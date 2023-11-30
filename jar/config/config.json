@@ -1,0 +1,33 @@
+{
+    "adminUI": {
+        "databases": true,
+        "apps": true,
+        "users": false,
+        "groups": false,
+        "saml": false
+    },
+    "webapps": {
+        "webjars": {
+            "/admin/ui/*": {
+                "type": "single",
+                "path": "/admin/index.html",
+                "csp": "default-src 'self' 'unsafe-inline'; img-src 'self' 'unsafe-inline' data:"
+            },
+            "/admin/ui": {
+                "type": "single",
+                "path": "/admin/index.html",
+                "csp": "default-src 'self' 'unsafe-inline'; img-src 'self' 'unsafe-inline' data:"
+            },
+            "/adminui.json": {
+                "type": "config",
+                "path": "/adminUI",
+                "csp": "default-src 'self';"
+            },
+            "/admin/*": {
+                "type": "path",
+                "path": "/admin",
+                "csp": "default-src 'self' 'unsafe-inline'; img-src 'self' 'unsafe-inline' data:"
+            }
+        }
+    }
+}

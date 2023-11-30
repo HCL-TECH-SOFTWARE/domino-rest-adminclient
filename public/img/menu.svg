@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="16px" viewBox="0 0 18 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61.2 (89653) - https://sketch.com -->
+    <title>icon/navigation/menu/24</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M3,4.5 L21,4.5 L21,6 L3,6 L3,4.5 Z M3,18 L21,18 L21,19.5 L3,19.5 L3,18 Z M3,11.25 L21,11.25 L21,12.75 L3,12.75 L3,11.25 Z" id="path-1"></path>
+    </defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="main-header" transform="translate(-108.000000, -28.000000)">
+            <g id="icon/navigation/menu/24" transform="translate(105.000000, 24.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="icon-color" fill="#717171" fill-rule="evenodd" xlink:href="#path-1"></use>
+            </g>
+        </g>
+    </g>
+</svg>

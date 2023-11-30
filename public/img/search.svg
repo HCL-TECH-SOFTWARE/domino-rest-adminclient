@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="21px" height="21px" viewBox="0 0 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61.2 (89653) - https://sketch.com -->
+    <title>icon/image/search/24</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M22.5,21.4425 L16.8375,15.75 C19.6494972,12.3571203 19.2986123,7.35329772 16.0406226,4.38606596 C12.782633,1.41883421 7.76788865,1.53588082 4.65188473,4.65188473 C1.53588082,7.76788865 1.41883421,12.782633 4.38606596,16.0406226 C7.35329772,19.2986123 12.3571203,19.6494972 15.75,16.8375 L21.4425,22.5 L22.5,21.4425 Z M3.75,10.5 C3.75,6.77207794 6.77207794,3.75 10.5,3.75 C14.2279221,3.75 17.25,6.77207794 17.25,10.5 C17.25,14.2279221 14.2279221,17.25 10.5,17.25 C6.77207794,17.25 3.75,14.2279221 3.75,10.5 Z" id="path-1"></path>
+    </defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="main-header" transform="translate(-1214.000000, -26.000000)">
+            <g id="icon/image/search/24" transform="translate(1212.000000, 24.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="icon-color" fill="#717171" fill-rule="evenodd" xlink:href="#path-1"></use>
+            </g>
+        </g>
+    </g>
+</svg>

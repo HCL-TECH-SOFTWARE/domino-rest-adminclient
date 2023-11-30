@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="22px" viewBox="0 0 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61.2 (89653) - https://sketch.com -->
+    <title>icon/image/home/24 copy 2</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M12.75,15.75 L12.75,9 L9.75,9 L9.75,10.5 L11.25,10.5 L11.25,15.75 L9,15.75 L9,17.25 L15,17.25 L15,15.75 L12.75,15.75 L12.75,15.75 Z M12,5.25 C11.3786797,5.25 10.875,5.75367966 10.875,6.375 C10.875,6.99632034 11.3786797,7.5 12,7.5 C12.6213203,7.5 13.125,6.99632034 13.125,6.375 C13.125,5.75367966 12.6213203,5.25 12,5.25 L12,5.25 Z M12,22.5 C6.20101013,22.5 1.5,17.7989899 1.5,12 C1.5,6.20101013 6.20101013,1.5 12,1.5 C17.7989899,1.5 22.5,6.20101013 22.5,12 C22.4935108,17.7962998 17.7962998,22.4935108 12,22.5 Z M12,3 C7.02943725,3 3,7.02943725 3,12 C3,16.9705627 7.02943725,21 12,21 C16.9705627,21 21,16.9705627 21,12 C20.9944614,7.03173323 16.9682668,3.00553863 12,3 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="5" transform="translate(-30.000000, -210.000000)">
+            <g id="Nav">
+                <g id="icon/status/info/16">
+                    <g transform="translate(29.000000, 209.000000)">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <use id="icon-color" fill="#717171" fill-rule="evenodd" xlink:href="#path-1"></use>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

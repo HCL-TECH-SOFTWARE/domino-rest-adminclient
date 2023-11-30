@@ -1,0 +1,97 @@
+{
+  "name": "keep-admin",
+  "version": "1.28.1-SNAPSHOT",
+  "private": true,
+  "proxy": "https://frascati.projectkeep.local:8880",
+  "homepage": "..",
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!axios)"
+    ]
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@material-ui/core": "^4.12.4",
+    "@material-ui/data-grid": "^4.0.0-alpha.37",
+    "@material-ui/icons": "^4.11.3",
+    "@material-ui/lab": "^4.0.0-alpha.61",
+    "@mui/icons-material": "^5.11.9",
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^18.0.6",
+    "axios": "^1.6.0",
+    "clsx": "^1.2.1",
+    "formik": "^2.4.5",
+    "lodash": "^4.17.21",
+    "moment": "2.29.4",
+    "prop-types": "^15.8.1",
+    "react": "^17.0.2",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "^17.0.2",
+    "react-icons": "^4.8.0",
+    "react-jsondata-editor": "^2.0.2",
+    "react-redux": "^8.0.4",
+    "react-router-dom": "^6.20.0",
+    "react-swipeable-views": "^0.14.0",
+    "redux": "^4.2.1",
+    "redux-thunk": "^2.4.1",
+    "styled-components": "^5.3.6",
+    "typescript": "^4.8.4",
+    "uuid": "^9.0.0",
+    "yup": "^0.32.11"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "REACT_APP_ADMIN_UI_BUILD_VERSION=`date +%Y%m%d%H%M%S` cross-env CI=true BUILD_PATH='./build/admin' react-scripts build",
+    "build:win": "set REACT_APP_ADMIN_UI_BUILD_VERSION=%date% %time%&& cross-env CI=true BUILD_PATH='./build/admin' react-scripts build",
+    "test": "cross-env CI=true react-scripts test --coverage --testResultsProcessor jest-sonar-reporter --testURL http://localhost/admin/ui",
+    "dont-do-this-eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "rules": {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off"
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">1.0%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^29.1.1",
+    "@types/node": "^18.8.2",
+    "@types/react-beautiful-dnd": "^13.1.2",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/react-swipeable-views": "^0.13.5",
+    "@types/styled-components": "^5.1.26",
+    "@types/uuid": "^8.3.4",
+    "@xmldom/xmldom": "^0.8.6",
+    "cross-env": "^7.0.3",
+    "immer": "^10.0.3",
+    "jest-sonar-reporter": "^2.0.0",
+    "loader-utils": "^3.2.0",
+    "msw": "^0.47.4",
+    "react-scripts": "5.0.1",
+    "redux-devtools-extension": "^2.13.9"
+  },
+  "jestSonar": {
+    "reportPath": "coverage",
+    "reportFile": "sonar-report.xml",
+    "indent": 4
+  }
+}

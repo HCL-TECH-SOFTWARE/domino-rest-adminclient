@@ -1,0 +1,8 @@
+<Configuration sourceCodeOnly="true">
+  <Targets>
+    <Target outputs-only="true" path="../src">
+      <Include></Include>
+      <Exclude>__tests__/</Exclude>
+    </Target>
+  </Targets>
+</Configuration>

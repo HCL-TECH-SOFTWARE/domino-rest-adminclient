@@ -1,0 +1,21 @@
+#modal .holder {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+#modal .popup {
+  width: 500px;
+  background: #fff;
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  padding: 25px;
+}
+
+body {
+  overflow: hidden;
+}
