@@ -207,7 +207,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
 
   const dispatch = useDispatch();
 
-  const { databases } = useSelector((state: AppState) => state.databases);
+  const { databases, folders } = useSelector((state: AppState) => state.databases);
   const nsfPathDecode = decodeURIComponent(nsfPathProp);
 
   const {
@@ -534,9 +534,11 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   useEffect(() => {
     const fetchColumns = async () => {
       let encodedViewName = fullEncode(viewName);
+      const folderNames = folders.map((folder) => {return folder.viewName});
+      const isFolder = folderNames.includes(viewName);
 
       const data = await axios
-        .get(`${SETUP_KEEP_API_URL}/design/views/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
+        .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             "Content-Type": 'application/json'
@@ -590,7 +592,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         }
       })
     }
-  }, [aScopeName, open, viewName, views, nsfPathProp, dispatch])
+  }, [aScopeName, open, viewName, views, nsfPathProp, dispatch, folders])
 
   function setActiveViews(dbName: string, views: Array<any>) {
     // Build Active View list

@@ -14,13 +14,12 @@ import { checkIcon } from '../../../../../styles/scripts';
 import appIcons from '../../../../../styles/app-icons';
 import { Scope } from '../../../../../store/databases/types';
 import { Box } from '@material-ui/core';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../../../../store';
 import { DeleteIcon } from '../../../../../styles/CommonStyles';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
-import { useDispatch } from 'react-redux';
 
 const AlphabeticalViewContainer = styled.div`
   display: flex;
@@ -160,15 +159,15 @@ interface AlphabeticalSchemaViewProps {
 const mapAlphabets = (databases: Array<any>, isSchema: boolean) => {
   const newCities = {} as any;
 
-  for (let i = 0; i < databases.length; i++) {
+  for (const element of databases) {
     const c = isSchema
-      ? databases[i].schemaName[0].toUpperCase()
-      : databases[i].apiName[0].toUpperCase();
+      ? element.schemaName[0].toUpperCase()
+      : element.apiName[0].toUpperCase();
     if (newCities[c] && newCities[c].length >= 0)
-      newCities[c].push(databases[i]);
+      newCities[c].push(element);
     else {
       newCities[c] = [];
-      newCities[c].push(databases[i]);
+      newCities[c].push(element);
     }
   }
 
@@ -184,7 +183,7 @@ const mapAlphabets = (databases: Array<any>, isSchema: boolean) => {
 };
 
 const getAllLetters = () => {
-  var allLetters = [];
+  const allLetters = [];
   
   for (let i = 65; i <= 90; i++) {
     allLetters.push(String.fromCharCode(i));
@@ -278,11 +277,11 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
       <AlphabeticalViewContainer>
         <Box className='letters'>
           {
-            allLetters.map((letter: string, index: number) => (
+            allLetters.map((letter: string) => (
               <Box 
                 className={`each-letter ${Object.keys(alphabets).includes(letter) ? '' : 'no-schema'} ${letter === chosenLetter ? 'focused' : ''}`} 
                 onClick={() => {handleClickLetter(letter)}}
-                key={index}
+                key={letter}
                 tabIndex={Object.keys(alphabets).includes(letter) ? 1 : -1} // Can't focus via tab if letter is disabled
                 onKeyDown={(e) => {handleKeyPressLetter(e, letter)}}
               >
@@ -295,16 +294,16 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
         <Box className='all-rows'>
           {
             Object.keys(alphabets).map((letter) => (
-              <Box>
+              <Box key={letter}>
                 <BlockContainer key={letter} ref={letter === chosenLetter ? rowRef : null}>
                   <Typography className="letter" color="textPrimary">
                     {letter}
                   </Typography>
                   <Box className='schemas'>
                     {alphabets[letter].map((data: any, index: number) => (
-                      <Db key={index}>
-                        <Tooltip title={schemasWithScopes && schemasWithScopes.includes(data.nsfPath + ":" + data.schemaName) ? 'Used by Scopes' : 'Not used by Scopes'}>
-                          <Box className={`api-status ${schemasWithScopes && schemasWithScopes.includes(data.nsfPath + ":" + data.schemaName) ? '' : 'unused'}`} />
+                      <Db key={data.schemaName + data.nsfPath}>
+                        <Tooltip title={schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? 'Used by Scopes' : 'Not used by Scopes'}>
+                          <Box className={`api-status ${schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? '' : 'unused'}`} />
                         </Tooltip>
                         {checkIcon(data.iconName) ? (
                           <img

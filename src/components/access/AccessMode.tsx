@@ -190,16 +190,17 @@ const AccessMode: React.FC = () => {
     }
   };
 
-  const remove = (idx: number, droppableIndex: any, all?: boolean) => {
+  const remove = (idx: number, fieldList: any, all?: boolean) => {
     if (all) {
       setstate({ [uuid()]: [] })
     } else {
-      setstate({
-        ...state,
-        [droppableIndex]: state[droppableIndex].filter(
-          (item: any, index: number) => index !== idx
-        ),
-      });
+      const deleteId = fieldList.map((field: any) => {return field.id})
+      const deleteContent = fieldList.map((field: any) => {return field.content})
+      let stateBuffer = {...state}
+      Object.keys(state).forEach((key) => {
+        stateBuffer[key] = state[key].filter((field: any) => !deleteId.includes(field.id) && !deleteContent.includes(field.content))
+      })
+      setstate(stateBuffer)
     }
   };
 

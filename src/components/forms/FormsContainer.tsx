@@ -33,7 +33,8 @@ import {
   setDbIndex,
   fetchKeepDatabases,
   addNsfDesign,
-  updateSchema} from '../../store/databases/action';
+  updateSchema,
+  fetchFolders} from '../../store/databases/action';
 import { toggleSettings } from '../../store/dbsettings/action';
 import { getToken } from '../../store/account/action';
 import ErrorWrapper from '../wrapper/ErrorWrapper';
@@ -552,6 +553,10 @@ const FormsContainer = () => {
   const handleToggle = () => {
     setStyledObjMode(!styledObjMode);
   };
+
+  useEffect(() => {
+    dispatch(fetchFolders(dbName, nsfPath) as any)
+  }, [dbName, dispatch, nsfPath])
 
   return (
     <ErrorWrapper errorStatus={errorStatus}>

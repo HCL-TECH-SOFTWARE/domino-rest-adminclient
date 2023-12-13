@@ -11,6 +11,7 @@ import UserIcon from '@material-ui/icons/AccountCircleOutlined';
 import styled from 'styled-components';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
+import { getTheme } from '../../store/styles/action';
 import { TokenProps } from '../../store/account/types';
 
 

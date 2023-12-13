@@ -4,6 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
+import React from 'react';
 import styled from 'styled-components';
 import BreadcrumbRouter from './BreadcrumbRouter';
 
