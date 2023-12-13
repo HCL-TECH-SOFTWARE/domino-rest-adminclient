@@ -8,5 +8,5 @@ test("renders home page", () => {
 
   render(<Provider store={store}><App /></Provider>);
   const linkElement = screen.getByText(/login your account/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(linkElement).toBeDefined();
 });
