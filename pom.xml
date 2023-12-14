@@ -21,15 +21,8 @@
 
 	<distributionManagement>
 		<repository>
-			<id>release</id>
-			<name>Domino Rest API Admin Client</name>
-			<url>https://maven.pkg.github.com/HCL-TECH-SOFTWARE/domino-rest-adminclient</url>
-		</repository>
-	</distributionManagement>
-
-	<repositories>
-		<repository>
 			<id>github</id>
+			<name>GitHub Pakckages</name>
 			<url>https://maven.pkg.github.com/HCL-TECH-SOFTWARE/domino-rest-adminclient</url>
 			<releases>
 				<enabled>true</enabled>
@@ -38,7 +31,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-	</repositories>
+	</distributionManagement>
 
 	<build>
 		<resources>
