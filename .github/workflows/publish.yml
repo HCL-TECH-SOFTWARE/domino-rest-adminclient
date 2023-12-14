@@ -2,8 +2,8 @@ name: Publish package to Github registry
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
+  release:
+    types: [published]
 
 jobs:
   publish:
@@ -18,7 +18,13 @@ jobs:
         with:
           java-version: 8
           distribution: 'temurin'
-
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: mvn clean
+      - run: npm ci
+      - run: npm run test
       - name: Publish to GitHub Packages Apache Maven
         run: mvn deploy
         env:
