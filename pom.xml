@@ -5,80 +5,33 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.hcl.domino.keep</groupId>
 	<artifactId>keep-admin-ui</artifactId>
-	<version>1.28.3-SNAPSHOT</version>
+	<version>1.28.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>HCL Domino REST API Administration UI</name>
 	<description>ReactJS application using the HCL Domino REST APIs for administration</description>
 
-	<profiles>
-		<profile>
-			<properties>
-				<npm.build.script>build:win</npm.build.script>
-			</properties>
-			<activation>
-				<os>
-					<family>Windows</family>
-				</os>
-			</activation>
-		</profile>
-	</profiles>
 	<properties>
 		<java.version>1.8</java.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.version>[3.8.1,)</maven.version>
 		<project.autorelease>true</project.autorelease>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<npm.build.script>build</npm.build.script>
-		<sonar.sources>.</sonar.sources>
-		<!-- when unit test ready, uncomment below lines and modify values-->
-		<sonar.tests>.</sonar.tests>
-		<sonar.test.inclusions>**/*.test.js, *.test.js, __test__/*.js, *.test, *.spec, test.js,
-			spec.js,
-			**/tests/*.test.js, **/tests/**/*.test.js, **/tests/*.ts, **/tests/**/*.ts,
-			**/test/*.test.js,
-			**/test/**/*.test.js, **/*.test.tsx</sonar.test.inclusions>
-		<sonar.testExecutionReportPaths>coverage/sonar-report.xml</sonar.testExecutionReportPaths>
-		<sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
-		<sonar.coverage.exclusions>**/tests/**/*, docs/**/*, **/*.test.js, test.js, spec.js,
-			**/*.test.tsx</sonar.coverage.exclusions>
-		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-		<sonar.cpd.exclusions>docs/**/*, tests/**/*.test.js, **/*.test.js, test/**/*.ts,
-			**/*.test.tsx</sonar.cpd.exclusions>
 	</properties>
 
 	<distributionManagement>
 		<repository>
-			<id>release</id>
-			<name>Domino Rest API Admin Client</name>
+			<id>github</id>
+			<name>GitHub Pakckages</name>
 			<url>https://maven.pkg.github.com/HCL-TECH-SOFTWARE/domino-rest-adminclient</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 	</distributionManagement>
-
-	<repositories>
-		<repository>
-			<id>github</id>
-			<url>https://maven.pkg.github.com/HCL-TECH-SOFTWARE/domino-rest-adminclient</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>public</id>
-			<url>https://nexus.qs.hcllabs.net/repository/maven-public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<build>
 		<resources>
@@ -95,6 +48,37 @@
 		</resources>
 
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.1.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>de.skuzzle.enforcer</groupId>
+						<artifactId>restrict-imports-enforcer-rule</artifactId>
+						<version>2.4.0</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>${maven.version}</version>
+								</requireMavenVersion>
+								<requireJavaVersion>
+									<version>${java.version}</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<!-- Clean out npm build directory -->
 				<groupId>org.apache.maven.plugins</groupId>
@@ -113,84 +97,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.3.0</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.1.1</version>
-				<executions>
-
-					<!-- Optional: The following will output the npm configuration. efffect:
-						CI
-					logs will show the npm information -->
-					<execution>
-						<?m2e ignore?>
-						<id>npm config list (validate)</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>validate</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>config</argument>
-								<argument>list</argument>
-							</arguments>
-						</configuration>
-					</execution>
-
-					<!-- Required: The following will ensure `npm install` is called before
-						anything
-					else during the 'Default Lifecycle' -->
-					<execution>
-						<?m2e ignore?>
-						<id>npm install (initialize)</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>initialize</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>install</argument>
-							</arguments>
-						</configuration>
-					</execution>
-
-					<!-- Required: This following calls `npm run build` -->
-					<execution>
-						<?m2e ignore?>
-						<id>npm run build (generate-sources)</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>generate-sources</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments>
-								<argument>run</argument>
-								<argument>${npm.build.script}</argument>
-							</arguments>
-						</configuration>
-					</execution>
-
-					<execution>
-						<id>npm run test (integration-test)</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>test</phase>
-						<configuration>
-							<executable>npm</executable>
-							<arguments> > <argument>run</argument>
-								<argument>test</argument>
-							</arguments>
-						</configuration>
-					</execution>
-
-				</executions>
-
 			</plugin>
 		</plugins>
 	</build>

@@ -1,8 +1,8 @@
 {
-  "name": "keep-admin",
+  "name": "@hcl-software/domino-rest-adminclient",
   "version": "1.28.3-SNAPSHOT",
-  "private": true,
-  "proxy": "https://frascati.projectkeep.local:8880",
+  "private": false,
+  "proxy": "http://localhost:8880",
   "homepage": "..",
   "jest": {
     "transformIgnorePatterns": [
