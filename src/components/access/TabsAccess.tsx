@@ -10,7 +10,6 @@ import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import TestIcon from '@material-ui/icons/PlayArrow';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
@@ -388,10 +387,14 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   };
 
   const handleChange = (event: React.ChangeEvent<any>) => {
+    console.log(event.target)
+    console.log(event.target.value)
     const value =
       event.target.name === 'computeWithForm'
         ? event.target.checked
         : event.target.value;
+    console.log(value)
+    console.log(event.target.name)
 
     // map the value in object
     const formulaObj = {
@@ -404,6 +407,11 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       [event.target.name]:
         event.target.name === 'computeWithForm' ? value : formulaObj,
     });
+    console.log({
+      ...scripts,
+      [event.target.name]:
+        event.target.name === 'computeWithForm' ? value : formulaObj,
+    })
   };
 
   /**
@@ -583,12 +591,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                 />
               </>
             )}
-            <Button onClick={test}>
-              <TestIcon className='action-icon' color='primary' />
-              <Typography variant='body2' color='textPrimary'>
-                Test Formulas
-              </Typography>
-            </Button>
             <Button onClick={save}>
               <FiSave className='action-icon' color='primary' size='0.9em' />
               <Typography variant='body2' color='textPrimary'>
@@ -598,7 +600,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           </PagerAction>
         </TabsContainer>
         <LoadTabContainer>
-          <FieldDNDContainer remove={remove} update={update} state={state} addField={addField} data={scripts} handleChangeScript={handleChange} />
+          <FieldDNDContainer remove={remove} update={update} state={state} addField={addField} data={scripts} setScripts={setScripts} test={test} />
         </LoadTabContainer>
       </TabNavigator>
       <FormDrawer formName='TestForm' formik={formik} />

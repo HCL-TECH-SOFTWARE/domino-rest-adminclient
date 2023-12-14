@@ -115,7 +115,7 @@ const SchemaCardV2: React.FC<SchemaCardV2Props> = ({
     >
       <OptionsIcon>
         <Tooltip title={inUse ? 'Used by Scopes' : 'Not used by Scopes'}>
-          <SchemaIconStatus isActive={inUse ? true : false} style={{ position: 'absolute', right: '20px', top: '20px' }} />
+          <SchemaIconStatus isActive={inUse} style={{ position: 'absolute', right: '20px', top: '20px' }} />
         </Tooltip>
       </OptionsIcon>
       <SchemaCardWrapper onKeyDown={handleKeyPress} tabIndex={1}>
@@ -156,14 +156,16 @@ const SchemaCardV2: React.FC<SchemaCardV2Props> = ({
                   {database.schemaName}
                 </Typography>
               </Tooltip>
-              <Typography
-                className="api-description"
-                variant="subtitle1"
-                component="p"
-                color="textPrimary"
-              >
-                {database.nsfPath}
-              </Typography>
+              <Tooltip title={database.nsfPath} arrow placement='bottom'>
+                <Typography
+                  className="api-description"
+                  variant="subtitle1"
+                  component="p"
+                  color="textPrimary"
+                >
+                  {database.nsfPath}
+                </Typography>
+              </Tooltip>
             </CardLabelContainer>
           </SchemaCardHeader>
           <Tooltip title={database.description} arrow placement='bottom'>

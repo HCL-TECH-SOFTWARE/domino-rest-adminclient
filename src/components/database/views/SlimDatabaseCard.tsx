@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
+import React, { KeyboardEventHandler } from 'react';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';

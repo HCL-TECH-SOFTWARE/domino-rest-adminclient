@@ -50,12 +50,12 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
         </Typography>
         <ExtraFlex>
           {
-            mapSchemas(databases, 'schemas').map((database: any, index: any) => {
+            mapSchemas(databases, 'schemas').map((database: any) => {
               return (
                 <NsfCard
                   openDatabase={openSchema}
                   open={open}
-                  key={index}
+                  key={database.schemaName}
                   aria-describedby={id}
                   database={database}
                   setSelectedDB={setSelectedDB}

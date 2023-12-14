@@ -61,6 +61,7 @@ import {
   DELETE_ACTIVEAGENT,
   UPDATE_ERROR,
   SET_FORM_NAME,
+  SET_FOLDERS,
 } from './types';
 import { setLoading } from '../loading/action';
 import { toggleDrawer, toggleQuickConfigDrawer } from '../drawer/action';
@@ -641,6 +642,51 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
                   viewAlias: aliasArray,
                   viewUnid: view['@unid'],
                   viewUpdated: view['columns'] && view['columns'].length ? true : false
+                };
+              })
+            ) as any
+          );
+        });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+};
+
+/**
+ * Retrieves folders for a particular database and
+ * passes them to Redux.
+ *
+ * @param nsfPath the name of the database
+ */
+export const fetchFolders = (dbName: string, nsfPath: string) => {
+  return async (dispatch: Dispatch) => {
+    try {
+      await axios
+        .get(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json'
+          }
+        })
+        .then((res) => {
+          dispatch(
+            setFolders(
+              dbName,
+              res.data.folders.map((folder: any) => {
+                let aliasArray: Array<any> = [];
+                if (folder['@alias'] != null && folder['@alias'].length > 0) {
+                  if (Array.isArray(folder['@alias'])) {
+                    aliasArray = folder['@alias'];
+                  } else {
+                    aliasArray.push(folder['@alias']);
+                  }
+                }
+                return {
+                  viewName: folder['@name'],
+                  viewAlias: aliasArray,
+                  viewUnid: folder['@unid'],
+                  viewUpdated: folder['columns'] && folder['columns'].length ? true : false
                 };
               })
             ) as any
@@ -2226,6 +2272,24 @@ export const setViews = (dbName: string, views: Array<any>) => {
       payload: {
         db: dbName,
         views
+      }
+    });
+  };
+};
+
+/**
+ * Save a list of folders for a particular database
+ *
+ * @param dbname the database containing the views
+ * @param views the array of views
+ */
+export const setFolders = (dbName: string, folders: Array<any>) => {
+  return async (dispatch: any) => {
+    await dispatch({
+      type: SET_FOLDERS,
+      payload: {
+        db: dbName,
+        folders
       }
     });
   };

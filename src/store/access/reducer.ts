@@ -21,7 +21,6 @@ export default function usersReducer(
 ): UserState {
   switch (action.type) {
     case SET_USERS:
-      console.log(action.payload);
       return {
         ...state,
         users: action.payload,

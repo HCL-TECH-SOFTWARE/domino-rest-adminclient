@@ -25,8 +25,9 @@ const ConfigFieldContainer = styled.div`
   border: 1px solid #BFBFBF;
   background: #FFF;
   padding: 0;
-  height: fit-content;
+  height: 45%;
   width: 100%;
+  overflow-y: scroll;
 
   .title {
     font-size: 12px;
@@ -45,17 +46,17 @@ const ConfigFieldContainer = styled.div`
     font-weight: 700;
     color: #000;
     width: 100%;
-    padding: 10px 20px 0 20px;
+    padding: 0 20px;
   }
 
   .details {
-    padding: 10px 20px;
+    padding: 10px 20px 0 20px;
     display: flex;
     flex-wrap: wrap;
   }
 
   .input {
-    min-width: 50%;
+    width: 50%;
     padding: 5px 0;
   }
 `
@@ -189,98 +190,100 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
 
   return (
     <ConfigFieldContainer>
-      <Box style={{ width: '30%', padding: '20px 20px 10px 20px' }}>
+      <Box style={{ width: '30%', padding: '15px 20px 5px 20px' }}>
         <Typography className='title'>Item Name</Typography>
         <Typography className='name'>{item.name}</Typography>
       </Box>
       <HorizontalDivider />
-      <Typography className='setting'>Field Setting</Typography>
-      <Box className='details'>
-        <Box className='input'>
-          <TextField 
-            label="Field Name" 
-            value={editedItem.externalName} 
-            style={{"width":"50%"}}
-            onChange={handleFieldNameChange} 
-            InputProps={{ style: { fontSize: '15px' }}} 
-            InputLabelProps={{ shrink: true }}
-            id="field-name"
-          />
-        </Box>
-        <Box className='input'>
-          <TextField
-            value={formatValue}
-            onChange={handleFieldTypeChange}
-            style={{"width":"50%"}}
-            label="Field Type"
-            select
-            InputProps={{ style: { fontSize: '15px' }}}
-            id='field-type'
-          >
-            <MenuItem value={"authors"}>authors</MenuItem>
-            <MenuItem value={"binary"}>binary</MenuItem>
-            <MenuItem value={"boolean"}>boolean</MenuItem>
-            <MenuItem value={"byte"}>byte</MenuItem>
-            <MenuItem value={"date"}>date</MenuItem>
-            <MenuItem value={"date-time"}>date-time</MenuItem>
-            <MenuItem value={"double"}>double</MenuItem>
-            <MenuItem value={"float"}>float</MenuItem>
-            <MenuItem value={"int32"}>int32</MenuItem>
-            <MenuItem value={"int64"}>int64</MenuItem>
-            <MenuItem value={"names"}>names</MenuItem>
-            <MenuItem value={"password"}>password</MenuItem>
-            <MenuItem value={"readers"}>readers</MenuItem>
-            <MenuItem value={"richtext"}>richtext</MenuItem>
-            <MenuItem value={"string"}>string</MenuItem>
-          </TextField>
-        </Box>
-        <Box className='input'>
-          <TextField
-            value={editedItem.fieldAccess}
-            onChange={handleAccessModeChange}
-            style={{"width":"50%"}}
-            label="Access"
-            select
-            InputProps={{ style: { fontSize: '15px' }}}
-            id='field-access'
-          >
-            <MenuItem value={"RW"}>Read/Write</MenuItem>
-            <MenuItem value={"RO"}>Read Only</MenuItem>
-            <MenuItem value={"WO"}>Write Only</MenuItem>
-          </TextField>
-        </Box>
-        <Tooltip 
-          title={editedItem.fieldGroup?.length > 0 ? "Field group should be empty to toggle off multi-value" : ""} 
-          style={{ display: 'flex', flexDirection: 'row' }} 
-          arrow
-        >
-          <Box className='input' style={{ display: 'flex', alignItems: 'center' }}>
-            <Typography style={{ width: 'fit-content' }}>
-              Multi-Value?
-            </Typography>
-            <BlueSwitch 
-              size='small' 
-              checked={isMultiValue} 
-              onChange={toggleMultiValue} 
-              disabled = {formatValue === "readers" || formatValue === "authors" || editedItem.fieldGroup?.length > 0} 
-              id='multi-value'
-            />
-          </Box>
-        </Tooltip>
-        <Tooltip title={isMultiValue ? "" : "Enable multi-value to input a field group"} arrow>
+      <Box style={{ height: '100%' }}>
+        <Typography className='setting'>Field Setting</Typography>
+        <Box className='details'>
           <Box className='input'>
             <TextField 
-              label="Field Group" 
-              value={editedItem.fieldGroup} 
+              label="Field Name" 
+              value={editedItem.externalName} 
               style={{"width":"50%"}}
-              onChange={handleFieldGroupChange} 
-              InputProps={{ style: { fontSize: '15px' }}} 
-              disabled={!isMultiValue} 
+              onChange={handleFieldNameChange} 
+              InputProps={{ style: { fontSize: '14px' }}} 
               InputLabelProps={{ shrink: true }}
-              id='field-group'
+              id="field-name"
             />
           </Box>
-        </Tooltip>
+          <Box className='input'>
+            <TextField
+              value={formatValue}
+              onChange={handleFieldTypeChange}
+              style={{"width":"50%"}}
+              label="Field Type"
+              select
+              InputProps={{ style: { fontSize: '14px' }}} 
+              id='field-type'
+            >
+              <MenuItem value={"authors"}>authors</MenuItem>
+              <MenuItem value={"binary"}>binary</MenuItem>
+              <MenuItem value={"boolean"}>boolean</MenuItem>
+              <MenuItem value={"byte"}>byte</MenuItem>
+              <MenuItem value={"date"}>date</MenuItem>
+              <MenuItem value={"date-time"}>date-time</MenuItem>
+              <MenuItem value={"double"}>double</MenuItem>
+              <MenuItem value={"float"}>float</MenuItem>
+              <MenuItem value={"int32"}>int32</MenuItem>
+              <MenuItem value={"int64"}>int64</MenuItem>
+              <MenuItem value={"names"}>names</MenuItem>
+              <MenuItem value={"password"}>password</MenuItem>
+              <MenuItem value={"readers"}>readers</MenuItem>
+              <MenuItem value={"richtext"}>richtext</MenuItem>
+              <MenuItem value={"string"}>string</MenuItem>
+            </TextField>
+          </Box>
+          <Box className='input'>
+            <TextField
+              value={editedItem.fieldAccess}
+              onChange={handleAccessModeChange}
+              style={{"width":"50%"}}
+              label="Access"
+              select
+              InputProps={{ style: { fontSize: '14px' }}} 
+              id='field-access'
+            >
+              <MenuItem value={"RW"}>Read/Write</MenuItem>
+              <MenuItem value={"RO"}>Read Only</MenuItem>
+              <MenuItem value={"WO"}>Write Only</MenuItem>
+            </TextField>
+          </Box>
+          <Tooltip 
+            title={editedItem.fieldGroup?.length > 0 ? "Field group should be empty to toggle off multi-value" : ""} 
+            style={{ display: 'flex', flexDirection: 'row' }} 
+            arrow
+          >
+            <Box className='input' style={{ display: 'flex', alignItems: 'center' }}>
+              <Typography style={{ width: 'fit-content' }}>
+                Multi-Value?
+              </Typography>
+              <BlueSwitch 
+                size='small' 
+                checked={isMultiValue} 
+                onChange={toggleMultiValue} 
+                disabled = {formatValue === "readers" || formatValue === "authors" || editedItem.fieldGroup?.length > 0} 
+                id='multi-value'
+              />
+            </Box>
+          </Tooltip>
+          <Tooltip title={isMultiValue ? "" : "Enable multi-value to input a field group"} arrow>
+            <Box className='input'>
+              <TextField 
+                label="Field Group" 
+                value={editedItem.fieldGroup} 
+                style={{ "width":"50%" }}
+                onChange={handleFieldGroupChange} 
+                InputProps={{ style: { fontSize: '14px' }}} 
+                disabled={!isMultiValue} 
+                InputLabelProps={{ shrink: true }}
+                id='field-group'
+              />
+            </Box>
+          </Tooltip>
+        </Box>
       </Box>
     </ConfigFieldContainer>
   );

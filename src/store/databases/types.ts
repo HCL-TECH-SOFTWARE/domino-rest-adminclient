@@ -129,6 +129,7 @@ export interface DBState {
   activeFields: Array<any>;
   views: Array<any>;
   activeViews: Array<any>;
+  folders: Array<any>;
   agents: Array<any>;
   activeAgents: Array<any>;
   formLoading: boolean;
@@ -183,6 +184,7 @@ export const SET_ACTIVEFORM = 'SET_ACTIVEFORM';
 export const SET_ACTIVEFIELDS = 'SET_ACTIVEFIELDS';
 export const ADD_ACTIVEFIELDS = 'ADD_ACTIVEFIELDS';
 export const SET_VIEWS = 'SET_VIEWS';
+export const SET_FOLDERS = 'SET_FOLDERS';
 export const UPDATE_VIEW = 'UPDATE_VIEW';
 export const SET_ACTIVEVIEWS = 'SET_ACTIVEVIEWS';
 export const ADD_ACTIVEVIEW = 'ADD_ACTIVEVIEW';
@@ -362,6 +364,14 @@ interface DeleteActiveView {
   payload: {
     db: string;
     activeView: string;
+  };
+}
+
+interface SetFolders {
+  type: typeof SET_FOLDERS;
+  payload: {
+    db: string;
+    folders: Array<any>;
   };
 }
 
@@ -675,4 +685,5 @@ export type DatabaseActionTypes =
   | ViewsError
   | AgentsError
   | UpdateError
-  | SetFormName;
+  | SetFormName
+  | SetFolders;
