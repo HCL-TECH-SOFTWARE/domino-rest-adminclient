@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.hcl.domino.keep</groupId>
 	<artifactId>keep-admin-ui</artifactId>
-	<version>1.28.2-SNAPSHOT</version>
+	<version>1.28.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>HCL Domino REST API Administration UI</name>
 	<description>ReactJS application using the HCL Domino REST APIs for administration</description>
