@@ -1,6 +1,6 @@
 {
   "name": "@hcl-software/domino-rest-adminclient",
-  "version": "1.28.2-SNAPSHOT",
+  "version": "1.28.3-SNAPSHOT",
   "private": false,
   "proxy": "http://localhost:8880",
   "homepage": "..",
@@ -31,7 +31,7 @@
     "react-icons": "^4.8.0",
     "react-jsondata-editor": "^2.0.2",
     "react-redux": "^8.0.4",
-    "react-router-dom": "^5.2.0",
+    "react-router-dom": "^5.3.0",
     "react-swipeable-views": "^0.14.0",
     "redux": "^4.2.1",
     "redux-thunk": "^2.4.1",

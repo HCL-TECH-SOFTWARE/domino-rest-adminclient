@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import Typography from '@material-ui/core/Typography';
-import { Box, ButtonBase, Dialog, Grid, TextField, TextareaAutosize } from '@material-ui/core';
+import { Box, ButtonBase, Dialog, Grid, TextField } from '@material-ui/core';
 import { ButtonNeutral, ButtonYes, DialogContainer, HorizontalDivider } from '../../styles/CommonStyles';
 import styled from 'styled-components';
 import CloseMenuIcon from '@material-ui/icons/Close';
@@ -74,20 +74,22 @@ const DialogActionsContainer = styled(Box)`
 
 const SchemaFormSchema = Yup.object().shape({
   schemaName: Yup.string()
-    .max(256, 'Schema Name is too long (maximum is 256 characters)')
-    .required('Schema Name is required.')
-    .test('First Character', 'Schema Name must start with a letter', (val) => {
+    .max(256, 'Schema name is too long (maximum is 256 characters).')
+    .min(3, "Schema name should contain at least 3 characters.")
+    .required('Schema name is required.')
+    .test('First Character', 'Schema name must start with a letter', (val) => {
       // Build Issue: character must be converted to an int before the isNaN call
       let retval = false;
       if (val && val.length) {
         retval = isNaN(parseInt(val.charAt(0), 10));
       }
       return retval;
-    }),
+    })
+    .matches(/^[a-z0-9_]+$/g, "Schema name should only contain lowercase letters, numbers, and underscores."),
   description: Yup.string()
+    .min(3, "Schema name should contain at least 3 characters.")
     .required('Please provide a short description about this schema!'),
   nsfPath: Yup.string()
-    .min(1, 'Please select a database!')
     .required('Please select a database!'),
 });
 
@@ -116,7 +118,8 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const [dbErrorMessage, setDbErrorMessage] = useState("Please choose a database!");
   const [nameErrorMessage, setNameErrorMessage] = useState("");
-  const [optionTitle, setOptionTitle] = useState("Import Schema");
+  const [importFlag, setImportFlag] = useState(false)
+  const [schemaName, setSchemaName] = useState('')
   
   const engineOptions = ['domino'];
 
@@ -146,24 +149,23 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       allowDecryption: true,
       owners: []
     },
+    validateOnChange: true,
+    validateOnBlur: true,
     validationSchema: SchemaFormSchema,
     onSubmit: (values) => {
-      if (validateSchemaName(values.schemaName) && validateNsfPath(nsfPath)) {
-        const newSchema = {
-          ...values,
-          apiName: values.schemaName,
-          nsfPath: nsfPath,
-          iconName: iconName,
-          icon: appIcons[iconName],
-        };
-        dispatch(addSchema(newSchema) as any);
-        setIconName('beach');
-        setNsfPath('');
-        setImportDialogOpen(false);
-        handleClose();
-      } else {
-        return
-      }
+      const newSchema = {
+        ...values,
+        schemaName: schemaName,
+        apiName: schemaName,
+        nsfPath: nsfPath,
+        iconName: iconName,
+        icon: appIcons[iconName],
+      };
+      dispatch(addSchema(newSchema) as any);
+      setIconName('beach');
+      setNsfPath('');
+      setImportDialogOpen(false);
+      handleClose();
     }
   })
 
@@ -172,11 +174,12 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
     setDbError(false);
     setNameError(false);
     handleClose();
+    setSchemaName('')
   }
 
   // create a hidden input element and click it to open file dialog
   const handleClickImport = () => {
-    setOptionTitle("Import Schema");
+    setImportFlag(true)
     fileElement.setAttribute('type', 'file');
     fileElement.setAttribute('accept', '.json');
     fileElement.addEventListener('change', readSchema);
@@ -188,7 +191,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   }
 
   const handleClickCreate = () => {
-    setOptionTitle("Create Schema");
+    setImportFlag(false)
     formik.setValues({
       schemaName: '',
       description: '',
@@ -228,6 +231,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         formulaEngine: schemaData.formulaEngine,
       });
       setIconName(schemaData.iconName);
+      setSchemaName(schemaData.schemaName)
 
       // initial validation, then call schema API
       if (schemas.includes(schemaData.nsfPath + ':' + schemaData.schemaName)) {
@@ -271,8 +275,9 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const handleSchemaNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newSchemaName = e.target.value;
-    newSchemaName = newSchemaName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    formik.handleChange(e);
+    newSchemaName = newSchemaName.toLowerCase().replace(/[^a-z0-9_]/g, '');
+    setSchemaName(newSchemaName)
+    formik.values.schemaName = newSchemaName
 
     // validation error
     validateSchemaName(newSchemaName);
@@ -385,16 +390,17 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         </ButtonBase>
         <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <Typography className='detail-title'>
-            Import Into Database
+            {`${importFlag ? "Import Into Database" : "Database"}`}
           </Typography>
           <Autocomplete
             id="choose-database"
             options={availableDatabases.map((database) => database.title)}
+            filterOptions={(options) => options.filter((option) => option.toLowerCase().indexOf(formik.values.nsfPath.toLowerCase()) !== -1)}
             onInputChange={handleChooseDatabase}
             getOptionLabel={nsfPath => nsfPath}
             value={formik.values.nsfPath}
             fullWidth
-            renderInput={(params) => <TextField {...params} error={dbError} helperText={dbErrorMessage} name='nsfPath' value={formik.values.nsfPath} variant='outlined' fullWidth />}
+            renderInput={(params) => <TextField {...params} error={dbError} helperText={dbErrorMessage} name='nsfPath' variant='outlined' fullWidth />}
             style={{ margin: 0, padding: 0, zIndex: 100 }}
           />
         </Box>
@@ -425,11 +431,11 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             <Box style={{ height: '41px' }}>
               <TextField 
                 onChange={handleSchemaNameChange} 
-                error={nameError}
-                helperText={nameErrorMessage}
+                error={!!formik.errors.schemaName && formik.touched.schemaName}
+                helperText={formik.errors.schemaName}
                 name='schemaName'
                 variant='outlined' 
-                value={formik.values.schemaName} 
+                value={schemaName} 
                 placeholder='Schema Name' 
                 style={{ maxHeight: '41px', width: '100%' }} 
               />
@@ -440,11 +446,17 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
           <Typography className='detail-title'>
             Schema Description
           </Typography>
-          <TextareaAutosize
-            style={{ width: '100%', height: '15vh', borderRadius: '5px', border: '1px solid #B8B8B8', padding: '16px', overflow: 'auto' }}
-            value={formik.values.description}
-            onChange={(e) => {formik.handleChange(e)}}
+          <TextField 
+            onChange={(e) => {formik.handleChange(e)}} 
+            error={!!formik.errors.description && formik.touched.description}
+            helperText={formik.errors.description}
             name='description'
+            variant='outlined' 
+            value={formik.values.description} 
+            placeholder='Description' 
+            multiline={true}
+            minRows={5}
+            style={{ width: '100%', overflowY: 'scroll' }} 
           />
         </Box>
         <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -475,7 +487,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       <Grid container className='title' style={{ display: 'flex', flexDirection: 'row' }}>
         <Grid item xs={11} style={{ padding: '20px 25px 15px 25px', fontWeight: 'normal', fontSize: '20px' }}>
           {!importDialogOpen && `Add New Schema`}
-          {importDialogOpen && optionTitle}
+          {importDialogOpen && `${importFlag ? "Import Schema" : "Create Schema"}`}
         </Grid>
         <Grid item xs={1} style={{ paddingTop: '20px', cursor: 'pointer' }}>
           <CloseMenuIcon onClick={handleCloseDialog} />

@@ -20,6 +20,7 @@ import { useDispatch } from 'react-redux';
 import { toggleAlert } from '../../store/alerts/action';
 import { FiEdit2 } from 'react-icons/fi';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
+import { FaRegFolderOpen } from "react-icons/fa";
 
 const StyledTableCell = styled(TableCell)`
   padding-left: 30px;
@@ -77,6 +78,9 @@ const EditIcon = styled.div`
 
 const ViewNameDisplay = styled.div`
   text-transform: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 `
 
 const AliasContainer = styled.span`
@@ -96,6 +100,8 @@ interface ViewsTableProps {
 
 const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInactive, dbName, nsfPath, setViewOpen, setOpenViewName }) => {
   const { loading } = useSelector((state: AppState) => state.dialog);
+  const { folders } = useSelector((state: AppState) => state.databases);
+  const folderNames = folders.map((folder) => {return folder.viewName});
   const dispatch = useDispatch();
 
   const handleClickViewName = (viewName: string, viewActive: boolean) => {
@@ -137,10 +143,17 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
               </StyledTableCell>
               <StyledTableCell width="550px">
                 <ViewNameDisplay>
+                  {folderNames.includes(view.viewName) && 
+                    <Tooltip title={`${view.viewName} is a folder.`} arrow>
+                      <span>
+                        <FaRegFolderOpen size='1.2em' />
+                      </span>
+                    </Tooltip>
+                  }
                   {
                   view.viewUpdated && view.viewActive ?
                   <span>
-                    <Tooltip title={`A change was made in this view.`}>
+                    <Tooltip title={`A change was made in this view.`} arrow>
                         <span>
                         <AiOutlineQuestionCircle color='#0F52BA' />
                         </span>

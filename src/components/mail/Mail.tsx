@@ -4,6 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
+import React from 'react';
 import DashboardIcon from '@material-ui/icons/Email';
 import Typography from '@material-ui/core/Typography';
 import { FormContainer } from '../../styles/CommonStyles';

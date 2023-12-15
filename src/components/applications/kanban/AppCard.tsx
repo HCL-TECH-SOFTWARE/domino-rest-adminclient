@@ -176,8 +176,13 @@ const AppCard: React.FC<AppCardProps> = ({
 
   return (
     <>
-      <CardContainer tabIndex={1} onFocus={() => {setShowActions(true)}}>
-        <Action className="actions" style={{ visibility: showActions ? 'visible' : 'hidden' }} onFocus={() => {setShowActions(true)}}>
+      <CardContainer 
+        tabIndex={1}
+        onFocus={() => {setShowActions(true)}}
+        onMouseEnter={() => {setShowActions(true)}}
+        onMouseLeave={() => {setShowActions(false)}}
+      >
+        <Action className="actions" style={{ visibility: showActions ? 'visible' : 'hidden' }} onFocus={() => {setShowActions(true)}} >
           {
             item.appHasSecret ? (
               <Tooltip title="This application has an application secret configured" tabIndex={1} arrow>

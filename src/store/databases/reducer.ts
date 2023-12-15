@@ -66,6 +66,7 @@ import {
   AGENTS_ERROR,
   UPDATE_ERROR,
   SET_FORM_NAME,
+  SET_FOLDERS,
 } from './types';
 import { getDatabaseIndex, getScopeIndex } from './scripts';
 
@@ -83,6 +84,7 @@ const initialState: DBState = {
   activeFields: [],
   views: [],
   activeViews: [],
+  folders: [],
   agents: [],
   activeAgents: [],
   formLoading: true,
@@ -369,6 +371,20 @@ export default function databaseReducer(
         if (viewIndex !== -1) {
           draft.activeViews.splice(viewIndex, 1);
         }
+      });
+    case SET_FOLDERS:
+      return produce(state, (draft: DBState) => {
+        action.payload.folders.forEach((folder) => {
+          folder.viewActive = folder.viewActive ? true : false;
+          for (let ii = 0; ii < draft.activeViews.length; ii++) {
+            if (folder.viewUnid === draft.activeViews[ii].viewUnid) {
+              folder.viewActive = true;
+              folder.viewUpdated = draft.activeViews[ii].viewUpdated ? true : false;
+              break;
+            }
+          }
+        });
+        draft.folders = action.payload.folders;
       });
     // Save the list of Agents
     case SET_AGENTS:

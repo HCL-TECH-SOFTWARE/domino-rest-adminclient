@@ -667,7 +667,7 @@ export const ButtonYes = styled(Button)`
   color: #FFFFFF;
 
   &:hover {
-    background-color: #0F5FDC;
+    background-color: #0B4AAE;
     color: #FFFFFF;
   }
 `

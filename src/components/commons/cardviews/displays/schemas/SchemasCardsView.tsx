@@ -104,9 +104,9 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
                 aria-describedby={id}
                 database={database}
                 onContextMenu={(event) => loadDatabase(event, database)}
-                key={index}
+                key={database.schemaName + database.nsfPath}
                 permissions={permissions}
-                inUse = {schemasWithScopes && schemasWithScopes.includes(database.nsfPath + ":" + database.schemaName)}
+                inUse = {schemasWithScopes?.includes(database.nsfPath + ":" + database.schemaName)}
               />
             );
           })

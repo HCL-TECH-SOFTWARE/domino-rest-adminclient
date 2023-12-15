@@ -47,10 +47,30 @@ export const ItemContainer = styled.div<{ isDragging?: boolean; ref?: any }>`
 export const TextEditorContainer = styled.div`
   display: flex;
   flex-direction: column;
-  flex: 1;
-  align-items: stretch;
   overflow-y: scroll;
-  height: 60%;
+  border-radius: 5px;
+  border: 1px solid #BFBFBF;
+  padding: 20px;
+  gap: 16px;
+  background-color: #FFF;
+
+  .settings-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .settings-text {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .formulas-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
 `;
 
 export const AccessModeContainer = styled.div`

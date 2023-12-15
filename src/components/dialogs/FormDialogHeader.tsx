@@ -11,6 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import { useSelector } from 'react-redux';
 import CloseMenuIcon from '@material-ui/icons/Close';
 import { AppState } from '../../store';
+import { getTheme } from '../../store/styles/action';
 
 const DialogTitleContainer = styled(DialogTitle)<{ theme: string }>`
   padding: 0;

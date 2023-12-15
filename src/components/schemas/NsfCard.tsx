@@ -9,7 +9,7 @@ import { useHistory } from 'react-router-dom';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import DBIcon from '@material-ui/icons/Storage';
 import Tooltip from '@material-ui/core/Tooltip';
 import { DeleteIcon, FormSearchContainer, ModeLogo, Options, SearchContainer, SearchInput } from '../../styles/CommonStyles';
@@ -25,7 +25,6 @@ import {
 import SearchIcon from '@material-ui/icons/Search';
 import { Box } from '@material-ui/core';
 import styled from 'styled-components';
-import { useDispatch } from 'react-redux';
 import { toggleAlert } from '../../store/alerts/action';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 
@@ -143,15 +142,17 @@ const NsfCard: React.FC<NsfCardProps> = ({
               />
             )}
           </ModeLogo>
-          <Typography
-            className="file-name"
-            variant="subtitle1"
-            component="p"
-            color="textPrimary"
-            gutterBottom
-          >
-            {database.fileName}
-          </Typography>
+          <Tooltip title={database.fileName} arrow placement='bottom'>
+            <Typography
+              className="file-name"
+              variant="subtitle1"
+              component="p"
+              color="textPrimary"
+              gutterBottom
+            >
+              {database.fileName}
+            </Typography>
+          </Tooltip>
         </SchemaCardHeader>
         <FormSearchContainer theme={themeMode} variant="outlined" style={{ marginTop: 25, marginBottom: 16 }}>
           <SearchContainer style={{ padding: '12px 17px', backgroundColor: '#F9F9F9', border: '1px solid #A5AFBE', borderRadius: '10px' }}>
@@ -169,7 +170,7 @@ const NsfCard: React.FC<NsfCardProps> = ({
         >
           {results.map((database: any, index: number) => {
             const openDatabaseByApi = () => openDatabase(database);
-            const status = schemasWithScopes && schemasWithScopes.includes(database.nsfPath + ":" + database.schemaName) ? 'Used by Scopes' : 'Not used by Scopes';
+            const status = schemasWithScopes?.includes(database.nsfPath + ":" + database.schemaName) ? 'Used by Scopes' : 'Not used by Scopes';
             const description = isSchema ? database.schemaName : database.apiName;
             const handleEnterScope = (e: any) => {
               if (e.key === "Enter") {
@@ -184,17 +185,16 @@ const NsfCard: React.FC<NsfCardProps> = ({
               }
             };
             return (
-              <div key={index}>
+              <div key={database.schemaName + database.nsfPath}>
                 <SchemaRow>
                   {isSchema && <Tooltip title={status}>
-                    <Box className={`api-status ${schemasWithScopes && schemasWithScopes.includes(database.nsfPath + ":" + database.schemaName) ? '' : 'unused'}`} />
+                    <Box className={`api-status ${schemasWithScopes?.includes(database.nsfPath + ":" + database.schemaName) ? '' : 'unused'}`} />
                   </Tooltip>}
-                  <Tooltip title={description} key={index}>
+                  <Tooltip title={description}>
                     <Typography
                       className={`description ${isSchema ? '' : 'scope'}`}
                       variant="body1"
                       component="p"
-                      key={index}
                       color="textPrimary"
                       onClick={openDatabaseByApi}
                       tabIndex={1}

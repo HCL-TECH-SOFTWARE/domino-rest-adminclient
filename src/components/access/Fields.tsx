@@ -77,7 +77,6 @@ const FieldList = styled(ListContainer)`
   left: 0;
   bottom: 0;
   padding: 10px 1px;
-  height: calc(100vh - 385px);
 `;
 
 const FieldsDropDownHeader = styled.div`
@@ -421,46 +420,42 @@ const Fields: React.FC<FieldsProps> = ({
               <Typography color="textPrimary">Loading fields...</Typography>
             </div>
           </div>) :
-        (<SwipeableViews axis="x" index={tabValue}>
-        <TabPanel value={tabValue} index={0}>
-          <Box style={{ height: '100%' }}>
-            {fieldsDisplayed.map((item: any, index: any) => (
-              <List key={`${item.formName}-${index}`} component="nav" className={classes.root} style={{ height: '100%' }}>
-                {(
-                  <div className={classes.spacer}>
-                    <List component="div" disablePadding>
-                      <ListItem className={classes.field}>
-                        <FieldList className="fields-list">
-                          {item.fields.length > 0
-                            ?
-                            item.fields.map((item: any, index: any) =>
-                              (!item.content.startsWith('@') && !item.content.startsWith('~#')) && !item.content.startsWith('Formula') && (
-                                <SingleFieldContainer
-                                  key={`${item.content}-index`}
-                                  moveTo={moveTo}
-                                  item={{
-                                    name: item.content,
-                                    ...item,
-                                  }}
-                                />
-                            ))
-                            : (
+        (<SwipeableViews axis="x" index={tabValue} style={{ borderRadius: '10px' }}>
+          {fieldsDisplayed.map((item: any, index: any) => (
+            <List key={`${item.formName}-${index}`} component="nav" className={classes.root}>
+              {(
+                <div className={classes.spacer}>
+                  <List component="div" disablePadding>
+                    <ListItem className={classes.field}>
+                      <FieldList className="fields-list">
+                        {item.fields.length > 0
+                          ?
+                          item.fields.map((item: any, index: any) =>
+                            (!item.content.startsWith('@') && !item.content.startsWith('~#')) && !item.content.startsWith('Formula') && (
                               <SingleFieldContainer
-                                  key="0"
-                                  moveTo={() => {}}
-                                  item={noFieldObj}
+                                key={`${item.content}-${index}`}
+                                moveTo={moveTo}
+                                item={{
+                                  name: item.content,
+                                  ...item,
+                                }}
                               />
-                            )
-                          }
-                        </FieldList>
-                      </ListItem>
-                    </List>
-                  </div>
-                )}
-              </List>
-            ))}
-          </Box>
-        </TabPanel>
+                          ))
+                          : (
+                            <SingleFieldContainer
+                                key="0"
+                                moveTo={() => {}}
+                                item={noFieldObj}
+                            />
+                          )
+                        }
+                      </FieldList>
+                    </ListItem>
+                  </List>
+                </div>
+              )}
+            </List>
+          ))}
       </SwipeableViews>)}
     </FieldContainer>
   );

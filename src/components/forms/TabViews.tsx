@@ -77,9 +77,8 @@ interface TabViewsProps {
 }
 
 const TabViews : React.FC<TabViewsProps> = (viewState) => {
-  const { views } = useSelector((state: AppState) => state.databases);
+  const { views, folders } = useSelector((state: AppState) => state.databases);
   const { databases } = useSelector((state: AppState) => state.databases);
-  const [filtered, setFiltered] = useState([...views]);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState('');
@@ -88,22 +87,39 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
   let { dbName, nsfPath } = useParams() as { dbName: string, nsfPath: string };
   dbName = decodeURIComponent(dbName);
   nsfPath = decodeURIComponent(nsfPath);
+  
   let activeViews = databases[getDatabaseIndex(databases, dbName, nsfPath)]['views']?.map((view: any) => {
+    const folderNames = folders.map((folder) => {return folder.viewName});
     return {
       viewActive: true,
       viewAlias: view.alias,
       viewName: view.name,
       viewUnid: view.unid,
       viewUpdated: view.viewUpdated,
-      viewColumns: view.columns
+      viewColumns: view.columns,
+      viewFolder: folderNames.includes(view.name),
     }
   });
+
+  const activeViewNames = activeViews?.map((view) => {return view.viewName});
+  const updatedFolders = folders.map((folder) => {
+    return {
+      viewName: folder.viewName,
+      viewUnid: folder.viewUnid,
+      viewAlias: folder.viewAlias,
+      viewUpdated: folder.viewUpdated,
+      viewActive: activeViewNames?.includes(folder.viewName),
+    }
+  });
+
+  const lists = [...views, ...updatedFolders];
+  const [filtered, setFiltered] = useState([...views, ...updatedFolders]);
 
   const handleSearchView = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.value;
     setSearchKey(key);
 
-    const filteredViews = views.filter((data) => {
+    const filteredViews = lists.filter((data) => {
       return (
         data.viewName &&
         data.viewName.toLowerCase().indexOf(key.toLowerCase()) !== -1
@@ -148,7 +164,7 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
         <ViewsTable
           views = {
             searchKey === ''
-              ? views
+              ? lists
                   .slice()
                   .sort((a, b) => (a.viewName > b.viewName ? 1 : -1))
               : filtered
