@@ -1,0 +1,35 @@
+name: Push Snapshot to Github registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 8
+          distribution: 'temurin'
+      - run: mvn --no-transfer-progress clean
+      - run: npm ci
+      - run: npm run test
+      - name: Extract Project version
+        id: project
+        run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+      - name: Publish only Snapshot to GitHub Packages
+        if: ${{ endsWith(steps.project.outputs.version, '-SNAPSHOT') }}
+        run: mvn --batch-mode deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
