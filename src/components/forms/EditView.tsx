@@ -268,7 +268,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     if (existingColumn.length === 0) {
       let updatedColumn = {
         name: column.name,
-        externalName: !!column.title ? column.title.replaceAll(/[^A-z0-9 ]/g, "").replaceAll(' ', '_') : column.name.replaceAll(/[^A-z0-9 $_@-]/g, "").replaceAll(' ', '_'),
+        externalName: !!column.title ? column.title.replaceAll(/[^\w ]/g, "").replaceAll(' ', '_') : column.name.replaceAll(/[^\w $@-]/g, "").replaceAll(' ', '_'),
         title: column.title,
       }
       setChosenColumns ([...chosenColumns, updatedColumn]);
@@ -474,7 +474,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     let updatedColumns = fetchedColumns.map((column) => {
       return {
         name: column.name,
-        externalName: !!column.title ? column.title.replaceAll(/[^A-z0-9 ]/g, "").replaceAll(' ', '_') : column.name.replaceAll(/[^A-z0-9 $_@-]/g, "").replaceAll(' ', '_'),
+        externalName: !!column.title ? column.title.replaceAll(/[^\w ]/g, "").replaceAll(' ', '_') : column.name.replaceAll(/[^\w $@-]/g, "").replaceAll(' ', '_'),
       }
     });
     setChosenColumns(updatedColumns);
