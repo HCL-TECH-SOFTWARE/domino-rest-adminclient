@@ -7,6 +7,7 @@ on:
 
 jobs:
   publish:
+    name: Publish to ghcr.io
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,7 +26,7 @@ jobs:
       - run: mvn --no-transfer-progress clean
       - run: npm ci
       - run: npm run test
-      - name: Publish to GitHub Packages Apache Maven
+      - name: Publish mvn to GitHub Packages
         run: mvn --no-transfer-progress deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
