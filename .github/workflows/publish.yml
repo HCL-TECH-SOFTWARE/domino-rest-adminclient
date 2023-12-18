@@ -25,6 +25,7 @@ jobs:
           distribution: 'temurin'
       - run: mvn --no-transfer-progress clean
       - run: npm ci
+      - run: npm build
       - run: npm run test
       - name: Publish mvn to GitHub Packages
         run: mvn --no-transfer-progress deploy

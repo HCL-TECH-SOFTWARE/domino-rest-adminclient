@@ -26,6 +26,7 @@ jobs:
           distribution: 'temurin'
       - run: mvn --no-transfer-progress clean
       - run: npm ci
+      - run: npm build
       - run: npm run test
       - name: Extract Project version
         id: project
