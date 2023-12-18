@@ -24,15 +24,15 @@ jobs:
         with:
           java-version: 8
           distribution: 'temurin'
-      - run: mvn --no-transfer-progress clean
-      - run: npm ci
-      - run: npm run build
-      - run: npm run test
       - name: Extract Project version
         id: project
         run: echo "MVN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "GITHUB_ENV"
       - name: Check env variable
         run: echo $MVN_VERSION
+      - run: mvn --no-transfer-progress clean
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test
       - name: Publish only Snapshot to GitHub Packages
         if: endsWith(env.MVN_VERSION, '-SNAPSHOT')
         run: mvn --no-transfer-progress deploy
