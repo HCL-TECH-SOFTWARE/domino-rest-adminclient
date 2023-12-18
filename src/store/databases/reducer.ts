@@ -269,7 +269,10 @@ export default function databaseReducer(
       };
     case APPEND_CONFIGURED_FORM:
       return produce(state, (draft: DBState) => {
-        draft.forms[action.payload.formIndex].formModes.push(action.payload.data);
+        const formModes = draft.forms[action.payload.formIndex].formModes;
+        if (formModes !== undefined) {
+          formModes.push(action.payload.data);
+        }
       });
     case UNCONFIG_FORM:
       return produce(state, (draft: DBState) => {

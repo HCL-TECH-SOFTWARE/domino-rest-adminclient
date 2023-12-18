@@ -120,7 +120,7 @@ export interface DBState {
     dbName: string;
     formName: string;
     alias: Array<string>;
-    formModes: Array<any>;
+    formModes?: Array<any>;
     formAccessModes: Array<any>;
   }>;
   loadedForm: string;
