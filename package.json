@@ -42,8 +42,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "REACT_APP_ADMIN_UI_BUILD_VERSION=`date +%Y%m%d%H%M%S` cross-env CI=true BUILD_PATH='./build/admin' react-scripts build",
-    "build:win": "set REACT_APP_ADMIN_UI_BUILD_VERSION=%date% %time%&& cross-env CI=true BUILD_PATH='./build/admin' react-scripts build",
+    "build": "REACT_APP_ADMIN_UI_BUILD_VERSION=`date +%Y%m%d%H%M%S` INLINE_RUNTIME_CHUNK=false cross-env CI=true BUILD_PATH='./build/admin' react-scripts build",
+    "build:win": "set REACT_APP_ADMIN_UI_BUILD_VERSION=%date% %time%&& set INLINE_RUNTIME_CHUNK=false&& cross-env CI=true BUILD_PATH='./build/admin' react-scripts build",
     "test": "cross-env CI=true react-scripts test --coverage --testResultsProcessor jest-sonar-reporter --testURL http://localhost/admin/ui",
     "dont-do-this-eject": "react-scripts eject"
   },
