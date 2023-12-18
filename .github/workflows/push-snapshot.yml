@@ -26,7 +26,7 @@ jobs:
           distribution: 'temurin'
       - name: Extract Project version
         id: project
-        run: echo "MVN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "GITHUB_ENV"
+        run: echo "MVN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: Check env variable
         run: echo $MVN_VERSION
       - run: mvn --no-transfer-progress clean
