@@ -29,7 +29,7 @@ jobs:
       - run: npm run test
       - name: Extract Project version
         id: project
-        run: echo "mvnversion=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"" >> "GITHUB_ENV"
+        run: echo "mvnversion=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "GITHUB_ENV"
       - name: Publish only Snapshot to GitHub Packages
         if: endsWith(env.mvnversion, '-SNAPSHOT')
         run: mvn --no-transfer-progress deploy
