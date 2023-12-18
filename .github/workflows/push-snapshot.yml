@@ -1,6 +1,7 @@
 name: Push Snapshot to Github registry
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -30,6 +31,6 @@ jobs:
         run: echo ::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
       - name: Publish only Snapshot to GitHub Packages
         if: ${{ endsWith(steps.project.outputs.version, '-SNAPSHOT') }}
-        run: mvn --batch-mode deploy
+        run: mvn --no-transfer-progress clean deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
