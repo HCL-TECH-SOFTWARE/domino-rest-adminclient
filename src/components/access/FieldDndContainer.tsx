@@ -8,7 +8,6 @@ import React, { useRef, useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { Box, Tooltip, TextField, Button, Checkbox, ButtonBase } from '@material-ui/core';
 import { TabsProps } from '@material-ui/core/Tabs';
-import RemoveIcon from '@material-ui/icons/Delete';
 import styled from 'styled-components';
 import AddIcon from '@material-ui/icons/Add';
 import { ButtonNeutral, ButtonYes, HorizontalDivider } from '../../styles/CommonStyles';
@@ -176,11 +175,6 @@ const CustomItem = styled.div`
     text-overflow: ellipsis;
     text-align: left;
   }
-
-  .field-remove {
-    margin-left: 10px;
-    width: 10%;
-  }
 `;
 
 const RemoveFieldDialog = styled.dialog`
@@ -250,19 +244,6 @@ const RemoveFieldDialog = styled.dialog`
     padding: 11px 24px;
   }
 `
-
-const DeleteButton: React.FC<DeleteButtonProps> = ({remove, index, list}) => {
-  return (
-    <Tooltip title="remove field" arrow>
-      <RemoveIcon
-        onClick={() => remove(index, list)}
-        className="remove-icon"
-        cursor="pointer"
-        style={{ right: 35 }}
-      />
-    </Tooltip>
-  );
-};
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -492,9 +473,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
                       <div className="field-info">
                         <div className="field-name">{item.name}</div>
                         <div className="field-meta-data">{`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup}`}</div>
-                      </div>
-                      <div className="field-remove">
-                        <DeleteButton remove={remove} index={index} list={list} />
                       </div>
                     </CustomItem>
                   )
