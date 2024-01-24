@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import produce from 'immer';
+import { produce } from 'immer';
 import {
   FETCH_ALL_USERS,
   UPDATE_USER,
