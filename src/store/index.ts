@@ -6,7 +6,7 @@
 
 import { createStore, combineReducers, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
-import { composeWithDevTools } from 'redux-devtools-extension';
+import { composeWithDevTools } from '@redux-devtools/extension';
 import databaseReducer from './databases/reducer';
 import historyReducer from './history/reducer';
 import drawerReducer from './drawer/reducer';
