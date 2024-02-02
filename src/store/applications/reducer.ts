@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import produce from 'immer';
+import { produce } from 'immer';
 import {
   ApplicationStates,
   GET_APPS,
