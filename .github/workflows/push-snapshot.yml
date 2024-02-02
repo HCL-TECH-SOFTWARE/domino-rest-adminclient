@@ -44,7 +44,7 @@ jobs:
         with:
           wssURL: https://saas.whitesourcesoftware.com/agent
           apiKey: ${{ secrets.WSS_API_KEY }}
-          productName: ${{ env.PRODUCT_NAME }}
+          productName: ${{ format('{0}', env.PRODUCT_NAME) }}
           projectName: 'domino-keep-admin-ui'      
       - name: Publish only Snapshot to GitHub Packages
         if: endsWith(env.MVN_VERSION, '-SNAPSHOT')
