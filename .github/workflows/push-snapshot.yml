@@ -29,10 +29,16 @@ jobs:
         run: echo "MVN_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: set productName for Snapshot
         if: endsWith(env.MVN_VERSION, '-SNAPSHOT')
-        run: echo "PRODUCT_NAME=HCL_Labs_Project_KEEP" >> $GITHUB_ENV
+        run: echo "PRODUCT_NAME=HCL Labs Project KEEP" >> $GITHUB_ENV
+      - name: set Mend name for Snapshot
+        if: endsWith(env.MVN_VERSION, '-SNAPSHOT')
+        run: echo "MEND_NAME=HCL_Labs_Project_KEEP" >> $GITHUB_ENV      
       - name: Determine productName for release
         if: ${{ ! endsWith(env.MVN_VERSION, '-SNAPSHOT')}}
-        run: echo "PRODUCT_NAME=HCL_Labs_Project_KEEP-$MVN_VERSION" >> $GITHUB_ENV
+        run: echo "PRODUCT_NAME=HCL Labs Project KEEP $MVN_VERSION" >> $GITHUB_ENV
+      - name: Set procut Mend Name for release
+        if: ${{ ! endsWith(env.MVN_VERSION, '-SNAPSHOT')}}
+        run: echo "MEND_NAME=HCL_Labs_Project_KEEP-$MVN_VERSION" >> $GITHUB_ENV
       - name: Check env variables
         run: echo version = $MVN_VERSION, product = $PRODUCT_NAME
       - run: mvn --no-transfer-progress clean
@@ -44,7 +50,7 @@ jobs:
         with:
           wssURL: https://saas.whitesourcesoftware.com/agent
           apiKey: ${{ secrets.WSS_API_KEY }}
-          productName: ${{ env.PRODUCT_NAME }}
+          productName: ${{ env.MEND_NAME }}
           projectName: 'domino-keep-admin-ui'      
       - name: Publish only Snapshot to GitHub Packages
         if: endsWith(env.MVN_VERSION, '-SNAPSHOT')
