@@ -123,11 +123,13 @@ const LoginPage = () => {
   const classes = useStyles();
   const { error, error401 } = useSelector((state: AppState) => state.account);
   const dispatch = useDispatch();
+  const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
   const [passkeyLogin, setPasskeyLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [noUsernamePasskey, setNoUsernamePasskey] = useState(false);
   const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
+  const isHttps = protocol === "https"
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -428,7 +430,7 @@ const LoginPage = () => {
               </Button>}
             </form>
             <PasskeySignUpContainer>
-              {!passkeyLogin && <Button fullWidth className='text-button'>
+              {!passkeyLogin && isHttps && <Button fullWidth className='text-button'>
                 <Typography className='sign-up-text' display="inline" onClick={handleSignUpWithPasskey}>
                   Sign up with Passkey
                 </Typography>
