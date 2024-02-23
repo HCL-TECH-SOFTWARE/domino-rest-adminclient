@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -14,6 +14,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  TextField,
 } from "@material-ui/core";
 import { AppState } from "../../store";
 import { getDatabaseIndex } from "../../store/databases/scripts";
@@ -26,16 +27,36 @@ import {
   pullForms,
 } from "../../store/databases/action";
 import FormsTable from "./FormsTable";
+import FormDialogHeader from "../dialogs/FormDialogHeader";
+import { Autocomplete, createFilterOptions } from "@material-ui/lab";
+import zIndex from "@material-ui/core/styles/zIndex";
 
 const ButtonsPanel = styled.div`
-  height: 60px;
   margin: auto;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .button {
+    padding: 10px;
+    text-transform: none;
+  }
+
+  .add-form {
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #DAE2EC;
+
+    &:hover {
+      background-color: #C2CCD8;
+    }
+  }
 
   .activate {
     color: #087251;
     padding: 0 10px 0 0;
     cursor: pointer;
-    text-transform: none;
     background-color: transparent;
   }
 
@@ -43,7 +64,6 @@ const ButtonsPanel = styled.div`
     color: #aa1f51;
     padding: 0 0 0 10px;
     cursor: pointer;
-    text-transform: none;
     background-color: transparent;
   }
 
@@ -55,6 +75,29 @@ const ButtonsPanel = styled.div`
     transform: translateY(29%);
   }
 `;
+
+const CreateFormDialogContainer = styled.dialog`
+  border: 1px solid white;
+  border-radius: 10px;
+  width: 30%;
+  padding: 30px;
+  height: fit-content;
+
+  .content-container {
+    padding: 0 0 55px 0;
+    margin: 0;
+  }
+
+  .content-text {
+    font-size: 16px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .dialog-buttons {
+    padding: 0 30px 30px 30px
+  }
+`
 
 /**
  * Database views Component
@@ -75,6 +118,10 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
   const [filtered, setFiltered] = useState(
     forms && forms.length > 0 ? [...forms] : []
   );
+  const ref = useRef<HTMLDialogElement>(null)
+  const [createFormOpen, setCreateFormOpen] = useState(false)
+  const [value, setValue] = React.useState<string | null>(null)
+  const filter = createFilterOptions<string>()
   
 
   const normalizeForms =
@@ -113,6 +160,19 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
     setResetAllForms(false);
   }
 
+  const handleCreateFormClose = () => {
+    setCreateFormOpen(false)
+  };
+
+  useEffect(() => {
+    if (createFormOpen) {
+      ref.current?.showModal();
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close();
+      }
+    }
+  }, [createFormOpen])
 
   return (
     <>
@@ -120,22 +180,86 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
         <FormSearch handleSearchDatabase={handleSearchDatabase} />
       </TopNavigator>
       <ButtonsPanel>
+        <Box>
+          <Button
+            disabled={normalizeForms.length === 0 || loading}
+            onClick={handleConfigureAll}
+            className={`button activate ${normalizeForms.length === 0 || loading ? "disabled" : ""}`}
+          >
+            Configure All
+          </Button>
+          <RxDividerVertical size={"1.4em"} className="vertical" />
+          <Button
+            disabled={normalizeForms.length === 0 || loading}
+            onClick={() => setResetAllForms(true)}
+            className={`button deactivate ${normalizeForms.length === 0 || loading ? "disabled" : ""}`}
+          >
+            Unconfigure All
+          </Button>
+        </Box>
         <Button
-          disabled={normalizeForms.length === 0 || loading}
-          onClick={handleConfigureAll}
-          className={`activate ${normalizeForms.length === 0 || loading ? "disabled" : ""}`}
+          onClick={() => setCreateFormOpen(true)}
+          className="button add-form"
         >
-          Configure All
-        </Button>
-        <RxDividerVertical size={"1.4em"} className="vertical" />
-        <Button
-          disabled={normalizeForms.length === 0 || loading}
-          onClick={() => setResetAllForms(true)}
-          className={`deactivate ${normalizeForms.length === 0 || loading ? "disabled" : ""}`}
-        >
-          Unconfigure All
+          Add New Form Schema
         </Button>
       </ButtonsPanel>
+      <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
+        <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />
+        <Autocomplete
+          value={value}
+          onChange={(event, newValue) => { setValue(newValue) }}
+          options={normalizeForms.map((form) => form.formName)}
+          filterOptions={(options, params) => {
+            // const filtered = [];
+            const filtered = filter(options, params)
+            const { inputValue } = params;
+            // Suggest the creation of a new value
+            const isExisting = options.some((option) => inputValue === option);
+            console.log(options)
+            if (inputValue !== '' && !isExisting) {
+              filtered.push(inputValue)
+
+            }
+    
+            return filtered;
+          }}
+          selectOnFocus
+          clearOnBlur
+          handleHomeEndKeys
+          id="free-solo-with-text-demo"
+          disablePortal
+          fullWidth
+          renderOption={(option) => {
+            console.log(option)
+            if (normalizeForms.map((form) => form.formName).includes(option)) {
+              return option
+            } else {
+              return `Create "${option}"`
+            }
+            // if (!(normalizeForms.map((form) => form.formName).includes(option))) {
+            //   return `Create "${option}"`
+            // }
+          }}
+          style={{ margin: 0, padding: 0, width: '100%' }}
+          freeSolo
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              value={value}
+              onChange={(e) => { setValue(e.target.value) }}
+              variant="outlined"
+              error={normalizeForms.map((form) => form.formName).includes(value || "")}
+              helperText={`The form name "${value}" already exists.`}
+            />
+          )}
+        />
+        {console.log(value)}
+        <Box>
+          <Button>Cancel</Button>
+          <Button>Create</Button>
+        </Box>
+      </CreateFormDialogContainer>
       <FormsTable forms={
             searchKey === ""
               ? normalizeForms.filter(
