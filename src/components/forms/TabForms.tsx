@@ -6,7 +6,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -19,17 +19,20 @@ import {
 import { AppState } from "../../store";
 import { getDatabaseIndex } from "../../store/databases/scripts";
 import styled from "styled-components";
-import { CommonDialog, TopNavigator } from "../../styles/CommonStyles";
+import { ButtonNeutral, ButtonYes, CommonDialog, TopNavigator } from "../../styles/CommonStyles";
 import { RxDividerVertical } from "react-icons/rx";
 import FormSearch from "./FormSearch";
 import {
+  addForm,
   handleDatabaseForms,
   pullForms,
+  setForms,
 } from "../../store/databases/action";
 import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { Autocomplete, createFilterOptions } from "@material-ui/lab";
 import zIndex from "@material-ui/core/styles/zIndex";
+import { toggleAlert } from "../../store/alerts/action";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -111,7 +114,7 @@ interface TabFormProps {
 
 const TabForms: React.FC<TabFormProps> = ({ setData }) => {
   const { forms } = useSelector((state: AppState) => state.databases);
-  const { databases } = useSelector((state: AppState) => state.databases);
+  const { databases, newForm } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState("");
@@ -122,6 +125,8 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
   const [createFormOpen, setCreateFormOpen] = useState(false)
   const [value, setValue] = React.useState<string | null>(null)
   const filter = createFilterOptions<string>()
+  const history = useHistory()
+  console.log(forms)
   
 
   const normalizeForms =
@@ -225,7 +230,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
             return filtered;
           }}
           selectOnFocus
-          clearOnBlur
+          // clearOnBlur
           handleHomeEndKeys
           id="free-solo-with-text-demo"
           disablePortal
@@ -247,18 +252,118 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
             <TextField
               {...params}
               value={value}
-              onChange={(e) => { setValue(e.target.value) }}
+              // onChange={(e) => { setValue(e.target.value) }}
               variant="outlined"
               error={normalizeForms.map((form) => form.formName).includes(value || "")}
               helperText={`The form name "${value}" already exists.`}
             />
           )}
         />
-        {console.log(value)}
-        <Box>
-          <Button>Cancel</Button>
-          <Button>Create</Button>
-        </Box>
+        <ButtonsPanel style={{ justifyContent: 'flex-end', gap: '10px', padding: '10px 0 0 0', margin: 0 }}>
+          {/* <Button className='button'>Cancel</Button> */}
+          <ButtonNeutral
+            onClick={() => {
+              setCreateFormOpen(false)
+              setValue("")
+            }}
+          >
+            Cancel
+          </ButtonNeutral>
+          {/* <Button className='button'>Create</Button> */}
+          <ButtonYes
+            onClick={() => {
+              console.log(`value: ${value}`)
+              console.log(normalizeForms.map((form) => form.formName))
+              if (value !== null && value.length > 0) {
+                const newForm = {
+                  alias: [value],
+                  dbName: dbName,
+                  formModes: [{
+                    computeWithForm: false,
+                    deleteAccessFormula: {
+                      formula: "@False",
+                      formulaType: "domino",
+                    },
+                    fields: [],
+                    modeName: "default",
+                    onLoad: {
+                      formula: "",
+                      formulaType: "domino",
+                    },
+                    onSave: {
+                      formula: "",
+                      formulaType: "domino",
+                    },
+                    readAccessFields: [],
+                    readAccessFormula: {
+                      formula: "@True",
+                      formulaType: "domino",
+                    },
+                    required: [],
+                    validationRules: [],
+                    writeAccessFields: [],
+                    writeAccessFormula: {
+                      formula: "@False",
+                      formulaType: "True",
+                    },
+                  }],
+                  formAccessModes: [{
+                    computeWithForm: false,
+                    deleteAccessFormula: {
+                      formula: "@False",
+                      formulaType: "domino",
+                    },
+                    fields: [],
+                    modeName: "default",
+                    onLoad: {
+                      formula: "",
+                      formulaType: "domino",
+                    },
+                    onSave: {
+                      formula: "",
+                      formulaType: "domino",
+                    },
+                    readAccessFields: [],
+                    readAccessFormula: {
+                      formula: "@True",
+                      formulaType: "domino",
+                    },
+                    required: [],
+                    validationRules: [],
+                    writeAccessFields: [],
+                    writeAccessFormula: {
+                      formula: "@False",
+                      formulaType: "True",
+                    },
+                  }],
+                  formName: value,
+                  formValue: value,
+                }
+                // const addedForms = [...forms, newForm]
+                // setForms(dbName, addedForms)
+                dispatch(addForm(newForm) as any)
+                history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(value)}/access`)
+              } else {
+                dispatch(toggleAlert(`Please enter a valid form schema name!`))
+              }
+              // console.log(newForm)
+            }}
+          >
+            Create
+          </ButtonYes>
+          <ButtonYes
+            onClick={() => 
+              {
+                console.log(`new form: ${newForm}`)
+                if (value !== null && value.length > 0) {
+                history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(value)}/access`)
+                }
+              }
+            }
+          >
+            Final Create
+          </ButtonYes>
+        </ButtonsPanel>
       </CreateFormDialogContainer>
       <FormsTable forms={
             searchKey === ""

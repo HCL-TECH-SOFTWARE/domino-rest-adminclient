@@ -137,7 +137,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
 }) => {
   const dispatch = useDispatch();
 
-  const { databases, scopes } = useSelector(
+  const { databases, scopes, newForm } = useSelector(
     (state: AppState) => state.databases
   );
 
@@ -208,29 +208,55 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const save = () => {
     // Gather form data from the page
     const formData = gatherFormData();
+    console.log(formData)
 
     // Save it off and post an alert
-    const currentForms = currentSchema.forms
-      .filter((form: any) => form.formModes.length > 0)
-      .map((form: any) => {
-        return {
-          formName: form.formName,
-          alias: form.alias,
-          formModes: form.formModes,
-        };
-      });
-    const currentTargetForm = currentForms.filter(
-      (targetForm: any) => form === targetForm.formName
-    );
-    const { formModes } = currentTargetForm[0];
-    const oriCardIndex = formModes.findIndex(
-      (mode: any) => currentModeValue === mode.modeName
-    );
-    setCurrentModeIndex(oriCardIndex);
-    dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode) as any);
-    // After Saved the tab all data will be fetch from latest state again to ensure accuracy
-    setPageIndex(oriCardIndex);
-    setCurrentModeValue(formModes[oriCardIndex].modeName);
+    if (newForm) {
+      
+    } else {
+      const currentForms = currentSchema.forms
+        .filter((form: any) => form.formModes.length > 0)
+        .map((form: any) => {
+          return {
+            formName: form.formName,
+            alias: form.alias,
+            formModes: form.formModes,
+          };
+        });
+      const currentTargetForm = currentForms.filter(
+        (targetForm: any) => form === targetForm.formName
+      );
+      const { formModes } = currentTargetForm[0];
+      const oriCardIndex = formModes.findIndex(
+        (mode: any) => currentModeValue === mode.modeName
+      );
+      setCurrentModeIndex(oriCardIndex);
+      dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode) as any);
+      // After Saved the tab all data will be fetch from latest state again to ensure accuracy
+      setPageIndex(oriCardIndex);
+      setCurrentModeValue(formModes[oriCardIndex].modeName);
+    }
+    // const currentForms = currentSchema.forms
+    //   .filter((form: any) => form.formModes.length > 0)
+    //   .map((form: any) => {
+    //     return {
+    //       formName: form.formName,
+    //       alias: form.alias,
+    //       formModes: form.formModes,
+    //     };
+    //   });
+    // const currentTargetForm = currentForms.filter(
+    //   (targetForm: any) => form === targetForm.formName
+    // );
+    // const { formModes } = currentTargetForm[0];
+    // const oriCardIndex = formModes.findIndex(
+    //   (mode: any) => currentModeValue === mode.modeName
+    // );
+    // setCurrentModeIndex(oriCardIndex);
+    // dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode) as any);
+    // // After Saved the tab all data will be fetch from latest state again to ensure accuracy
+    // setPageIndex(oriCardIndex);
+    // setCurrentModeValue(formModes[oriCardIndex].modeName);
   };
 
   /**

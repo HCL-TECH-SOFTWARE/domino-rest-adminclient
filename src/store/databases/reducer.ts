@@ -25,6 +25,7 @@ import {
   UPDATE_SCHEMA,
   UPDATE_SCOPE,
   SET_FORMS,
+  ADD_FORM,
   SET_CURRENTFORMS,
   SET_LOADEDFORM,
   SET_LOADEDFIELDS,
@@ -249,6 +250,11 @@ export default function databaseReducer(
           draft.databases[dbIndex].forms = forms;
         }
       });
+    case ADD_FORM:
+      return {
+        ...state,
+        newForm: action.payload
+      }
     case SET_CURRENTFORMS:
       return produce(state, (draft: DBState) => {
         draft.forms = action.payload.forms ;

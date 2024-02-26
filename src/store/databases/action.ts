@@ -23,6 +23,7 @@ import {
   UPDATE_SCOPE,
   UPDATE_SCHEMA,
   SET_FORMS,
+  ADD_FORM,
   SET_CURRENTFORMS,
   SET_LOADEDFORM,
   SET_LOADEDFIELDS,
@@ -1178,6 +1179,18 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
   }
 }
 
+// export const setForms = () => {
+//   return async (dispatch: Dispatch) => {
+//     dispatch({
+//       type: SET_FORMS,
+//       payload: {
+//         db: dbName,
+//         forms: configformsList
+//       }
+//     })
+//   }
+// }
+
 const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>) => {
   let configformsList: Array<any> = [];
   return async (dispatch: Dispatch) => {
@@ -2237,6 +2250,26 @@ export const setForms = (dbName: string, forms: Array<any>) => {
         db: dbName,
         forms
       }
+    });
+  };
+};
+
+/**
+ * Initialize a new form that user wants to create and configure
+ *
+ * @param form the form object
+ */
+export const addForm = (form: {
+  dbName: string,
+  formName: string,
+  alias: Array<string>,
+  formModes: Array<any>,
+  formAccessModes: Array<any>,
+}) => {
+  return async (dispatch: any) => {
+    await dispatch({
+      type: ADD_FORM,
+      payload: form
     });
   };
 };

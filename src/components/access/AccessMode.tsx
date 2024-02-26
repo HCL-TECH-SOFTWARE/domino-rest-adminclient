@@ -60,15 +60,25 @@ const AccessMode: React.FC = () => {
   const dbName = urls.pathname.split('/')[3];
 
   const { loading } = useSelector((state: AppState) => state.dialog);
-  const { loadedFields } = useSelector((state: AppState) => state.databases);
+  const { loadedFields, newForm } = useSelector((state: AppState) => state.databases);
   const { forms } = useSelector(
     (state: AppState) =>
       state.databases.databases[
         getDatabaseIndex(state.databases.databases, dbName, nsfPath)
       ]
   );
+  const allForms = newForm ? [...forms, newForm] : forms
+  // const { forms } = useSelector((state: AppState) => state.databases)
+  console.log("hello")
+  console.log(forms)
+  console.log(newForm)
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
-  const allModes = forms[getFormIndex(forms, formName)].formModes;
+  console.log(allForms)
+  console.log(formName)
+  console.log(allForms.filter((form) => form.formName === formName)[0].formModes)
+  // console.log(allForms[getFormIndex(forms, formName)].formModes)
+  const allModes = allForms.filter((form) => form.formName === formName)[0].formModes || [{}]
+  console.log(allModes)
   const currentDesign = nsfDesigns[nsfPath];
   const fetchFieldsArray = currentDesign?.forms;
   const [tabValue, setTabValue] = useState(0);
@@ -337,7 +347,7 @@ const AccessMode: React.FC = () => {
             <ModeCompareButton 
               className={`button-compare ${modes.length > 1 ? '' : 'compare-disabled'}`} 
               onClick={handleClickOpenModeCompare}
-              disabled={modes.length === 1}
+              disabled={modes.length === 1 || !!newForm}
             >
               <Typography className={`text ${modes.length > 1 ? '' : 'disabled'}`}>
                 Open Mode Compare
@@ -397,11 +407,11 @@ const AccessMode: React.FC = () => {
         <PageLoading message={`Loading ${formName} Form Access Data`} />
       )}
       <NetworkErrorDialog />
-      <ModeCompare 
+      {!newForm && <ModeCompare 
         open={openModeCompare}
         handleClose={handleCloseModeCompare}
         currentModeIndex={currentModeIndex}
-      />
+      />}
     </AccessContext.Provider>
   );
 };

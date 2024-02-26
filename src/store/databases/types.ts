@@ -123,6 +123,13 @@ export interface DBState {
     formModes?: Array<any>;
     formAccessModes: Array<any>;
   }>;
+  newForm?: {
+    dbName: string;
+    formName: string;
+    alias: Array<string>;
+    formModes?: Array<any>;
+    formAccessModes: Array<any>;
+  }
   loadedForm: string;
   loadedFields: Array<any>;
   activeForm: string;
@@ -177,6 +184,7 @@ export const SET_PULLED_DATABASE = 'SET_PULLED_DATABASE';
 export const SET_PULLED_SCOPE = 'SET_PULLED_SCOPE';
 export const FETCH_DB_CONFIG = 'FETCH_DB_CONFIG';
 export const SET_FORMS = 'SET_FORMS';
+export const ADD_FORM = 'ADD_FORM';
 export const SET_CURRENTFORMS = 'SET_CURRENTFORMS';
 export const SET_LOADEDFORM = 'SET_LOADEDFORM';
 export const SET_LOADEDFIELDS = 'SET_LOADEDFIELDS';
@@ -627,6 +635,18 @@ export interface SetFormName {
   payload: string
 }
 
+export interface AddForm {
+  type: typeof ADD_FORM;
+  payload: {
+    formName: string,
+    alias: Array<string>,
+    dbName: string,
+    formModes: Array<any>,
+    formAccessModes: Array<any>,
+    formValue: string,
+  }
+}
+
 export type DatabaseActionTypes =
   | AddSchema
   | AddScope
@@ -686,4 +706,5 @@ export type DatabaseActionTypes =
   | AgentsError
   | UpdateError
   | SetFormName
-  | SetFolders;
+  | SetFolders
+  | AddForm;
