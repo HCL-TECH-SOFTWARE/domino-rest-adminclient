@@ -9,7 +9,7 @@ import Button from '@material-ui/core/Button';
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
@@ -22,6 +22,8 @@ import {
   testFormula,
   updateFormMode,
   deleteFormMode,
+  saveNewForm,
+  addForm,
 } from '../../store/databases/action';
 import { AppState } from '../../store';
 import FormDrawer from '../applications/FormDrawer';
@@ -35,6 +37,7 @@ import {
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
+import { convertField2DesignType } from './functions';
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
@@ -189,6 +192,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   };
 
   const urls = useLocation();
+  const history = useHistory()
 
   const paths = urls.pathname.split('/');
   const nsfPath = decodeURIComponent(paths[2]);
@@ -212,7 +216,27 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
 
     // Save it off and post an alert
     if (newForm) {
-      
+      saveNewForm(
+        {
+          formName: newForm.formName,
+          fields: formData.fields.map((field: {
+            fieldAccess: string,
+            format: string,
+            isMultiValue: boolean,
+            name: string,
+            type: string,
+            items?: Array<any>,
+          }) => {
+            return {
+              allowMultiValues: field.isMultiValue,
+              name: field.name,
+              type: convertField2DesignType(field.format),
+            }
+          }),
+        },
+        nsfPath,
+      )
+      history.push(`/schema/${encodeURIComponent(nsfPath)}/${db}/`)
     } else {
       const currentForms = currentSchema.forms
         .filter((form: any) => form.formModes.length > 0)

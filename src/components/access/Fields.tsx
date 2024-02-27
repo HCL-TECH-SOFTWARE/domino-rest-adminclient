@@ -257,7 +257,7 @@ const Fields: React.FC<FieldsProps> = ({
   }
   formsSorted.unshift(allFieldObj);
 
-  const { activeFields } = useSelector((state: AppState) => state.databases);
+  const { activeFields, newForm } = useSelector((state: AppState) => state.databases);
 
   const classes = useStyles();
 
@@ -269,9 +269,13 @@ const Fields: React.FC<FieldsProps> = ({
   const { loading } = useSelector( (state: AppState) => state.loading );
 
   useEffect(() => {
-    if (formsInDb.length > 0 && !!formName)
+    if (formsInDb.length > 0 && !!formName && !newForm) {
+      console.log("used effect")
       dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
-  }, [schemaName, nsfPath, formName, formsInDb, dispatch]);
+    } else if (newForm) {
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
+    }
+  }, [schemaName, nsfPath, formName, formsInDb, newForm, dispatch]);
 
   const handleFieldListOnClick = (event: any) => {
     setAnchorEl(event.target);
@@ -301,6 +305,7 @@ const Fields: React.FC<FieldsProps> = ({
     if (formName === 'keep_internal_form_for_allFields') {
       await dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
     } else {
+      console.log("new form schema?")
       await dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, externalName, designType) as any);
     }
     dispatch(setLoading({ status: false }));

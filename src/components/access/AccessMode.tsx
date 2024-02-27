@@ -22,6 +22,7 @@ import {
   cacheFormFields,
   setLoadedFields,
   addActiveFields,
+  addForm,
 } from '../../store/databases/action';
 import { AccessContext } from './AccessContext';
 import { AppState } from '../../store';
@@ -69,16 +70,9 @@ const AccessMode: React.FC = () => {
   );
   const allForms = newForm ? [...forms, newForm] : forms
   // const { forms } = useSelector((state: AppState) => state.databases)
-  console.log("hello")
-  console.log(forms)
-  console.log(newForm)
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
-  console.log(allForms)
-  console.log(formName)
-  console.log(allForms.filter((form) => form.formName === formName)[0].formModes)
   // console.log(allForms[getFormIndex(forms, formName)].formModes)
   const allModes = allForms.filter((form) => form.formName === formName)[0].formModes || [{}]
-  console.log(allModes)
   const currentDesign = nsfDesigns[nsfPath];
   const fetchFieldsArray = currentDesign?.forms;
   const [tabValue, setTabValue] = useState(0);
@@ -329,12 +323,17 @@ const AccessMode: React.FC = () => {
   };
 
   const handleClickOpenModeCompare = () => {
+    console.log(newForm)
     setOpenModeCompare(true);
   }
 
   const handleCloseModeCompare = () => {
     setOpenModeCompare(false);
   }
+
+  useEffect(() => {
+    addForm()
+  })
 
   return (
     <AccessContext.Provider value={[state, setstate]}>
@@ -347,7 +346,7 @@ const AccessMode: React.FC = () => {
             <ModeCompareButton 
               className={`button-compare ${modes.length > 1 ? '' : 'compare-disabled'}`} 
               onClick={handleClickOpenModeCompare}
-              disabled={modes.length === 1 || !!newForm}
+              disabled={modes.length === 1 || newForm === null}
             >
               <Typography className={`text ${modes.length > 1 ? '' : 'disabled'}`}>
                 Open Mode Compare
@@ -407,6 +406,7 @@ const AccessMode: React.FC = () => {
         <PageLoading message={`Loading ${formName} Form Access Data`} />
       )}
       <NetworkErrorDialog />
+      {console.log(newForm)}
       {!newForm && <ModeCompare 
         open={openModeCompare}
         handleClose={handleCloseModeCompare}

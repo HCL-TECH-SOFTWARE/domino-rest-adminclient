@@ -535,6 +535,7 @@ export const fetchFields = (
   designType: string
 ) => {
   return async (dispatch: Dispatch) => {
+    console.log("called fetch fields function")
     try {
       // Encode the form name
       const encodedFormName = fullEncode(formName);
@@ -2259,7 +2260,7 @@ export const setForms = (dbName: string, forms: Array<any>) => {
  *
  * @param form the form object
  */
-export const addForm = (form: {
+export const addForm = (form?: {
   dbName: string,
   formName: string,
   alias: Array<string>,
@@ -2272,6 +2273,39 @@ export const addForm = (form: {
       payload: form
     });
   };
+};
+
+/**
+ * Initialize a new form that user wants to create and configure
+ *
+ * @param form the form object
+ */
+export const saveNewForm = (form: {
+  formName: string,
+  fields: Array<any>,
+}, nsfPath: string) => {
+  return async (dispatch: any) => {
+    const formData = {
+      name: form.formName,
+      alias: "",
+      fields: form.fields,
+    }
+    await axios
+      .put(
+        `${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+      .then((response) => {
+        dispatch(toggleAlert("New form schema successfully created!"))
+      })
+  }
+  // };
 };
 
 /**
