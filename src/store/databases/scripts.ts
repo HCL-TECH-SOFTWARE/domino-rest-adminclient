@@ -30,3 +30,22 @@ export const getFormModeIndex = (formModes: Array<Mode>, formModeName: string) =
 export const getFieldIndex = (fields: Array<Field>, fieldName: string) => {
   return fields.findIndex((field: any) => fieldName === field.name)
 };
+
+export const validateFormSchemaName = (formName: string, formList: Array<string>) => {
+  if (formList.includes(formName)) {
+    return {
+      error: true,
+      errorMessage: `The form name ${formName} already exists!`,
+    }
+  } else if (formName === "") {
+    return {
+      error: true,
+      errorMessage: `Please input a form name!`,
+    }
+  } else {
+    return {
+      error: false,
+      errorMessage: "",
+    }
+  }
+}

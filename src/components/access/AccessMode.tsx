@@ -68,7 +68,7 @@ const AccessMode: React.FC = () => {
         getDatabaseIndex(state.databases.databases, dbName, nsfPath)
       ]
   );
-  const allForms = newForm ? [...forms, newForm] : forms
+  const allForms = newForm.form ? [...forms, newForm.form] : forms
   // const { forms } = useSelector((state: AppState) => state.databases)
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
   // console.log(allForms[getFormIndex(forms, formName)].formModes)
@@ -332,7 +332,7 @@ const AccessMode: React.FC = () => {
   }
 
   useEffect(() => {
-    addForm()
+    addForm(false)
   })
 
   return (
@@ -407,7 +407,7 @@ const AccessMode: React.FC = () => {
       )}
       <NetworkErrorDialog />
       {console.log(newForm)}
-      {!newForm && <ModeCompare 
+      {!newForm.enabled && <ModeCompare 
         open={openModeCompare}
         handleClose={handleCloseModeCompare}
         currentModeIndex={currentModeIndex}

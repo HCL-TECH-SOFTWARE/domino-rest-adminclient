@@ -2260,18 +2260,33 @@ export const setForms = (dbName: string, forms: Array<any>) => {
  *
  * @param form the form object
  */
-export const addForm = (form?: {
-  dbName: string,
-  formName: string,
-  alias: Array<string>,
-  formModes: Array<any>,
-  formAccessModes: Array<any>,
-}) => {
+export const addForm = (
+  enabled: boolean,
+  form?: {
+    dbName: string,
+    formName: string,
+    alias: Array<string>,
+    formModes: Array<any>,
+    formAccessModes: Array<any>,
+  }
+) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: ADD_FORM,
-      payload: form
-    });
+    if (enabled) {
+      await dispatch({
+        type: ADD_FORM,
+        payload: {
+          enabled: true,
+          form: form,
+        }
+      })
+    } else {
+      await dispatch({
+        type: ADD_FORM,
+        payload: {
+          enabled: false,
+        }
+      })
+    }
   };
 };
 
@@ -2290,7 +2305,7 @@ export const saveNewForm = (form: {
       alias: "",
       fields: form.fields,
     }
-    await axios
+    axios
       .put(
         `${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`,
         formData,
@@ -2301,11 +2316,7 @@ export const saveNewForm = (form: {
           }
         }
       )
-      .then((response) => {
-        dispatch(toggleAlert("New form schema successfully created!"))
-      })
   }
-  // };
 };
 
 /**

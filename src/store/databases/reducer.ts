@@ -87,6 +87,9 @@ const initialState: DBState = {
   activeViews: [],
   folders: [],
   agents: [],
+  newForm: {
+    enabled: false,
+  },
   activeAgents: [],
   formLoading: true,
   contextViewIndex: -1,
@@ -251,9 +254,21 @@ export default function databaseReducer(
         }
       });
     case ADD_FORM:
-      return {
-        ...state,
-        newForm: action.payload
+      if (action.payload.enabled) {
+        return {
+          ...state,
+          newForm: {
+            enabled: true,
+            form: action.payload.form,
+          }
+        }
+      } else {
+        return {
+          ...state,
+          newForm: {
+            enabled: false,
+          }
+        }
       }
     case SET_CURRENTFORMS:
       return produce(state, (draft: DBState) => {

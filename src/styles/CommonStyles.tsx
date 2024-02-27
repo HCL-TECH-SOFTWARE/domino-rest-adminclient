@@ -670,6 +670,11 @@ export const ButtonYes = styled(Button)`
     background-color: #0B4AAE;
     color: #FFFFFF;
   }
+
+  &:disabled {
+    background-color: #96BCF8;
+    color: #0C0D0D
+  }
 `
 
 export const ButtonNeutral = styled(Button)`

@@ -123,12 +123,15 @@ export interface DBState {
     formModes?: Array<any>;
     formAccessModes: Array<any>;
   }>;
-  newForm?: {
-    dbName: string;
-    formName: string;
-    alias: Array<string>;
-    formModes?: Array<any>;
-    formAccessModes: Array<any>;
+  newForm: {
+    enabled: boolean;
+    form?: {
+      dbName: string;
+      formName: string;
+      alias: Array<string>;
+      formModes?: Array<any>;
+      formAccessModes: Array<any>;
+    }
   }
   loadedForm: string;
   loadedFields: Array<any>;
@@ -638,12 +641,15 @@ export interface SetFormName {
 export interface AddForm {
   type: typeof ADD_FORM;
   payload: {
-    formName: string,
-    alias: Array<string>,
-    dbName: string,
-    formModes: Array<any>,
-    formAccessModes: Array<any>,
-    formValue: string,
+    enabled: boolean,
+    form?: {
+      formName: string,
+      alias: Array<string>,
+      dbName: string,
+      formModes: Array<any>,
+      formAccessModes: Array<any>,
+      formValue: string,
+    },
   }
 }
 

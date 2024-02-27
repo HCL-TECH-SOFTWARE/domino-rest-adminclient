@@ -269,7 +269,7 @@ const Fields: React.FC<FieldsProps> = ({
   const { loading } = useSelector( (state: AppState) => state.loading );
 
   useEffect(() => {
-    if (formsInDb.length > 0 && !!formName && !newForm) {
+    if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
       console.log("used effect")
       dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
     } else if (newForm) {

@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
@@ -13,7 +13,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import { Menu, MenuItem } from '@material-ui/core';
+import { Menu, MenuItem, Tooltip } from '@material-ui/core';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
 import AddModeDialog from './AddModeDialog';
@@ -164,6 +164,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           .sort((a: any, b: any) => (a.modeName > b.modeName ? 1 : -1))
       : modes;
   const [cloneMode, setCloneMode] = useState(false);
+  const [saveEnabled, setSaveEnabled] = useState(false)
+  const [saveTooltip, setSaveTooltip] = useState("")
 
   const handleFieldListOnClick = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -212,13 +214,15 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const save = () => {
     // Gather form data from the page
     const formData = gatherFormData();
-    console.log(formData)
 
     // Save it off and post an alert
-    if (newForm) {
-      saveNewForm(
+    if (formData.fields.length > 0 && !!newForm.form) {
+      setSaveEnabled(false)
+      setSaveTooltip("Please add at least 1 field to save the form.")
+    } else if (!!newForm.form) {
+      dispatch(saveNewForm(
         {
-          formName: newForm.formName,
+          formName: newForm.form.formName,
           fields: formData.fields.map((field: {
             fieldAccess: string,
             format: string,
@@ -235,8 +239,9 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           }),
         },
         nsfPath,
-      )
-      history.push(`/schema/${encodeURIComponent(nsfPath)}/${db}/`)
+      ) as any)
+      dispatch(addForm(false) as any)
+      history.push(`/schema/${encodeURIComponent(nsfPath)}/${db}`)
     } else {
       const currentForms = currentSchema.forms
         .filter((form: any) => form.formModes.length > 0)
@@ -641,12 +646,20 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                 />
               </>
             )}
-            <Button onClick={save}>
+            <Tooltip title={saveTooltip} arrow>
+              <Button onClick={save} disabled={!saveEnabled}>
+                <FiSave className='action-icon' color='primary' size='0.9em' />
+                <Typography variant='body2' color='textPrimary'>
+                  Save
+                </Typography>
+              </Button>
+            </Tooltip>
+            {/* <Button onClick={save} disabled={!saveEnabled}>
               <FiSave className='action-icon' color='primary' size='0.9em' />
               <Typography variant='body2' color='textPrimary'>
                 Save
               </Typography>
-            </Button>
+            </Button> */}
           </PagerAction>
         </TabsContainer>
         <LoadTabContainer>
