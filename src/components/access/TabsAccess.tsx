@@ -4,16 +4,16 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '@material-ui/core/Button';
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import { Menu, MenuItem } from '@material-ui/core';
+import { Menu, MenuItem, Tooltip } from '@material-ui/core';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
 import AddModeDialog from './AddModeDialog';
@@ -22,6 +22,8 @@ import {
   testFormula,
   updateFormMode,
   deleteFormMode,
+  saveNewForm,
+  addForm,
 } from '../../store/databases/action';
 import { AppState } from '../../store';
 import FormDrawer from '../applications/FormDrawer';
@@ -35,6 +37,8 @@ import {
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
+import { convertField2DesignType } from './functions';
+import { getTheme } from '../../store/styles/action';
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
@@ -68,7 +72,6 @@ const LoadTabContainer = styled.div`
 
 const TabsContainer = styled.div`
   display: flex;
-  cursor: pointer;
   align-items: center;
   background-color: #f9fbff;
   padding-bottom: 21px;
@@ -100,6 +103,11 @@ const PagerAction = styled.div`
   }
   .MuiButton-text {
     white-space: nowrap;
+  }
+  .button-disabled {
+    &:hover {
+      background-color: none;
+    }
   }
 `;
 
@@ -136,8 +144,9 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   addField,
 }) => {
   const dispatch = useDispatch();
+  const { themeMode } = useSelector((state: AppState) => state.styles);
 
-  const { databases, scopes } = useSelector(
+  const { databases, scopes, newForm } = useSelector(
     (state: AppState) => state.databases
   );
 
@@ -161,6 +170,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           .sort((a: any, b: any) => (a.modeName > b.modeName ? 1 : -1))
       : modes;
   const [cloneMode, setCloneMode] = useState(false);
+  const [saveEnabled, setSaveEnabled] = useState(false)
+  const [saveTooltip, setSaveTooltip] = useState("")
 
   const handleFieldListOnClick = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -189,6 +200,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   };
 
   const urls = useLocation();
+  const history = useHistory()
 
   const paths = urls.pathname.split('/');
   const nsfPath = decodeURIComponent(paths[2]);
@@ -209,28 +221,58 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     // Gather form data from the page
     const formData = gatherFormData();
 
-    // Save it off and post an alert
-    const currentForms = currentSchema.forms
-      .filter((form: any) => form.formModes.length > 0)
-      .map((form: any) => {
-        return {
-          formName: form.formName,
-          alias: form.alias,
-          formModes: form.formModes,
-        };
-      });
-    const currentTargetForm = currentForms.filter(
-      (targetForm: any) => form === targetForm.formName
-    );
-    const { formModes } = currentTargetForm[0];
-    const oriCardIndex = formModes.findIndex(
-      (mode: any) => currentModeValue === mode.modeName
-    );
-    setCurrentModeIndex(oriCardIndex);
-    dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode) as any);
-    // After Saved the tab all data will be fetch from latest state again to ensure accuracy
-    setPageIndex(oriCardIndex);
-    setCurrentModeValue(formModes[oriCardIndex].modeName);
+    if (newForm.enabled && !saveEnabled) {
+      return
+    }
+
+    // Check if creating new form schema or editing a form
+    // Then save it off and post an alert
+    if (!!newForm.form) {
+      dispatch(saveNewForm(
+        {
+          formName: newForm.form.formName,
+          fields: formData.fields.map((field: {
+            fieldAccess: string,
+            format: string,
+            isMultiValue: boolean,
+            name: string,
+            type: string,
+            items?: Array<any>,
+          }) => {
+            return {
+              allowMultiValues: field.isMultiValue,
+              name: field.name,
+              type: convertField2DesignType(field.format),
+            }
+          }),
+        },
+        nsfPath,
+      ) as any)
+      dispatch(addForm(false) as any)
+      history.push(`/schema/${encodeURIComponent(nsfPath)}/${db}`)
+    } else {
+      const currentForms = currentSchema.forms
+        .filter((form: any) => form.formModes.length > 0)
+        .map((form: any) => {
+          return {
+            formName: form.formName,
+            alias: form.alias,
+            formModes: form.formModes,
+          };
+        });
+      const currentTargetForm = currentForms.filter(
+        (targetForm: any) => form === targetForm.formName
+      );
+      const { formModes } = currentTargetForm[0];
+      const oriCardIndex = formModes.findIndex(
+        (mode: any) => currentModeValue === mode.modeName
+      );
+      setCurrentModeIndex(oriCardIndex);
+      dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode) as any);
+      // After Saved the tab all data will be fetch from latest state again to ensure accuracy
+      setPageIndex(oriCardIndex);
+      setCurrentModeValue(formModes[oriCardIndex].modeName);
+    }
   };
 
   /**
@@ -250,6 +292,22 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     };
     return formData;
   };
+
+  useEffect(() => {
+    const keys = Object.keys(state);
+    const readAccessFields = state[keys[0]].map((field: any) => {
+      let { content, id, ...newField } = field;
+      return newField;
+    });
+
+    if (readAccessFields.length > 0) {
+      setSaveEnabled(true)
+      setSaveTooltip("")
+    } else {
+      setSaveEnabled(false)
+      setSaveTooltip("At least 1 field is required to save this new form.")
+    }
+  }, [state])
 
   /**
    * formik provide form support for the Test Formulas Form
@@ -387,14 +445,10 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   };
 
   const handleChange = (event: React.ChangeEvent<any>) => {
-    console.log(event.target)
-    console.log(event.target.value)
     const value =
       event.target.name === 'computeWithForm'
         ? event.target.checked
         : event.target.value;
-    console.log(value)
-    console.log(event.target.name)
 
     // map the value in object
     const formulaObj = {
@@ -407,11 +461,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       [event.target.name]:
         event.target.name === 'computeWithForm' ? value : formulaObj,
     });
-    console.log({
-      ...scripts,
-      [event.target.name]:
-        event.target.name === 'computeWithForm' ? value : formulaObj,
-    })
   };
 
   /**
@@ -500,7 +549,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const handleClickCloneMode = () => {
     setCloneMode(true);
     setNewModeOpen(true);
-    // addModeDialog.showModal();
   }
 
   const deleteModeTitle: string = 'Delete Mode';
@@ -555,15 +603,15 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             ))}
           </Menu>
           <PagerAction>
-            <Button onClick={handleClickCloneMode}>
+            <Button onClick={handleClickCloneMode} style={{ cursor: newForm.enabled ? "default" : "pointer" }} disabled={newForm.enabled}>
               <BiCopy className='action-icon' />
-              <Typography variant='body2' color='textPrimary'>
+              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
                 Clone Mode
               </Typography>
             </Button>
-            <Button onClick={handleNewModeOpen}>
-              <AddIcon className='action-icon' color='primary' />
-              <Typography variant='body2' color='textPrimary'>
+            <Button onClick={handleNewModeOpen} style={{ cursor: newForm.enabled ? "default" : "pointer" }} disabled={newForm.enabled}>
+              <AddIcon className='action-icon' />
+              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
                 Add Mode
               </Typography>
             </Button>
@@ -591,12 +639,27 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                 />
               </>
             )}
-            <Button onClick={save}>
-              <FiSave className='action-icon' color='primary' size='0.9em' />
-              <Typography variant='body2' color='textPrimary'>
-                Save
-              </Typography>
-            </Button>
+            <Tooltip title={saveTooltip} arrow>
+              <Button
+                onClick={save}
+                style={{
+                  cursor: !newForm.enabled ? "pointer" : saveEnabled ? "pointer" : "default",
+                }}
+                className='button-disabled'
+              >
+                <FiSave
+                  className='action-icon'
+                  color={!newForm.enabled ?
+                    getTheme(themeMode).textColorPrimary
+                    :
+                    saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9"}
+                  size='0.9em'
+                />
+                <Typography variant='body2' style={{ color: !newForm.enabled ? getTheme(themeMode).textColorPrimary : saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9" }}>
+                  Save
+                </Typography>
+              </Button>
+            </Tooltip>
           </PagerAction>
         </TabsContainer>
         <LoadTabContainer>

@@ -17,11 +17,12 @@ import { AccessModeContainer } from './styles';
 import TabsAccess from './TabsAccess';
 import PageLoading from '../loaders/PageLoading';
 import { Mode } from '../../store/databases/types';
-import { getDatabaseIndex, getFormIndex } from '../../store/databases/scripts';
+import { getDatabaseIndex } from '../../store/databases/scripts';
 import {
   cacheFormFields,
   setLoadedFields,
   addActiveFields,
+  addForm,
 } from '../../store/databases/action';
 import { AccessContext } from './AccessContext';
 import { AppState } from '../../store';
@@ -60,15 +61,16 @@ const AccessMode: React.FC = () => {
   const dbName = urls.pathname.split('/')[3];
 
   const { loading } = useSelector((state: AppState) => state.dialog);
-  const { loadedFields } = useSelector((state: AppState) => state.databases);
+  const { loadedFields, newForm } = useSelector((state: AppState) => state.databases);
   const { forms } = useSelector(
     (state: AppState) =>
       state.databases.databases[
         getDatabaseIndex(state.databases.databases, dbName, nsfPath)
       ]
   );
+  const allForms = newForm.form ? [...forms, newForm.form] : forms
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
-  const allModes = forms[getFormIndex(forms, formName)].formModes;
+  const allModes = allForms.filter((form) => form.formName === formName)[0].formModes || [{}]
   const currentDesign = nsfDesigns[nsfPath];
   const fetchFieldsArray = currentDesign?.forms;
   const [tabValue, setTabValue] = useState(0);
@@ -326,6 +328,10 @@ const AccessMode: React.FC = () => {
     setOpenModeCompare(false);
   }
 
+  useEffect(() => {
+    addForm(false)
+  })
+
   return (
     <AccessContext.Provider value={[state, setstate]}>
       {fetchFieldsArray.length > 0 ? (
@@ -337,7 +343,7 @@ const AccessMode: React.FC = () => {
             <ModeCompareButton 
               className={`button-compare ${modes.length > 1 ? '' : 'compare-disabled'}`} 
               onClick={handleClickOpenModeCompare}
-              disabled={modes.length === 1}
+              disabled={modes.length === 1 || newForm === null}
             >
               <Typography className={`text ${modes.length > 1 ? '' : 'disabled'}`}>
                 Open Mode Compare
@@ -397,11 +403,11 @@ const AccessMode: React.FC = () => {
         <PageLoading message={`Loading ${formName} Form Access Data`} />
       )}
       <NetworkErrorDialog />
-      <ModeCompare 
+      {!newForm.enabled && <ModeCompare 
         open={openModeCompare}
         handleClose={handleCloseModeCompare}
         currentModeIndex={currentModeIndex}
-      />
+      />}
     </AccessContext.Provider>
   );
 };

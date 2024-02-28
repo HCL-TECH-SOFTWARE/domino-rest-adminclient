@@ -25,6 +25,7 @@ import {
   UPDATE_SCHEMA,
   UPDATE_SCOPE,
   SET_FORMS,
+  ADD_FORM,
   SET_CURRENTFORMS,
   SET_LOADEDFORM,
   SET_LOADEDFIELDS,
@@ -86,6 +87,9 @@ const initialState: DBState = {
   activeViews: [],
   folders: [],
   agents: [],
+  newForm: {
+    enabled: false,
+  },
   activeAgents: [],
   formLoading: true,
   contextViewIndex: -1,
@@ -249,6 +253,23 @@ export default function databaseReducer(
           draft.databases[dbIndex].forms = forms;
         }
       });
+    case ADD_FORM:
+      if (action.payload.enabled) {
+        return {
+          ...state,
+          newForm: {
+            enabled: true,
+            form: action.payload.form,
+          }
+        }
+      } else {
+        return {
+          ...state,
+          newForm: {
+            enabled: false,
+          }
+        }
+      }
     case SET_CURRENTFORMS:
       return produce(state, (draft: DBState) => {
         draft.forms = action.payload.forms ;

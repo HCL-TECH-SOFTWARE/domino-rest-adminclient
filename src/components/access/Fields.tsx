@@ -222,7 +222,6 @@ const Fields: React.FC<FieldsProps> = ({
   tabValue,
   setTabValue,
 }) => {
-  const [fieldText, setFieldText] = useState('');
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
@@ -257,7 +256,7 @@ const Fields: React.FC<FieldsProps> = ({
   }
   formsSorted.unshift(allFieldObj);
 
-  const { activeFields } = useSelector((state: AppState) => state.databases);
+  const { activeFields, newForm } = useSelector((state: AppState) => state.databases);
 
   const classes = useStyles();
 
@@ -269,9 +268,12 @@ const Fields: React.FC<FieldsProps> = ({
   const { loading } = useSelector( (state: AppState) => state.loading );
 
   useEffect(() => {
-    if (formsInDb.length > 0 && !!formName)
+    if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
       dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
-  }, [schemaName, nsfPath, formName, formsInDb, dispatch]);
+    } else if (!newForm.enabled) {
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
+    }
+  }, [schemaName, nsfPath, formName, formsInDb, newForm, dispatch]);
 
   const handleFieldListOnClick = (event: any) => {
     setAnchorEl(event.target);

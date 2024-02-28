@@ -23,11 +23,11 @@ import {
   UPDATE_SCOPE,
   UPDATE_SCHEMA,
   SET_FORMS,
+  ADD_FORM,
   SET_CURRENTFORMS,
   SET_LOADEDFORM,
   SET_LOADEDFIELDS,
   SET_ACTIVEFORM,
-  SET_ACTIVEFIELDS,
   ADD_ACTIVEFIELDS,
   SET_VIEWS,
   UPDATE_VIEW,
@@ -2239,6 +2239,71 @@ export const setForms = (dbName: string, forms: Array<any>) => {
       }
     });
   };
+};
+
+/**
+ * Initialize a new form that user wants to create and configure
+ *
+ * @param form the form object
+ */
+export const addForm = (
+  enabled: boolean,
+  form?: {
+    dbName: string,
+    formName: string,
+    alias: Array<string>,
+    formModes: Array<any>,
+    formAccessModes: Array<any>,
+  }
+) => {
+  return async (dispatch: any) => {
+    if (enabled) {
+      await dispatch({
+        type: ADD_FORM,
+        payload: {
+          enabled: true,
+          form: form,
+        }
+      })
+    } else {
+      await dispatch({
+        type: ADD_FORM,
+        payload: {
+          enabled: false,
+        }
+      })
+    }
+  };
+};
+
+/**
+ * Initialize a new form that user wants to create and configure
+ *
+ * @param form the form object
+ */
+export const saveNewForm = (form: {
+  formName: string,
+  fields: Array<any>,
+}, nsfPath: string) => {
+  return async (dispatch: any) => {
+    const formData = {
+      name: form.formName,
+      alias: "",
+      fields: form.fields,
+    }
+    await axios
+      .put(
+        `${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    dispatch(toggleAlert("New form schema created!"))
+  }
 };
 
 /**

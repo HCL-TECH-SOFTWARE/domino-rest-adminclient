@@ -97,3 +97,33 @@ export const convert2FieldType = (fieldFormat: string, isMultipleValue: boolean)
     return "string";
   }
 };
+
+export const convertField2DesignType = (fieldType: string) => {
+  switch (fieldType) {
+    case "binary":
+      // other: json
+      return "attachments"
+    case "date":
+    case "date-time":
+      return "datetime"
+    case "float":
+    case "double":
+      return "number"
+    case "authors":
+      return "authors"
+    case "password":
+      return "password"
+    case "richtext":
+      // other: richtextlite
+      return "richtext"
+    case "names":
+      return "names"
+    case "readers":
+      return "readers"
+    case "boolean":
+      return "boolean"
+    default:
+      // others: keyword, color, formula, timezone, int32, int64, byte
+      return "text"
+  }
+}

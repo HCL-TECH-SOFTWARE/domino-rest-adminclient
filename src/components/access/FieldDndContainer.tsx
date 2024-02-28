@@ -51,7 +51,7 @@ const SelectedFieldsContainer = styled.div`
   .batch-delete-container {
     display: flex;
     justify-content: flex-end;
-    padding: 0 15px;
+    padding: 0 11px;
     max-width: 100%;
     flex-wrap: wrap;
   }
@@ -406,14 +406,14 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
                   color: '#0E5FDC',
                 }}
               />
-              <Box display='flex'>
+              <Box display='flex' flexWrap='wrap'>
                 <Button 
                   className='batch-delete-button'
                   style={{}}
                   onClick={toggleBatchDelete} 
                   disabled={state[stateList[0]].length === 0}
                 >
-                  <Typography className={`batch-delete disabled`}>Cancel</Typography>
+                  <Typography className={`batch-delete`} style={{ color: '#000' }}>Cancel</Typography>
                 </Button>
                 <Tooltip title={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""} arrow>
                   <Button 
@@ -509,7 +509,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
           <Typography className='text-content'>Are you sure you want to remove the following fields:</Typography>
           <ul>
             {deleteFields.map((field: any) => {
-              return <li><Typography className='text-content field'>{`${field.name} `}</Typography></li>
+              return <li key={field.name}><Typography className='text-content field'>{`${field.name} `}</Typography></li>
             })}
           </ul>
           <Typography className='text-content'>on this mode?</Typography>
