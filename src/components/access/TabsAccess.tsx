@@ -38,6 +38,7 @@ import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
 import { convertField2DesignType } from './functions';
+import { getTheme } from '../../store/styles/action';
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
@@ -143,6 +144,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   addField,
 }) => {
   const dispatch = useDispatch();
+  const { themeMode } = useSelector((state: AppState) => state.styles);
 
   const { databases, scopes, newForm } = useSelector(
     (state: AppState) => state.databases
@@ -645,18 +647,19 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                 }}
                 className='button-disabled'
               >
-                <FiSave className='action-icon' color={!newForm.enabled ? "primary" : saveEnabled ? "primary" : "#A7A8A9"} size='0.9em' />
-                <Typography variant='body2' style={{ color: !newForm.enabled ? "#000" : saveEnabled ? "#000" : "#A7A8A9" }}>
+                <FiSave
+                  className='action-icon'
+                  color={!newForm.enabled ?
+                    getTheme(themeMode).textColorPrimary
+                    :
+                    saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9"}
+                  size='0.9em'
+                />
+                <Typography variant='body2' style={{ color: !newForm.enabled ? getTheme(themeMode).textColorPrimary : saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9" }}>
                   Save
                 </Typography>
               </Button>
             </Tooltip>
-            {/* <Button onClick={save} disabled={!saveEnabled}>
-              <FiSave className='action-icon' color='primary' size='0.9em' />
-              <Typography variant='body2' color='textPrimary'>
-                Save
-              </Typography>
-            </Button> */}
           </PagerAction>
         </TabsContainer>
         <LoadTabContainer>
