@@ -103,6 +103,7 @@ export const convertField2DesignType = (fieldType: string) => {
     case "binary":
       // other: json
       return "attachments"
+    case "date":
     case "date-time":
       return "datetime"
     case "float":
@@ -119,14 +120,10 @@ export const convertField2DesignType = (fieldType: string) => {
       return "names"
     case "readers":
       return "readers"
-    case "int32":
-    case "int64":
-    case "byte":
-      return "integer"
     case "boolean":
       return "boolean"
     default:
-      // others: keyword, color, formula, timezone
+      // others: keyword, color, formula, timezone, int32, int64, byte
       return "text"
   }
 }

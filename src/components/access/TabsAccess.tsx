@@ -603,15 +603,15 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             ))}
           </Menu>
           <PagerAction>
-            <Button onClick={handleClickCloneMode}>
+            <Button onClick={handleClickCloneMode} style={{ cursor: newForm.enabled ? "default" : "pointer" }} disabled={newForm.enabled}>
               <BiCopy className='action-icon' />
-              <Typography variant='body2' color='textPrimary'>
+              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
                 Clone Mode
               </Typography>
             </Button>
-            <Button onClick={handleNewModeOpen}>
-              <AddIcon className='action-icon' color='primary' />
-              <Typography variant='body2' color='textPrimary'>
+            <Button onClick={handleNewModeOpen} style={{ cursor: newForm.enabled ? "default" : "pointer" }} disabled={newForm.enabled}>
+              <AddIcon className='action-icon' />
+              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
                 Add Mode
               </Typography>
             </Button>
