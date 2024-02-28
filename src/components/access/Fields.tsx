@@ -222,7 +222,6 @@ const Fields: React.FC<FieldsProps> = ({
   tabValue,
   setTabValue,
 }) => {
-  const [fieldText, setFieldText] = useState('');
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
@@ -270,9 +269,8 @@ const Fields: React.FC<FieldsProps> = ({
 
   useEffect(() => {
     if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
-      console.log("used effect")
       dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
-    } else if (newForm) {
+    } else if (!newForm.enabled) {
       dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
     }
   }, [schemaName, nsfPath, formName, formsInDb, newForm, dispatch]);
@@ -305,7 +303,6 @@ const Fields: React.FC<FieldsProps> = ({
     if (formName === 'keep_internal_form_for_allFields') {
       await dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
     } else {
-      console.log("new form schema?")
       await dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, externalName, designType) as any);
     }
     dispatch(setLoading({ status: false }));

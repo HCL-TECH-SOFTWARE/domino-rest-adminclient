@@ -34,7 +34,8 @@ import {
   fetchKeepDatabases,
   addNsfDesign,
   updateSchema,
-  fetchFolders} from '../../store/databases/action';
+  fetchFolders,
+  addForm} from '../../store/databases/action';
 import { toggleSettings } from '../../store/dbsettings/action';
 import { getToken } from '../../store/account/action';
 import ErrorWrapper from '../wrapper/ErrorWrapper';
@@ -557,6 +558,10 @@ const FormsContainer = () => {
   useEffect(() => {
     dispatch(fetchFolders(dbName, nsfPath) as any)
   }, [dbName, dispatch, nsfPath])
+
+  useEffect(() => {
+    dispatch(addForm(false) as any)
+  }, [dispatch])
 
   return (
     <ErrorWrapper errorStatus={errorStatus}>

@@ -17,7 +17,7 @@ import { AccessModeContainer } from './styles';
 import TabsAccess from './TabsAccess';
 import PageLoading from '../loaders/PageLoading';
 import { Mode } from '../../store/databases/types';
-import { getDatabaseIndex, getFormIndex } from '../../store/databases/scripts';
+import { getDatabaseIndex } from '../../store/databases/scripts';
 import {
   cacheFormFields,
   setLoadedFields,
@@ -69,9 +69,7 @@ const AccessMode: React.FC = () => {
       ]
   );
   const allForms = newForm.form ? [...forms, newForm.form] : forms
-  // const { forms } = useSelector((state: AppState) => state.databases)
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
-  // console.log(allForms[getFormIndex(forms, formName)].formModes)
   const allModes = allForms.filter((form) => form.formName === formName)[0].formModes || [{}]
   const currentDesign = nsfDesigns[nsfPath];
   const fetchFieldsArray = currentDesign?.forms;
@@ -323,7 +321,6 @@ const AccessMode: React.FC = () => {
   };
 
   const handleClickOpenModeCompare = () => {
-    console.log(newForm)
     setOpenModeCompare(true);
   }
 
@@ -406,7 +403,6 @@ const AccessMode: React.FC = () => {
         <PageLoading message={`Loading ${formName} Form Access Data`} />
       )}
       <NetworkErrorDialog />
-      {console.log(newForm)}
       {!newForm.enabled && <ModeCompare 
         open={openModeCompare}
         handleClose={handleCloseModeCompare}

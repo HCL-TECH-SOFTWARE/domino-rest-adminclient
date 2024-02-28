@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useParams } from "react-router-dom";
 import {
@@ -26,12 +26,10 @@ import {
   addForm,
   handleDatabaseForms,
   pullForms,
-  setForms,
 } from "../../store/databases/action";
 import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
-import { Autocomplete, createFilterOptions } from "@material-ui/lab";
-import zIndex from "@material-ui/core/styles/zIndex";
+import { createFilterOptions } from "@material-ui/lab";
 import { toggleAlert } from "../../store/alerts/action";
 
 const ButtonsPanel = styled.div`
@@ -129,15 +127,27 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
   const [formNameError, setFormNameError] = useState(false)
   const [formNameErrorMessage, setFormNameErrorMessage] = useState("")
   
-
-  const normalizeForms =
+  const [normalizeForms, setNormalizeForms] = useState(
     forms && forms.length > 0
       ? forms.map((form) =>
           "formModes" in form
             ? form
             : { ...form, formModes: form.formAccessModes }
         )
-      : [];
+      : []
+  )
+
+  useEffect(() => {
+    setNormalizeForms(
+      forms && forms.length > 0
+      ? forms.map((form) =>
+          "formModes" in form
+            ? form
+            : { ...form, formModes: form.formAccessModes }
+        )
+      : []
+    )
+  }, [forms])
 
   let { dbName, nsfPath } = useParams() as { dbName: string; nsfPath: string };
   const [resetAllForms, setResetAllForms] = useState(false);

@@ -14,7 +14,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import ActivateSwitchForm from "./ActivateSwitchForm";
 import { Button, Tooltip } from "@material-ui/core";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useHistory } from 'react-router-dom';

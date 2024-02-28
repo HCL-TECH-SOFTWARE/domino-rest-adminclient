@@ -28,7 +28,6 @@ import {
   SET_LOADEDFORM,
   SET_LOADEDFIELDS,
   SET_ACTIVEFORM,
-  SET_ACTIVEFIELDS,
   ADD_ACTIVEFIELDS,
   SET_VIEWS,
   UPDATE_VIEW,
@@ -535,7 +534,6 @@ export const fetchFields = (
   designType: string
 ) => {
   return async (dispatch: Dispatch) => {
-    console.log("called fetch fields function")
     try {
       // Encode the form name
       const encodedFormName = fullEncode(formName);
@@ -1179,18 +1177,6 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
     }
   }
 }
-
-// export const setForms = () => {
-//   return async (dispatch: Dispatch) => {
-//     dispatch({
-//       type: SET_FORMS,
-//       payload: {
-//         db: dbName,
-//         forms: configformsList
-//       }
-//     })
-//   }
-// }
 
 const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>) => {
   let configformsList: Array<any> = [];
@@ -2305,7 +2291,7 @@ export const saveNewForm = (form: {
       alias: "",
       fields: form.fields,
     }
-    axios
+    await axios
       .put(
         `${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`,
         formData,
@@ -2316,6 +2302,7 @@ export const saveNewForm = (form: {
           }
         }
       )
+    dispatch(toggleAlert("New form schema created!"))
   }
 };
 
