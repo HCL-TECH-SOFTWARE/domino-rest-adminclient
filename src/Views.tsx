@@ -75,7 +75,7 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
     }
     document.title = `HCL Domino REST API | ${subTitle}`;
     if (!fetchedPermission) {
-      dispatch(fetchKeepPermissions() as any);
+      // dispatch(fetchKeepPermissions() as any);
       setFetchedPermission(true);
     }
     if (scopePull && scopePulling) {
@@ -102,6 +102,7 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
           dispatch(fetchScopes() as any);
         } else if (!databasePull) {
           setDatabasePulling(true);
+          console.log("database pull")
           dispatch(fetchKeepDatabases() as any);
         }
       }

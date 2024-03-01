@@ -12,6 +12,7 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { AppState } from '../../store';
 import {
+  fetchKeepDatabases,
         setOnlyShowSchemasWithScopes,
         setPullDatabase,
         setPullScope,
@@ -34,7 +35,7 @@ import { Tooltip } from '@material-ui/core';
 import AddImportDialog from '../database/AddImportDialog';
 
 const SchemasLists = () => {
-  const { databases, scopes, scopePull, onlyShowSchemasWithScopes, permissions } = useSelector(
+  const { databases, scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview } = useSelector(
     (state: AppState) => state.databases
   );
   const { loading } = useSelector( (state: AppState) => state.loading );
@@ -75,6 +76,9 @@ const SchemasLists = () => {
   };
   const handleRefresh = () => {
     dispatch(setPullDatabase(false));
+    console.log("handle refresh")
+    // dispatch(fetchKeepDatabases() as any)
+    // dispatch(setPullDatabase(false))
     dispatch(setPullScope(false));
     dispatch({
       type: FETCH_KEEP_DATABASES,
@@ -119,14 +123,20 @@ const SchemasLists = () => {
   }, [addImportDialog])
 
   useEffect(() => {
-    let schemas = databases.slice();
+    // console.log(databasesOverview)
+    let schemas = databasesOverview.slice();
+    // console.log(new Set(schemas))
     if (onlyShowSchemasWithScopes) {
       const schemasWithScopes = scopes.map((scope) => {
         return scope.nsfPath + ":" + scope.schemaName;
       });
-      schemas = databases.filter((schema) => {
+      // console.log(schemasWithScopes)
+      schemas = databasesOverview.filter((schema) => {
+        // console.log(schema.nsfPath + ":" + schema.schemaName)
+        // console.log(schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName))
         return schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName);
       });
+      // console.log(schemas)
     }
     if (searchKey) {
       if(searchType.indexOf("NSF") !== -1){
@@ -140,8 +150,11 @@ const SchemasLists = () => {
       }
     }
     schemas.sort((schemaA, schemaB) => schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1);
-    setResults(schemas);
-  }, [databases, scopes, onlyShowSchemasWithScopes, searchKey, searchType]);
+    // console.log(schemas)
+    const uniqueSchemas = [...new Set(schemas)]
+    // console.log(uniqueSchemas)
+    setResults(uniqueSchemas);
+  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType]);
 
   return (
     <SettingContext.Provider value={[context, setContext]}>

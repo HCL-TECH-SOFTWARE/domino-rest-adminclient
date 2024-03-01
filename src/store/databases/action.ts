@@ -79,6 +79,7 @@ import {
   convertDesignType2Format
 } from '../../components/access/functions';
 import { fullEncode } from '../../utils/common';
+import appIcons from '../../styles/app-icons';
 
 /**
  * action.ts provides the action methods for the Database page
@@ -264,12 +265,30 @@ const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any
     schemasWithoutScopes = [];
     if (done) {
       schemasWithoutScopes = [...schemasWithoutScopes, processBuffer(buffer, dispatch, scopeList, schemasWithoutScopes, true)];
+      console.log("hello")
       // remove undefined nsfPaths and schemaNames
       schemasWithoutScopes = schemasWithoutScopes[0].filter((db: any) => !!db.nsfPath && !!db.schemaName);
+
+      const chunkSize = 20;
+      for (let i = 0; i < schemasWithoutScopes.length; i += chunkSize) {
+          const chunk = schemasWithoutScopes.slice(i, i + chunkSize);
+          const stringChunk = chunk.map((c: any) => JSON.stringify(c))
+          // console.log(stringChunk)
+          // console.log(new Set(stringChunk))
+          const uniqueChunk = [...new Set(stringChunk)].map((c: any) => JSON.parse(c))
+          // console.log(new Set(chunk))
+          dispatch({
+            type: UPDATE_SCHEMA,
+            payload: uniqueChunk,
+          })
+          // do whatever
+      }
       
-      const dbProcessWithoutScopes: any[] = schemasWithoutScopes
-          .map((db: any) => getSchema(db.nsfPath, db.schemaName, dispatch));
-      await Promise.all(dbProcessWithoutScopes);
+      // const dbProcessWithoutScopes: any[] = schemasWithoutScopes
+      //     .map((db: any) => getSchema(db.nsfPath, db.schemaName, dispatch, db));
+      // console.log(dbProcessWithoutScopes.length)
+      // await Promise.all(dbProcessWithoutScopes);
+      console.log("hi")
       
       dispatch(setLoading({ status: false }));
       dispatch(setPullDatabase(true));
@@ -295,6 +314,7 @@ const processBuffer = (buffer: string, dispatch: Dispatch, scopeList: Array<any>
     if(!!processedPart) schemasWithoutScopes = [...schemasWithoutScopes, processedPart];
   });
   buffer = newArray[newArray.length - 1];
+  console.log(buffer)
   return schemasWithoutScopes
 }
 
@@ -306,16 +326,60 @@ const processPart = (part: string, dispatch: Dispatch, callback: any, scopeList:
 const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
   if (!!json.configurations && json.configurations.length > 0) {
     const { configurations } = json;
+    // console.log(configurations)
+    // const chunkSize = 20;
+    // for (let i = 0; i < configurations.length; i += chunkSize) {
+    //     const chunk = configurations.slice(i, i + chunkSize);
+    //     // do whatever
+    // }
+    let schemasWithScopes: Array<{
+      schemaName: string;
+      description: string;
+      iconName: string;
+      icon: string;
+      nsfPath: string;
+    }> = []
     configurations.forEach((config: any) => {
       let schema = typeof(config) === 'string' ? config : config.name;
       if (!!json.path && !!schema) {
         if (scopeList.includes(json.path + ':' + schema)) {
-          getSchema(json.path, schema, dispatch);
+          const new_config = {
+            schemaName: config.name,
+            description: config.description,
+            iconName: config.iconName,
+            icon: appIcons[config.iconName],
+            nsfPath: json.path,
+          }
+          // getSchema(json.path, schema, dispatch, new_config);
+          // getSchema(json.path, schema, dispatch);
+          schemasWithScopes.push(new_config)
         } else {
           schemasWithoutScopes.push({ nsfPath: json.path, schemaName: schema });
         }
       }
     });
+    // console.log(schemasWithScopes)
+    const chunkSize = 5;
+    for (let i = 0; i < schemasWithScopes.length; i += chunkSize) {
+        const chunk = schemasWithScopes.slice(i, i + chunkSize);
+        const stringChunk = chunk.map((c) => JSON.stringify(c))
+        // console.log(stringChunk)
+        // console.log(new Set(stringChunk))
+        const uniqueChunk = [...new Set(stringChunk)].map((c) => JSON.parse(c))
+        // console.log(uniqueChunk)
+        // console.log(new Set(JSON.stringify(chunk)))
+        setTimeout(() => {
+          dispatch({
+            type: UPDATE_SCHEMA,
+            payload: uniqueChunk
+          })
+        }, 100)
+        // dispatch({
+        //   type: UPDATE_SCHEMA,
+        //   payload: uniqueChunk
+        // })
+        // do whatever
+    }
   }
 
   let availableDatabases = {
@@ -336,20 +400,34 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
   return schemasWithoutScopes
 }
 
-const getSchema = (nsfPath: string, schemaName: string, dispatch: Dispatch) => new Promise<void>(resolve => {
-  fetchSchema({ nsfPath, schemaName })
-    .then((schemaData) => {
-      dispatch({
-        type: UPDATE_SCHEMA,
-        payload: schemaData
-      });
-    })
-    .finally(() => {
-      resolve();
-    });
-});
+// const getSchema = (nsfPath: string, schemaName: string, dispatch: Dispatch, db: any) => new Promise<void>(resolve => {
+//   // console.log(`
+//   //   nsfPath: ${nsfPath}
+//   //   schemaName: ${schemaName}
+//   //   db: ${JSON.stringify(db)}
+//   // `)
+//   // fetchSchema({ nsfPath, schemaName })
+//   //   .then((schemaData) => {
+//       dispatch({
+//         type: UPDATE_SCHEMA,
+//         payload: db,
+//       });
+//       resolve()
+//     // })
+//     // .finally(() => {
+//     //   resolve();
+//     // });
+// });
+
+const getSchema = (nsfPath: string, schemaName: string, dispatch: Dispatch, db: any) => {
+  dispatch({
+    type: UPDATE_SCHEMA,
+    payload: db,
+  })
+};
 
 export const fetchKeepDatabases = () => {
+  console.log("fetch keep databases")
   return async (dispatch: Dispatch, getState: () => AppState) => {
     dispatch(setLoading({ status: true }));
 
@@ -373,6 +451,13 @@ export const fetchKeepDatabases = () => {
       body: JSON.stringify(payload)
     }).then(async function respond(response) {
       processResponse(response, dispatch, scopeList);
+      // dispatch({
+      //   type: FETCH_KEEP_PERMISSIONS,
+      //   payload: {
+      //     createDbMapping: data.CreateDbMapping,
+      //     deleteDbMapping: data.DeleteDbMapping
+      //   }
+      // });
     });
   }
 }

@@ -91,6 +91,14 @@ export interface Database {
   activeAgents?: Array<string>;
 }
 
+export interface DatabaseOverview {
+  schemaName: string;
+  description: string;
+  nsfPath: string;
+  icon: string;
+  iconName: string;
+}
+
 export interface AvailableDatabases {
   title: string;
   nsfpath: string;
@@ -111,6 +119,7 @@ export interface Scope {
 
 export interface DBState {
   databases: Array<Database>;
+  databasesOverview: Array<DatabaseOverview>;
   nsfDesigns: any;
   availableDatabases: AvailableDatabases[];
   scopes: Scope[];
@@ -457,7 +466,7 @@ interface updateScope {
 
 interface updateSchema {
   type: typeof UPDATE_SCHEMA;
-  payload: Database;
+  payload: Array<DatabaseOverview>;
 }
 
 interface UpdateSchema {

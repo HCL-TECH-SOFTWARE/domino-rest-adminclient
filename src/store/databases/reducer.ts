@@ -68,11 +68,13 @@ import {
   UPDATE_ERROR,
   SET_FORM_NAME,
   SET_FOLDERS,
+  Database,
 } from './types';
 import { getDatabaseIndex, getScopeIndex } from './scripts';
 
 const initialState: DBState = {
   databases: [],
+  databasesOverview: [],
   nsfDesigns: {},
   availableDatabases: [],
   scopes: [],
@@ -213,17 +215,69 @@ export default function databaseReducer(
         draft.scopes.splice(dbIndex, 1);
       });
     case UPDATE_SCHEMA:
+      // console.log(state.databases)
       return produce(state, (draft: DBState) => {
-        const dbIndex = getDatabaseIndex(
-          state.databases,
-          action.payload.schemaName,
-          action.payload.nsfPath
-        );
-        if (dbIndex>=0) {
-          draft.databases[dbIndex] = action.payload;
-        } else {
-          draft.databases.push(action.payload);
-        }
+        let newDatabases: Array<{
+          schemaName: string;
+          description: string;
+          iconName: string;
+          icon: any;
+          nsfPath: string;
+        }> = []
+        // console.log(state.databasesOverview)
+        // console.log(new Set(state.databasesOverview))
+        // const demoSchemas = action.payload.filter((schema) => schema.schemaName === "demo" && schema.nsfPath === "Demo.nsf")
+        const payloadMap = action.payload.map((schema) => {
+          return {
+            schemaName: schema.schemaName,
+            nsfPath: schema.nsfPath,
+          }
+        })
+        // console.log(new Set(payloadMap))
+        const uniquePayload = action.payload.filter((schema, index) => {
+          return !payloadMap.includes({schemaName: schema.schemaName, nsfPath: schema.nsfPath}, index + 1)
+        })
+        // console.log(action.payload)
+        // console.log(uniquePayload)
+        // console.log(demoSchemas[0] === demoSchemas[1])
+        // console.log(demoSchemas[1] === demoSchemas[2])
+        // console.log(demoSchemas[2] === demoSchemas[0])
+        action.payload.forEach((schema) => {
+          if (schema.schemaName === "demo" && schema.nsfPath === "Demo.nsf") {
+            // console.log(action.payload)
+            // console.log([...new Set(action.payload)])
+          }
+          const dbIndex = getDatabaseIndex(
+            state.databasesOverview,
+            schema.schemaName,
+            schema.nsfPath
+          );
+          // console.log(schema.schemaName + ':' + schema.nsfPath)
+          // console.log(state.databasesOverview.filter((database) => database.schemaName === schema.schemaName && database.nsfPath === schema.nsfPath))
+          // const dbIndex = state.databasesOverview.findIndex((database) => database.schemaName === schema.schemaName && database.nsfPath === schema.nsfPath)
+          // console.log(schema)
+          // console.log(dbIndex)
+          if (dbIndex >= 0) {
+            // console.log(schema)
+            console.log(dbIndex)
+            draft.databasesOverview[dbIndex] = schema;
+          } else {
+            newDatabases.push(schema);
+            // draft.databases = [...draft.databases, action.payload]
+          }
+        })
+        draft.databasesOverview = [...draft.databasesOverview, ...newDatabases]
+        // const dbIndex = getDatabaseIndex(
+        //   state.databases,
+        //   action.payload.schemaName,
+        //   action.payload.nsfPath
+        // );
+        // if (dbIndex>=0) {
+        //   draft.databases[dbIndex] = action.payload;
+        // } else {
+        //   draft.databases.push(action.payload);
+        //   // draft.databases = [...draft.databases, action.payload]
+        // }
       });
     case SET_PULLED_DATABASE:
       return {
