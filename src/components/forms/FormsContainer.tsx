@@ -232,12 +232,28 @@ const FormsContainer = () => {
   const dispatch = useDispatch();
   const setData = useState<Array<string>>([])[1];
   const { visible } = useSelector((state: AppState) => state.dbSetting);
+  const [schemaData, setSchemaData] = useState({
+    '@unid': "",
+    apiName: "",
+    schemaName: "",
+    description: "",
+    nsfPath: "",
+    icon: "beach",
+    iconName: "beach",
+    isActive: "true",
+    owners: [],
+    isModeFetch: false,
+    modes: [],
+    forms: [],
+    configuredForms: [],
+  })
 
   const nsfPathDecode = decodeURIComponent(nsfPath);
   
   const [styledObjMode, setStyledObjMode] = useState(true);
   
-  const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+  // const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+  const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
   const [buttonsEnabled, setButtonsEnabled] = useState(false);
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
   const [discardChangesDialog, setDiscardChangesDialog] = useState(false);
@@ -271,8 +287,9 @@ const FormsContainer = () => {
   }
 
   useEffect(() => {
-    setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
-  }, [databases, dbName, nsfPathDecode])
+    // setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+    setSourceTabContent(JSON.stringify(schemaData, null, 1))
+  }, [databases, dbName, nsfPathDecode, schemaData])
 
   /**
    * Retrieve the information for a particular database and
@@ -297,6 +314,7 @@ const FormsContainer = () => {
 
       if (apiData) {
         dispatch(addNsfDesign(nsfPathDecode, apiData.data));
+        console.log("hello")
 
         // Get list of configured forms
         axios
@@ -311,14 +329,24 @@ const FormsContainer = () => {
           )
           .then((response) => {
             setErrorStatus({ status: 200, statusText: 'success' });
-            dispatch({
-              type: UPDATE_SCHEMA,
-              payload: {
-                ...response.data,
-                nsfPath: nsfPathDecode,
-                schemaName: dbName
-              }
-            });
+            // dispatch({
+            //   type: UPDATE_SCHEMA,
+            //   payload: {
+            //     ...response.data,
+            //     nsfPath: nsfPathDecode,
+            //     schemaName: dbName
+            //   }
+            // });
+            setSchemaData({
+              ...response.data,
+              nsfPath: nsfPathDecode,
+              schemaName: dbName,
+            })
+            console.log({
+              ...response.data,
+              nsfPath: nsfPathDecode,
+              schemaName: dbName,
+            })
             // Loop through configured forms and fetch their modes
             configformsList = response.data.forms;
             if (configformsList != null && configformsList.length > 0) {
@@ -351,6 +379,10 @@ const FormsContainer = () => {
       });
     }
   };
+
+  // useEffect(() => {
+  //   console.log(schemaData)
+  // }, [schemaData])
 
   const handleChangeContent = (output: any) => {
     if (output === sourceTabContent && buttonsEnabled) {
@@ -534,6 +566,10 @@ const FormsContainer = () => {
   }
   const [value, setValue]  = React.useState(0);
 
+  // useEffect(() => {
+  //   console.log(schemaData)
+  // }, [schemaData])
+
   const handleTabChange = (event: any, newValue: number) => {
     setValue(newValue);
     if (newValue === 1) {
@@ -577,7 +613,7 @@ const FormsContainer = () => {
         {isFetch ? (
           <>
             <Details>
-              <DetailsSection dbName={dbName} nsfPathProp={nsfPathDecode} />
+              <DetailsSection dbName={dbName} nsfPathProp={nsfPathDecode} schemaData={schemaData} />
             </Details>
             <Stack>
               <Tabs 
@@ -597,12 +633,14 @@ const FormsContainer = () => {
               </Tabs>
 
               <TabPanel  value={value} index={0}>
-                <TabForms setData={setData} />
+                <TabForms setData={setData} schemaData={schemaData} />
               </TabPanel>
               <TabPanel value={value} index={1}>
                 <TabViews 
+                  key={`${schemaData.schemaName}-${schemaData.nsfPath}`}
                   setViewOpen={setViewOpen}
                   setOpenViewName={setOpenViewName}
+                  schemaData={schemaData}
                 />
                 <EditViewDialog
                   open={viewOpen}
@@ -612,8 +650,10 @@ const FormsContainer = () => {
                   viewName={openViewName}
                   scopes={scopes}
                   setOpen={setViewOpen}
+                  schemaData={schemaData}
                 />
               </TabPanel>
+              {/* {console.log(schemaData)} */}
               <TabPanel value={value} index={2}>
                 <TabAgents />
               </TabPanel>

@@ -33,6 +33,7 @@ import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import { Tooltip } from '@material-ui/core';
 import AddImportDialog from '../database/AddImportDialog';
+import { setLoading } from '../../store/loading/action';
 
 const SchemasLists = () => {
   const { databases, scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview } = useSelector(
@@ -154,7 +155,8 @@ const SchemasLists = () => {
     const uniqueSchemas = [...new Set(schemas)]
     // console.log(uniqueSchemas)
     setResults(uniqueSchemas);
-  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType]);
+    dispatch(setLoading({ status: false }))
+  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType, dispatch]);
 
   return (
     <SettingContext.Provider value={[context, setContext]}>

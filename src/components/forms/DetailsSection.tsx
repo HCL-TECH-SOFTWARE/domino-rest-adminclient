@@ -35,6 +35,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 interface DetailsSectionProps {
   dbName: string;
   nsfPathProp: string;
+  schemaData: Database;
 }
 
 const Title = styled.div`
@@ -200,7 +201,7 @@ const ConfigContainer = styled(Box)`
   }
 `
 
-const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp }) => {
+const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, schemaData }) => {
   const { databases, scopes } = useSelector((state: AppState) => state.databases);
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const {
@@ -221,7 +222,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp }) 
     agents,
     views,
     schemaName,
-  } = databases[getDatabaseIndex(databases, dbName, nsfPathProp)] as Database;
+  } = schemaData;
   const [isInUse, setIsInUse] = useState(false);
   const [isConfigLoading, setIsConfigLoading] = useState(true);
   const [desc, setDesc] = useState(description);

@@ -7,7 +7,7 @@
 export function fullEncode (name: string) {
   let encodedName = "";
   for (let i = 0; i < name.length; i++) {
-    if (name[i] === '[' || name[i] === '!' || name[i] === ']' || name[i] === '(' || name[i] === ')' || name[i] === '*' || name[i] === '\\' || name[i] === '/' || name[i] === '$') {
+    if (name[i] === '[' || name[i] === '!' || name[i] === ']' || name[i] === '(' || name[i] === ')' || name[i] === '*' || name[i] === '\\' || name[i] === '/' || name[i] === '$' || name[i] === '&') {
       encodedName += '%' + name[i].charCodeAt(0).toString(16);
     } else if (name[i] === undefined) {
       encodedName += ''
@@ -15,6 +15,17 @@ export function fullEncode (name: string) {
       encodedName += name[i]
     }
   };
+  const newName = name.replace(/[!()[]\*\/\$&A-z0-9]/g, (char: string) => {
+    if (char.match(/[A-z0-9]/g)) {
+      return char
+    } else if (char === undefined) {
+      return char
+    } else {
+      return '%' + char.charCodeAt(0).toString(16)
+    }
+  })
+  console.log(newName)
+  // return newName
   return encodedName
 };
 

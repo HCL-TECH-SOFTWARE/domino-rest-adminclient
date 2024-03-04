@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
@@ -16,6 +16,7 @@ import styled from 'styled-components';
 import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
+import { Database } from '../../store/databases/types';
 
 const TabViewsContainer = styled.div`
   display: flex;
@@ -74,9 +75,11 @@ const ButtonsPanel = styled.div`
 interface TabViewsProps {
   setViewOpen: (viewOpen: boolean) => void;
   setOpenViewName: (viewName: string) => void;
+  schemaData: Database;
 }
 
 const TabViews : React.FC<TabViewsProps> = (viewState) => {
+  const schemaData = viewState.schemaData
   const { views, folders } = useSelector((state: AppState) => state.databases);
   const { databases } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
@@ -84,11 +87,34 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
   const [searchKey, setSearchKey] = useState('');
   const [resetAllViews, setResetAllViews] = useState(false);
 
+  // const [activeViews, setActiveViews] = useState(schemaData['views']?.map((view: any) => {
+  //   const folderNames = folders.map((folder) => {return folder.viewName});
+  //   return {
+  //     viewActive: true,
+  //     viewAlias: view.alias,
+  //     viewName: view.name,
+  //     viewUnid: view.unid,
+  //     viewUpdated: view.viewUpdated,
+  //     viewColumns: view.columns,
+  //     viewFolder: folderNames.includes(view.name),
+  //   }
+  // }))
+  // const [activeViewNames, setActiveViewNames] = useState(activeViews?.map((view: any) => {return view.viewName}))
+  // const [updatedFolders, setUpdatedFolders] = useState(folders.map((folder) => {
+  //   return {
+  //     viewName: folder.viewName,
+  //     viewUnid: folder.viewUnid,
+  //     viewAlias: folder.viewAlias,
+  //     viewUpdated: folder.viewUpdated,
+  //     viewActive: activeViewNames?.includes(folder.viewName),
+  //   }
+  // }))
+
   let { dbName, nsfPath } = useParams() as { dbName: string, nsfPath: string };
   dbName = decodeURIComponent(dbName);
   nsfPath = decodeURIComponent(nsfPath);
   
-  let activeViews = databases[getDatabaseIndex(databases, dbName, nsfPath)]['views']?.map((view: any) => {
+  let activeViews = schemaData['views']?.map((view: any) => {
     const folderNames = folders.map((folder) => {return folder.viewName});
     return {
       viewActive: true,
@@ -101,7 +127,7 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
     }
   });
 
-  const activeViewNames = activeViews?.map((view) => {return view.viewName});
+  const activeViewNames = activeViews?.map((view: any) => {return view.viewName});
   const updatedFolders = folders.map((folder) => {
     return {
       viewName: folder.viewName,
@@ -128,24 +154,71 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
     setFiltered(filteredViews);
   };
 
+  // useEffect(() => {
+  //   setActiveViews(schemaData['views']?.map((view: any) => {
+  //     const folderNames = folders.map((folder) => {return folder.viewName});
+  //     return {
+  //       viewActive: true,
+  //       viewAlias: view.alias,
+  //       viewName: view.name,
+  //       viewUnid: view.unid,
+  //       viewUpdated: view.viewUpdated,
+  //       viewColumns: view.columns,
+  //       viewFolder: folderNames.includes(view.name),
+  //     }
+  //   }))
+  // }, [schemaData, folders])
+
+  // useEffect(() => {
+  //   setActiveViewNames(activeViews?.map((view: any) => {return view.viewName}))
+  //   console.log(activeViews)
+  // }, [activeViews])
+
+  // useEffect(() => {
+  //   setUpdatedFolders(folders.map((folder) => {
+  //     return {
+  //       viewName: folder.viewName,
+  //       viewUnid: folder.viewUnid,
+  //       viewAlias: folder.viewAlias,
+  //       viewUpdated: folder.viewUpdated,
+  //       viewActive: activeViewNames?.includes(folder.viewName),
+  //     }
+  //   }))
+  // }, [activeViewNames, folders])
+
   const toggleActive = async (view: any) => {
+    console.log(activeViews)
     const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews([view], activeViews, dbName, currentSchema, true) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, true) as any);
   }
 
   const toggleInactive = async (view: any) => {
+    // console.log(activeViews)
+    console.log(schemaData)
+    // const activeViews = schemaData['views']?.map((view: any) => {
+    //   const folderNames = folders.map((folder) => {return folder.viewName});
+    //   return {
+    //     viewActive: true,
+    //     viewAlias: view.alias,
+    //     viewName: view.name,
+    //     viewUnid: view.unid,
+    //     viewUpdated: view.viewUpdated,
+    //     viewColumns: view.columns,
+    //     viewFolder: folderNames.includes(view.name),
+    //   }
+    // })
     const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews([view], activeViews, dbName, currentSchema, false) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, false) as any);
   }
 
   const handleActivateAll = () => {
     const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews(views, activeViews, dbName, currentSchema, true) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, true) as any);
   }
 
   const handleDeactivateAll = () => {
     const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews(views, activeViews, dbName, currentSchema, false) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, false) as any);
     setResetAllViews(false);
   }
 

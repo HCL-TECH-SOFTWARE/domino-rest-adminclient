@@ -188,6 +188,7 @@ interface EditViewDialogProps {
   nsfPathProp: string;
   scopes: any[];
   setOpen: any;
+  schemaData: Database;
 }
 
 const EditViewDialog: React.FC<EditViewDialogProps> = ({
@@ -198,6 +199,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   nsfPathProp,
   scopes,
   setOpen,
+  schemaData,
 }) => {
   const [chosenColumns, setChosenColumns] = useState<any[]>([]);
   const [fetchedColumns, setFetchedColumns] = useState<any[]>([]);
@@ -227,7 +229,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     forms,
     agents,
     views
-  } = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)] as Database;
+  } = schemaData;
 
   const selectedDB = useMemo(() => ({
     apiName,

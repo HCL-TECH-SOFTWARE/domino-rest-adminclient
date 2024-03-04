@@ -31,6 +31,7 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { createFilterOptions } from "@material-ui/lab";
 import { toggleAlert } from "../../store/alerts/action";
+import { Database } from "../../store/databases/types";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -108,9 +109,10 @@ const CreateFormDialogContainer = styled.dialog`
 
 interface TabFormProps {
   setData: React.Dispatch<React.SetStateAction<string[]>>;
+  schemaData: Database;
 }
 
-const TabForms: React.FC<TabFormProps> = ({ setData }) => {
+const TabForms: React.FC<TabFormProps> = ({ setData, schemaData }) => {
   const { forms } = useSelector((state: AppState) => state.databases);
   const { databases, newForm } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
@@ -148,6 +150,10 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
       : []
     )
   }, [forms])
+
+  // useEffect(() => {
+  //   console.log(forms)
+  // }, [forms])
 
   let { dbName, nsfPath } = useParams() as { dbName: string; nsfPath: string };
   const [resetAllForms, setResetAllForms] = useState(false);
@@ -331,17 +337,21 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
           </ButtonYes>
         </ButtonsPanel>
       </CreateFormDialogContainer>
-      <FormsTable forms={
-            searchKey === ""
-              ? normalizeForms.filter(
-                  (form) =>
-                    form.dbName === dbName
-                )
-              : filtered.filter(
-                  (form) =>
-                    form.dbName === dbName
-                )
-          } dbName={dbName} nsfPath={nsfPath}
+      <FormsTable
+        forms={
+          searchKey === ""
+            ? normalizeForms.filter(
+                (form) =>
+                  form.dbName === dbName
+              )
+            : filtered.filter(
+                (form) =>
+                  form.dbName === dbName
+              )
+        }
+        dbName={dbName}
+        nsfPath={nsfPath}
+        schemaData={schemaData}
       >
         
       </FormsTable>

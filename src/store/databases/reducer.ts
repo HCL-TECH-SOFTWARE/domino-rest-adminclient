@@ -259,7 +259,6 @@ export default function databaseReducer(
           // console.log(dbIndex)
           if (dbIndex >= 0) {
             // console.log(schema)
-            console.log(dbIndex)
             draft.databasesOverview[dbIndex] = schema;
           } else {
             newDatabases.push(schema);
