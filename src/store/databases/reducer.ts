@@ -193,7 +193,7 @@ export default function databaseReducer(
       });
     case ADD_SCHEMA:
       return produce(state, (draft: DBState) => {
-        draft.databases.push(action.payload);
+        draft.databasesOverview.push(action.payload);
       });
     case ADD_SCOPE:
       return produce(state, (draft: DBState) => {
@@ -206,8 +206,17 @@ export default function databaseReducer(
       });
     case DELETE_SCHEMA:
       return produce(state, (draft: DBState) => {
-        const dbIndex = getDatabaseIndex(state.databases, action.payload.schemaName, action.payload.nsfPath);
-        draft.databases.splice(dbIndex, 1);
+        let dbIndex = getDatabaseIndex(state.databasesOverview, action.payload.schemaName, action.payload.nsfPath);
+        draft.databasesOverview.splice(dbIndex, 1);
+        console.log(state.availableDatabases)
+        dbIndex = state.availableDatabases.findIndex((db) => db.nsfpath === action.payload.nsfPath)
+        if (dbIndex >= 0) {
+          // draft.availableDatabases.splice(dbIndex, 1);
+          console.log(state.availableDatabases[dbIndex])
+          const apiIndex = state.availableDatabases[dbIndex].apinames.findIndex((apiname) => apiname === action.payload.schemaName)
+          console.log(state.availableDatabases[dbIndex].apinames[apiIndex])
+          draft.availableDatabases[dbIndex].apinames.splice(apiIndex, 1)
+        }
       });
     case DELETE_SCOPE:
       return produce(state, (draft: DBState) => {

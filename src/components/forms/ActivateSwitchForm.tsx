@@ -81,11 +81,12 @@ interface ActivateSwitchFormProps {
   nsfPath: string,
   dbName: string,
   schemaData: Database,
+  setSchemaData: (schemaData: any) => void;
 }
 
 
 
-const ActivateSwitchForm: React.FC<ActivateSwitchFormProps> = ({ form, forms, nsfPath, dbName, schemaData }) => {
+const ActivateSwitchForm: React.FC<ActivateSwitchFormProps> = ({ form, forms, nsfPath, dbName, schemaData, setSchemaData, }) => {
   const [toggle, setToggle] = useState(form.formModes.length > 0 ? true : false);
   const [resetView, setResetView] = useState(false);
   const { loading } = useSelector((state: AppState) => state.dialog);
@@ -147,7 +148,8 @@ const ActivateSwitchForm: React.FC<ActivateSwitchFormProps> = ({ form, forms, ns
         alias,
         formModeData,
         formIndex,
-        false
+        false,
+        setSchemaData
       ) as any
     );
   };

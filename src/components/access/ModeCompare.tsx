@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { getDatabaseIndex, getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import _ from 'lodash';
-import { Field } from '../../store/databases/types';
+import { Database, Field } from '../../store/databases/types';
 import { Box, Button, Dialog, MenuItem, Select, Tooltip } from '@material-ui/core';
 import { AiOutlinePlus } from 'react-icons/ai';
 
@@ -217,24 +217,21 @@ interface ModeCompareProps {
   open: boolean;
   handleClose: () => void;
   currentModeIndex: number;
+  schemaData: Database;
 }
 
 const ModeCompare: React.FC<ModeCompareProps> = ({
   open,
   handleClose,
   currentModeIndex,
+  schemaData,
 }) => {
   const urls = useLocation();
   const nsfPath = decodeURIComponent(urls.pathname.split('/')[2]);
   const dbName = urls.pathname.split('/')[3];
   const formName = decodeURIComponent(urls.pathname.split('/')[4]);
 
-  const { forms } = useSelector(
-    (state: AppState) =>
-      state.databases.databases[
-        getDatabaseIndex(state.databases.databases, dbName, nsfPath)
-      ]
-  );
+  const { forms } = schemaData
   const allModes = forms[getFormIndex(forms, formName)].formModes;
   const allModeNames = allModes.map((mode: any) => { return mode.modeName });
   const [selectedModeNames, setSelectedModeNames] = useState(Array<any>); // ensure all selected mode names are unique

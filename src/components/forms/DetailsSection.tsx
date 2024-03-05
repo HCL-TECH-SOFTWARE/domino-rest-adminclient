@@ -36,6 +36,7 @@ interface DetailsSectionProps {
   dbName: string;
   nsfPathProp: string;
   schemaData: Database;
+  setSchemaData: (data: any) => void;
 }
 
 const Title = styled.div`
@@ -201,7 +202,7 @@ const ConfigContainer = styled(Box)`
   }
 `
 
-const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, schemaData }) => {
+const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, schemaData, setSchemaData }) => {
   const { databases, scopes } = useSelector((state: AppState) => state.databases);
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const {
@@ -332,7 +333,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       owners,
       forms: formData,
     };
-    dispatch(updateSchema(updatedSchema) as any);
+    dispatch(updateSchema(updatedSchema, setSchemaData) as any);
   };
   
   useEffect(() => {

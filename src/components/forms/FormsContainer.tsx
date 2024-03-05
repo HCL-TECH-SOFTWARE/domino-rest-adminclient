@@ -246,6 +246,8 @@ const FormsContainer = () => {
     modes: [],
     forms: [],
     configuredForms: [],
+    views: [],
+    agents: [],
   })
 
   const nsfPathDecode = decodeURIComponent(nsfPath);
@@ -342,11 +344,6 @@ const FormsContainer = () => {
               nsfPath: nsfPathDecode,
               schemaName: dbName,
             })
-            console.log({
-              ...response.data,
-              nsfPath: nsfPathDecode,
-              schemaName: dbName,
-            })
             // Loop through configured forms and fetch their modes
             configformsList = response.data.forms;
             if (configformsList != null && configformsList.length > 0) {
@@ -407,7 +404,7 @@ const FormsContainer = () => {
 
   const handleSaveChanges = async () => {
     setSaveChangesDialog(false);
-    await dispatch(updateSchema(JSON.parse(sourceTabContent)) as any);
+    await dispatch(updateSchema(JSON.parse(sourceTabContent), setSchemaData) as any);
     setButtonsEnabled(false);
     setUnsavedChanges(false);
   }
@@ -465,7 +462,7 @@ const FormsContainer = () => {
         }
       } else {
         try {
-          dispatch(fetchKeepDatabases() as any);
+          // dispatch(fetchKeepDatabases() as any);
           await pullForms();
           await pullSubForms();
           setIsFetch(true);
@@ -613,7 +610,7 @@ const FormsContainer = () => {
         {isFetch ? (
           <>
             <Details>
-              <DetailsSection dbName={dbName} nsfPathProp={nsfPathDecode} schemaData={schemaData} />
+              <DetailsSection dbName={dbName} nsfPathProp={nsfPathDecode} schemaData={schemaData} setSchemaData={setSchemaData} />
             </Details>
             <Stack>
               <Tabs 
@@ -633,7 +630,7 @@ const FormsContainer = () => {
               </Tabs>
 
               <TabPanel  value={value} index={0}>
-                <TabForms setData={setData} schemaData={schemaData} />
+                <TabForms setData={setData} schemaData={schemaData} setSchemaData={setSchemaData} />
               </TabPanel>
               <TabPanel value={value} index={1}>
                 <TabViews 
@@ -651,11 +648,12 @@ const FormsContainer = () => {
                   scopes={scopes}
                   setOpen={setViewOpen}
                   schemaData={schemaData}
+                  setSchemaData={setSchemaData}
                 />
               </TabPanel>
               {/* {console.log(schemaData)} */}
               <TabPanel value={value} index={2}>
-                <TabAgents />
+                <TabAgents schemaData={schemaData} />
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />

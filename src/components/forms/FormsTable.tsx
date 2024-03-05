@@ -81,6 +81,7 @@ interface FormsTableProps {
   dbName: string;
   nsfPath: string;
   schemaData: Database;
+  setSchemaData: (schemaData: any) => void;
 }
 
 const FormsTable: React.FC<FormsTableProps> = ({
@@ -88,6 +89,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
   dbName,
   nsfPath,
   schemaData,
+  setSchemaData,
 }) => {
   const dispatch = useDispatch();
   
@@ -148,7 +150,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </ViewNameDisplay>
               </StyledTableCell>
               <StyledTableCell>
-                <ActivateSwitchForm form={form} nsfPath={nsfPath} dbName={dbName} forms={forms} schemaData={schemaData}/>
+                <ActivateSwitchForm form={form} nsfPath={nsfPath} dbName={dbName} forms={forms} schemaData={schemaData} setSchemaData={setSchemaData}/>
               </StyledTableCell>
             </StyledTableRow>
             

@@ -110,9 +110,10 @@ const CreateFormDialogContainer = styled.dialog`
 interface TabFormProps {
   setData: React.Dispatch<React.SetStateAction<string[]>>;
   schemaData: Database;
+  setSchemaData: (schemaData: any) => void;
 }
 
-const TabForms: React.FC<TabFormProps> = ({ setData, schemaData }) => {
+const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }) => {
   const { forms } = useSelector((state: AppState) => state.databases);
   const { databases, newForm } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
@@ -128,6 +129,10 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData }) => {
   const history = useHistory()
   const [formNameError, setFormNameError] = useState(false)
   const [formNameErrorMessage, setFormNameErrorMessage] = useState("")
+
+  // useEffect(() => {
+  //   console.log(forms)
+  // }, [forms])
   
   const [normalizeForms, setNormalizeForms] = useState(
     forms && forms.length > 0
@@ -352,6 +357,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData }) => {
         dbName={dbName}
         nsfPath={nsfPath}
         schemaData={schemaData}
+        setSchemaData={setSchemaData}
       >
         
       </FormsTable>

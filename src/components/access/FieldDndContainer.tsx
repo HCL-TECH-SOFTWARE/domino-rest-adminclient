@@ -16,6 +16,7 @@ import FieldContainer from './FieldContainer';
 import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
 import CloseIcon from '@material-ui/icons/Close';
+import { toggleAlert } from '../../store/alerts/action';
 
 interface DeleteButtonProps {
   remove: (idx: number, list: string) => void;
@@ -297,6 +298,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
     remove(0, deleteFields)
     toggleBatchDelete()
     handleCloseDialog()
+    toggleAlert(`Successfully deleted fields from the current mode.`)
   }
 
   const handleCloseDialog = () => {
@@ -430,6 +432,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
             {
               stateList.map((list, idx) => {
                 return state[list].length && (state[list].map((item: any, index: any) => {
+                  console.log(item)
                   const fieldGroup = item.fieldGroup || '';
                   let rwFlag;
                   if (!!item.isMultiValue) {
@@ -515,7 +518,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
           <Typography className='text-content'>on this mode?</Typography>
         </Box>
         <Box className='buttons'>
-          <ButtonYes className='button-ok' onClick={handleBatchDelete}>OK</ButtonYes>
+          <ButtonYes className='button-ok' onClick={handleBatchDelete} style={{ color: '#FFF' }}>OK</ButtonYes>
           <ButtonNeutral className='button-cancel' onClick={handleCloseDialog}>Cancel</ButtonNeutral>
         </Box>
       </RemoveFieldDialog>

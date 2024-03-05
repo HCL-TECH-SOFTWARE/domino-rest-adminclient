@@ -19,6 +19,7 @@ import {
 import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
+import { Database } from '../../store/databases/types';
 
 /**
  * Database Agents Component
@@ -56,7 +57,13 @@ import { RxDividerVertical } from 'react-icons/rx';
  }
 `
 
-const TabAgents: React.FC = () => {
+interface TabAgentsProps {
+  // setViewOpen: (viewOpen: boolean) => void;
+  // setOpenViewName: (viewName: string) => void;
+  schemaData: Database;
+}
+
+const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   const { agents } = useSelector((state: AppState) => state.databases);
   const { databases, activeAgents } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
@@ -81,23 +88,23 @@ const TabAgents: React.FC = () => {
   };
 
   const toggleActive = async (agent: any) => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, currentSchema, true) as any);
+    // const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, true) as any);
   }
 
   const toggleInactive = async (agent: any) => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, currentSchema, false) as any);
+    // const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, false) as any);
   }
 
   const handleActivateAll = () => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, currentSchema, true) as any);
+    // const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, true) as any);
   }
 
   const handleDeactivateAll = () => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, currentSchema, false) as any);
+    // const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, false) as any);
     setResetAllAgents(false);
   }
 

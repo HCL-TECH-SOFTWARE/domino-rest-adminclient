@@ -189,6 +189,7 @@ interface EditViewDialogProps {
   scopes: any[];
   setOpen: any;
   schemaData: Database;
+  setSchemaData: (data: any) => void;
 }
 
 const EditViewDialog: React.FC<EditViewDialogProps> = ({
@@ -200,6 +201,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   scopes,
   setOpen,
   schemaData,
+  setSchemaData
 }) => {
   const [chosenColumns, setChosenColumns] = useState<any[]>([]);
   const [fetchedColumns, setFetchedColumns] = useState<any[]>([]);
@@ -365,7 +367,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         forms,
       };
 
-      dispatch(updateSchema(updatedSchema) as any);
+      dispatch(updateSchema(updatedSchema, setSchemaData) as any);
       setActiveViews(dbName, viewsBuffer);
       setOpen(false);
     }
@@ -465,7 +467,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         owners,
         forms,
       };
-      dispatch(updateSchema(updatedSchema) as any);
+      dispatch(updateSchema(updatedSchema, setSchemaData) as any);
       handleClose();
       
       setActiveViews(dbName, viewsBuffer);
