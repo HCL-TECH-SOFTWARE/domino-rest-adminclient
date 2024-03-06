@@ -18,7 +18,6 @@ import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppState } from '../../store';
-import { getDatabaseIndex } from '../../store/databases/scripts';
 import { getTheme } from '../../store/styles/action';
 import appIcons from '../../styles/app-icons';
 import { checkIcon } from '../../styles/scripts';
@@ -203,7 +202,7 @@ const ConfigContainer = styled(Box)`
 `
 
 const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, schemaData, setSchemaData }) => {
-  const { databases, scopes } = useSelector((state: AppState) => state.databases);
+  const { scopes } = useSelector((state: AppState) => state.databases);
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const {
     apiName,

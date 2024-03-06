@@ -18,12 +18,6 @@ import ScriptEditor from './ScriptEditor';
 import CloseIcon from '@material-ui/icons/Close';
 import { toggleAlert } from '../../store/alerts/action';
 
-interface DeleteButtonProps {
-  remove: (idx: number, list: string) => void;
-  index: number;
-  list: any;
-}
-
 const SelectedFieldsContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -432,7 +426,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
             {
               stateList.map((list, idx) => {
                 return state[list].length && (state[list].map((item: any, index: any) => {
-                  console.log(item)
                   const fieldGroup = item.fieldGroup || '';
                   let rwFlag;
                   if (!!item.isMultiValue) {

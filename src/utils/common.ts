@@ -15,17 +15,6 @@ export function fullEncode (name: string) {
       encodedName += name[i]
     }
   };
-  const newName = name.replace(/[!()[]\*\/\$&A-z0-9]/g, (char: string) => {
-    if (char.match(/[A-z0-9]/g)) {
-      return char
-    } else if (char === undefined) {
-      return char
-    } else {
-      return '%' + char.charCodeAt(0).toString(16)
-    }
-  })
-  console.log(newName)
-  // return newName
   return encodedName
 };
 

@@ -94,6 +94,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
         </Popper>
         {
           databases.map((database: any, index: any) => {
+            // console.log(database.schemaName + ':' + database.nsfPath)
             return (
               <SchemaCardV2
                 openDatabase={openSchema}

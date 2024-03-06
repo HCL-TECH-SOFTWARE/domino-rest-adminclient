@@ -13,7 +13,6 @@ import styled from 'styled-components';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { Database, FORMS_ERROR } from '../../store/databases/types';
-import { getDatabaseIndex } from '../../store/databases/scripts';
 import { deleteForm, updateFormMode } from '../../store/databases/action';
 
 const ToggleContainer = styled.div`
@@ -26,7 +25,6 @@ const ToggleContainer = styled.div`
     user-select: none;
     border-radius: 5px;
     padding: 5px;
-    /* margin-top: 20px; */
   }
 
   .toggle-btn {
@@ -36,7 +34,6 @@ const ToggleContainer = styled.div`
     box-sizing: border-box;
     width: 68px;
     height: 24px;
-    /* font-weight: bold; */
     font-size: 14px;
     line-height: 16px;
     cursor: pointer;
@@ -92,8 +89,6 @@ const ActivateSwitchForm: React.FC<ActivateSwitchFormProps> = ({ form, forms, ns
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { updateFormError } = useSelector((state: AppState) => state.databases);
   
-  const { databases } = useSelector((state: AppState) => state.databases);
-
   const dispatch = useDispatch();
   const handleToggle = () => {
     if (loading) {
@@ -118,7 +113,6 @@ const ActivateSwitchForm: React.FC<ActivateSwitchFormProps> = ({ form, forms, ns
     setResetView(false);
   }
   const toggleConfigure = (formName: string) => {
-    const nsfPathDecode = decodeURIComponent(nsfPath);
     const formIndex = forms.findIndex(
       (f: { formName: string; dbName: string; }) => f.formName === formName && f.dbName === dbName
     );

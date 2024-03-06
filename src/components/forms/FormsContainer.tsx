@@ -15,7 +15,6 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import PropTypes from 'prop-types';
 import {
-  UPDATE_SCHEMA,
   SET_ACTIVEVIEWS,
   SET_ACTIVEAGENTS,
 } from '../../store/databases/types';
@@ -31,7 +30,6 @@ import {
   setAgents,
   fetchAgents,
   setDbIndex,
-  fetchKeepDatabases,
   addNsfDesign,
   updateSchema,
   fetchFolders,
@@ -207,7 +205,7 @@ const JsonEditorContainer = styled.div`
  * @author Neil Schultz
  */
 const FormsContainer = () => {
-  const { databases, updateSchemaError, scopes } = useSelector(
+  const { databasesOverview, updateSchemaError, scopes } = useSelector(
     (state: AppState) => state.databases
   );
 
@@ -254,7 +252,6 @@ const FormsContainer = () => {
   
   const [styledObjMode, setStyledObjMode] = useState(true);
   
-  // const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
   const [buttonsEnabled, setButtonsEnabled] = useState(false);
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
@@ -289,9 +286,8 @@ const FormsContainer = () => {
   }
 
   useEffect(() => {
-    // setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
     setSourceTabContent(JSON.stringify(schemaData, null, 1))
-  }, [databases, dbName, nsfPathDecode, schemaData])
+  }, [dbName, nsfPathDecode, schemaData])
 
   /**
    * Retrieve the information for a particular database and
@@ -316,7 +312,6 @@ const FormsContainer = () => {
 
       if (apiData) {
         dispatch(addNsfDesign(nsfPathDecode, apiData.data));
-        console.log("hello")
 
         // Get list of configured forms
         axios
@@ -331,14 +326,6 @@ const FormsContainer = () => {
           )
           .then((response) => {
             setErrorStatus({ status: 200, statusText: 'success' });
-            // dispatch({
-            //   type: UPDATE_SCHEMA,
-            //   payload: {
-            //     ...response.data,
-            //     nsfPath: nsfPathDecode,
-            //     schemaName: dbName
-            //   }
-            // });
             setSchemaData({
               ...response.data,
               nsfPath: nsfPathDecode,
@@ -377,10 +364,6 @@ const FormsContainer = () => {
     }
   };
 
-  // useEffect(() => {
-  //   console.log(schemaData)
-  // }, [schemaData])
-
   const handleChangeContent = (output: any) => {
     if (output === sourceTabContent && buttonsEnabled) {
       // disable buttons if edits were made but the changes are equal to the current schema, so no need for actual save
@@ -414,7 +397,7 @@ const FormsContainer = () => {
   }
 
   const handleDiscardChanges = () => {
-    setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+    setSourceTabContent(JSON.stringify(schemaData, null, 1));
     setDiscardChangesDialog(false);
     setUnsavedChanges(false);
     setButtonsEnabled(false);
@@ -449,9 +432,9 @@ const FormsContainer = () => {
 
     // Fetch current forms
     async function fetchForms() {
-      const dbIndex = getDatabaseIndex(databases, dbName, nsfPathDecode);
+      const dbIndex = getDatabaseIndex(databasesOverview, dbName, nsfPathDecode);
       dispatch(setDbIndex(dbIndex));
-      if (databases.length > 0) {
+      if (databasesOverview.length > 0) {
         // LABS-1865 Reinitialize state on refresh
         try {
           await pullForms();
@@ -462,7 +445,6 @@ const FormsContainer = () => {
         }
       } else {
         try {
-          // dispatch(fetchKeepDatabases() as any);
           await pullForms();
           await pullSubForms();
           setIsFetch(true);
@@ -479,10 +461,10 @@ const FormsContainer = () => {
 
   useEffect(() => {
     if (updateSchemaError) {
-      setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+      setSourceTabContent(JSON.stringify(schemaData, null, 1));
       setButtonsEnabled(true);
     }
-  }, [updateSchemaError, databases, dbName, nsfPathDecode])
+  }, [updateSchemaError, schemaData, dbName, nsfPathDecode])
 
   function TabPanel(props: any) {
     const { children, value, index, ...other } = props;
@@ -563,10 +545,6 @@ const FormsContainer = () => {
   }
   const [value, setValue]  = React.useState(0);
 
-  // useEffect(() => {
-  //   console.log(schemaData)
-  // }, [schemaData])
-
   const handleTabChange = (event: any, newValue: number) => {
     setValue(newValue);
     if (newValue === 1) {
@@ -638,6 +616,7 @@ const FormsContainer = () => {
                   setViewOpen={setViewOpen}
                   setOpenViewName={setOpenViewName}
                   schemaData={schemaData}
+                  setSchemaData={setSchemaData}
                 />
                 <EditViewDialog
                   open={viewOpen}
@@ -651,7 +630,6 @@ const FormsContainer = () => {
                   setSchemaData={setSchemaData}
                 />
               </TabPanel>
-              {/* {console.log(schemaData)} */}
               <TabPanel value={value} index={2}>
                 <TabAgents schemaData={schemaData} />
               </TabPanel>

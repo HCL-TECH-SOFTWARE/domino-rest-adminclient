@@ -17,7 +17,7 @@ import {
   TextField,
 } from "@material-ui/core";
 import { AppState } from "../../store";
-import { getDatabaseIndex, validateFormSchemaName } from "../../store/databases/scripts";
+import { validateFormSchemaName } from "../../store/databases/scripts";
 import styled from "styled-components";
 import { ButtonNeutral, ButtonYes, CommonDialog, TopNavigator } from "../../styles/CommonStyles";
 import { RxDividerVertical } from "react-icons/rx";
@@ -115,7 +115,6 @@ interface TabFormProps {
 
 const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }) => {
   const { forms } = useSelector((state: AppState) => state.databases);
-  const { databases, newForm } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState("");
@@ -129,10 +128,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
   const history = useHistory()
   const [formNameError, setFormNameError] = useState(false)
   const [formNameErrorMessage, setFormNameErrorMessage] = useState("")
-
-  // useEffect(() => {
-  //   console.log(forms)
-  // }, [forms])
   
   const [normalizeForms, setNormalizeForms] = useState(
     forms && forms.length > 0
@@ -156,10 +151,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
     )
   }, [forms])
 
-  // useEffect(() => {
-  //   console.log(forms)
-  // }, [forms])
-
   let { dbName, nsfPath } = useParams() as { dbName: string; nsfPath: string };
   const [resetAllForms, setResetAllForms] = useState(false);
   // Searching the forms based on entered searchKey values
@@ -172,17 +163,12 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
     setFiltered(filteredDatabases);
   };
   function handleConfigureAll() {
-    const currentSchema =
-      databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseForms(currentSchema, dbName, forms) as any);
+    dispatch(handleDatabaseForms(schemaData, dbName, forms) as any);
     dispatch(pullForms(nsfPath, dbName, setData) as any);
   }
 
   async function handleUnConfigureAll() {
-    const currentSchema =
-      databases[getDatabaseIndex(databases, dbName, nsfPath)];
-
-    dispatch(handleDatabaseForms(currentSchema, dbName, []) as any);
+    dispatch(handleDatabaseForms(schemaData, dbName, []) as any);
     dispatch(pullForms(nsfPath, dbName, setData) as any);
     setResetAllForms(false);
   }

@@ -17,9 +17,7 @@ import {
         setPullDatabase,
         setPullScope,
        } from '../../store/databases/action';
-import { FETCH_KEEP_DATABASES,
-        FETCH_AVAILABLE_DATABASES,
-       } from '../../store/databases/types';
+import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer, FilterContainer, BlueSwitch } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
 import DatabaseSearch from '../database/DatabaseSearch';
@@ -36,7 +34,7 @@ import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
 
 const SchemasLists = () => {
-  const { databases, scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview } = useSelector(
+  const { scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview, databasePull } = useSelector(
     (state: AppState) => state.databases
   );
   const { loading } = useSelector( (state: AppState) => state.loading );
@@ -76,15 +74,10 @@ const SchemasLists = () => {
     }
   };
   const handleRefresh = () => {
+    dispatch(setLoading({ status: true }))
     dispatch(setPullDatabase(false));
-    console.log("handle refresh")
-    // dispatch(fetchKeepDatabases() as any)
-    // dispatch(setPullDatabase(false))
     dispatch(setPullScope(false));
-    dispatch({
-      type: FETCH_KEEP_DATABASES,
-      payload: []
-    });
+    dispatch(fetchKeepDatabases() as any)
     dispatch({
       type: FETCH_AVAILABLE_DATABASES,
       payload: []
@@ -124,20 +117,20 @@ const SchemasLists = () => {
   }, [addImportDialog])
 
   useEffect(() => {
-    // console.log(databasesOverview)
+    if (!databasePull && databasesOverview.length === 0) {
+      dispatch(fetchKeepDatabases() as any)
+    }
+  }, [dispatch, databasesOverview, databasePull])
+
+  useEffect(() => {
     let schemas = databasesOverview.slice();
-    // console.log(new Set(schemas))
     if (onlyShowSchemasWithScopes) {
       const schemasWithScopes = scopes.map((scope) => {
         return scope.nsfPath + ":" + scope.schemaName;
       });
-      // console.log(schemasWithScopes)
       schemas = databasesOverview.filter((schema) => {
-        // console.log(schema.nsfPath + ":" + schema.schemaName)
-        // console.log(schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName))
         return schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName);
       });
-      // console.log(schemas)
     }
     if (searchKey) {
       if(searchType.indexOf("NSF") !== -1){
@@ -151,11 +144,9 @@ const SchemasLists = () => {
       }
     }
     schemas.sort((schemaA, schemaB) => schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1);
-    // console.log(schemas)
+    
     const uniqueSchemas = [...new Set(schemas)]
-    // console.log(uniqueSchemas)
-    setResults(uniqueSchemas);
-    dispatch(setLoading({ status: false }))
+    setResults(uniqueSchemas)
   }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType, dispatch]);
 
   return (
@@ -205,8 +196,8 @@ const SchemasLists = () => {
                 /> 
               </Tooltip>
             </FilterContainer>
-              {results.length !== 0 && <SchemasMultiView databases={results} view={view} />}
-              {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <ZeroResultsWrapper mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
+            {results.length !== 0 && !loading.status && <SchemasMultiView databases={results} view={view} />}
+            {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <ZeroResultsWrapper mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
             <NetworkErrorDialog />
             <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
           </>

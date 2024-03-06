@@ -4,17 +4,14 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DialogContent from '@material-ui/core/DialogContent';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { BlueSwitch, DeleteIcon, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import SearchIcon from '@material-ui/icons/Search';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../store';
-import { getDatabaseIndex, getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
+import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import _ from 'lodash';
 import { Database, Field } from '../../store/databases/types';
 import { Box, Button, Dialog, MenuItem, Select, Tooltip } from '@material-ui/core';
@@ -227,8 +224,6 @@ const ModeCompare: React.FC<ModeCompareProps> = ({
   schemaData,
 }) => {
   const urls = useLocation();
-  const nsfPath = decodeURIComponent(urls.pathname.split('/')[2]);
-  const dbName = urls.pathname.split('/')[3];
   const formName = decodeURIComponent(urls.pathname.split('/')[4]);
 
   const { forms } = schemaData

@@ -31,7 +31,6 @@ import DeleteApplicationDialog from '../applications/DeleteApplicationDialog';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { toggleAlert } from '../../store/alerts/action';
 import {
-  getDatabaseIndex,
   findScopeBySchema,
 } from '../../store/databases/scripts';
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
@@ -151,7 +150,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const dispatch = useDispatch();
   const { themeMode } = useSelector((state: AppState) => state.styles);
 
-  const { databases, scopes, newForm } = useSelector(
+  const { scopes, newForm } = useSelector(
     (state: AppState) => state.databases
   );
 

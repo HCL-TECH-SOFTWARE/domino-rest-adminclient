@@ -280,7 +280,9 @@ export const fetchSchema2 = async (nsfPath: string, schemaName: string, setSchem
  * Retrieves views for a particular database and
  * passes them to Redux.
  *
- * @param nsfPath the name of the database
+ * @param nsfPath             the name of the database
+ * @param schemaName          the name of the schema
+ * @param setSchemaCallback   callback to set the schema state
  */
 export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: (schemaData: any) => void) => {
   return async (dispatch: Dispatch) => {
@@ -321,38 +323,26 @@ const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any
       for (let i = 0; i < schemasWithoutScopes.length; i += chunkSize) {
           const chunk = schemasWithoutScopes.slice(i, i + chunkSize);
           const stringChunk = chunk.map((c: any) => JSON.stringify(c))
-          // console.log(stringChunk)
-          // console.log(new Set(stringChunk))
           const uniqueChunk = [...new Set(stringChunk)].map((c: any) => JSON.parse(c))
-          // console.log(new Set(chunk))
-          // dispatch({
-          //   type: UPDATE_SCHEMA,
-          //   payload: uniqueChunk,
-          // })
           setTimeout(() => {
             dispatch({
               type: UPDATE_SCHEMA,
               payload: uniqueChunk
             })
           })
-          // do whatever
       }
       
-      // const dbProcessWithoutScopes: any[] = schemasWithoutScopes
-      //     .map((db: any) => getSchema(db.nsfPath, db.schemaName, dispatch, db));
-      // console.log(dbProcessWithoutScopes.length)
-      // await Promise.all(dbProcessWithoutScopes);
-      
-      // dispatch(setLoading({ status: false }));
       dispatch(setPullDatabase(true));
       return;
     }
 
     try {
         let decoded = td.decode(value);
-        console.log(JSON.parse(decoded))
         buffer += decoded;
-        console.log(JSON.parse(buffer))
+        dispatch({
+          type: SET_VALUE,
+          payload: { status: false }
+        })
     }
     catch(e){
         //console.log("Exception:"+e);
@@ -398,8 +388,6 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
             icon: appIcons[config.iconName],
             nsfPath: json.path,
           }
-          // getSchema(json.path, schema, dispatch, new_config);
-          // getSchema(json.path, schema, dispatch);
           schemasWithScopes.push(new_config)
         } else {
           schemasWithoutScopes.push({
@@ -412,27 +400,19 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
         }
       }
     });
-    // console.log(schemasWithScopes)
+    
     const chunkSize = 20;
     for (let i = 0; i < schemasWithScopes.length; i += chunkSize) {
         const chunk = schemasWithScopes.slice(i, i + chunkSize);
         const stringChunk = chunk.map((c) => JSON.stringify(c))
-        // console.log(stringChunk)
-        // console.log(new Set(stringChunk))
         const uniqueChunk = [...new Set(stringChunk)].map((c) => JSON.parse(c))
-        // console.log(uniqueChunk)
-        // console.log(new Set(JSON.stringify(chunk)))
+        
         setTimeout(() => {
           dispatch({
             type: UPDATE_SCHEMA,
             payload: uniqueChunk
           })
         })
-        // dispatch({
-        //   type: UPDATE_SCHEMA,
-        //   payload: uniqueChunk
-        // })
-        // do whatever
     }
   }
 
@@ -454,34 +434,7 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
   return schemasWithoutScopes
 }
 
-// const getSchema = (nsfPath: string, schemaName: string, dispatch: Dispatch, db: any) => new Promise<void>(resolve => {
-//   // console.log(`
-//   //   nsfPath: ${nsfPath}
-//   //   schemaName: ${schemaName}
-//   //   db: ${JSON.stringify(db)}
-//   // `)
-//   // fetchSchema({ nsfPath, schemaName })
-//   //   .then((schemaData) => {
-//       dispatch({
-//         type: UPDATE_SCHEMA,
-//         payload: db,
-//       });
-//       resolve()
-//     // })
-//     // .finally(() => {
-//     //   resolve();
-//     // });
-// });
-
-const getSchema = (nsfPath: string, schemaName: string, dispatch: Dispatch, db: any) => {
-  dispatch({
-    type: UPDATE_SCHEMA,
-    payload: db,
-  })
-};
-
 export const fetchKeepDatabases = () => {
-  console.log("fetch keep databases")
   return async (dispatch: Dispatch, getState: () => AppState) => {
     dispatch(setLoading({ status: true }));
 
@@ -490,7 +443,7 @@ export const fetchKeepDatabases = () => {
       onlyConfigured: false
     };
 
-    const { databases, scopes } = getState().databases;
+    const { scopes } = getState().databases;
 
     const scopeList = scopes.map((scope) => {
       return scope.nsfPath + ':' + scope.schemaName;
@@ -504,14 +457,7 @@ export const fetchKeepDatabases = () => {
       },
       body: JSON.stringify(payload)
     }).then(async function respond(response) {
-      processResponse(response, dispatch, scopeList);
-      // dispatch({
-      //   type: FETCH_KEEP_PERMISSIONS,
-      //   payload: {
-      //     createDbMapping: data.CreateDbMapping,
-      //     deleteDbMapping: data.DeleteDbMapping
-      //   }
-      // });
+      processResponse(response, dispatch, scopeList)
     });
   }
 }
@@ -803,6 +749,7 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
  * Retrieves folders for a particular database and
  * passes them to Redux.
  *
+ * @param dbName the name of the schema
  * @param nsfPath the name of the database
  */
 export const fetchFolders = (dbName: string, nsfPath: string) => {
@@ -1249,7 +1196,7 @@ export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArr
 export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch<React.SetStateAction<string[]>>)  => {
   let allForms: Array<any> = [];
   let configformsList: Array<any> = [];
-  console.log("hey there")
+  
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
@@ -1262,8 +1209,7 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
           }
         })
         if (apiData) {
-          dispatch(addNsfDesign(nsfPath, apiData.data));
-          console.log("hello")
+          dispatch(addNsfDesign(nsfPath, apiData.data))
   
           // Get list of configured forms
           axios
@@ -1277,14 +1223,6 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
               }
             )
             .then((response) => {
-              dispatch({
-                type: UPDATE_SCHEMA,
-                payload: {
-                  ...response.data,
-                  nsfPath: nsfPath,
-                  schemaName: dbName
-                }
-              });
               // Loop through configured forms and fetch their modes
               configformsList = response.data.forms;
               if (configformsList != null && configformsList.length > 0) {
@@ -1349,14 +1287,6 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
           configformsList = response.data.forms.map((form: any) => {
             return { ...form, dbName };
           });
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: newSchemaData.nsfPath,
-              schemaName: newSchemaData.schemaName
-            }
-          });
 
           dispatch(dispatch({
             type: SET_FORMS,
@@ -1391,7 +1321,14 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
 /**
  * Add/remove active view/s and then send them to the server
  */
-export const handleDatabaseViews = (viewsArray: Array<any>, activeViews: any, dbName: string, schemaData: Database, active: boolean) => {
+export const handleDatabaseViews = (
+  viewsArray: Array<any>,
+  activeViews: any,
+  dbName: string,
+  schemaData: Database,
+  active: boolean,
+  setSchemaData: (data: any) => void,
+) => {
   return async (dispatch: Dispatch) => {
     // Build redux data
     const viewsData = viewsArray.map((view: any) => {
@@ -1407,7 +1344,6 @@ export const handleDatabaseViews = (viewsArray: Array<any>, activeViews: any, db
     //  Build the array of new views
     const viewsList: Array<any> = [];
     if (viewsArray.length === 1) {
-      console.log(activeViews)
       activeViews.forEach((view: any) => {
         if (view.viewName !== viewsData[0].viewName) {
           viewsList.push(saveViewDetails(view));
@@ -1434,19 +1370,15 @@ export const handleDatabaseViews = (viewsArray: Array<any>, activeViews: any, db
     }
 
     // Send the new views to the server
-    console.log(schemaData)
-    const newSchema = dispatch(updateViews(schemaData, viewsList) as any);
-    console.log(newSchema)
+    dispatch(updateViews(schemaData, viewsList, setSchemaData) as any)
   }
 }
 
 /**
  * update views to server
  */
-const updateViews = (schemaData: Database, viewsData: any) => {
+const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data: any) => void) => {
   return async (dispatch: Dispatch) => {
-    console.log(schemaData)
-    console.log(viewsData)
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0)
       .map((form) => {
@@ -1479,15 +1411,12 @@ const updateViews = (schemaData: Database, viewsData: any) => {
         )
         .then((response) => {
           const { data } = response;
-          // dispatch({
-          //   type: UPDATE_SCHEMA,
-          //   payload: {
-          //     ...data,
-          //     nsfPath: newSchemaData.nsfPath,
-          //     schemaName: newSchemaData.schemaName
-          //   }
-          // });
           dispatch(toggleAlert(`Views have been successfully saved.`));
+          setSchemaData({
+            ...data,
+            nsfPath: newSchemaData.nsfPath,
+            schemaName: newSchemaData.schemaName,
+          })
           return {
             ...data,
             nsfPath: newSchemaData.nsfPath,
@@ -1728,14 +1657,7 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
         )
         .then((response) => {
           const { data } = response;
-          // dispatch({
-          //   type: UPDATE_SCHEMA,
-          //   payload: {
-          //     ...data,
-          //     nsfPath: newSchemaData.nsfPath,
-          //     schemaName: newSchemaData.schemaName
-          //   }
-          // });
+          
           dispatch(setApiLoading(false));
           dispatch(toggleAlert(`Agents have been successfully saved.`));
         })
@@ -2441,19 +2363,7 @@ export const saveNewForm = (
       )
       .then((res) => {
         const data = { res }
-        // const newForm = {
-        //   dbName: schemaName,
-        //   formName: form.formName,
-        //   alias: [form.formName],
-        //   formModes: [],
-        // }
-        // dispatch({
-        //   type: SET_FORMS,
-        //   payload: {
-        //     db: schemaName,
-        //     forms: configformsList
-        //   }
-        // })
+        
         dispatch(toggleAlert("New form schema created!"))
       })
       .catch((err: string) => {

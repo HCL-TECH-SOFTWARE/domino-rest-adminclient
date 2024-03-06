@@ -17,7 +17,6 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../../store/account/action';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import { getDatabaseIndex } from '../../store/databases/scripts';
 import { Database, SET_ACTIVEVIEWS } from '../../store/databases/types';
 import { checkIcon } from '../../styles/scripts';
 import appIcons from '../../styles/app-icons';
@@ -36,29 +35,6 @@ const EditViewDialogContainer = styled.div`
 
   background: #F8F8F8;
   border-radius: 10px;
-
-  .close-btn {
-    cursor: pointer;
-    justify-content: right;
-    align-items: right;
-
-    position: absolute;
-    top: 1%;
-    right: 2%;
-  }
-`
-
-const DialogContainer = styled.dialog`
-  border: 1px solid white;
-    
-  width: 95vw;
-  position: relative;
-  height: 95vh;
-  max-height: 95vh;
-  margin: 0;
-
-  background-color: #F8F8F8;
-  background-color: yellow;
 
   .close-btn {
     cursor: pointer;
@@ -211,8 +187,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
 
   const dispatch = useDispatch();
 
-  const { databases, folders } = useSelector((state: AppState) => state.databases);
-  const nsfPathDecode = decodeURIComponent(nsfPathProp);
+  const { folders } = useSelector((state: AppState) => state.databases)
 
   const {
     apiName,
@@ -255,17 +230,14 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     forms
   }), [apiName, description, nsfPath, iconName, dqlAccess, openAccess, allowCode, allowDecryption, formulaEngine, dqlFormula, requireRevisionToUpdate, icon, isActive, forms]);
 
-  const [displayIconName, setDisplayIconName] = useState(checkIcon(iconName) ? iconName : 'beach');
-  const [displayIcon, setDisplayIcon] = useState(checkIcon(iconName) ? icon : appIcons['beach']);
-
-  const [dbContext, setDbContext] = useState(selectedDB);
+  const displayIconName = checkIcon(iconName) ? iconName : 'beach'
+  const displayIcon = checkIcon(iconName) ? icon : appIcons['beach']
+  const dbContext = selectedDB
 
   const { loading } = useSelector( (state: AppState) => state.loading );
 
   const scopeNames = scopes.filter((scope) => { return scope.schemaName === dbName && scope.nsfPath === nsfPath });
   const aScopeName = scopeNames.length > 0 ? scopeNames[0].apiName : '';
-
-  const ref = useRef<HTMLDialogElement>(null);
 
   const handleClickColumn = (column: any) => {
     let existingColumn = chosenColumns.filter((col) => col.name === column.name);
@@ -541,7 +513,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       const folderNames = folders.map((folder) => {return folder.viewName});
       const isFolder = folderNames.includes(viewName);
 
-      const data = await axios
+      await axios
         .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
