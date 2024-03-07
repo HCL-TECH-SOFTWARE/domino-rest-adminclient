@@ -31,7 +31,6 @@ import DeleteApplicationDialog from '../applications/DeleteApplicationDialog';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { toggleAlert } from '../../store/alerts/action';
 import {
-  getDatabaseIndex,
   findScopeBySchema,
 } from '../../store/databases/scripts';
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
@@ -39,6 +38,7 @@ import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
 import { convertField2DesignType } from './functions';
 import { getTheme } from '../../store/styles/action';
+import { Database } from '../../store/databases/types';
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
@@ -122,6 +122,8 @@ interface TabsAccessProps {
   remove: any;
   update: any;
   addField:(from: string, item: any) => string;
+  schemaData: Database;
+  setSchemaData: (schemaData: any) => void;
 }
 
 /**
@@ -142,11 +144,13 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   remove,
   update,
   addField,
+  schemaData,
+  setSchemaData,
 }) => {
   const dispatch = useDispatch();
   const { themeMode } = useSelector((state: AppState) => state.styles);
 
-  const { databases, scopes, newForm } = useSelector(
+  const { scopes, newForm } = useSelector(
     (state: AppState) => state.databases
   );
 
@@ -207,7 +211,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const db = paths[3];
   const form = decodeURIComponent(paths[4]);
 
-  const currentSchema = databases[getDatabaseIndex(databases, db, nsfPath)];
+  const currentSchema = schemaData;
 
   const [modeText, setModeText] = useState('');
   const [formError, setFormError] = useState('');
@@ -268,7 +272,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         (mode: any) => currentModeValue === mode.modeName
       );
       setCurrentModeIndex(oriCardIndex);
-      dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode) as any);
+      dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode, setSchemaData) as any);
       // After Saved the tab all data will be fetch from latest state again to ensure accuracy
       setPageIndex(oriCardIndex);
       setCurrentModeValue(formModes[oriCardIndex].modeName);
@@ -305,7 +309,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       setSaveTooltip("")
     } else {
       setSaveEnabled(false)
-      setSaveTooltip("At least 1 field is required to save this new form.")
+      // setSaveTooltip("At least 1 field is required to save this new form.")
     }
   }, [state])
 
@@ -470,11 +474,13 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const deleteMode = () => {
     dispatch(
       deleteFormMode(
-        databases[getDatabaseIndex(databases, db, nsfPath)],
+        schemaData,
         form,
-        modes[currentModeIndex].modeName
+        modes[currentModeIndex].modeName,
+        setSchemaData,
       ) as any
     );
+    setCurrentModeIndex(0)
   };
 
   /**
@@ -519,7 +525,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         };
 
         await dispatch(
-          updateFormMode(currentSchema, form, [], formModeData, -1, cloneMode) as any
+          updateFormMode(currentSchema, form, [], formModeData, -1, cloneMode, setSchemaData) as any
         );
         setCurrentModeValue(modeText);
         setNewModeOpen(false);

@@ -11,14 +11,12 @@ import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } 
 import Button from '@material-ui/core/Button';
 import { AppState } from '../../store';
 import styled from 'styled-components';
-import { handleDatabaseAgents, updateAgents } from '../../store/databases/action';
+import { handleDatabaseAgents } from '../../store/databases/action';
 import AgentSearch from './AgentSearch';
-import {
-  getDatabaseIndex,
-} from '../../store/databases/scripts';
 import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
+import { Database } from '../../store/databases/types';
 
 /**
  * Database Agents Component
@@ -56,13 +54,16 @@ import { RxDividerVertical } from 'react-icons/rx';
  }
 `
 
-const TabAgents: React.FC = () => {
+interface TabAgentsProps {
+  schemaData: Database;
+}
+
+const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   const { agents } = useSelector((state: AppState) => state.databases);
-  const { databases, activeAgents } = useSelector((state: AppState) => state.databases);
+  const { activeAgents } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const [filtered, setFiltered] = useState([...agents]);
   const { dbName, nsfPath } = useParams() as { dbName: string, nsfPath: string };
-  const nsfPathDecode = decodeURIComponent(nsfPath);
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState('');
   const [resetAllAgents, setResetAllAgents] = useState(false);
@@ -81,23 +82,19 @@ const TabAgents: React.FC = () => {
   };
 
   const toggleActive = async (agent: any) => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, currentSchema, true) as any);
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, true) as any);
   }
 
   const toggleInactive = async (agent: any) => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, currentSchema, false) as any);
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, false) as any);
   }
 
   const handleActivateAll = () => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, currentSchema, true) as any);
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, true) as any);
   }
 
   const handleDeactivateAll = () => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)];
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, currentSchema, false) as any);
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, false) as any);
     setResetAllAgents(false);
   }
 

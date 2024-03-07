@@ -19,6 +19,7 @@ import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useHistory } from 'react-router-dom';
 import { toggleAlert } from "../../store/alerts/action";
+import { Database } from "../../store/databases/types";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   paddingLeft: "30px",
   paddingRight: "30px",
@@ -79,12 +80,16 @@ interface FormsTableProps {
   forms: Array<any>;
   dbName: string;
   nsfPath: string;
+  schemaData: Database;
+  setSchemaData: (schemaData: any) => void;
 }
 
 const FormsTable: React.FC<FormsTableProps> = ({
   forms,
   dbName,
-  nsfPath
+  nsfPath,
+  schemaData,
+  setSchemaData,
 }) => {
   const dispatch = useDispatch();
   
@@ -145,7 +150,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </ViewNameDisplay>
               </StyledTableCell>
               <StyledTableCell>
-                <ActivateSwitchForm form={form} nsfPath={nsfPath} dbName={dbName} forms={forms}                                 />
+                <ActivateSwitchForm form={form} nsfPath={nsfPath} dbName={dbName} forms={forms} schemaData={schemaData} setSchemaData={setSchemaData}/>
               </StyledTableCell>
             </StyledTableRow>
             

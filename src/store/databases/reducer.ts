@@ -73,6 +73,7 @@ import { getDatabaseIndex, getScopeIndex } from './scripts';
 
 const initialState: DBState = {
   databases: [],
+  databasesOverview: [],
   nsfDesigns: {},
   availableDatabases: [],
   scopes: [],
@@ -134,7 +135,7 @@ export default function databaseReducer(
     case FETCH_KEEP_DATABASES:
       return {
         ...state,
-        databases: action.payload,
+        databasesOverview: action.payload,
       };
     case FETCH_KEEP_SCOPES:
       return {
@@ -157,7 +158,9 @@ export default function databaseReducer(
       const { schemaName, nsfPath } = action.payload;
       return produce(state, (draft: DBState) => {
         const index = state.availableDatabases.findIndex(db => db.nsfpath === nsfPath);
-        draft.availableDatabases[index].apinames.push(schemaName);
+        if (index >= 0) {
+          draft.availableDatabases[index].apinames.push(schemaName);
+        }
       });
     case CLEAR_SCHEMA_FORM:
       return {
@@ -182,16 +185,16 @@ export default function databaseReducer(
     case FETCH_DB_CONFIG:
       return produce(state, (draft: DBState) => {
         const dbIndex = getDatabaseIndex(
-          state.databases,
+          state.databasesOverview,
           action.payload.apiName,
           action.payload.nsfPath
         );
         draft.contextViewIndex = dbIndex;
-        draft.databases[dbIndex] = action.payload;
+        draft.databasesOverview[dbIndex] = action.payload;
       });
     case ADD_SCHEMA:
       return produce(state, (draft: DBState) => {
-        draft.databases.push(action.payload);
+        draft.databasesOverview.push(action.payload);
       });
     case ADD_SCOPE:
       return produce(state, (draft: DBState) => {
@@ -204,8 +207,13 @@ export default function databaseReducer(
       });
     case DELETE_SCHEMA:
       return produce(state, (draft: DBState) => {
-        const dbIndex = getDatabaseIndex(state.databases, action.payload.schemaName, action.payload.nsfPath);
-        draft.databases.splice(dbIndex, 1);
+        let dbIndex = getDatabaseIndex(state.databasesOverview, action.payload.schemaName, action.payload.nsfPath);
+        draft.databasesOverview.splice(dbIndex, 1);
+        dbIndex = state.availableDatabases.findIndex((db) => db.nsfpath === action.payload.nsfPath)
+        if (dbIndex >= 0) {
+          const apiIndex = state.availableDatabases[dbIndex].apinames.findIndex((apiname) => apiname === action.payload.schemaName)
+          draft.availableDatabases[dbIndex].apinames.splice(apiIndex, 1)
+        }
       });
     case DELETE_SCOPE:
       return produce(state, (draft: DBState) => {
@@ -214,16 +222,28 @@ export default function databaseReducer(
       });
     case UPDATE_SCHEMA:
       return produce(state, (draft: DBState) => {
-        const dbIndex = getDatabaseIndex(
-          state.databases,
-          action.payload.schemaName,
-          action.payload.nsfPath
-        );
-        if (dbIndex>=0) {
-          draft.databases[dbIndex] = action.payload;
-        } else {
-          draft.databases.push(action.payload);
-        }
+        let newDatabases: Array<{
+          schemaName: string;
+          description: string;
+          iconName: string;
+          icon: any;
+          nsfPath: string;
+        }> = []
+        
+        action.payload.forEach((schema) => {
+          const dbIndex = getDatabaseIndex(
+            state.databasesOverview,
+            schema.schemaName,
+            schema.nsfPath
+          );
+          
+          if (dbIndex >= 0) {
+            draft.databasesOverview[dbIndex] = schema
+          } else {
+            newDatabases.push(schema)
+          }
+        })
+        draft.databasesOverview = [...draft.databasesOverview, ...newDatabases]
       });
     case SET_PULLED_DATABASE:
       return {
@@ -243,14 +263,14 @@ export default function databaseReducer(
       };
     case APPEND_FORM_DATA:
       return produce(state, (draft: DBState) => {
-        draft.databases[action.payload.dbIndex] = action.payload.data;
+        draft.databasesOverview[action.payload.dbIndex] = action.payload.data;
       });
     case SET_FORMS:
       const { db, forms } = action.payload;
-      const dbIndex = getDatabaseIndex(state.databases, db, action.payload.nsfPath);
+      const dbIndex = getDatabaseIndex(state.databasesOverview, db, action.payload.nsfPath);
       return produce(state, (draft: DBState) => {
         if (dbIndex !== -1) {
-          draft.databases[dbIndex].forms = forms;
+          draft.forms = forms
         }
       });
     case ADD_FORM:
@@ -277,8 +297,7 @@ export default function databaseReducer(
     case CACHE_MODES:
       return produce(state, (draft: DBState) => {
         const { formName, formModes } = action.payload;
-        const index = getDatabaseIndex(state.databases, action.payload.db, action.payload.nsfPath);
-        draft.databases[index].isModeFetch = true;
+        const index = getDatabaseIndex(state.databasesOverview, action.payload.db, action.payload.nsfPath);
       });
     case CACHE_FORM_FIELDS:
       return produce(state, (draft: DBState) => {

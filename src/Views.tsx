@@ -20,11 +20,10 @@ import SettingsPage from './components/settings/SettingsPage';
 import Homepage from './components/home/Homepage';
 import PageRouters from './components/routers/PageRouters';
 import SchemasLists from './components/schemas/SchemasLists';
-import { fetchScopes, fetchKeepPermissions, fetchKeepDatabases } from './store/databases/action';
+import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
 import ConsentsListContainer from './components/consents/ConsentsListContainer';
-import { getConsents } from './store/consents/action';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -102,7 +101,6 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
           dispatch(fetchScopes() as any);
         } else if (!databasePull) {
           setDatabasePulling(true);
-          dispatch(fetchKeepDatabases() as any);
         }
       }
     }

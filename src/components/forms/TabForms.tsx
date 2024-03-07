@@ -17,7 +17,7 @@ import {
   TextField,
 } from "@material-ui/core";
 import { AppState } from "../../store";
-import { getDatabaseIndex, validateFormSchemaName } from "../../store/databases/scripts";
+import { validateFormSchemaName } from "../../store/databases/scripts";
 import styled from "styled-components";
 import { ButtonNeutral, ButtonYes, CommonDialog, TopNavigator } from "../../styles/CommonStyles";
 import { RxDividerVertical } from "react-icons/rx";
@@ -31,6 +31,7 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { createFilterOptions } from "@material-ui/lab";
 import { toggleAlert } from "../../store/alerts/action";
+import { Database } from "../../store/databases/types";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -108,11 +109,12 @@ const CreateFormDialogContainer = styled.dialog`
 
 interface TabFormProps {
   setData: React.Dispatch<React.SetStateAction<string[]>>;
+  schemaData: Database;
+  setSchemaData: (schemaData: any) => void;
 }
 
-const TabForms: React.FC<TabFormProps> = ({ setData }) => {
+const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }) => {
   const { forms } = useSelector((state: AppState) => state.databases);
-  const { databases, newForm } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState("");
@@ -161,17 +163,12 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
     setFiltered(filteredDatabases);
   };
   function handleConfigureAll() {
-    const currentSchema =
-      databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseForms(currentSchema, dbName, forms) as any);
+    dispatch(handleDatabaseForms(schemaData, dbName, forms) as any);
     dispatch(pullForms(nsfPath, dbName, setData) as any);
   }
 
   async function handleUnConfigureAll() {
-    const currentSchema =
-      databases[getDatabaseIndex(databases, dbName, nsfPath)];
-
-    dispatch(handleDatabaseForms(currentSchema, dbName, []) as any);
+    dispatch(handleDatabaseForms(schemaData, dbName, []) as any);
     dispatch(pullForms(nsfPath, dbName, setData) as any);
     setResetAllForms(false);
   }
@@ -331,17 +328,22 @@ const TabForms: React.FC<TabFormProps> = ({ setData }) => {
           </ButtonYes>
         </ButtonsPanel>
       </CreateFormDialogContainer>
-      <FormsTable forms={
-            searchKey === ""
-              ? normalizeForms.filter(
-                  (form) =>
-                    form.dbName === dbName
-                )
-              : filtered.filter(
-                  (form) =>
-                    form.dbName === dbName
-                )
-          } dbName={dbName} nsfPath={nsfPath}
+      <FormsTable
+        forms={
+          searchKey === ""
+            ? normalizeForms.filter(
+                (form) =>
+                  form.dbName === dbName
+              )
+            : filtered.filter(
+                (form) =>
+                  form.dbName === dbName
+              )
+        }
+        dbName={dbName}
+        nsfPath={nsfPath}
+        schemaData={schemaData}
+        setSchemaData={setSchemaData}
       >
         
       </FormsTable>

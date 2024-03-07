@@ -15,7 +15,6 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import PropTypes from 'prop-types';
 import {
-  UPDATE_SCHEMA,
   SET_ACTIVEVIEWS,
   SET_ACTIVEAGENTS,
 } from '../../store/databases/types';
@@ -31,7 +30,6 @@ import {
   setAgents,
   fetchAgents,
   setDbIndex,
-  fetchKeepDatabases,
   addNsfDesign,
   updateSchema,
   fetchFolders,
@@ -207,7 +205,7 @@ const JsonEditorContainer = styled.div`
  * @author Neil Schultz
  */
 const FormsContainer = () => {
-  const { databases, updateSchemaError, scopes } = useSelector(
+  const { databasesOverview, updateSchemaError, scopes } = useSelector(
     (state: AppState) => state.databases
   );
 
@@ -232,12 +230,29 @@ const FormsContainer = () => {
   const dispatch = useDispatch();
   const setData = useState<Array<string>>([])[1];
   const { visible } = useSelector((state: AppState) => state.dbSetting);
+  const [schemaData, setSchemaData] = useState({
+    '@unid': "",
+    apiName: "",
+    schemaName: "",
+    description: "",
+    nsfPath: "",
+    icon: "beach",
+    iconName: "beach",
+    isActive: "true",
+    owners: [],
+    isModeFetch: false,
+    modes: [],
+    forms: [],
+    configuredForms: [],
+    views: [],
+    agents: [],
+  })
 
   const nsfPathDecode = decodeURIComponent(nsfPath);
   
   const [styledObjMode, setStyledObjMode] = useState(true);
   
-  const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+  const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
   const [buttonsEnabled, setButtonsEnabled] = useState(false);
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
   const [discardChangesDialog, setDiscardChangesDialog] = useState(false);
@@ -271,8 +286,8 @@ const FormsContainer = () => {
   }
 
   useEffect(() => {
-    setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
-  }, [databases, dbName, nsfPathDecode])
+    setSourceTabContent(JSON.stringify(schemaData, null, 1))
+  }, [dbName, nsfPathDecode, schemaData])
 
   /**
    * Retrieve the information for a particular database and
@@ -311,14 +326,11 @@ const FormsContainer = () => {
           )
           .then((response) => {
             setErrorStatus({ status: 200, statusText: 'success' });
-            dispatch({
-              type: UPDATE_SCHEMA,
-              payload: {
-                ...response.data,
-                nsfPath: nsfPathDecode,
-                schemaName: dbName
-              }
-            });
+            setSchemaData({
+              ...response.data,
+              nsfPath: nsfPathDecode,
+              schemaName: dbName,
+            })
             // Loop through configured forms and fetch their modes
             configformsList = response.data.forms;
             if (configformsList != null && configformsList.length > 0) {
@@ -375,7 +387,7 @@ const FormsContainer = () => {
 
   const handleSaveChanges = async () => {
     setSaveChangesDialog(false);
-    await dispatch(updateSchema(JSON.parse(sourceTabContent)) as any);
+    await dispatch(updateSchema(JSON.parse(sourceTabContent), setSchemaData) as any);
     setButtonsEnabled(false);
     setUnsavedChanges(false);
   }
@@ -385,7 +397,7 @@ const FormsContainer = () => {
   }
 
   const handleDiscardChanges = () => {
-    setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+    setSourceTabContent(JSON.stringify(schemaData, null, 1));
     setDiscardChangesDialog(false);
     setUnsavedChanges(false);
     setButtonsEnabled(false);
@@ -420,9 +432,9 @@ const FormsContainer = () => {
 
     // Fetch current forms
     async function fetchForms() {
-      const dbIndex = getDatabaseIndex(databases, dbName, nsfPathDecode);
+      const dbIndex = getDatabaseIndex(databasesOverview, dbName, nsfPathDecode);
       dispatch(setDbIndex(dbIndex));
-      if (databases.length > 0) {
+      if (databasesOverview.length > 0) {
         // LABS-1865 Reinitialize state on refresh
         try {
           await pullForms();
@@ -433,7 +445,6 @@ const FormsContainer = () => {
         }
       } else {
         try {
-          dispatch(fetchKeepDatabases() as any);
           await pullForms();
           await pullSubForms();
           setIsFetch(true);
@@ -450,10 +461,10 @@ const FormsContainer = () => {
 
   useEffect(() => {
     if (updateSchemaError) {
-      setSourceTabContent(JSON.stringify(databases.filter((database) => { return database.schemaName === dbName && database.nsfPath === nsfPathDecode })[0], null, 1));
+      setSourceTabContent(JSON.stringify(schemaData, null, 1));
       setButtonsEnabled(true);
     }
-  }, [updateSchemaError, databases, dbName, nsfPathDecode])
+  }, [updateSchemaError, schemaData, dbName, nsfPathDecode])
 
   function TabPanel(props: any) {
     const { children, value, index, ...other } = props;
@@ -577,7 +588,7 @@ const FormsContainer = () => {
         {isFetch ? (
           <>
             <Details>
-              <DetailsSection dbName={dbName} nsfPathProp={nsfPathDecode} />
+              <DetailsSection dbName={dbName} nsfPathProp={nsfPathDecode} schemaData={schemaData} setSchemaData={setSchemaData} />
             </Details>
             <Stack>
               <Tabs 
@@ -597,12 +608,15 @@ const FormsContainer = () => {
               </Tabs>
 
               <TabPanel  value={value} index={0}>
-                <TabForms setData={setData} />
+                <TabForms setData={setData} schemaData={schemaData} setSchemaData={setSchemaData} />
               </TabPanel>
               <TabPanel value={value} index={1}>
                 <TabViews 
+                  key={`${schemaData.schemaName}-${schemaData.nsfPath}`}
                   setViewOpen={setViewOpen}
                   setOpenViewName={setOpenViewName}
+                  schemaData={schemaData}
+                  setSchemaData={setSchemaData}
                 />
                 <EditViewDialog
                   open={viewOpen}
@@ -612,10 +626,12 @@ const FormsContainer = () => {
                   viewName={openViewName}
                   scopes={scopes}
                   setOpen={setViewOpen}
+                  schemaData={schemaData}
+                  setSchemaData={setSchemaData}
                 />
               </TabPanel>
               <TabPanel value={value} index={2}>
-                <TabAgents />
+                <TabAgents schemaData={schemaData} />
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />

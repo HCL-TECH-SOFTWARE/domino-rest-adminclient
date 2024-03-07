@@ -7,7 +7,7 @@
 export function fullEncode (name: string) {
   let encodedName = "";
   for (let i = 0; i < name.length; i++) {
-    if (name[i] === '[' || name[i] === '!' || name[i] === ']' || name[i] === '(' || name[i] === ')' || name[i] === '*' || name[i] === '\\' || name[i] === '/' || name[i] === '$') {
+    if (name[i] === '[' || name[i] === '!' || name[i] === ']' || name[i] === '(' || name[i] === ')' || name[i] === '*' || name[i] === '\\' || name[i] === '/' || name[i] === '$' || name[i] === '&') {
       encodedName += '%' + name[i].charCodeAt(0).toString(16);
     } else if (name[i] === undefined) {
       encodedName += ''

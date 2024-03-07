@@ -4,18 +4,18 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
 import { AppState } from '../../store';
 import ViewSearch from './ViewSearch';
-import { getDatabaseIndex } from '../../store/databases/scripts';
 import { handleDatabaseViews } from '../../store/databases/action';
 import styled from 'styled-components';
 import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
+import { Database } from '../../store/databases/types';
 
 const TabViewsContainer = styled.div`
   display: flex;
@@ -74,11 +74,12 @@ const ButtonsPanel = styled.div`
 interface TabViewsProps {
   setViewOpen: (viewOpen: boolean) => void;
   setOpenViewName: (viewName: string) => void;
+  schemaData: Database;
+  setSchemaData: (data: any) => void;
 }
 
-const TabViews : React.FC<TabViewsProps> = (viewState) => {
+const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, schemaData, setSchemaData }) => {
   const { views, folders } = useSelector((state: AppState) => state.databases);
-  const { databases } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState('');
@@ -88,7 +89,7 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
   dbName = decodeURIComponent(dbName);
   nsfPath = decodeURIComponent(nsfPath);
   
-  let activeViews = databases[getDatabaseIndex(databases, dbName, nsfPath)]['views']?.map((view: any) => {
+  const [activeViews, setActiveViews] = useState(schemaData['views']?.map((view: any) => {
     const folderNames = folders.map((folder) => {return folder.viewName});
     return {
       viewActive: true,
@@ -99,10 +100,10 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
       viewColumns: view.columns,
       viewFolder: folderNames.includes(view.name),
     }
-  });
+  }));
 
-  const activeViewNames = activeViews?.map((view) => {return view.viewName});
-  const updatedFolders = folders.map((folder) => {
+  const [activeViewNames, setActiveViewNames] = useState(activeViews?.map((view: any) => {return view.viewName}))
+  const [updatedFolders, setUpdatedFolders] = useState(folders.map((folder) => {
     return {
       viewName: folder.viewName,
       viewUnid: folder.viewUnid,
@@ -110,10 +111,47 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
       viewUpdated: folder.viewUpdated,
       viewActive: activeViewNames?.includes(folder.viewName),
     }
-  });
+  }));
 
-  const lists = [...views, ...updatedFolders];
-  const [filtered, setFiltered] = useState([...views, ...updatedFolders]);
+  const [lists, setLists] = useState([...views, ...updatedFolders]);
+  const [filtered, setFiltered] = useState(lists);
+
+  useEffect(() => {
+    console.log(schemaData.views)
+    setActiveViews(schemaData['views']?.map((view: any) => {
+      const folderNames = folders.map((folder) => {return folder.viewName});
+      return {
+        viewActive: true,
+        viewAlias: view.alias,
+        viewName: view.name,
+        viewUnid: view.unid,
+        viewUpdated: view.viewUpdated,
+        viewColumns: view.columns,
+        viewFolder: folderNames.includes(view.name),
+      }
+    }))
+  }, [schemaData, folders])
+
+  useEffect(() => {
+    setActiveViewNames(activeViews?.map((view: any) => {return view.viewName}))
+  }, [activeViews])
+
+  useEffect(() => {
+    setUpdatedFolders(folders.map((folder) => {
+      return {
+        viewName: folder.viewName,
+        viewUnid: folder.viewUnid,
+        viewAlias: folder.viewAlias,
+        viewUpdated: folder.viewUpdated,
+        viewActive: activeViewNames?.includes(folder.viewName),
+      }
+    }))
+  }, [folders, activeViewNames])
+
+  useEffect(() => {
+    setLists([...views, ...updatedFolders])
+    // console.log([...views, ...updatedFolders])
+  }, [views, updatedFolders])
 
   const handleSearchView = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.value;
@@ -129,23 +167,19 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
   };
 
   const toggleActive = async (view: any) => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews([view], activeViews, dbName, currentSchema, true) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, true, setSchemaData) as any);
   }
 
   const toggleInactive = async (view: any) => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews([view], activeViews, dbName, currentSchema, false) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, false, setSchemaData) as any);
   }
 
   const handleActivateAll = () => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews(views, activeViews, dbName, currentSchema, true) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, true, setSchemaData) as any);
   }
 
   const handleDeactivateAll = () => {
-    const currentSchema = databases[getDatabaseIndex(databases, dbName, nsfPath)];
-    dispatch(handleDatabaseViews(views, activeViews, dbName, currentSchema, false) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, false, setSchemaData) as any);
     setResetAllViews(false);
   }
 
@@ -173,8 +207,8 @@ const TabViews : React.FC<TabViewsProps> = (viewState) => {
           toggleInactive={toggleInactive}
           dbName={dbName}
           nsfPath={nsfPath}
-          setViewOpen={viewState.setViewOpen}
-          setOpenViewName={viewState.setOpenViewName}
+          setViewOpen={setViewOpen}
+          setOpenViewName={setOpenViewName}
          />
       </ViewPanel>
       <Dialog

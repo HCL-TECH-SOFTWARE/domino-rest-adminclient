@@ -12,13 +12,12 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { AppState } from '../../store';
 import {
+  fetchKeepDatabases,
         setOnlyShowSchemasWithScopes,
         setPullDatabase,
         setPullScope,
        } from '../../store/databases/action';
-import { FETCH_KEEP_DATABASES,
-        FETCH_AVAILABLE_DATABASES,
-       } from '../../store/databases/types';
+import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer, FilterContainer, BlueSwitch } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
 import DatabaseSearch from '../database/DatabaseSearch';
@@ -32,9 +31,10 @@ import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import { Tooltip } from '@material-ui/core';
 import AddImportDialog from '../database/AddImportDialog';
+import { setLoading } from '../../store/loading/action';
 
 const SchemasLists = () => {
-  const { databases, scopes, scopePull, onlyShowSchemasWithScopes, permissions } = useSelector(
+  const { scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview, databasePull } = useSelector(
     (state: AppState) => state.databases
   );
   const { loading } = useSelector( (state: AppState) => state.loading );
@@ -74,12 +74,10 @@ const SchemasLists = () => {
     }
   };
   const handleRefresh = () => {
+    dispatch(setLoading({ status: true }))
     dispatch(setPullDatabase(false));
     dispatch(setPullScope(false));
-    dispatch({
-      type: FETCH_KEEP_DATABASES,
-      payload: []
-    });
+    dispatch(fetchKeepDatabases() as any)
     dispatch({
       type: FETCH_AVAILABLE_DATABASES,
       payload: []
@@ -119,12 +117,18 @@ const SchemasLists = () => {
   }, [addImportDialog])
 
   useEffect(() => {
-    let schemas = databases.slice();
+    if (!databasePull && databasesOverview.length === 0) {
+      dispatch(fetchKeepDatabases() as any)
+    }
+  }, [dispatch, databasesOverview, databasePull])
+
+  useEffect(() => {
+    let schemas = databasesOverview.slice();
     if (onlyShowSchemasWithScopes) {
       const schemasWithScopes = scopes.map((scope) => {
         return scope.nsfPath + ":" + scope.schemaName;
       });
-      schemas = databases.filter((schema) => {
+      schemas = databasesOverview.filter((schema) => {
         return schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName);
       });
     }
@@ -140,8 +144,10 @@ const SchemasLists = () => {
       }
     }
     schemas.sort((schemaA, schemaB) => schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1);
-    setResults(schemas);
-  }, [databases, scopes, onlyShowSchemasWithScopes, searchKey, searchType]);
+    
+    const uniqueSchemas = [...new Set(schemas)]
+    setResults(uniqueSchemas)
+  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType, dispatch]);
 
   return (
     <SettingContext.Provider value={[context, setContext]}>
@@ -190,8 +196,8 @@ const SchemasLists = () => {
                 /> 
               </Tooltip>
             </FilterContainer>
-              {results.length !== 0 && <SchemasMultiView databases={results} view={view} />}
-              {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <ZeroResultsWrapper mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
+            {results.length !== 0 && !loading.status && <SchemasMultiView databases={results} view={view} />}
+            {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <ZeroResultsWrapper mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
             <NetworkErrorDialog />
             <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
           </>
