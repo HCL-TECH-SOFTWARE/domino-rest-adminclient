@@ -344,6 +344,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
         nsfPath={nsfPath}
         schemaData={schemaData}
         setSchemaData={setSchemaData}
+        formList={normalizeForms.map((form) => {return form.formName})}
       >
         
       </FormsTable>

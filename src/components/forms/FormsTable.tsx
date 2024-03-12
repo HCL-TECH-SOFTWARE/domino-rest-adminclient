@@ -20,6 +20,7 @@ import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useHistory } from 'react-router-dom';
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
+import ActivateMenu from "./ActivateMenu";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   paddingLeft: "30px",
   paddingRight: "30px",
@@ -82,6 +83,7 @@ interface FormsTableProps {
   nsfPath: string;
   schemaData: Database;
   setSchemaData: (schemaData: any) => void;
+  formList: Array<string>;
 }
 
 const FormsTable: React.FC<FormsTableProps> = ({
@@ -90,6 +92,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
   nsfPath,
   schemaData,
   setSchemaData,
+  formList,
 }) => {
   const dispatch = useDispatch();
   
@@ -115,7 +118,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
               <StatusHeader>
                 <div>
                   <Tooltip
-                    title={`Activate the Views that should be accessible\nvia rest API`}
+                    title={`Activate the Forms that should be accessible\nvia rest API`}
                   >
                     <div>
                       Status <AiOutlineQuestionCircle className="status-icon" />
@@ -150,7 +153,16 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </ViewNameDisplay>
               </StyledTableCell>
               <StyledTableCell>
-                <ActivateSwitchForm form={form} nsfPath={nsfPath} dbName={dbName} forms={forms} schemaData={schemaData} setSchemaData={setSchemaData}/>
+                {/* <ActivateSwitchForm form={form} nsfPath={nsfPath} dbName={dbName} forms={forms} schemaData={schemaData} setSchemaData={setSchemaData}/> */}
+                <ActivateMenu
+                  form={form}
+                  nsfPath={nsfPath}
+                  dbName={dbName}
+                  forms={forms}
+                  schemaData={schemaData}
+                  setSchemaData={setSchemaData}
+                  formList={formList}
+                />
               </StyledTableCell>
             </StyledTableRow>
             
