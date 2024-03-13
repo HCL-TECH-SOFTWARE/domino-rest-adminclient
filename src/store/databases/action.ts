@@ -1882,7 +1882,7 @@ export const deleteFormMode = (
 /**
  * Delete configured form to server
  */
-export const deleteForm = (schemaData: Database, formName: string) => {
+export const deleteForm = (schemaData: Database, formName: string, setSchemaData?: (data: Database) => void) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0 && form.formName !== formName)
@@ -1914,6 +1914,15 @@ export const deleteForm = (schemaData: Database, formName: string) => {
           }
         )
         .then((response) => {
+          if (!!setSchemaData) {
+            setSchemaData({
+              ...response.data,
+            })
+            dispatch({
+              type: RESET_FORM,
+              payload: formName,
+            })
+          }
           dispatch(setApiLoading(false));
           dispatch(
             toggleAlert(`${formName} has been Unconfigured Successfully.`)
@@ -2336,6 +2345,7 @@ export const addForm = (
  * Initialize a new form that user wants to create and configure
  *
  * @param form the form object
+ * @param nsfPath the name of the NSF
  */
 export const saveNewForm = (
   form: {

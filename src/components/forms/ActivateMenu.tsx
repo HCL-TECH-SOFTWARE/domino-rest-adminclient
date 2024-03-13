@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Button, ButtonBase, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Typography } from '@material-ui/core';
+import { Box, Button, ButtonBase, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Typography } from '@material-ui/core';
 import * as React from 'react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -17,15 +17,14 @@ import { deleteForm, updateFormMode } from '../../store/databases/action';
 import { BsThreeDots } from "react-icons/bs";
 
 const ActionContainer = styled.div`
-    display: flex;
-    // align-items: center;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 
-    .menu-container {
-        &:hover: {
-            cursor: pointer;
-        }
-    }
+  .menu-container {
+      &:hover: {
+          cursor: pointer;
+      }
+  }
 
   .toggle-btn {
     display: flex;
@@ -93,22 +92,6 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
   const { updateFormError } = useSelector((state: AppState) => state.databases);
   
   const dispatch = useDispatch();
-  const handleToggle = () => {
-    if (loading) {
-      dispatch(toggleAlert(`Please wait while forms are still saving!`));
-      return;
-    } else if (!active && (!updateFormError)) {
-      toggleConfigure(form.formName);
-      setActive(active);
-    } else if (!updateFormError) {
-        setResetForm(true);
-    } else {
-      dispatch({
-        type: FORMS_ERROR,
-        payload: false
-      });
-    }
-  }
 
   const handleClickActivate = () => {
     if (loading) {
@@ -117,7 +100,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
         toggleConfigure(form.formName)
         setActive(active)
     } else if (!updateFormError) {
-        setResetForm(true)
+        dispatch(toggleAlert(`This form is already active!`))
     } else {
         dispatch({
             type: FORMS_ERROR,
@@ -131,7 +114,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     setResetForm(true)
   }
 
-  const clickConfirmDeactivate = () => {
+  const handleConfirmDeactivate = () => {
     toggleUnconfigure()
     setActive(false)
     setResetForm(false)
@@ -173,7 +156,11 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
   };
 
   const toggleUnconfigure = async () => {
-    dispatch(deleteForm(schemaData, form.formName) as any)
+    if (formList.includes(form.formName)) {
+      dispatch(deleteForm(schemaData, form.formName) as any)
+    } else {
+      dispatch(deleteForm(schemaData, form.formName, setSchemaData) as any)
+    }
     handleCloseMenu()
   };
 
@@ -187,16 +174,13 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     setOpen(false)
   }
 
-  React.useEffect(() => {
-    console.log(formList)
-    console.log(form)
-  }, [formList, form])
-
   return (
     <ActionContainer>
-        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <circle cx="4" cy="4" r="4" fill={active ? '#0FA068' : '#8291A0'}/>
-        </svg>
+        <Box display='flex' flexDirection='column' justifyContent='center'>
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <circle cx="4" cy="5" r="4" fill={active ? '#0FA068' : '#8291A0'}/>
+          </svg>
+        </Box>
         <Typography
             variant='body1'
             style={{
@@ -244,7 +228,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => {setResetForm(false)}}>No</Button>
-                <Button onClick={clickConfirmDeactivate}>Yes</Button>
+                <Button onClick={handleConfirmDeactivate}>Yes</Button>
             </DialogActions>
         </Dialog>
     </ActionContainer>

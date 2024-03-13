@@ -327,7 +327,7 @@ export default function databaseReducer(
     case RESET_FORM:
       return produce(state, (draft: DBState) => {
         const sliceForms = state.forms.filter(
-          (form) => form.dbName !== action.payload.dbName
+          (form) => form.formName !== action.payload
         );
         draft.forms = sliceForms;
       });

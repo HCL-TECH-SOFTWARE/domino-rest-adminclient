@@ -22,8 +22,7 @@ import {
   testFormula,
   updateFormMode,
   deleteFormMode,
-  saveNewForm,
-  addForm,
+  updateSchema,
 } from '../../store/databases/action';
 import { AppState } from '../../store';
 import FormDrawer from '../applications/FormDrawer';
@@ -36,7 +35,6 @@ import {
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
-import { convertField2DesignType } from './functions';
 import { getTheme } from '../../store/styles/action';
 import { Database } from '../../store/databases/types';
 
@@ -232,27 +230,48 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     // Check if creating new form schema or editing a form
     // Then save it off and post an alert
     if (!!newForm.form) {
-      dispatch(saveNewForm(
-        {
-          formName: newForm.form.formName,
-          fields: formData.fields.map((field: {
-            fieldAccess: string,
-            format: string,
-            isMultiValue: boolean,
-            name: string,
-            type: string,
-            items?: Array<any>,
-          }) => {
-            return {
-              allowMultiValues: field.isMultiValue,
-              name: field.name,
-              type: convertField2DesignType(field.format),
-            }
-          }),
-        },
-        nsfPath,
-      ) as any)
-      dispatch(addForm(false) as any)
+      // add form to the schema by creating a new schema with the additional form
+      const newSchema = {
+        ...schemaData,
+        forms: [
+          ...schemaData.forms,
+          {
+            formName: newForm.form.formName,
+            formValue: newForm.form.formName,
+            alias: [newForm.form.formName],
+            formModes: [{
+              modeName: "default",
+              fields: formData.fields.map((field: {
+                fieldAccess: string,
+                format: string,
+                isMultiValue: boolean,
+                name: string,
+                type: string,
+                items?: Array<any>,
+              }) => {
+                return {
+                  externalName: field.name,
+                  fieldAccess: field.fieldAccess,
+                  fieldGroup: "",
+                  format: field.format,
+                  itemFlags: ["SUMMARY"],
+                  name: field.name,
+                  protectedField: false,
+                  summaryField: true,
+                  type: field.type,
+                }
+              }),
+              computeWithForm: false,
+              readAccessFormula: {formulaType: "domino", formula: "@True"},
+              writeAccessFormula: {formulaType: "domino", formula: "@True"},
+              deleteAccessFormula: {formulaType: "domino", formula: "@False"},
+              onLoad: {formulaType: "domino", formula: ""},
+              onSave: {formulaType: "domino", formula: ""},
+            }],
+          }
+        ]
+      }
+      dispatch(updateSchema(newSchema, setSchemaData) as any)
       history.push(`/schema/${encodeURIComponent(nsfPath)}/${db}`)
     } else {
       const currentForms = currentSchema.forms

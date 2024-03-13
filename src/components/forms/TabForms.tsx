@@ -111,9 +111,10 @@ interface TabFormProps {
   setData: React.Dispatch<React.SetStateAction<string[]>>;
   schemaData: Database;
   setSchemaData: (schemaData: any) => void;
+  formList: Array<string>;
 }
 
-const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }) => {
+const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, formList }) => {
   const { forms } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useDispatch();
@@ -124,7 +125,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
   const ref = useRef<HTMLDialogElement>(null)
   const [createFormOpen, setCreateFormOpen] = useState(false)
   const [value, setValue] = React.useState<string | null>(null)
-  const filter = createFilterOptions<string>()
   const history = useHistory()
   const [formNameError, setFormNameError] = useState(false)
   const [formNameErrorMessage, setFormNameErrorMessage] = useState("")
@@ -168,7 +168,8 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
   }
 
   async function handleUnConfigureAll() {
-    dispatch(handleDatabaseForms(schemaData, dbName, []) as any);
+    const customForms = forms.filter((form) => !formList.includes(form.formName))
+    dispatch(handleDatabaseForms(schemaData, dbName, customForms) as any);
     dispatch(pullForms(nsfPath, dbName, setData) as any);
     setResetAllForms(false);
   }
@@ -280,7 +281,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
             onClick={handleConfigureAll}
             className={`button activate ${normalizeForms.length === 0 || loading ? "disabled" : ""}`}
           >
-            Configure All
+            Activate All
           </Button>
           <RxDividerVertical size={"1.4em"} className="vertical" />
           <Button
@@ -288,7 +289,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
             onClick={() => setResetAllForms(true)}
             className={`button deactivate ${normalizeForms.length === 0 || loading ? "disabled" : ""}`}
           >
-            Unconfigure All
+            Deactivate All
           </Button>
         </Box>
         <Button
@@ -344,10 +345,8 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
         nsfPath={nsfPath}
         schemaData={schemaData}
         setSchemaData={setSchemaData}
-        formList={normalizeForms.map((form) => {return form.formName})}
-      >
-        
-      </FormsTable>
+        formList={formList}
+      />
       <CommonDialog
         open={resetAllForms}
         onClose={() => {
@@ -356,24 +355,18 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData }
         aria-labelledby="reset-form-dialog"
         aria-describedby="reset-form-description"
       >
-        
         <DialogTitle id="reset-form-dialog-title">
           <Box className="title">
-            {"WARNING: Unconfigure ALL forms?"}
+            {"WARNING: Deactivate ALL forms?"}
           </Box>
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="reset-form-contents" color="textPrimary">
-            This action deletes all form modes and removes all configurations done to <span style={{ color: 'red' }}>ALL</span> of the forms. Do you wish to proceed?
+            This action deletes all form modes and removes all configurations done to <span style={{ color: 'red' }}>ALL</span> of the designer forms. Do you wish to proceed?
           </DialogContentText>
         </DialogContent>
         <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
-
-          <Button
-            className="btn right save"
-            
-            onClick={handleUnConfigureAll}
-          >
+          <Button className="btn right save" onClick={handleUnConfigureAll}>
             Yes
           </Button>
           <Button 

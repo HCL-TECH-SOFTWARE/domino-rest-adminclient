@@ -545,9 +545,7 @@ interface UnConfigForm {
 
 interface ResetForm {
   type: typeof RESET_FORM;
-  payload: {
-    dbName: string;
-  };
+  payload: string;
 }
 
 interface SetRetryCount {
