@@ -50,7 +50,6 @@ import { ImCancelCircle } from 'react-icons/im';
 import { BiExport } from 'react-icons/bi';
 import EditViewDialog from './EditView';
 
-
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
   display: flex;
@@ -208,6 +207,7 @@ const FormsContainer = () => {
   const { databasesOverview, updateSchemaError, scopes } = useSelector(
     (state: AppState) => state.databases
   );
+  const [nsfForms, setNsfForms] = useState([])
 
   // check if formModes key is present in the form object
   // if not, it will add new key(formModes) and add the formAccessModes values
@@ -311,6 +311,7 @@ const FormsContainer = () => {
       );
 
       if (apiData) {
+        setNsfForms(apiData.data.forms.map((form: any) => form['@name']))
         dispatch(addNsfDesign(nsfPathDecode, apiData.data));
 
         // Get list of configured forms
@@ -608,7 +609,7 @@ const FormsContainer = () => {
               </Tabs>
 
               <TabPanel  value={value} index={0}>
-                <TabForms setData={setData} schemaData={schemaData} setSchemaData={setSchemaData} />
+                <TabForms setData={setData} schemaData={schemaData} setSchemaData={setSchemaData} formList={nsfForms} />
               </TabPanel>
               <TabPanel value={value} index={1}>
                 <TabViews 

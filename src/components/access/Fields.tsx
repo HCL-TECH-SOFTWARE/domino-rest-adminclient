@@ -268,12 +268,20 @@ const Fields: React.FC<FieldsProps> = ({
   const { loading } = useSelector( (state: AppState) => state.loading );
 
   useEffect(() => {
-    if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
+    const designFormNames = [
+      ...formsInDb.map((form: { '@alias': Array<string>, '@flags': string, '@name': string, '@unid': string }) => form['@name']),
+      ...subformsInDb.map((form: { '@alias': Array<string>, '@flags': string, '@name': string, '@unid': string }) => form['@name']),
+    ]
+
+    if (!designFormNames.includes(formName)) {
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
+      dispatch(setLoading({ status: false }))
+    } else if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
       dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
     } else if (!newForm.enabled) {
       dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
     }
-  }, [schemaName, nsfPath, formName, formsInDb, newForm, dispatch]);
+  }, [schemaName, nsfPath, formName, formsInDb, subformsInDb, newForm, dispatch]);
 
   const handleFieldListOnClick = (event: any) => {
     setAnchorEl(event.target);
