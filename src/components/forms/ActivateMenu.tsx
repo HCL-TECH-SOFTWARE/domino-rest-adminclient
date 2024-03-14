@@ -158,6 +158,10 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
   const toggleUnconfigure = async () => {
     if (formList.includes(form.formName)) {
       dispatch(deleteForm(schemaData, form.formName) as any)
+      setSchemaData({
+        ...schemaData,
+        forms: schemaData.forms.filter((item) => item.formName !== form.formName)
+      })
     } else {
       dispatch(deleteForm(schemaData, form.formName, setSchemaData) as any)
     }
