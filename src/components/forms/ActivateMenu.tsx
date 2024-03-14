@@ -84,7 +84,8 @@ interface ActivateMenuProps {
 
 
 const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbName, schemaData, setSchemaData, formList }) => {
-  const [active, setActive] = useState(form.formModes.length > 0 ? true : false);
+  const [activatedForms, setActivatedForms] = useState(schemaData.forms.map((form) => form.formName))
+  const [active, setActive] = useState(activatedForms.includes(form.formName))
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [resetForm, setResetForm] = useState(false);
@@ -97,15 +98,14 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     if (loading) {
         dispatch(toggleAlert(`Please wait while forms are still saving!`))
     } else if (!active && (!updateFormError)) {
-        toggleConfigure(form.formName)
-        setActive(active)
+      toggleConfigure(form.formName)
     } else if (!updateFormError) {
-        dispatch(toggleAlert(`This form is already active!`))
+      dispatch(toggleAlert(`This form is already active!`))
     } else {
-        dispatch({
-            type: FORMS_ERROR,
-            payload: false
-        });
+      dispatch({
+        type: FORMS_ERROR,
+        payload: false
+      });
     }
     handleCloseMenu()
   }
@@ -173,6 +173,12 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     setAnchorEl(null)
     setOpen(false)
   }
+
+  React.useEffect(() => {
+    const activatedFormsBuffer = schemaData.forms.map((form) => form.formName)
+    setActivatedForms(activatedFormsBuffer)
+    setActive(activatedFormsBuffer.includes(form.formName))
+  }, [form, schemaData])
 
   return (
     <ActionContainer>
