@@ -61,7 +61,6 @@ export const convertDesignType2Format = (designType: string, attributes: Array<s
       return "date";
     }
     return "date-time";
-    return "date-time";
   } else if (designType === "number") {
     return "float";
   } else if (designType === "authors") {
