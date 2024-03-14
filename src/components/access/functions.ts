@@ -51,8 +51,15 @@ export const move = (
   return result;
 };
 
-export const convertDesignType2Format = (designType: string) => {
+export const convertDesignType2Format = (designType: string, attributes: Array<string>) => {
   if (designType === "datetime") {
+    if (attributes.length === 1 && attributes.includes("time")) {
+      return "string";
+    }
+
+    if (attributes.length === 1 && attributes.includes("date")) {
+      return "date";
+    }
     return "date-time";
   } else if (designType === "number") {
     return "float";

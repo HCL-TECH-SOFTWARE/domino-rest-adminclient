@@ -655,7 +655,7 @@ export const fetchFields = (
               });
             } else {
               let field = res.data[key];
-              let format = key === "$FILES" ? "string" : convertDesignType2Format(field.type);
+              let format = key === "$FILES" ? "string" : convertDesignType2Format(field.type, field.attributes);
               let allowMultiValues = field.allowmultivalues;
               let type = convert2FieldType(format, allowMultiValues);
               let fieldAccess = 'RO';
