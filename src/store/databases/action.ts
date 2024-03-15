@@ -1758,15 +1758,17 @@ export const updateFormMode = (
         )
         .then((response) => {
           const { data } = response;
+          console.log(data)
+          // setSchemaData(data)
 
           if (formIdx !== -1) {
-            setSchemaData(data)
+            setSchemaData({ ...data })
             dispatch(
               appendConfiguredForm(formIdx, formModeData)
             );
           }
           if (!clone) {
-            setSchemaData(data)
+            setSchemaData({ ...data })
             dispatch(
               toggleAlert(
                 `${formModeData.modeName} mode has been successfully ${
@@ -1775,7 +1777,7 @@ export const updateFormMode = (
               )
             );
           } else {
-            setSchemaData(data)
+            setSchemaData({ ...data })
             dispatch(
               toggleAlert(
                 `Mode successfully cloned to ${formModeData.modeName}`
@@ -1783,11 +1785,20 @@ export const updateFormMode = (
             );
           }
 
+          dispatch({
+            type: SET_FORMS,
+            payload: {
+              ...data,
+              db: data.schemaName,
+            }
+          })
+
           dispatch(setApiLoading(false));
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
           dispatch(toggleAlert(`Update form mode failed! ${errorMsg}`));
+          console.log(errorMsg)
         });
       dispatch(clearDBError());
     } catch (err: any) {
