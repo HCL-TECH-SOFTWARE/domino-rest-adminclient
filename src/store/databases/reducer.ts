@@ -267,10 +267,37 @@ export default function databaseReducer(
       });
     case SET_FORMS:
       const { db, forms } = action.payload;
+      console.log(db)
+      console.log(forms)
       const dbIndex = getDatabaseIndex(state.databasesOverview, db, action.payload.nsfPath);
+      // const dbIndex = state.databasesOverview.findIndex()
       return produce(state, (draft: DBState) => {
+        console.log(state.forms)
+        console.log(dbIndex)
         if (dbIndex !== -1) {
-          draft.forms = forms
+          console.log("in")
+          // console.log()
+          draft.forms = state.forms.map((form) => {
+            if (forms.map((frm) => frm.formName).includes(form.formName)) {
+              return forms.find((frm) => frm.formName === form.formName)
+            } else {
+              return form
+            }
+          })
+          const test = state.forms.map((form) => {
+            if (forms.map((frm) => frm.formName).includes(form.formName)) {
+              const getForm = forms.find((frm) => frm.formName === form.formName)
+              return {
+                alias: getForm.alias,
+                formModes: getForm.formModes,
+                formName: getForm.formName,
+                formValue: getForm.formName,
+              }
+            } else {
+              return form
+            }
+          })
+          console.log(test)
         }
       });
     case ADD_FORM:
