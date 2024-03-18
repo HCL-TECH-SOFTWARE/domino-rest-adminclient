@@ -15,6 +15,7 @@ import { toggleAlert } from '../../store/alerts/action';
 import { Database, FORMS_ERROR } from '../../store/databases/types';
 import { deleteForm, handleDatabaseForms } from '../../store/databases/action';
 import { BsThreeDots } from "react-icons/bs";
+import { ButtonNeutral, ButtonYes, WarningIcon } from '../../styles/CommonStyles';
 
 const ActionContainer = styled.div`
   display: flex;
@@ -115,7 +116,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
   }
 
   const handleConfirmDeactivate = () => {
-    toggleUnconfigure()
+    toggleDeactivate()
     setActive(false)
     setResetForm(false)
   }
@@ -150,7 +151,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     
   };
 
-  const toggleUnconfigure = async () => {
+  const toggleDeactivate = async () => {
     if (formList.includes(form.formName)) {
       dispatch(deleteForm(schemaData, form.formName) as any)
     } else {
@@ -203,27 +204,34 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
             aria-labelledby="reset-view-dialog"
             aria-describedby='reset-view-description'
         >
-            <DialogTitle id="reset-view-dialog-title">
-                {
-                    formList.includes(form.formName) ?
-                    `Reset Form?`
-                    :
-                    `WARNING: Deleting Custom Form`
-                }
+            <DialogTitle>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Box style={{ width: 'fit-content' }}>
+                  <WarningIcon />
+                </Box>
+                <Typography variant='h4' style={{ fontSize: '20px', fontWeight: 700 }}>
+                  {
+                      formList.includes(form.formName) ?
+                      `Reset Form?`
+                      :
+                      `WARNING: Deleting Custom Form`
+                  }
+                </Typography>
+              </Box>
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="reset-view-dialog-contents" color='textPrimary'>
-                    {
-                        formList.includes(form.formName) ?
-                        `Deactivating this form will delete all form modes and remove any configurations done to this form. Do you wish to proceed?`
-                        :
-                        `This is a custom form. Deactivating this form will DELETE it from the schema entirely, which means you won't be able to retrieve it. Do you wish to proceed?`
-                    }
+                  {
+                      formList.includes(form.formName) ?
+                      `Deactivating this form will delete all form modes and remove any configurations done to this form. Do you wish to proceed?`
+                      :
+                      `This is a custom form. DELETING this form removes it from the schema entirely, which means you won't be able to retrieve it. Do you wish to proceed?`
+                  }
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => {setResetForm(false)}}>No</Button>
-                <Button onClick={handleConfirmDeactivate}>Yes</Button>
+              <ButtonNeutral onClick={() => {setResetForm(false)}}>No</ButtonNeutral>
+              <ButtonYes onClick={handleConfirmDeactivate}>Yes</ButtonYes>
             </DialogActions>
         </Dialog>
     </ActionContainer>
