@@ -1154,7 +1154,7 @@ function loadConfiguredForms(
     .catch((e: any) => console.log('Error processing: ' + e));
   }
 
-export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArray: Array<any>, setSchemaData: (data: Database) => void) => {
+export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArray: Array<any>) => {
   return async (dispatch: Dispatch) => {
     // Send the new views to the server
     const formModeData = {
@@ -1189,7 +1189,7 @@ export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArr
         formToUpdate.push(newFormData);
       }
     });
-    dispatch(updateForms(schemaData,dbName, formToUpdate, setSchemaData) as any);
+    dispatch(updateForms(schemaData,dbName, formToUpdate) as any);
   }
 }
 
@@ -1259,7 +1259,7 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
   }
 }
 
-const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>, setSchemaData: (data: Database) => void) => {
+const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>) => {
   let configformsList: Array<any> = [];
   return async (dispatch: Dispatch) => {
     const newSchemaData: any = _.omit(
@@ -1284,12 +1284,9 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
         )
         .then((response) => {
           const { data } = response;
-          console.log(data)
-          setSchemaData(data)
           configformsList = response.data.forms.map((form: any) => {
             return { ...form, dbName };
           });
-          console.log(configformsList)
 
           dispatch(dispatch({
             type: SET_FORMS,
@@ -1746,7 +1743,6 @@ export const updateFormMode = (
       },
       ['isFetch']
     );
-    console.log(newSchemaData)
     try {
       dispatch(setApiLoading(true));
       await axios
