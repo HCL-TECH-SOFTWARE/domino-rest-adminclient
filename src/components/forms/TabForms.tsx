@@ -29,7 +29,6 @@ import {
 } from "../../store/databases/action";
 import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
-import { createFilterOptions } from "@material-ui/lab";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
 
@@ -102,9 +101,10 @@ const CreateFormDialogContainer = styled.dialog`
 `
 
 /**
- * Database views Component
+ * Database Forms Component
  *
  * @author Alec Vincent Bardiano
+ * @author Denise Soriano
  */
 
 interface TabFormProps {
@@ -149,13 +149,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         )
       : []
     )
-    console.log(forms && forms.length > 0
-      ? forms.map((form) =>
-          "formModes" in form
-            ? form
-            : { ...form, formModes: form.formAccessModes }
-        )
-      : [])
   }, [forms])
 
   let { dbName, nsfPath } = useParams() as { dbName: string; nsfPath: string };
@@ -169,15 +162,18 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
     });
     setFiltered(filteredDatabases);
   };
-  function handleConfigureAll() {
-    console.log(forms)
-    dispatch(handleDatabaseForms(schemaData, dbName, forms, setSchemaData) as any);
+  function handleActivateAll() {
+    const successMsg = "Successfully activated all forms."
+    dispatch(handleDatabaseForms(schemaData, dbName, forms, setSchemaData, successMsg) as any);
+    dispatch(toggleAlert(`Successfully activated all forms.`))
     dispatch(pullForms(nsfPath, dbName, setData) as any);
   }
 
-  async function handleUnConfigureAll() {
+  async function handleDeactivateAll() {
     const customForms = forms.filter((form) => !formList.includes(form.formName))
-    dispatch(handleDatabaseForms(schemaData, dbName, customForms, setSchemaData) as any);
+    const successMsg = "Successfully deactivated all designer forms."
+    dispatch(handleDatabaseForms(schemaData, dbName, customForms, setSchemaData, successMsg) as any);
+    dispatch(toggleAlert(`Successfully deactivated all designer forms.`))
     dispatch(pullForms(nsfPath, dbName, setData) as any);
     setResetAllForms(false);
   }
@@ -286,7 +282,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         <Box>
           <Button
             disabled={normalizeForms.length === 0 || loading}
-            onClick={handleConfigureAll}
+            onClick={handleActivateAll}
             className={`button activate ${normalizeForms.length === 0 || loading ? "disabled" : ""}`}
           >
             Activate All
@@ -374,7 +370,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           </DialogContentText>
         </DialogContent>
         <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
-          <Button className="btn right save" onClick={handleUnConfigureAll}>
+          <Button className="btn right save" onClick={handleDeactivateAll}>
             Yes
           </Button>
           <Button 

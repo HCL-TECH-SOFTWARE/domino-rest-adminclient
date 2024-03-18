@@ -13,7 +13,7 @@ import styled from 'styled-components';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { Database, FORMS_ERROR } from '../../store/databases/types';
-import { deleteForm, handleDatabaseForms, updateFormMode } from '../../store/databases/action';
+import { deleteForm, handleDatabaseForms } from '../../store/databases/action';
 import { BsThreeDots } from "react-icons/bs";
 
 const ActionContainer = styled.div`
@@ -97,7 +97,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     if (loading) {
         dispatch(toggleAlert(`Please wait while forms are still saving!`))
     } else if (!active && (!updateFormError)) {
-        toggleConfigure(form.formName)
+        toggleActivate(form.formName)
         setActive(active)
     } else if (!updateFormError) {
         dispatch(toggleAlert(`This form is already active!`))
@@ -119,10 +119,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     setActive(false)
     setResetForm(false)
   }
-  const toggleConfigure = (formName: string) => {
-    const formIndex = forms.findIndex(
-      (f: { formName: string; dbName: string; }) => f.formName === formName && f.dbName === dbName
-    );
+  const toggleActivate = (formName: string) => {
     const formModeData = {
       modeName: "default",
       fields: [],
@@ -141,38 +138,16 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
       computeWithForm: false,
     };
 
-    console.log(forms)
     const newForm = {
-      // dbName: dbName,
       formValue: formName,
       formName: formName,
       alias: [formName],
       formModes: [formModeData],
     }
-    console.log(schemaData.forms)
-    console.log([...schemaData.forms, newForm])
-    // const newForms = [
-    //   ...schemaData.forms.map((form) => {
-    //     console.log(form)
-    //     return {
-    //       alias,
-    //       formName,
-    //     }
-    //   })
-    // ]
-
-    // dispatch(
-    //   updateFormMode(
-    //     schemaData,
-    //     formName,
-    //     alias,
-    //     formModeData,
-    //     formIndex,
-    //     false,
-    //     setSchemaData
-    //   ) as any
-    // );
-    dispatch(handleDatabaseForms(schemaData, dbName, [...schemaData.forms, newForm], setSchemaData) as any)
+    
+    const successMsg = `Successfully activated form ${formName}.`
+    dispatch(handleDatabaseForms(schemaData, dbName, [...schemaData.forms, newForm], setSchemaData, successMsg) as any)
+    
   };
 
   const toggleUnconfigure = async () => {

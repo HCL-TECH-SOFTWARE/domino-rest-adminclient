@@ -266,11 +266,8 @@ export default function databaseReducer(
         draft.databasesOverview[action.payload.dbIndex] = action.payload.data;
       });
     case SET_FORMS:
-      const { db, forms } = action.payload;
-      // const dbIndex = state.forms.findIndex((form) => form.form);
-      console.log(forms)
+      const { forms } = action.payload;
       return produce(state, (draft: DBState) => {
-        // draft.forms = forms
         forms.forEach((form) => {
           const index = draft.forms.findIndex((f) => f.formName === form.formName)
           if (index !== -1) {
@@ -279,11 +276,6 @@ export default function databaseReducer(
             draft.forms = [...draft.forms, form]
           }
         })
-        console.log(draft.forms)
-        // if (dbIndex !== -1) {
-        //   console.log("updating forms")
-        //   draft.forms = forms
-        // }
       });
     case ADD_FORM:
       if (action.payload.enabled) {
