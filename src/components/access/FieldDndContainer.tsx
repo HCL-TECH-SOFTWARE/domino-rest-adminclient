@@ -376,26 +376,10 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
               onClick={toggleBatchDelete} 
               disabled={state[stateList[0]].length === 0}
             >
-              <Typography className={`batch-delete ${state[stateList[0]].length === 0 ? 'disabled' : ''}`}>Delete Multiple</Typography>
+              <Typography className={`batch-delete ${state[stateList[0]].length === 0 ? 'disabled' : ''}`}>Delete Field(s)</Typography>
             </Button>}
             {batchDelete && <Box display='flex' justifyContent='space-between' width='100%' padding='0'>
-              <Checkbox
-                className='field-checkbox' 
-                onChange={handleSelectAll}
-                size='small'
-                style={{
-                  color: '#0E5FDC',
-                }}
-              />
               <Box display='flex' flexWrap='wrap'>
-                <Button 
-                  className='batch-delete-button'
-                  style={{}}
-                  onClick={toggleBatchDelete} 
-                  disabled={state[stateList[0]].length === 0}
-                >
-                  <Typography className={`batch-delete`} style={{ color: '#000' }}>Cancel</Typography>
-                </Button>
                 <Tooltip title={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""} arrow>
                   <Button 
                     className='batch-delete-button'
@@ -404,7 +388,23 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
                     <Typography className={`batch-delete ${deleteFields.length === 0 ? 'disabled' : ''}`}>Remove</Typography>
                   </Button>
                 </Tooltip>
+                <Button 
+                  className='batch-delete-button'
+                  style={{}}
+                  onClick={toggleBatchDelete} 
+                  disabled={state[stateList[0]].length === 0}
+                >
+                  <Typography className={`batch-delete`} style={{ color: '#000' }}>Cancel</Typography>
+                </Button>
               </Box>
+              <Checkbox
+                className='field-checkbox' 
+                onChange={handleSelectAll}
+                size='small'
+                style={{
+                  color: '#0E5FDC',
+                }}
+              />
             </Box>}
           </Box>
           {state[stateList[0]].length > 0 && <Box className='field-list'>
@@ -442,6 +442,10 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
                   }
                   return (
                     <CustomItem onClick={() => setEditField(item)} key={`${item.name}-${idx}`}>
+                      <div className="field-info" onChange={(e) => {handleSelectField(e, item)}}>
+                        <div className="field-name">{item.name}</div>
+                        <div className="field-meta-data">{`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup}`}</div>
+                      </div>
                       {batchDelete && <Checkbox 
                         className='field-checkbox' 
                         onChange={(e) => {handleSelectField(e, item)}}
@@ -451,10 +455,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
                         }}
                         checked={deleteFields.filter((field) => field.name === item.name).length === 1}
                       />}
-                      <div className="field-info">
-                        <div className="field-name">{item.name}</div>
-                        <div className="field-meta-data">{`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup}`}</div>
-                      </div>
                     </CustomItem>
                   )
                 }))
