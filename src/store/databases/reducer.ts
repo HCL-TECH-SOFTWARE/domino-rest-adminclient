@@ -267,38 +267,23 @@ export default function databaseReducer(
       });
     case SET_FORMS:
       const { db, forms } = action.payload;
-      console.log(db)
+      // const dbIndex = state.forms.findIndex((form) => form.form);
       console.log(forms)
-      const dbIndex = getDatabaseIndex(state.databasesOverview, db, action.payload.nsfPath);
-      // const dbIndex = state.databasesOverview.findIndex()
       return produce(state, (draft: DBState) => {
-        console.log(state.forms)
-        console.log(dbIndex)
-        if (dbIndex !== -1) {
-          console.log("in")
-          // console.log()
-          draft.forms = state.forms.map((form) => {
-            if (forms.map((frm) => frm.formName).includes(form.formName)) {
-              return forms.find((frm) => frm.formName === form.formName)
-            } else {
-              return form
-            }
-          })
-          const test = state.forms.map((form) => {
-            if (forms.map((frm) => frm.formName).includes(form.formName)) {
-              const getForm = forms.find((frm) => frm.formName === form.formName)
-              return {
-                alias: getForm.alias,
-                formModes: getForm.formModes,
-                formName: getForm.formName,
-                formValue: getForm.formName,
-              }
-            } else {
-              return form
-            }
-          })
-          console.log(test)
-        }
+        // draft.forms = forms
+        forms.forEach((form) => {
+          const index = draft.forms.findIndex((f) => f.formName === form.formName)
+          if (index !== -1) {
+            draft.forms[index] = form
+          } else {
+            draft.forms = [...draft.forms, form]
+          }
+        })
+        console.log(draft.forms)
+        // if (dbIndex !== -1) {
+        //   console.log("updating forms")
+        //   draft.forms = forms
+        // }
       });
     case ADD_FORM:
       if (action.payload.enabled) {
