@@ -13,7 +13,7 @@ import styled from 'styled-components';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { Database, FORMS_ERROR } from '../../store/databases/types';
-import { deleteForm, updateFormMode } from '../../store/databases/action';
+import { deleteForm, handleDatabaseForms, updateFormMode } from '../../store/databases/action';
 import { BsThreeDots } from "react-icons/bs";
 
 const ActionContainer = styled.div`
@@ -84,8 +84,7 @@ interface ActivateMenuProps {
 
 
 const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbName, schemaData, setSchemaData, formList }) => {
-  const [activatedForms, setActivatedForms] = useState(schemaData.forms.map((form) => form.formName))
-  const [active, setActive] = useState(activatedForms.includes(form.formName))
+  const [active, setActive] = useState(form.formModes.length > 0 ? true : false);
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [resetForm, setResetForm] = useState(false);
@@ -98,14 +97,15 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     if (loading) {
         dispatch(toggleAlert(`Please wait while forms are still saving!`))
     } else if (!active && (!updateFormError)) {
-      toggleConfigure(form.formName)
+        toggleConfigure(form.formName)
+        setActive(active)
     } else if (!updateFormError) {
-      dispatch(toggleAlert(`This form is already active!`))
+        dispatch(toggleAlert(`This form is already active!`))
     } else {
-      dispatch({
-        type: FORMS_ERROR,
-        payload: false
-      });
+        dispatch({
+            type: FORMS_ERROR,
+            payload: false
+        });
     }
     handleCloseMenu()
   }
@@ -141,27 +141,43 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
       computeWithForm: false,
     };
 
-    const alias = forms[formIndex].alias;
-    dispatch(
-      updateFormMode(
-        schemaData,
-        formName,
-        alias,
-        formModeData,
-        formIndex,
-        false,
-        setSchemaData
-      ) as any
-    );
+    console.log(forms)
+    const newForm = {
+      // dbName: dbName,
+      formValue: formName,
+      formName: formName,
+      alias: [formName],
+      formModes: [formModeData],
+    }
+    console.log(schemaData.forms)
+    console.log([...schemaData.forms, newForm])
+    // const newForms = [
+    //   ...schemaData.forms.map((form) => {
+    //     console.log(form)
+    //     return {
+    //       alias,
+    //       formName,
+    //     }
+    //   })
+    // ]
+
+    // dispatch(
+    //   updateFormMode(
+    //     schemaData,
+    //     formName,
+    //     alias,
+    //     formModeData,
+    //     formIndex,
+    //     false,
+    //     setSchemaData
+    //   ) as any
+    // );
+    dispatch(handleDatabaseForms(schemaData, dbName, [...schemaData.forms, newForm], setSchemaData) as any)
   };
 
   const toggleUnconfigure = async () => {
     if (formList.includes(form.formName)) {
       dispatch(deleteForm(schemaData, form.formName) as any)
-      setSchemaData({
-        ...schemaData,
-        forms: schemaData.forms.filter((item) => item.formName !== form.formName)
-      })
     } else {
       dispatch(deleteForm(schemaData, form.formName, setSchemaData) as any)
     }
@@ -177,12 +193,6 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     setAnchorEl(null)
     setOpen(false)
   }
-
-  React.useEffect(() => {
-    const activatedFormsBuffer = schemaData.forms.map((form) => form.formName)
-    setActivatedForms(activatedFormsBuffer)
-    setActive(activatedFormsBuffer.includes(form.formName))
-  }, [form, schemaData])
 
   return (
     <ActionContainer>

@@ -149,6 +149,13 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         )
       : []
     )
+    console.log(forms && forms.length > 0
+      ? forms.map((form) =>
+          "formModes" in form
+            ? form
+            : { ...form, formModes: form.formAccessModes }
+        )
+      : [])
   }, [forms])
 
   let { dbName, nsfPath } = useParams() as { dbName: string; nsfPath: string };
@@ -163,13 +170,14 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
     setFiltered(filteredDatabases);
   };
   function handleConfigureAll() {
-    dispatch(handleDatabaseForms(schemaData, dbName, forms) as any);
+    console.log(forms)
+    dispatch(handleDatabaseForms(schemaData, dbName, forms, setSchemaData) as any);
     dispatch(pullForms(nsfPath, dbName, setData) as any);
   }
 
   async function handleUnConfigureAll() {
     const customForms = forms.filter((form) => !formList.includes(form.formName))
-    dispatch(handleDatabaseForms(schemaData, dbName, customForms) as any);
+    dispatch(handleDatabaseForms(schemaData, dbName, customForms, setSchemaData) as any);
     dispatch(pullForms(nsfPath, dbName, setData) as any);
     setResetAllForms(false);
   }

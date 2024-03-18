@@ -1154,7 +1154,7 @@ function loadConfiguredForms(
     .catch((e: any) => console.log('Error processing: ' + e));
   }
 
-export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArray: Array<any>) => {
+export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArray: Array<any>, setSchemaData: (data: Database) => void) => {
   return async (dispatch: Dispatch) => {
     // Send the new views to the server
     const formModeData = {
@@ -1189,7 +1189,7 @@ export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArr
         formToUpdate.push(newFormData);
       }
     });
-    dispatch(updateForms(schemaData,dbName, formToUpdate) as any);
+    dispatch(updateForms(schemaData,dbName, formToUpdate, setSchemaData) as any);
   }
 }
 
@@ -1259,7 +1259,7 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
   }
 }
 
-const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>) => {
+const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>, setSchemaData: (data: Database) => void) => {
   let configformsList: Array<any> = [];
   return async (dispatch: Dispatch) => {
     const newSchemaData: any = _.omit(
@@ -1284,9 +1284,12 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
         )
         .then((response) => {
           const { data } = response;
+          console.log(data)
+          setSchemaData(data)
           configformsList = response.data.forms.map((form: any) => {
             return { ...form, dbName };
           });
+          console.log(configformsList)
 
           dispatch(dispatch({
             type: SET_FORMS,
@@ -1743,6 +1746,7 @@ export const updateFormMode = (
       },
       ['isFetch']
     );
+    console.log(newSchemaData)
     try {
       dispatch(setApiLoading(true));
       await axios
@@ -1758,17 +1762,15 @@ export const updateFormMode = (
         )
         .then((response) => {
           const { data } = response;
-          console.log(data)
-          // setSchemaData(data)
 
           if (formIdx !== -1) {
-            setSchemaData({ ...data })
+            setSchemaData(data)
             dispatch(
               appendConfiguredForm(formIdx, formModeData)
             );
           }
           if (!clone) {
-            setSchemaData({ ...data })
+            setSchemaData(data)
             dispatch(
               toggleAlert(
                 `${formModeData.modeName} mode has been successfully ${
@@ -1777,7 +1779,7 @@ export const updateFormMode = (
               )
             );
           } else {
-            setSchemaData({ ...data })
+            setSchemaData(data)
             dispatch(
               toggleAlert(
                 `Mode successfully cloned to ${formModeData.modeName}`
@@ -1785,20 +1787,11 @@ export const updateFormMode = (
             );
           }
 
-          dispatch({
-            type: SET_FORMS,
-            payload: {
-              ...data,
-              db: data.schemaName,
-            }
-          })
-
           dispatch(setApiLoading(false));
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
           dispatch(toggleAlert(`Update form mode failed! ${errorMsg}`));
-          console.log(errorMsg)
         });
       dispatch(clearDBError());
     } catch (err: any) {
