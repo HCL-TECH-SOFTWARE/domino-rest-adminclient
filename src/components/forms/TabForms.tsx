@@ -165,7 +165,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   function handleActivateAll() {
     const successMsg = "Successfully activated all forms."
     dispatch(handleDatabaseForms(schemaData, dbName, forms, setSchemaData, successMsg) as any);
-    dispatch(toggleAlert(`Successfully activated all forms.`))
     dispatch(pullForms(nsfPath, dbName, setData) as any);
   }
 
@@ -173,7 +172,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
     const customForms = forms.filter((form) => !formList.includes(form.formName))
     const successMsg = "Successfully deactivated all designer forms."
     dispatch(handleDatabaseForms(schemaData, dbName, customForms, setSchemaData, successMsg) as any);
-    dispatch(toggleAlert(`Successfully deactivated all designer forms.`))
     dispatch(pullForms(nsfPath, dbName, setData) as any);
     setResetAllForms(false);
   }
