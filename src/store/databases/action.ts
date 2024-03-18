@@ -237,45 +237,6 @@ export const fetchScope = async (scopeData: any) => {
   };
 };
 
-export const fetchSchema2 = async (nsfPath: string, schemaName: string, setSchemaData: (schemaData: Database) => void) => {
-  // const { nsfPath, schemaName } = schemaData;
-  return async (dispatch: Dispatch) => {
-    await axios
-      .get(
-        `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-      .then((res) => {
-        setSchemaData(res.data)
-        dispatch({
-          type: SET_API_LOADING,
-          payload: false,
-        })
-    });
-  }
-  // const schema = await axios
-  //   .get(
-  //     `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`,
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${getToken()}`,
-  //         'Content-Type': 'application/json'
-  //       }
-  //     }
-  //   )
-  //   .then((res) => res.data);
-  // return {
-  //   ...schema,
-  //   schemaName: schemaName,
-  //   nsfPath
-  // };
-};
-
 /**
  * Retrieves views for a particular database and
  * passes them to Redux.
@@ -1154,7 +1115,22 @@ function loadConfiguredForms(
     .catch((e: any) => console.log('Error processing: ' + e));
   }
 
-export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArray: Array<any>) => {
+/**
+ * Prepare form object to pass into the schema data payload.
+ *
+ * @param schemaData      the current schema object before changing the forms
+ * @param dbName          the name of the schema
+ * @param formsArray      the array of the new forms to be set into the schema object
+ * @param setSchemaData   callback to set the schema state
+ * @param successMsg      the alert message to show if updating the forms is a success
+ */
+export const handleDatabaseForms= (
+  schemaData: Database,
+  dbName:string,
+  formsArray: Array<any>,
+  setSchemaData: (data: Database) => void,
+  successMsg: string
+) => {
   return async (dispatch: Dispatch) => {
     // Send the new views to the server
     const formModeData = {
@@ -1189,7 +1165,7 @@ export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArr
         formToUpdate.push(newFormData);
       }
     });
-    dispatch(updateForms(schemaData,dbName, formToUpdate) as any);
+    dispatch(updateForms(schemaData,dbName, formToUpdate, setSchemaData, successMsg) as any);
   }
 }
 
@@ -1259,7 +1235,16 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
   }
 }
 
-const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>) => {
+/**
+ * Set the new forms by updating the schema.
+ *
+ * @param schemaData      the current schema object before changing the forms
+ * @param dbName          the name of the schema
+ * @param formsData       the array of the organized forms to be set into the schema object
+ * @param setSchemaData   callback to set the schema state
+ * @param successMsg      the alert message to show if updating the forms is a success
+ */
+const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>, setSchemaData: (data: Database) => void, successMsg: string) => {
   let configformsList: Array<any> = [];
   return async (dispatch: Dispatch) => {
     const newSchemaData: any = _.omit(
@@ -1284,6 +1269,7 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
         )
         .then((response) => {
           const { data } = response;
+          setSchemaData(data)
           configformsList = response.data.forms.map((form: any) => {
             return { ...form, dbName };
           });
@@ -1295,16 +1281,12 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
               forms: configformsList
             }
           }));
-          dispatch(toggleAlert(`Forms have been successfully saved.`));
           dispatch(setApiLoading(false));
+          dispatch(toggleAlert(successMsg))
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
           dispatch(toggleAlert(`Update forms failed! ${errorMsg}`));
-          dispatch({
-            type: VIEWS_ERROR,
-            payload: true
-          });
         });
       dispatch(clearDBError());
     } catch (err: any) {
@@ -1880,7 +1862,11 @@ export const deleteFormMode = (
 };
 
 /**
- * Delete configured form to server
+ * Deactivate a configured form to the server.
+ *
+ * @param schemaData      the current schema object before changing the forms
+ * @param formName        the name of the form to delete
+ * @param setSchemaData   callback to set the schema state
  */
 export const deleteForm = (schemaData: Database, formName: string, setSchemaData?: (data: Database) => void) => {
   return async (dispatch: Dispatch) => {
@@ -1925,7 +1911,7 @@ export const deleteForm = (schemaData: Database, formName: string, setSchemaData
           }
           dispatch(setApiLoading(false));
           dispatch(
-            toggleAlert(`${formName} has been Unconfigured Successfully.`)
+            toggleAlert(`Successfully deactivated form ${formName}.`)
           );
           // dispatch(toggleDeleteDialog());
           dispatch(unConfigForm(newSchemaData.schemaName, formName));

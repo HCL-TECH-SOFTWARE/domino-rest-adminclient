@@ -117,7 +117,6 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
   const [filtered, setFiltered] = useState(lists);
 
   useEffect(() => {
-    console.log(schemaData.views)
     setActiveViews(schemaData['views']?.map((view: any) => {
       const folderNames = folders.map((folder) => {return folder.viewName});
       return {

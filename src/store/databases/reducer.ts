@@ -266,12 +266,16 @@ export default function databaseReducer(
         draft.databasesOverview[action.payload.dbIndex] = action.payload.data;
       });
     case SET_FORMS:
-      const { db, forms } = action.payload;
-      const dbIndex = getDatabaseIndex(state.databasesOverview, db, action.payload.nsfPath);
+      const { forms } = action.payload;
       return produce(state, (draft: DBState) => {
-        if (dbIndex !== -1) {
-          draft.forms = forms
-        }
+        forms.forEach((form) => {
+          const index = draft.forms.findIndex((f) => f.formName === form.formName)
+          if (index !== -1) {
+            draft.forms[index] = form
+          } else {
+            draft.forms = [...draft.forms, form]
+          }
+        })
       });
     case ADD_FORM:
       if (action.payload.enabled) {
