@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -27,6 +27,9 @@ import { toggleApplicationDrawer } from '../../../store/drawer/action';
 import AppStack from '../AppStack';
 import AppSearch from '../AppSearch';
 import { TopContainer } from '../../../styles/CommonStyles';
+import Consents from './Consents';
+import { fetchUsers } from '../../../store/access/action';
+import { getConsents } from '../../../store/consents/action';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -41,6 +44,12 @@ const AppStackContainer = styled.div`
     height: calc( 100vh - 280px);
   }
 `;
+
+const ConsentsDialogContainer = styled.dialog`
+  border: none;
+  width: 90vw;
+  padding: 30px 35px;
+`
 
 const ApplicationFormSchema = Yup.object().shape({
   appName: Yup.string().trim().required('Application Name is Required.'),
@@ -65,10 +74,18 @@ const Kanban: React.FC = () => {
   const deleteAppMessage: string =
     'Are you sure you want to delete this Application?';
 
+  const ref = useRef<HTMLDialogElement>(null)
+
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
     setSelected(appId);
   };
+
+  const handleOpenConsents = () => {
+    dispatch(fetchUsers() as any)
+    dispatch(getConsents() as any)
+    ref.current?.showModal()
+  }
 
   const deleteApp = () => {
     dispatch(deleteApplication(selected) as any);
@@ -166,6 +183,13 @@ const Kanban: React.FC = () => {
         <Button
           color="primary"
           className="button-create"
+          onClick={handleOpenConsents}
+        >
+          OAuth Consents
+        </Button>
+        <Button
+          color="primary"
+          className="button-create"
           onClick={createAction}
         >
           <AddIcon style={{ margin: '0 5px' }} />
@@ -209,7 +233,11 @@ const Kanban: React.FC = () => {
           }
         />
       </AppStackContainer>
-
+      <ConsentsDialogContainer ref={ref} onClose={() => {ref.current?.close()}}>
+        <Consents
+          handleClose={() => {ref.current?.close()}}
+        />
+      </ConsentsDialogContainer>
       <DeleteApplicationDialog
         dialogTitle={deleteAppTitle}
         deleteMessage={deleteAppMessage}
