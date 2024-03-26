@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AddIcon from '@material-ui/icons/Add';
-import { Button, Typography } from '@material-ui/core';
+import { Box, Button, Dialog, Typography } from '@material-ui/core';
 import styled from 'styled-components';
 import {
   deleteApplication,
@@ -45,10 +45,10 @@ const AppStackContainer = styled.div`
   }
 `;
 
-const ConsentsDialogContainer = styled.dialog`
+const ConsentsDialogContainer = styled(Dialog)`
   border: none;
-  width: 90vw;
-  padding: 30px 35px;
+  width: 100vw;
+  padding: 2.5% 5%;
 `
 
 const ApplicationFormSchema = Yup.object().shape({
@@ -73,6 +73,7 @@ const Kanban: React.FC = () => {
   const deleteAppTitle: string = 'Delete Application';
   const deleteAppMessage: string =
     'Are you sure you want to delete this Application?';
+  const [consentDialogOpen, setConsentDialogOpen] = useState(false)
 
   const ref = useRef<HTMLDialogElement>(null)
 
@@ -84,7 +85,8 @@ const Kanban: React.FC = () => {
   const handleOpenConsents = () => {
     dispatch(fetchUsers() as any)
     dispatch(getConsents() as any)
-    ref.current?.showModal()
+    // ref.current?.showModal()
+    setConsentDialogOpen(true)
   }
 
   const deleteApp = () => {
@@ -172,6 +174,7 @@ const Kanban: React.FC = () => {
   };
 
   return (
+    <>
     <AppContainer>
       <TopContainer  style={{ marginTop: '15px' }}>
         <Typography
@@ -233,18 +236,37 @@ const Kanban: React.FC = () => {
           }
         />
       </AppStackContainer>
-      <ConsentsDialogContainer ref={ref} onClose={() => {ref.current?.close()}}>
+      {/* <ConsentsDialogContainer ref={ref} onClose={() => {ref.current?.close()}}> */}
+      {/* <Box style={{ width: '100vw' }}> */}
+        {/* <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}}>
+          <Consents
+            handleClose={() => {setConsentDialogOpen(false)}}
+          />
+        </ConsentsDialogContainer> */}
+      {/* </Box> */}
+      {/* <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}}>
         <Consents
-          handleClose={() => {ref.current?.close()}}
+          handleClose={() => {setConsentDialogOpen(false)}}
         />
-      </ConsentsDialogContainer>
+      </ConsentsDialogContainer> */}
       <DeleteApplicationDialog
         dialogTitle={deleteAppTitle}
         deleteMessage={deleteAppMessage}
         handleDelete={deleteApp}
       />
       <FormDrawer formName="AppForm" formik={formik} />
+      <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
+        <Consents
+          handleClose={() => {setConsentDialogOpen(false)}}
+        />
+      </ConsentsDialogContainer>
     </AppContainer>
+    {/* <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
+      <Consents
+        handleClose={() => {setConsentDialogOpen(false)}}
+      />
+    </ConsentsDialogContainer> */}
+    </>
   );
 };
 

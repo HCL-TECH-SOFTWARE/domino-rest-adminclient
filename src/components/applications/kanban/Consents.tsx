@@ -34,9 +34,12 @@ import { RxDividerVertical } from "react-icons/rx"
 import ConsentsTable from './ConsentsTable';
 
 const ConsentsContainer = styled.div`
-    display: flex;
-    gap: 16px;
-    flex-direction: column;
+  display: flex;
+  gap: 16px;
+  flex-direction: column;
+  z-index: 1;
+  width: 90vw;
+  padding: 30px 35px;
 `;
 
 const Header = styled.div`
@@ -54,7 +57,7 @@ const Header = styled.div`
 
 const OptionsBar = styled.div`
     display: flex;
-    padding: 0 16px;
+    padding: 25px 16px 0 16px;
     width: 100%;
     align-items: center;
     gap: 28px;
@@ -112,22 +115,22 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose }) => {
 
   return (
     <ConsentsContainer>
-        <Header>
-            <Typography className='title'>OAuth Consents</Typography>
-            <ButtonBase onClick={handleClose}><CloseIcon /></ButtonBase>
-        </Header>
-        <OptionsBar>
-            <Box className='option'>
-                <ButtonBase><ExpandMoreIcon /></ButtonBase>
-                Expand all
-            </Box>
-            <RxDividerVertical color='#A0A0A0' size='1.5em' />
-            <Box className='option'>
-                <ButtonBase><ExpandLessIcon /></ButtonBase>
-                Collapse all
-            </Box>
-        </OptionsBar>
-        <ConsentsTable />
+      <Header>
+        <Typography className='title'>OAuth Consents</Typography>
+        <ButtonBase onClick={handleClose}><CloseIcon /></ButtonBase>
+      </Header>
+      <OptionsBar>
+        <Box className='option'>
+          <ButtonBase><ExpandMoreIcon /></ButtonBase>
+          Expand all
+        </Box>
+        <RxDividerVertical color='#A0A0A0' size='1.5em' />
+        <Box className='option'>
+          <ButtonBase><ExpandLessIcon /></ButtonBase>
+          Collapse all
+        </Box>
+      </OptionsBar>
+      <ConsentsTable />
     </ConsentsContainer>
   );
 };

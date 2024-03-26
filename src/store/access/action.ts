@@ -29,7 +29,6 @@ export function fetchUsers (startsWith?: string) {
           payload: res.data,
         })
         dispatch(toggleUsersLoading());
-        console.log(res.data);
         // return res.data
       })
       .catch((err) => {

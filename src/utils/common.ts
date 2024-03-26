@@ -35,3 +35,24 @@ export function insertCharacter (inputString: string, interval: number, insertCh
 export function capitalizeFirst (inputString: string) {
   return inputString[0].toUpperCase() + inputString.slice(1)
 }
+
+// Get the string equivalent of expiration from milliseconds in this format ---> dd:hh:mm.
+// Copied from Stack Overflow: https://stackoverflow.com/questions/8528382/javascript-show-milliseconds-as-dayshoursmins-without-seconds
+export function stringExpiration(t: number){
+  var cd = 24 * 60 * 60 * 1000,
+    ch = 60 * 60 * 1000,
+    d = Math.floor(t / cd),
+    h = Math.floor( (t - d * cd) / ch),
+    m = Math.round( (t - d * cd - h * ch) / 60000),
+    pad = function(n: number){ return n < 10 ? '0' + n : n; };
+  if( m === 60 ){
+    h++;
+    m = 0;
+  }
+  if( h === 24 ){
+    d++;
+    h = 0;
+  }
+
+  return [d, pad(h), pad(m)].join(':');
+}
