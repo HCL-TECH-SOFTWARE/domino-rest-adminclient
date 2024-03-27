@@ -151,7 +151,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
             <StyledTableRow>
                 <TableCell colSpan={5}>
                     <Collapse in={showDetails} timeout="auto" unmountOnExit>
-                        <AppDetailContainer>
+                        {/* <AppDetailContainer>
                             <Box className='details-box'>
                                 <Box className='app-icon'>
                                     {!!iconName && <SchemaDBImage
@@ -173,10 +173,14 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                             <Box className='scope-description'>
                                 <span className='value'>{consent.scope_description}</span>
                             </Box>
-                        </AppDetailContainer>
+                        </AppDetailContainer> */}
                         <UrlContainer>
                             <span><b>URL:</b></span>
                             <a href={consent.redirect_uri} target='_blank' rel='noreferrer' className='value'>{consent.redirect_uri}</a>
+                        </UrlContainer>
+                        <UrlContainer>
+                            <span><b>Scope Name:</b></span>
+                            <text>{consent.scope}</text>
                         </UrlContainer>
                     </Collapse>
                 </TableCell>
