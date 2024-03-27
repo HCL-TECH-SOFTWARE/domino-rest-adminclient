@@ -4,13 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../store';
 import { fetchMyApps } from '../../store/applications/action';
-import PageLoading from '../loaders/PageLoading';
-import Kanban from './kanban/Kanban';
-import { AppFormContext } from './ApplicationContext';
 import styled from 'styled-components';
 import { Box } from '@material-ui/core';
 import Consents from './kanban/Consents';

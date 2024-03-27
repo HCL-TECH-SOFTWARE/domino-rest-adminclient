@@ -6,7 +6,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import * as Yup from 'yup';
 import styled from 'styled-components';
 import { Box, ButtonBase, Collapse, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { AppState } from '../../../store';
@@ -83,15 +82,11 @@ const UrlContainer = styled(Box)`
 
 interface ConsentItemProps {
   consent: Consent;
-  idx: number;
-  lastItem: boolean;
   expand: boolean;
 }
 
 const ConsentItem: React.FC<ConsentItemProps> = ({
   consent,
-  idx,
-  lastItem,
   expand,
 }) => {
   const [showDetails, setShowDetails] = useState(false);

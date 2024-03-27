@@ -16,7 +16,6 @@ import { TableFooter, TablePagination } from '@material-ui/core';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
-import TablePaginationActions from '@material-ui/core/TablePagination/TablePaginationActions';
 import { Consent } from '../../../store/consents/types';
 import ConsentItem from './ConsentItem';
 
@@ -79,10 +78,6 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - consents.length) : 0
-
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number,
@@ -123,8 +118,6 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
                       <ConsentItem
                         key={`${consent.username}-${idx}`}
                         consent={consent}
-                        idx={idx}
-                        lastItem={idx === consents.length - 1 ? true : false}
                         expand={expand}
                       />
                     )
@@ -149,7 +142,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
                         width: '70px',
                       }
                     }}
-                    ActionsComponent={TablePaginationActions}
+                    // ActionsComponent={TablePaginationActions} --> to investigate later
                   />
                 </TableRow>
               </TableFooter>

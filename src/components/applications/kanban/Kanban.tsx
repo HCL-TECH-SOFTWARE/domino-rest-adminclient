@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AddIcon from '@material-ui/icons/Add';
-import { Box, Button, Dialog, Typography } from '@material-ui/core';
+import { Button, Dialog, Typography } from '@material-ui/core';
 import styled from 'styled-components';
 import {
   deleteApplication,
@@ -76,8 +76,6 @@ const Kanban: React.FC = () => {
     'Are you sure you want to delete this Application?';
   const [consentDialogOpen, setConsentDialogOpen] = useState(false)
 
-  const ref = useRef<HTMLDialogElement>(null)
-
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
     setSelected(appId);
@@ -87,7 +85,6 @@ const Kanban: React.FC = () => {
     if (!appPull) dispatch(fetchMyApps() as any)
     dispatch(fetchUsers() as any)
     dispatch(getConsents() as any)
-    // ref.current?.showModal()
     setConsentDialogOpen(true)
   }
 
@@ -112,6 +109,7 @@ const Kanban: React.FC = () => {
       setFiltered(apps);
     }
   }, [apps, searchKey]);
+
   // Submit Form
   const formik = useFormik({
     initialValues: {
@@ -238,19 +236,6 @@ const Kanban: React.FC = () => {
           }
         />
       </AppStackContainer>
-      {/* <ConsentsDialogContainer ref={ref} onClose={() => {ref.current?.close()}}> */}
-      {/* <Box style={{ width: '100vw' }}> */}
-        {/* <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}}>
-          <Consents
-            handleClose={() => {setConsentDialogOpen(false)}}
-          />
-        </ConsentsDialogContainer> */}
-      {/* </Box> */}
-      {/* <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}}>
-        <Consents
-          handleClose={() => {setConsentDialogOpen(false)}}
-        />
-      </ConsentsDialogContainer> */}
       <DeleteApplicationDialog
         dialogTitle={deleteAppTitle}
         deleteMessage={deleteAppMessage}
@@ -264,11 +249,6 @@ const Kanban: React.FC = () => {
         />
       </ConsentsDialogContainer>
     </AppContainer>
-    {/* <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
-      <Consents
-        handleClose={() => {setConsentDialogOpen(false)}}
-      />
-    </ConsentsDialogContainer> */}
     </>
   );
 };

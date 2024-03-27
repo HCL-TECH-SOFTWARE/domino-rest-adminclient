@@ -186,7 +186,6 @@
 
           {routes.map((route) => {
             const Icon = route.icon;
-            console.log(route)
             return (
               <NavLink
                 key={route.label}
