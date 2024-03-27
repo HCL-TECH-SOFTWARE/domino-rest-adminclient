@@ -13,7 +13,6 @@
   import List from '@material-ui/core/List';
   import ListItem from '@material-ui/core/ListItem';
   import ListItemIcon from '@material-ui/core/ListItemIcon';
-  import ListIcon from '@mui/icons-material/List';
   import ListItemText from '@material-ui/core/ListItemText';
   import Tooltip from '@material-ui/core/Tooltip';
   import Divider from '@material-ui/core/Divider';
@@ -27,16 +26,13 @@
     databases,
     groups,
     people,
-    settings
+    settings,
   } from './Routes';
   import ProfileMenu from './ProfileMenu';
   import ProfileMenuDialog from './ProfileMenuDialog';
   import { IMG_DIR } from '../../config.dev';
   import { showPages } from '../../store/account/action';
-  import { toggleConsentsDrawer, toggleQuickConfigDrawer } from '../../store/drawer/action';
-import { getConsents } from '../../store/consents/action';
-import { fetchUsers } from '../../store/access/action';
-import { fetchMyApps } from '../../store/applications/action';
+  import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 
   const SideContainer = styled.aside<{ theme: string }>`
     height: calc(100vh - 23px);
@@ -135,10 +131,6 @@ import { fetchMyApps } from '../../store/applications/action';
 
   `;
 
-  const OAuthConsents = styled.div`
-
-  `;
-
   interface SidenavProps {
     classes: any;
     open: boolean;
@@ -151,7 +143,6 @@ import { fetchMyApps } from '../../store/applications/action';
     const { databasePull } = useSelector((state: AppState) => state.databases);
     const dispatch = useDispatch();
     const { themeMode } = useSelector((state: AppState) => state.styles);
-    const { appPull } = useSelector((state: AppState) => state.apps);
     useEffect(() => {
       dispatch(showPages() as any);
     }, [dispatch]);
@@ -162,13 +153,6 @@ import { fetchMyApps } from '../../store/applications/action';
       }
       dispatch(toggleQuickConfigDrawer());
     };
-
-    const handleConsentList = async () => {
-      if (!appPull) dispatch(fetchMyApps() as any);
-      dispatch(fetchUsers() as any);
-      dispatch(getConsents() as any);
-      dispatch(toggleConsentsDrawer());
-    }
 
     return (
       <SideContainer
@@ -202,6 +186,7 @@ import { fetchMyApps } from '../../store/applications/action';
 
           {routes.map((route) => {
             const Icon = route.icon;
+            console.log(route)
             return (
               <NavLink
                 key={route.label}
@@ -346,6 +331,46 @@ import { fetchMyApps } from '../../store/applications/action';
               );
             })}
 
+          {/* {navitems.apps &&
+            consents.map((route) => {
+              const Icon = route.icon;
+              return (
+                <NavLink
+                  key={route.label}
+                  exact
+                  className={
+                    `/${location.pathname.split('/')[1]}` === `${route.uri}`
+                      ? 'route-active'
+                      : ''
+                  }
+                  to={route.uri}
+                >
+                  <Tooltip
+                    enterDelay={700}
+                    placement="right"
+                    title={route.label}
+                    arrow
+                  >
+                    <ListItem className="link-container" button key={route.label}>
+                      <ListItemIcon>
+                        <Icon
+                          style={{
+                            color: getTheme(themeMode).sidenav.iconColor,
+                            fontSize: 19
+                          }}
+                        />
+                      </ListItemIcon>
+                      <ListItemText>
+                        <Typography className="text-link" style={{color: getTheme(themeMode).sidenav.textColor}}>
+                          {route.label}
+                        </Typography>
+                      </ListItemText>
+                    </ListItem>
+                  </Tooltip>
+                </NavLink>
+              );
+            })} */}
+
           {navitems.users &&
             people.map((route) => {
               const Icon = route.icon;
@@ -425,33 +450,6 @@ import { fetchMyApps } from '../../store/applications/action';
                 </NavLink>
               );
             })}
-
-          <OAuthConsents
-            className='consent-list'>
-            <Tooltip
-              enterDelay={700}
-              placement="right"
-              title="OAuth Consents"
-              arrow
-            >
-              <ListItem className="link-container" button key="OAuth Consents"
-                onClick={handleConsentList}>
-                <ListItemIcon>
-                  <ListIcon
-                    style={{
-                      color: getTheme(themeMode).sidenav.iconColor,
-                      fontSize: 19
-                    }}
-                  />
-                </ListItemIcon>
-                <ListItemText>
-                  <Typography className="text-link" style={{color: getTheme(themeMode).sidenav.textColor}}>
-                    OAuth Consents
-                  </Typography>
-                </ListItemText>
-              </ListItem>
-            </Tooltip>
-          </OAuthConsents>
 
           <Divider />
 

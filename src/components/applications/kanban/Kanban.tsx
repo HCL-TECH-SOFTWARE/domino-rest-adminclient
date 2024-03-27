@@ -16,6 +16,7 @@ import {
   addApplication,
   updateApp,
   clearAppError,
+  fetchMyApps,
 } from '../../../store/applications/action';
 import { AppState } from '../../../store';
 import { toggleAlert } from '../../../store/alerts/action';
@@ -59,7 +60,7 @@ const ApplicationFormSchema = Yup.object().shape({
 });
 
 const Kanban: React.FC = () => {
-  const { apps } = useSelector((selector: AppState) => selector.apps);
+  const { apps, appPull } = useSelector((selector: AppState) => selector.apps);
   const { permissions } = useSelector(
     (state: AppState) => state.databases
   );
@@ -83,6 +84,7 @@ const Kanban: React.FC = () => {
   };
 
   const handleOpenConsents = () => {
+    if (!appPull) dispatch(fetchMyApps() as any)
     dispatch(fetchUsers() as any)
     dispatch(getConsents() as any)
     // ref.current?.showModal()
@@ -258,6 +260,7 @@ const Kanban: React.FC = () => {
       <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
         <Consents
           handleClose={() => {setConsentDialogOpen(false)}}
+          dialog={true}
         />
       </ConsentsDialogContainer>
     </AppContainer>

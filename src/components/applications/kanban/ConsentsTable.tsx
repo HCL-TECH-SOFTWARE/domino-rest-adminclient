@@ -12,21 +12,13 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, Button, ButtonBase, TableFooter, TablePagination, Tooltip, Typography } from '@material-ui/core';
+import { TableFooter, TablePagination } from '@material-ui/core';
 import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
-import { FiEdit2 } from 'react-icons/fi';
-import { AiOutlineQuestionCircle } from 'react-icons/ai';
-import { FaRegFolderOpen } from "react-icons/fa";
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
 import TablePaginationActions from '@material-ui/core/TablePagination/TablePaginationActions';
-import { stringExpiration } from '../../../utils/common';
-
-const StyledTableCell = styled(TableCell)`
-  padding-left: 30px;
-  padding-right: 30px;
-`
+import { Consent } from '../../../store/consents/types';
+import ConsentItem from './ConsentItem';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
@@ -42,38 +34,6 @@ const StyledTableBody = styled(TableBody)`
   padding-top: 20px;
   padding-bottom: 20px;
   border-bottom: none;
-`
-
-const StyledTableRow = styled(TableRow)`
-//   &:nth-of-type(odd) {
-//     background-color: #F8FBFF;
-//     border-bottom: none;
-//   }
-
-  // hide last border
-  // &:last-child th, &:last-child td {
-  //   border-bottom: 0;
-  // }
-
-  .exp-content {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .exp-row {
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-    align-items: center;
-  }
-
-  .text {
-    font-size: 14px;
-  }
-
-  .revoke {
-    color: #AA1F51;
-  }
 `
 
 const StyledTableContainer = styled(TableContainer)`
@@ -102,57 +62,20 @@ const StyledTableContainer = styled(TableContainer)`
   .action {
     width: 10%;
   }
-`
 
-const StatusHeader = styled.div`
-  cursor: default;
-
-  .tooltip {
-    background: #ffffff;
-    text-color: #000000;
-  }
-
-  .status-icon {
-    transform: translateY(10%);
+  .collapse {
+    width: 100%;
   }
 `
 
-const EditIcon = styled.div`
-  cursor: pointer;
-`
-
-const ViewNameDisplay = styled.div`
-  text-transform: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`
-
-const AliasContainer = styled.span`
-    text-transform: none;
-    cursor: default;
-`
-
-interface ViewsTableProps {
-  views: Array<any>;
-  toggleActive: any;
-  toggleInactive: any;
-  dbName: string;
-  nsfPath: string;
-  setViewOpen: any;
-  setOpenViewName: any;
+interface ConsentsTableProps {
+  expand: boolean;
 }
 
-const ConsentsTable: React.FC = () => {
-//   const { loading } = useSelector((state: AppState) => state.dialog);
-//   const { folders } = useSelector((state: AppState) => state.databases);
-//   const folderNames = folders.map((folder) => {return folder.viewName});
-  const dispatch = useDispatch();
-  const { consents, deleteConsentDialog, deleteUnid } = useSelector((state: AppState) => state.consents)
+const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
+  const { consents } = useSelector((state: AppState) => state.consents)
   const { consentsLoading, usersLoading } = useSelector((state: AppState) => state.loading)
-  const { users } = useSelector((state: AppState) => state.users)
-  const { apps } = useSelector((state: AppState) => state.apps)
-
+  
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
 
@@ -173,11 +96,6 @@ const ConsentsTable: React.FC = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   }
-
-  React.useEffect(() => {
-    console.log(`users loading: ${usersLoading}`)
-    console.log(`consents loading: ${consentsLoading}`)
-  }, [usersLoading, consentsLoading])
   
   return (
     <>
@@ -200,47 +118,15 @@ const ConsentsTable: React.FC = () => {
                   ? consents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   : consents
                 )
-                  .map((consent) => {
-                    const allMatches = users?.filter((user) => user[Object.keys(user)[0]].FullName[0] === consent.username);
-                    const username = allMatches && allMatches.length > 0 && allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress[0] !== ''
-                                      ? allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress :
-                                      consent.username
-                    const app = apps.find((app: any) => app.appId === consent.client_id)
-                    const expirationPast = new Date(consent.code_expires_at).getTime() - new Date().getTime()
-                    const tokenExpirationPast = new Date(consent.refresh_token_expires_at).getTime() - new Date().getTime()
-                    if (!tokenExpirationPast) {
-                      console.log(new Date(consent.refresh_token_expires_at))
-                      console.log(consent.refresh_token_expires_at)
-                      console.log(new Date().getTime() - new Date(consent.refresh_token_expires_at).getTime())
-                      console.log(stringExpiration(new Date(consent.refresh_token_expires_at).getTime() - new Date().getTime()))
-                    }
+                  .map((consent: Consent, idx: number) => {
                     return (
-                      <StyledTableRow>
-                        <TableCell className='expand' />
-                        <TableCell className='user'>{username}</TableCell>
-                        <TableCell className='app-name'>{app ? app.appName : "-"}</TableCell>
-                        <TableCell className='expiration exp-content'>
-                          <Box className='exp-row'>
-                            <Tooltip title={expirationPast > 0 && expirationPast <= 86400000 ? "Expiring in less than a day" : ""}>
-                              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 9 9" fill="none">
-                                <circle cx="4.5" cy="4.5" r="4.5" fill={expirationPast < 0 ? '#C3335F' : expirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
-                              </svg>
-                            </Tooltip>
-                            <Typography className='text'>Expiration:</Typography>
-                            <Typography className='text'>{`${new Date(consent.code_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.code_expires_at).toUTCString() : "-"}`}</Typography>
-                          </Box>
-                          <Box className='exp-row'>
-                            <Tooltip title={tokenExpirationPast > 0 && tokenExpirationPast <= 86400000 ? "Expiring in less than a day" : ""}>
-                              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 9 9" fill="none">
-                                <circle cx="4.5" cy="4.5" r="4.5" fill={tokenExpirationPast < 0 ? '#C3335F' : tokenExpirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
-                              </svg>
-                            </Tooltip>
-                            <Typography className='text'>Token Expiration:</Typography>
-                            <Typography className='text'>{`${new Date(consent.refresh_token_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.refresh_token_expires_at).toUTCString() : "-"}`}</Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell><ButtonBase className='revoke'>Revoke</ButtonBase></TableCell>
-                      </StyledTableRow>
+                      <ConsentItem
+                        key={`${consent.username}-${idx}`}
+                        consent={consent}
+                        idx={idx}
+                        lastItem={idx === consents.length - 1 ? true : false}
+                        expand={expand}
+                      />
                     )
                   })}
               </StyledTableBody>
@@ -256,9 +142,7 @@ const ConsentsTable: React.FC = () => {
                     SelectProps={{
                       inputProps: {
                         'aria-label': 'rows per page',
-                        // backgroundColor: 'yellow',
                       },
-                      // native: true,
                       style: {
                         borderRadius: '10px',
                         border: '1px solid black',

@@ -4,34 +4,20 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import AddIcon from '@material-ui/icons/Add';
-import { Box, Button, ButtonBase, Table, TableContainer, Typography } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Box, Button, ButtonBase, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip, Typography } from '@material-ui/core';
 import styled from 'styled-components';
-import {
-  deleteApplication,
-  addApplication,
-  updateApp,
-  clearAppError,
-} from '../../../store/applications/action';
-import { AppState } from '../../../store';
-import { toggleAlert } from '../../../store/alerts/action';
-import DeleteApplicationDialog from '../DeleteApplicationDialog';
-import FormDrawer from '../FormDrawer';
-import { toggleDeleteDialog } from '../../../store/dialog/action';
-import { AppFormContext } from '../ApplicationContext';
-import { toggleApplicationDrawer } from '../../../store/drawer/action';
-import AppStack from '../AppStack';
-import AppSearch from '../AppSearch';
-import { TopContainer } from '../../../styles/CommonStyles';
 import CloseIcon from '@material-ui/icons/Close'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import { RxDividerVertical } from "react-icons/rx"
 import ConsentsTable from './ConsentsTable';
+import KeyboardBackspaceIcon from '@material-ui/icons/KeyboardBackspace'
+import { CommonDialog } from '../../../styles/CommonStyles';
+import { useSelector } from 'react-redux';
+import { AppState } from '../../../store';
+import { useDispatch } from 'react-redux';
+import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 
 const ConsentsContainer = styled.div`
   display: flex;
@@ -75,62 +61,80 @@ const OptionsBar = styled.div`
     }
 `
 
-const AppStackContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc( 100vh - 260px);
-  @media only screen and (max-width: 768px) {
-    height: calc( 100vh - 280px);
-  }
-`;
-
-const ApplicationFormSchema = Yup.object().shape({
-  appName: Yup.string().trim().required('Application Name is Required.'),
-  appCallbackUrlsStr: Yup.string().required('At least one URL is required.'),
-  appStartPage: Yup.string().required('Startup page is required.'),
-  appScope: Yup.string().required('Scope is required.'),
-});
-
 interface ConsentsProps {
-    handleClose: () => void;
+  handleClose: () => void;
+  dialog: boolean;
+}
+
+const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
+  const [expand, setExpand] = useState(false)
+  const { deleteConsentDialog, deleteUnid } = useSelector((state: AppState) => state.consents)
+  const dispatch = useDispatch()
+
+  const handleCloseDialog = () => {
+    dispatch(toggleDeleteConsent(''));
   }
 
-const Consents: React.FC<ConsentsProps> = ({ handleClose }) => {
-  const { apps } = useSelector((selector: AppState) => selector.apps);
-  const { permissions } = useSelector(
-    (state: AppState) => state.databases
-  );
-  const permissionCreate = permissions.createDbMapping;
-  const [searchKey, setSearchKey] = useState('');
-  const [filtered, setFiltered] = useState([...apps]);
-  const [selected, setSelected] = useState('');
-  const dispatch = useDispatch();
-  const [formContext, setFormContext] = useContext(AppFormContext) as any;
-  const icon = useState('beach')[0];
-  const deleteAppTitle: string = 'Delete Application';
-  const deleteAppMessage: string =
-    'Are you sure you want to delete this Application?';
-
-    const ref = useRef<HTMLDialogElement>(null)
+  // Handle deleting/revoking consent
+  const confirmDeleteConsent = () => {
+    dispatch(deleteConsent(deleteUnid) as any);
+    dispatch(toggleDeleteConsent(''));
+  }
 
   return (
     <ConsentsContainer>
       <Header>
         <Typography className='title'>OAuth Consents</Typography>
-        <ButtonBase onClick={handleClose}><CloseIcon /></ButtonBase>
+        <ButtonBase onClick={handleClose}>
+          {dialog && <CloseIcon />}
+          {!dialog && <Tooltip title="Go to Applications"><KeyboardBackspaceIcon /></Tooltip>}
+        </ButtonBase>
       </Header>
       <OptionsBar>
         <Box className='option'>
-          <ButtonBase><ExpandMoreIcon /></ButtonBase>
+          <ButtonBase onClick={() => setExpand(true)}><ExpandMoreIcon /></ButtonBase>
           Expand all
         </Box>
         <RxDividerVertical color='#A0A0A0' size='1.5em' />
         <Box className='option'>
-          <ButtonBase><ExpandLessIcon /></ButtonBase>
+          <ButtonBase onClick={() => setExpand(false)}><ExpandLessIcon /></ButtonBase>
           Collapse all
         </Box>
       </OptionsBar>
-      <ConsentsTable />
+      <ConsentsTable expand={expand} />
+      <CommonDialog
+        open={deleteConsentDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="delete-consent-dialog"
+        aria-describedby="delete-consent-description"
+      >
+        <DialogTitle id="reset-form-dialog-title">
+          <Box className="title">
+            {`Revoke consent?`}
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="reset-form-contents" color="textPrimary">
+            Are you sure you want to revoke consent for UNID {deleteUnid}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
+          <Button 
+            className="btn right save" 
+            onClick={confirmDeleteConsent}
+            style={{ right: 'calc(93px + 5px + 30px)' }}
+          >
+            Yes
+          </Button>
+          <Button
+            className="btn cancel"
+            onClick={handleCloseDialog}
+          >
+            No
+          </Button>
+        </DialogActions>
+      </CommonDialog>
+
     </ConsentsContainer>
   );
 };
