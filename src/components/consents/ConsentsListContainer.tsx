@@ -10,7 +10,6 @@ import Drawer from '@material-ui/core/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
 import { DrawerFormContainer } from '../../styles/CommonStyles';
-import ConsentsList from './ConsentsList';
 
 export default function ConsentsListContainer() {
   const { consentsDrawer } = useSelector((state: AppState) => state.drawer);
@@ -32,7 +31,7 @@ export default function ConsentsListContainer() {
   return (
     <Drawer anchor="right" open={consentsDrawer} onClose={handleClickOpen}>
       <DrawerFormContainer>
-        <ConsentsList />
+        placeholder for filtering consents
       </DrawerFormContainer>
     </Drawer>
   );

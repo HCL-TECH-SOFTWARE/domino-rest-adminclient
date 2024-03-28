@@ -58,7 +58,6 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
   clone,
   modeName
 }) => {
-  const matches = useMediaQuery('(max-width:768px)');
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {

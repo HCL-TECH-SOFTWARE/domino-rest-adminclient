@@ -4,18 +4,19 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AddIcon from '@material-ui/icons/Add';
-import { Button, Typography } from '@material-ui/core';
+import { Button, Dialog, Typography } from '@material-ui/core';
 import styled from 'styled-components';
 import {
   deleteApplication,
   addApplication,
   updateApp,
   clearAppError,
+  fetchMyApps,
 } from '../../../store/applications/action';
 import { AppState } from '../../../store';
 import { toggleAlert } from '../../../store/alerts/action';
@@ -27,6 +28,9 @@ import { toggleApplicationDrawer } from '../../../store/drawer/action';
 import AppStack from '../AppStack';
 import AppSearch from '../AppSearch';
 import { TopContainer } from '../../../styles/CommonStyles';
+import Consents from './Consents';
+import { fetchUsers } from '../../../store/access/action';
+import { getConsents } from '../../../store/consents/action';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -42,6 +46,12 @@ const AppStackContainer = styled.div`
   }
 `;
 
+const ConsentsDialogContainer = styled(Dialog)`
+  border: none;
+  width: 100vw;
+  padding: 2.5% 5%;
+`
+
 const ApplicationFormSchema = Yup.object().shape({
   appName: Yup.string().trim().required('Application Name is Required.'),
   appCallbackUrlsStr: Yup.string().required('At least one URL is required.'),
@@ -50,7 +60,7 @@ const ApplicationFormSchema = Yup.object().shape({
 });
 
 const Kanban: React.FC = () => {
-  const { apps } = useSelector((selector: AppState) => selector.apps);
+  const { apps, appPull } = useSelector((selector: AppState) => selector.apps);
   const { permissions } = useSelector(
     (state: AppState) => state.databases
   );
@@ -64,11 +74,19 @@ const Kanban: React.FC = () => {
   const deleteAppTitle: string = 'Delete Application';
   const deleteAppMessage: string =
     'Are you sure you want to delete this Application?';
+  const [consentDialogOpen, setConsentDialogOpen] = useState(false)
 
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
     setSelected(appId);
   };
+
+  const handleOpenConsents = () => {
+    if (!appPull) dispatch(fetchMyApps() as any)
+    dispatch(fetchUsers() as any)
+    dispatch(getConsents() as any)
+    setConsentDialogOpen(true)
+  }
 
   const deleteApp = () => {
     dispatch(deleteApplication(selected) as any);
@@ -91,6 +109,7 @@ const Kanban: React.FC = () => {
       setFiltered(apps);
     }
   }, [apps, searchKey]);
+
   // Submit Form
   const formik = useFormik({
     initialValues: {
@@ -155,6 +174,7 @@ const Kanban: React.FC = () => {
   };
 
   return (
+    <>
     <AppContainer>
       <TopContainer  style={{ marginTop: '15px' }}>
         <Typography
@@ -163,6 +183,13 @@ const Kanban: React.FC = () => {
         >
           Application Management
         </Typography> 
+        <Button
+          color="primary"
+          className="button-create"
+          onClick={handleOpenConsents}
+        >
+          OAuth Consents
+        </Button>
         <Button
           color="primary"
           className="button-create"
@@ -209,14 +236,20 @@ const Kanban: React.FC = () => {
           }
         />
       </AppStackContainer>
-
       <DeleteApplicationDialog
         dialogTitle={deleteAppTitle}
         deleteMessage={deleteAppMessage}
         handleDelete={deleteApp}
       />
       <FormDrawer formName="AppForm" formik={formik} />
+      <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
+        <Consents
+          handleClose={() => {setConsentDialogOpen(false)}}
+          dialog={true}
+        />
+      </ConsentsDialogContainer>
     </AppContainer>
+    </>
   );
 };
 

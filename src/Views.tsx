@@ -23,7 +23,7 @@ import SchemasLists from './components/schemas/SchemasLists';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
-import ConsentsListContainer from './components/consents/ConsentsListContainer';
+import ConsentsContainer from './components/applications/ConsentsContainer';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -129,6 +129,9 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
         <Route exact path="/apps">
           <ApplicationsContainer />
         </Route>
+        <Route exact path="/apps/consents">
+          <ConsentsContainer />
+        </Route>
         <Route exact path="/groups">
           <Groups />
         </Route>
@@ -146,7 +149,6 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
         </Route>
       </>
       <QuickConfigFormContainer />
-      <ConsentsListContainer />
     </ViewContainer>
   );
 };
