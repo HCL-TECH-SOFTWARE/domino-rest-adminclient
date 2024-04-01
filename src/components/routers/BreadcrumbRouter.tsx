@@ -64,7 +64,7 @@ const BreadcrumbRouter: React.FC = () => {
     breadcrumbTitle = 'Schemas';
   } else if (pathname === '/scope') {
     breadcrumbTitle = 'Scopes';
-  } else if (pathname === '/apps') {
+  } else if (pathname.slice(0, 5) === '/apps') {
     breadcrumbTitle = 'Application Management';
   } else {
     breadcrumbTitle = 'HCL Domino REST API Administrator';
@@ -109,7 +109,7 @@ const BreadcrumbRouter: React.FC = () => {
                 <Tooltip
                   enterDelay={700}
                   placement="bottom"
-                  title="Back to list of Schema/Scope Management Page"
+                  title={`Back to ${location.pathname.split('/')[1].charAt(0).toUpperCase() + location.pathname.split('/')[1].slice(1)} Management Page`}
                   arrow
                 >
                   <Typography
@@ -124,6 +124,19 @@ const BreadcrumbRouter: React.FC = () => {
                     {breadcrumbTitle}
                   </Typography>
                 </Tooltip>
+              )}
+
+              {location.pathname.split('/').length === 3 && (
+                <Typography
+                  color="textPrimary"
+                  style={
+                    location.pathname.split('/').length === 3
+                      ? { fontWeight: 600, color: activeColor, whiteSpace: 'nowrap'}
+                      : {}
+                  }
+                >
+                  {location.pathname.split('/')[2].charAt(0).toUpperCase() + location.pathname.split('/')[2].slice(1)}
+                </Typography>
               )}
 
               {location.pathname.split('/').length >= 4 && (
