@@ -130,7 +130,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                     <Box className='exp-row'>
                         <Tooltip title={expirationPast > 0 && expirationPast <= 86400000 ? "Expiring in less than a day" : ""}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 9 9" fill="none">
-                            <circle cx="4.5" cy="4.5" r="4.5" fill={expirationPast < 0 ? '#C3335F' : expirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
+                              <circle cx="4.5" cy="4.5" r="4.5" fill={expirationPast < 0 ? '#C3335F' : expirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
                             </svg>
                         </Tooltip>
                         <Typography className='text'>Expiration:</Typography>
@@ -139,7 +139,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                     <Box className='exp-row'>
                         <Tooltip title={tokenExpirationPast > 0 && tokenExpirationPast <= 86400000 ? "Expiring in less than a day" : ""}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 9 9" fill="none">
-                            <circle cx="4.5" cy="4.5" r="4.5" fill={tokenExpirationPast < 0 ? '#C3335F' : tokenExpirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
+                              <circle cx="4.5" cy="4.5" r="4.5" fill={tokenExpirationPast < 0 ? '#C3335F' : tokenExpirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
                             </svg>
                         </Tooltip>
                         <Typography className='text'>Token Expiration:</Typography>
