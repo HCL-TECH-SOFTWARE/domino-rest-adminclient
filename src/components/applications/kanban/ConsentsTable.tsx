@@ -19,6 +19,7 @@ import APILoadingProgress from '../../loading/APILoadingProgress';
 import { Consent } from '../../../store/consents/types';
 import ConsentItem from './ConsentItem';
 import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@material-ui/icons';
+import ConsentFilterContainer from '../../consents/ConsentFilterContainer';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
@@ -77,9 +78,13 @@ const StyledTableContainer = styled(TableContainer)`
 
 interface ConsentsTableProps {
   expand: boolean;
+  filtersOn: boolean;
+  setFiltersOn: (filtersOn: boolean) => void;
+  reset: boolean;
+  setReset: (reset: boolean) => void;
 }
 
-const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
+const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFiltersOn, reset, setReset }) => {
   const { consents } = useSelector((state: AppState) => state.consents)
   const { apps } = useSelector((state: AppState) => state.apps)
   const { users } = useSelector((state: AppState) => state.users)
@@ -91,7 +96,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
   // states for filters
   const [user, setUser] = React.useState("")
   const [appName, setAppName] = React.useState("")
-  const [status, setStatus] = React.useState("")
+  const [status, setStatus] = React.useState("All")
   const [showWithApps, setShowWithApps] = React.useState(false)
   const [expiration, setExpiration] = React.useState("")
   const [tokenExpiration, setTokenExpiration] = React.useState("")
@@ -109,6 +114,13 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  }
+
+  const resetFilters = () => {
+    setStatus("All")
+    setShowWithApps(false)
+    setExpiration("All")
+    setTokenExpiration("All")
   }
 
   React.useEffect(() => {
@@ -140,24 +152,101 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
           }
         })
       }
-      // filter for status here
-      if (showWithApps) {
-        newConsents = newConsents.filter((consent) => {
-          const app = apps.find((app: any) => app.appId === consent.client_id)
-          if (app.appName) return true
-          else return false
-        })
+
+      if (reset) {
+        setFilteredConsents(newConsents)
+        setReset(false)
+        resetFilters()
+      } else {
+        if (status.length > 0) {
+          switch (status) {
+            case "Active":
+              newConsents = newConsents.filter((consent) => {
+                if (new Date(consent.code_expires_at) > new Date()) return true
+                else return false
+              })
+              break
+            default:
+          }
+        }
+        if (showWithApps) {
+          newConsents = newConsents.filter((consent) => {
+            const app = apps.find((app: any) => app.appId === consent.client_id)
+            if (app !== undefined) {
+              if (!!app.appName && app.appName !== '-') return true
+              else return false
+            } else {
+              return false
+            }
+          })
+        }
+        if (expiration.length > 0) {
+          switch (expiration) {
+            case "All":
+              break
+            case "None":
+              newConsents = newConsents.filter((consent) => new Date(consent.code_expires_at).toUTCString() === "Invalid Date")
+              break
+            default:
+              newConsents = newConsents.filter((consent) => {
+                const consentExpiration = new Date(consent.code_expires_at)
+                const filterExpiration = new Date(expiration)
+                return (
+                  consentExpiration.getDate() === filterExpiration.getDate() &&
+                  consentExpiration.getMonth() === filterExpiration.getMonth() &&
+                  consentExpiration.getFullYear() === filterExpiration.getFullYear()
+                )
+              })
+          }
+        }
+        if (tokenExpiration.length > 0) {
+          switch (tokenExpiration) {
+            case "All":
+              break
+            case "None":
+              newConsents = newConsents.filter((consent) => new Date(consent.refresh_token_expires_at).toUTCString() === "Invalid Date")
+              break
+            default:
+              newConsents = newConsents.filter((consent) => {
+                const consentTokenExpiration = new Date(consent.refresh_token_expires_at)
+                const filterTokenExpiration = new Date(expiration)
+                return (
+                  consentTokenExpiration.getDate() === filterTokenExpiration.getDate() &&
+                  consentTokenExpiration.getMonth() === filterTokenExpiration.getMonth() &&
+                  consentTokenExpiration.getFullYear() === filterTokenExpiration.getFullYear()
+                )
+              })
+          }
+        }
+        // filter part for scopes
+        setFilteredConsents(newConsents)
+        console.log("hello")
+        // console.log(filtersOn)
+        setFiltersOn(true)
       }
-      if (expiration.length > 0) newConsents = newConsents.filter((consent) => new Date(consent.code_expires_at).toUTCString() === expiration)
-      if (tokenExpiration.length > 0) newConsents = newConsents.filter((consent) => new Date(consent.refresh_token_expires_at).toUTCString() === tokenExpiration)
-      // filter part for scopes
-      // debugger
+
       setPage(0)
-      setFilteredConsents(newConsents)
+
+      if (status === "All" || showWithApps || expiration === "" || tokenExpiration === "" || scopes.length > 0) setFiltersOn(false)
     }
 
     filterConsents(user, appName, status, showWithApps, expiration, tokenExpiration, scopes)
-  }, [user, appName, status, showWithApps, expiration, tokenExpiration, scopes, apps, consents, users])
+  }, [user, appName, status, showWithApps, expiration, tokenExpiration, scopes, apps, consents, users, setFiltersOn, reset, setReset])
+
+  React.useEffect(() => {
+    if (filtersOn) {
+      console.log("on")
+      resetFilters()
+      setFiltersOn(false)
+    }
+  }, [filtersOn, setFiltersOn])
+
+  React.useEffect(() => {
+    console.log(status)
+    console.log(showWithApps)
+    console.log(expiration)
+    console.log(tokenExpiration)
+  }, [status, showWithApps, expiration, tokenExpiration])
   
   return (
     <>
@@ -259,6 +348,15 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand }) => {
             </Table>
           </StyledTableContainer>
         }
+        <ConsentFilterContainer
+          setStatus={setStatus}
+          showWithApps={showWithApps}
+          setShowWithApps={setShowWithApps}
+          exp={expiration}
+          setExp={setExpiration}
+          tokenExp={tokenExpiration}
+          setTokenExp={setTokenExpiration}
+        />
     </>
   );
 };
