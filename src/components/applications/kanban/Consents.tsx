@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, ButtonBase, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip, Typography } from '@material-ui/core';
 import styled from 'styled-components';
 import CloseIcon from '@material-ui/icons/Close'
@@ -92,9 +92,9 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
     dispatch(toggleDeleteConsent(''));
   }
 
-  useEffect(() => {
-    console.log(filtersOn)
-  }, [filtersOn])
+  const handleClickReset = () => {
+    setResetFilters(true)
+  }
 
   return (
     <ConsentsContainer>
@@ -120,7 +120,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
             <CiFilter size='1.2em' />
             All filters
           </ButtonBase>
-          <ButtonBase onClick={() => setResetFilters(true)} style={{ visibility: !filtersOn ? 'visible' : 'visible' }}>
+          <ButtonBase onClick={handleClickReset} style={{ visibility: resetFilters ? 'visible' : 'visible' }}>
             Reset
           </ButtonBase>
       </OptionsBar>

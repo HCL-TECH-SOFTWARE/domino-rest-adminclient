@@ -12,7 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, IconButton, TableFooter, TablePagination, Typography } from '@material-ui/core';
+import { Box, ButtonBase, IconButton, TableFooter, TablePagination, Typography } from '@material-ui/core';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
@@ -20,6 +20,7 @@ import { Consent } from '../../../store/consents/types';
 import ConsentItem from './ConsentItem';
 import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@material-ui/icons';
 import ConsentFilterContainer from '../../consents/ConsentFilterContainer';
+import { FaSort } from "react-icons/fa";
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
@@ -74,6 +75,12 @@ const StyledTableContainer = styled(TableContainer)`
   .collapse {
     width: 100%;
   }
+
+  .can-sort {
+    gap: 3px;
+    display: flex;
+    align-items: center;
+  }
 `
 
 interface ConsentsTableProps {
@@ -98,9 +105,12 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
   const [appName, setAppName] = React.useState("")
   const [status, setStatus] = React.useState("All")
   const [showWithApps, setShowWithApps] = React.useState(false)
-  const [expiration, setExpiration] = React.useState("")
-  const [tokenExpiration, setTokenExpiration] = React.useState("")
-  const [scopes, setScopes] = React.useState([])
+  const [expiration, setExpiration] = React.useState({ expiration: "All", date: new Date()})
+  const [tokenExpiration, setTokenExpiration] = React.useState({ expiration: "All", date: new Date()})
+  const [scopes, setScopes] = React.useState([""])
+  // sorting flags states
+  const [sortUser, setSortUser] = React.useState(true)
+  const [sortAppName, setSortAppName] = React.useState(true)
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -119,8 +129,44 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
   const resetFilters = () => {
     setStatus("All")
     setShowWithApps(false)
-    setExpiration("All")
-    setTokenExpiration("All")
+    setExpiration({ expiration: "All", date: new Date()})
+    setTokenExpiration({ expiration: "All", date: new Date()})
+    setScopes([""])
+  }
+
+  const getConsentUsername = (consent: Consent) => {
+    const allMatches = users?.filter((user) => user[Object.keys(user)[0]].FullName[0] === consent.username);
+    const username = allMatches && allMatches.length > 0 && allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress[0] !== ''
+                      ? allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress[0] :
+                      consent.username
+    return username
+  }
+
+  const getConsentAppName = (consent: Consent) => {
+    const app = apps.find((app: any) => app.appId === consent.client_id)
+    return app ? app.appName : "-"
+  }
+
+  const handleSortUsers = () => {
+    const sortedConsents = consents.sort((a, b) => {
+      const aUsername = getConsentUsername(a)
+      const bUsername = getConsentUsername(b)
+      if (sortUser) return aUsername.localeCompare(bUsername)
+      else return bUsername.localeCompare(aUsername)
+    })
+    setFilteredConsents(sortedConsents)
+    setSortUser(!sortUser)
+  }
+
+  const handleSortAppNames = () => {
+    const sortedConsents = consents.sort((a, b) => {
+      const aAppName = getConsentAppName(a)
+      const bAppName = getConsentAppName(b)
+      if (sortAppName) return aAppName.localeCompare(bAppName)
+      else return bAppName.localeCompare(aAppName)
+    })
+    setFilteredConsents(sortedConsents)
+    setSortAppName(!sortAppName)
   }
 
   React.useEffect(() => {
@@ -129,8 +175,8 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
       appName: string,
       status: string,
       showWithApps: boolean,
-      expiration: string,
-      tokenExpiration: string,
+      expiration: { expiration: string, date: Date },
+      tokenExpiration: { expiration: string, date: Date },
       scopes: Array<string>,
     ) => {
       let newConsents = consents
@@ -180,8 +226,8 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
             }
           })
         }
-        if (expiration.length > 0) {
-          switch (expiration) {
+        if (expiration.expiration.length > 0) {
+          switch (expiration.expiration) {
             case "All":
               break
             case "None":
@@ -190,7 +236,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
             default:
               newConsents = newConsents.filter((consent) => {
                 const consentExpiration = new Date(consent.code_expires_at)
-                const filterExpiration = new Date(expiration)
+                const filterExpiration = new Date(expiration.date)
                 return (
                   consentExpiration.getDate() === filterExpiration.getDate() &&
                   consentExpiration.getMonth() === filterExpiration.getMonth() &&
@@ -199,8 +245,8 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
               })
           }
         }
-        if (tokenExpiration.length > 0) {
-          switch (tokenExpiration) {
+        if (tokenExpiration.expiration.length > 0) {
+          switch (tokenExpiration.expiration) {
             case "All":
               break
             case "None":
@@ -209,7 +255,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
             default:
               newConsents = newConsents.filter((consent) => {
                 const consentTokenExpiration = new Date(consent.refresh_token_expires_at)
-                const filterTokenExpiration = new Date(expiration)
+                const filterTokenExpiration = new Date(tokenExpiration.date)
                 return (
                   consentTokenExpiration.getDate() === filterTokenExpiration.getDate() &&
                   consentTokenExpiration.getMonth() === filterTokenExpiration.getMonth() &&
@@ -218,16 +264,19 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
               })
           }
         }
-        // filter part for scopes
+        if (scopes.filter(s => s !== '').length > 0) {
+          newConsents = newConsents.filter((consent: Consent) => {
+            const consentScopes = consent.scope.split(",");
+            return scopes.some((scope) => scope !== '' && consentScopes.includes(scope));
+          });
+        }
         setFilteredConsents(newConsents)
-        console.log("hello")
-        // console.log(filtersOn)
         setFiltersOn(true)
       }
 
       setPage(0)
 
-      if (status === "All" || showWithApps || expiration === "" || tokenExpiration === "" || scopes.length > 0) setFiltersOn(false)
+      if (status === "All" || showWithApps || expiration.expiration === "All" || tokenExpiration.expiration === "All" || scopes.length > 0) setFiltersOn(false)
     }
 
     filterConsents(user, appName, status, showWithApps, expiration, tokenExpiration, scopes)
@@ -235,18 +284,25 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
 
   React.useEffect(() => {
     if (filtersOn) {
-      console.log("on")
       resetFilters()
       setFiltersOn(false)
     }
   }, [filtersOn, setFiltersOn])
 
   React.useEffect(() => {
-    console.log(status)
-    console.log(showWithApps)
-    console.log(expiration)
-    console.log(tokenExpiration)
-  }, [status, showWithApps, expiration, tokenExpiration])
+    if (reset) {
+      setUser("")
+      setAppName("")
+      setStatus("All")
+      setShowWithApps(false)
+      setExpiration({ expiration: "All", date: new Date()})
+      setTokenExpiration({ expiration: "All", date: new Date()})
+      setScopes([])
+      setSortUser(true)
+      setSortAppName(true)
+      setReset(false)
+    }
+  }, [reset, setReset, consents])
   
   return (
     <>
@@ -260,16 +316,18 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                   <TableCell className='expand' />
                   <TableCell className='user'>
                     <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
-                      <Typography className='text'>
+                      <Typography className='text can-sort'>
                         User
+                        <ButtonBase onClick={handleSortUsers}><FaSort /></ButtonBase>
                       </Typography>
                       <input type='text' placeholder='Search User' value={user} onChange={(e) => setUser(e.target.value)} className='search-bar' />
                     </Box>
                   </TableCell>
                   <TableCell className='app-name text'>
                     <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
-                      <Typography className='text'>
+                      <Typography className='text can-sort'>
                         App Name
+                        <ButtonBase onClick={handleSortAppNames}><FaSort /></ButtonBase>
                       </Typography>
                       <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
                     </Box>
@@ -356,6 +414,9 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
           setExp={setExpiration}
           tokenExp={tokenExpiration}
           setTokenExp={setTokenExpiration}
+          setReset={setReset}
+          scopes={scopes}
+          setScopes={setScopes}
         />
     </>
   );

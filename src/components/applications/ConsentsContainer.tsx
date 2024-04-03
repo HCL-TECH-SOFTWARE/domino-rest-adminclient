@@ -14,7 +14,6 @@ import Consents from './kanban/Consents';
 import { useHistory } from 'react-router-dom';
 import { fetchUsers } from '../../store/access/action';
 import { getConsents } from '../../store/consents/action';
-import ConsentFilterContainer from '../consents/ConsentFilterContainer';
 
 const ConsentsBox = styled(Box)`
     display: flex;
