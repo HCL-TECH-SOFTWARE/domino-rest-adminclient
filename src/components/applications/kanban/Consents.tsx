@@ -11,6 +11,7 @@ import CloseIcon from '@material-ui/icons/Close'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import { RxDividerVertical } from "react-icons/rx"
+import { CiFilter } from "react-icons/ci";
 import ConsentsTable from './ConsentsTable';
 import KeyboardBackspaceIcon from '@material-ui/icons/KeyboardBackspace'
 import { CommonDialog } from '../../../styles/CommonStyles';
@@ -18,6 +19,7 @@ import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { useDispatch } from 'react-redux';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
+import { toggleConsentsDrawer } from '../../../store/drawer/action';
 
 const ConsentsContainer = styled.div`
   display: flex;
@@ -46,12 +48,19 @@ const OptionsBar = styled.div`
     padding: 25px 16px 0 16px;
     width: 100%;
     align-items: center;
-    gap: 28px;
+    gap: 10px;
 
     .option {
         display: flex;
         gap: 5px;
         align-items: center;
+        border-radius: 5px;
+        padding: 5px 10px 5px 5px;
+
+        &:hover {
+          color: #FFF;
+          background-color: #0F5FDC;
+        }
     }
 
     .text {
@@ -68,6 +77,8 @@ interface ConsentsProps {
 
 const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
   const [expand, setExpand] = useState(false)
+  const [filtersOn, setFiltersOn] = useState(false)
+  const [resetFilters, setResetFilters] = useState(false)
   const { deleteConsentDialog, deleteUnid } = useSelector((state: AppState) => state.consents)
   const dispatch = useDispatch()
 
@@ -81,6 +92,10 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
     dispatch(toggleDeleteConsent(''));
   }
 
+  const handleClickReset = () => {
+    setResetFilters(true)
+  }
+
   return (
     <ConsentsContainer>
       <Header>
@@ -91,17 +106,25 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
         </ButtonBase>
       </Header>
       <OptionsBar>
-        <Box className='option'>
-          <ButtonBase onClick={() => setExpand(true)}><ExpandMoreIcon /></ButtonBase>
+        <ButtonBase onClick={() => setExpand(true)} className='option'>
+          <ExpandMoreIcon style={{ padding: 0 }} />
           Expand all
-        </Box>
+        </ButtonBase>
         <RxDividerVertical color='#A0A0A0' size='1.5em' />
-        <Box className='option'>
-          <ButtonBase onClick={() => setExpand(false)}><ExpandLessIcon /></ButtonBase>
+        <ButtonBase onClick={() => setExpand(false)} className='option'>
+          <ExpandLessIcon />
           Collapse all
-        </Box>
+        </ButtonBase>
+        <RxDividerVertical color='#A0A0A0' size='1.5em' />
+          <ButtonBase onClick={() => dispatch(toggleConsentsDrawer())} className='option'>
+            <CiFilter size='1.2em' />
+            All filters
+          </ButtonBase>
+          <ButtonBase onClick={handleClickReset} style={{ visibility: resetFilters ? 'visible' : 'visible' }}>
+            Reset
+          </ButtonBase>
       </OptionsBar>
-      <ConsentsTable expand={expand} />
+      <ConsentsTable expand={expand} filtersOn={filtersOn} setFiltersOn={setFiltersOn} reset={resetFilters} setReset={setResetFilters} />
       <CommonDialog
         open={deleteConsentDialog}
         onClose={handleCloseDialog}
