@@ -1123,13 +1123,15 @@ function loadConfiguredForms(
  * @param formsArray      the array of the new forms to be set into the schema object
  * @param setSchemaData   callback to set the schema state
  * @param successMsg      the alert message to show if updating the forms is a success
+ * @param successCallback callback function to execute after success
  */
 export const handleDatabaseForms= (
   schemaData: Database,
   dbName:string,
   formsArray: Array<any>,
   setSchemaData: (data: Database) => void,
-  successMsg: string
+  successMsg: string,
+  successCallback?: () => void,
 ) => {
   return async (dispatch: Dispatch) => {
     // Send the new views to the server
@@ -1156,7 +1158,7 @@ export const handleDatabaseForms= (
       if (form.formModes.length > 0) {
         formToUpdate.push(form);
         return;
-      }else{
+      } else {
         const newFormData = {
           formName: form.formName,
           alias: form.alias,
@@ -1165,7 +1167,7 @@ export const handleDatabaseForms= (
         formToUpdate.push(newFormData);
       }
     });
-    dispatch(updateForms(schemaData,dbName, formToUpdate, setSchemaData, successMsg) as any);
+    dispatch(updateForms(schemaData, dbName, formToUpdate, setSchemaData, successMsg, successCallback) as any);
   }
 }
 
@@ -1243,8 +1245,16 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
  * @param formsData       the array of the organized forms to be set into the schema object
  * @param setSchemaData   callback to set the schema state
  * @param successMsg      the alert message to show if updating the forms is a success
+ * @param successCallback callback function to execute after success
  */
-const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>, setSchemaData: (data: Database) => void, successMsg: string) => {
+const updateForms = (
+  schemaData: Database,
+  dbName: string,
+  formsData: Array<any>,
+  setSchemaData: (data: Database) => void,
+  successMsg: string,
+  successCallback?: () => void,
+) => {
   let configformsList: Array<any> = [];
   return async (dispatch: Dispatch) => {
     const newSchemaData: any = _.omit(
@@ -1289,6 +1299,9 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
           dispatch(toggleAlert(`Update forms failed! ${errorMsg}`));
         });
       dispatch(clearDBError());
+      if (successCallback) {
+        successCallback()
+      }
     } catch (err: any) {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
