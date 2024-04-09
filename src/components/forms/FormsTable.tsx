@@ -21,7 +21,7 @@ import { Database } from "../../store/databases/types";
 import ActivateMenu from "./ActivateMenu";
 import { ButtonNeutral, ButtonYes, WarningIcon } from "../../styles/CommonStyles";
 import { IoMdClose } from "react-icons/io";
-import { updateFormMode } from "../../store/databases/action";
+import { handleDatabaseForms } from "../../store/databases/action";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   paddingLeft: "30px",
   paddingRight: "30px",
@@ -209,15 +209,20 @@ const FormsTable: React.FC<FormsTableProps> = ({
     };
 
     const alias = forms[formIndex].alias;
+    const newForm = {
+      formValue: formName,
+      formName: formName,
+      alias: alias,
+      formModes: [formModeData],
+    }
     dispatch(
-      updateFormMode(
+      handleDatabaseForms(
         schemaData,
-        formName,
-        alias,
-        formModeData,
-        formIndex,
-        false,
-        setSchemaData
+        dbName,
+        [...schemaData.forms, newForm],
+        setSchemaData,
+        `${formName} activated successfully.`,
+        () => {history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`)},
       ) as any
     );
   };
