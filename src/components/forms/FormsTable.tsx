@@ -38,7 +38,6 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
-
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: "#F8FBFF",
@@ -75,7 +74,20 @@ const EditIcon = styled.div`
 `;
 
 const ViewNameDisplay = styled.div`
-  text-transform: none;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  .text {
+    text-transform: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .custom-form {
+    font-size: 12px;
+    color: #475155;
+  }
 `;
 
 const ActivateDialogContainer = styled.dialog`
@@ -234,7 +246,16 @@ const FormsTable: React.FC<FormsTableProps> = ({
           <TableHead>
             <TableRow>
               <StyledTableCell width="50px" />
-              <StyledTableCell width="350px">Form Name</StyledTableCell>
+              <StyledTableCell width="350px">
+                <Box display='flex' flexDirection='row' style={{ gap: '10px' }}>
+                  <Box visibility='hidden'>
+                    <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
+                      <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
+                    </svg>
+                  </Box>
+                  Form Name
+                </Box>
+              </StyledTableCell>
               <StyledTableCell width="350px">Form Aliases</StyledTableCell>
               <StyledTableCell width="350px">Modes Available</StyledTableCell>
               <StyledTableCell>
@@ -262,7 +283,15 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </StyledTableCell>
                 <StyledTableCell width="550px">
                   <ViewNameDisplay>
-                    <span>{form.formName}</span>
+                    <Box visibility={formList.includes(form.formName) ? 'hidden' : 'visible'}>
+                      <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
+                      </svg>
+                    </Box>
+                    <Box className="text">
+                      <span>{form.formName}</span>
+                      {!formList.includes(form.formName) && <span className='custom-form'>custom form</span>}
+                    </Box>
                   </ViewNameDisplay>
                 </StyledTableCell>
                 <StyledTableCell>
