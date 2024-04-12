@@ -49,12 +49,17 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  borderRadius: "10px",
-  boxSizing: "border-box",
-  border: "1px solid #B9B9B9",
-  background: "#FFFFFF",
-}));
+const StyledTableContainer = styled(TableContainer)`
+  border-radius: 10px;
+  box-sizing: border-box;
+  border: 1px solid #B9B9B9;
+  background: #FFF;
+
+  .diamond-marker {
+    margin-right: 5px;
+    transform: translateY(-7%);
+  }
+`
 
 const StatusHeader = styled.div`
   cursor: default;
@@ -75,7 +80,6 @@ const EditIcon = styled.div`
 
 const ViewNameDisplay = styled.div`
   display: flex;
-  gap: 10px;
   align-items: flex-start;
 
   .text {
@@ -247,8 +251,8 @@ const FormsTable: React.FC<FormsTableProps> = ({
             <TableRow>
               <StyledTableCell width="50px" />
               <StyledTableCell width="350px">
-                <Box display='flex' flexDirection='row' style={{ gap: '10px' }}>
-                  <Box visibility='hidden'>
+                <Box display='flex' flexDirection='row'>
+                  <Box visibility='hidden' className='diamond-marker'>
                     <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                       <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                     </svg>
@@ -283,7 +287,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </StyledTableCell>
                 <StyledTableCell width="550px">
                   <ViewNameDisplay>
-                    <Box visibility={formList.includes(form.formName) ? 'hidden' : 'visible'}>
+                    <Box visibility={formList.includes(form.formName) ? 'hidden' : 'visible'} className='diamond-marker'>
                       <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                       </svg>
