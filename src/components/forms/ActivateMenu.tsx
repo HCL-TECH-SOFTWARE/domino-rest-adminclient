@@ -80,11 +80,12 @@ interface ActivateMenuProps {
   schemaData: Database,
   setSchemaData: (schemaData: any) => void;
   formList: Array<string>;
+  toggleActivate: (formName: string, openForm: boolean) => void;
 }
 
 
 
-const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbName, schemaData, setSchemaData, formList }) => {
+const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbName, schemaData, setSchemaData, formList, toggleActivate }) => {
   const [active, setActive] = useState(form.formModes.length > 0 ? true : false);
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
@@ -98,7 +99,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     if (loading) {
         dispatch(toggleAlert(`Please wait while forms are still saving!`))
     } else if (!active && (!updateFormError)) {
-        toggleActivate(form.formName)
+        toggleActivate(form.formName, false)
         setActive(active)
     } else if (!updateFormError) {
         dispatch(toggleAlert(`This form is already active!`))
@@ -120,42 +121,12 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
     setActive(false)
     setResetForm(false)
   }
-  const toggleActivate = (formName: string) => {
-    const formModeData = {
-      modeName: "default",
-      fields: [],
-      readAccessFormula: {
-        formulaType: "domino",
-        formula: "@True",
-      },
-      writeAccessFormula: {
-        formulaType: "domino",
-        formula: "@True",
-      },
-      deleteAccessFormula: {
-        formulaType: "domino",
-        formula: "@False",
-      },
-      computeWithForm: false,
-    };
-
-    const newForm = {
-      formValue: formName,
-      formName: formName,
-      alias: [formName],
-      formModes: [formModeData],
-    }
-    
-    const successMsg = `Successfully activated form ${formName}.`
-    dispatch(handleDatabaseForms(schemaData, dbName, [...schemaData.forms, newForm], setSchemaData, successMsg) as any)
-    
-  };
 
   const toggleDeactivate = async () => {
     if (formList.includes(form.formName)) {
-      dispatch(deleteForm(schemaData, form.formName) as any)
-    } else {
       dispatch(deleteForm(schemaData, form.formName, setSchemaData) as any)
+    } else {
+      dispatch(deleteForm(schemaData, form.formName, setSchemaData, true) as any)
     }
     handleCloseMenu()
   };
