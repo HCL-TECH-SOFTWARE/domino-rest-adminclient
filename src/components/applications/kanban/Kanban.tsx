@@ -76,6 +76,9 @@ const Kanban: React.FC = () => {
     'Are you sure you want to delete this Application?';
   const [consentDialogOpen, setConsentDialogOpen] = useState(false)
 
+  const [filtersOn, setFiltersOn] = useState(false)
+  const [reset, setReset] = useState(false)
+
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
     setSelected(appId);
@@ -203,7 +206,7 @@ const Kanban: React.FC = () => {
         <AppSearch handleSearchApp={handleSearchApp} />
       </TopContainer>
       <AppStackContainer>
-        <AppStack
+        {/* <AppStack
           heading="Active Applications"
           formik={formik}
           deleteApplication={openDeleteDialog}
@@ -234,8 +237,21 @@ const Kanban: React.FC = () => {
                   .slice()
                   .sort((a, b) => (a.appName > b.appName ? 1 : -1))
           }
-        />
+        /> */}
+        <AppsTable filtersOn={filtersOn} setFiltersOn={setFiltersOn} reset={reset} setReset={setReset} />
       </AppStackContainer>
+      {/* <paginated-table>
+        <th>
+          <tr>
+            <td>
+              hello
+            </td>
+            <td>
+              hello
+            </td>
+          </tr>
+        </th>
+      </paginated-table> */}
       <DeleteApplicationDialog
         dialogTitle={deleteAppTitle}
         deleteMessage={deleteAppMessage}
