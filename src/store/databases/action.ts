@@ -1881,7 +1881,7 @@ export const deleteFormMode = (
  * @param formName        the name of the form to delete
  * @param setSchemaData   callback to set the schema state
  */
-export const deleteForm = (schemaData: Database, formName: string, setSchemaData?: (data: Database) => void) => {
+export const deleteForm = (schemaData: Database, formName: string, setSchemaData?: (data: Database) => void, customForm = false) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0 && form.formName !== formName)
@@ -1917,15 +1917,22 @@ export const deleteForm = (schemaData: Database, formName: string, setSchemaData
             setSchemaData({
               ...response.data,
             })
-            dispatch({
-              type: RESET_FORM,
-              payload: formName,
-            })
+            if (customForm) {
+              dispatch({
+                type: RESET_FORM,
+                payload: formName,
+              })
+              dispatch(
+                toggleAlert(`Successfully deleted form ${formName}.`)
+              );
+            } else {
+              dispatch(
+                toggleAlert(`Successfully deactivated form ${formName}.`)
+              );
+            }
           }
           dispatch(setApiLoading(false));
-          dispatch(
-            toggleAlert(`Successfully deactivated form ${formName}.`)
-          );
+          
           // dispatch(toggleDeleteDialog());
           dispatch(unConfigForm(newSchemaData.schemaName, formName));
         })

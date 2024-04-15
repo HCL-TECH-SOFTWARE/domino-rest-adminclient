@@ -186,7 +186,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
     }
   }
 
-  const toggleConfigure = (formName: string) => {
+  const toggleConfigure = (formName: string, openForm = true) => {
     const formIndex = forms.findIndex(
       (f: { formName: string; dbName: string; }) => f.formName === formName && f.dbName === dbName
     );
@@ -215,16 +215,28 @@ const FormsTable: React.FC<FormsTableProps> = ({
       alias: alias,
       formModes: [formModeData],
     }
-    dispatch(
-      handleDatabaseForms(
-        schemaData,
-        dbName,
-        [...schemaData.forms, newForm],
-        setSchemaData,
-        `${formName} activated successfully.`,
-        () => {history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`)},
-      ) as any
-    );
+    if (openForm) {
+      dispatch(
+        handleDatabaseForms(
+          schemaData,
+          dbName,
+          [...schemaData.forms, newForm],
+          setSchemaData,
+          `${formName} activated successfully.`,
+          () => {history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`)},
+        ) as any
+      );
+    } else {
+      dispatch(
+        handleDatabaseForms(
+          schemaData,
+          dbName,
+          [...schemaData.forms, newForm],
+          setSchemaData,
+          `${formName} activated successfully.`,
+        ) as any
+      );
+    }
   };
 
   return (
@@ -284,6 +296,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
                     schemaData={schemaData}
                     setSchemaData={setSchemaData}
                     formList={formList}
+                    toggleActivate={toggleConfigure}
                   />
                 </StyledTableCell>
               </StyledTableRow>
