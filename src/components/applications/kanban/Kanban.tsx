@@ -31,6 +31,7 @@ import { TopContainer } from '../../../styles/CommonStyles';
 import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
+import AppsTable from '../AppsTable';
 
 const AppContainer = styled.div`
   overflow-y: auto;
