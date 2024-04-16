@@ -203,9 +203,6 @@ const Kanban: React.FC = () => {
           Add Application
         </Button>
       </TopContainer>
-      <TopContainer style={{ marginTop: 0 }}>
-        <AppSearch handleSearchApp={handleSearchApp} />
-      </TopContainer>
       <AppStackContainer>
         {/* <AppStack
           heading="Active Applications"
@@ -239,7 +236,14 @@ const Kanban: React.FC = () => {
                   .sort((a, b) => (a.appName > b.appName ? 1 : -1))
           }
         /> */}
-        <AppsTable filtersOn={filtersOn} setFiltersOn={setFiltersOn} reset={reset} setReset={setReset} />
+        <AppsTable
+          filtersOn={filtersOn}
+          setFiltersOn={setFiltersOn}
+          reset={reset}
+          setReset={setReset}
+          deleteApplication={openDeleteDialog}
+          formik={formik}
+        />
       </AppStackContainer>
       {/* <paginated-table>
         <th>

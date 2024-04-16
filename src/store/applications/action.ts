@@ -301,6 +301,54 @@ export const setPullApp = (appPull: boolean) => {
 };
 
 /**
+ * Generate application secret
+ * @param appId     the application ID
+ * @param appStatus the application status
+ */
+export const generateSecret = (
+  appId: string,
+  appStatus: string,
+  setGenerating: (generating: boolean) => void,
+  setAppSecret: (appSecret: string) => void,
+)  => {
+  return async (dispatch: Dispatch) => {
+    setGenerating(true)
+
+    axios
+      .post(
+        `${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`,
+        {
+          status: appStatus
+          //TODO: warn if secret exists ask for confirmation
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`
+          }
+        }
+      )
+      .then((res) => {
+        setGenerating(false);
+        setAppSecret(res.data.client_secret);
+      })
+      .catch((err) => {
+        // Use the Keep response error if it's available
+        if (err.response && err.response.statusText) {
+          dispatch(
+            toggleAlert(
+              `Error Generating App Secret: ${err.response.statusText}`
+            )
+          );
+        }
+        // Otherwise use the generic error
+        else {
+          dispatch(toggleAlert(`Error Generating App Secret: ${err.message}`));
+        }
+      })
+  }
+}
+
+/**
  * Init applications state
  */
 export const initApplicationState = () => {

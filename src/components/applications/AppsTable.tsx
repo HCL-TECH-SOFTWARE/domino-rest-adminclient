@@ -23,6 +23,7 @@ import ConsentItem from './kanban/ConsentItem';
 import ConsentFilterContainer from '../consents/ConsentFilterContainer';
 import { AppProp } from '../../store/applications/types';
 import AppItem from './AppItem';
+import { FormikProps } from 'formik';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
@@ -55,26 +56,26 @@ const StyledTableContainer = styled(TableContainer)`
   padding: 0;
 
   .launch {
-    width: 60px;
+    width: 4%;
   }
 
   .app-name {
     // width: calc(30% - 70px);
     // min-width: calc(30% - 200px);
-    width: 30%;
+    width: 26%;
   }
 
   .app-id-secret {
-    width: calc(30% - 60px);
+    width: 30%;
     font-size: 14px;
   }
 
   .description {
-    width: calc(40% - 70px);
+    width: 36%;
   }
 
   .icons {
-    width: 70px;
+    width: 9%;
   }
 
   .collapse {
@@ -93,9 +94,11 @@ interface AppsTableProps {
   setFiltersOn: (filtersOn: boolean) => void;
   reset: boolean;
   setReset: (reset: boolean) => void;
+  deleteApplication: (appId: string) => void;
+  formik: FormikProps<any>;
 }
 
-const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, setReset }) => {
+const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, setReset, deleteApplication, formik }) => {
   const { apps } = useSelector((state: AppState) => state.apps)
   
   const [page, setPage] = React.useState(0)
@@ -330,7 +333,8 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                       <AppItem
                         key={`${app.appName}-${idx}`}
                         app={app}
-                        // expand={expand}
+                        deleteApplication={deleteApplication}
+                        formik={formik}
                       />
                     )
                   })}
@@ -341,9 +345,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                         }} />
                     })
                 } */}
-                {console.log(apps)}
-                {console.log("filtered apps:")}
-                {console.log(filteredApps)}
               </StyledTableBody>
               <TableFooter>
                 <TableRow>

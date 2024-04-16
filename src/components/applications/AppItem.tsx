@@ -4,16 +4,22 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Box, ButtonBase, Collapse, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import { AppProp } from '../../store/applications/types';
+import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
 import { getTheme } from '../../store/styles/action';
+import { generateSecret } from '../../store/applications/action';
+import { toggleAlert } from '../../store/alerts/action';
+import { DeleteIcon } from '../../styles/CommonStyles';
+import { FiEdit2 } from 'react-icons/fi';
+import { FormikProps } from 'formik';
+import { toggleApplicationDrawer } from '../../store/drawer/action';
 
 const StyledTableRow = styled(TableRow)`
   .app-name {
@@ -41,6 +47,12 @@ const StyledTableRow = styled(TableRow)`
   .off-border {
     border-bottom: 0;
   }
+
+  .delete-icon {
+    width: 20px;
+    height: 20px;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNkg1SDIxIiBmaWxsPSIjRDY0NjZGIi8+CjxwYXRoIGQ9Ik0zIDZINUgyMSIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTkgNlYyMEMxOSAyMC41MzA0IDE4Ljc4OTMgMjEuMDM5MSAxOC40MTQyIDIxLjQxNDJDMTguMDM5MSAyMS43ODkzIDE3LjUzMDQgMjIgMTcgMjJIN0M2LjQ2OTU3IDIyIDUuOTYwODYgMjEuNzg5MyA1LjU4NTc5IDIxLjQxNDJDNS4yMTA3MSAyMS4wMzkxIDUgMjAuNTMwNCA1IDIwVjZNOCA2VjRDOCAzLjQ2OTU3IDguMjEwNzEgMi45NjA4NiA4LjU4NTc5IDIuNTg1NzlDOC45NjA4NiAyLjIxMDcxIDkuNDY5NTcgMiAxMCAySDE0QzE0LjUzMDQgMiAxNS4wMzkxIDIuMjEwNzEgMTUuNDE0MiAyLjU4NTc5QzE1Ljc4OTMgMi45NjA4NiAxNiAzLjQ2OTU3IDE2IDRWNiIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K');
+  }
 `
 
 const UrlContainer = styled(Box)`
@@ -65,35 +77,45 @@ const UrlContainer = styled(Box)`
 `
 
 const AppNameContainer = styled(Box)`
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+
+  .status-container {
     display: flex;
+    gap: 5px;
+    border-radius: 3px;
+    background: #A1E596;
+    font-color: #000;
     flex-direction: row;
-    gap: 10px;
-    width: 100%;
     align-items: center;
+    width: fit-content;
+    font-size: 10px;
+    padding: 0 5px;
+  }
 
-    .status-container {
-        display: flex;
-        gap: 5px;
-        border-radius: 3px;
-        background: #A1E596;
-        font-color: #000;
-        flex-direction: row;
-        align-items: center;
-        width: fit-content;
-        font-size: 10px;
-        padding: 0 5px;
-    }
-
-    .inactive {
-        background: #E6EBF5;
-        font-color: #6C7882;
-    }
+  .inactive {
+    background: #E6EBF5;
+    font-color: #6C7882;
+  }
 `
 
 const AppIdSecretContainer = styled(Box)`
     display: flex;
     flex-direction: row;
     gap: 5px;
+
+    .id-secret {
+      cursor: pointer;
+    }
+`
+
+const OptionsContainer = styled(Box)`
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
 `
 
 const AppImage = styled.img`
@@ -106,10 +128,14 @@ const AppImage = styled.img`
 
 interface AppItemProps {
   app: AppProp;
+  deleteApplication: (appId: string) => void;
+  formik: FormikProps<any>;
 }
 
 const AppItem: React.FC<AppItemProps> = ({
   app,
+  deleteApplication,
+  formik,
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const { apps } = useSelector((state: AppState) => state.apps)
@@ -118,9 +144,73 @@ const AppItem: React.FC<AppItemProps> = ({
   const dispatch = useDispatch()
   const { themeMode } = useSelector((state: AppState) => state.styles)
 
+  const [generating, setGenerating] = useState(false)
+  const [appSecret, setAppSecret] = useState('')
+  const appSecretTextRef = useRef(null) as any
+
   const launch = () => {
     window.open(app.appStartPage)
   }
+
+  const handleClickGenerate = () => {
+    dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret) as any)
+  }
+
+  const handleKeyPress = (e: any, callback: any, focus?: boolean) => {
+    if (e.key === "Enter") {
+      callback();
+    }
+  }
+
+  const copyToClipboard = (current: any) => {
+    const clipValue = current?.currentTarget?.innerText;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(clipValue);
+      dispatch(toggleAlert(`Copied ${clipValue} to clipboard`));
+    } else {
+      dispatch(toggleAlert(`Failed to copy to clipboard. Please copy by yourself: ${clipValue} `));
+    }
+  }
+
+  const viewEdit = () => {
+    let formData: AppFormProp = {
+      appId: app.appId,
+      appName: app.appName,
+      appDescription: app.appDescription,
+      appStartPage: app.appStartPage,
+      appStatus: app.appStatus === 'isActive',
+      appScope: app.appScope,
+      appIcon: app.appIcon,
+      appHasSecret: app.appHasSecret ? true : false,
+      appSecret: app.appSecret,
+      appCallbackUrlsStr: '',
+      appContactsStr: ''
+    };
+
+    if (app.appStartPage != null && app.appStartPage.length > 0) {
+      formData.appStartPage = app.appStartPage
+        .replace(/\s+/g, '');
+    }
+    formData.appStatus = app.appStatus === 'isActive';
+
+    if (app.appCallbackUrls != null && app.appCallbackUrls.length > 0) {
+      formData.appCallbackUrlsStr = ([] as Array<string>).concat(app.appCallbackUrls).sort(
+        (a,b) => a.localeCompare(b)
+      ).join('\n');
+    }
+    if (app.appContacts != null && app.appContacts.length > 0) {
+      formData.appContactsStr = ([] as Array<string>).concat(app.appContacts).sort(
+        (a,b) => a.localeCompare(b)
+      ).join('\n');
+    }
+
+    // Save values and open the form
+    formik.setValues(formData);
+    dispatch(toggleApplicationDrawer());
+  }
+
+  // console.log(app)
+  // console.log("app secret:", appSecret)
 
 //   const scope = scopes.find((scope: any) => scope.apiName === consent.scope)
 
@@ -141,7 +231,6 @@ const AppItem: React.FC<AppItemProps> = ({
 //   useEffect(() => {
 //     setShowDetails(expand)
 //   }, [expand])
-
   
   return (
     (
@@ -192,47 +281,70 @@ const AppItem: React.FC<AppItemProps> = ({
                     </AppNameContainer>
                 </TableCell>
                 <TableCell className='expiration exp-content'>
-                    <Box>
-                        {/* <Tooltip title={expirationPast > 0 && expirationPast <= 86400000 ? "Expiring in less than a day" : ""}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 9 9" fill="none">
-                              <circle cx="4.5" cy="4.5" r="4.5" fill={expirationPast < 0 ? '#C3335F' : expirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
-                            </svg>
-                        </Tooltip> */}
-                        <AppIdSecretContainer>
-                            <Typography className='text'>App ID:</Typography>
-                            <Typography className='text' style={{ color: '#656565' }}>{app.appId}</Typography>
-                        </AppIdSecretContainer>
-                        <AppIdSecretContainer>
-                            <Typography className='text'>App Secret: {app.appSecret}</Typography>
-                            {!app.appHasSecret && <ButtonBase>
-                                <Typography className='text' style={{ color: '#2873F0' }}>Click to Generate Secret</Typography>
-                            </ButtonBase>}
-                        </AppIdSecretContainer>
-                    </Box>
+                  <Box>
+                    <AppIdSecretContainer>
+                      <Typography className='text'>App ID:</Typography>
+                      <Tooltip 
+                        title="Copy App Id" 
+                        arrow 
+                        tabIndex={1} 
+                        onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}}
+                      >
+                        <Typography
+                          className='text id-secret'
+                          style={{ color: '#656565' }}
+                          onClick={copyToClipboard}
+                        >
+                          {app.appId}
+                        </Typography>
+                      </Tooltip>
+                    </AppIdSecretContainer>
+                    <AppIdSecretContainer>
+                      <Typography className='text'>App Secret:</Typography>
+                      {app.appHasSecret ? <Typography className='text' style={{ color: '#505050' }}>This app has an app secret configured.</Typography> :
+                        appSecret.length === 0 ? <ButtonBase onClick={handleClickGenerate}>
+                          <Typography className='text' style={{ color: '#2873F0' }}>Click to Generate Secret</Typography>
+                        </ButtonBase>
+                          : <Tooltip 
+                              title="Copy Application Secret" 
+                              tabIndex={1} 
+                              onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                              arrow
+                            >
+                              <Typography
+                                className='text id-secret'
+                                style={{ color: '#656565' }}
+                                ref={appSecretTextRef}
+                                onClick={copyToClipboard}
+                              >
+                                {appSecret}
+                              </Typography>
+                            </Tooltip>
+                      }
+                    </AppIdSecretContainer>
+                  </Box>
                 </TableCell>
                 <TableCell>
-                    <Typography className='text'>{app.appDescription}</Typography>
+                  <Typography className='text'>{app.appDescription}</Typography>
                 </TableCell>
-                <TableCell><ButtonBase className='revoke'>Revoke</ButtonBase></TableCell>
+                <TableCell>
+                  <OptionsContainer>
+                    <Tooltip title="Edit Application" arrow>
+                      <ButtonBase onClick={viewEdit}>
+                        <FiEdit2 size='1.4em' />
+                      </ButtonBase>
+                    </Tooltip>
+                    <Box>
+                      <div style={{ height: '31px', width: '1px', backgroundColor: 'black'}}></div>  
+                    </Box>
+                    <Tooltip title="Delete Application" arrow>
+                      <ButtonBase onClick={() => deleteApplication(app.appId)}>
+                        <DeleteIcon className='delete-icon' />
+                      </ButtonBase>
+                    </Tooltip>
+                  </OptionsContainer>
+                </TableCell>
             </StyledTableRow>
-            {/* <StyledTableRow>
-                <TableCell colSpan={5}>
-                    <Collapse in={showDetails} timeout="auto" unmountOnExit>
-                        <UrlContainer>
-                            <span><b>URL:</b></span>
-                            <a href={consent.redirect_uri} target='_blank' rel='noreferrer' className='value'>{consent.redirect_uri}</a>
-                        </UrlContainer>
-                        <UrlContainer style={{ flexDirection: 'column' }}>
-                            <span><b>Scopes</b></span>
-                            <Box className='scope-box'>
-                              {consentScopes.map((scope) =>
-                                <text key={scope} className='scope'>{scope}</text>
-                              )}
-                            </Box>
-                        </UrlContainer>
-                    </Collapse>
-                </TableCell>
-            </StyledTableRow> */}
       </>
     )
   );
