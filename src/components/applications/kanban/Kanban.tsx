@@ -25,8 +25,6 @@ import FormDrawer from '../FormDrawer';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { AppFormContext } from '../ApplicationContext';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
-import AppStack from '../AppStack';
-import AppSearch from '../AppSearch';
 import { TopContainer } from '../../../styles/CommonStyles';
 import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
@@ -204,38 +202,6 @@ const Kanban: React.FC = () => {
         </Button>
       </TopContainer>
       <AppStackContainer>
-        {/* <AppStack
-          heading="Active Applications"
-          formik={formik}
-          deleteApplication={openDeleteDialog}
-          list={
-            searchKey === ''
-              ? apps
-                  .filter((app) => app.appStatus === 'isActive')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-              : filtered
-                  .filter((app) => app.appStatus === 'isActive')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-          }
-        />
-        <AppStack
-          heading="Inactive Applications"
-          formik={formik}
-          deleteApplication={openDeleteDialog}
-          list={
-            searchKey === ''
-              ? apps
-                  .filter((app) => app.appStatus === 'disabled')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-              : filtered
-                  .filter((app) => app.appStatus === 'disabled')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-          }
-        /> */}
         <AppsTable
           filtersOn={filtersOn}
           setFiltersOn={setFiltersOn}
@@ -245,18 +211,6 @@ const Kanban: React.FC = () => {
           formik={formik}
         />
       </AppStackContainer>
-      {/* <paginated-table>
-        <th>
-          <tr>
-            <td>
-              hello
-            </td>
-            <td>
-              hello
-            </td>
-          </tr>
-        </th>
-      </paginated-table> */}
       <DeleteApplicationDialog
         dialogTitle={deleteAppTitle}
         deleteMessage={deleteAppMessage}

@@ -17,17 +17,13 @@ import { useSelector } from 'react-redux';
 import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@material-ui/icons';
 import { FaSort } from "react-icons/fa";
 import { AppState } from '../../store';
-import { Consent } from '../../store/consents/types';
 import APILoadingProgress from '../loading/APILoadingProgress';
-import ConsentItem from './kanban/ConsentItem';
-import ConsentFilterContainer from '../consents/ConsentFilterContainer';
 import { AppProp } from '../../store/applications/types';
 import AppItem from './AppItem';
 import { FormikProps } from 'formik';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
-//   background-color: #F0F4F7;
 
   .text {
     font-weight: bold;
@@ -60,8 +56,6 @@ const StyledTableContainer = styled(TableContainer)`
   }
 
   .app-name {
-    // width: calc(30% - 70px);
-    // min-width: calc(30% - 200px);
     width: 26%;
   }
 
@@ -104,16 +98,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
   const [filteredApps, setFilteredApps] = React.useState(apps)
-//   // states for filters
-//   const [user, setUser] = React.useState("")
   const [appName, setAppName] = React.useState("")
-//   const [status, setStatus] = React.useState("All")
-//   const [showWithApps, setShowWithApps] = React.useState(false)
-//   const [expiration, setExpiration] = React.useState({ expiration: "All", date: new Date()})
-//   const [tokenExpiration, setTokenExpiration] = React.useState({ expiration: "All", date: new Date()})
-//   const [scopes, setScopes] = React.useState([""])
-  // sorting flags states
-//   const [sortUser, setSortUser] = React.useState(true)
   const [sortAppName, setSortAppName] = React.useState(true)
 
   const handleChangePage = (
@@ -130,27 +115,14 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
     setPage(0);
   }
 
-  const resetFilters = () => {
-    // setStatus("All")
-    // setShowWithApps(false)
-    // setExpiration({ expiration: "All", date: new Date()})
-    // setTokenExpiration({ expiration: "All", date: new Date()})
-    // setScopes([""])
-  }
-
-  const getConsentAppName = (consent: Consent) => {
-    const app = apps.find((app: any) => app.appId === consent.client_id)
-    return app ? app.appName : "-"
-  }
-
   const handleSortAppNames = () => {
-    // const sortedConsents = consents.sort((a, b) => {
-    //   const aAppName = getConsentAppName(a)
-    //   const bAppName = getConsentAppName(b)
-    //   if (sortAppName) return aAppName.localeCompare(bAppName)
-    //   else return bAppName.localeCompare(aAppName)
-    // })
-    // setFilteredConsents(sortedConsents)
+    const sortedApps = apps.sort((a, b) => {
+      const aAppName = a.appName
+      const bAppName = b.appName
+      if (sortAppName) return aAppName.localeCompare(bAppName)
+      else return bAppName.localeCompare(aAppName)
+    })
+    setFilteredApps(sortedApps)
     setSortAppName(!sortAppName)
   }
 
@@ -188,81 +160,13 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
       if (reset) {
         setFilteredApps(newApps)
         setReset(false)
-        resetFilters()
+        // resetFilters()
       } else {
-        // if (status.length > 0) {
-        //   switch (status) {
-        //     case "Active":
-        //       newConsents = newConsents.filter((consent) => {
-        //         if (new Date(consent.code_expires_at) > new Date()) return true
-        //         else return false
-        //       })
-        //       break
-        //     default:
-        //   }
-        // }
-        // if (showWithApps) {
-        //   newConsents = newConsents.filter((consent) => {
-        //     const app = apps.find((app: any) => app.appId === consent.client_id)
-        //     if (app !== undefined) {
-        //       if (!!app.appName && app.appName !== '-') return true
-        //       else return false
-        //     } else {
-        //       return false
-        //     }
-        //   })
-        // }
-        // if (expiration.expiration.length > 0) {
-        //   switch (expiration.expiration) {
-        //     case "All":
-        //       break
-        //     case "None":
-        //       newConsents = newConsents.filter((consent) => new Date(consent.code_expires_at).toUTCString() === "Invalid Date")
-        //       break
-        //     default:
-        //       newConsents = newConsents.filter((consent) => {
-        //         const consentExpiration = new Date(consent.code_expires_at)
-        //         const filterExpiration = new Date(expiration.date)
-        //         return (
-        //           consentExpiration.getDate() === filterExpiration.getDate() &&
-        //           consentExpiration.getMonth() === filterExpiration.getMonth() &&
-        //           consentExpiration.getFullYear() === filterExpiration.getFullYear()
-        //         )
-        //       })
-        //   }
-        // }
-        // if (tokenExpiration.expiration.length > 0) {
-        //   switch (tokenExpiration.expiration) {
-        //     case "All":
-        //       break
-        //     case "None":
-        //       newConsents = newConsents.filter((consent) => new Date(consent.refresh_token_expires_at).toUTCString() === "Invalid Date")
-        //       break
-        //     default:
-        //       newConsents = newConsents.filter((consent) => {
-        //         const consentTokenExpiration = new Date(consent.refresh_token_expires_at)
-        //         const filterTokenExpiration = new Date(tokenExpiration.date)
-        //         return (
-        //           consentTokenExpiration.getDate() === filterTokenExpiration.getDate() &&
-        //           consentTokenExpiration.getMonth() === filterTokenExpiration.getMonth() &&
-        //           consentTokenExpiration.getFullYear() === filterTokenExpiration.getFullYear()
-        //         )
-        //       })
-        //   }
-        // }
-        // if (scopes.filter(s => s !== '').length > 0) {
-        //   newConsents = newConsents.filter((consent: Consent) => {
-        //     const consentScopes = consent.scope.split(",");
-        //     return scopes.some((scope) => scope !== '' && consentScopes.includes(scope));
-        //   });
-        // }
         setFilteredApps(newApps)
         setFiltersOn(true)
       }
 
       setPage(0)
-
-    //   if (status === "All" || showWithApps || expiration.expiration === "All" || tokenExpiration.expiration === "All" || scopes.length > 0) setFiltersOn(false)
     }
 
     filterApps(appName)
@@ -270,7 +174,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
 
   React.useEffect(() => {
     if (filtersOn) {
-      resetFilters()
+      // resetFilters()
       setFiltersOn(false)
     }
   }, [filtersOn, setFiltersOn])
@@ -309,7 +213,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                       <Typography className='text' style={{ fontSize: '13px' }}>
                         App Secret
                       </Typography>
-                      {/* <input type='text' className='search-bar' style={{ visibility: 'hidden' }} /> */}
                     </Box>
                   </TableCell>
                   <TableCell className='description text'>
@@ -338,13 +241,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                       />
                     )
                   })}
-                {/* {
-                    filteredApps.map((app: any, idx: number) => {
-                        return <app-item key={app.appId} ref={(ref: any) => {
-                            if (ref) ref.setData(app)
-                        }} />
-                    })
-                } */}
               </StyledTableBody>
               <TableFooter>
                 <TableRow>
@@ -387,18 +283,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
             </Table>
           </StyledTableContainer>
         }
-        {/* <ConsentFilterContainer
-          setStatus={setStatus}
-          showWithApps={showWithApps}
-          setShowWithApps={setShowWithApps}
-          exp={expiration}
-          setExp={setExpiration}
-          tokenExp={tokenExpiration}
-          setTokenExp={setTokenExpiration}
-          setReset={setReset}
-          scopes={scopes}
-          setScopes={setScopes}
-        /> */}
     </>
   );
 };

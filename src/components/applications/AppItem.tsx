@@ -7,9 +7,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, ButtonBase, Collapse, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import { Box, ButtonBase, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
@@ -18,8 +16,11 @@ import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
 import { DeleteIcon } from '../../styles/CommonStyles';
 import { FiEdit2 } from 'react-icons/fi';
+import { MdRefresh } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
+import '../webcomponents/app-status';
+import '../webcomponents/copyable-text';
 
 const StyledTableRow = styled(TableRow)`
   .app-name {
@@ -52,27 +53,6 @@ const StyledTableRow = styled(TableRow)`
     width: 20px;
     height: 20px;
     background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNkg1SDIxIiBmaWxsPSIjRDY0NjZGIi8+CjxwYXRoIGQ9Ik0zIDZINUgyMSIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTkgNlYyMEMxOSAyMC41MzA0IDE4Ljc4OTMgMjEuMDM5MSAxOC40MTQyIDIxLjQxNDJDMTguMDM5MSAyMS43ODkzIDE3LjUzMDQgMjIgMTcgMjJIN0M2LjQ2OTU3IDIyIDUuOTYwODYgMjEuNzg5MyA1LjU4NTc5IDIxLjQxNDJDNS4yMTA3MSAyMS4wMzkxIDUgMjAuNTMwNCA1IDIwVjZNOCA2VjRDOCAzLjQ2OTU3IDguMjEwNzEgMi45NjA4NiA4LjU4NTc5IDIuNTg1NzlDOC45NjA4NiAyLjIxMDcxIDkuNDY5NTcgMiAxMCAySDE0QzE0LjUzMDQgMiAxNS4wMzkxIDIuMjEwNzEgMTUuNDE0MiAyLjU4NTc5QzE1Ljc4OTMgMi45NjA4NiAxNiAzLjQ2OTU3IDE2IDRWNiIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K');
-  }
-`
-
-const UrlContainer = styled(Box)`
-  padding: 0 20px;
-  display: flex;
-  gap: 5px;
-
-  .scope-box {
-    border: 1px solid #B9B9B9;
-    border-radius: 5px;
-    padding: 10px;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-  }
-
-  .scope {
-    border-radius: 20px;
-    padding: 5px 10px;
-    background-color: #E6EBF5;
   }
 `
 
@@ -137,16 +117,13 @@ const AppItem: React.FC<AppItemProps> = ({
   deleteApplication,
   formik,
 }) => {
-  const [showDetails, setShowDetails] = useState(false);
-  const { apps } = useSelector((state: AppState) => state.apps)
-  const { scopes } = useSelector((state: AppState) => state.databases)
-  const { users } = useSelector((state: AppState) => state.users)
   const dispatch = useDispatch()
   const { themeMode } = useSelector((state: AppState) => state.styles)
 
   const [generating, setGenerating] = useState(false)
-  const [appSecret, setAppSecret] = useState('')
+  const [appSecret, setAppSecret] = useState(app.appSecret)
   const appSecretTextRef = useRef(null) as any
+  const clickToGenerateText = "Click to Generate Secret"
 
   const launch = () => {
     window.open(app.appStartPage)
@@ -209,36 +186,11 @@ const AppItem: React.FC<AppItemProps> = ({
     dispatch(toggleApplicationDrawer());
   }
 
-  // console.log(app)
-  // console.log("app secret:", appSecret)
-
-//   const scope = scopes.find((scope: any) => scope.apiName === consent.scope)
-
-  // Show delete consent dialog when clicking the Revoke button
-//   const handleClickRevoke = () => {
-//     dispatch(toggleDeleteConsent(consent.unid));
-//   }
-
-//   const allMatches = users?.filter((user) => user[Object.keys(user)[0]].FullName[0] === consent.username);
-//   const username = allMatches && allMatches.length > 0 && allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress[0] !== ''
-//                     ? allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress :
-//                     consent.username
-//   const app = apps.find((app: any) => app.appId === consent.client_id)
-//   const expirationPast = new Date(consent.code_expires_at).getTime() - new Date().getTime()
-//   const tokenExpirationPast = new Date(consent.refresh_token_expires_at).getTime() - new Date().getTime()
-//   const consentScopes = consent.scope.split(",")
-
-//   useEffect(() => {
-//     setShowDetails(expand)
-//   }, [expand])
-  
   return (
     (
         <>
             <StyledTableRow>
                 <TableCell className='expand'>
-                    {/* {!showDetails && <ButtonBase onClick={() => {setShowDetails(true)}}><ExpandMoreIcon /></ButtonBase>}
-                    {showDetails && <ButtonBase onClick={() => {setShowDetails(false)}}><ExpandLessIcon /></ButtonBase>} */}
                     {app.appStatus === 'isActive' && <Tooltip title={`Launch ${app.appName}`} arrow>
                         <ButtonBase onClick={launch}>
                             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -257,33 +209,25 @@ const AppItem: React.FC<AppItemProps> = ({
                     </Tooltip>}
                 </TableCell>
                 <TableCell className='app-name'>
-                    <AppNameContainer>
-                        <AppImage
-                            src={`data:image/svg+xml;base64, ${appIcons[app.appIcon]}`}
-                            alt="db-icon"
-                            style={{
-                                color: getTheme(themeMode).hoverColor
-                            }}
-                        />
-                        <Box style={{ flexDirection: 'column' }}>
-                            <Typography className='text'>{app.appName}</Typography>
-                            <Box className={`status-container ${app.appStatus === 'isActive' ? '' : 'inactive'}`}>
-                                <svg width="5" height="5" viewBox="0 0 5 5" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="2.5" cy="2.5" r="2.5" fill={app.appStatus === 'isActive' ? '#003122' : '#6C7882'}/>
-                                </svg>
-                                <Typography
-                                    style={{ fontSize: '12px', color: `${app.appStatus === 'isActive' ? '#000' : '#6C7882'}` }}
-                                >
-                                    {app.appStatus === 'isActive' ? "Active" : "Inactive"}
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </AppNameContainer>
+                  <AppNameContainer>
+                    <AppImage
+                        src={`data:image/svg+xml;base64, ${appIcons[app.appIcon]}`}
+                        alt="db-icon"
+                        style={{
+                            color: getTheme(themeMode).hoverColor
+                        }}
+                    />
+                    <Box style={{ flexDirection: 'column', gap: '2px', display: 'flex' }}>
+                        <Typography className='text'>{app.appName}</Typography>
+                        {app.appStatus === 'isActive' ? <app-status status="true" /> : <app-status status="false" />}
+                    </Box>
+                  </AppNameContainer>
                 </TableCell>
                 <TableCell className='expiration exp-content'>
                   <Box>
                     <AppIdSecretContainer>
                       <Typography className='text'>App ID:</Typography>
+                      <copyable-text tooltip="Copy App ID">Click to copy</copyable-text>
                       <Tooltip 
                         title="Copy App Id" 
                         arrow 
@@ -301,26 +245,28 @@ const AppItem: React.FC<AppItemProps> = ({
                     </AppIdSecretContainer>
                     <AppIdSecretContainer>
                       <Typography className='text'>App Secret:</Typography>
-                      {app.appHasSecret ? <Typography className='text' style={{ color: '#505050' }}>This app has an app secret configured.</Typography> :
-                        appSecret.length === 0 ? <ButtonBase onClick={handleClickGenerate}>
-                          <Typography className='text' style={{ color: '#2873F0' }}>Click to Generate Secret</Typography>
-                        </ButtonBase>
-                          : <Tooltip 
-                              title="Copy Application Secret" 
-                              tabIndex={1} 
-                              onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                              arrow
-                            >
-                              <Typography
-                                className='text id-secret'
-                                style={{ color: '#656565' }}
-                                ref={appSecretTextRef}
-                                onClick={copyToClipboard}
+                      {(app.appHasSecret || appSecret !== app.appSecret) && <Tooltip title={clickToGenerateText} arrow>
+                        <ButtonBase onClick={handleClickGenerate}><MdRefresh color='#2873F0' /></ButtonBase>
+                      </Tooltip>}
+                      {(app.appHasSecret && appSecret === app.appSecret) ? <Typography className='text' style={{ color: '#505050' }}>This app has an app secret configured.</Typography> :
+                          appSecret === app.appSecret ? <ButtonBase onClick={handleClickGenerate}>
+                            <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
+                          </ButtonBase>
+                            : <Tooltip 
+                                title="Copy Application Secret" 
+                                tabIndex={1} 
+                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                                arrow
                               >
-                                {appSecret}
-                              </Typography>
-                            </Tooltip>
-                      }
+                                <Typography
+                                  className='text id-secret'
+                                  style={{ color: '#2873F0' }}
+                                  ref={appSecretTextRef}
+                                  onClick={copyToClipboard}
+                                >
+                                  {appSecret}
+                                </Typography>
+                              </Tooltip>}
                     </AppIdSecretContainer>
                   </Box>
                 </TableCell>
