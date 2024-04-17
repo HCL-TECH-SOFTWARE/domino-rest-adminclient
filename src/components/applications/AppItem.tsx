@@ -227,7 +227,7 @@ const AppItem: React.FC<AppItemProps> = ({
                   <Box>
                     <AppIdSecretContainer>
                       <Typography className='text'>App ID:</Typography>
-                      <copyable-text tooltip="Copy App ID">Click to copy</copyable-text>
+                      {/* <copyable-text tooltip="Copy App ID">Click to copy</copyable-text> */}
                       <Tooltip 
                         title="Copy App Id" 
                         arrow 
