@@ -85,7 +85,7 @@ export interface Database {
   applicationAccessApprovers?: any;
   forms: Array<Form>;
   configuredForms: Array<string>;
-  views?: Array<string>;
+  views?: Array<ViewSchemaObj>;
   activeViews?: Array<string>;
   agents?: Array<string>;
   activeAgents?: Array<string>;
@@ -146,7 +146,7 @@ export interface DBState {
   loadedFields: Array<any>;
   activeForm: string;
   activeFields: Array<any>;
-  views: Array<any>;
+  views: Array<ViewObj>;
   activeViews: Array<any>;
   folders: Array<any>;
   agents: Array<any>;
@@ -612,6 +612,22 @@ export interface ViewObj {
   viewUnid: string;
   viewActive: boolean;
   viewUpdated?: boolean;
+}
+
+export interface ViewSchemaObj {
+  name: string;
+  unid: string;
+  alias: Array<string>;
+  selectionFormula: string;
+  columns: Array<ColumnObj>;
+}
+
+export interface ColumnObj {
+  name: string;
+  externalName: string;
+  title: string;
+  formula: string;
+  position: number;
 }
 
 export interface AgentObj {

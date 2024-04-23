@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -185,7 +185,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   const [hoveredColumn, setHoveredColumn] = useState({});
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
   const { folders } = useSelector((state: AppState) => state.databases)
 
@@ -206,7 +206,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     forms,
     agents,
     views
-  } = schemaData;
+  } = schemaData
 
   const selectedDB = useMemo(() => ({
     apiName,
@@ -277,11 +277,13 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     if (views) {
       let viewsBuffer = views.map((view: any) => {
         if (view.name === viewName) {
-          // remove columns for chosen view
+          // replace all columns for chosen view
           return {
             name: view.name,
             alias: view.alias,
             unid: view.unid,
+            columns: fetchedColumns,
+            selectionFormula: view.selectionFormula,
           }
         } else if (!!view.columns) {
           // retain columns for other views that have columns
@@ -290,6 +292,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
             alias: view.alias,
             unid: view.unid,
             columns: view.columns,
+            selectionFormula: view.selectionFormula,
           }
         } else {
           // retain no columns for views that don't have columns
@@ -297,6 +300,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
             name: view.name,
             alias: view.alias,
             unid: view.unid,
+            columns: fetchedColumns,
+            selectionFormula: view.selectionFormula,
           }
         }
       });
@@ -351,7 +356,10 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       let columnsPayload = chosenColumns.map((column) => {
         return {
           name: column.name,
-          externalName: column.externalName,
+          externalName: !!column.externalName ? column.externalName : !!column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
+          title: column.title,
+          formula: column.formula,
+          position: column.position,
         }
       });
       // fill up views buffer
@@ -363,7 +371,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               alias: view.alias,
               unid: view.unid,
               columns: columnsPayload,
-              viewUpdated: true
+              viewUpdated: true,
+              selectionFormula: view.selectionFormula,
             }
           } else if (!!view.columns) {
             return {
@@ -371,14 +380,17 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               alias: view.alias,
               unid: view.unid,
               columns: view.columns,
-              viewUpdated: view.viewUpdated ? true : false
+              viewUpdated: view.viewUpdated ? true : false,
+              selectionFormula: view.selectionFormula,
             }
           } else {
             return {
               name: view.name,
               alias: view.alias,
               unid: view.unid,
-              viewUpdated: view.viewUpdated ? true : false
+              viewUpdated: view.viewUpdated ? true : false,
+              columns: fetchedColumns,
+              selectionFormula: view.selectionFormula,
             }
           }
         });
@@ -389,13 +401,16 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               name: view.name,
               alias: view.alias,
               unid: view.unid,
-              columns: view.columns
+              columns: view.columns,
+              selectionFormula: view.selectionFormula,
             }
           } else {
             return {
               name: view.name,
               alias: view.alias,
               unid: view.unid,
+              columns: fetchedColumns,
+              selectionFormula: view.selectionFormula,
             }
           }
         });
@@ -508,67 +523,70 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   }
   
   useEffect(() => {
-    const fetchColumns = async () => {
-      let encodedViewName = fullEncode(viewName);
-      const folderNames = folders.map((folder) => {return folder.viewName});
-      const isFolder = folderNames.includes(viewName);
-
-      await axios
-        .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            "Content-Type": 'application/json'
+    if (viewName.length > 0) {
+      const fetchColumns = async () => {
+        let encodedViewName = fullEncode(viewName);
+        const folderNames = folders.map((folder) => {return folder.viewName});
+        const isFolder = folderNames.includes(viewName);
+  
+        await axios
+          .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              "Content-Type": 'application/json'
+            }
+          })
+          .then((res: any) => {
+            const items = Object.keys(res.data);
+            let fetchedColumnsBuffer: any[];
+            items.forEach((item: any) => {
+              // skip items with '@' at the start of the key, it is metadata
+              if (!(item[0] === '@')) {
+                let newColumn = {
+                  ...res.data[item],
+                  name: item,
+                  externalName: schemaData.views?.find((view: any) => view.name === viewName)?.columns.find((column: any) => column.name === item)?.externalName,
+                };
+                fetchedColumnsBuffer = !!fetchedColumnsBuffer ? [...fetchedColumnsBuffer, newColumn] : [newColumn];
+                setFetchedColumns(fetchedColumnsBuffer);
+              }
+            });
+          });
+  
+        dispatch(setLoading({status: false}));
+      }
+  
+      if (open) {
+        dispatch(setLoading({status: true}));
+        fetchColumns();
+      }
+  
+      if (views) {
+        views.forEach((view: any) => {
+          if (!!view.columns) {
+            if (view.name === viewName) {
+              setChosenColumns(view.columns);
+            }
+            return {
+              name: view.name,
+              alias: view.alias,
+              unid: view.unid,
+              columns: view.columns
+            }
+          } else {
+            if (view.name === viewName) {
+              setChosenColumns([]);
+            }
+            return {
+              name: view.name,
+              alias: view.alias,
+              unid: view.unid,
+            }
           }
         })
-        .then((res) => {
-          const items = Object.keys(res.data);
-          let fetchedColumnsBuffer: any[];
-          items.forEach((item: any) => {
-            // skip items with '@' at the start of the key, it is metadata
-            if (!(item[0] === '@')) {
-              let newColumn = {
-                ...res.data[item],
-                name: item,
-              };
-              fetchedColumnsBuffer = !!fetchedColumnsBuffer ? [...fetchedColumnsBuffer, newColumn] : [newColumn];
-              setFetchedColumns(fetchedColumnsBuffer);
-            }
-          });
-        });
-
-      dispatch(setLoading({status: false}));
+      }
     }
-
-    if (open) {
-      dispatch(setLoading({status: true}));
-      fetchColumns();
-    }
-
-    if (views) {
-      views.forEach((view: any) => {
-        if (!!view.columns) {
-          if (view.name === viewName) {
-            setChosenColumns(view.columns);
-          }
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-            columns: view.columns
-          }
-        } else {
-          if (view.name === viewName) {
-            setChosenColumns([]);
-          }
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-          }
-        }
-      })
-    }
-  }, [aScopeName, open, viewName, views, nsfPathProp, dispatch, folders])
+  }, [aScopeName, open, viewName, views, nsfPathProp, dispatch, folders, schemaData.views])
 
   function setActiveViews(dbName: string, views: Array<any>) {
     // Build Active View list
