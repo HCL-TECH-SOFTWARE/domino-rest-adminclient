@@ -542,10 +542,12 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
             items.forEach((item: any) => {
               // skip items with '@' at the start of the key, it is metadata
               if (!(item[0] === '@')) {
+                const externalName = schemaData.views?.find((view: any) => view.name === viewName)?.columns.find((column: any) => column.name === item)?.externalName
+                const defaultExternalName = res.data[item].title.length > 0 ? res.data[item].title.replace(/[$@-]/g, '').replace(/\s/g, '_') : res.data[item].name.replace(/[$@-]/g, '').replace(/\s/g, '_')
                 let newColumn = {
                   ...res.data[item],
                   name: item,
-                  externalName: schemaData.views?.find((view: any) => view.name === viewName)?.columns.find((column: any) => column.name === item)?.externalName,
+                  externalName: defaultExternalName,
                 };
                 fetchedColumnsBuffer = !!fetchedColumnsBuffer ? [...fetchedColumnsBuffer, newColumn] : [newColumn];
                 setFetchedColumns(fetchedColumnsBuffer);
