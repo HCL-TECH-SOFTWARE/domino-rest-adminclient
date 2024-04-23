@@ -1324,6 +1324,7 @@ export const handleDatabaseViews = (
   active: boolean,
   setSchemaData: (data: any) => void,
 ) => {
+  console.log(viewsArray)
   return async (dispatch: Dispatch) => {
     // Build redux data
     const viewsData = viewsArray.map((view: any) => {
@@ -1338,34 +1339,43 @@ export const handleDatabaseViews = (
     // Save views
     //  Build the array of new views
     const viewsList: Array<any> = [];
+    console.log(viewsArray)
     if (viewsArray.length === 1) {
       activeViews.forEach((view: any) => {
         if (view.viewName !== viewsData[0].viewName) {
-          viewsList.push(saveViewDetails(view));
+          viewsList.push(saveViewDetails(view, schemaData.nsfPath, active));
         } else if (view.viewName === viewsData[0].viewName && active) {
-          viewsList.push(saveViewDetails(view));
+          viewsList.push(saveViewDetails(view, schemaData.nsfPath, active));
         }
       });
+      console.log(viewsList)
       if (active) {
-        viewsList.push(saveViewDetails(viewsArray[0]));
+        viewsList.push(saveViewDetails(viewsArray[0], schemaData.nsfPath, active));
       }
     } else if (active) {
       const activeViewNames = activeViews.map((view: any) => {
         return view.viewName
       });
-      viewsArray.forEach((view: any) => {
+      viewsArray.forEach(async (view: any) => {
         // if a view was already active, don't add it again to the active views list
         if (!activeViewNames.includes(view.viewName)) {
-          viewsList.push(saveViewDetails(view));
+          const viewDetails = saveViewDetails(view, schemaData.nsfPath, active)
+          viewsList.push(viewDetails);
         }
       });
-      activeViews.forEach((view: any) => {
-        viewsList.push(saveViewDetails(view));
+      activeViews.forEach(async (view: any) => {
+        const viewDetails = saveViewDetails(view, schemaData.nsfPath, active)
+        viewsList.push(viewDetails);
       });
     }
 
+    const finalViews = await Promise.all(viewsList);
+    console.log(finalViews)
+
     // Send the new views to the server
-    dispatch(updateViews(schemaData, viewsList, setSchemaData) as any)
+    console.log(viewsList)
+    console.log(schemaData)
+    dispatch(updateViews(schemaData, finalViews, setSchemaData) as any)
   }
 }
 
@@ -1439,7 +1449,7 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
   };
 };
 
-function saveViewDetails(currentView: any) {
+async function saveViewDetails(currentView: any, nsfPath: string, active: boolean) {
   let aliasArray: Array<any> = [];
   if (currentView.viewAlias != null && currentView.viewAlias.length > 0) {
     if (Array.isArray(currentView.viewAlias)) {
@@ -1449,14 +1459,71 @@ function saveViewDetails(currentView: any) {
     }
   }
 
+  console.log(currentView.viewColumns)
+  console.log(!!currentView.viewColumns)
+  // if (!(!!currentView.viewColumns)) {
+  //   console.log("hello")
+  //   // currentView.viewColumns = []
+  //   const viewDesign = await getViewDesign(currentView.viewName, nsfPath)
+  //   console.log(viewDesign)
+  //   console.log(typeof viewDesign)
+  //   // add all columns
+  // }
+
+  let viewDesign: any = {}
+  let viewColumns: Array<any> = []
+
+  if (active) {
+    viewDesign = await getViewDesign(currentView.viewName, nsfPath)
+    if (currentView.viewColumns?.length > 0) {
+      console.log(currentView.viewColumns)
+    } else {
+      Object.keys(viewDesign).forEach((key: string) => {
+        if (!key.startsWith('@')) {
+          viewColumns.push({
+            title: viewDesign[key].title,
+            formula: viewDesign[key].formula,
+            position: viewDesign[key].position,
+            name: viewDesign[key].name,
+            externalName: viewDesign[key].title.length > 0 ? viewDesign[key].title.replace(/[$@-]/g, '').replace(/\s/g, '_') : viewDesign[key].name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
+          })
+        }
+      })
+    }
+  }
+
   return {
     name: currentView.viewName,
     alias: aliasArray,
     unid: currentView.viewUnid,
-    columns: currentView.viewColumns,
-    viewUpdated: currentView.viewUpdated
+    columns: !!currentView.viewColumns ? currentView.viewColumns : viewColumns,
+    viewUpdated: currentView.viewUpdated,
+    selectionFormula: viewDesign['@selectionFormula'],
   }
 };
+
+// Get view elements by calling the design API
+async function getViewDesign(viewName: string, nsfPath: string) {
+  let viewDesign = {}
+  // might need to encode nsfPath here
+  const res = await fetch(`${SETUP_KEEP_API_URL}/design/views/${fullEncode(viewName)}?nsfPath=${nsfPath}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      'Content-Type': 'application/json'
+    },
+  })
+  // .then((response) => {
+  //   return response.json();
+  // }).then((data) => {
+  //   console.log(data)
+  //   viewDesign = data
+  //   return data
+  // })
+  const obj = await res.json()
+  console.log(obj)
+  return obj
+}
 
 export function setFormName(formName: string) {
   return async (dispatch: Dispatch) => {
