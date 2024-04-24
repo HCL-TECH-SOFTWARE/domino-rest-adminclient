@@ -694,7 +694,8 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
                   viewName: view['@name'],
                   viewAlias: aliasArray,
                   viewUnid: view['@unid'],
-                  viewUpdated: view['columns'] && view['columns'].length ? true : false
+                  viewUpdated: view['columns'] && view['columns'].length ? true : false,
+                  viewSelectionFormula: view['@selectionformula'],
                 };
               })
             ) as any
@@ -1455,31 +1456,33 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
   }
 
   let viewDesign: any = {}
-  let viewColumns: Array<any> = []
 
   if (active && callFetch) {
     viewDesign = await getViewDesign(currentView.viewName, nsfPath, isFolder)
-    Object.keys(viewDesign).forEach((key: string) => {
-      if (!key.startsWith('@')) {
-        viewColumns.push({
-          title: viewDesign[key].title,
-          formula: viewDesign[key].formula,
-          position: viewDesign[key].position,
-          name: viewDesign[key].name,
-          externalName: viewDesign[key].title.length > 0 ? viewDesign[key].title.replace(/[$@-]/g, '').replace(/\s/g, '_') : viewDesign[key].name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
-        })
-      }
-    })
-    viewColumns = viewColumns.sort((a, b) => a.position - b.position)
+  } else {
+    viewDesign = {
+      ...viewDesign,
+      '@selectionFormula': currentView.viewSelectionFormula,
+    }
   }
 
-  return {
-    name: currentView.viewName,
-    alias: aliasArray,
-    unid: currentView.viewUnid,
-    columns: viewColumns.length > 0 ? viewColumns : currentView.viewColumns,
-    viewUpdated: currentView.viewUpdated,
-    selectionFormula: !!viewDesign['@selectionFormula'] ? viewDesign['@selectionFormula'] : !!currentView['@selectionFormula'] ? currentView['@selectionFormula'] : '',
+  if (isFolder) {
+    return {
+      name: currentView.viewName,
+      alias: aliasArray,
+      unid: currentView.viewUnid,
+      columns: currentView.viewColumns,
+      viewUpdated: currentView.viewUpdated,
+    }
+  } else {
+    return {
+      name: currentView.viewName,
+      alias: aliasArray,
+      unid: currentView.viewUnid,
+      columns: currentView.viewColumns,
+      viewUpdated: currentView.viewUpdated,
+      selectionFormula: viewDesign['@selectionFormula'],
+    }
   }
 };
 
@@ -1512,7 +1515,8 @@ function buildReduxViewData(currentView: any, viewActive: boolean) {
     viewAlias: currentView.viewAlias,
     viewUnid: currentView.viewUnid,
     viewActive: viewActive,
-    viewUpdated: !viewActive ? false : currentView.viewUpdated
+    viewUpdated: !viewActive ? false : currentView.viewUpdated,
+    viewSelectionFormula: currentView.viewSelectionFormula,
   }
 }
 

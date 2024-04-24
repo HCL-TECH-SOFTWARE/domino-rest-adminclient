@@ -99,6 +99,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
       viewUpdated: view.viewUpdated,
       viewColumns: view.columns,
       viewFolder: folderNames.includes(view.name),
+      viewSelectionFormula: view.selectionFormula,
     }
   }));
 
@@ -127,6 +128,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
         viewUpdated: view.viewUpdated,
         viewColumns: view.columns,
         viewFolder: folderNames.includes(view.name),
+        viewSelectionFormula: view.selectionFormula,
       }
     }))
   }, [schemaData, folders])
