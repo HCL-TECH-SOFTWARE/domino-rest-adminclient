@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { Prompt, useParams } from 'react-router-dom';
+import { unstable_usePrompt, useParams } from 'react-router-dom';
 import axios, { AxiosResponse } from 'axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@material-ui/core';
@@ -755,10 +755,16 @@ const FormsContainer = () => {
           </div>
         )}
       </CoreContainer>
-      <Prompt
+
+      unstable_usePrompt(
+        message: `WARNING: Leaving this page will discard your changes to the schema. Are you sure you want to leave?`
+        when: unsavedChanges,
+      );
+      
+      {/* <Prompt
         when={unsavedChanges}
         message={`WARNING: Leaving this page will discard your changes to the schema. Are you sure you want to leave?`}
-      />
+      /> */}
     </ErrorWrapper>
   );
 };

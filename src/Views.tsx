@@ -111,40 +111,40 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
       <>
         <PageRouters />
         <Route
-          exact
           path="/schema/:nsfPath/:dbName/:formName/access"
-          render={({ match }) => {
-            return match && <AccessMode />;
-          }}
+          element={<AccessMode />}
+          // render={({ match }) => {
+          //   return match && <AccessMode />;
+          // }}
         />
-        <Route exact path="/">
+        <Route path="/">
           <Homepage />
         </Route>
-        <Route exact path="/scope">
+        <Route path="/scope">
             <ScopeLists />
         </Route>
-        <Route exact path="/schema">
+        <Route path="/schema">
             <SchemasLists />
         </Route>
-        <Route exact path="/apps">
+        <Route path="/apps">
           <ApplicationsContainer />
         </Route>
-        <Route exact path="/apps/consents">
+        <Route path="/apps/consents">
           <ConsentsContainer />
         </Route>
-        <Route exact path="/groups">
+        <Route path="/groups">
           <Groups />
         </Route>
-        <Route exact path="/people">
+        <Route path="/people">
           <People />
         </Route>
-        <Route exact path="/mail">
+        <Route path="/mail">
           <Mail />
         </Route>
         <Route path="/settings">
           <SettingsPage />
         </Route>
-        <Route exact path="/schema/:nsfPath/:dbName">
+        <Route path="/schema/:nsfPath/:dbName">
           <FormsContainer />
         </Route>
       </>

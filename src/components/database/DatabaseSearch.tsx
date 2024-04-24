@@ -9,7 +9,7 @@ import { IconButton, Tooltip } from '@material-ui/core';
 import ClearIcon from '@material-ui/icons/Clear'
 import SearchIcon from '@material-ui/icons/Search';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { Button, Menu, MenuItem } from '@material-ui/core';
@@ -36,8 +36,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const { scopePull } = useSelector((state: AppState) => state.databases);
-  const history = useHistory();
-  const { pathname } = history.location;
+  const { pathname } = useLocation();
   const searchName = pathname.indexOf("schema") > 0 ? "SCHEMA NAME" : "SCOPE NAME";
   let searchTypes = [searchName, 'NSF NAME'];
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

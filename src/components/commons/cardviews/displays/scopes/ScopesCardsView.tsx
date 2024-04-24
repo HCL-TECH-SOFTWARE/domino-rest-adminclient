@@ -6,7 +6,6 @@
 
 import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';
@@ -35,7 +34,6 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const setOption = useState({})[1];
-  const history = useHistory();
 
   const [selectedDB, setSelectedDB] = useState('');
   const [selectedNsf, setSelectedNsf] = useState('');

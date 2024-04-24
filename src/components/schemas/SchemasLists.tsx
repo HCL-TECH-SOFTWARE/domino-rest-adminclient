@@ -23,7 +23,7 @@ import { SettingContext } from '../database/settings/SettingContext';
 import DatabaseSearch from '../database/DatabaseSearch';
 import APILoadingProgress from '../loading/APILoadingProgress';
 import { WrapperContainer } from '../commons/Wrappers';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import SchemasMultiView from '../commons/cardviews/displays/schemas/SchemasMultiView';
 import { toggleAlert } from '../../store/alerts/action';
@@ -39,8 +39,9 @@ const SchemasLists = () => {
   );
   const { loading } = useSelector( (state: AppState) => state.loading );
   const permissionCreate = permissions.createDbMapping;
-  const history = useHistory();
-  const { pathname, search } = history.location;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { pathname, search } = location;
 
   const [results, setResults] = useState([]) as any;
   const [searchKey, setSearchKey] = useState('');
@@ -85,7 +86,7 @@ const SchemasLists = () => {
   };
 
   const changeView = (view: string) => {
-    history.push({
+    navigate({
       pathname,
       search: `?view=${view}`,
     });

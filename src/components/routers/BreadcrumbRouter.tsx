@@ -8,7 +8,7 @@ import React from 'react';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Tooltip from '@material-ui/core/Tooltip';
 import Home from '@material-ui/icons/Home';
 import { useSelector } from 'react-redux';
@@ -54,8 +54,8 @@ const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
 const BreadcrumbRouter: React.FC = () => {
   const location = useLocation();
   const { themeMode } = useSelector((state: AppState) => state.styles);
-  const history = useHistory();
-  const { pathname } = history.location;
+  const navigate = useNavigate();
+  const { pathname } = location;
 
   const activeColor = getTheme(themeMode).breadcrumb.lastActiveColor;
   const pathnameArr = pathname && pathname.split('/');
@@ -71,8 +71,8 @@ const BreadcrumbRouter: React.FC = () => {
   }
 
   const handleOnClick = (index: number) => {
-    if (index > 2) history.push(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
-    else history.push('/schema');
+    if (index > 2) navigate(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
+    else navigate('/schema');
   };
 
   return (
@@ -99,7 +99,7 @@ const BreadcrumbRouter: React.FC = () => {
                 data-testid="overview"
                 style={{display: 'flex', alignItems:'center'}}
                 onClick={() => {
-                  history.push(`/`);
+                  navigate(`/`);
                 }}
               >
                 <Home className="home-icon" />

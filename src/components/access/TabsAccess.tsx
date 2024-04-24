@@ -9,7 +9,7 @@ import Button from '@material-ui/core/Button';
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
@@ -202,7 +202,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   };
 
   const urls = useLocation();
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const paths = urls.pathname.split('/');
   const nsfPath = decodeURIComponent(paths[2]);
@@ -272,7 +272,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         ]
       }
       dispatch(updateSchema(newSchema, setSchemaData) as any)
-      history.push(`/schema/${encodeURIComponent(nsfPath)}/${db}`)
+      navigate(`/schema/${encodeURIComponent(nsfPath)}/${db}`);
     } else {
       const currentForms = currentSchema.forms
         .filter((form: any) => form.formModes.length > 0)

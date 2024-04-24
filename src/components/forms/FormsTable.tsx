@@ -16,7 +16,7 @@ import { Box, Button, ButtonBase, Tooltip, Typography } from "@material-ui/core"
 import { useDispatch } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Database } from "../../store/databases/types";
 import ActivateMenu from "./ActivateMenu";
 import { ButtonNeutral, ButtonYes, WarningIcon } from "../../styles/CommonStyles";
@@ -163,10 +163,10 @@ const FormsTable: React.FC<FormsTableProps> = ({
   const ref = React.useRef<HTMLDialogElement>(null)
   const [activateFormName, setActivateFormName] = React.useState("")
   
-  const history = useHistory();
+  const navigate = useNavigate();
   const openForm = (formName: string, modeLength: number) => {
     if (modeLength > 0) {
-      history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`);
+      navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`);
     } else {
       setActivateFormName(formName)
       ref.current?.showModal()
@@ -223,7 +223,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
           [...schemaData.forms, newForm],
           setSchemaData,
           `${formName} activated successfully.`,
-          () => {history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`)},
+          () => {navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`)},
         ) as any
       );
     } else {

@@ -189,7 +189,7 @@
             return (
               <NavLink
                 key={route.label}
-                exact
+                
                 className={
                   `/${location.pathname.split('/')[1]}` === `${route.uri}`
                     ? 'route-active'
@@ -229,7 +229,7 @@
               return (
                 <NavLink
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -296,7 +296,6 @@
               return (
                 <NavLink
                   key={route.label}
-                  exact
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -336,7 +335,7 @@
               return (
                 <NavLink
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -376,7 +375,7 @@
               return (
                 <NavLink
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -416,7 +415,7 @@
               return (
                 <NavLink
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -459,7 +458,7 @@
               return (
                 <NavLink
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'

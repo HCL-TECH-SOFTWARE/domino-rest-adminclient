@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
@@ -75,8 +75,8 @@ const NsfCard: React.FC<NsfCardProps> = ({
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
   const dispatch = useDispatch();
   const { databases } = database;
-  const history = useHistory();
-  const { pathname } = history.location;
+  const location = useLocation();
+  const { pathname } = location;
   const isSchema = pathname === '/schema';
   const [searchKey, setSearchKey] = useState('');
   const [results, setResults] = useState(databases);

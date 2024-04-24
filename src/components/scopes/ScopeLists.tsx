@@ -24,7 +24,7 @@ import ScopeFormContainer from '../database/ScopeFormContainer';
 import APILoadingProgress from '../loading/APILoadingProgress';
 import { WrapperContainer } from '../commons/Wrappers';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiView';
 import { toggleAlert } from '../../store/alerts/action';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
@@ -39,8 +39,9 @@ const ScopeLists = () => {
   const { visible } = useSelector((state: AppState) => state.drawer);
   const dispatch = useDispatch();
 
-  const history = useHistory();
-  const { pathname, search } = history.location;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { pathname, search } = location;
 
   const displayType = search.split('?view=')[1];
 
@@ -68,7 +69,7 @@ const ScopeLists = () => {
   };
 
   const changeView = (view: string) => {
-    history.push({
+    navigate({
       pathname,
       search: `?view=${view}`,
     });
