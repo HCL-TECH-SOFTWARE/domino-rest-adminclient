@@ -277,27 +277,11 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     if (views) {
       let viewsBuffer = views.map((view: any) => {
         if (view.name === viewName) {
-          // remove columns for chosen view
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-          }
-        } else if (!!view.columns) {
-          // retain columns for other views that have columns
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-            columns: view.columns,
-          }
+          const { columns, ...finalView } = view
+          return finalView
         } else {
-          // retain no columns for views that don't have columns
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-          }
+          // retain columns for other views that have columns, OR retain no columns for views that don't have columns
+          return view
         }
       });
 
@@ -359,25 +343,13 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         viewsBuffer = views.map((view: any) => {
           if (view.name === viewName) {
             return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
+              ...view,
               columns: columnsPayload,
               viewUpdated: true,
             }
-          } else if (!!view.columns) {
-            return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
-              columns: view.columns,
-              viewUpdated: view.viewUpdated ? true : false,
-            }
           } else {
             return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
+              ...view,
               viewUpdated: view.viewUpdated ? true : false,
             }
           }
@@ -385,18 +357,10 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       } else {
         viewsBuffer = views.map((view: any) => {
           if (view.name !== viewName) {
-            return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
-              columns: view.columns,
-            }
+            return view
           } else {
-            return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
-            }
+            const { columns, ...finalView } = view
+            return finalView
           }
         });
       }
