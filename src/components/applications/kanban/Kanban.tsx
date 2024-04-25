@@ -25,12 +25,11 @@ import FormDrawer from '../FormDrawer';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { AppFormContext } from '../ApplicationContext';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
-import AppStack from '../AppStack';
-import AppSearch from '../AppSearch';
 import { TopContainer } from '../../../styles/CommonStyles';
 import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
+import AppsTable from '../AppsTable';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -75,6 +74,9 @@ const Kanban: React.FC = () => {
   const deleteAppMessage: string =
     'Are you sure you want to delete this Application?';
   const [consentDialogOpen, setConsentDialogOpen] = useState(false)
+
+  const [filtersOn, setFiltersOn] = useState(false)
+  const [reset, setReset] = useState(false)
 
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
@@ -199,41 +201,14 @@ const Kanban: React.FC = () => {
           Add Application
         </Button>
       </TopContainer>
-      <TopContainer style={{ marginTop: 0 }}>
-        <AppSearch handleSearchApp={handleSearchApp} />
-      </TopContainer>
       <AppStackContainer>
-        <AppStack
-          heading="Active Applications"
-          formik={formik}
+        <AppsTable
+          filtersOn={filtersOn}
+          setFiltersOn={setFiltersOn}
+          reset={reset}
+          setReset={setReset}
           deleteApplication={openDeleteDialog}
-          list={
-            searchKey === ''
-              ? apps
-                  .filter((app) => app.appStatus === 'isActive')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-              : filtered
-                  .filter((app) => app.appStatus === 'isActive')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-          }
-        />
-        <AppStack
-          heading="Inactive Applications"
           formik={formik}
-          deleteApplication={openDeleteDialog}
-          list={
-            searchKey === ''
-              ? apps
-                  .filter((app) => app.appStatus === 'disabled')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-              : filtered
-                  .filter((app) => app.appStatus === 'disabled')
-                  .slice()
-                  .sort((a, b) => (a.appName > b.appName ? 1 : -1))
-          }
         />
       </AppStackContainer>
       <DeleteApplicationDialog
