@@ -99,6 +99,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
       viewUpdated: view.viewUpdated,
       viewColumns: view.columns,
       viewFolder: folderNames.includes(view.name),
+      viewSelectionFormula: view.selectionFormula,
     }
   }));
 
@@ -127,6 +128,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
         viewUpdated: view.viewUpdated,
         viewColumns: view.columns,
         viewFolder: folderNames.includes(view.name),
+        viewSelectionFormula: view.selectionFormula,
       }
     }))
   }, [schemaData, folders])
@@ -166,19 +168,19 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
   };
 
   const toggleActive = async (view: any) => {
-    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, true, setSchemaData) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, true, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
   }
 
   const toggleInactive = async (view: any) => {
-    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, false, setSchemaData) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, false, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
   }
 
   const handleActivateAll = () => {
-    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, true, setSchemaData) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, true, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
   }
 
   const handleDeactivateAll = () => {
-    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, false, setSchemaData) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, false, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
     setResetAllViews(false);
   }
 
