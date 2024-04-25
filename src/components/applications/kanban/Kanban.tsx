@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AddIcon from '@material-ui/icons/Add';
-import { Button, Dialog, Typography } from '@material-ui/core';
+import { Button, ButtonBase, Dialog, Typography } from '@material-ui/core';
 import styled from 'styled-components';
 import {
   deleteApplication,
@@ -24,12 +24,15 @@ import DeleteApplicationDialog from '../DeleteApplicationDialog';
 import FormDrawer from '../FormDrawer';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { AppFormContext } from '../ApplicationContext';
-import { toggleApplicationDrawer } from '../../../store/drawer/action';
+import { toggleAppFilterDrawer, toggleApplicationDrawer } from '../../../store/drawer/action';
 import { TopContainer } from '../../../styles/CommonStyles';
 import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
+import { FiFilter } from "react-icons/fi";
+import '../../webcomponents/drawer-container';
+import AppFilterContainer from '../AppFilterContainer';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -74,6 +77,7 @@ const Kanban: React.FC = () => {
   const deleteAppMessage: string =
     'Are you sure you want to delete this Application?';
   const [consentDialogOpen, setConsentDialogOpen] = useState(false)
+  const drawerRef = useRef(null)
 
   const [filtersOn, setFiltersOn] = useState(false)
   const [reset, setReset] = useState(false)
@@ -112,6 +116,8 @@ const Kanban: React.FC = () => {
     }
   }, [apps, searchKey]);
 
+  const AppFilterDrawer = <drawer-container ref={drawerRef}></drawer-container>
+  
   // Submit Form
   const formik = useFormik({
     initialValues: {
@@ -175,6 +181,20 @@ const Kanban: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const drawer = drawerRef.current
+
+    // const toggleDrawer = () => {
+    //   if (drawer) {
+    //     drawer.toggleDrawer()
+    //   }
+    // }
+
+    // if (drawer) {
+    //   drawer.addEventListener('toggleDrawer', toggleDrawer)
+    // }
+  })
+
   return (
     <>
     <AppContainer>
@@ -184,7 +204,15 @@ const Kanban: React.FC = () => {
           color="textPrimary"
         >
           Application Management
-        </Typography> 
+        </Typography>
+        <section style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', transform: 'translateY(12%)' }}>
+          <ButtonBase onClick={() => dispatch(toggleAppFilterDrawer())} className='option'>
+            <FiFilter size='2em' />
+          </ButtonBase>
+        </section>
+        <section>
+          <div style={{ height: '70%', width: '1px', backgroundColor: 'black'}}></div>  
+        </section>
         <Button
           color="primary"
           className="button-create"
@@ -224,6 +252,7 @@ const Kanban: React.FC = () => {
         />
       </ConsentsDialogContainer>
     </AppContainer>
+    <button>Click me to toggle drawer for filters</button>
     </>
   );
 };
