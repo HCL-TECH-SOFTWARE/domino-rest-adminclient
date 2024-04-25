@@ -101,6 +101,10 @@ const App: React.FC = () => {
     setOpen(!open);
   };
 
+  if (window.location.pathname === '/') {
+    window.location.assign('/admin/ui');
+  }
+
   useEffect(() => {
     // Handle Axios Interceptor
     // Handle All API Request on the Page
@@ -177,11 +181,11 @@ const App: React.FC = () => {
                         </IconButton>
                       )
                   )}
-                  <Routes>
-                    <Route element={<Views open={open} classes={classes} />}>
-                      
-                    </Route>
-                  </Routes>
+
+                  <Views open={open} classes={classes} />
+                  {/* <Routes>
+                    <Route element={<Views open={open} classes={classes} />} />
+                  </Routes> */}
                   {/* <Route>
                     <Views open={open} classes={classes} />
                   </Route> */}

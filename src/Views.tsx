@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import AccessMode from './components/access/AccessMode';
 import ApplicationsContainer from './components/applications/Applications';
@@ -24,6 +24,7 @@ import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
 import ConsentsContainer from './components/applications/ConsentsContainer';
+import { Home } from '@material-ui/icons';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -108,30 +109,20 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
 
   return (
     <ViewContainer id="main-stack">
-      <>
         <PageRouters />
-        <Route
-          path="/schema/:nsfPath/:dbName/:formName/access"
-          element={<AccessMode />}
-          // render={({ match }) => {
-          //   return match && <AccessMode />;
-          // }}
-        />
-        <Route path="/">
-          <Homepage />
-        </Route>
-        <Route path="/scope">
-            <ScopeLists />
-        </Route>
-        <Route path="/schema">
-            <SchemasLists />
-        </Route>
-        <Route path="/apps">
-          <ApplicationsContainer />
-        </Route>
-        <Route path="/apps/consents">
-          <ConsentsContainer />
-        </Route>
+        {/* <BrowserRouter> */}
+        <Routes>
+          <Route path='/schema/:nsfPath/:dbName/:formName/access' element={<AccessMode />}/>
+          <Route path='/' element={<Homepage />} />
+          <Route path='/schema' element={<SchemasLists />} />
+          <Route path='/scope' element={<ScopeLists />} />
+          <Route path='/apps' element={<ApplicationsContainer />} />
+          <Route path='/apps/consents' element={<ConsentsContainer />} />
+          <Route path='/schema/:nsfpath/:dbName' element={<FormsContainer />} />
+        </Routes>
+        {/* </BrowserRouter> */}
+        
+        {/* 
         <Route path="/groups">
           <Groups />
         </Route>
@@ -144,10 +135,7 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
         <Route path="/settings">
           <SettingsPage />
         </Route>
-        <Route path="/schema/:nsfPath/:dbName">
-          <FormsContainer />
-        </Route>
-      </>
+        */}
       <QuickConfigFormContainer />
     </ViewContainer>
   );
