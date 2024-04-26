@@ -177,13 +177,10 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
         }
         switch (appSecret) {
           case "Generated":
-            newApps = newApps.filter((app) => app.appHasSecret || app.appSecret?.length > 0)
+            newApps = newApps.filter((app) => app.appSecret !== null)
             break
           case "Not Generated":
-            newApps = newApps.filter((app) => {
-              console.log(app)
-              return !(app.appHasSecret || app.appSecret.length > 0)}
-            )
+            newApps = newApps.filter((app) => app.appSecret === null)
             break
           case "All":
             break

@@ -54,6 +54,13 @@ const ConsentsDialogContainer = styled(Dialog)`
   padding: 2.5% 5%;
 `
 
+const OptionsContainer = styled.section`
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 20px;
+`
+
 const ApplicationFormSchema = Yup.object().shape({
   appName: Yup.string().trim().required('Application Name is Required.'),
   appCallbackUrlsStr: Yup.string().required('At least one URL is required.'),
@@ -68,8 +75,9 @@ const Kanban: React.FC = () => {
   );
   const permissionCreate = permissions.createDbMapping;
   const [searchKey, setSearchKey] = useState('');
-  const [filtered, setFiltered] = useState([...apps]);
+  const [filtered, setFiltered] = useState(false);
   const [selected, setSelected] = useState('');
+  // const [filte]
   const dispatch = useDispatch();
   const [formContext, setFormContext] = useContext(AppFormContext) as any;
   const icon = useState('beach')[0];
@@ -81,6 +89,9 @@ const Kanban: React.FC = () => {
 
   const [filtersOn, setFiltersOn] = useState(false)
   const [reset, setReset] = useState(false)
+
+  const [status, setStatus] = useState("All")
+  const [appSecret, setAppSecret] = useState("All")
 
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
@@ -97,24 +108,21 @@ const Kanban: React.FC = () => {
   const deleteApp = () => {
     dispatch(deleteApplication(selected) as any);
   };
-  const handleSearchApp = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const key = e.target.value;
-    setSearchKey(key);
-  };
-  useEffect(() => {
-    if (searchKey) {
-      const filteredApps = apps.filter((data) => {
-        return (
-          data.appName &&
-          data.appName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1
-        );
-      });
   
-      setFiltered(filteredApps);
-    } else {
-      setFiltered(apps);
-    }
-  }, [apps, searchKey]);
+  // useEffect(() => {
+  //   if (searchKey) {
+  //     const filteredApps = apps.filter((data) => {
+  //       return (
+  //         data.appName &&
+  //         data.appName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1
+  //       );
+  //     });
+  
+  //     // setFiltered(filteredApps);
+  //   } else {
+  //     // setFiltered(apps);
+  //   }
+  // }, [apps, searchKey]);
 
   const AppFilterDrawer = <drawer-container ref={drawerRef}></drawer-container>
   
@@ -181,8 +189,14 @@ const Kanban: React.FC = () => {
     }
   };
 
+  const handleClickReset = () => {
+    setStatus("All")
+    setAppSecret("All")
+  }
+
   useEffect(() => {
     const drawer = drawerRef.current
+    console.log(filtered)
 
     // const toggleDrawer = () => {
     //   if (drawer) {
@@ -193,7 +207,7 @@ const Kanban: React.FC = () => {
     // if (drawer) {
     //   drawer.addEventListener('toggleDrawer', toggleDrawer)
     // }
-  })
+  }, [filtered])
 
   return (
     <>
@@ -205,29 +219,27 @@ const Kanban: React.FC = () => {
         >
           Application Management
         </Typography>
-        <section style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', transform: 'translateY(12%)' }}>
+        <OptionsContainer>
+          <Button
+            color="primary"
+            className="button-create"
+            onClick={createAction}
+          >
+            <AddIcon style={{ margin: '0 5px' }} />
+            Add Application
+          </Button>
+          <Button
+            color="primary"
+            className="button-create"
+            onClick={handleOpenConsents}
+          >
+            OAuth Consents
+          </Button>
+          <div style={{ height: '46px', width: '1px', backgroundColor: '#000' }} />
           <ButtonBase onClick={() => dispatch(toggleAppFilterDrawer())} className='option'>
             <FiFilter size='2em' />
           </ButtonBase>
-        </section>
-        <section>
-          <div style={{ height: '70%', width: '1px', backgroundColor: 'black'}}></div>  
-        </section>
-        <Button
-          color="primary"
-          className="button-create"
-          onClick={handleOpenConsents}
-        >
-          OAuth Consents
-        </Button>
-        <Button
-          color="primary"
-          className="button-create"
-          onClick={createAction}
-        >
-          <AddIcon style={{ margin: '0 5px' }} />
-          Add Application
-        </Button>
+        </OptionsContainer>
       </TopContainer>
       <AppStackContainer>
         <AppsTable
@@ -237,6 +249,11 @@ const Kanban: React.FC = () => {
           setReset={setReset}
           deleteApplication={openDeleteDialog}
           formik={formik}
+          // setFiltered={setFiltered}
+          // status={status}
+          // setStatus={setStatus}
+          // appSecret={appSecret}
+          // setAppSecret={setAppSecret}
         />
       </AppStackContainer>
       <DeleteApplicationDialog

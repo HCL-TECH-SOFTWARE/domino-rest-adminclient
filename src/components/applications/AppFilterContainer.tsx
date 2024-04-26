@@ -13,9 +13,9 @@ import { BlueSwitch, ButtonNeutral, ButtonYes, DrawerFormContainer, HorizontalDi
 import { Box, Checkbox, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography, makeStyles, withStyles } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import styled from 'styled-components';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
+import { fetchMyApps } from '../../store/applications/action';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -150,6 +150,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   };
 
   const handleClickShowResults = () => {
+    dispatch(fetchMyApps() as any)
     setStatus(filterStatus)
     setAppSecret(filterAppSecret)
     // setShowWithApps(filterShow)
@@ -194,7 +195,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             <HorizontalDivider />
             <ButtonsContainer>
               <ButtonNeutral onClick={() => dispatch(toggleAppFilterDrawer())}>Cancel</ButtonNeutral>
-              <ButtonYes onClick={handleClickShowResults}>Show n Results</ButtonYes>
+              <ButtonYes onClick={handleClickShowResults}>Show Results</ButtonYes>
             </ButtonsContainer>
           </FilterContainer>
         </LocalizationProvider>
