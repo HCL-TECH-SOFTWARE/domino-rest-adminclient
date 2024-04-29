@@ -119,7 +119,8 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
   }
 
   const handleSortAppNames = () => {
-    const sortedApps = apps.sort((a, b) => {
+    const appsCopy = [...apps]
+    const sortedApps = appsCopy.sort((a, b) => {
       const aAppName = a.appName
       const bAppName = b.appName
       if (sortAppName) return aAppName.localeCompare(bAppName)
@@ -127,12 +128,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
     })
     setFilteredApps(sortedApps)
     setSortAppName(!sortAppName)
-  }
-
-  const resetFilters = () => {
-    setAppName("")
-    // setStatus("All")
-    // setAppSecret("All")
   }
 
   React.useEffect(() => {
@@ -161,7 +156,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
       if (reset) {
         setFilteredApps(newApps)
         setReset(false)
-        resetFilters()
       } else {
         switch (status) {
           case "Active":
@@ -195,7 +189,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
 
   React.useEffect(() => {
     if (filtersOn) {
-      resetFilters()
       setFiltersOn(false)
     }
   }, [filtersOn, setFiltersOn])
