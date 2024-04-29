@@ -31,7 +31,6 @@ import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
 import { FiFilter } from "react-icons/fi";
-import '../../webcomponents/drawer-container';
 
 const AppContainer = styled.div`
   overflow-y: auto;
