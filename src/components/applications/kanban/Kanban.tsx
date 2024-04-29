@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -32,7 +32,6 @@ import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
 import { FiFilter } from "react-icons/fi";
 import '../../webcomponents/drawer-container';
-import AppFilterContainer from '../AppFilterContainer';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -43,6 +42,8 @@ const AppStackContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: calc( 100vh - 260px);
+  max-width: 100%;
+  overflow-y: scroll;
   @media only screen and (max-width: 768px) {
     height: calc( 100vh - 280px);
   }
@@ -69,15 +70,12 @@ const ApplicationFormSchema = Yup.object().shape({
 });
 
 const Kanban: React.FC = () => {
-  const { apps, appPull } = useSelector((selector: AppState) => selector.apps);
+  const { appPull } = useSelector((selector: AppState) => selector.apps);
   const { permissions } = useSelector(
     (state: AppState) => state.databases
   );
   const permissionCreate = permissions.createDbMapping;
-  const [searchKey, setSearchKey] = useState('');
-  const [filtered, setFiltered] = useState(false);
   const [selected, setSelected] = useState('');
-  // const [filte]
   const dispatch = useDispatch();
   const [formContext, setFormContext] = useContext(AppFormContext) as any;
   const icon = useState('beach')[0];
@@ -85,13 +83,9 @@ const Kanban: React.FC = () => {
   const deleteAppMessage: string =
     'Are you sure you want to delete this Application?';
   const [consentDialogOpen, setConsentDialogOpen] = useState(false)
-  const drawerRef = useRef(null)
 
   const [filtersOn, setFiltersOn] = useState(false)
   const [reset, setReset] = useState(false)
-
-  const [status, setStatus] = useState("All")
-  const [appSecret, setAppSecret] = useState("All")
 
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
@@ -108,24 +102,7 @@ const Kanban: React.FC = () => {
   const deleteApp = () => {
     dispatch(deleteApplication(selected) as any);
   };
-  
-  // useEffect(() => {
-  //   if (searchKey) {
-  //     const filteredApps = apps.filter((data) => {
-  //       return (
-  //         data.appName &&
-  //         data.appName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1
-  //       );
-  //     });
-  
-  //     // setFiltered(filteredApps);
-  //   } else {
-  //     // setFiltered(apps);
-  //   }
-  // }, [apps, searchKey]);
 
-  const AppFilterDrawer = <drawer-container ref={drawerRef}></drawer-container>
-  
   // Submit Form
   const formik = useFormik({
     initialValues: {
@@ -189,87 +166,61 @@ const Kanban: React.FC = () => {
     }
   };
 
-  const handleClickReset = () => {
-    setStatus("All")
-    setAppSecret("All")
-  }
-
-  useEffect(() => {
-    const drawer = drawerRef.current
-    console.log(filtered)
-
-    // const toggleDrawer = () => {
-    //   if (drawer) {
-    //     drawer.toggleDrawer()
-    //   }
-    // }
-
-    // if (drawer) {
-    //   drawer.addEventListener('toggleDrawer', toggleDrawer)
-    // }
-  }, [filtered])
-
   return (
     <>
-    <AppContainer>
-      <TopContainer  style={{ marginTop: '15px' }}>
-        <Typography
-          className="top-nav"
-          color="textPrimary"
-        >
-          Application Management
-        </Typography>
-        <OptionsContainer>
-          <Button
-            color="primary"
-            className="button-create"
-            onClick={createAction}
+      <AppContainer>
+        <TopContainer  style={{ marginTop: '15px' }}>
+          <Typography
+            className="top-nav"
+            color="textPrimary"
           >
-            <AddIcon style={{ margin: '0 5px' }} />
-            Add Application
-          </Button>
-          <Button
-            color="primary"
-            className="button-create"
-            onClick={handleOpenConsents}
-          >
-            OAuth Consents
-          </Button>
-          <div style={{ height: '46px', width: '1px', backgroundColor: '#000' }} />
-          <ButtonBase onClick={() => dispatch(toggleAppFilterDrawer())} className='option'>
-            <FiFilter size='2em' />
-          </ButtonBase>
-        </OptionsContainer>
-      </TopContainer>
-      <AppStackContainer>
-        <AppsTable
-          filtersOn={filtersOn}
-          setFiltersOn={setFiltersOn}
-          reset={reset}
-          setReset={setReset}
-          deleteApplication={openDeleteDialog}
-          formik={formik}
-          // setFiltered={setFiltered}
-          // status={status}
-          // setStatus={setStatus}
-          // appSecret={appSecret}
-          // setAppSecret={setAppSecret}
+            Application Management
+          </Typography>
+          <OptionsContainer>
+            <Button
+              color="primary"
+              className="button-create"
+              onClick={createAction}
+            >
+              <AddIcon style={{ margin: '0 5px' }} />
+              Add Application
+            </Button>
+            <Button
+              color="primary"
+              className="button-create"
+              onClick={handleOpenConsents}
+            >
+              OAuth Consents
+            </Button>
+            <div style={{ height: '46px', width: '1px', backgroundColor: '#000' }} />
+            <ButtonBase onClick={() => dispatch(toggleAppFilterDrawer())} className='option'>
+              <FiFilter size='2em' />
+            </ButtonBase>
+          </OptionsContainer>
+        </TopContainer>
+        <AppStackContainer>
+          <AppsTable
+            filtersOn={filtersOn}
+            setFiltersOn={setFiltersOn}
+            reset={reset}
+            setReset={setReset}
+            deleteApplication={openDeleteDialog}
+            formik={formik}
+          />
+        </AppStackContainer>
+        <DeleteApplicationDialog
+          dialogTitle={deleteAppTitle}
+          deleteMessage={deleteAppMessage}
+          handleDelete={deleteApp}
         />
-      </AppStackContainer>
-      <DeleteApplicationDialog
-        dialogTitle={deleteAppTitle}
-        deleteMessage={deleteAppMessage}
-        handleDelete={deleteApp}
-      />
-      <FormDrawer formName="AppForm" formik={formik} />
-      <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
-        <Consents
-          handleClose={() => {setConsentDialogOpen(false)}}
-          dialog={true}
-        />
-      </ConsentsDialogContainer>
-    </AppContainer>
-    <button>Click me to toggle drawer for filters</button>
+        <FormDrawer formName="AppForm" formik={formik} />
+        <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
+          <Consents
+            handleClose={() => {setConsentDialogOpen(false)}}
+            dialog={true}
+          />
+        </ConsentsDialogContainer>
+      </AppContainer>
     </>
   );
 };

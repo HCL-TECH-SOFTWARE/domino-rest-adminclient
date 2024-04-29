@@ -22,7 +22,6 @@ import { AppProp } from '../../store/applications/types';
 import AppItem from './AppItem';
 import { FormikProps } from 'formik';
 import AppFilterContainer from './AppFilterContainer';
-import { stat } from 'fs';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
@@ -164,7 +163,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
         setReset(false)
         resetFilters()
       } else {
-        console.log(status)
         switch (status) {
           case "Active":
             newApps = newApps.filter((app) => app.appStatus === "isActive")

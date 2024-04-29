@@ -8,9 +8,9 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Drawer from '@material-ui/core/Drawer';
 import { AppState } from '../../store';
-import { toggleAppFilterDrawer, toggleConsentsDrawer } from '../../store/drawer/action';
-import { BlueSwitch, ButtonNeutral, ButtonYes, DrawerFormContainer, HorizontalDivider } from '../../styles/CommonStyles';
-import { Box, Checkbox, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography, makeStyles, withStyles } from '@material-ui/core';
+import { toggleAppFilterDrawer } from '../../store/drawer/action';
+import { ButtonNeutral, ButtonNo, ButtonYes, DrawerFormContainer, HorizontalDivider } from '../../styles/CommonStyles';
+import { Box, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography, makeStyles, withStyles } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import styled from 'styled-components';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -100,15 +100,6 @@ interface AppFilterContainerProps {
   setStatus: (status: string) => void;
   appSecret: string;
   setAppSecret: (status: string) => void;
-//   showWithApps: boolean;
-//   setShowWithApps: (show: boolean) => void;
-//   exp: { expiration: string, date: Date };
-//   setExp: (exp: { expiration: string, date: Date }) => void;
-//   tokenExp: { expiration: string, date: Date };
-//   setTokenExp: (tokenExp: { expiration: string, date: Date }) => void;
-//   setReset: (reset: boolean) => void;
-//   scopes: string[];
-//   setScopes: (scopes: string[]) => void;
 }
 
 const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
@@ -116,18 +107,8 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   setStatus,
   appSecret,
   setAppSecret,
-//   showWithApps,
-//   setShowWithApps,
-//   exp,
-//   setExp,
-//   tokenExp,
-//   setTokenExp,
-//   setReset,
-//   scopes,
-//   setScopes,
 }) => {
   const { appFilterDrawer } = useSelector((state: AppState) => state.drawer)
-  const { consents } = useSelector((state: AppState) => state.consents)
   const dispatch = useDispatch();
   const descriptionElementRef = React.useRef<HTMLElement>(null);
 
@@ -153,10 +134,14 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
     dispatch(fetchMyApps() as any)
     setStatus(filterStatus)
     setAppSecret(filterAppSecret)
-    // setShowWithApps(filterShow)
-    // setExp(filterExp)
-    // setTokenExp(filterTokenExp)
-    // setScopes(filterScopes)
+    dispatch(toggleAppFilterDrawer())
+  }
+
+  const handleClickReset = () => {
+    setFilterStatus("All")
+    setFilterAppSecret("All")
+    setStatus("All")
+    setAppSecret("All")
     dispatch(toggleAppFilterDrawer())
   }
   
@@ -194,7 +179,8 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             </Section>
             <HorizontalDivider />
             <ButtonsContainer>
-              <ButtonNeutral onClick={() => dispatch(toggleAppFilterDrawer())}>Cancel</ButtonNeutral>
+              <ButtonNeutral onClick={handleClickReset}>Reset</ButtonNeutral>
+              <ButtonNo onClick={() => dispatch(toggleAppFilterDrawer())}>Cancel</ButtonNo>
               <ButtonYes onClick={handleClickShowResults}>Show Results</ButtonYes>
             </ButtonsContainer>
           </FilterContainer>
