@@ -4,12 +4,12 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import AddIcon from '@material-ui/icons/Add';
-import { Button, Dialog, Typography } from '@material-ui/core';
+import { Button, ButtonBase, Dialog, Typography } from '@material-ui/core';
 import styled from 'styled-components';
 import {
   deleteApplication,
@@ -24,12 +24,13 @@ import DeleteApplicationDialog from '../DeleteApplicationDialog';
 import FormDrawer from '../FormDrawer';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { AppFormContext } from '../ApplicationContext';
-import { toggleApplicationDrawer } from '../../../store/drawer/action';
+import { toggleAppFilterDrawer, toggleApplicationDrawer } from '../../../store/drawer/action';
 import { TopContainer } from '../../../styles/CommonStyles';
 import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
+import { FiFilter } from "react-icons/fi";
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -40,6 +41,8 @@ const AppStackContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: calc( 100vh - 260px);
+  max-width: 100%;
+  overflow-y: scroll;
   @media only screen and (max-width: 768px) {
     height: calc( 100vh - 280px);
   }
@@ -51,6 +54,13 @@ const ConsentsDialogContainer = styled(Dialog)`
   padding: 2.5% 5%;
 `
 
+const OptionsContainer = styled.section`
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 20px;
+`
+
 const ApplicationFormSchema = Yup.object().shape({
   appName: Yup.string().trim().required('Application Name is Required.'),
   appCallbackUrlsStr: Yup.string().required('At least one URL is required.'),
@@ -59,13 +69,11 @@ const ApplicationFormSchema = Yup.object().shape({
 });
 
 const Kanban: React.FC = () => {
-  const { apps, appPull } = useSelector((selector: AppState) => selector.apps);
+  const { appPull } = useSelector((selector: AppState) => selector.apps);
   const { permissions } = useSelector(
     (state: AppState) => state.databases
   );
   const permissionCreate = permissions.createDbMapping;
-  const [searchKey, setSearchKey] = useState('');
-  const [filtered, setFiltered] = useState([...apps]);
   const [selected, setSelected] = useState('');
   const dispatch = useDispatch();
   const [formContext, setFormContext] = useContext(AppFormContext) as any;
@@ -93,24 +101,6 @@ const Kanban: React.FC = () => {
   const deleteApp = () => {
     dispatch(deleteApplication(selected) as any);
   };
-  const handleSearchApp = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const key = e.target.value;
-    setSearchKey(key);
-  };
-  useEffect(() => {
-    if (searchKey) {
-      const filteredApps = apps.filter((data) => {
-        return (
-          data.appName &&
-          data.appName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1
-        );
-      });
-  
-      setFiltered(filteredApps);
-    } else {
-      setFiltered(apps);
-    }
-  }, [apps, searchKey]);
 
   // Submit Form
   const formik = useFormik({
@@ -177,53 +167,59 @@ const Kanban: React.FC = () => {
 
   return (
     <>
-    <AppContainer>
-      <TopContainer  style={{ marginTop: '15px' }}>
-        <Typography
-          className="top-nav"
-          color="textPrimary"
-        >
-          Application Management
-        </Typography> 
-        <Button
-          color="primary"
-          className="button-create"
-          onClick={handleOpenConsents}
-        >
-          OAuth Consents
-        </Button>
-        <Button
-          color="primary"
-          className="button-create"
-          onClick={createAction}
-        >
-          <AddIcon style={{ margin: '0 5px' }} />
-          Add Application
-        </Button>
-      </TopContainer>
-      <AppStackContainer>
-        <AppsTable
-          filtersOn={filtersOn}
-          setFiltersOn={setFiltersOn}
-          reset={reset}
-          setReset={setReset}
-          deleteApplication={openDeleteDialog}
-          formik={formik}
+      <AppContainer>
+        <TopContainer  style={{ marginTop: '15px' }}>
+          <Typography
+            className="top-nav"
+            color="textPrimary"
+          >
+            Application Management
+          </Typography>
+          <OptionsContainer>
+            <Button
+              color="primary"
+              className="button-create"
+              onClick={createAction}
+            >
+              <AddIcon style={{ margin: '0 5px' }} />
+              Add Application
+            </Button>
+            <Button
+              color="primary"
+              className="button-create"
+              onClick={handleOpenConsents}
+            >
+              OAuth Consents
+            </Button>
+            <div style={{ height: '46px', width: '1px', backgroundColor: '#000' }} />
+            <ButtonBase onClick={() => dispatch(toggleAppFilterDrawer())} className='option'>
+              <FiFilter size='2em' />
+            </ButtonBase>
+          </OptionsContainer>
+        </TopContainer>
+        <AppStackContainer>
+          <AppsTable
+            filtersOn={filtersOn}
+            setFiltersOn={setFiltersOn}
+            reset={reset}
+            setReset={setReset}
+            deleteApplication={openDeleteDialog}
+            formik={formik}
+          />
+        </AppStackContainer>
+        <DeleteApplicationDialog
+          dialogTitle={deleteAppTitle}
+          deleteMessage={deleteAppMessage}
+          handleDelete={deleteApp}
         />
-      </AppStackContainer>
-      <DeleteApplicationDialog
-        dialogTitle={deleteAppTitle}
-        deleteMessage={deleteAppMessage}
-        handleDelete={deleteApp}
-      />
-      <FormDrawer formName="AppForm" formik={formik} />
-      <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
-        <Consents
-          handleClose={() => {setConsentDialogOpen(false)}}
-          dialog={true}
-        />
-      </ConsentsDialogContainer>
-    </AppContainer>
+        <FormDrawer formName="AppForm" formik={formik} />
+        <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>
+          <Consents
+            handleClose={() => {setConsentDialogOpen(false)}}
+            dialog={true}
+          />
+        </ConsentsDialogContainer>
+      </AppContainer>
     </>
   );
 };

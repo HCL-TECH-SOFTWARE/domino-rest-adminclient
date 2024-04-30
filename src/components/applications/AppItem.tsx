@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Box, ButtonBase, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
@@ -21,6 +21,7 @@ import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import '../webcomponents/app-status';
 import '../webcomponents/copyable-text';
+import { AppFormContext } from './ApplicationContext';
 
 const StyledTableRow = styled(TableRow)`
   .app-name {
@@ -124,6 +125,7 @@ const AppItem: React.FC<AppItemProps> = ({
   const [appSecret, setAppSecret] = useState(app.appSecret)
   const appSecretTextRef = useRef(null) as any
   const clickToGenerateText = "Click to Generate Secret"
+  const [formContext, setFormContext] = useContext(AppFormContext) as any
 
   const launch = () => {
     window.open(app.appStartPage)
@@ -150,6 +152,7 @@ const AppItem: React.FC<AppItemProps> = ({
   }
 
   const viewEdit = () => {
+    setFormContext('Edit')
     let formData: AppFormProp = {
       appId: app.appId,
       appName: app.appName,
@@ -227,7 +230,6 @@ const AppItem: React.FC<AppItemProps> = ({
                   <Box>
                     <AppIdSecretContainer>
                       <Typography className='text'>App ID:</Typography>
-                      {/* <copyable-text tooltip="Copy App ID">Click to copy</copyable-text> */}
                       <Tooltip 
                         title="Copy App Id" 
                         arrow 
@@ -248,7 +250,7 @@ const AppItem: React.FC<AppItemProps> = ({
                       {(app.appHasSecret || appSecret !== app.appSecret) && <Tooltip title={clickToGenerateText} arrow>
                         <ButtonBase onClick={handleClickGenerate}><MdRefresh color='#2873F0' /></ButtonBase>
                       </Tooltip>}
-                      {(app.appHasSecret && appSecret === app.appSecret) ? <Typography className='text' style={{ color: '#505050' }}>This app has an app secret configured.</Typography> :
+                      {(app.appHasSecret && (appSecret === app.appSecret || app.appSecret === undefined)) ? <Typography className='text' style={{ color: '#505050' }}>This app has an app secret configured.</Typography> :
                           appSecret === app.appSecret ? <ButtonBase onClick={handleClickGenerate}>
                             <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
                           </ButtonBase>

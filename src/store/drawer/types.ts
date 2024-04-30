@@ -8,12 +8,14 @@
 export interface DrawerState {
   visible: boolean;
   applicationDrawer: boolean;
+  appFilterDrawer: boolean;
   quickConfigDrawer: boolean;
   consentsDrawer: boolean;
 }
 // Describing the different ACTION NAMES available
 export const TOGGLE_DRAWER = 'TOGGLE_DRAWER';
 export const TOGGLE_APPLICATION_DRAWER = 'TOGGLE_APPLICATION_DRAWER';
+export const TOGGLE_APPLICATION_FILTER_DRAWER = 'TOGGLE_APPLICATION_FILTER_DRAWER';
 export const TOGGLE_QUICKCONFIG_DRAWER = 'TOGGLE_QUICKCONFIG_DRAWER';
 export const TOGGLE_CONSENTS_DRAWER = 'TOGGLE_CONSENTS_DRAWER';
 
@@ -25,6 +27,10 @@ interface ToggleDrawer {
 
 interface ToggleApplicationDrawer {
   type: typeof TOGGLE_APPLICATION_DRAWER;
+}
+
+interface ToggleApplicationFilterDrawer {
+  type: typeof TOGGLE_APPLICATION_FILTER_DRAWER;
 }
 
 interface ToggleQuickConfigDrawer {
@@ -39,4 +45,10 @@ interface InitState {
   type: typeof INIT_STATE;
 }
 
-export type DrawerActionTypes = ToggleDrawer | ToggleApplicationDrawer | ToggleQuickConfigDrawer | ToggleConsentsDrawer | InitState;
+export type DrawerActionTypes = 
+  ToggleDrawer | 
+  ToggleApplicationDrawer | 
+  ToggleApplicationFilterDrawer | 
+  ToggleQuickConfigDrawer | 
+  ToggleConsentsDrawer | 
+  InitState;
