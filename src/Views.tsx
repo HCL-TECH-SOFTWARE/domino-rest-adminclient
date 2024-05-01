@@ -118,7 +118,7 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
           <Route path='/scope' element={<ScopeLists />} />
           <Route path='/apps' element={<ApplicationsContainer />} />
           <Route path='/apps/consents' element={<ConsentsContainer />} />
-          <Route path='/schema/:nsfpath/:dbName' element={<FormsContainer />} />
+          <Route path='/schema/:nsfPath/:dbName' element={<FormsContainer />} />
         </Routes>
         {/* </BrowserRouter> */}
         
