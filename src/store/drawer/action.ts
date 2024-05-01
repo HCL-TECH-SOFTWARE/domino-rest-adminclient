@@ -9,6 +9,7 @@ import {
   TOGGLE_APPLICATION_DRAWER,
   TOGGLE_QUICKCONFIG_DRAWER,
   TOGGLE_CONSENTS_DRAWER,
+  TOGGLE_APPLICATION_FILTER_DRAWER,
 } from './types';
 
 export function toggleDrawer() {
@@ -20,6 +21,12 @@ export function toggleDrawer() {
 export function toggleApplicationDrawer() {
   return {
     type: TOGGLE_APPLICATION_DRAWER,
+  };
+}
+
+export function toggleAppFilterDrawer() {
+  return {
+    type: TOGGLE_APPLICATION_FILTER_DRAWER,
   };
 }
 

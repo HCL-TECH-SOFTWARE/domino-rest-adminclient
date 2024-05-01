@@ -694,7 +694,8 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
                   viewName: view['@name'],
                   viewAlias: aliasArray,
                   viewUnid: view['@unid'],
-                  viewUpdated: view['columns'] && view['columns'].length ? true : false
+                  viewUpdated: view['columns'] && view['columns'].length ? true : false,
+                  viewSelectionFormula: view['@selectionformula'],
                 };
               })
             ) as any
@@ -1323,6 +1324,7 @@ export const handleDatabaseViews = (
   schemaData: Database,
   active: boolean,
   setSchemaData: (data: any) => void,
+  folderNames: Array<string>,
 ) => {
   return async (dispatch: Dispatch) => {
     // Build redux data
@@ -1341,31 +1343,35 @@ export const handleDatabaseViews = (
     if (viewsArray.length === 1) {
       activeViews.forEach((view: any) => {
         if (view.viewName !== viewsData[0].viewName) {
-          viewsList.push(saveViewDetails(view));
+          viewsList.push(saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName)));
         } else if (view.viewName === viewsData[0].viewName && active) {
-          viewsList.push(saveViewDetails(view));
+          viewsList.push(saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName)));
         }
       });
       if (active) {
-        viewsList.push(saveViewDetails(viewsArray[0]));
+        viewsList.push(saveViewDetails(viewsArray[0], schemaData.nsfPath, active, folderNames.includes(viewsArray[0].viewName), true));
       }
     } else if (active) {
       const activeViewNames = activeViews.map((view: any) => {
         return view.viewName
       });
-      viewsArray.forEach((view: any) => {
+      viewsArray.forEach(async (view: any) => {
         // if a view was already active, don't add it again to the active views list
         if (!activeViewNames.includes(view.viewName)) {
-          viewsList.push(saveViewDetails(view));
+          const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName), true)
+          viewsList.push(viewDetails);
         }
       });
-      activeViews.forEach((view: any) => {
-        viewsList.push(saveViewDetails(view));
+      activeViews.forEach(async (view: any) => {
+        const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName))
+        viewsList.push(viewDetails);
       });
     }
 
+    const finalViews = await Promise.all(viewsList)
+
     // Send the new views to the server
-    dispatch(updateViews(schemaData, viewsList, setSchemaData) as any)
+    dispatch(updateViews(schemaData, finalViews, setSchemaData) as any)
   }
 }
 
@@ -1439,7 +1445,7 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
   };
 };
 
-function saveViewDetails(currentView: any) {
+async function saveViewDetails(currentView: any, nsfPath: string, active: boolean, isFolder: boolean, callFetch = false) {
   let aliasArray: Array<any> = [];
   if (currentView.viewAlias != null && currentView.viewAlias.length > 0) {
     if (Array.isArray(currentView.viewAlias)) {
@@ -1449,14 +1455,50 @@ function saveViewDetails(currentView: any) {
     }
   }
 
-  return {
-    name: currentView.viewName,
-    alias: aliasArray,
-    unid: currentView.viewUnid,
-    columns: currentView.viewColumns,
-    viewUpdated: currentView.viewUpdated
+  let viewDesign: any = {}
+
+  if (active && callFetch) {
+    viewDesign = await getViewDesign(currentView.viewName, nsfPath, isFolder)
+  } else {
+    viewDesign = {
+      ...viewDesign,
+      '@selectionFormula': currentView.viewSelectionFormula,
+    }
+  }
+
+  if (isFolder) {
+    return {
+      name: currentView.viewName,
+      alias: aliasArray,
+      unid: currentView.viewUnid,
+      columns: currentView.viewColumns,
+      viewUpdated: currentView.viewUpdated,
+    }
+  } else {
+    return {
+      name: currentView.viewName,
+      alias: aliasArray,
+      unid: currentView.viewUnid,
+      columns: currentView.viewColumns,
+      viewUpdated: currentView.viewUpdated,
+      selectionFormula: viewDesign['@selectionFormula'],
+    }
   }
 };
+
+// Get view elements by calling the design API
+async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolean) {
+  const res = await fetch(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      'Content-Type': 'application/json'
+    },
+  })
+  
+  const obj = await res.json()
+  return obj
+}
 
 export function setFormName(formName: string) {
   return async (dispatch: Dispatch) => {
@@ -1473,7 +1515,8 @@ function buildReduxViewData(currentView: any, viewActive: boolean) {
     viewAlias: currentView.viewAlias,
     viewUnid: currentView.viewUnid,
     viewActive: viewActive,
-    viewUpdated: !viewActive ? false : currentView.viewUpdated
+    viewUpdated: !viewActive ? false : currentView.viewUpdated,
+    viewSelectionFormula: currentView.viewSelectionFormula,
   }
 }
 
