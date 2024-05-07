@@ -110,7 +110,6 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
   return (
     <ViewContainer id="main-stack">
         <PageRouters />
-        {/* <BrowserRouter> */}
         <Routes>
           <Route path='/schema/:nsfPath/:dbName/:formName/access' element={<AccessMode />}/>
           <Route path='/' element={<Homepage />} />
@@ -120,7 +119,6 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
           <Route path='/apps/consents' element={<ConsentsContainer />} />
           <Route path='/schema/:nsfPath/:dbName' element={<FormsContainer />} />
         </Routes>
-        {/* </BrowserRouter> */}
         
         {/* 
         <Route path="/groups">

@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { unstable_usePrompt, useParams } from 'react-router-dom';
+import { useBlocker, useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios, { AxiosResponse } from 'axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@material-ui/core';
@@ -212,7 +212,6 @@ const FormsContainer = () => {
   // check if formModes key is present in the form object
   // if not, it will add new key(formModes) and add the formAccessModes values
   
-
   const { show } = useSelector((state: AppState) => state.search);
   const { nsfPath, dbName } = useParams() as {
     nsfPath: string;
@@ -547,6 +546,13 @@ const FormsContainer = () => {
   const [value, setValue]  = React.useState(0);
 
   const handleTabChange = (event: any, newValue: number) => {
+
+    if (unsavedChanges) {
+      if (window.confirm("WARNING: Leaving this page will discard your changes to the schema. Are you sure you want to leave?")) {
+        handleDiscardChanges();
+      }
+    }
+
     setValue(newValue);
     if (newValue === 1) {
       if (!isFetchedViews) {
@@ -571,9 +577,6 @@ const FormsContainer = () => {
     dispatch(fetchFolders(dbName, nsfPath) as any)
   }, [dbName, dispatch, nsfPath])
 
-  useEffect(() => {
-    dispatch(addForm(false) as any)
-  }, [dispatch])
 
   return (
     <ErrorWrapper errorStatus={errorStatus}>
@@ -755,16 +758,6 @@ const FormsContainer = () => {
           </div>
         )}
       </CoreContainer>
-
-      unstable_usePrompt(
-        message: `WARNING: Leaving this page will discard your changes to the schema. Are you sure you want to leave?`
-        when: unsavedChanges,
-      );
-      
-      {/* <Prompt
-        when={unsavedChanges}
-        message={`WARNING: Leaving this page will discard your changes to the schema. Are you sure you want to leave?`}
-      /> */}
     </ErrorWrapper>
   );
 };
