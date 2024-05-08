@@ -547,10 +547,18 @@ const FormsContainer = () => {
 
   const handleTabChange = (event: any, newValue: number) => {
 
-    if (unsavedChanges) {
+    // Need future improvements:
+    // Issue : userBlock component on react-dom-router version 6
+    // This condition checks if you are moving on other tabs except newValue = 3 [Source Tab]
+    // When user changes tab and it has some changes or updates on Source tab, 
+    // it will pop a confirmation alert window, once user confirm it, changes will be discarded 
+    // and user can move in different tab else, user will stay in Source tab
+    if (unsavedChanges && newValue !== 3) {
       if (window.confirm("WARNING: Leaving this page will discard your changes to the schema. Are you sure you want to leave?")) {
         handleDiscardChanges();
+        setValue(newValue);
       }
+      return;
     }
 
     setValue(newValue);
@@ -567,6 +575,7 @@ const FormsContainer = () => {
         setIsFetchedAgents(true);
       }
     }
+    
   };
 
   const handleToggle = () => {
