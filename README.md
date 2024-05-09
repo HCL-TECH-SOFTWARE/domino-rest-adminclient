@@ -33,11 +33,15 @@ The config.json file contains the configurations for Admin UI and the paths that
 
 ## 🛠️ Building
 
-To build, run:
+To build, run the following from the main project directory:
 
-```
-mvn run clean package
-```
+Mac / linux
+
+`localbuild.sh`
+
+Windows
+
+`localbuild.cmd`
 
 ## License
 
