@@ -138,7 +138,7 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme(authenticated, getTheme, themeMode)}>
       <CssBaseline />
       {valid ? (
-        <Router basename="/admin/ui">
+        <Router basename="/">
           {authenticated ? (
             <>
               {matches && (
