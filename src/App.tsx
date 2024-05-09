@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import styled from 'styled-components';
-import { BrowserRouter as Router, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { useSelector, useDispatch } from 'react-redux';
@@ -101,6 +101,10 @@ const App: React.FC = () => {
     setOpen(!open);
   };
 
+  if (window.location.pathname === '/') {
+    window.location.assign('/admin/ui');
+  }
+
   useEffect(() => {
     // Handle Axios Interceptor
     // Handle All API Request on the Page
@@ -134,7 +138,7 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme(authenticated, getTheme, themeMode)}>
       <CssBaseline />
       {valid ? (
-        <Router basename="/admin/ui/">
+        <Router basename="/admin/ui">
           {authenticated ? (
             <>
               {matches && (
@@ -177,9 +181,8 @@ const App: React.FC = () => {
                         </IconButton>
                       )
                   )}
-                  <Switch>
-                    <Views open={open} classes={classes} />
-                  </Switch>
+
+                <Views open={open} classes={classes} />
                 </RightPanel>
                 {!ipadMatches && <Footer />}
               </AppContainer>

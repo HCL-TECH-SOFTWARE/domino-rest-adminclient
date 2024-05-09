@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ExtraFlex } from '../../../../flex';
 import NsfCard from '../../../../schemas/NsfCard';
 import { mapSchemas } from '../../../../../utils/mapper';
@@ -23,7 +23,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
   databases
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const history = useHistory();
+  const navigate = useNavigate();
   const [selectedNsf, setSelectedNsf] = useState('');
   const [selectedDB, setSelectedDB] = useState('');
   const { deleteDialog } = useSelector((state: AppState) => state.dialog);
@@ -32,7 +32,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
   const id = open ? 'simple-popper' : undefined;
 
   const openSchema = (database: any) => {
-    history.push(
+    navigate(
       `/schema/${encodeURIComponent(database.nsfPath)}/${
         database.schemaName
       }`

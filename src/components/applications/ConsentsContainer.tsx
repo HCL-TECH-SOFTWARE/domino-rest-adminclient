@@ -11,7 +11,7 @@ import { fetchMyApps } from '../../store/applications/action';
 import styled from 'styled-components';
 import { Box } from '@material-ui/core';
 import Consents from './kanban/Consents';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchUsers } from '../../store/access/action';
 import { getConsents } from '../../store/consents/action';
 
@@ -23,7 +23,7 @@ const ConsentsBox = styled(Box)`
 const ConsentsContainer: React.FC = () => {
   const dispatch = useDispatch();
   const { appPull } = useSelector((state: AppState) => state.apps);
-  const history = useHistory()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!appPull) dispatch(fetchMyApps() as any)
@@ -34,7 +34,7 @@ const ConsentsContainer: React.FC = () => {
   return (
     <ConsentsBox>
         <Consents
-            handleClose={() => {history.push('/apps')}}
+            handleClose={() => {navigate('/apps')}}
             dialog={false}
         />
     </ConsentsBox>

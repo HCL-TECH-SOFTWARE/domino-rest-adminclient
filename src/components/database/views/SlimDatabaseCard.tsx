@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import styled, { css } from 'styled-components';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import DBIcon from '@material-ui/icons/Storage';
 import { AppState } from '../../../store';
 import { getTheme } from '../../../store/styles/action';
@@ -149,8 +149,8 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
 }) => {
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const { permissions } = useSelector((state: AppState) => state.databases);
-  const history = useHistory();
-  const { pathname } = history.location;
+  const location = useLocation();
+  const { pathname } = location;
   const isSchema = pathname === '/schema';
   const dispatch = useDispatch();
 

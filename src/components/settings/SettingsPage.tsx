@@ -76,7 +76,7 @@ const SettingsPage = () => {
         <Links>
           {links.map(link => (
             <NavLink
-              activeClassName="active-setting"
+              className="active-setting"
               key={link.label}
               to={`/settings/${link.uri}`}
             >

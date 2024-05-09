@@ -6,7 +6,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -125,7 +125,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   const ref = useRef<HTMLDialogElement>(null)
   const [createFormOpen, setCreateFormOpen] = useState(false)
   const [value, setValue] = React.useState<string | null>(null)
-  const history = useHistory()
+  const navigate = useNavigate()
   const [formNameError, setFormNameError] = useState(false)
   const [formNameErrorMessage, setFormNameErrorMessage] = useState("")
   
@@ -255,7 +255,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         formValue: value,
       }
       await dispatch(addForm(true, newForm) as any)
-      history.push(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(value)}/access`)
+      navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(value)}/access`)
     } else {
       dispatch(toggleAlert(`Please enter a valid form schema name!`))
     }

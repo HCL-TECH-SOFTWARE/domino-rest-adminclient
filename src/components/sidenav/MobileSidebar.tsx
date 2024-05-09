@@ -152,7 +152,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({
               <NavLink
                 onClick={toggleMenu}
                 key={route.label}
-                exact
+                
                 className={
                   `/${location.pathname.split('/')[1]}` === `${route.uri}`
                     ? 'route-active'
@@ -192,7 +192,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({
                 <NavLink
                   onClick={toggleMenu}
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -264,7 +264,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({
                 <NavLink
                   onClick={toggleMenu}
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -309,7 +309,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({
                 <NavLink
                   onClick={toggleMenu}
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'
@@ -354,7 +354,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({
                 <NavLink
                   onClick={toggleMenu}
                   key={route.label}
-                  exact
+                  
                   className={
                     `/${location.pathname.split('/')[1]}` === `${route.uri}`
                       ? 'route-active'

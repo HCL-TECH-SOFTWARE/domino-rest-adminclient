@@ -17,7 +17,7 @@ import * as Yup from 'yup';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import LoginIcon from '@material-ui/icons/ExitToApp';
 import { useSelector, useDispatch } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import {
   IMG_DIR,
   KEEP_ADMIN_BASE_COLOR,
@@ -280,7 +280,7 @@ const LoginPage = () => {
 
   return (
     <Grid container component="main" className={classes.root}>
-      <Redirect to="/" />
+      <Navigate to="/" />
       <CssBaseline />
       <Grid
         style={{

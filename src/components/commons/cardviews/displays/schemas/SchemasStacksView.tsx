@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
 import { AppState } from '../../../../../store';
@@ -28,7 +28,7 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
   );
   const { deleteDialog } = useSelector((state: AppState) => state.dialog);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const history = useHistory();
+  const navigate = useNavigate();
   const setOption = useState({})[1];
   const [selected, setselected] = useState('');
   const dispatch = useDispatch();
@@ -63,7 +63,7 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
   };
 
   const openDatabase = (database: any) => {
-    history.push(
+    navigate(
       `/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`
     );
   };
