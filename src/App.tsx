@@ -182,13 +182,7 @@ const App: React.FC = () => {
                       )
                   )}
 
-                  <Views open={open} classes={classes} />
-                  {/* <Routes>
-                    <Route element={<Views open={open} classes={classes} />} />
-                  </Routes> */}
-                  {/* <Route>
-                    <Views open={open} classes={classes} />
-                  </Route> */}
+                <Views open={open} classes={classes} />
                 </RightPanel>
                 {!ipadMatches && <Footer />}
               </AppContainer>
