@@ -2,8 +2,8 @@
   "name": "@hcl-software/domino-rest-adminclient",
   "version": "1.30.7-SNAPSHOT",
   "private": false,
-  "proxy": "http://localhost:3000",
-  "homepage": "..",
+  "proxy": "http://localhost:8880",
+  "homepage": ".",
   "jest": {
     "transformIgnorePatterns": [
       "node_modules/(?!axios)"
