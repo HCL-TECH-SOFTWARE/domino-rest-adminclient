@@ -101,10 +101,6 @@ const App: React.FC = () => {
     setOpen(!open);
   };
 
-  if (window.location.pathname === '/') {
-    window.location.assign('/admin/ui');
-  }
-
   useEffect(() => {
     // Handle Axios Interceptor
     // Handle All API Request on the Page
@@ -138,7 +134,7 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme(authenticated, getTheme, themeMode)}>
       <CssBaseline />
       {valid ? (
-        <Router basename="/">
+        <Router basename="/admin/ui">
           {authenticated ? (
             <>
               {matches && (
