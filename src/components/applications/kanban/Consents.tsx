@@ -20,6 +20,7 @@ import { AppState } from '../../../store';
 import { useDispatch } from 'react-redux';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
+import { get } from 'lodash';
 
 const ConsentsContainer = styled.div`
   display: flex;
@@ -79,7 +80,18 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
   const [expand, setExpand] = useState(false)
   const [filtersOn, setFiltersOn] = useState(false)
   const [resetFilters, setResetFilters] = useState(false)
-  const { deleteConsentDialog, deleteUnid } = useSelector((state: AppState) => state.consents)
+  const { consents, deleteConsentDialog, deleteUnid } = useSelector((state: AppState) => state.consents)
+
+  const getUserName = (input: string): string | null => {
+    const match = input.match(/CN=(.*?)\//);
+    return match ? match[1] : null;
+  }
+
+  const username = getUserName(consents.find((consent) => consent.username)?.username || '');
+  const scope = consents.find((consent) => consent.scope)?.scope;
+  
+
+
   const dispatch = useDispatch()
 
   const handleCloseDialog = () => {
@@ -134,7 +146,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="reset-form-contents" color="textPrimary">
-            Are you sure you want to revoke consent for UNID {deleteUnid}?
+            Are you sure you want to revoke consent for user {username} with scopes {scope}?
           </DialogContentText>
         </DialogContent>
         <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
