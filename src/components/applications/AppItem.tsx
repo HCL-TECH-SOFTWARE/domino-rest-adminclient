@@ -4,17 +4,17 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, ButtonBase, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
+import { Box, ButtonBase, DialogActions, DialogContent, DialogContentText, DialogTitle, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
 import { getTheme } from '../../store/styles/action';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
-import { DeleteIcon } from '../../styles/CommonStyles';
+import { DeleteIcon, CommonDialog, ButtonNeutral, ButtonYes } from '../../styles/CommonStyles';
 import { FiEdit2 } from 'react-icons/fi';
 import { MdRefresh } from "react-icons/md";
 import { FormikProps } from 'formik';
@@ -122,17 +122,38 @@ const AppItem: React.FC<AppItemProps> = ({
   const { themeMode } = useSelector((state: AppState) => state.styles)
 
   const [generating, setGenerating] = useState(false)
-  const [appSecret, setAppSecret] = useState(app.appSecret)
+  const [appSecret, setAppSecret] = useState('')
   const appSecretTextRef = useRef(null) as any
   const clickToGenerateText = "Click to Generate Secret"
   const [formContext, setFormContext] = useContext(AppFormContext) as any
+  const [isGenerate, setIsGenerate] =  useState(false);
+  const [hasAppSecret, setHasAppSecret] = useState(false);
 
+  
   const launch = () => {
     window.open(app.appStartPage)
   }
 
-  const handleClickGenerate = () => {
+  const handleClickGenerate = (newSecret: boolean) => {
+    if (newSecret) {
+      dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret) as any)
+    } else {
+      setIsGenerate(true);
+    }
+    setHasAppSecret(true)
+  }
+
+  useEffect(() => {
+    console.log(appSecret)
+  }, [appSecret])
+
+  useEffect(() => {
+    console.log(app.appHasSecret)
+  }, [app.appHasSecret])
+
+  const regenerateSecret = () => {
     dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret) as any)
+    setIsGenerate(false);
   }
 
   const handleKeyPress = (e: any, callback: any, focus?: boolean) => {
@@ -247,10 +268,55 @@ const AppItem: React.FC<AppItemProps> = ({
                     </AppIdSecretContainer>
                     <AppIdSecretContainer>
                       <Typography className='text'>App Secret:</Typography>
-                      {(app.appHasSecret || appSecret !== app.appSecret) && <Tooltip title={clickToGenerateText} arrow>
+                      {/* {(app.appHasSecret || appSecret !== app.appSecret) && <Tooltip title={clickToGenerateText} arrow>
                         <ButtonBase onClick={handleClickGenerate}><MdRefresh color='#2873F0' /></ButtonBase>
-                      </Tooltip>}
-                      {(app.appHasSecret && (appSecret === app.appSecret || app.appSecret === undefined)) ? <Typography className='text' style={{ color: '#505050' }}>This app has an app secret configured.</Typography> :
+                      </Tooltip>} */}
+                      {
+                        hasAppSecret ? <>
+                          <Tooltip 
+                                title="Copy Application Secret" 
+                                tabIndex={1} 
+                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                                arrow
+                              >
+                                <Typography
+                                  className='text id-secret'
+                                  style={{ color: '#2873F0' }}
+                                  ref={appSecretTextRef}
+                                  onClick={copyToClipboard}
+                                >
+                                  {appSecret}
+                                </Typography>
+                              </Tooltip>
+                        </> :
+                        app.appHasSecret ? <>
+                          <ButtonBase onClick={() => handleClickGenerate(false)}><MdRefresh color='#2873F0' /></ButtonBase>
+                          <Typography className='text' style={{ color: '#505050' }}>********************</Typography>
+                        </> : <>
+                          {app.appSecret?.length > 0 ? <>
+                            <Tooltip 
+                                title="Copy Application Secret" 
+                                tabIndex={1} 
+                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                                arrow
+                              >
+                                <Typography
+                                  className='text id-secret'
+                                  style={{ color: '#2873F0' }}
+                                  ref={appSecretTextRef}
+                                  onClick={copyToClipboard}
+                                >
+                                  {appSecret}
+                                </Typography>
+                              </Tooltip>
+                          </> : <>
+                          <ButtonBase onClick={() => handleClickGenerate(true)}>
+                            <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
+                          </ButtonBase>
+                          </>}
+                        </>
+                      }
+                      {/* {(app.appHasSecret && (appSecret === app.appSecret || app.appSecret === undefined)) ? <Typography className='text' style={{ color: '#505050' }}>********************</Typography> :
                           appSecret === app.appSecret ? <ButtonBase onClick={handleClickGenerate}>
                             <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
                           </ButtonBase>
@@ -268,7 +334,7 @@ const AppItem: React.FC<AppItemProps> = ({
                                 >
                                   {appSecret}
                                 </Typography>
-                              </Tooltip>}
+                              </Tooltip>} */}
                     </AppIdSecretContainer>
                   </Box>
                 </TableCell>
@@ -293,6 +359,20 @@ const AppItem: React.FC<AppItemProps> = ({
                   </OptionsContainer>
                 </TableCell>
             </StyledTableRow>
+            <CommonDialog open={isGenerate} onClose={() => setIsGenerate(false)}>
+                <DialogTitle>
+                    <Box className="title">Regenerate App Secret?</Box>
+                    <DialogContent>
+                      <DialogContentText color={'textPrimary'}>
+                        WARNING: You are attempting to regenerate the App Secret, doing so may break existing applications.  Are you sure you want to proceed?
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
+                        <ButtonNeutral onClick = {() => setIsGenerate(false)}>No</ButtonNeutral>
+                        <ButtonYes onClick={regenerateSecret}>Yes</ButtonYes>
+                    </DialogActions>
+                </DialogTitle>
+            </CommonDialog>
       </>
     )
   );
