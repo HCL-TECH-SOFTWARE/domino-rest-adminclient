@@ -364,7 +364,7 @@ const AppItem: React.FC<AppItemProps> = ({
                     <Box className="title">Regenerate App Secret?</Box>
                     <DialogContent>
                       <DialogContentText color={'textPrimary'}>
-                        WARNING: You're attempting to regenerate App Secret, doing this will BREAK your application. Are you sure you want to proceed?
+                        WARNING: You are attempting to regenerate the App Secret, doing so may break existing applications.  Are you sure you want to proceed?
                       </DialogContentText>
                     </DialogContent>
                     <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
