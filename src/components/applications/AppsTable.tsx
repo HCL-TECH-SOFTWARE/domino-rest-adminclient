@@ -22,6 +22,8 @@ import { AppProp } from '../../store/applications/types';
 import AppItem from './AppItem';
 import { FormikProps } from 'formik';
 import AppFilterContainer from './AppFilterContainer';
+import { fetchMyApps } from '../../store/applications/action';
+import { useDispatch } from 'react-redux';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
@@ -104,11 +106,14 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
   const [status, setStatus] = React.useState("All")
   const [appSecret, setAppSecret] = React.useState("All")
 
+  const dispatch = useDispatch()
+
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number,
   ) => {
     setPage(newPage);
+    dispatch(fetchMyApps() as any)
   };
 
   const handleChangeRowsPerPage = (
@@ -132,23 +137,11 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
 
   React.useEffect(() => {
     const filterApps = (
-    //   user: string,
       appName: string,
       status: string,
       appSecret: string,
-    //   showWithApps: boolean,
-    //   expiration: { expiration: string, date: Date },
-    //   tokenExpiration: { expiration: string, date: Date },
-    //   scopes: Array<string>,
     ) => {
       let newApps = apps
-    //   if (user.length > 0) newConsents = newConsents.filter((consent) => {
-    //     const allMatches = users?.filter((user) => user[Object.keys(user)[0]].FullName[0] === consent.username);
-    //     const username = allMatches && allMatches.length > 0 && allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress[0] !== ''
-    //                       ? allMatches[0][Object.keys(allMatches[0])[0]].InternetAddress[0] :
-    //                       consent.username
-    //     return username.toLowerCase().indexOf(user.toLowerCase()) !== -1
-    //   })
       if (appName.length > 0) {
         newApps = newApps.filter((app) => app.appName.toLowerCase().indexOf(appName.toLowerCase()) !== -1)
       }
@@ -156,6 +149,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
       if (reset) {
         setFilteredApps(newApps)
         setReset(false)
+        setPage(0)
       } else {
         switch (status) {
           case "Active":
@@ -180,8 +174,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
         setFilteredApps(newApps)
         setFiltersOn(true)
       }
-
-      setPage(0)
     }
 
     filterApps(appName, status, appSecret)
@@ -277,16 +269,16 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   }}
                   ActionsComponent={({ count, page }) => (
                     <div style={{ flexShrink: 0, marginLeft: 10 }}>
-                      <IconButton disabled={page === 0} aria-label='First Page' onClick={() => setPage(0)}>
+                      <IconButton disabled={page === 0} aria-label='First Page' onClick={(e) => handleChangePage(e, 0)}>
                         <FirstPage />
                       </IconButton>
-                      <IconButton disabled={page === 0} aria-label="Previous Page" onClick={() => setPage(page - 1)}>
+                      <IconButton disabled={page === 0} aria-label="Previous Page" onClick={(e) => handleChangePage(e, page - 1)}>
                         <KeyboardArrowLeft />
                       </IconButton>
-                      <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Next Page' onClick={() => setPage(page + 1)}>
+                      <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Next Page' onClick={(e) => handleChangePage(e, page + 1)}>
                         <KeyboardArrowRight />
                       </IconButton>
-                      <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Last Page' onClick={() => setPage(Math.max(0, Math.ceil(filteredApps.length / rowsPerPage) - 1))}>
+                      <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Last Page' onClick={(e) => handleChangePage(e, Math.max(0, Math.ceil(filteredApps.length / rowsPerPage) - 1))}>
                         <LastPage />
                       </IconButton>
                     </div>

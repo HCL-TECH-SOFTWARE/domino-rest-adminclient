@@ -122,7 +122,7 @@ const AppItem: React.FC<AppItemProps> = ({
   const { themeMode } = useSelector((state: AppState) => state.styles)
 
   const [generating, setGenerating] = useState(false)
-  const [appSecret, setAppSecret] = useState(app.appSecret)
+  const [appSecret, setAppSecret] = useState('')
   const appSecretTextRef = useRef(null) as any
   const clickToGenerateText = "Click to Generate Secret"
   const [formContext, setFormContext] = useContext(AppFormContext) as any
