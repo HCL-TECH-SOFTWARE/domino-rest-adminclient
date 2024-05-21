@@ -481,7 +481,11 @@ interface FetchAvailableDatabases {
 
 interface AddAvailableDatabase {
   type: typeof ADD_AVAILABLE_DATABASE;
-  payload: any;
+  payload: {
+    title: string;
+    nsfpath: string;
+    apinames: Array<string>;
+  };
 }
 
 interface FetchKeepDatabases {
