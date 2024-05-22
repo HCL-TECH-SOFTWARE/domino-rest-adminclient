@@ -80,28 +80,44 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
   const [expand, setExpand] = useState(false)
   const [filtersOn, setFiltersOn] = useState(false)
   const [resetFilters, setResetFilters] = useState(false)
-  const { consents, deleteConsentDialog, deleteUnid } = useSelector((state: AppState) => state.consents)
+  const { deleteConsentDialog, appName, username, scope } = useSelector((state: AppState) => state.consents)
 
-  const getUserName = (input: string): string | null => {
-    const match = input.match(/CN=(.*?)\//);
-    return match ? match[1] : null;
+  const getUserName = (input: string): string | '' => {
+    let str = "username" as keyof typeof input;
+    const user = input[str];
+    const match = user.toString().match(/CN=(.*?)\//);
+    return match ? match[1] : '';
   }
 
-  const username = getUserName(consents.find((consent) => consent.username)?.username || '');
-  const scope = consents.find((consent) => consent.scope)?.scope;
-  
+  const getAppName = (input: string): string | '' => {
+    let str = "appName" as keyof typeof input;
+    const app = input[str];
+    return app.toString();
+  }
 
+  const getScopes = (input: string): string | '' => {
+    let str = "scope" as keyof typeof input;
+    const scopeName = input[str];
+
+    return scopeName.toString();
+  }
+
+  const userName = getUserName(username);
+  const applicationName = getAppName(appName);
+  const scopeName = getScopes(scope);
+  
+  
 
   const dispatch = useDispatch()
 
   const handleCloseDialog = () => {
-    dispatch(toggleDeleteConsent(''));
+    dispatch(toggleDeleteConsent('', '', '', ''));
   }
 
   // Handle deleting/revoking consent
   const confirmDeleteConsent = () => {
-    dispatch(deleteConsent(deleteUnid) as any);
-    dispatch(toggleDeleteConsent(''));
+    //dispatch(deleteConsent(consentInfo.unid) as any);
+    dispatch(toggleDeleteConsent('', '', '', ''));
   }
 
   const handleClickReset = () => {
@@ -146,7 +162,12 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="reset-form-contents" color="textPrimary">
-            Are you sure you want to revoke consent for user {username} with scopes {scope}?
+            {
+              applicationName?
+              `Are you sure you want to revoke consent for application ${applicationName} with user ${userName} and scopes ${scopeName}?`
+              :
+              `Are you sure you want to revoke consent for user ${userName} with scopes ${scopeName}?`
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>

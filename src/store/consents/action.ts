@@ -53,10 +53,15 @@ export function deleteConsent (unid: string) {
   }
 }
 
-export function toggleDeleteConsent (unid: string) {
+export function toggleDeleteConsent (unid:string, appName:string, username:string, scope:string) {
   return {
     type: TOGGLE_DELETE_CONSENT,
-    payload: unid,
+    payload: {
+      "unid": unid,
+      "appName": appName,
+      "username": username,
+      "scope": scope
+    }
   }
 }
 

@@ -18,6 +18,9 @@ const initialState: ConsentState = {
   consents: [],
   deleteConsentDialog: false,
   deleteUnid: '',
+  appName: '',
+  username: '',
+  scope: '',
 };
 
 export default function consentsReducer(
@@ -43,6 +46,9 @@ export default function consentsReducer(
         ...state,
         deleteConsentDialog: !state.deleteConsentDialog,
         deleteUnid: action.payload,
+        appName: action.payload,
+        username: action.payload,
+        scope: action.payload,
       }
     case INIT_STATE:
       return {

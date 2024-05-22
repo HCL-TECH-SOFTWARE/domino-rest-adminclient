@@ -78,9 +78,14 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
 
   const scope = scopes.find((scope: any) => scope.apiName === consent.scope)
 
-  // Show delete consent dialog when clicking the Revoke button
+  // Show delete consent dialog when clicking the Revoke 
+  
+
   const handleClickRevoke = () => {
-    dispatch(toggleDeleteConsent(consent.unid));
+    const appName = apps.find((app: any) => app.appId === consent.client_id)?.appName || '';
+    const user = consent.username;
+    const scope = consent.scope;
+    dispatch(toggleDeleteConsent(consent.unid, appName, user, scope));
   }
 
   const allMatches = users?.filter((user) => user[Object.keys(user)[0]].FullName[0] === consent.username);
