@@ -128,6 +128,9 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
     <ConsentsContainer>
       <Header>
         <Typography className='title'>OAuth Consents</Typography>
+        <ButtonBase onClick={handleClose}>
+          {dialog && <CloseIcon />}
+        </ButtonBase>
       </Header>
       <OptionsBar>
         <ButtonBase onClick={() => setExpand(true)} className='option'>
