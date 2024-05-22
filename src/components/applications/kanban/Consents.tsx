@@ -85,21 +85,21 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
   const getUserName = (input: string): string | '' => {
     let str = "username" as keyof typeof input;
     const user = input[str];
-    const match = user.toString().match(/CN=(.*?)\//);
+    const match = user?.toString().match(/CN=(.*?)\//);
     return match ? match[1] : '';
   }
 
   const getAppName = (input: string): string | '' => {
     let str = "appName" as keyof typeof input;
     const app = input[str];
-    return app.toString();
+    return app?.toString();
   }
 
   const getScopes = (input: string): string | '' => {
     let str = "scope" as keyof typeof input;
     const scopeName = input[str];
 
-    return scopeName.toString();
+    return scopeName?.toString();
   }
 
   const userName = getUserName(username);
