@@ -9,6 +9,9 @@ export interface ConsentState {
   consents: Array<Consent>;
   deleteConsentDialog: boolean;
   deleteUnid: string;
+  appName: string;
+  username: string;
+  scope: string
 }
 
 export interface Consent {
