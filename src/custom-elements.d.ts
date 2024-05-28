@@ -3,5 +3,6 @@ declare namespace JSX {
         'app-status': any;
         'copyable-text': any;
         'drawer-container': any;
+        'lit-autocomplete': any;
     }
 }

@@ -3,32 +3,41 @@ import { LitElement, html, css } from 'lit';
 class Autocomplete extends LitElement {
   static properties = {
     options: { type: Array },
-    selectedOption: { type: String }
+    selectedOption: { type: String },
+    error: { type: Boolean },
+    errorMessage: { type: String },
+    initialOption: { type: String },
   };
 
   static styles = css`
-    .autocomplete-container {
+    .parent-container {
       position: relative;
       display: inline-block;
       width: 95%;
+      overflow: visible;
+    }
+
+    .autocomplete-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
     }
 
     .dropdown {
       position: absolute;
       top: 100%;
       left: 0;
-      display: none;
+      visibility: hidden;
       background-color: white;
       border: 1px solid #ccc;
       border-radius: 5px;
       width: 100%;
-      z-index: 1;
+      z-index: 9999;
       max-height: 30vh;
       overflow: scroll;
     }
-    
-    .show {
-      display: block;
+    .dropdown.show {
+      visibility: visible;
     }
 
     .input-container {
@@ -40,6 +49,11 @@ class Autocomplete extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin: 0;
+      position: relative;
+    }
+    .input-container.error {
+      border: 1px solid red;
     }
 
     input {
@@ -72,6 +86,12 @@ class Autocomplete extends LitElement {
       background: none;
     }
 
+    p {
+      margin: 8px 0 0 2px;
+      font-size: 14px;
+      color: red;
+    }
+
     ul {
       padding: 0;
       margin: 0;
@@ -98,6 +118,10 @@ class Autocomplete extends LitElement {
       input, .input-container {
         font-size: 16px;
       }
+
+      p {
+        font-size: 12px;
+      }
     }
   `;
 
@@ -109,55 +133,61 @@ class Autocomplete extends LitElement {
     this.filteredOptions = this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase()));
     this.highlightedOptionIndex = -1;
     this.showDropdown = false;
+    this.error = false;
+    this.errorMessage = '';
+    this.initialOption = '';
   }
 
   render() {
     return html`
-      <section class="autocomplete-container" @focusout="${this._handleFocusOut}">
-        <section class="input-container">
-          <input
-            list="autocomplete-options"
-            .value="${this.selectedOption}"
-            @input="${this._handleInput}"
-            @click="${this._handleInput}"
-            @keydown="${this._handleKeyDown}"
-          >
-          <section class="button-container">
-            ${this.selectedOption !== '' ? html`
-              <button @click="${this._handleClearInput}">
-                <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="width: 15px; height: 15px">
-                  <line x1="10" y1="10" x2="40" y2="40" stroke="#808283" stroke-width="5" />
-                  <line x1="10" y1="40" x2="40" y2="10" stroke="#808283" stroke-width="5" />
+      <div class="parent-container">
+        <section class="autocomplete-container" @focusout="${this._handleFocusOut}">
+          <section class="input-container ${this.error ? 'error' : ''}">
+            <input
+              list="autocomplete-options"
+              .value="${this.selectedOption.length > 0 ? this.selectedOption : this.initialOption}"
+              @input="${this._handleInput}"
+              @click="${this._handleInput}"
+              @keydown="${this._handleKeyDown}"
+            >
+            <section class="button-container">
+              ${this.selectedOption !== '' ? html`
+                <button @click="${this._handleClearInput}">
+                  <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="width: 15px; height: 15px">
+                    <line x1="10" y1="10" x2="40" y2="40" stroke="#808283" stroke-width="5" />
+                    <line x1="10" y1="40" x2="40" y2="10" stroke="#808283" stroke-width="5" />
+                  </svg>
+                </button>
+            ` : html``}
+            </section>
+            <section class="button-container">
+              <button @click="${this._toggleDropdown}">
+                <svg
+                  viewBox="0 0 50 50"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style="width: 12px; height: 12px; transform: ${this.showDropdown ? 'rotate(0deg)' : 'rotate(180deg)'}"
+                >
+                  <polygon points="25,10 45,40 5,40" fill="#808283" />
                 </svg>
               </button>
-          ` : html``}
+            </section>
           </section>
-          <section class="button-container">
-            <button @click="${this._toggleDropdown}">
-              <svg
-                viewBox="0 0 50 50"
-                xmlns="http://www.w3.org/2000/svg"
-                style="width: 12px; height: 12px; transform: ${this.showDropdown ? 'rotate(0deg)' : 'rotate(180deg)'}"
-              >
-                <polygon points="25,10 45,40 5,40" fill="#808283" />
-              </svg>
-            </button>
+          <section class="dropdown ${this.showDropdown ? 'show' : ''}">
+            <ul>
+              ${this.filteredOptions.map((option, index) => html`
+                <li
+                  id="option-${index}"
+                  class="${index === this.highlightedOptionIndex ? 'highlighted' : ''}"
+                  @mousedown="${() => this._handleOptionClick(option)}"
+                >
+                  ${option}
+                </li>
+              `)}
+            </ul>
           </section>
+          <p>${this.error ? this.errorMessage : ""}</p>
         </section>
-        <section class="dropdown ${this.showDropdown ? 'show' : ''}">
-          <ul>
-            ${this.filteredOptions.map((option, index) => html`
-              <li
-                id="option-${index}"
-                class="${index === this.highlightedOptionIndex ? 'highlighted' : ''}"
-                @mousedown="${() => this._handleOptionClick(option)}"
-              >
-                ${option}
-              </li>
-            `)}
-          </ul>
-        </section>
-      </section>
+      </div>
     `;
   }
 
@@ -220,6 +250,7 @@ class Autocomplete extends LitElement {
 
   _handleClearInput() {
     this.selectedOption = ''
+    this.initialOption = ''
     this.filteredOptions = this.options
     this.requestUpdate()
   }
@@ -231,6 +262,6 @@ class Autocomplete extends LitElement {
   }
 }
 
-customElements.define('my-autocomplete', Autocomplete)
+customElements.define('lit-autocomplete', Autocomplete)
 
 export default Autocomplete
