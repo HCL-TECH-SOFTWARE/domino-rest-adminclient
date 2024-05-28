@@ -359,9 +359,19 @@ const Fields: React.FC<FieldsProps> = ({
   useEffect(() => {
     const currentActiveFields = activeFields.filter((item) => item.formName === currentFormValue)
     const filteredFields = currentActiveFields.map((form) => {
+      const newFields = form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(searchFieldKey.toLowerCase()) !== - 1)
       return {
         ...form,
-        fields: form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(searchFieldKey.toLowerCase()) !== - 1)
+        fields: newFields.length > 0 ? newFields : (() => {
+          for (let i = searchFieldKey.length; i >= 0; i--) {
+            const slicedSearchFieldKey = searchFieldKey.slice(0, i).toLowerCase();
+            const filteredFields = form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(slicedSearchFieldKey) !== -1);
+            if (filteredFields.length > 0) {
+              return filteredFields;
+            }
+          }
+          return [];
+        })()
       }
     })
     if (searchFieldKey !== '') {
