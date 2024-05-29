@@ -934,7 +934,7 @@ export const quickConfig = (dbData: any) => {
 /**
  * Add Database and check for errors
  */
-export const addSchema = (dbData: any) => {
+export const addSchema = (dbData: any, resetCallback?: () => void) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
@@ -968,6 +968,9 @@ export const addSchema = (dbData: any) => {
               type: CLEAR_SCHEMA_FORM,
               payload: true
             });
+            if (resetCallback) {
+              resetCallback()
+            }
           }
           dispatch(
             toggleAlert(`${dbData.schemaName} has been successfully created.`)

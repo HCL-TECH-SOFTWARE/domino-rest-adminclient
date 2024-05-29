@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import Typography from '@material-ui/core/Typography';
@@ -19,6 +19,7 @@ import appIcons from '../../styles/app-icons';
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { LitAutocomplete } from '../lit-elements/LitElements';
 
 const AddImportDialogContainer = styled(Dialog)`
   width: 50vw;
@@ -100,6 +101,8 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const dispatch = useDispatch();
 
+  const autocompleteRef = useRef<any>(null)
+
   const SchemaFormSchema = Yup.object().shape({
     schemaName: Yup.string()
       .max(256, 'Schema name is too long (maximum is 256 characters).')
@@ -168,7 +171,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         iconName: iconName,
         icon: appIcons[iconName],
       };
-      dispatch(addSchema(newSchema) as any);
+      dispatch(addSchema(newSchema, resetForm) as any);
       setIconName('beach');
       setNsfPath('');
       setImportDialogOpen(false);
@@ -237,6 +240,14 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       setIconName(schemaData.iconName);
       setSchemaName(schemaData.schemaName)
 
+      // Set values of the web components
+      if (autocompleteRef.current && autocompleteRef.current.shadowRoot) {
+        const inputElement = autocompleteRef.current.shadowRoot.querySelector('input')
+        if (inputElement) {
+          inputElement.value = schemaData.nsfPath
+        }
+      }
+
       setImportDialogOpen(true);
       
       document.body.removeChild(fileElement);
@@ -280,15 +291,20 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   };
 
   const handleClickSaveSchema = async () => {
-    await formik.submitForm()
-    formik.resetForm()
-    setSchemaName('')
+    if (autocompleteRef.current) {
+      const inputElement = autocompleteRef.current.shadowRoot.querySelector('input')
+      if (inputElement) {
+        setNsfPath(inputElement.value)
+        formik.values.nsfPath = inputElement.value
+      }
+    }
+    formik.submitForm()
   };
 
-  const handleChooseDatabase = (event: any, value: any) => {
-    setNsfPath(value);
-    formik.values.nsfPath = value;
-  };
+  const resetForm = () => {
+    formik.resetForm()
+    setSchemaName('')
+  }
 
   const BackArrow = (
     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" fill="none">
@@ -355,16 +371,12 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
           <Typography className='detail-title'>
             {`${importFlag ? "Import Into Database" : "Database"}`}
           </Typography>
-          <Autocomplete
-            id="choose-database"
+          <LitAutocomplete
             options={availableDatabases.map((database) => database.title)}
-            filterOptions={(options) => options.filter((option) => option.toLowerCase().indexOf(formik.values.nsfPath.toLowerCase()) !== -1)}
-            onInputChange={handleChooseDatabase}
-            getOptionLabel={nsfPath => nsfPath}
-            value={formik.values.nsfPath}
-            fullWidth
-            renderInput={(params) => <TextField {...params} error={!!formik.errors.nsfPath && formik.touched.nsfPath} helperText={formik.errors.nsfPath} name='nsfPath' variant='outlined' fullWidth />}
-            style={{ margin: 0, padding: 0, zIndex: 100 }}
+            ref={autocompleteRef}
+            error={!!formik.errors.nsfPath && formik.touched.nsfPath}
+            errorMessage={formik.errors.nsfPath}
+            initialOption={formik.values.nsfPath}
           />
         </Box>
       </DialogContentContainer>
