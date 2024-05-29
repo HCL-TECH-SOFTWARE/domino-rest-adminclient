@@ -279,8 +279,10 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
     formik.values.schemaName = newSchemaName
   };
 
-  const handleClickSaveSchema = () => {
-    formik.submitForm();
+  const handleClickSaveSchema = async () => {
+    await formik.submitForm()
+    formik.resetForm()
+    setSchemaName('')
   };
 
   const handleChooseDatabase = (event: any, value: any) => {

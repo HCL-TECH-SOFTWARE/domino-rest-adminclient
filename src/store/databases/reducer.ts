@@ -148,11 +148,18 @@ export default function databaseReducer(
         availableDatabases: action.payload,
       };
     case ADD_AVAILABLE_DATABASE:
-      let updatedList = state.availableDatabases ? [...state.availableDatabases, action.payload] : [action.payload];
-      return {
-        ...state,
-        availableDatabases: updatedList
-      };    
+      const dbExists = state.availableDatabases.findIndex((db) => db.nsfpath === action.payload.nsfpath) >= 0
+      switch (dbExists) {
+        case true:
+          return state
+        case false:
+        default:
+          let updatedList = state.availableDatabases ? [...state.availableDatabases, action.payload] : [action.payload];
+          return {
+            ...state,
+            availableDatabases: updatedList
+          };   
+      } 
     case ADD_NEW_SCHEMA_TO_STATE:
       // Save resource to avoid fetching all database again after new schema created every time
       const { schemaName, nsfPath } = action.payload;
