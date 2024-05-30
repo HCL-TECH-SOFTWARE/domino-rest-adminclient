@@ -31,6 +31,14 @@ Domino Rest Admin Client uses `npm` as its package manager. The `exec-maven-plug
 
 The config.json file contains the configurations for Admin UI and the paths that will be available in the WebJar.
 
+## Lit Web Components
+
+We are now using Lit 3.0 for web components. To build a custom Lit element, follow the following steps:
+
+1. Place your Lit element file in *src/components/lit-elements*.
+2. Add your Lit element's React counterpart in *src/components/lit-elements/LitElements.tsx* using the `createComponent` method.
+3. Import the created React component in the appropriate TSX, e.g. `import { LitAutocomplete } from '../lit-elements/LitElements'`.
+
 ## 🛠️ Building
 
 To build, run the following from the main project directory:
