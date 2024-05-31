@@ -296,7 +296,7 @@
                 <NavLink
                   key={route.label}
                   className={
-                    `/${location.pathname.split('/')[1]}` === `${route.uri}`
+                    `/${location.pathname}` === `${route.uri}`
                       ? 'route-active'
                       : ''
                   }
@@ -308,7 +308,7 @@
                     title={route.label}
                     arrow
                   >
-                    <ListItem className="link-container" button key={route.label}>
+                    <ListItem className={location.pathname === route.uri ? "link-container" : ''} button key={route.label}>
                       <ListItemIcon>
                         <Icon
                           style={{
