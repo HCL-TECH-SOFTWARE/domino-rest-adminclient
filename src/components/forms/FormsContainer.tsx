@@ -49,6 +49,8 @@ import { FiSave } from 'react-icons/fi';
 import { ImCancelCircle } from 'react-icons/im';
 import { BiExport } from 'react-icons/bi';
 import EditViewDialog from './EditView';
+import { LitSource } from '../lit-elements/LitElements';
+// import SlIcon from '@shoelace-style/shoelace/dist/react/icon';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -693,10 +695,13 @@ const FormsContainer = () => {
                 {
                   styledObjMode && 
                   <JsonEditorContainer>
-                    <JsonEditor 
+                    {/* <JsonEditor 
                       jsonObject={sourceTabContent}
                       onChange={(output: any) => {handleChangeContent(output)}}
-                    />
+                    /> */}
+                    {/* <SlIcon name="0-circle"></SlIcon> */}
+                    <LitSource content={JSON.parse(sourceTabContent)} />
+                    {/* <lit-source></lit-source> */}
                     <Dialog open={saveChangesDialog}>
                       <DialogContainer>
                         <DialogTitle className='title'>

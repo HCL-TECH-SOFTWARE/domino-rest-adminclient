@@ -20,6 +20,7 @@
     "@mui/icons-material": "^5.15.6",
     "@mui/x-date-pickers": "^7.2.0",
     "@redux-devtools/extension": "^3.3.0",
+    "@shoelace-style/shoelace": "^2.15.1",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^18.0.6",
     "axios": "^1.6.0",
