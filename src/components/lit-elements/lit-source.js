@@ -15,8 +15,23 @@ import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
+import '@shoelace-style/shoelace/dist/components/input/input.js';
 // Import setBasePath for Shoelace assets
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
+
+function removeEmpty(obj) {
+  Object.keys(obj).forEach(key => {
+    if (obj[key] && typeof obj[key] === 'object') {
+      removeEmpty(obj[key]);
+      if ((Object.keys(obj[key]).length === 0 && obj[key].constructor === Object) || (Array.isArray(obj[key]) && obj[key].length === 0)) {
+        delete obj[key];
+      }
+    } else if (obj[key] == null) {
+      delete obj[key];
+    }
+  });
+  return obj;
+}
 
 class SourceTree extends LitElement {
   static properties = {
@@ -84,11 +99,15 @@ class SourceTree extends LitElement {
       border: 1px solid #D2D2D2;
       border: none;
       flex-direction: row;
+      cursor: default;
     }
 
     sl-divider {
-      padding: 0;
-      margin: 0;
+      
+    }
+
+    sl-menu {
+      
     }
 
     .dialog-content {
@@ -96,11 +115,38 @@ class SourceTree extends LitElement {
       flex-direction: row;
       gap: 10px;
     }
+    .dialog-content.buttons {
+      flex-direction: row-reverse;
+      padding: 20px 0 10px 0;
+    }
 
     sl-select {
       --sl-font-size-small: 12px;
       --sl-font-size-medium: 14px;
       --sl-font-size-large: 16px;
+    }
+
+    sl-option {
+      --sl-font-size-small: 12px;
+      --sl-font-size-medium: 14px;
+      --sl-font-size-large: 16px;
+    }
+
+    button {
+      background-color: #5E1EBE;
+      color: white;
+      border-radius: 3px;
+      border: none;
+      padding: 6px 16px;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #4D1A9A;
+      cursor: pointer;
+    }
+    button.cancel {
+      background: none;
+      color: black;
     }
   `;
 
@@ -188,24 +234,27 @@ class SourceTree extends LitElement {
             <sl-tree-item>
               <section class="key-value-container ${this.currentInputValues[fullPath] !== value ? 'modified' : ''}">
                 <span>${key}:</span>
-                <input id="input-${fullPath}" class="tree" @input=${(e) => {
-                  this.currentInputValues = {
-                    ...this.currentInputValues,
-                    [fullPath]: e.target.value
-                  }
-                  // console.log(this.currentInputValues[fullPath])
-                  // console.log(value)
-                  // console.log(this.currentInputValues[fullPath] !== value)
-                  this.updateEditedContent(key, this.editedContent, e.target.value)
-                }} value=${value}>
+                <input
+                  id="input-${fullPath}"
+                  class="tree"
+                  @input=${(e) => {
+                    this.currentInputValues = {
+                      ...this.currentInputValues,
+                      [fullPath]: e.target.value
+                    }
+                    this.updateEditedContent(key, this.editedContent, e.target.value)
+                }}
+                  value=${value}
+                  @contextmenu="${this.handleRightClick}"
+                >
                 <sl-dropdown>
-                  <sl-icon-button class="icon-button" slot="trigger" name="caret-down-square" label="Settings"></sl-icon-button>
+                  <sl-icon-button class="icon-button" slot="trigger" name="caret-down-square" label="Context Menu"></sl-icon-button>
                   <sl-menu>
                     <sl-menu-item @click="${this.handleClickAdd}">
                       Add
                       <sl-icon slot="prefix" name="plus-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item @click="${() => this.handleClickEdit(fullPath)}">
+                    <sl-menu-item @click="${(e) => {this.handleClickEdit(e)}}">
                       Edit
                       <sl-icon slot="prefix" name="pencil"></sl-icon>
                     </sl-menu-item>
@@ -213,7 +262,7 @@ class SourceTree extends LitElement {
                       Duplicate
                       <sl-icon slot="prefix" name="copy"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item>
+                    <sl-menu-item @click="${(e) => this.handleClickRemove(e, key, this.editedContent)}">
                       Remove
                       <sl-icon slot="prefix" name="trash"></sl-icon>
                     </sl-menu-item> 
@@ -233,7 +282,7 @@ class SourceTree extends LitElement {
                 <section class="dialog-content">
                   <section class="dialog-input">
                     Key
-                    <input class="dialog">
+                    <sl-input></sl-input>
                   </section>
                   <section class="dialog-p">
                     <p>:</p>
@@ -250,8 +299,12 @@ class SourceTree extends LitElement {
                   </section>
                   <section class="dialog-input">
                     Value
-                    <input class="dialog">
+                    <sl-input></sl-input>
                   </section>
+                </section>
+                <section class="dialog-content buttons">
+                  <button>Insert</button>
+                  <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
               </dialog>
             </sl-tree-item>
@@ -278,13 +331,44 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleClickEdit(fullPath) {
-    const inputToFocus = this.shadowRoot.querySelector(`#input-${fullPath}`)
+  handleClickEdit(e) {
+    const inputToFocus = e.target.closest('sl-tree-item').querySelector(`input`)
     setTimeout(() => {
       if (inputToFocus) {
         inputToFocus.focus()
       }
     })
+  }
+
+  handleClickRemove(e, key, parentObj)  {
+    if (parentObj.hasOwnProperty(key)) {
+      if (Object.keys(parentObj).length === 1) {
+        delete parentObj[key]
+      }
+      // delete parentObj[key]
+      const node = e.target.closest('sl-tree-item')
+      node.remove()
+    } else {
+      for (let prop in parentObj) {
+        if (typeof parentObj[prop] === 'object' && parentObj[prop] !== null) {
+          this.handleClickRemove(e, key, parentObj[prop])
+        }
+      }
+    }
+    this.editedContent = parentObj
+    // console.log(this.editedContent)
+  }
+
+  handleRightClick(e) {
+    e.preventDefault(); // Prevent the default context menu from showing up
+    const dropdown = e.target.closest('sl-tree-item').querySelector('sl-dropdown');
+    if (dropdown) {
+      dropdown.open = true;
+    }
+  }
+
+  handleClickCancel(e) {
+    e.target.closest('sl-tree-item').querySelector('dialog').close()
   }
 
   updateEditedContent(key, parentObj, newValue) {
