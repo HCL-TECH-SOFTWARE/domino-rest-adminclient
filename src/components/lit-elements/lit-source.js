@@ -188,7 +188,7 @@ class SourceTree extends LitElement {
             <sl-tree-item>
               <section class="key-value-container ${this.currentInputValues[fullPath] !== value ? 'modified' : ''}">
                 <span>${key}:</span>
-                <input class="tree" @input=${(e) => {
+                <input id="input-${fullPath}" class="tree" @input=${(e) => {
                   this.currentInputValues = {
                     ...this.currentInputValues,
                     [fullPath]: e.target.value
@@ -201,11 +201,11 @@ class SourceTree extends LitElement {
                 <sl-dropdown>
                   <sl-icon-button class="icon-button" slot="trigger" name="caret-down-square" label="Settings"></sl-icon-button>
                   <sl-menu>
-                    <sl-menu-item>
+                    <sl-menu-item @click="${this.handleClickAdd}">
                       Add
                       <sl-icon slot="prefix" name="plus-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item @click="${this.handleClick}">
+                    <sl-menu-item @click="${() => this.handleClickEdit(fullPath)}">
                       Edit
                       <sl-icon slot="prefix" name="pencil"></sl-icon>
                     </sl-menu-item>
@@ -269,13 +269,22 @@ class SourceTree extends LitElement {
     `;
   }
 
-  handleClick() {
+  handleClickAdd() {
     const dialog = this.shadowRoot.querySelector('dialog');
     if (dialog) {
       dialog.showModal();
     } else {
       console.error('Dialog element not found');
     }
+  }
+
+  handleClickEdit(fullPath) {
+    const inputToFocus = this.shadowRoot.querySelector(`#input-${fullPath}`)
+    setTimeout(() => {
+      if (inputToFocus) {
+        inputToFocus.focus()
+      }
+    })
   }
 
   updateEditedContent(key, parentObj, newValue) {
