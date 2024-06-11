@@ -243,14 +243,14 @@ class SourceTree extends LitElement {
                       [fullPath]: e.target.value
                     }
                     this.updateEditedContent(key, this.editedContent, e.target.value)
-                }}
+                  }}
                   value=${value}
                   @contextmenu="${this.handleRightClick}"
                 >
                 <sl-dropdown>
                   <sl-icon-button class="icon-button" slot="trigger" name="caret-down-square" label="Context Menu"></sl-icon-button>
                   <sl-menu>
-                    <sl-menu-item @click="${this.handleClickAdd}">
+                    <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
                       Add
                       <sl-icon slot="prefix" name="plus-circle"></sl-icon>
                     </sl-menu-item>
@@ -278,11 +278,11 @@ class SourceTree extends LitElement {
                   </sl-menu>
                 <sl-dropdown>
               </section>
-              <dialog>
+              <dialog id="${key}">
                 <section class="dialog-content">
                   <section class="dialog-input">
                     Key
-                    <sl-input></sl-input>
+                    <sl-input id="new-key"></sl-input>
                   </section>
                   <section class="dialog-p">
                     <p>:</p>
@@ -299,11 +299,11 @@ class SourceTree extends LitElement {
                   </section>
                   <section class="dialog-input">
                     Value
-                    <sl-input></sl-input>
+                    <sl-input id="new-value"></sl-input>
                   </section>
                 </section>
                 <section class="dialog-content buttons">
-                  <button>Insert</button>
+                  <button @click="${(e) => this.handleClickInsert(e, fullPath)}">Insert</button>
                   <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
               </dialog>
@@ -322,9 +322,10 @@ class SourceTree extends LitElement {
     `;
   }
 
-  handleClickAdd() {
-    const dialog = this.shadowRoot.querySelector('dialog');
+  handleClickAdd(e, dialogId) {
+    const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
     if (dialog) {
+      console.log(e.target.closest('sl-tree-item'))
       dialog.showModal();
     } else {
       console.error('Dialog element not found');
@@ -363,12 +364,33 @@ class SourceTree extends LitElement {
     e.preventDefault(); // Prevent the default context menu from showing up
     const dropdown = e.target.closest('sl-tree-item').querySelector('sl-dropdown');
     if (dropdown) {
-      dropdown.open = true;
+      dropdown.open = true
     }
   }
 
   handleClickCancel(e) {
     e.target.closest('sl-tree-item').querySelector('dialog').close()
+  }
+
+  handleClickInsert(e, fullPath) {
+    const paths = fullPath.split('.')
+    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+    const newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    let obj = this.editedContent
+    
+    for (let i = 0; i < paths.length; i++) {
+      if (i === paths.length - 2) {
+        // If we're at the last key in the path, add the new key-value pair
+        obj[paths[i]][newKey] = newValue
+        e.target.closest('sl-tree-item').querySelector('dialog').close()
+      } else {
+        // Otherwise, move to the next level of the object
+        obj = obj[paths[i]]
+      }
+    }
+  
+    // Trigger a re-render
+    this.requestUpdate()
   }
 
   updateEditedContent(key, parentObj, newValue) {
