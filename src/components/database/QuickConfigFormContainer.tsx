@@ -77,13 +77,19 @@ export default function QuickConfigFormContainer() {
       isActive: true,
       icon: appIcons[icon],
       iconName: icon,
+      additionalModes: {
+        odata: false,
+        dql: false,
+      }
     },
     validationSchema: QuickConfigFormSchema,
     onSubmit: (values) => {
       const data = JSON.stringify(values, null, 2);
-      const parseData = JSON.parse(data);
+      let parseData = JSON.parse(data);
+      const modes = Object.keys(parseData.additionalModes).filter((mode) => parseData.additionalModes[mode] === true)
+      let {additionalModes, ...sendData} = parseData
       const formData = { // Form data for schema submit
-          ...parseData,
+          ...sendData,
           create: true,
           scopeName: `${parseData.scopeName}`,
           server: '',
