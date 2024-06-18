@@ -93,6 +93,19 @@ class SourceTree extends LitElement {
       right: -4%;
     }
 
+    .object-array-container {
+      position: relative;
+    }
+    .object-array-container .icon-button {
+      position: absolute;
+      top: -40%;
+      right: -30%;
+      display: none;
+    }
+    .object-array-container:hover .icon-button {
+      display: block;
+    }
+
     dialog {
       padding: 10px;
       border-radius: 5px;
@@ -154,13 +167,14 @@ class SourceTree extends LitElement {
     super();
     setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/')
     this.content = {}
-    this.editedContent = {...this.content}
+    this.editedContent = JSON.parse(JSON.stringify(this.content))
     this.currentInputValues = {}
   }
 
   updated(changedProperties) {
     if (changedProperties.has('content')) {
-      this.editedContent = {...this.content}
+      this.editedContent = JSON.parse(JSON.stringify(this.content))
+      this.requestUpdate()
     }
   }
 
@@ -224,8 +238,42 @@ class SourceTree extends LitElement {
         if (typeof value === 'object' && value !== null) {
           return html`
             <sl-tree-item>
-              ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}` }`}
               ${generateTreeItems(value, fullPath)}
+              <section class="object-array-container">
+                ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}` }`}
+                <sl-dropdown>
+                  <sl-icon-button class="icon-button" slot="trigger" name="caret-down-square" label="Context Menu"></sl-icon-button>
+                  <sl-menu>
+                    <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
+                      Add
+                      <sl-icon slot="prefix" name="plus-circle"></sl-icon>
+                    </sl-menu-item>
+                    <sl-menu-item disabled>
+                      Edit
+                      <sl-icon slot="prefix" name="pencil"></sl-icon>
+                    </sl-menu-item>
+                    <sl-menu-item @click="${(e) => {this.handleClickDuplicate(e, fullPath, key, value)}}">
+                      Duplicate
+                      <sl-icon slot="prefix" name="copy"></sl-icon>
+                    </sl-menu-item>
+                    <sl-menu-item @click="${(e) => this.handleClickRemove(e, key, this.editedContent)}">
+                      Remove
+                      <sl-icon slot="prefix" name="trash"></sl-icon>
+                    </sl-menu-item>
+                    <!--
+                    <sl-divider></sl-divider>
+                    <sl-menu-item>
+                      Insert Before
+                      <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
+                    </sl-menu-item>
+                    <sl-menu-item>
+                      Insert After
+                      <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
+                    </sl-menu-item>
+                    -->
+                  </sl-menu>
+                </sl-dropdown>
+              </section>
             </sl-tree-item>
           `;
         } else {
@@ -254,18 +302,19 @@ class SourceTree extends LitElement {
                       Add
                       <sl-icon slot="prefix" name="plus-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item @click="${(e) => {this.handleClickEdit(e)}}">
+                    <sl-menu-item @click="${(e) => {this.handleClickEdit(e, key, value)}}">
                       Edit
                       <sl-icon slot="prefix" name="pencil"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item>
+                    <sl-menu-item disabled>
                       Duplicate
                       <sl-icon slot="prefix" name="copy"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${(e) => this.handleClickRemove(e, key, this.editedContent)}">
                       Remove
                       <sl-icon slot="prefix" name="trash"></sl-icon>
-                    </sl-menu-item> 
+                    </sl-menu-item>
+                    <!--
                     <sl-divider></sl-divider>
                     <sl-menu-item>
                       Insert Before
@@ -275,8 +324,9 @@ class SourceTree extends LitElement {
                       Insert After
                       <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
                     </sl-menu-item>
+                    -->
                   </sl-menu>
-                <sl-dropdown>
+                </sl-dropdown>
               </section>
               <dialog id="${key}">
                 <section class="dialog-content">
@@ -316,7 +366,7 @@ class SourceTree extends LitElement {
     return html`
       <div>
         <sl-tree>
-            ${generateTreeItems(this.content)}
+            ${generateTreeItems(this.editedContent)}
         </sl-tree>
       </div>
     `;
@@ -325,39 +375,94 @@ class SourceTree extends LitElement {
   handleClickAdd(e, dialogId) {
     const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
     if (dialog) {
-      console.log(e.target.closest('sl-tree-item'))
+      // console.log(e.target.closest('sl-tree-item'))
       dialog.showModal();
     } else {
       console.error('Dialog element not found');
     }
   }
 
-  handleClickEdit(e) {
+  handleClickEdit(e, key, value) {
     const inputToFocus = e.target.closest('sl-tree-item').querySelector(`input`)
-    setTimeout(() => {
-      if (inputToFocus) {
-        inputToFocus.focus()
-      }
-    })
+    const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
+    console.log(e.target.closest('sl-tree-item'))
+    if (dialog) {
+      // console.log(e.target.closest('sl-tree-item'))
+      dialog.querySelector('#new-key').value = key
+      dialog.querySelector('#new-value').value = value
+      dialog.showModal();
+    } else {
+      console.error('Dialog element not found');
+    }
+    // setTimeout(() => {
+    //   if (inputToFocus) {
+    //     inputToFocus.focus()
+    //   }
+    // })
   }
 
   handleClickRemove(e, key, parentObj)  {
+    // if (parentObj.hasOwnProperty(key)) {
+    //   // console.log(Object.keys(parentObj))
+    //   // if (Object.keys(parentObj).length === 1) {
+    //   //   delete parentObj[key]
+    //   // } else {
+    //   //   console.log(Object.keys(parentObj))
+    //   // }
+    //   delete parentObj[key]
+    //   const node = e.target.closest('sl-tree-item')
+    //   // console.log(node)
+    //   node.remove()
+    // } else {
+    //   for (let prop in parentObj) {
+    //     if (typeof parentObj[prop] === 'object' && parentObj[prop] !== null) {
+    //       this.handleClickRemove(e, key, parentObj[prop])
+    //     }
+    //   }
+    // }
+    this.removeItem(key, parentObj)
+    this.editedContent = parentObj
+    // console.log(this.editedContent)
+
+    this.requestUpdate()
+  }
+
+  removeItem(key, parentObj) {
     if (parentObj.hasOwnProperty(key)) {
-      if (Object.keys(parentObj).length === 1) {
-        delete parentObj[key]
-      }
-      // delete parentObj[key]
-      const node = e.target.closest('sl-tree-item')
-      node.remove()
+      delete parentObj[key]
     } else {
       for (let prop in parentObj) {
         if (typeof parentObj[prop] === 'object' && parentObj[prop] !== null) {
-          this.handleClickRemove(e, key, parentObj[prop])
+          this.removeItem(key, parentObj[prop])
         }
       }
     }
     this.editedContent = parentObj
-    // console.log(this.editedContent)
+  
+  }
+
+  handleClickDuplicate(e, fullPath, key, value) {
+    const paths = fullPath.split('.')
+    // console.log(paths)
+    let obj = this.editedContent
+    const newKey = `${key}_copy`
+
+    if (paths.length === 1) {
+      obj[newKey] = value
+    } else {
+      for (let i = 0; i < paths.length - 1; i++) {
+        if (i === paths.length - 2) {
+          // If we're at the last key in the path, add the new key-value pair
+          obj[paths[i]][newKey] = value
+          // e.target.closest('sl-tree-item').querySelector('dialog').close()
+        } else {
+          // Otherwise, move to the next level of the object
+          obj = obj[paths[i]]
+        }
+      }
+    }
+
+    this.requestUpdate()
   }
 
   handleRightClick(e) {
@@ -372,21 +477,42 @@ class SourceTree extends LitElement {
     e.target.closest('sl-tree-item').querySelector('dialog').close()
   }
 
-  handleClickInsert(e, fullPath) {
+  handleClickInsert(e, fullPath, edit = false) {
     const paths = fullPath.split('.')
     const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
     const newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
     let obj = this.editedContent
     
-    for (let i = 0; i < paths.length; i++) {
-      if (i === paths.length - 2) {
-        // If we're at the last key in the path, add the new key-value pair
-        obj[paths[i]][newKey] = newValue
-        e.target.closest('sl-tree-item').querySelector('dialog').close()
-      } else {
-        // Otherwise, move to the next level of the object
-        obj = obj[paths[i]]
+    if (paths.length === 1) {
+      obj[newKey] = newValue
+      e.target.closest('sl-tree-item').querySelector('dialog').close()
+      // e.target.closest('sl-tree-item').insertBefore(html`
+      //   <sl-tree-item>
+      //     <section class="key-value-container">
+      //       <span>${newKey}:</span>
+      //       <input value=${newValue}>
+      //     </section>`
+      // )
+    } else {
+      for (let i = 0; i < paths.length - 1; i++) {
+        if (i === paths.length - 2) {
+          // If we're at the last key in the path, add the new key-value pair
+          obj[paths[i]][newKey] = newValue
+          e.target.closest('sl-tree-item').querySelector('dialog').close()
+        } else {
+          // Otherwise, move to the next level of the object
+          obj = obj[paths[i]]
+        }
       }
+    }
+
+    if (edit) {
+      // if (paths.length === 1) {
+      //   delete obj[paths[0]]
+      // } else {
+
+      // }
+      this.removeItem(newKey, this.editedContent)
     }
   
     // Trigger a re-render
