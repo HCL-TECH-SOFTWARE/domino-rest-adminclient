@@ -404,6 +404,41 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             value={formik.values.isActive}
           />
         </InputContainer>
+        <InputContainer style={{ display: 'flex', flexDirection: 'column' }}>
+          <Typography className="icon-heading" color="textPrimary">
+            Additional Modes
+          </Typography>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formik.values.additionalModes.odata}
+                color="primary"
+                icon={<CheckboxIcon fontSize="small" color="primary" />}
+                size='small'
+              />
+            }
+            label="Odata"
+            name="additionalModes.odata"
+            onChange={formik.handleChange}
+            value={formik.values.additionalModes.odata}
+            style={{ fontSize: 12, paddingLeft: '10px' }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formik.values.additionalModes.dql}
+                color="primary"
+                icon={<CheckboxIcon fontSize="small" color="primary" />}
+                size='small'
+              />
+            }
+            label="DQL"
+            name="additionalModes.dql"
+            onChange={formik.handleChange}
+            value={formik.values.additionalModes.dql}
+            style={{ fontSize: 12, paddingLeft: '10px' }}
+          />
+        </InputContainer>
         <ActionButtonBar>
           <Button
             className="button-style"
