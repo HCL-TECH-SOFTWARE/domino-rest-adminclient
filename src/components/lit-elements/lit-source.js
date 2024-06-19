@@ -302,7 +302,7 @@ class SourceTree extends LitElement {
                       Add
                       <sl-icon slot="prefix" name="plus-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item @click="${(e) => {this.handleClickEdit(e, key, value)}}">
+                    <sl-menu-item @click="${(e) => {this.handleClickEdit(e, key, value, fullPath)}}">
                       Edit
                       <sl-icon slot="prefix" name="pencil"></sl-icon>
                     </sl-menu-item>
@@ -353,7 +353,8 @@ class SourceTree extends LitElement {
                   </section>
                 </section>
                 <section class="dialog-content buttons">
-                  <button @click="${(e) => this.handleClickInsert(e, fullPath)}">Insert</button>
+                  <button id="dialog-insert" style="display:none;" @click="${(e) => this.handleClickInsert(e, fullPath)}">Insert</button>
+                  <button id="dialog-edit" style="display:none;" @click="${(e) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
                   <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
               </dialog>
@@ -374,6 +375,10 @@ class SourceTree extends LitElement {
 
   handleClickAdd(e, dialogId) {
     const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
+    const insertButton = dialog.querySelector('#dialog-insert')
+    const editButton = dialog.querySelector('#dialog-edit')
+    insertButton.setAttribute('style', 'display:block')
+    editButton.setAttribute('style', 'display:none')
     if (dialog) {
       // console.log(e.target.closest('sl-tree-item'))
       dialog.showModal();
@@ -382,10 +387,13 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleClickEdit(e, key, value) {
+  handleClickEdit(e, key, value, fullPath) {
     const inputToFocus = e.target.closest('sl-tree-item').querySelector(`input`)
     const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
-    console.log(e.target.closest('sl-tree-item'))
+    const insertButton = dialog.querySelector('#dialog-insert')
+    const editButton = dialog.querySelector('#dialog-edit')
+    insertButton.setAttribute('style', 'display:none')
+    editButton.setAttribute('style', 'display:block')
     if (dialog) {
       // console.log(e.target.closest('sl-tree-item'))
       dialog.querySelector('#new-key').value = key
@@ -474,10 +482,12 @@ class SourceTree extends LitElement {
   }
 
   handleClickCancel(e) {
+    e.target.closest('sl-tree-item').querySelector('#new-key').value = ''
+    e.target.closest('sl-tree-item').querySelector('#new-value').value = ''
     e.target.closest('sl-tree-item').querySelector('dialog').close()
   }
 
-  handleClickInsert(e, fullPath, edit = false) {
+  insertItem(e, fullPath) {
     const paths = fullPath.split('.')
     const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
     const newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
@@ -505,6 +515,38 @@ class SourceTree extends LitElement {
         }
       }
     }
+  }
+
+  handleClickInsert(e, fullPath, edit = false) {
+    // const paths = fullPath.split('.')
+    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+    // const newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    // let obj = this.editedContent
+    
+    // if (paths.length === 1) {
+    //   obj[newKey] = newValue
+    //   e.target.closest('sl-tree-item').querySelector('dialog').close()
+    //   // e.target.closest('sl-tree-item').insertBefore(html`
+    //   //   <sl-tree-item>
+    //   //     <section class="key-value-container">
+    //   //       <span>${newKey}:</span>
+    //   //       <input value=${newValue}>
+    //   //     </section>`
+    //   // )
+    // } else {
+    //   for (let i = 0; i < paths.length - 1; i++) {
+    //     if (i === paths.length - 2) {
+    //       // If we're at the last key in the path, add the new key-value pair
+    //       obj[paths[i]][newKey] = newValue
+    //       e.target.closest('sl-tree-item').querySelector('dialog').close()
+    //     } else {
+    //       // Otherwise, move to the next level of the object
+    //       obj = obj[paths[i]]
+    //     }
+    //   }
+    // }
+
+    this.insertItem(e, fullPath)
 
     if (edit) {
       // if (paths.length === 1) {
@@ -512,7 +554,24 @@ class SourceTree extends LitElement {
       // } else {
 
       // }
+      console.log("hello")
       this.removeItem(newKey, this.editedContent)
+    }
+
+    console.log(this.editedContent)
+  
+    // Trigger a re-render
+    this.requestUpdate()
+  }
+
+  handleClickDialogEdit(e, key, fullPath) {
+    // const paths = fullPath.split('.')
+    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+    console.log("hello")
+
+    this.insertItem(e, fullPath)
+    if (newKey !== key)  {
+      this.removeItem(key, this.editedContent)
     }
   
     // Trigger a re-render
