@@ -108,7 +108,8 @@ export default function QuickConfigFormContainer() {
           openAccess: true,
           requireRevisionToUpdate: false,
           allowDecryption: true,
-          owners: []
+          owners: [],
+          additionalModes: modes,
         }
       // Submit the form
       setIsDisabled(true);
