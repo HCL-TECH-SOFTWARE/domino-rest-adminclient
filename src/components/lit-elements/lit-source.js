@@ -588,8 +588,7 @@ class SourceTree extends LitElement {
         }
       }
     }
-    this.editedContent = parentObj;
-    // console.log(this.editedContent)
+    this.editedContent = parentObj
   }
 
   // menuOpenClick() {

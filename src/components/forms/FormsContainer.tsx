@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useBlocker, useParams, useNavigate, useLocation } from 'react-router-dom';
@@ -210,6 +210,7 @@ const FormsContainer = () => {
     (state: AppState) => state.databases
   );
   const [nsfForms, setNsfForms] = useState([])
+  const litsourceRef = useRef<any>(null)
 
   // check if formModes key is present in the form object
   // if not, it will add new key(formModes) and add the formAccessModes values
@@ -252,6 +253,7 @@ const FormsContainer = () => {
   const nsfPathDecode = decodeURIComponent(nsfPath);
   
   const [styledObjMode, setStyledObjMode] = useState(true);
+  const [editedContent, setEditedContent] = useState({})
   
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
   const [buttonsEnabled, setButtonsEnabled] = useState(false);
@@ -384,25 +386,35 @@ const FormsContainer = () => {
   }
 
   const handleClickSave = async () => {
+    if (litsourceRef.current && litsourceRef.current.shadowRoot) {
+      setEditedContent(litsourceRef.current.editedContent)
+    }
     setSaveChangesDialog(true);
   }
 
   const handleSaveChanges = async () => {
-    setSaveChangesDialog(false);
-    await dispatch(updateSchema(JSON.parse(sourceTabContent), setSchemaData) as any);
-    setButtonsEnabled(false);
-    setUnsavedChanges(false);
+    setSaveChangesDialog(false)
+    dispatch(updateSchema(editedContent) as any)
   }
 
   const handleClickCancel = () => {
     setDiscardChangesDialog(true);
+    console.log(editedContent)
+    setSourceTabContent(JSON.stringify(editedContent, null, 1))
   }
 
   const handleDiscardChanges = () => {
-    setSourceTabContent(JSON.stringify(schemaData, null, 1));
+    // setSourceTabContent(JSON.stringify(schemaData, null, 1));
+    // console.log(editedContent)
+    setSourceTabContent(JSON.stringify(editedContent, null, 1))
     setDiscardChangesDialog(false);
     setUnsavedChanges(false);
     setButtonsEnabled(false);
+  }
+
+  const handleClickNo = () => {
+    setSourceTabContent(JSON.stringify(editedContent, null, 1))
+    setSaveChangesDialog(false)
   }
 
   const handleClickExport = () => {
@@ -659,7 +671,7 @@ const FormsContainer = () => {
                     <Buttons>
                       <Button 
                         onClick={handleClickSave} 
-                        disabled={!buttonsEnabled} 
+                        // disabled={!buttonsEnabled} 
                         className={styledObjMode ? 'btn' : 'hidden'}
                         style={{right: 'calc(93px + 2% + 93px)'}}
                       >
@@ -700,7 +712,7 @@ const FormsContainer = () => {
                       onChange={(output: any) => {handleChangeContent(output)}}
                     /> */}
                     {/* <SlIcon name="0-circle"></SlIcon> */}
-                    <LitSource content={JSON.parse(sourceTabContent)} />
+                    <LitSource content={JSON.parse(sourceTabContent)} ref={litsourceRef} />
                     {/* <lit-source></lit-source> */}
                     <Dialog open={saveChangesDialog}>
                       <DialogContainer>
@@ -714,7 +726,7 @@ const FormsContainer = () => {
                           Are you sure you want to save the changes made to the schema? Click Yes to continue.
                         </DialogContent>
                         <DialogActions className='actions'>
-                          <ButtonNeutral onClick={() => setSaveChangesDialog(false)}>No</ButtonNeutral>
+                          <ButtonNeutral onClick={handleClickNo}>No</ButtonNeutral>
                           <ButtonYes onClick={handleSaveChanges}>Yes</ButtonYes>
                         </DialogActions>
                       </DialogContainer>
