@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { useBlocker, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios, { AxiosResponse } from 'axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@material-ui/core';
@@ -33,7 +33,7 @@ import {
   addNsfDesign,
   updateSchema,
   fetchFolders,
-  addForm} from '../../store/databases/action';
+ } from '../../store/databases/action';
 import { toggleSettings } from '../../store/dbsettings/action';
 import { getToken } from '../../store/account/action';
 import ErrorWrapper from '../wrapper/ErrorWrapper';
@@ -43,14 +43,12 @@ import TabAgents from './TabAgents';
 import { ButtonNeutral, ButtonNo, ButtonYes, Buttons, DialogContainer, TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
-import { JsonEditor } from 'react-jsondata-editor';
 import { toggleAlert } from '../../store/alerts/action';
 import { FiSave } from 'react-icons/fi';
 import { ImCancelCircle } from 'react-icons/im';
 import { BiExport } from 'react-icons/bi';
 import EditViewDialog from './EditView';
 import { LitSource } from '../lit-elements/LitElements';
-// import SlIcon from '@shoelace-style/shoelace/dist/react/icon';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -368,23 +366,6 @@ const FormsContainer = () => {
     }
   };
 
-  const handleChangeContent = (output: any) => {
-    if (output === sourceTabContent && buttonsEnabled) {
-      // disable buttons if edits were made but the changes are equal to the current schema, so no need for actual save
-      setButtonsEnabled(false);
-      dispatch(toggleAlert(`The new edits are the same as the current schema - no new changes are made. Disabling Save and Cancel buttons.`));
-    } else if (output === sourceTabContent) {
-      dispatch(toggleAlert(`The new edits are the same as the current schema - no new changes are made.`));
-    } else if (!buttonsEnabled) {
-      setButtonsEnabled(true);
-      setSourceTabContent(output);
-      setUnsavedChanges(true);
-    } else {
-      setSourceTabContent(output);
-      setUnsavedChanges(true);
-    }
-  }
-
   const handleClickSave = async () => {
     if (litsourceRef.current && litsourceRef.current.shadowRoot) {
       setEditedContent(litsourceRef.current.editedContent)
@@ -394,18 +375,15 @@ const FormsContainer = () => {
 
   const handleSaveChanges = async () => {
     setSaveChangesDialog(false)
-    dispatch(updateSchema(editedContent) as any)
+    dispatch(updateSchema(editedContent, setSchemaData) as any)
   }
 
   const handleClickCancel = () => {
-    setDiscardChangesDialog(true);
-    console.log(editedContent)
+    setDiscardChangesDialog(true)
     setSourceTabContent(JSON.stringify(editedContent, null, 1))
   }
 
   const handleDiscardChanges = () => {
-    // setSourceTabContent(JSON.stringify(schemaData, null, 1));
-    // console.log(editedContent)
     setSourceTabContent(JSON.stringify(editedContent, null, 1))
     setDiscardChangesDialog(false);
     setUnsavedChanges(false);

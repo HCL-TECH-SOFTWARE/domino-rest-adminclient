@@ -1035,7 +1035,6 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
             payload: true
           });
         });
-      dispatch(clearDBError());
     } catch (err: any) {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
