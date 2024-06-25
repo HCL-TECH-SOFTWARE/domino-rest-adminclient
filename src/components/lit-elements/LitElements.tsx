@@ -1,8 +1,7 @@
 import React from 'react';
-import {createComponent, EventName} from '@lit/react';
+import {createComponent} from '@lit/react';
 import Autocomplete from './lit-autocomplete';
 import SourceTree from './lit-source';
-// import {type EventName}
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -20,7 +19,4 @@ export const LitSource = createComponent({
   tagName: 'lit-source',
   elementClass: SourceTree,
   react: React,
-  // events: {
-  //   onEditedContentChanged: 'edited-content-changed' as EventName<EditedContentChangedEvent>,
-  // }
 });
