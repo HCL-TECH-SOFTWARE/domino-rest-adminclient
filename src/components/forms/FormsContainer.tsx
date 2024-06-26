@@ -4,10 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { useBlocker, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios, { AxiosResponse } from 'axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@material-ui/core';
@@ -33,7 +33,7 @@ import {
   addNsfDesign,
   updateSchema,
   fetchFolders,
-  addForm} from '../../store/databases/action';
+ } from '../../store/databases/action';
 import { toggleSettings } from '../../store/dbsettings/action';
 import { getToken } from '../../store/account/action';
 import ErrorWrapper from '../wrapper/ErrorWrapper';
@@ -43,12 +43,12 @@ import TabAgents from './TabAgents';
 import { ButtonNeutral, ButtonNo, ButtonYes, Buttons, DialogContainer, TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
-import { JsonEditor } from 'react-jsondata-editor';
 import { toggleAlert } from '../../store/alerts/action';
 import { FiSave } from 'react-icons/fi';
 import { ImCancelCircle } from 'react-icons/im';
 import { BiExport } from 'react-icons/bi';
 import EditViewDialog from './EditView';
+import { LitSource } from '../lit-elements/LitElements';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -208,6 +208,7 @@ const FormsContainer = () => {
     (state: AppState) => state.databases
   );
   const [nsfForms, setNsfForms] = useState([])
+  const litsourceRef = useRef<any>(null)
 
   // check if formModes key is present in the form object
   // if not, it will add new key(formModes) and add the formAccessModes values
@@ -250,6 +251,7 @@ const FormsContainer = () => {
   const nsfPathDecode = decodeURIComponent(nsfPath);
   
   const [styledObjMode, setStyledObjMode] = useState(true);
+  const [editedContent, setEditedContent] = useState({})
   
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
   const [buttonsEnabled, setButtonsEnabled] = useState(false);
@@ -364,43 +366,33 @@ const FormsContainer = () => {
     }
   };
 
-  const handleChangeContent = (output: any) => {
-    if (output === sourceTabContent && buttonsEnabled) {
-      // disable buttons if edits were made but the changes are equal to the current schema, so no need for actual save
-      setButtonsEnabled(false);
-      dispatch(toggleAlert(`The new edits are the same as the current schema - no new changes are made. Disabling Save and Cancel buttons.`));
-    } else if (output === sourceTabContent) {
-      dispatch(toggleAlert(`The new edits are the same as the current schema - no new changes are made.`));
-    } else if (!buttonsEnabled) {
-      setButtonsEnabled(true);
-      setSourceTabContent(output);
-      setUnsavedChanges(true);
-    } else {
-      setSourceTabContent(output);
-      setUnsavedChanges(true);
-    }
-  }
-
   const handleClickSave = async () => {
+    if (litsourceRef.current && litsourceRef.current.shadowRoot) {
+      setEditedContent(litsourceRef.current.editedContent)
+    }
     setSaveChangesDialog(true);
   }
 
   const handleSaveChanges = async () => {
-    setSaveChangesDialog(false);
-    await dispatch(updateSchema(JSON.parse(sourceTabContent), setSchemaData) as any);
-    setButtonsEnabled(false);
-    setUnsavedChanges(false);
+    setSaveChangesDialog(false)
+    dispatch(updateSchema(editedContent, setSchemaData) as any)
   }
 
   const handleClickCancel = () => {
-    setDiscardChangesDialog(true);
+    setDiscardChangesDialog(true)
+    setSourceTabContent(JSON.stringify(editedContent, null, 1))
   }
 
   const handleDiscardChanges = () => {
-    setSourceTabContent(JSON.stringify(schemaData, null, 1));
+    setSourceTabContent(JSON.stringify(editedContent, null, 1))
     setDiscardChangesDialog(false);
     setUnsavedChanges(false);
     setButtonsEnabled(false);
+  }
+
+  const handleClickNo = () => {
+    setSourceTabContent(JSON.stringify(editedContent, null, 1))
+    setSaveChangesDialog(false)
   }
 
   const handleClickExport = () => {
@@ -657,7 +649,7 @@ const FormsContainer = () => {
                     <Buttons>
                       <Button 
                         onClick={handleClickSave} 
-                        disabled={!buttonsEnabled} 
+                        // disabled={!buttonsEnabled} 
                         className={styledObjMode ? 'btn' : 'hidden'}
                         style={{right: 'calc(93px + 2% + 93px)'}}
                       >
@@ -693,10 +685,13 @@ const FormsContainer = () => {
                 {
                   styledObjMode && 
                   <JsonEditorContainer>
-                    <JsonEditor 
+                    {/* <JsonEditor 
                       jsonObject={sourceTabContent}
                       onChange={(output: any) => {handleChangeContent(output)}}
-                    />
+                    /> */}
+                    {/* <SlIcon name="0-circle"></SlIcon> */}
+                    <LitSource content={JSON.parse(sourceTabContent)} ref={litsourceRef} />
+                    {/* <lit-source></lit-source> */}
                     <Dialog open={saveChangesDialog}>
                       <DialogContainer>
                         <DialogTitle className='title'>
@@ -709,7 +704,7 @@ const FormsContainer = () => {
                           Are you sure you want to save the changes made to the schema? Click Yes to continue.
                         </DialogContent>
                         <DialogActions className='actions'>
-                          <ButtonNeutral onClick={() => setSaveChangesDialog(false)}>No</ButtonNeutral>
+                          <ButtonNeutral onClick={handleClickNo}>No</ButtonNeutral>
                           <ButtonYes onClick={handleSaveChanges}>Yes</ButtonYes>
                         </DialogActions>
                       </DialogContainer>
