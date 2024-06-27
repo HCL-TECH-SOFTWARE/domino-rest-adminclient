@@ -9,6 +9,7 @@ import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
+import '@shoelace-style/shoelace/dist/components/menu-label/menu-label.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
@@ -33,6 +34,16 @@ function removeEmpty(obj) {
   return obj;
 }
 
+function getValueAtPath(obj, path) {
+  const keys = path.split('.'); // Assuming dot notation for path
+  let current = obj;
+  for (const key of keys) {
+    if (current[key] === undefined) return undefined; // Path does not exist
+    current = current[key];
+  }
+  return current; // Return the value at the path
+}
+
 class SourceTree extends LitElement {
   static properties = {
     content: { type: Object },
@@ -45,6 +56,10 @@ class SourceTree extends LitElement {
       --sl-font-size-large: 16px;
       padding: 0;
       margin: 0;
+    }
+    
+    sl-tree-item.modified {
+      background-color: #FFDEEA;
     }
 
     input.tree {
@@ -71,9 +86,13 @@ class SourceTree extends LitElement {
       flex-direction: column;
       align-items: flex-end;
     }
+    section.modified {
+      background-color: #FFDEEA;
+    }
 
     .key-value-container {
       position: relative;
+      width: 100%;
     }
     .key-value-container .icon-button {
       position: absolute;
@@ -149,6 +168,16 @@ class SourceTree extends LitElement {
       background: none;
       color: black;
     }
+
+    p.tip {
+      font-size: 12px;
+      padding: 10px;
+      background-color: #FAF9FF;
+      color: #454545;
+    }
+    p.tip:hover {
+      cursor: default;
+    }
   `;
 
   constructor() {
@@ -195,26 +224,29 @@ class SourceTree extends LitElement {
                       Remove
                       <sl-icon slot="prefix" name="trash"></sl-icon>
                     </sl-menu-item>
-                    <!--
                     <sl-divider></sl-divider>
-                    <sl-menu-item>
+                    <sl-menu-item disabled="${Array.isArray(obj) ? 'false' : 'true'}">
                       Insert Before
                       <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item>
+                    <sl-menu-item disabled="${Array.isArray(obj) ? 'false' : 'true'}">
                       Insert After
                       <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
                     </sl-menu-item>
-                    -->
                   </sl-menu>
                 </sl-dropdown>
               </section>
             </sl-tree-item>
           `;
         } else {
+          // console.log("full path:", fullPath)
+          // console.log("expected value:", value)
+          // console.log("returned value:", getValueAtPath(this.editedContent, fullPath))
+          // console.log("original value:", getValueAtPath(this.content, fullPath))
+          const modified = getValueAtPath(this.content, fullPath) !== value
           return html`
-            <sl-tree-item>
-              <section class="key-value-container ${this.currentInputValues[fullPath] !== value ? 'modified' : ''}">
+            <sl-tree-item class="${modified ? 'modified' : ''}">
+              <section id="key-value-container" class="key-value-container ${modified ? 'modified' : ''}">
                 <span>${key}:</span>
                 <input
                   id="input-${fullPath}"
@@ -224,7 +256,7 @@ class SourceTree extends LitElement {
                       ...this.currentInputValues,
                       [fullPath]: e.target.value
                     }
-                    this.updateEditedContent(key, this.editedContent, e.target.value)
+                    this.updateEditedContent(e, key, this.editedContent, e.target.value, fullPath)
                   }}
                   value=${value}
                   @contextmenu="${this.handleRightClick}"
@@ -248,17 +280,19 @@ class SourceTree extends LitElement {
                       Remove
                       <sl-icon slot="prefix" name="trash"></sl-icon>
                     </sl-menu-item>
-                    <!--
                     <sl-divider></sl-divider>
-                    <sl-menu-item>
+                    <sl-menu-item disabled="${Array.isArray(obj) ? 'false' : 'true'}">
                       Insert Before
                       <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item>
+                    <sl-menu-item disabled="${Array.isArray(obj) ? 'false' : 'true'}">
                       Insert After
                       <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
                     </sl-menu-item>
-                    -->
+                    <p class="tip">
+                      <sl-icon name="question-circle"></sl-icon>
+                      Tip: You can open this context menu via right-click
+                    </p>
                   </sl-menu>
                 </sl-dropdown>
               </section>
@@ -438,13 +472,22 @@ class SourceTree extends LitElement {
     this.requestUpdate()
   }
 
-  updateEditedContent(key, parentObj, newValue) {
+  updateEditedContent(e, key, parentObj, newValue, fullPath) {
     if (parentObj.hasOwnProperty(key)) {
       parentObj[key] = newValue;
+      const section = e.target.closest('sl-tree-item').querySelector('section#key-value-container')
+      const treeItem = e.target.closest('sl-tree-item')
+      if (getValueAtPath(this.editedContent, fullPath) === getValueAtPath(this.content, fullPath)) {
+        // treeItem.classList.remove('modified')
+        section.classList.remove('modified')
+      } else {
+        // treeItem.classList.add('modified')
+        section.classList.add('modified')
+      }
     } else {
       for (let prop in parentObj) {
         if (typeof parentObj[prop] === 'object' && parentObj[prop] !== null) {
-          this.updateEditedContent(key, parentObj[prop], newValue);
+          this.updateEditedContent(key, parentObj[prop], newValue, fullPath);
         }
       }
     }
