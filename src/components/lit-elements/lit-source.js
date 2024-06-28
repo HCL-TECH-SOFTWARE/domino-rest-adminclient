@@ -427,8 +427,20 @@ class SourceTree extends LitElement {
   insertItem(e, fullPath) {
     const paths = fullPath.split('.')
     const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
-    const newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
     let obj = this.editedContent
+
+    const type = e.target.closest('sl-tree-item').querySelector('sl-option[aria-selected="true"]').value
+    switch (type) {
+      case 'Object':
+        newValue = JSON.parse(newValue)
+        break
+      case 'Array':
+        newValue = newValue.split(",")
+        break
+      default:
+        break
+    }
     
     if (paths.length === 1) {
       obj[newKey] = newValue
