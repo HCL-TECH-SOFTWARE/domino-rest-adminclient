@@ -198,8 +198,11 @@ class SourceTree extends LitElement {
   render() {
     const generateTreeItems = (obj, path = '') => {
       return Object.entries(obj).map(([key, value]) => {
-        const fullPath = path ? `${path}.${key}` : key;
+        const fullPath = path ? `${path}.${key}` : key
         if (typeof value === 'object' && value !== null) {
+          if (Array.isArray(obj)) {
+            console.log(obj)
+          }
           return html`
             <sl-tree-item>
               ${generateTreeItems(value, fullPath)}
@@ -225,7 +228,7 @@ class SourceTree extends LitElement {
                       <sl-icon slot="prefix" name="trash"></sl-icon>
                     </sl-menu-item>
                     <sl-divider></sl-divider>
-                    <sl-menu-item disabled="${Array.isArray(obj) ? 'false' : 'true'}">
+                    <sl-menu-item disabled="false">
                       Insert Before
                       <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
                     </sl-menu-item>
@@ -239,10 +242,6 @@ class SourceTree extends LitElement {
             </sl-tree-item>
           `;
         } else {
-          // console.log("full path:", fullPath)
-          // console.log("expected value:", value)
-          // console.log("returned value:", getValueAtPath(this.editedContent, fullPath))
-          // console.log("original value:", getValueAtPath(this.content, fullPath))
           const modified = getValueAtPath(this.content, fullPath) !== value
           return html`
             <sl-tree-item class="${modified ? 'modified' : ''}">
@@ -296,36 +295,6 @@ class SourceTree extends LitElement {
                   </sl-menu>
                 </sl-dropdown>
               </section>
-              <dialog id="${key}">
-                <section class="dialog-content">
-                  <section class="dialog-input">
-                    Key
-                    <sl-input id="new-key"></sl-input>
-                  </section>
-                  <section class="dialog-p">
-                    <p>:</p>
-                  </section>
-                  <section class="dialog-input">
-                    Type
-                    <sl-select hoist placement="bottom" value="String">
-                      <sl-option value="String">String</sl-option>
-                      <sl-option value="Boolean">Boolean</sl-option>
-                      <sl-option value="Number">Number</sl-option>
-                      <sl-option value="Array">Array</sl-option>
-                      <sl-option value="Object">Object</sl-option>
-                    </sl-select>
-                  </section>
-                  <section class="dialog-input">
-                    Value
-                    <sl-input id="new-value"></sl-input>
-                  </section>
-                </section>
-                <section class="dialog-content buttons">
-                  <button id="dialog-insert" style="display:none;" @click="${(e) => this.handleClickInsert(e, fullPath)}">Insert</button>
-                  <button id="dialog-edit" style="display:none;" @click="${(e) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
-                  <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
-                </section>
-              </dialog>
             </sl-tree-item>
           `;
         }
@@ -333,17 +302,48 @@ class SourceTree extends LitElement {
     };
 
     return html`
-      <div>
+      <div id="main">
         <sl-tree>
             ${generateTreeItems(this.editedContent)}
         </sl-tree>
+        <dialog>
+          <section class="dialog-content">
+            <section class="dialog-input">
+              Key
+              <sl-input id="new-key"></sl-input>
+            </section>
+            <section class="dialog-p">
+              <p>:</p>
+            </section>
+            <section class="dialog-input">
+              Type
+              <sl-select hoist placement="bottom" value="String">
+                <sl-option value="String">String</sl-option>
+                <sl-option value="Boolean">Boolean</sl-option>
+                <sl-option value="Number">Number</sl-option>
+                <sl-option value="Array">Array</sl-option>
+                <sl-option value="Object">Object</sl-option>
+              </sl-select>
+            </section>
+            <section class="dialog-input">
+              Value
+              <sl-input id="new-value"></sl-input>
+            </section>
+          </section>
+          <section class="dialog-content buttons">
+            <button id="dialog-insert" style="display:none;" @click="${this.handleClickInsert}">Insert</button>
+            <button id="dialog-edit" style="display:none;" @click="${this.handleClickDialogEdit}">Edit</button>
+            <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
+          </section>
+        </dialog>
       </div>
     `;
   }
 
-  handleClickAdd(e) {
-    const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
+  handleClickAdd(e, fullPath) {
+    const dialog = e.target.closest('div#main').querySelector(`dialog`)
     const insertButton = dialog.querySelector('#dialog-insert')
+    dialog.setAttribute('data-fullpath', fullPath)
     const editButton = dialog.querySelector('#dialog-edit')
     insertButton.setAttribute('style', 'display:block')
     editButton.setAttribute('style', 'display:none')
@@ -353,9 +353,10 @@ class SourceTree extends LitElement {
   }
 
   handleClickEdit(e, key, value, fullPath) {
-    const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
+    const dialog = e.target.closest('div#main').querySelector(`dialog`)
     const insertButton = dialog.querySelector('#dialog-insert')
     const editButton = dialog.querySelector('#dialog-edit')
+    dialog.setAttribute('data-fullpath', fullPath)
     insertButton.setAttribute('style', 'display:none')
     editButton.setAttribute('style', 'display:block')
     if (dialog) {
@@ -419,18 +420,18 @@ class SourceTree extends LitElement {
   }
 
   handleClickCancel(e) {
-    e.target.closest('sl-tree-item').querySelector('#new-key').value = ''
-    e.target.closest('sl-tree-item').querySelector('#new-value').value = ''
-    e.target.closest('sl-tree-item').querySelector('dialog').close()
+    e.target.closest('div#main').querySelector('#new-key').value = ''
+    e.target.closest('div#main').querySelector('#new-value').value = ''
+    e.target.closest('div#main').querySelector('dialog').close()
   }
 
   insertItem(e, fullPath) {
     const paths = fullPath.split('.')
-    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
-    let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    const newKey = e.target.closest('div#main').querySelector('#new-key').value
+    let newValue = e.target.closest('div#main').querySelector('#new-value').value
     let obj = this.editedContent
 
-    const type = e.target.closest('sl-tree-item').querySelector('sl-option[aria-selected="true"]').value
+    const type = e.target.closest('div#main').querySelector('sl-option[aria-selected="true"]').value
     switch (type) {
       case 'Object':
         newValue = JSON.parse(newValue)
@@ -444,23 +445,27 @@ class SourceTree extends LitElement {
     
     if (paths.length === 1) {
       obj[newKey] = newValue
-      e.target.closest('sl-tree-item').querySelector('dialog').close()
+      e.target.closest('div#main').querySelector('dialog').close()
     } else {
       for (let i = 0; i < paths.length - 1; i++) {
         if (i === paths.length - 2) {
           // If we're at the last key in the path, add the new key-value pair
           obj[paths[i]][newKey] = newValue
-          e.target.closest('sl-tree-item').querySelector('dialog').close()
+          e.target.closest('div#main').querySelector('dialog').close()
         } else {
           // Otherwise, move to the next level of the object
           obj = obj[paths[i]]
         }
       }
     }
+
+    e.target.closest('div#main').querySelector('#new-key').value = ''
+    e.target.closest('div#main').querySelector('#new-value').value = ''
   }
 
-  handleClickInsert(e, fullPath, edit = false) {
-    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+  handleClickInsert(e, edit = false) {
+    const newKey = e.target.closest('div#main').querySelector('#new-key').value
+    const fullPath = e.target.closest('div#main').querySelector('dialog').getAttribute('data-fullpath')
 
     this.insertItem(e, fullPath)
 
@@ -472,8 +477,9 @@ class SourceTree extends LitElement {
     this.requestUpdate()
   }
 
-  handleClickDialogEdit(e, key, fullPath) {
-    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+  handleClickDialogEdit(e, key) {
+    const newKey = e.target.closest('div#main').querySelector('#new-key').value
+    const fullPath = e.target.closest('div#main').querySelector('dialog').getAttribute('data-fullpath')
 
     this.insertItem(e, fullPath)
     if (newKey !== key)  {
