@@ -228,11 +228,11 @@ class SourceTree extends LitElement {
                       <sl-icon slot="prefix" name="trash"></sl-icon>
                     </sl-menu-item>
                     <sl-divider></sl-divider>
-                    <sl-menu-item disabled="false">
+                    <sl-menu-item>
                       Insert Before
                       <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item disabled="${Array.isArray(obj) ? 'false' : 'true'}">
+                    <sl-menu-item>
                       Insert After
                       <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
                     </sl-menu-item>
@@ -365,6 +365,18 @@ class SourceTree extends LitElement {
       dialog.showModal();
     } else {
       console.error('Dialog element not found');
+    }
+  }
+
+  handleClickInsertBeforeAfter(e, fullPath) {
+    const dialog = e.target.closest('div#main').querySelector(`dialog`)
+    const insertButton = dialog.querySelector('#dialog-insert')
+    dialog.setAttribute('data-fullpath', fullPath)
+    const editButton = dialog.querySelector('#dialog-edit')
+    insertButton.setAttribute('style', 'display:block')
+    editButton.setAttribute('style', 'display:none')
+    if (dialog) {
+      dialog.showModal();
     }
   }
 
