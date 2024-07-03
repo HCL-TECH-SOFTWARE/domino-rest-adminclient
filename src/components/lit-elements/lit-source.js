@@ -200,9 +200,6 @@ class SourceTree extends LitElement {
       return Object.entries(obj).map(([key, value]) => {
         const fullPath = path ? `${path}.${key}` : key
         if (typeof value === 'object' && value !== null) {
-          if (Array.isArray(obj)) {
-            console.log(obj)
-          }
           return html`
             <sl-tree-item>
               ${generateTreeItems(value, fullPath)}
@@ -228,11 +225,11 @@ class SourceTree extends LitElement {
                       <sl-icon slot="prefix" name="trash"></sl-icon>
                     </sl-menu-item>
                     <sl-divider></sl-divider>
-                    <sl-menu-item>
+                    <sl-menu-item @click="${(e) => this.handleClickInsertBeforeAfter(e, fullPath, 'before')}">
                       Insert Before
                       <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
                     </sl-menu-item>
-                    <sl-menu-item>
+                    <sl-menu-item @click="${(e) => this.handleClickInsertBeforeAfter(e, fullPath, 'after')}">>
                       Insert After
                       <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
                     </sl-menu-item>
@@ -333,6 +330,7 @@ class SourceTree extends LitElement {
           <section class="dialog-content buttons">
             <button id="dialog-insert" style="display:none;" @click="${this.handleClickInsert}">Insert</button>
             <button id="dialog-edit" style="display:none;" @click="${this.handleClickDialogEdit}">Edit</button>
+            <button id="dialog-edit" style="display:none;" @click="${this.handleClickInsertBefore}">Insert Before</button>
             <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
           </section>
         </dialog>
@@ -368,16 +366,26 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleClickInsertBeforeAfter(e, fullPath) {
+  handleClickInsertBeforeAfter(e, fullPath, position) {
     const dialog = e.target.closest('div#main').querySelector(`dialog`)
     const insertButton = dialog.querySelector('#dialog-insert')
     dialog.setAttribute('data-fullpath', fullPath)
+    dialog.setAttribute('data-position', position)
     const editButton = dialog.querySelector('#dialog-edit')
     insertButton.setAttribute('style', 'display:block')
     editButton.setAttribute('style', 'display:none')
+    console.log(getValueAtPath(this.editedContent, fullPath))
+    console.log(fullPath)
+    const parentPath = fullPath.split('.').slice(0, -1).join('.')
+    console.log(getValueAtPath(this.editedContent, parentPath))
+    console.log(getValueAtPath(this.editedContent, parentPath).findIndex((item) => item === getValueAtPath(this.editedContent, fullPath)))
+    console.log(fullPath.slice(-1))
     if (dialog) {
       dialog.showModal();
     }
+  }
+
+  handleClickInsertBefore(e) {
   }
 
   handleClickRemove(key, parentObj)  {
@@ -405,6 +413,7 @@ class SourceTree extends LitElement {
     const paths = fullPath.split('.')
     let obj = this.editedContent
     const newKey = `${key}_copy`
+    const parentIsArray = Array.isArray(getValueAtPath(this.editedContent, paths.slice(0, -1).join('.')))
 
     if (paths.length === 1) {
       obj[newKey] = value
@@ -412,7 +421,11 @@ class SourceTree extends LitElement {
       for (let i = 0; i < paths.length - 1; i++) {
         if (i === paths.length - 2) {
           // If we're at the last key in the path, add the new key-value pair
-          obj[paths[i]][newKey] = value
+          if (parentIsArray) {
+            obj[paths[i]].push(value)
+          } else {
+            obj[paths[i]][newKey] = value
+          }
         } else {
           // Otherwise, move to the next level of the object
           obj = obj[paths[i]]
