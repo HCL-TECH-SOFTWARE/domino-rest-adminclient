@@ -10,7 +10,7 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "allowImportingTsExtensions": true,
+    /* "allowImportingTsExtensions": true, */
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -19,7 +19,9 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    /* later version of tS will have this */
+    /* "moduleResolution": "bundler",*/
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
