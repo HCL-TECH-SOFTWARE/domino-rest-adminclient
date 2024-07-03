@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';
@@ -32,7 +32,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
   
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
   const setOption = useState({})[1];
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [selectedDB, setSelectedDB] = useState('');
   const [selectedNsf, setSelectedNsf] = useState('');
@@ -63,7 +63,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
   };
 
   const openSchema = (database: any) => {
-    history.push(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);
+    navigate(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);
   };
 
   return (
@@ -94,6 +94,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
         </Popper>
         {
           databases.map((database: any, index: any) => {
+            // console.log(database.schemaName + ':' + database.nsfPath)
             return (
               <SchemaCardV2
                 openDatabase={openSchema}

@@ -91,6 +91,14 @@ export interface Database {
   activeAgents?: Array<string>;
 }
 
+export interface DatabaseOverview {
+  schemaName: string;
+  description: string;
+  nsfPath: string;
+  icon: string;
+  iconName: string;
+}
+
 export interface AvailableDatabases {
   title: string;
   nsfpath: string;
@@ -111,6 +119,7 @@ export interface Scope {
 
 export interface DBState {
   databases: Array<Database>;
+  databasesOverview: Array<DatabaseOverview>;
   nsfDesigns: any;
   availableDatabases: AvailableDatabases[];
   scopes: Scope[];
@@ -123,6 +132,16 @@ export interface DBState {
     formModes?: Array<any>;
     formAccessModes: Array<any>;
   }>;
+  newForm: {
+    enabled: boolean;
+    form?: {
+      dbName: string;
+      formName: string;
+      alias: Array<string>;
+      formModes?: Array<any>;
+      formAccessModes: Array<any>;
+    }
+  }
   loadedForm: string;
   loadedFields: Array<any>;
   activeForm: string;
@@ -177,6 +196,7 @@ export const SET_PULLED_DATABASE = 'SET_PULLED_DATABASE';
 export const SET_PULLED_SCOPE = 'SET_PULLED_SCOPE';
 export const FETCH_DB_CONFIG = 'FETCH_DB_CONFIG';
 export const SET_FORMS = 'SET_FORMS';
+export const ADD_FORM = 'ADD_FORM';
 export const SET_CURRENTFORMS = 'SET_CURRENTFORMS';
 export const SET_LOADEDFORM = 'SET_LOADEDFORM';
 export const SET_LOADEDFIELDS = 'SET_LOADEDFIELDS';
@@ -446,7 +466,7 @@ interface updateScope {
 
 interface updateSchema {
   type: typeof UPDATE_SCHEMA;
-  payload: Database;
+  payload: Array<DatabaseOverview>;
 }
 
 interface UpdateSchema {
@@ -461,7 +481,11 @@ interface FetchAvailableDatabases {
 
 interface AddAvailableDatabase {
   type: typeof ADD_AVAILABLE_DATABASE;
-  payload: any;
+  payload: {
+    title: string;
+    nsfpath: string;
+    apinames: Array<string>;
+  };
 }
 
 interface FetchKeepDatabases {
@@ -525,9 +549,7 @@ interface UnConfigForm {
 
 interface ResetForm {
   type: typeof RESET_FORM;
-  payload: {
-    dbName: string;
-  };
+  payload: string;
 }
 
 interface SetRetryCount {
@@ -627,6 +649,21 @@ export interface SetFormName {
   payload: string
 }
 
+export interface AddForm {
+  type: typeof ADD_FORM;
+  payload: {
+    enabled: boolean,
+    form?: {
+      formName: string,
+      alias: Array<string>,
+      dbName: string,
+      formModes: Array<any>,
+      formAccessModes: Array<any>,
+      formValue: string,
+    },
+  }
+}
+
 export type DatabaseActionTypes =
   | AddSchema
   | AddScope
@@ -686,4 +723,5 @@ export type DatabaseActionTypes =
   | AgentsError
   | UpdateError
   | SetFormName
-  | SetFolders;
+  | SetFolders
+  | AddForm;

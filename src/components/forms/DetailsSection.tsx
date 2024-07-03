@@ -18,7 +18,6 @@ import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { AppState } from '../../store';
-import { getDatabaseIndex } from '../../store/databases/scripts';
 import { getTheme } from '../../store/styles/action';
 import appIcons from '../../styles/app-icons';
 import { checkIcon } from '../../styles/scripts';
@@ -35,6 +34,8 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 interface DetailsSectionProps {
   dbName: string;
   nsfPathProp: string;
+  schemaData: Database;
+  setSchemaData: (data: any) => void;
 }
 
 const Title = styled.div`
@@ -200,8 +201,8 @@ const ConfigContainer = styled(Box)`
   }
 `
 
-const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp }) => {
-  const { databases, scopes } = useSelector((state: AppState) => state.databases);
+const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, schemaData, setSchemaData }) => {
+  const { scopes } = useSelector((state: AppState) => state.databases);
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const {
     apiName,
@@ -221,7 +222,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp }) 
     agents,
     views,
     schemaName,
-  } = databases[getDatabaseIndex(databases, dbName, nsfPathProp)] as Database;
+  } = schemaData;
   const [isInUse, setIsInUse] = useState(false);
   const [isConfigLoading, setIsConfigLoading] = useState(true);
   const [desc, setDesc] = useState(description);
@@ -331,7 +332,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp }) 
       owners,
       forms: formData,
     };
-    dispatch(updateSchema(updatedSchema) as any);
+    dispatch(updateSchema(updatedSchema, setSchemaData) as any);
   };
   
   useEffect(() => {

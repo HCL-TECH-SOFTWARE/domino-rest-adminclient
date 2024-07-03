@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import AccessMode from './components/access/AccessMode';
 import ApplicationsContainer from './components/applications/Applications';
@@ -20,11 +20,11 @@ import SettingsPage from './components/settings/SettingsPage';
 import Homepage from './components/home/Homepage';
 import PageRouters from './components/routers/PageRouters';
 import SchemasLists from './components/schemas/SchemasLists';
-import { fetchScopes, fetchKeepPermissions, fetchKeepDatabases } from './store/databases/action';
+import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
-import ConsentsListContainer from './components/consents/ConsentsListContainer';
-import { getConsents } from './store/consents/action';
+import ConsentsContainer from './components/applications/ConsentsContainer';
+import { Home } from '@material-ui/icons';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -102,7 +102,6 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
           dispatch(fetchScopes() as any);
         } else if (!databasePull) {
           setDatabasePulling(true);
-          dispatch(fetchKeepDatabases() as any);
         }
       }
     }
@@ -110,45 +109,32 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
 
   return (
     <ViewContainer id="main-stack">
-      <>
         <PageRouters />
-        <Route
-          exact
-          path="/schema/:nsfPath/:dbName/:formName/access"
-          render={({ match }) => {
-            return match && <AccessMode />;
-          }}
-        />
-        <Route exact path="/">
-          <Homepage />
-        </Route>
-        <Route exact path="/scope">
-            <ScopeLists />
-        </Route>
-        <Route exact path="/schema">
-            <SchemasLists />
-        </Route>
-        <Route exact path="/apps">
-          <ApplicationsContainer />
-        </Route>
-        <Route exact path="/groups">
+        <Routes>
+          <Route path='/schema/:nsfPath/:dbName/:formName/access' element={<AccessMode />}/>
+          <Route path='/' element={<Homepage />} />
+          <Route path='/schema' element={<SchemasLists />} />
+          <Route path='/scope' element={<ScopeLists />} />
+          <Route path='/apps' element={<ApplicationsContainer />} />
+          <Route path='/apps/consents' element={<ConsentsContainer />} />
+          <Route path='/schema/:nsfPath/:dbName' element={<FormsContainer />} />
+        </Routes>
+        
+        {/* 
+        <Route path="/groups">
           <Groups />
         </Route>
-        <Route exact path="/people">
+        <Route path="/people">
           <People />
         </Route>
-        <Route exact path="/mail">
+        <Route path="/mail">
           <Mail />
         </Route>
         <Route path="/settings">
           <SettingsPage />
         </Route>
-        <Route exact path="/schema/:nsfPath/:dbName">
-          <FormsContainer />
-        </Route>
-      </>
+        */}
       <QuickConfigFormContainer />
-      <ConsentsListContainer />
     </ViewContainer>
   );
 };

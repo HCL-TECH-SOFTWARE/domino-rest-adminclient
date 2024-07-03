@@ -81,13 +81,13 @@ const Section = () => {
           {navitems.apps &&
             app.map((route) => {
               return (
-                <Tip
+                (route.label === "Applications" && <Tip
                   key={route.label}
                   uri="/apps"
                   backgroungImage={apps}
                   heading="Application Management - OAUTH"
                   description="ADMIN"
-                />
+                />)
               );
             })}
           {navitems.users &&

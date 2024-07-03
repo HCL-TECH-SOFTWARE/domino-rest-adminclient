@@ -8,7 +8,7 @@ import React from 'react';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Tooltip from '@material-ui/core/Tooltip';
 import Home from '@material-ui/icons/Home';
 import { useSelector } from 'react-redux';
@@ -54,8 +54,8 @@ const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
 const BreadcrumbRouter: React.FC = () => {
   const location = useLocation();
   const { themeMode } = useSelector((state: AppState) => state.styles);
-  const history = useHistory();
-  const { pathname } = history.location;
+  const navigate = useNavigate();
+  const { pathname } = location;
 
   const activeColor = getTheme(themeMode).breadcrumb.lastActiveColor;
   const pathnameArr = pathname && pathname.split('/');
@@ -64,15 +64,15 @@ const BreadcrumbRouter: React.FC = () => {
     breadcrumbTitle = 'Schemas';
   } else if (pathname === '/scope') {
     breadcrumbTitle = 'Scopes';
-  } else if (pathname === '/apps') {
+  } else if (pathname.slice(0, 5) === '/apps') {
     breadcrumbTitle = 'Application Management';
   } else {
     breadcrumbTitle = 'HCL Domino REST API Administrator';
   }
 
   const handleOnClick = (index: number) => {
-    if (index > 2) history.push(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
-    else history.push('/schema');
+    if (index > 2) navigate(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
+    else navigate('/schema');
   };
 
   return (
@@ -99,7 +99,7 @@ const BreadcrumbRouter: React.FC = () => {
                 data-testid="overview"
                 style={{display: 'flex', alignItems:'center'}}
                 onClick={() => {
-                  history.push(`/`);
+                  navigate(`/`);
                 }}
               >
                 <Home className="home-icon" />
@@ -109,7 +109,7 @@ const BreadcrumbRouter: React.FC = () => {
                 <Tooltip
                   enterDelay={700}
                   placement="bottom"
-                  title="Back to list of Schema/Scope Management Page"
+                  title={`Back to ${location.pathname.split('/')[1].charAt(0).toUpperCase() + location.pathname.split('/')[1].slice(1)} Management Page`}
                   arrow
                 >
                   <Typography
@@ -124,6 +124,19 @@ const BreadcrumbRouter: React.FC = () => {
                     {breadcrumbTitle}
                   </Typography>
                 </Tooltip>
+              )}
+
+              {location.pathname.split('/').length === 3 && (
+                <Typography
+                  color="textPrimary"
+                  style={
+                    location.pathname.split('/').length === 3
+                      ? { fontWeight: 600, color: activeColor, whiteSpace: 'nowrap'}
+                      : {}
+                  }
+                >
+                  {location.pathname.split('/')[2].charAt(0).toUpperCase() + location.pathname.split('/')[2].slice(1)}
+                </Typography>
               )}
 
               {location.pathname.split('/').length >= 4 && (

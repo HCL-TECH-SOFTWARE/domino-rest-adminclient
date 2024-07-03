@@ -11,7 +11,7 @@ import Home from '@material-ui/icons/Home';
 import Apps from '@material-ui/icons/Apps';
 import Groups from '@material-ui/icons/Group';
 import People from '@material-ui/icons/Person';
-import ListIcon from '@mui/icons-material/List';
+import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
 /**
  * Route.ts provides menu entries for each of the main pages in the Admin UI.
  *
@@ -55,6 +55,11 @@ export const apps = [
     icon: Apps,
     label: 'Applications',
   },
+  {
+    uri: '/apps/consents',
+    icon: FormatListBulletedIcon,
+    label: 'Consents',
+  },
 ];
 export const people = [
   {
@@ -78,11 +83,3 @@ export const settings = [
     label: 'Mail',
   },
 ];
-
-export const consents = [
-  {
-    uri: '/consents',
-    icon: ListIcon,
-    label: 'Consents',
-  }
-]

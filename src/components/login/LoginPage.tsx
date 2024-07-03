@@ -17,7 +17,7 @@ import * as Yup from 'yup';
 import { Alert, AlertTitle } from '@material-ui/lab';
 import LoginIcon from '@material-ui/icons/ExitToApp';
 import { useSelector, useDispatch } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import {
   IMG_DIR,
   KEEP_ADMIN_BASE_COLOR,
@@ -123,11 +123,13 @@ const LoginPage = () => {
   const classes = useStyles();
   const { error, error401 } = useSelector((state: AppState) => state.account);
   const dispatch = useDispatch();
+  const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
   const [passkeyLogin, setPasskeyLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [noUsernamePasskey, setNoUsernamePasskey] = useState(false);
   const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
+  const isHttps = protocol === "https"
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -278,7 +280,7 @@ const LoginPage = () => {
 
   return (
     <Grid container component="main" className={classes.root}>
-      <Redirect to="/" />
+      <Navigate to="/" />
       <CssBaseline />
       <Grid
         style={{
@@ -428,7 +430,7 @@ const LoginPage = () => {
               </Button>}
             </form>
             <PasskeySignUpContainer>
-              {!passkeyLogin && <Button fullWidth className='text-button'>
+              {!passkeyLogin && isHttps && <Button fullWidth className='text-button'>
                 <Typography className='sign-up-text' display="inline" onClick={handleSignUpWithPasskey}>
                   Sign up with Passkey
                 </Typography>

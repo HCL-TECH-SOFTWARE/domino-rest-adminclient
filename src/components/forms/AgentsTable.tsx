@@ -73,9 +73,14 @@ const AgentNameDisplay = styled.div`
 `
 
 interface AgentsTableProps {
-  agents: Array<any>;
-  toggleActive: any;
-  toggleInactive: any;
+  agents: Array<{
+    agentActive: boolean;
+    agentAlias: Array<string>;
+    agentName: string;
+    agentUnid: string;
+  }>;
+  toggleActive: (agent?: any) => Promise<void>;
+  toggleInactive: (agent?: any) => Promise<void>;
 }
 
 const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleInactive }) => {
@@ -98,7 +103,7 @@ const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleI
         </TableHead>
         <TableBody>
           {agents.map((agent) => (
-            <StyledTableRow key={agent.viewName}>
+            <StyledTableRow key={agent.agentName}>
               <StyledTableCell width="550px">
                 <AgentNameDisplay>
                     {agent.agentName}

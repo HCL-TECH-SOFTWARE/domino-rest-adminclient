@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -17,7 +17,6 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../../store/account/action';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import { getDatabaseIndex } from '../../store/databases/scripts';
 import { Database, SET_ACTIVEVIEWS } from '../../store/databases/types';
 import { checkIcon } from '../../styles/scripts';
 import appIcons from '../../styles/app-icons';
@@ -36,29 +35,6 @@ const EditViewDialogContainer = styled.div`
 
   background: #F8F8F8;
   border-radius: 10px;
-
-  .close-btn {
-    cursor: pointer;
-    justify-content: right;
-    align-items: right;
-
-    position: absolute;
-    top: 1%;
-    right: 2%;
-  }
-`
-
-const DialogContainer = styled.dialog`
-  border: 1px solid white;
-    
-  width: 95vw;
-  position: relative;
-  height: 95vh;
-  max-height: 95vh;
-  margin: 0;
-
-  background-color: #F8F8F8;
-  background-color: yellow;
 
   .close-btn {
     cursor: pointer;
@@ -188,6 +164,8 @@ interface EditViewDialogProps {
   nsfPathProp: string;
   scopes: any[];
   setOpen: any;
+  schemaData: Database;
+  setSchemaData: (data: any) => void;
 }
 
 const EditViewDialog: React.FC<EditViewDialogProps> = ({
@@ -198,6 +176,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   nsfPathProp,
   scopes,
   setOpen,
+  schemaData,
+  setSchemaData
 }) => {
   const [chosenColumns, setChosenColumns] = useState<any[]>([]);
   const [fetchedColumns, setFetchedColumns] = useState<any[]>([]);
@@ -205,10 +185,9 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   const [hoveredColumn, setHoveredColumn] = useState({});
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
-  const { databases, folders } = useSelector((state: AppState) => state.databases);
-  const nsfPathDecode = decodeURIComponent(nsfPathProp);
+  const { folders } = useSelector((state: AppState) => state.databases)
 
   const {
     apiName,
@@ -227,7 +206,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     forms,
     agents,
     views
-  } = databases[getDatabaseIndex(databases, dbName, nsfPathDecode)] as Database;
+  } = schemaData
 
   const selectedDB = useMemo(() => ({
     apiName,
@@ -251,24 +230,21 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     forms
   }), [apiName, description, nsfPath, iconName, dqlAccess, openAccess, allowCode, allowDecryption, formulaEngine, dqlFormula, requireRevisionToUpdate, icon, isActive, forms]);
 
-  const [displayIconName, setDisplayIconName] = useState(checkIcon(iconName) ? iconName : 'beach');
-  const [displayIcon, setDisplayIcon] = useState(checkIcon(iconName) ? icon : appIcons['beach']);
-
-  const [dbContext, setDbContext] = useState(selectedDB);
+  const displayIconName = checkIcon(iconName) ? iconName : 'beach'
+  const displayIcon = checkIcon(iconName) ? icon : appIcons['beach']
+  const dbContext = selectedDB
 
   const { loading } = useSelector( (state: AppState) => state.loading );
 
   const scopeNames = scopes.filter((scope) => { return scope.schemaName === dbName && scope.nsfPath === nsfPath });
   const aScopeName = scopeNames.length > 0 ? scopeNames[0].apiName : '';
 
-  const ref = useRef<HTMLDialogElement>(null);
-
   const handleClickColumn = (column: any) => {
     let existingColumn = chosenColumns.filter((col) => col.name === column.name);
     if (existingColumn.length === 0) {
       let updatedColumn = {
         name: column.name,
-        externalName: !!column.title ? column.title.replaceAll(/[^\w ]/g, "").replaceAll(' ', '_') : column.name.replaceAll(/[^\w $@-]/g, "").replaceAll(' ', '_'),
+        externalName: !!column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
         title: column.title,
       }
       setChosenColumns ([...chosenColumns, updatedColumn]);
@@ -301,27 +277,11 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     if (views) {
       let viewsBuffer = views.map((view: any) => {
         if (view.name === viewName) {
-          // remove columns for chosen view
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-          }
-        } else if (!!view.columns) {
-          // retain columns for other views that have columns
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-            columns: view.columns,
-          }
+          const { columns, ...finalView } = view
+          return finalView
         } else {
-          // retain no columns for views that don't have columns
-          return {
-            name: view.name,
-            alias: view.alias,
-            unid: view.unid,
-          }
+          // retain columns for other views that have columns, OR retain no columns for views that don't have columns
+          return view
         }
       });
 
@@ -363,7 +323,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         forms,
       };
 
-      dispatch(updateSchema(updatedSchema) as any);
+      dispatch(updateSchema(updatedSchema, setSchemaData) as any);
       setActiveViews(dbName, viewsBuffer);
       setOpen(false);
     }
@@ -383,44 +343,24 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         viewsBuffer = views.map((view: any) => {
           if (view.name === viewName) {
             return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
+              ...view,
               columns: columnsPayload,
-              viewUpdated: true
-            }
-          } else if (!!view.columns) {
-            return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
-              columns: view.columns,
-              viewUpdated: view.viewUpdated ? true : false
+              viewUpdated: true,
             }
           } else {
             return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
-              viewUpdated: view.viewUpdated ? true : false
+              ...view,
+              viewUpdated: view.viewUpdated ? true : false,
             }
           }
         });
       } else {
         viewsBuffer = views.map((view: any) => {
           if (view.name !== viewName) {
-            return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
-              columns: view.columns
-            }
+            return view
           } else {
-            return {
-              name: view.name,
-              alias: view.alias,
-              unid: view.unid,
-            }
+            const { columns, ...finalView } = view
+            return finalView
           }
         });
       }
@@ -463,7 +403,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         owners,
         forms,
       };
-      dispatch(updateSchema(updatedSchema) as any);
+      dispatch(updateSchema(updatedSchema, setSchemaData) as any);
       handleClose();
       
       setActiveViews(dbName, viewsBuffer);
@@ -474,7 +414,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     let updatedColumns = fetchedColumns.map((column) => {
       return {
         name: column.name,
-        externalName: !!column.title ? column.title.replaceAll(/[^\w ]/g, "").replaceAll(' ', '_') : column.name.replaceAll(/[^\w $@-]/g, "").replaceAll(' ', '_'),
+        externalName: !!column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
       }
     });
     setChosenColumns(updatedColumns);
@@ -537,7 +477,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       const folderNames = folders.map((folder) => {return folder.viewName});
       const isFolder = folderNames.includes(viewName);
 
-      const data = await axios
+      await axios
         .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,

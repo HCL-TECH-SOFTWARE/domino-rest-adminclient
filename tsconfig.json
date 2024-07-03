@@ -6,6 +6,9 @@
       "dom.iterable",
       "esnext"
     ],
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

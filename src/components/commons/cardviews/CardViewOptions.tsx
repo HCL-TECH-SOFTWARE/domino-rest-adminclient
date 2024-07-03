@@ -6,7 +6,7 @@
 
 import React, { useState }  from 'react';
 import { Button, Menu, MenuItem } from '@material-ui/core';
-import { useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
@@ -19,8 +19,8 @@ interface CardViewOptionsProps {
 const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const { scopePull } = useSelector((state: AppState) => state.databases);
-  const history = useHistory();
-  const { search } = history.location;
+  const location = useLocation();
+  const { search } = location;
 
   const displayType = search.split('?view=')[1];
   const view = search && displayType ? displayType : 'card';

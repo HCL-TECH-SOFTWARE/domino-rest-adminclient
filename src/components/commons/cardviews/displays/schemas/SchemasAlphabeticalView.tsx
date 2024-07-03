@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import DBIcon from '@material-ui/icons/Storage';
-import { useHistory } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { checkIcon } from '../../../../../styles/scripts';
 import appIcons from '../../../../../styles/app-icons';
 import { Scope } from '../../../../../store/databases/types';
@@ -195,8 +195,9 @@ const getAllLetters = () => {
 const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
   databases
 }) => {
-  const history = useHistory();
-  const { pathname } = history.location;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { pathname } = location;
   const isSchema = pathname === '/schema';
   const alphabets = mapAlphabets(databases, isSchema);
   const allLetters = getAllLetters();
@@ -222,7 +223,7 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
   }, [scopes]);
 
   const openDatabase = (database: any) => {
-    history.push(
+    navigate(
       `/schema/${encodeURIComponent(database.nsfPath)}/${
         database.schemaName
       }`

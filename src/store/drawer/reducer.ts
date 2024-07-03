@@ -12,11 +12,13 @@ import {
   TOGGLE_QUICKCONFIG_DRAWER,
   INIT_STATE,
   TOGGLE_CONSENTS_DRAWER,
+  TOGGLE_APPLICATION_FILTER_DRAWER,
 } from './types';
 
 const initialState: DrawerState = {
   visible: false,
   applicationDrawer: false,
+  appFilterDrawer: false,
   quickConfigDrawer: false,
   consentsDrawer: false,
 };
@@ -35,6 +37,11 @@ export default function drawerReducer(
       return {
         ...state,
         applicationDrawer: !state.applicationDrawer,
+      };
+    case TOGGLE_APPLICATION_FILTER_DRAWER:
+      return {
+        ...state,
+        appFilterDrawer: !state.appFilterDrawer,
       };
     case TOGGLE_QUICKCONFIG_DRAWER:
       return {

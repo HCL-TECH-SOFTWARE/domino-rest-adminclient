@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import Typography from '@material-ui/core/Typography';
@@ -19,6 +19,7 @@ import appIcons from '../../styles/app-icons';
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { LitAutocomplete } from '../lit-elements/LitElements';
 
 const AddImportDialogContainer = styled(Dialog)`
   width: 50vw;
@@ -72,27 +73,6 @@ const DialogActionsContainer = styled(Box)`
   gap: 20px;
 `
 
-const SchemaFormSchema = Yup.object().shape({
-  schemaName: Yup.string()
-    .max(256, 'Schema name is too long (maximum is 256 characters).')
-    .min(3, "Schema name should contain at least 3 characters.")
-    .required('Schema name is required.')
-    .test('First Character', 'Schema name must start with a letter', (val) => {
-      // Build Issue: character must be converted to an int before the isNaN call
-      let retval = false;
-      if (val && val.length) {
-        retval = isNaN(parseInt(val.charAt(0), 10));
-      }
-      return retval;
-    })
-    .matches(/^[a-z0-9_]+$/g, "Schema name should only contain lowercase letters, numbers, and underscores."),
-  description: Yup.string()
-    .min(3, "Schema name should contain at least 3 characters.")
-    .required('Please provide a short description about this schema!'),
-  nsfPath: Yup.string()
-    .required('Please select a database!'),
-});
-
 interface AddImportDialogProps {
   open: boolean;
   handleClose: () => void;
@@ -113,17 +93,47 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   const [selectedIndex, setSelectedIndex] = React.useState(1);
   const [nsfPath, setNsfPath] = useState('');
   const [iconName, setIconName] = useState('beach');
-  const [dbError, setDbError] = useState(false);
-  const [nameError, setNameError] = useState(false);
-
-  const [dbErrorMessage, setDbErrorMessage] = useState("Please choose a database!");
-  const [nameErrorMessage, setNameErrorMessage] = useState("");
+  
   const [importFlag, setImportFlag] = useState(false)
   const [schemaName, setSchemaName] = useState('')
   
   const engineOptions = ['domino'];
 
   const dispatch = useDispatch();
+
+  const autocompleteRef = useRef<any>(null)
+
+  const SchemaFormSchema = Yup.object().shape({
+    schemaName: Yup.string()
+      .max(256, 'Schema name is too long (maximum is 256 characters).')
+      .min(3, "Schema name should contain at least 3 characters.")
+      .required('Schema name is required.')
+      .test('First Character', 'Schema name must start with a letter', (val) => {
+        // Build Issue: character must be converted to an int before the isNaN call
+        let retval = false;
+        if (val && val.length) {
+          retval = isNaN(parseInt(val.charAt(0), 10));
+        }
+        return retval;
+      })
+      .test('Unique Schema Name', 'Schema name already exists in this database! Change the schema name or the database.', (val) => {
+        if(schemas.includes(nsfPath + ':' + val)) return false
+        else return true
+      })
+      .matches(/^[a-z0-9_]+$/g, "Schema name should only contain lowercase letters, numbers, and underscores."),
+    description: Yup.string()
+      .min(3, "Schema name should contain at least 3 characters.")
+      .required('Please provide a short description about this schema!'),
+    nsfPath: Yup.string()
+      .required('Please select a database!')
+      .test('Database Does Not Exist', 'Database does not exist!', (val) => {
+        if(!(availableDatabases.map((database) => {return database.title}).includes(val))) {
+          return false
+        } else {
+          return true
+        }
+      }),
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -161,7 +171,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         iconName: iconName,
         icon: appIcons[iconName],
       };
-      dispatch(addSchema(newSchema) as any);
+      dispatch(addSchema(newSchema, resetForm) as any);
       setIconName('beach');
       setNsfPath('');
       setImportDialogOpen(false);
@@ -171,8 +181,6 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const handleCloseDialog = () => {
     setImportDialogOpen(false);
-    setDbError(false);
-    setNameError(false);
     handleClose();
     setSchemaName('')
   }
@@ -225,7 +233,6 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
     reader.onloadend = () => {
       const schemaData = JSON.parse(String(reader.result));
-      setDbError(true);
       formik.setValues({
         ...schemaData,
         formulaEngine: schemaData.formulaEngine,
@@ -233,12 +240,15 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       setIconName(schemaData.iconName);
       setSchemaName(schemaData.schemaName)
 
-      // initial validation, then call schema API
-      if (schemas.includes(schemaData.nsfPath + ':' + schemaData.schemaName)) {
-        validateSchemaName(schemaData.schemaName)
-      } else {
-        setImportDialogOpen(true);
+      // Set values of the web components
+      if (autocompleteRef.current && autocompleteRef.current.shadowRoot) {
+        const inputElement = autocompleteRef.current.shadowRoot.querySelector('input')
+        if (inputElement) {
+          inputElement.value = schemaData.nsfPath
+        }
       }
+
+      setImportDialogOpen(true);
       
       document.body.removeChild(fileElement);
     }
@@ -278,53 +288,22 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
     newSchemaName = newSchemaName.toLowerCase().replace(/[^a-z0-9_]/g, '');
     setSchemaName(newSchemaName)
     formik.values.schemaName = newSchemaName
-
-    // validation error
-    validateSchemaName(newSchemaName);
   };
 
-  function validateSchemaName (newSchemaName: string) {
-    if (newSchemaName === '') {
-      setNameErrorMessage('Schema name is required!')
-      setNameError(true);
-      return false
-    } else if (schemas.includes(nsfPath + ':' + newSchemaName)) {
-      setNameErrorMessage('This schema name already exists in this database. Please choose another database or type another schema name!');
-      setNameError(true);
-      return false
+  const handleClickSaveSchema = async () => {
+    if (autocompleteRef.current) {
+      const inputElement = autocompleteRef.current.shadowRoot.querySelector('input')
+      if (inputElement) {
+        setNsfPath(inputElement.value)
+        formik.values.nsfPath = inputElement.value
+      }
     }
-     else {
-      setNameError(false);
-      setNameErrorMessage('');
-      return true
-    }
+    formik.submitForm()
   };
 
-  const handleClickSaveSchema = () => {
-    formik.submitForm();
-  };
-
-  const handleChooseDatabase = (event: any, value: any) => {
-    setNsfPath(value);
-    formik.values.nsfPath = value;
-    validateNsfPath(value);
-  };
-
-  function validateNsfPath (newNsfPath: string) {
-    if (newNsfPath === '') {
-      setDbErrorMessage('Please choose a database!')
-      setDbError(true);
-      return false
-    } else if (!(availableDatabases.map((database) => {return database.title}).includes(newNsfPath))) {
-      setDbErrorMessage('Database does not exist. Please choose another database!');
-      setDbError(true);
-      return false
-    }
-     else {
-      setDbError(false);
-      setDbErrorMessage('');
-      return true
-    }
+  const resetForm = () => {
+    formik.resetForm()
+    setSchemaName('')
   }
 
   const BackArrow = (
@@ -392,16 +371,12 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
           <Typography className='detail-title'>
             {`${importFlag ? "Import Into Database" : "Database"}`}
           </Typography>
-          <Autocomplete
-            id="choose-database"
+          <LitAutocomplete
             options={availableDatabases.map((database) => database.title)}
-            filterOptions={(options) => options.filter((option) => option.toLowerCase().indexOf(formik.values.nsfPath.toLowerCase()) !== -1)}
-            onInputChange={handleChooseDatabase}
-            getOptionLabel={nsfPath => nsfPath}
-            value={formik.values.nsfPath}
-            fullWidth
-            renderInput={(params) => <TextField {...params} error={dbError} helperText={dbErrorMessage} name='nsfPath' variant='outlined' fullWidth />}
-            style={{ margin: 0, padding: 0, zIndex: 100 }}
+            ref={autocompleteRef}
+            error={!!formik.errors.nsfPath && formik.touched.nsfPath}
+            errorMessage={formik.errors.nsfPath}
+            initialOption={formik.values.nsfPath}
           />
         </Box>
       </DialogContentContainer>

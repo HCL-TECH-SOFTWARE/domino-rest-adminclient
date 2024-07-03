@@ -222,7 +222,6 @@ const Fields: React.FC<FieldsProps> = ({
   tabValue,
   setTabValue,
 }) => {
-  const [fieldText, setFieldText] = useState('');
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
@@ -257,7 +256,7 @@ const Fields: React.FC<FieldsProps> = ({
   }
   formsSorted.unshift(allFieldObj);
 
-  const { activeFields } = useSelector((state: AppState) => state.databases);
+  const { activeFields, newForm } = useSelector((state: AppState) => state.databases);
 
   const classes = useStyles();
 
@@ -269,9 +268,20 @@ const Fields: React.FC<FieldsProps> = ({
   const { loading } = useSelector( (state: AppState) => state.loading );
 
   useEffect(() => {
-    if (formsInDb.length > 0 && !!formName)
+    const designFormNames = [
+      ...formsInDb.map((form: { '@alias': Array<string>, '@flags': string, '@name': string, '@unid': string }) => form['@name']),
+      ...subformsInDb.map((form: { '@alias': Array<string>, '@flags': string, '@name': string, '@unid': string }) => form['@name']),
+    ]
+
+    if (!designFormNames.includes(formName)) {
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
+      dispatch(setLoading({ status: false }))
+    } else if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
       dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
-  }, [schemaName, nsfPath, formName, formsInDb, dispatch]);
+    } else if (!newForm.enabled) {
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
+    }
+  }, [schemaName, nsfPath, formName, formsInDb, subformsInDb, newForm, dispatch]);
 
   const handleFieldListOnClick = (event: any) => {
     setAnchorEl(event.target);
@@ -349,9 +359,19 @@ const Fields: React.FC<FieldsProps> = ({
   useEffect(() => {
     const currentActiveFields = activeFields.filter((item) => item.formName === currentFormValue)
     const filteredFields = currentActiveFields.map((form) => {
+      const newFields = form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(searchFieldKey.toLowerCase()) !== - 1)
       return {
         ...form,
-        fields: form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(searchFieldKey.toLowerCase()) !== - 1)
+        fields: newFields.length > 0 ? newFields : (() => {
+          for (let i = searchFieldKey.length; i >= 0; i--) {
+            const slicedSearchFieldKey = searchFieldKey.slice(0, i).toLowerCase();
+            const filteredFields = form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(slicedSearchFieldKey) !== -1);
+            if (filteredFields.length > 0) {
+              return filteredFields;
+            }
+          }
+          return [];
+        })()
       }
     })
     if (searchFieldKey !== '') {

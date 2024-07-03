@@ -4,33 +4,27 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Drawer from '@material-ui/core/Drawer';
 import AddIcon from '@material-ui/icons/Add';
 import CachedIcon from '@material-ui/icons/Cached';
 import { Button, Typography} from '@material-ui/core';
 import { AppState } from '../../store';
-import { toggleSettings } from '../../store/dbsettings/action';
 import { toggleDrawer } from '../../store/drawer/action';
 import { clearDBError,
         fetchKeepDatabases,
-        fetchScopes,
         setPullDatabase,
         setPullScope,
        } from '../../store/databases/action';
-import { FETCH_KEEP_DATABASES,
-        FETCH_AVAILABLE_DATABASES,
-       } from '../../store/databases/types';
+import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
 import DatabaseSearch from '../database/DatabaseSearch';
 import ScopeFormContainer from '../database/ScopeFormContainer';
-import TabsSettings from '../database/settings/TabsSettings';
 import APILoadingProgress from '../loading/APILoadingProgress';
 import { WrapperContainer } from '../commons/Wrappers';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiView';
 import { toggleAlert } from '../../store/alerts/action';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
@@ -45,8 +39,9 @@ const ScopeLists = () => {
   const { visible } = useSelector((state: AppState) => state.drawer);
   const dispatch = useDispatch();
 
-  const history = useHistory();
-  const { pathname, search } = history.location;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { pathname, search } = location;
 
   const displayType = search.split('?view=')[1];
 
@@ -74,7 +69,7 @@ const ScopeLists = () => {
   };
 
   const changeView = (view: string) => {
-    history.push({
+    navigate({
       pathname,
       search: `?view=${view}`,
     });
@@ -101,10 +96,7 @@ const ScopeLists = () => {
   const handleRefresh = () => {
     dispatch(setPullDatabase(false));
     dispatch(setPullScope(false));
-    dispatch({
-      type: FETCH_KEEP_DATABASES,
-      payload: []
-    });
+    dispatch(fetchKeepDatabases() as any)
     dispatch({
       type: FETCH_AVAILABLE_DATABASES,
       payload: []

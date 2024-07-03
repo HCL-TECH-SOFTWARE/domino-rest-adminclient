@@ -23,11 +23,11 @@ import {
   UPDATE_SCOPE,
   UPDATE_SCHEMA,
   SET_FORMS,
+  ADD_FORM,
   SET_CURRENTFORMS,
   SET_LOADEDFORM,
   SET_LOADEDFIELDS,
   SET_ACTIVEFORM,
-  SET_ACTIVEFIELDS,
   ADD_ACTIVEFIELDS,
   SET_VIEWS,
   UPDATE_VIEW,
@@ -68,7 +68,7 @@ import { toggleDrawer, toggleQuickConfigDrawer } from '../drawer/action';
 import { AppState } from '..';
 import { getFormIndex, getFormModeIndex } from './scripts';
 import { TOGGLE_DRAWER } from '../drawer/types';
-import { TOGGLE_DETAILS_LOADING } from '../loading/types';
+import { SET_VALUE, TOGGLE_DETAILS_LOADING } from '../loading/types';
 import { toggleAlert, closeSnackbar } from '../alerts/action';
 import { SETUP_KEEP_API_URL, BASE_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
@@ -79,6 +79,8 @@ import {
   convertDesignType2Format
 } from '../../components/access/functions';
 import { fullEncode } from '../../utils/common';
+import appIcons from '../../styles/app-icons';
+import { SET_API_LOADING } from '../dialog/types';
 
 /**
  * action.ts provides the action methods for the Database page
@@ -235,23 +237,34 @@ export const fetchScope = async (scopeData: any) => {
   };
 };
 
-export const fetchSchema = async (schemaData: any) => {
-  const { nsfPath, schemaName } = schemaData;
-  const schema = await axios
-    .get(
-      `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`,
-      {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    .then((res) => res.data);
-  return {
-    ...schema,
-    schemaName: schemaName,
-    nsfPath
+/**
+ * Retrieves views for a particular database and
+ * passes them to Redux.
+ *
+ * @param nsfPath             the name of the database
+ * @param schemaName          the name of the schema
+ * @param setSchemaCallback   callback to set the schema state
+ */
+export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: (schemaData: any) => void) => {
+  return async (dispatch: Dispatch) => {
+    try {
+      await axios
+        .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json'
+          }
+        })
+        .then((res) => {
+          setSchemaData(res.data)
+          dispatch({
+            type: SET_API_LOADING,
+            payload: false,
+          })
+        });
+    } catch (err) {
+      console.log(err);
+    }
   };
 };
 
@@ -266,12 +279,20 @@ const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any
       schemasWithoutScopes = [...schemasWithoutScopes, processBuffer(buffer, dispatch, scopeList, schemasWithoutScopes, true)];
       // remove undefined nsfPaths and schemaNames
       schemasWithoutScopes = schemasWithoutScopes[0].filter((db: any) => !!db.nsfPath && !!db.schemaName);
+
+      const chunkSize = 20;
+      for (let i = 0; i < schemasWithoutScopes.length; i += chunkSize) {
+          const chunk = schemasWithoutScopes.slice(i, i + chunkSize);
+          const stringChunk = chunk.map((c: any) => JSON.stringify(c))
+          const uniqueChunk = [...new Set(stringChunk)].map((c: any) => JSON.parse(c))
+          setTimeout(() => {
+            dispatch({
+              type: UPDATE_SCHEMA,
+              payload: uniqueChunk
+            })
+          })
+      }
       
-      const dbProcessWithoutScopes: any[] = schemasWithoutScopes
-          .map((db: any) => getSchema(db.nsfPath, db.schemaName, dispatch));
-      await Promise.all(dbProcessWithoutScopes);
-      
-      dispatch(setLoading({ status: false }));
       dispatch(setPullDatabase(true));
       return;
     }
@@ -279,6 +300,10 @@ const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any
     try {
         let decoded = td.decode(value);
         buffer += decoded;
+        dispatch({
+          type: SET_VALUE,
+          payload: { status: false }
+        })
     }
     catch(e){
         //console.log("Exception:"+e);
@@ -306,16 +331,50 @@ const processPart = (part: string, dispatch: Dispatch, callback: any, scopeList:
 const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
   if (!!json.configurations && json.configurations.length > 0) {
     const { configurations } = json;
+    let schemasWithScopes: Array<{
+      schemaName: string;
+      description: string;
+      iconName: string;
+      icon: string;
+      nsfPath: string;
+    }> = []
     configurations.forEach((config: any) => {
       let schema = typeof(config) === 'string' ? config : config.name;
       if (!!json.path && !!schema) {
         if (scopeList.includes(json.path + ':' + schema)) {
-          getSchema(json.path, schema, dispatch);
+          const new_config = {
+            schemaName: config.name,
+            description: config.description,
+            iconName: config.iconName,
+            icon: appIcons[config.iconName],
+            nsfPath: json.path,
+          }
+          schemasWithScopes.push(new_config)
         } else {
-          schemasWithoutScopes.push({ nsfPath: json.path, schemaName: schema });
+          schemasWithoutScopes.push({
+            nsfPath: json.path,
+            schemaName: schema,
+            description: config.description,
+            iconName: config.iconName,
+            icon: appIcons[config.iconName],
+          });
         }
       }
     });
+    
+    const chunkSize = 20;
+    for (let i = 0; i < schemasWithScopes.length; i += chunkSize) {
+        const chunk = schemasWithScopes.slice(i, i + chunkSize);
+        const stringChunk = chunk.map((c) => JSON.stringify(c))
+        const uniqueChunk = [...new Set(stringChunk)].map((c) => JSON.parse(c))
+        
+        setTimeout(() => {
+          dispatch({
+            type: UPDATE_SCHEMA,
+            payload: uniqueChunk
+          })
+        })
+    }
   }
 
   let availableDatabases = {
@@ -336,19 +395,6 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
   return schemasWithoutScopes
 }
 
-const getSchema = (nsfPath: string, schemaName: string, dispatch: Dispatch) => new Promise<void>(resolve => {
-  fetchSchema({ nsfPath, schemaName })
-    .then((schemaData) => {
-      dispatch({
-        type: UPDATE_SCHEMA,
-        payload: schemaData
-      });
-    })
-    .finally(() => {
-      resolve();
-    });
-});
-
 export const fetchKeepDatabases = () => {
   return async (dispatch: Dispatch, getState: () => AppState) => {
     dispatch(setLoading({ status: true }));
@@ -358,7 +404,7 @@ export const fetchKeepDatabases = () => {
       onlyConfigured: false
     };
 
-    const { databases, scopes } = getState().databases;
+    const { scopes } = getState().databases;
 
     const scopeList = scopes.map((scope) => {
       return scope.nsfPath + ':' + scope.schemaName;
@@ -372,7 +418,7 @@ export const fetchKeepDatabases = () => {
       },
       body: JSON.stringify(payload)
     }).then(async function respond(response) {
-      processResponse(response, dispatch, scopeList);
+      processResponse(response, dispatch, scopeList)
     });
   }
 }
@@ -570,7 +616,7 @@ export const fetchFields = (
               });
             } else {
               let field = res.data[key];
-              let format = key === "$FILES" ? "string" : convertDesignType2Format(field.type);
+              let format = key === "$FILES" ? "string" : convertDesignType2Format(field.type, field.attributes);
               let allowMultiValues = field.allowmultivalues;
               let type = convert2FieldType(format, allowMultiValues);
               let fieldAccess = 'RO';
@@ -600,6 +646,13 @@ export const fetchFields = (
           dispatch<any>(addActiveFields(externalName, draggableFields));
           dispatch<any>(setLoadedForm(schemaName, formName));
           dispatch<any>(setLoadedFields(externalName, draggableFields) as any);
+
+          dispatch({
+            type: SET_VALUE,
+            payload: {
+              status: false,
+            }
+          })
         });
     } catch (err: any) {
       console.log(err);
@@ -641,7 +694,8 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
                   viewName: view['@name'],
                   viewAlias: aliasArray,
                   viewUnid: view['@unid'],
-                  viewUpdated: view['columns'] && view['columns'].length ? true : false
+                  viewUpdated: view['columns'] && view['columns'].length ? true : false,
+                  viewSelectionFormula: view['@selectionformula'],
                 };
               })
             ) as any
@@ -657,6 +711,7 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
  * Retrieves folders for a particular database and
  * passes them to Redux.
  *
+ * @param dbName the name of the schema
  * @param nsfPath the name of the database
  */
 export const fetchFolders = (dbName: string, nsfPath: string) => {
@@ -879,7 +934,7 @@ export const quickConfig = (dbData: any) => {
 /**
  * Add Database and check for errors
  */
-export const addSchema = (dbData: any) => {
+export const addSchema = (dbData: any, resetCallback?: () => void) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
@@ -913,6 +968,9 @@ export const addSchema = (dbData: any) => {
               type: CLEAR_SCHEMA_FORM,
               payload: true
             });
+            if (resetCallback) {
+              resetCallback()
+            }
           }
           dispatch(
             toggleAlert(`${dbData.schemaName} has been successfully created.`)
@@ -935,7 +993,7 @@ export const addSchema = (dbData: any) => {
 /**
  * Update schema to server and check for errors
  */
-export const updateSchema = (schemaData: any) => {
+export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => void) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
@@ -956,14 +1014,9 @@ export const updateSchema = (schemaData: any) => {
         )
         .then((response) => {
           const { data } = response;
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: schemaData.nsfPath,
-              schemaName: schemaData.schemaName
-            }
-          });
+          if (!!setSchemaData) {
+            setSchemaData(data)
+          }
           dispatch({
             type: ADD_NEW_SCHEMA_TO_STATE,
             payload: {
@@ -982,7 +1035,6 @@ export const updateSchema = (schemaData: any) => {
             payload: true
           });
         });
-      dispatch(clearDBError());
     } catch (err: any) {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
@@ -1066,7 +1118,24 @@ function loadConfiguredForms(
     .catch((e: any) => console.log('Error processing: ' + e));
   }
 
-export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArray: Array<any>) => {
+/**
+ * Prepare form object to pass into the schema data payload.
+ *
+ * @param schemaData      the current schema object before changing the forms
+ * @param dbName          the name of the schema
+ * @param formsArray      the array of the new forms to be set into the schema object
+ * @param setSchemaData   callback to set the schema state
+ * @param successMsg      the alert message to show if updating the forms is a success
+ * @param successCallback callback function to execute after success
+ */
+export const handleDatabaseForms= (
+  schemaData: Database,
+  dbName:string,
+  formsArray: Array<any>,
+  setSchemaData: (data: Database) => void,
+  successMsg: string,
+  successCallback?: () => void,
+) => {
   return async (dispatch: Dispatch) => {
     // Send the new views to the server
     const formModeData = {
@@ -1092,7 +1161,7 @@ export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArr
       if (form.formModes.length > 0) {
         formToUpdate.push(form);
         return;
-      }else{
+      } else {
         const newFormData = {
           formName: form.formName,
           alias: form.alias,
@@ -1101,13 +1170,14 @@ export const handleDatabaseForms= (schemaData: Database, dbName:string, formsArr
         formToUpdate.push(newFormData);
       }
     });
-    dispatch(updateForms(schemaData,dbName, formToUpdate) as any);
+    dispatch(updateForms(schemaData, dbName, formToUpdate, setSchemaData, successMsg, successCallback) as any);
   }
 }
 
 export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch<React.SetStateAction<string[]>>)  => {
   let allForms: Array<any> = [];
   let configformsList: Array<any> = [];
+  
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
@@ -1120,7 +1190,7 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
           }
         })
         if (apiData) {
-          dispatch(addNsfDesign(nsfPath, apiData.data));
+          dispatch(addNsfDesign(nsfPath, apiData.data))
   
           // Get list of configured forms
           axios
@@ -1134,14 +1204,6 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
               }
             )
             .then((response) => {
-              dispatch({
-                type: UPDATE_SCHEMA,
-                payload: {
-                  ...response.data,
-                  nsfPath: nsfPath,
-                  schemaName: dbName
-                }
-              });
               // Loop through configured forms and fetch their modes
               configformsList = response.data.forms;
               if (configformsList != null && configformsList.length > 0) {
@@ -1178,7 +1240,24 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
   }
 }
 
-const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>) => {
+/**
+ * Set the new forms by updating the schema.
+ *
+ * @param schemaData      the current schema object before changing the forms
+ * @param dbName          the name of the schema
+ * @param formsData       the array of the organized forms to be set into the schema object
+ * @param setSchemaData   callback to set the schema state
+ * @param successMsg      the alert message to show if updating the forms is a success
+ * @param successCallback callback function to execute after success
+ */
+const updateForms = (
+  schemaData: Database,
+  dbName: string,
+  formsData: Array<any>,
+  setSchemaData: (data: Database) => void,
+  successMsg: string,
+  successCallback?: () => void,
+) => {
   let configformsList: Array<any> = [];
   return async (dispatch: Dispatch) => {
     const newSchemaData: any = _.omit(
@@ -1203,16 +1282,9 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
         )
         .then((response) => {
           const { data } = response;
+          setSchemaData(data)
           configformsList = response.data.forms.map((form: any) => {
             return { ...form, dbName };
-          });
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: newSchemaData.nsfPath,
-              schemaName: newSchemaData.schemaName
-            }
           });
 
           dispatch(dispatch({
@@ -1222,18 +1294,17 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
               forms: configformsList
             }
           }));
-          dispatch(toggleAlert(`Forms have been successfully saved.`));
           dispatch(setApiLoading(false));
+          dispatch(toggleAlert(successMsg))
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
           dispatch(toggleAlert(`Update forms failed! ${errorMsg}`));
-          dispatch({
-            type: VIEWS_ERROR,
-            payload: true
-          });
         });
       dispatch(clearDBError());
+      if (successCallback) {
+        successCallback()
+      }
     } catch (err: any) {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
@@ -1248,7 +1319,15 @@ const updateForms = (schemaData: Database, dbName: string, formsData: Array<any>
 /**
  * Add/remove active view/s and then send them to the server
  */
-export const handleDatabaseViews = (viewsArray: Array<any>, activeViews: any, dbName: string, schemaData: Database, active: boolean) => {
+export const handleDatabaseViews = (
+  viewsArray: Array<any>,
+  activeViews: any,
+  dbName: string,
+  schemaData: Database,
+  active: boolean,
+  setSchemaData: (data: any) => void,
+  folderNames: Array<string>,
+) => {
   return async (dispatch: Dispatch) => {
     // Build redux data
     const viewsData = viewsArray.map((view: any) => {
@@ -1266,38 +1345,42 @@ export const handleDatabaseViews = (viewsArray: Array<any>, activeViews: any, db
     if (viewsArray.length === 1) {
       activeViews.forEach((view: any) => {
         if (view.viewName !== viewsData[0].viewName) {
-          viewsList.push(saveViewDetails(view));
+          viewsList.push(saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName)));
         } else if (view.viewName === viewsData[0].viewName && active) {
-          viewsList.push(saveViewDetails(view));
+          viewsList.push(saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName)));
         }
       });
       if (active) {
-        viewsList.push(saveViewDetails(viewsArray[0]));
+        viewsList.push(saveViewDetails(viewsArray[0], schemaData.nsfPath, active, folderNames.includes(viewsArray[0].viewName), true));
       }
     } else if (active) {
       const activeViewNames = activeViews.map((view: any) => {
         return view.viewName
       });
-      viewsArray.forEach((view: any) => {
+      viewsArray.forEach(async (view: any) => {
         // if a view was already active, don't add it again to the active views list
         if (!activeViewNames.includes(view.viewName)) {
-          viewsList.push(saveViewDetails(view));
+          const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName), true)
+          viewsList.push(viewDetails);
         }
       });
-      activeViews.forEach((view: any) => {
-        viewsList.push(saveViewDetails(view));
+      activeViews.forEach(async (view: any) => {
+        const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName))
+        viewsList.push(viewDetails);
       });
     }
 
+    const finalViews = await Promise.all(viewsList)
+
     // Send the new views to the server
-    dispatch(updateViews(schemaData, viewsList) as any);
+    dispatch(updateViews(schemaData, finalViews, setSchemaData) as any)
   }
 }
 
 /**
  * update views to server
  */
-const updateViews = (schemaData: Database, viewsData: any) => {
+const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data: any) => void) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0)
@@ -1331,16 +1414,17 @@ const updateViews = (schemaData: Database, viewsData: any) => {
         )
         .then((response) => {
           const { data } = response;
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: newSchemaData.nsfPath,
-              schemaName: newSchemaData.schemaName
-            }
-          });
-          dispatch(setApiLoading(false));
           dispatch(toggleAlert(`Views have been successfully saved.`));
+          setSchemaData({
+            ...data,
+            nsfPath: newSchemaData.nsfPath,
+            schemaName: newSchemaData.schemaName,
+          })
+          return {
+            ...data,
+            nsfPath: newSchemaData.nsfPath,
+            schemaName: newSchemaData.schemaName,
+          }
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
@@ -1350,6 +1434,7 @@ const updateViews = (schemaData: Database, viewsData: any) => {
             payload: true
           });
         });
+      dispatch(setApiLoading(false));
       dispatch(clearDBError());
     } catch (err: any) {
       // Use the response error if it's available
@@ -1362,7 +1447,7 @@ const updateViews = (schemaData: Database, viewsData: any) => {
   };
 };
 
-function saveViewDetails(currentView: any) {
+async function saveViewDetails(currentView: any, nsfPath: string, active: boolean, isFolder: boolean, callFetch = false) {
   let aliasArray: Array<any> = [];
   if (currentView.viewAlias != null && currentView.viewAlias.length > 0) {
     if (Array.isArray(currentView.viewAlias)) {
@@ -1372,14 +1457,50 @@ function saveViewDetails(currentView: any) {
     }
   }
 
-  return {
-    name: currentView.viewName,
-    alias: aliasArray,
-    unid: currentView.viewUnid,
-    columns: currentView.viewColumns,
-    viewUpdated: currentView.viewUpdated
+  let viewDesign: any = {}
+
+  if (active && callFetch) {
+    viewDesign = await getViewDesign(currentView.viewName, nsfPath, isFolder)
+  } else {
+    viewDesign = {
+      ...viewDesign,
+      '@selectionFormula': currentView.viewSelectionFormula,
+    }
+  }
+
+  if (isFolder) {
+    return {
+      name: currentView.viewName,
+      alias: aliasArray,
+      unid: currentView.viewUnid,
+      columns: currentView.viewColumns,
+      viewUpdated: currentView.viewUpdated,
+    }
+  } else {
+    return {
+      name: currentView.viewName,
+      alias: aliasArray,
+      unid: currentView.viewUnid,
+      columns: currentView.viewColumns,
+      viewUpdated: currentView.viewUpdated,
+      selectionFormula: viewDesign['@selectionFormula'],
+    }
   }
 };
+
+// Get view elements by calling the design API
+async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolean) {
+  const res = await fetch(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      'Content-Type': 'application/json'
+    },
+  })
+  
+  const obj = await res.json()
+  return obj
+}
 
 export function setFormName(formName: string) {
   return async (dispatch: Dispatch) => {
@@ -1396,7 +1517,8 @@ function buildReduxViewData(currentView: any, viewActive: boolean) {
     viewAlias: currentView.viewAlias,
     viewUnid: currentView.viewUnid,
     viewActive: viewActive,
-    viewUpdated: !viewActive ? false : currentView.viewUpdated
+    viewUpdated: !viewActive ? false : currentView.viewUpdated,
+    viewSelectionFormula: currentView.viewSelectionFormula,
   }
 }
 
@@ -1575,14 +1697,7 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
         )
         .then((response) => {
           const { data } = response;
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: newSchemaData.nsfPath,
-              schemaName: newSchemaData.schemaName
-            }
-          });
+          
           dispatch(setApiLoading(false));
           dispatch(toggleAlert(`Agents have been successfully saved.`));
         })
@@ -1616,6 +1731,7 @@ export const updateFormMode = (
   formModeData: any,
   formIdx: number,
   clone: boolean,
+  setSchemaData: (schemaData: any) => void,
 ) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
@@ -1682,22 +1798,15 @@ export const updateFormMode = (
         )
         .then((response) => {
           const { data } = response;
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: newSchemaData.nsfPath,
-              schemaName: newSchemaData.schemaName
-            }
-          });
 
-          dispatch(setApiLoading(false));
           if (formIdx !== -1) {
+            setSchemaData(data)
             dispatch(
               appendConfiguredForm(formIdx, formModeData)
             );
           }
           if (!clone) {
+            setSchemaData(data)
             dispatch(
               toggleAlert(
                 `${formModeData.modeName} mode has been successfully ${
@@ -1706,12 +1815,15 @@ export const updateFormMode = (
               )
             );
           } else {
+            setSchemaData(data)
             dispatch(
               toggleAlert(
                 `Mode successfully cloned to ${formModeData.modeName}`
               )
             );
           }
+
+          dispatch(setApiLoading(false));
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
@@ -1735,7 +1847,8 @@ export const updateFormMode = (
 export const deleteFormMode = (
   schemaData: Database,
   formName: string,
-  formModeName: string
+  formModeName: string,
+  setSchemaData: (data: any) => void,
 ) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
@@ -1786,14 +1899,7 @@ export const deleteFormMode = (
         )
         .then((response) => {
           const { data } = response;
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: newSchemaData.nsfPath,
-              schemaName: newSchemaData.schemaName
-            }
-          });
+          setSchemaData(data)
 
           dispatch(setApiLoading(false));
           dispatch(toggleDeleteDialog());
@@ -1814,9 +1920,13 @@ export const deleteFormMode = (
 };
 
 /**
- * Delete configured form to server
+ * Deactivate a configured form to the server.
+ *
+ * @param schemaData      the current schema object before changing the forms
+ * @param formName        the name of the form to delete
+ * @param setSchemaData   callback to set the schema state
  */
-export const deleteForm = (schemaData: Database, formName: string) => {
+export const deleteForm = (schemaData: Database, formName: string, setSchemaData?: (data: Database) => void, customForm = false) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0 && form.formName !== formName)
@@ -1848,20 +1958,26 @@ export const deleteForm = (schemaData: Database, formName: string) => {
           }
         )
         .then((response) => {
-          const { data } = response;
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: {
-              ...data,
-              nsfPath: newSchemaData.nsfPath,
-              schemaName: newSchemaData.schemaName
+          if (!!setSchemaData) {
+            setSchemaData({
+              ...response.data,
+            })
+            if (customForm) {
+              dispatch({
+                type: RESET_FORM,
+                payload: formName,
+              })
+              dispatch(
+                toggleAlert(`Successfully deleted form ${formName}.`)
+              );
+            } else {
+              dispatch(
+                toggleAlert(`Successfully deactivated form ${formName}.`)
+              );
             }
-          });
-
+          }
           dispatch(setApiLoading(false));
-          dispatch(
-            toggleAlert(`${formName} has been Unconfigured Successfully.`)
-          );
+          
           // dispatch(toggleDeleteDialog());
           dispatch(unConfigForm(newSchemaData.schemaName, formName));
         })
@@ -2239,6 +2355,82 @@ export const setForms = (dbName: string, forms: Array<any>) => {
       }
     });
   };
+};
+
+/**
+ * Initialize a new form that user wants to create and configure
+ *
+ * @param form the form object
+ */
+export const addForm = (
+  enabled: boolean,
+  form?: {
+    dbName: string,
+    formName: string,
+    alias: Array<string>,
+    formModes: Array<any>,
+    formAccessModes: Array<any>,
+  }
+) => {
+  return async (dispatch: any) => {
+    if (enabled) {
+      await dispatch({
+        type: ADD_FORM,
+        payload: {
+          enabled: true,
+          form: form,
+        }
+      })
+    } else {
+      await dispatch({
+        type: ADD_FORM,
+        payload: {
+          enabled: false,
+        }
+      })
+    }
+  };
+};
+
+/**
+ * Initialize a new form that user wants to create and configure
+ *
+ * @param form the form object
+ * @param nsfPath the name of the NSF
+ */
+export const saveNewForm = (
+  form: {
+    formName: string,
+    fields: Array<any>,
+  },
+  nsfPath: string,
+) => {
+  return async (dispatch: any) => {
+    const formData = {
+      name: form.formName,
+      alias: "",
+      fields: form.fields,
+    }
+    await axios
+      .put(
+        `${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+      .then((res) => {
+        const data = { res }
+        
+        dispatch(toggleAlert("New form schema created!"))
+      })
+      .catch((err: string) => {
+        console.log(err)
+      })
+  }
 };
 
 /**

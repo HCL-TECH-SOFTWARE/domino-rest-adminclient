@@ -177,6 +177,53 @@ export function updateApp(appData: any) {
   };
 }
 
+export function getSingleApp(appId: string) {
+  return async (dispatch: Dispatch) => {
+    // Based on API verb, this is now PUT instead of patch
+    await axios
+      .get(
+        `${SETUP_KEEP_API_URL}/admin/application/${appId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+      .then((res) => {
+        const appReduxData: AppProp = {
+          appName: res.data.client_name,
+          appDescription: res.data.description,
+          appCallbackUrls: res.data.redirect_uris,
+          appContacts: res.data.contacts,
+          appId: res.data.client_id,
+          appIcon: res.data.logo_uri,
+          appScope: res.data.scope,
+          appHasSecret: res.data.hasSecret ? true : false,
+          appSecret: res.data.client_secret,
+          appStartPage: res.data.client_uri,
+          appStatus: res.data.status
+        };
+        dispatch({
+          type: UPDATE_APP,
+          payload: appReduxData
+        });
+      })
+      .catch((err) => {
+        // Use the Keep response error if it's available
+        if (err.response && err.response.statusText) {
+          dispatch(
+            toggleAlert(`Error Updating App: ${err.response.statusText}`)
+          );
+        }
+        // Otherwise use the generic error
+        else {
+          dispatch(toggleAlert(`Error Updating App: ${err.message}`));
+        }
+      });
+  };
+}
+
 export function executing(visibility: boolean) {
   return {
     type: EXECUTING,
@@ -299,6 +346,54 @@ export const setPullApp = (appPull: boolean) => {
     payload: appPull
   };
 };
+
+/**
+ * Generate application secret
+ * @param appId     the application ID
+ * @param appStatus the application status
+ */
+export const generateSecret = (
+  appId: string,
+  appStatus: string,
+  setGenerating: (generating: boolean) => void,
+  setAppSecret: (appSecret: string) => void,
+)  => {
+  return async (dispatch: Dispatch) => {
+    setGenerating(true)
+
+    axios
+      .post(
+        `${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`,
+        {
+          status: appStatus
+          //TODO: warn if secret exists ask for confirmation
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getToken()}`
+          }
+        }
+      )
+      .then(async (res) => {
+        setGenerating(false);
+        setAppSecret(res.data.client_secret);
+      })
+      .catch((err) => {
+        // Use the Keep response error if it's available
+        if (err.response && err.response.statusText) {
+          dispatch(
+            toggleAlert(
+              `Error Generating App Secret: ${err.response.statusText}`
+            )
+          );
+        }
+        // Otherwise use the generic error
+        else {
+          dispatch(toggleAlert(`Error Generating App Secret: ${err.message}`));
+        }
+      })
+  }
+}
 
 /**
  * Init applications state

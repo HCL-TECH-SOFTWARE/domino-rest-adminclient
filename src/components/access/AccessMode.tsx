@@ -17,11 +17,12 @@ import { AccessModeContainer } from './styles';
 import TabsAccess from './TabsAccess';
 import PageLoading from '../loaders/PageLoading';
 import { Mode } from '../../store/databases/types';
-import { getDatabaseIndex, getFormIndex } from '../../store/databases/scripts';
 import {
   cacheFormFields,
   setLoadedFields,
   addActiveFields,
+  addForm,
+  fetchSchema,
 } from '../../store/databases/action';
 import { AccessContext } from './AccessContext';
 import { AppState } from '../../store';
@@ -53,6 +54,23 @@ const AccessMode: React.FC = () => {
     modes.findIndex((mode: any) => mode.modeName === 'default')
   );
   const [currentModeIndex, setCurrentModeIndex] = useState(modeIndex);
+  const [schemaData, setSchemaData] = useState({
+    '@unid': "",
+    apiName: "",
+    schemaName: "",
+    description: "",
+    nsfPath: "",
+    icon: "beach",
+    iconName: "beach",
+    isActive: "true",
+    owners: [],
+    isModeFetch: false,
+    modes: [],
+    forms: [],
+    configuredForms: [],
+    views: [],
+    agents: [],
+  })
 
   const urls = useLocation();
   const nsfPath = decodeURIComponent(urls.pathname.split('/')[2]);
@@ -60,19 +78,25 @@ const AccessMode: React.FC = () => {
   const dbName = urls.pathname.split('/')[3];
 
   const { loading } = useSelector((state: AppState) => state.dialog);
-  const { loadedFields } = useSelector((state: AppState) => state.databases);
-  const { forms } = useSelector(
-    (state: AppState) =>
-      state.databases.databases[
-        getDatabaseIndex(state.databases.databases, dbName, nsfPath)
-      ]
-  );
+  const { loadedFields, newForm } = useSelector((state: AppState) => state.databases);
+  const forms: any[] = []
+  const allForms = newForm.form ? [...forms, newForm.form] : forms
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
-  const allModes = forms[getFormIndex(forms, formName)].formModes;
+  const [allModes, setAllModes] = useState(allForms.length > 0 ? allForms.filter((form) => form.formName === formName)[0].formModes : [])
   const currentDesign = nsfDesigns[nsfPath];
   const fetchFieldsArray = currentDesign?.forms;
   const [tabValue, setTabValue] = useState(0);
   const [openModeCompare, setOpenModeCompare] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchSchema(nsfPath, dbName, setSchemaData) as any)
+  }, [dispatch, nsfPath, dbName])
+
+  useEffect(() => {
+    const forms = schemaData.forms
+    const allForms = newForm.form ? [...forms, newForm.form] : forms
+    setAllModes(allForms.length > 0 ? allForms.filter((form) => form.formName === formName)[0].formModes : [])
+  }, [schemaData, newForm.form, formName])
 
   useEffect(() => {
     function fetchSchemaFields() {
@@ -136,14 +160,16 @@ const AccessMode: React.FC = () => {
       setstate({
         ...state,
         ...newDroppables,
-      });
+      })
     }
     if (fetchFieldsArray.length === 0) {
       dispatch(setLoadedFields(formName, []) as any);
       dispatch(addActiveFields(formName, []) as any);
       dispatch(cacheFormFields(dbName, formName, []) as any);
     }
-    fetchSchemaFields();
+    if (allModes.length > 0) {
+      fetchSchemaFields();
+    }
 
     // eslint-disable-next-line
   }, [urls, allModes, dbName, formName]); //NOSONAR
@@ -326,6 +352,10 @@ const AccessMode: React.FC = () => {
     setOpenModeCompare(false);
   }
 
+  useEffect(() => {
+    addForm(false)
+  })
+
   return (
     <AccessContext.Provider value={[state, setstate]}>
       {fetchFieldsArray.length > 0 ? (
@@ -337,7 +367,7 @@ const AccessMode: React.FC = () => {
             <ModeCompareButton 
               className={`button-compare ${modes.length > 1 ? '' : 'compare-disabled'}`} 
               onClick={handleClickOpenModeCompare}
-              disabled={modes.length === 1}
+              disabled={modes.length === 1 || newForm === null}
             >
               <Typography className={`text ${modes.length > 1 ? '' : 'disabled'}`}>
                 Open Mode Compare
@@ -386,6 +416,8 @@ const AccessMode: React.FC = () => {
                   setPageIndex={setPageIndex}
                   setCurrentModeIndex={setCurrentModeIndex}
                   addField={addField}
+                  schemaData={schemaData}
+                  setSchemaData={setSchemaData}
                 />
               ) : (
                 <GenericLoading />
@@ -397,11 +429,12 @@ const AccessMode: React.FC = () => {
         <PageLoading message={`Loading ${formName} Form Access Data`} />
       )}
       <NetworkErrorDialog />
-      <ModeCompare 
+      {!newForm.enabled && allModes.length > 0 && <ModeCompare 
         open={openModeCompare}
         handleClose={handleCloseModeCompare}
         currentModeIndex={currentModeIndex}
-      />
+        schemaData={schemaData}
+      />}
     </AccessContext.Provider>
   );
 };

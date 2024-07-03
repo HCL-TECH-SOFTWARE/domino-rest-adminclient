@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import DBIcon from '@material-ui/icons/Storage';
-import { useHistory } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { checkIcon } from '../../../../../styles/scripts';
 import appIcons from '../../../../../styles/app-icons';
@@ -88,8 +88,8 @@ const ScopesAlphabeticalView: React.FC<ScopesAlphabeticalSchemaViewProps> = ({
   databases,
   openScope
 }) => {
-  const history = useHistory();
-  const { pathname } = history.location;
+  const location = useLocation();
+  const { pathname } = location;
   const isSchema = pathname === '/schema';
   const alphabets = mapAlphabets(databases, isSchema);
 
