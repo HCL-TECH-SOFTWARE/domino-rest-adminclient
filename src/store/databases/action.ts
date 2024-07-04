@@ -6,7 +6,6 @@
 
 import { Dispatch } from 'redux';
 import axios, { AxiosResponse } from 'axios';
-import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 import {
   Database,
@@ -61,7 +60,7 @@ import {
   DELETE_ACTIVEAGENT,
   UPDATE_ERROR,
   SET_FORM_NAME,
-  SET_FOLDERS,
+  SET_FOLDERS
 } from './types';
 import { setLoading } from '../loading/action';
 import { toggleDrawer, toggleQuickConfigDrawer } from '../drawer/action';
@@ -74,10 +73,7 @@ import { SETUP_KEEP_API_URL, BASE_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
 import { toggleSettings } from '../dbsettings/action';
-import {
-  convert2FieldType,
-  convertDesignType2Format
-} from '../../components/access/functions';
+import { convert2FieldType, convertDesignType2Format } from '../../components/access/functions';
 import { fullEncode } from '../../utils/common';
 import appIcons from '../../styles/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
@@ -106,8 +102,7 @@ export function setDbIndex(index: number) {
 
 function getErrorMsg(error: any) {
   if (error) {
-    if (error.response && error.response.statusText)
-      return error.response.statusText;
+    if (error.response && error.response.statusText) return error.response.statusText;
     if (error.message) return error.message;
   }
   return '';
@@ -151,15 +146,12 @@ export function deleteSchema(dbData: any) {
     if (nsfPath && schemaName) {
       try {
         axios
-          .delete(
-            `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`,
-            {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-              }
+          .delete(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
             }
-          )
+          })
           .then(() => {
             dispatch({
               type: DELETE_SCHEMA,
@@ -170,9 +162,7 @@ export function deleteSchema(dbData: any) {
             });
             dispatch(toggleDeleteDialog());
             dispatch(setApiLoading(false));
-            dispatch(
-              toggleAlert(`${dbData.schemaName} has been successfully deleted.`)
-            );
+            dispatch(toggleAlert(`${dbData.schemaName} has been successfully deleted.`));
           })
           .catch((error: any) => {
             dispatch(setApiLoading(false));
@@ -213,15 +203,7 @@ export const fetchScope = async (scopeData: any) => {
       }
     })
     .then((res) => res.data);
-  const {
-    schemaName,
-    nsfPath,
-    isActive,
-    icon,
-    iconName,
-    description,
-    formulaEngine
-  } = scopes;
+  const { schemaName, nsfPath, isActive, icon, iconName, description, formulaEngine } = scopes;
   return {
     apiName: apiName,
     schemaName: schemaName,
@@ -256,11 +238,11 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
           }
         })
         .then((res) => {
-          setSchemaData(res.data)
+          setSchemaData(res.data);
           dispatch({
             type: SET_API_LOADING,
-            payload: false,
-          })
+            payload: false
+          });
         });
     } catch (err) {
       console.log(err);
@@ -270,9 +252,9 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
 
 const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any>) => {
   const reader = response.body.getReader();
-  const td = new TextDecoder("utf-8");
-  let buffer = "";
-  
+  const td = new TextDecoder('utf-8');
+  let buffer = '';
+
   reader.read().then(async function processText({ done, value, schemasWithoutScopes }: any) {
     schemasWithoutScopes = [];
     if (done) {
@@ -282,51 +264,56 @@ const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any
 
       const chunkSize = 20;
       for (let i = 0; i < schemasWithoutScopes.length; i += chunkSize) {
-          const chunk = schemasWithoutScopes.slice(i, i + chunkSize);
-          const stringChunk = chunk.map((c: any) => JSON.stringify(c))
-          const uniqueChunk = [...new Set(stringChunk)].map((c: any) => JSON.parse(c))
-          setTimeout(() => {
-            dispatch({
-              type: UPDATE_SCHEMA,
-              payload: uniqueChunk
-            })
-          })
+        const chunk = schemasWithoutScopes.slice(i, i + chunkSize);
+        const stringChunk = chunk.map((c: any) => JSON.stringify(c));
+        const uniqueChunk = [...new Set(stringChunk)].map((c: any) => JSON.parse(c));
+        setTimeout(() => {
+          dispatch({
+            type: UPDATE_SCHEMA,
+            payload: uniqueChunk
+          });
+        });
       }
-      
+
       dispatch(setPullDatabase(true));
       return;
     }
 
     try {
-        let decoded = td.decode(value);
-        buffer += decoded;
-        dispatch({
-          type: SET_VALUE,
-          payload: { status: false }
-        })
-    }
-    catch(e){
-        //console.log("Exception:"+e);
+      let decoded = td.decode(value);
+      buffer += decoded;
+      dispatch({
+        type: SET_VALUE,
+        payload: { status: false }
+      });
+    } catch (e) {
+      //console.log("Exception:"+e);
     }
 
     return reader.read().then(processText);
-  })
-}
+  });
+};
 
-const processBuffer = (buffer: string, dispatch: Dispatch, scopeList: Array<any>, schemasWithoutScopes: Array<any>, lastLine: boolean) => {
+const processBuffer = (
+  buffer: string,
+  dispatch: Dispatch,
+  scopeList: Array<any>,
+  schemasWithoutScopes: Array<any>,
+  lastLine: boolean
+) => {
   let newArray = lastLine ? buffer.split('\n') : buffer.split('\n').slice(0, -1);
-  newArray.forEach(part => {
+  newArray.forEach((part) => {
     let processedPart = processPart(part, dispatch, displayResult, scopeList, schemasWithoutScopes);
-    if(!!processedPart) schemasWithoutScopes = [...schemasWithoutScopes, processedPart];
+    if (!!processedPart) schemasWithoutScopes = [...schemasWithoutScopes, processedPart];
   });
   buffer = newArray[newArray.length - 1];
-  return schemasWithoutScopes
-}
+  return schemasWithoutScopes;
+};
 
-const processPart = (part: string, dispatch: Dispatch, callback: any, scopeList: Array<any>, schemasWithoutScopes: Array<any>,) => {
+const processPart = (part: string, dispatch: Dispatch, callback: any, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
   if (part.endsWith(',')) return callback(JSON.parse(part.slice(0, -1)), dispatch, scopeList, schemasWithoutScopes);
   else if (part.endsWith('}')) return callback(JSON.parse(part), dispatch, scopeList, schemasWithoutScopes);
-}
+};
 
 const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
   if (!!json.configurations && json.configurations.length > 0) {
@@ -337,9 +324,9 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
       iconName: string;
       icon: string;
       nsfPath: string;
-    }> = []
+    }> = [];
     configurations.forEach((config: any) => {
-      let schema = typeof(config) === 'string' ? config : config.name;
+      let schema = typeof config === 'string' ? config : config.name;
       if (!!json.path && !!schema) {
         if (scopeList.includes(json.path + ':' + schema)) {
           const new_config = {
@@ -347,33 +334,33 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
             description: config.description,
             iconName: config.iconName,
             icon: appIcons[config.iconName],
-            nsfPath: json.path,
-          }
-          schemasWithScopes.push(new_config)
+            nsfPath: json.path
+          };
+          schemasWithScopes.push(new_config);
         } else {
           schemasWithoutScopes.push({
             nsfPath: json.path,
             schemaName: schema,
             description: config.description,
             iconName: config.iconName,
-            icon: appIcons[config.iconName],
+            icon: appIcons[config.iconName]
           });
         }
       }
     });
-    
+
     const chunkSize = 20;
     for (let i = 0; i < schemasWithScopes.length; i += chunkSize) {
-        const chunk = schemasWithScopes.slice(i, i + chunkSize);
-        const stringChunk = chunk.map((c) => JSON.stringify(c))
-        const uniqueChunk = [...new Set(stringChunk)].map((c) => JSON.parse(c))
-        
-        setTimeout(() => {
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: uniqueChunk
-          })
-        })
+      const chunk = schemasWithScopes.slice(i, i + chunkSize);
+      const stringChunk = chunk.map((c) => JSON.stringify(c));
+      const uniqueChunk = [...new Set(stringChunk)].map((c) => JSON.parse(c));
+
+      setTimeout(() => {
+        dispatch({
+          type: UPDATE_SCHEMA,
+          payload: uniqueChunk
+        });
+      });
     }
   }
 
@@ -381,19 +368,19 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
     title: json.path,
     nsfpath: json.path,
     apinames: json.configurations ? json.configurations : []
-  }
+  };
   let { apinames } = availableDatabases;
   availableDatabases.apinames = apinames.map((apiName: any) => {
-    if (typeof(apiName) === 'string') return apiName
-    else return apiName.name
+    if (typeof apiName === 'string') return apiName;
+    else return apiName.name;
   });
   dispatch({
     type: ADD_AVAILABLE_DATABASE,
     payload: availableDatabases
-  })
+  });
 
-  return schemasWithoutScopes
-}
+  return schemasWithoutScopes;
+};
 
 export const fetchKeepDatabases = () => {
   return async (dispatch: Dispatch, getState: () => AppState) => {
@@ -418,21 +405,17 @@ export const fetchKeepDatabases = () => {
       },
       body: JSON.stringify(payload)
     }).then(async function respond(response) {
-      processResponse(response, dispatch, scopeList)
+      processResponse(response, dispatch, scopeList);
     });
-  }
-}
+  };
+};
 
 const sortAndRemoveDupSchemas = (origSchemas: Array<any>) => {
   origSchemas.sort((schemaA, schemaB) => {
     if (schemaA.schemaName !== schemaB.schemaName) {
-      return schemaA.schemaName
-        ? schemaA.schemaName.localeCompare(schemaB.schemaName)
-        : -1;
+      return schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1;
     } else if (schemaA.nsfPath !== schemaB.nsfPath) {
-      return schemaA.nsfPath
-        ? schemaA.nsfPath.localeCompare(schemaB.nsfPath)
-        : -1;
+      return schemaA.nsfPath ? schemaA.nsfPath.localeCompare(schemaB.nsfPath) : -1;
     } else {
       return 0;
     }
@@ -495,7 +478,7 @@ export const fetchScopes = () => {
       // Begin fetch detailed schemas and refresh store
       simpleSchemas.forEach((schema: any) => {
         dispatch(setPullScope(true));
-        if(!pulled) {
+        if (!pulled) {
           pulled = true;
           dispatch(setPullScope(true));
         }
@@ -572,27 +555,18 @@ export const addActiveFields = (formName: string, fields: Array<any>) => {
  * @param schemaName the name of the database
  * @param formName the unencoded name of the form
  */
-export const fetchFields = (
-  schemaName: string,
-  nsfPath: string,
-  formName: string,
-  externalName: string,
-  designType: string
-) => {
+export const fetchFields = (schemaName: string, nsfPath: string, formName: string, externalName: string, designType: string) => {
   return async (dispatch: Dispatch) => {
     try {
       // Encode the form name
       const encodedFormName = fullEncode(formName);
       await axios
-        .get(
-          `${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${nsfPath}`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
+        .get(`${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json'
           }
-        )
+        })
         .then((res) => {
           // Add uuids for React
           const transformFields = [];
@@ -616,7 +590,7 @@ export const fetchFields = (
               });
             } else {
               let field = res.data[key];
-              let format = key === "$FILES" ? "string" : convertDesignType2Format(field.type, field.attributes);
+              let format = key === '$FILES' ? 'string' : convertDesignType2Format(field.type, field.attributes);
               let allowMultiValues = field.allowmultivalues;
               let type = convert2FieldType(format, allowMultiValues);
               let fieldAccess = 'RO';
@@ -635,11 +609,9 @@ export const fetchFields = (
           }
 
           // Strip away @alias, @hide, and @name
-          const draggableFields: Array<any> = transformFields.filter(
-            (value, idx) => {
-              return idx > 2;
-            }
-          );
+          const draggableFields: Array<any> = transformFields.filter((value, idx) => {
+            return idx > 2;
+          });
 
           // Save active form and fields for left panel
           dispatch<any>(setActiveForm(schemaName, formName));
@@ -650,13 +622,13 @@ export const fetchFields = (
           dispatch({
             type: SET_VALUE,
             payload: {
-              status: false,
+              status: false
             }
-          })
+          });
         });
     } catch (err: any) {
       console.log(err);
-      dispatch(toggleErrorDialog(`${err.code}: ${err.message}`))
+      dispatch(toggleErrorDialog(`${err.code}: ${err.message}`));
     }
   };
 };
@@ -695,7 +667,7 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
                   viewAlias: aliasArray,
                   viewUnid: view['@unid'],
                   viewUpdated: view['columns'] && view['columns'].length ? true : false,
-                  viewSelectionFormula: view['@selectionformula'],
+                  viewSelectionFormula: view['@selectionformula']
                 };
               })
             ) as any
@@ -813,8 +785,8 @@ export const quickConfig = (dbData: any) => {
           }
         })
         .then((response) => {
-          const keepData = _.omit(response.data, [
-            /*'@unid',*/ '@noteid',
+          const propertiesToOmit = [
+            '@noteid',
             '@created',
             '@lastmodified',
             '@revision',
@@ -823,7 +795,15 @@ export const quickConfig = (dbData: any) => {
             '@unread',
             '@etag',
             '$UpdatedBy'
-          ]);
+          ];
+
+          const keepData = Object.keys(response.data).reduce((acc, key) => {
+            if (!propertiesToOmit.includes(key)) {
+              acc[key] = response.data[key];
+            }
+            return acc;
+          }, {} as { [key: string]: any });
+
           const {
             unid,
             agents,
@@ -905,11 +885,7 @@ export const quickConfig = (dbData: any) => {
             });
           }
 
-          dispatch(
-            toggleAlert(
-              `${schemaName} and ${dbData.scopeName} have been successfully created.`
-            )
-          );
+          dispatch(toggleAlert(`${schemaName} and ${dbData.scopeName} have been successfully created.`));
 
           dispatch(setApiLoading(false));
         });
@@ -918,11 +894,7 @@ export const quickConfig = (dbData: any) => {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
         dispatch(setDBError(err.response.statusText));
-      } else if (
-        err.response &&
-        err.response.data &&
-        err.response.data.message
-      ) {
+      } else if (err.response && err.response.data && err.response.data.message) {
         dispatch(setDBError(err.response.data.message));
       } else {
         dispatch(setDBError(err.message));
@@ -939,16 +911,12 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
     try {
       dispatch(setApiLoading(true));
       await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`,
-          dbData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
+        .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, dbData, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
           }
-        )
+        })
         .then((response) => {
           const { data } = response;
           dispatch({
@@ -969,12 +937,10 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
               payload: true
             });
             if (resetCallback) {
-              resetCallback()
+              resetCallback();
             }
           }
-          dispatch(
-            toggleAlert(`${dbData.schemaName} has been successfully created.`)
-          );
+          dispatch(toggleAlert(`${dbData.schemaName} has been successfully created.`));
 
           dispatch(setApiLoading(false));
         });
@@ -999,23 +965,19 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
       dispatch(setApiLoading(true));
       dispatch({
         type: UPDATE_ERROR,
-        payload: false,
-      })
+        payload: false
+      });
       await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`,
-          schemaData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
+        .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, schemaData, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
           }
-        )
+        })
         .then((response) => {
           const { data } = response;
           if (!!setSchemaData) {
-            setSchemaData(data)
+            setSchemaData(data);
           }
           dispatch({
             type: ADD_NEW_SCHEMA_TO_STATE,
@@ -1061,13 +1023,10 @@ function loadUnconfiguredForms(
       formModes: []
     });
   });
-  
 
   // Sort the form names alphabetically
   try {
-    allForms.sort((a, b) =>
-      a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1
-    );
+    allForms.sort((a, b) => (a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1));
   } catch (e) {}
 
   // Save Forms Data
@@ -1105,18 +1064,16 @@ function loadConfiguredForms(
             alias: form['@alias'],
             formModes: []
           });
-        });
+      });
       // Sort the form names alphabetically
-      allForms.sort((a, b) =>
-        a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1
-      );
+      allForms.sort((a, b) => (a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1));
       // Save Forms Data
       setData(apiData.data.forms);
       dispatch(setForms(dbName, allForms));
       dispatch(setCurrentForms(dbName, allForms));
     })
     .catch((e: any) => console.log('Error processing: ' + e));
-  }
+}
 
 /**
  * Prepare form object to pass into the schema data payload.
@@ -1128,32 +1085,32 @@ function loadConfiguredForms(
  * @param successMsg      the alert message to show if updating the forms is a success
  * @param successCallback callback function to execute after success
  */
-export const handleDatabaseForms= (
+export const handleDatabaseForms = (
   schemaData: Database,
-  dbName:string,
+  dbName: string,
   formsArray: Array<any>,
   setSchemaData: (data: Database) => void,
   successMsg: string,
-  successCallback?: () => void,
+  successCallback?: () => void
 ) => {
   return async (dispatch: Dispatch) => {
     // Send the new views to the server
     const formModeData = {
-      modeName: "default",
+      modeName: 'default',
       fields: [],
       readAccessFormula: {
-        formulaType: "domino",
-        formula: "@True",
+        formulaType: 'domino',
+        formula: '@True'
       },
       writeAccessFormula: {
-        formulaType: "domino",
-        formula: "@True",
+        formulaType: 'domino',
+        formula: '@True'
       },
       deleteAccessFormula: {
-        formulaType: "domino",
-        formula: "@False",
+        formulaType: 'domino',
+        formula: '@False'
       },
-      computeWithForm: false,
+      computeWithForm: false
     };
     const formToUpdate: Array<any> = [];
     formsArray.forEach((form) => {
@@ -1165,71 +1122,53 @@ export const handleDatabaseForms= (
         const newFormData = {
           formName: form.formName,
           alias: form.alias,
-          formModes: [formModeData],
+          formModes: [formModeData]
         };
         formToUpdate.push(newFormData);
       }
     });
     dispatch(updateForms(schemaData, dbName, formToUpdate, setSchemaData, successMsg, successCallback) as any);
-  }
-}
+  };
+};
 
-export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch<React.SetStateAction<string[]>>)  => {
+export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispatch<React.SetStateAction<string[]>>) => {
   let allForms: Array<any> = [];
   let configformsList: Array<any> = [];
-  
+
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const apiData = await axios.get(
-        `${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
-        })
-        if (apiData) {
-          dispatch(addNsfDesign(nsfPath, apiData.data))
-  
-          // Get list of configured forms
-          axios
-            .get(
-              `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
-            .then((response) => {
-              // Loop through configured forms and fetch their modes
-              configformsList = response.data.forms;
-              if (configformsList != null && configformsList.length > 0) {
-                loadConfiguredForms(
-                  configformsList,
-                  allForms,
-                  dbName,
-                  apiData,
-                  setData,
-                  dispatch
-                );
-              } else {
-                // Add unconfigured forms
-                loadUnconfiguredForms(
-                  apiData,
-                  allForms,
-                  dbName,
-                  setData,
-                  dispatch
-                );
-              }
-              setActiveViews(dbName, response.data.views);
-              setActiveAgents(dbName, response.data.agents);
-            });
+      const apiData = await axios.get(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          Accept: 'application/json'
         }
-    }catch (err: any) {
+      });
+      if (apiData) {
+        dispatch(addNsfDesign(nsfPath, apiData.data));
+
+        // Get list of configured forms
+        axios
+          .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
+            }
+          })
+          .then((response) => {
+            // Loop through configured forms and fetch their modes
+            configformsList = response.data.forms;
+            if (configformsList != null && configformsList.length > 0) {
+              loadConfiguredForms(configformsList, allForms, dbName, apiData, setData, dispatch);
+            } else {
+              // Add unconfigured forms
+              loadUnconfiguredForms(apiData, allForms, dbName, setData, dispatch);
+            }
+            setActiveViews(dbName, response.data.views);
+            setActiveAgents(dbName, response.data.agents);
+          });
+      }
+    } catch (err: any) {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
         dispatch(setDBError(err.response.statusText));
@@ -1237,8 +1176,8 @@ export const pullForms = (nsfPath: string, dbName:string, setData:React.Dispatch
         dispatch(setDBError(err.message));
       }
     }
-  }
-}
+  };
+};
 
 /**
  * Set the new forms by updating the schema.
@@ -1256,17 +1195,14 @@ const updateForms = (
   formsData: Array<any>,
   setSchemaData: (data: Database) => void,
   successMsg: string,
-  successCallback?: () => void,
+  successCallback?: () => void
 ) => {
   let configformsList: Array<any> = [];
   return async (dispatch: Dispatch) => {
-    const newSchemaData: any = _.omit(
-      {
-        ...schemaData,
-        forms: formsData,
-      },
-      ['isFetch']
-    );
+    const newSchemaData = {
+      ...schemaData,
+      forms: formsData
+    };
     try {
       dispatch(setApiLoading(true));
       await axios
@@ -1282,20 +1218,22 @@ const updateForms = (
         )
         .then((response) => {
           const { data } = response;
-          setSchemaData(data)
+          setSchemaData(data);
           configformsList = response.data.forms.map((form: any) => {
             return { ...form, dbName };
           });
 
-          dispatch(dispatch({
-            type: SET_FORMS,
-            payload: {
-              db: dbName,
-              forms: configformsList
-            }
-          }));
+          dispatch(
+            dispatch({
+              type: SET_FORMS,
+              payload: {
+                db: dbName,
+                forms: configformsList
+              }
+            })
+          );
           dispatch(setApiLoading(false));
-          dispatch(toggleAlert(successMsg))
+          dispatch(toggleAlert(successMsg));
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
@@ -1303,7 +1241,7 @@ const updateForms = (
         });
       dispatch(clearDBError());
       if (successCallback) {
-        successCallback()
+        successCallback();
       }
     } catch (err: any) {
       // Use the response error if it's available
@@ -1314,7 +1252,7 @@ const updateForms = (
       }
     }
   };
-}
+};
 
 /**
  * Add/remove active view/s and then send them to the server
@@ -1326,7 +1264,7 @@ export const handleDatabaseViews = (
   schemaData: Database,
   active: boolean,
   setSchemaData: (data: any) => void,
-  folderNames: Array<string>,
+  folderNames: Array<string>
 ) => {
   return async (dispatch: Dispatch) => {
     // Build redux data
@@ -1351,31 +1289,33 @@ export const handleDatabaseViews = (
         }
       });
       if (active) {
-        viewsList.push(saveViewDetails(viewsArray[0], schemaData.nsfPath, active, folderNames.includes(viewsArray[0].viewName), true));
+        viewsList.push(
+          saveViewDetails(viewsArray[0], schemaData.nsfPath, active, folderNames.includes(viewsArray[0].viewName), true)
+        );
       }
     } else if (active) {
       const activeViewNames = activeViews.map((view: any) => {
-        return view.viewName
+        return view.viewName;
       });
       viewsArray.forEach(async (view: any) => {
         // if a view was already active, don't add it again to the active views list
         if (!activeViewNames.includes(view.viewName)) {
-          const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName), true)
+          const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName), true);
           viewsList.push(viewDetails);
         }
       });
       activeViews.forEach(async (view: any) => {
-        const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName))
+        const viewDetails = saveViewDetails(view, schemaData.nsfPath, active, folderNames.includes(view.viewName));
         viewsList.push(viewDetails);
       });
     }
 
-    const finalViews = await Promise.all(viewsList)
+    const finalViews = await Promise.all(viewsList);
 
     // Send the new views to the server
-    dispatch(updateViews(schemaData, finalViews, setSchemaData) as any)
-  }
-}
+    dispatch(updateViews(schemaData, finalViews, setSchemaData) as any);
+  };
+};
 
 /**
  * update views to server
@@ -1391,14 +1331,11 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
           alias: form.alias
         };
       });
-    const newSchemaData: any = _.omit(
-      {
-        ...schemaData,
-        forms: filteredForms,
-        views: viewsData
-      },
-      ['isFetch']
-    );
+    const newSchemaData: any = {
+      ...schemaData,
+      forms: filteredForms,
+      views: viewsData
+    };
     try {
       dispatch(setApiLoading(true));
       await axios
@@ -1418,13 +1355,13 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
           setSchemaData({
             ...data,
             nsfPath: newSchemaData.nsfPath,
-            schemaName: newSchemaData.schemaName,
-          })
+            schemaName: newSchemaData.schemaName
+          });
           return {
             ...data,
             nsfPath: newSchemaData.nsfPath,
-            schemaName: newSchemaData.schemaName,
-          }
+            schemaName: newSchemaData.schemaName
+          };
         })
         .catch((error) => {
           const errorMsg = getErrorMsg(error);
@@ -1457,15 +1394,15 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
     }
   }
 
-  let viewDesign: any = {}
+  let viewDesign: any = {};
 
   if (active && callFetch) {
-    viewDesign = await getViewDesign(currentView.viewName, nsfPath, isFolder)
+    viewDesign = await getViewDesign(currentView.viewName, nsfPath, isFolder);
   } else {
     viewDesign = {
       ...viewDesign,
-      '@selectionFormula': currentView.viewSelectionFormula,
-    }
+      '@selectionFormula': currentView.viewSelectionFormula
+    };
   }
 
   if (isFolder) {
@@ -1474,8 +1411,8 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
       alias: aliasArray,
       unid: currentView.viewUnid,
       columns: currentView.viewColumns,
-      viewUpdated: currentView.viewUpdated,
-    }
+      viewUpdated: currentView.viewUpdated
+    };
   } else {
     return {
       name: currentView.viewName,
@@ -1483,23 +1420,26 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
       unid: currentView.viewUnid,
       columns: currentView.viewColumns,
       viewUpdated: currentView.viewUpdated,
-      selectionFormula: viewDesign['@selectionFormula'],
-    }
+      selectionFormula: viewDesign['@selectionFormula']
+    };
   }
-};
+}
 
 // Get view elements by calling the design API
 async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolean) {
-  const res = await fetch(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-      'Content-Type': 'application/json'
-    },
-  })
-  
-  const obj = await res.json()
-  return obj
+  const res = await fetch(
+    `${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  const obj = await res.json();
+  return obj;
 }
 
 export function setFormName(formName: string) {
@@ -1507,8 +1447,8 @@ export function setFormName(formName: string) {
     dispatch({
       type: SET_FORM_NAME,
       payload: formName
-    })
-  }
+    });
+  };
 }
 
 function buildReduxViewData(currentView: any, viewActive: boolean) {
@@ -1518,8 +1458,8 @@ function buildReduxViewData(currentView: any, viewActive: boolean) {
     viewUnid: currentView.viewUnid,
     viewActive: viewActive,
     viewUpdated: !viewActive ? false : currentView.viewUpdated,
-    viewSelectionFormula: currentView.viewSelectionFormula,
-  }
+    viewSelectionFormula: currentView.viewSelectionFormula
+  };
 }
 
 function updatePanels(dbName: string, viewData: ViewObj) {
@@ -1529,8 +1469,8 @@ function updatePanels(dbName: string, viewData: ViewObj) {
       type: UPDATE_VIEW,
       payload: {
         db: dbName,
-        view: viewData,
-      },
+        view: viewData
+      }
     });
 
     // Update Active Panel
@@ -1539,22 +1479,28 @@ function updatePanels(dbName: string, viewData: ViewObj) {
         type: ADD_ACTIVEVIEW,
         payload: {
           db: dbName,
-          activeView: viewData,
-        },
+          activeView: viewData
+        }
       });
     } else {
       dispatch({
         type: DELETE_ACTIVEVIEW,
         payload: {
           db: dbName,
-          activeView: viewData.viewUnid,
-        },
+          activeView: viewData.viewUnid
+        }
       });
     }
-  }
+  };
 }
 
-export const handleDatabaseAgents = (agentsArray: Array<any>, activeAgents: Array<any>, dbName: string, schemaData: Database, active: boolean) => {
+export const handleDatabaseAgents = (
+  agentsArray: Array<any>,
+  activeAgents: Array<any>,
+  dbName: string,
+  schemaData: Database,
+  active: boolean
+) => {
   return async (dispatch: Dispatch) => {
     // Build redux data
     const agentsData = agentsArray.map((agent: any) => {
@@ -1581,7 +1527,7 @@ export const handleDatabaseAgents = (agentsArray: Array<any>, activeAgents: Arra
       }
     } else if (active) {
       const activeAgentNames = activeAgents.map((agent: any) => {
-        return agent.agentName
+        return agent.agentName;
       });
       agentsArray.forEach((agent: any) => {
         // if agent was already active, don't add it again to the active views list
@@ -1596,8 +1542,8 @@ export const handleDatabaseAgents = (agentsArray: Array<any>, activeAgents: Arra
 
     // Send the new agents to the server
     dispatch(updateAgents(schemaData, agentsList) as any);
-  }
-}
+  };
+};
 
 function buildReduxAgentData(currentAgent: any, agentActive: boolean) {
   return {
@@ -1606,7 +1552,7 @@ function buildReduxAgentData(currentAgent: any, agentActive: boolean) {
     agentUnid: currentAgent.agentUnid,
     agentActive: agentActive,
     agentUpdated: currentAgent.agentUpdated
-  } 
+  };
 }
 
 function updateActiveAgents(dbName: string, agentData: AgentObj) {
@@ -1616,8 +1562,8 @@ function updateActiveAgents(dbName: string, agentData: AgentObj) {
       type: UPDATE_AGENT,
       payload: {
         db: dbName,
-        agent: agentData,
-      },
+        agent: agentData
+      }
     });
 
     // Update Active Panel
@@ -1626,19 +1572,19 @@ function updateActiveAgents(dbName: string, agentData: AgentObj) {
         type: ADD_ACTIVEAGENT,
         payload: {
           db: dbName,
-          activeAgent: agentData,
-        },
+          activeAgent: agentData
+        }
       });
     } else {
       dispatch({
         type: DELETE_ACTIVEAGENT,
         payload: {
           db: dbName,
-          activeAgent: agentData.agentUnid,
-        },
+          activeAgent: agentData.agentUnid
+        }
       });
     }
-  }
+  };
 }
 
 function saveAgentDetails(currentAgent: any) {
@@ -1657,8 +1603,8 @@ function saveAgentDetails(currentAgent: any) {
     unid: currentAgent.agentUnid,
     columns: currentAgent.agentColumns,
     agentUpdated: currentAgent.agentUpdated
-  }
-};
+  };
+}
 
 /**
  * update agents to server
@@ -1674,14 +1620,11 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
           alias: form.alias
         };
       });
-    const newSchemaData: any = _.omit(
-      {
-        ...schemaData,
-        forms: filteredForms,
-        agents: agentsData
-      },
-      ['isFetch']
-    );
+    const newSchemaData: any = {
+      ...schemaData,
+      forms: filteredForms,
+      agents: agentsData
+    };
     try {
       dispatch(setApiLoading(true));
       await axios
@@ -1697,7 +1640,7 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
         )
         .then((response) => {
           const { data } = response;
-          
+
           dispatch(setApiLoading(false));
           dispatch(toggleAlert(`Agents have been successfully saved.`));
         })
@@ -1731,7 +1674,7 @@ export const updateFormMode = (
   formModeData: any,
   formIdx: number,
   clone: boolean,
-  setSchemaData: (schemaData: any) => void,
+  setSchemaData: (schemaData: any) => void
 ) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
@@ -1751,24 +1694,19 @@ export const updateFormMode = (
     };
     let isNew = false;
     if (formIndex >= 0) {
-      const formModeIndex = getFormModeIndex(
-        filteredForms[formIndex].formModes,
-        formModeData.modeName
-      );
+      const formModeIndex = getFormModeIndex(filteredForms[formIndex].formModes, formModeData.modeName);
       if (formModeIndex >= 0) {
         let newFormModes = [...filteredForms[formIndex].formModes];
         newFormModes[formModeIndex] = formModeData;
         filteredForms[formIndex] = {
           formName: formName,
-          alias:
-            alias && alias.length > 0 ? alias : filteredForms[formIndex].alias,
+          alias: alias && alias.length > 0 ? alias : filteredForms[formIndex].alias,
           formModes: newFormModes
         };
       } else {
         filteredForms[formIndex] = {
           formName: formName,
-          alias:
-            alias && alias.length > 0 ? alias : filteredForms[formIndex].alias,
+          alias: alias && alias.length > 0 ? alias : filteredForms[formIndex].alias,
           formModes: [...filteredForms[formIndex].formModes, formModeData]
         };
         isNew = true;
@@ -1776,13 +1714,10 @@ export const updateFormMode = (
     } else {
       filteredForms.push(newFormData);
     }
-    const newSchemaData: any = _.omit(
-      {
-        ...schemaData,
-        forms: filteredForms
-      },
-      ['isFetch']
-    );
+    const newSchemaData: any = {
+      ...schemaData,
+      forms: filteredForms
+    };
     try {
       dispatch(setApiLoading(true));
       await axios
@@ -1800,27 +1735,15 @@ export const updateFormMode = (
           const { data } = response;
 
           if (formIdx !== -1) {
-            setSchemaData(data)
-            dispatch(
-              appendConfiguredForm(formIdx, formModeData)
-            );
+            setSchemaData(data);
+            dispatch(appendConfiguredForm(formIdx, formModeData));
           }
           if (!clone) {
-            setSchemaData(data)
-            dispatch(
-              toggleAlert(
-                `${formModeData.modeName} mode has been successfully ${
-                  isNew ? 'added' : 'updated'
-                }.`
-              )
-            );
+            setSchemaData(data);
+            dispatch(toggleAlert(`${formModeData.modeName} mode has been successfully ${isNew ? 'added' : 'updated'}.`));
           } else {
-            setSchemaData(data)
-            dispatch(
-              toggleAlert(
-                `Mode successfully cloned to ${formModeData.modeName}`
-              )
-            );
+            setSchemaData(data);
+            dispatch(toggleAlert(`Mode successfully cloned to ${formModeData.modeName}`));
           }
 
           dispatch(setApiLoading(false));
@@ -1848,7 +1771,7 @@ export const deleteFormMode = (
   schemaData: Database,
   formName: string,
   formModeName: string,
-  setSchemaData: (data: any) => void,
+  setSchemaData: (data: any) => void
 ) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
@@ -1862,14 +1785,9 @@ export const deleteFormMode = (
       });
     const formIndex = getFormIndex(filteredForms, formName);
     if (formIndex >= 0) {
-      const formModeIndex = getFormModeIndex(
-        filteredForms[formIndex].formModes,
-        formModeName
-      );
+      const formModeIndex = getFormModeIndex(filteredForms[formIndex].formModes, formModeName);
       if (formModeIndex >= 0) {
-        const newFormModes = filteredForms[formIndex].formModes.filter(
-          (formMode) => formMode.modeName !== formModeName
-        );
+        const newFormModes = filteredForms[formIndex].formModes.filter((formMode) => formMode.modeName !== formModeName);
         filteredForms[formIndex] = {
           formName: formName,
           alias: filteredForms[formIndex].alias,
@@ -1877,13 +1795,10 @@ export const deleteFormMode = (
         };
       }
     }
-    const newSchemaData: any = _.omit(
-      {
-        ...schemaData,
-        forms: filteredForms
-      },
-      ['isFetch']
-    );
+    const newSchemaData: any = {
+      ...schemaData,
+      forms: filteredForms
+    };
     try {
       dispatch(setApiLoading(true));
       await axios
@@ -1899,7 +1814,7 @@ export const deleteFormMode = (
         )
         .then((response) => {
           const { data } = response;
-          setSchemaData(data)
+          setSchemaData(data);
 
           dispatch(setApiLoading(false));
           dispatch(toggleDeleteDialog());
@@ -1926,7 +1841,12 @@ export const deleteFormMode = (
  * @param formName        the name of the form to delete
  * @param setSchemaData   callback to set the schema state
  */
-export const deleteForm = (schemaData: Database, formName: string, setSchemaData?: (data: Database) => void, customForm = false) => {
+export const deleteForm = (
+  schemaData: Database,
+  formName: string,
+  setSchemaData?: (data: Database) => void,
+  customForm = false
+) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0 && form.formName !== formName)
@@ -1937,13 +1857,10 @@ export const deleteForm = (schemaData: Database, formName: string, setSchemaData
           formModes: form.formModes
         };
       });
-    const newSchemaData: any = _.omit(
-      {
-        ...schemaData,
-        forms: filteredForms
-      },
-      ['isFetch']
-    );
+    const newSchemaData: any = {
+      ...schemaData,
+      forms: filteredForms
+    };
     try {
       dispatch(setApiLoading(true));
       await axios
@@ -1960,24 +1877,20 @@ export const deleteForm = (schemaData: Database, formName: string, setSchemaData
         .then((response) => {
           if (!!setSchemaData) {
             setSchemaData({
-              ...response.data,
-            })
+              ...response.data
+            });
             if (customForm) {
               dispatch({
                 type: RESET_FORM,
-                payload: formName,
-              })
-              dispatch(
-                toggleAlert(`Successfully deleted form ${formName}.`)
-              );
+                payload: formName
+              });
+              dispatch(toggleAlert(`Successfully deleted form ${formName}.`));
             } else {
-              dispatch(
-                toggleAlert(`Successfully deactivated form ${formName}.`)
-              );
+              dispatch(toggleAlert(`Successfully deactivated form ${formName}.`));
             }
           }
           dispatch(setApiLoading(false));
-          
+
           // dispatch(toggleDeleteDialog());
           dispatch(unConfigForm(newSchemaData.schemaName, formName));
         })
@@ -2015,8 +1928,8 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
           }
         })
         .then((response) => {
-          const keepData = _.omit(response.data, [
-            /*'@unid',*/ '@noteid',
+          const omitKeys = [
+            '@noteid',
             '@created',
             '@lastmodified',
             '@revision',
@@ -2025,7 +1938,13 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
             '@unread',
             '@etag',
             '$UpdatedBy'
-          ]);
+          ];
+          const keepData = Object.keys(response.data).reduce((acc, key) => {
+            if (!omitKeys.includes(key)) {
+              acc[key] = response.data[key];
+            }
+            return acc;
+          }, {} as { [key: string]: any });
           dispatch({
             type: isEdit ? UPDATE_SCOPE : ADD_SCOPE,
             payload: keepData
@@ -2082,8 +2001,7 @@ export const updateScope = (active: boolean, data?: any) => {
     dispatch(closeSnackbar());
     dispatch(setApiLoading(true));
     const { contextViewIndex, scopes } = getState().databases;
-    const { apiName, schemaName, nsfPath, description, isActive } =
-      scopes[contextViewIndex];
+    const { apiName, schemaName, nsfPath, description, isActive } = scopes[contextViewIndex];
 
     const formData = {
       apiName,
@@ -2155,15 +2073,12 @@ export const processViewsAgents = (
   return async (dispatch: Dispatch) => {
     try {
       axios
-        .get(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
+        .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
           }
-        )
+        })
         .then((response) => {
           // Initialize Views and Agents
           if (action === 'init') {
@@ -2174,14 +2089,11 @@ export const processViewsAgents = (
             // Build Active View list
             const viewsList: Array<any> = [];
             Object.values(views).forEach((view) => {
-              let alias =
-                view.alias != null && view.alias.length > 0
-                  ? view.alias[0]
-                  : '';
+              let alias = view.alias != null && view.alias.length > 0 ? view.alias[0] : '';
 
               // Suppress alias when it's a duplicate of the name LABS-1903
               alias = alias === view.name ? '' : alias;
-              let viewUpdatedBool = (view.columns && view.columns.length > 0) ? true : false
+              let viewUpdatedBool = view.columns && view.columns.length > 0 ? true : false;
               viewsList.push({
                 viewName: view.name,
                 viewAlias: alias,
@@ -2194,10 +2106,7 @@ export const processViewsAgents = (
             // Build Active Agent list
             const agentsList: Array<any> = [];
             Object.values(agents).forEach((agent) => {
-              let alias =
-                agent.alias != null && agent.alias.length > 0
-                  ? agent.alias[0]
-                  : '';
+              let alias = agent.alias != null && agent.alias.length > 0 ? agent.alias[0] : '';
 
               // Suppress alias when it's a duplicate of the name LABS-1903
               alias = alias === agent.name ? '' : alias;
@@ -2365,11 +2274,11 @@ export const setForms = (dbName: string, forms: Array<any>) => {
 export const addForm = (
   enabled: boolean,
   form?: {
-    dbName: string,
-    formName: string,
-    alias: Array<string>,
-    formModes: Array<any>,
-    formAccessModes: Array<any>,
+    dbName: string;
+    formName: string;
+    alias: Array<string>;
+    formModes: Array<any>;
+    formAccessModes: Array<any>;
   }
 ) => {
   return async (dispatch: any) => {
@@ -2378,16 +2287,16 @@ export const addForm = (
         type: ADD_FORM,
         payload: {
           enabled: true,
-          form: form,
+          form: form
         }
-      })
+      });
     } else {
       await dispatch({
         type: ADD_FORM,
         payload: {
-          enabled: false,
+          enabled: false
         }
-      })
+      });
     }
   };
 };
@@ -2400,37 +2309,33 @@ export const addForm = (
  */
 export const saveNewForm = (
   form: {
-    formName: string,
-    fields: Array<any>,
+    formName: string;
+    fields: Array<any>;
   },
-  nsfPath: string,
+  nsfPath: string
 ) => {
   return async (dispatch: any) => {
     const formData = {
       name: form.formName,
-      alias: "",
-      fields: form.fields,
-    }
+      alias: '',
+      fields: form.fields
+    };
     await axios
-      .put(
-        `${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
+      .put(`${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`, formData, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json'
         }
-      )
+      })
       .then((res) => {
-        const data = { res }
-        
-        dispatch(toggleAlert("New form schema created!"))
+        const data = { res };
+
+        dispatch(toggleAlert('New form schema created!'));
       })
       .catch((err: string) => {
-        console.log(err)
-      })
-  }
+        console.log(err);
+      });
+  };
 };
 
 /**
@@ -2541,11 +2446,7 @@ export const setActiveAgents = (dbName: string, activeAgents: Array<any>) => {
   };
 };
 
-export const cacheFormFields = (
-  dbName: string,
-  formName: string,
-  fields: Array<any>
-) => {
+export const cacheFormFields = (dbName: string, formName: string, fields: Array<any>) => {
   return async (dispatch: any) => {
     await dispatch({
       type: CACHE_FORM_FIELDS,
@@ -2591,24 +2492,16 @@ export const unConfigForm = (schemaName: string, formName: string) => {
  *
  * @param formulaData Formula information needed to run the test
  */
-export const testFormula = (
-  dataSource: string,
-  formulaData: any,
-  formulaType: string
-) => {
+export const testFormula = (dataSource: string, formulaData: any, formulaType: string) => {
   return async (dispatch: Dispatch) => {
     // Run Formula test
     axios
-      .post(
-        `${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`,
-        formulaData,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
+      .post(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, formulaData, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json'
         }
-      )
+      })
 
       // Handle valid response
       .then((response) => {
@@ -2695,9 +2588,7 @@ export function addNsfDesign(nsfPath: string, nsfDesign: any) {
 /**
  * Set only show schemas configured with scopes
  */
-export function setOnlyShowSchemasWithScopes(
-  onlyShowSchemasWithScopes: boolean
-) {
+export function setOnlyShowSchemasWithScopes(onlyShowSchemasWithScopes: boolean) {
   return {
     type: SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES,
     payload: onlyShowSchemasWithScopes
@@ -2710,15 +2601,12 @@ export function setOnlyShowSchemasWithScopes(
 export const getAllFieldsByNsf = (nsfPath: any) => {
   return async (dispatch: Dispatch) => {
     const allFields = await axios
-      .get(
-        `${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
+      .get(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          Accept: 'application/json'
         }
-      )
+      })
       .then(async (res) => {
         return res.data[0];
       });
@@ -2728,7 +2616,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
       TYPE_TIME: 'date-time',
       TYPE_TEXT_LIST: 'string',
       TYPE_NUMBER_LIST: 'number',
-      TYPE_TIME_RANGE: 'date-time',
+      TYPE_TIME_RANGE: 'date-time'
     };
     const allFieldsKey = Object.keys(allFields);
     let requiredFields: any[] = [];
@@ -2747,18 +2635,11 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
         let format = 'string';
         let type = 'string';
         let isMultiValue = false;
-        if (
-          allFieldKey === 'TYPE_NUMBER' ||
-          allFieldKey === 'TYPE_NUMBER_RANGE'
-        ) {
+        if (allFieldKey === 'TYPE_NUMBER' || allFieldKey === 'TYPE_NUMBER_RANGE') {
           format = 'float';
           type = 'number';
         }
-        if (
-          allFieldKey === 'TYPE_NUMBER_RANGE' ||
-          allFieldKey === 'TYPE_TIME_RANGE' ||
-          allFieldKey === 'TYPE_TEXT_LIST'
-        ) {
+        if (allFieldKey === 'TYPE_NUMBER_RANGE' || allFieldKey === 'TYPE_TIME_RANGE' || allFieldKey === 'TYPE_TEXT_LIST') {
           isMultiValue = true;
           type = 'array';
         }
@@ -2788,9 +2669,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
         }
       }
     });
-    const checkSymbolFileFieldExist = finalFields.filter(
-      (field: any) => field.content === '$FILE'
-    );
+    const checkSymbolFileFieldExist = finalFields.filter((field: any) => field.content === '$FILE');
     if (!checkSymbolFileFieldExist || checkSymbolFileFieldExist.length <= 0) {
       const symbolFileField = {
         id: uuid(),
@@ -2804,9 +2683,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
       finalFields.push(symbolFileField);
     }
 
-    dispatch<any>(
-      addActiveFields('keep_internal_form_for_allFields', finalFields)
-    );
+    dispatch<any>(addActiveFields('keep_internal_form_for_allFields', finalFields));
   };
 };
 
