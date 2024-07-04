@@ -9,10 +9,9 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import _ from 'lodash';
 import Check from '@material-ui/icons/CheckCircle';
 import False from '@material-ui/icons/Block';
-import TextField from "@material-ui/core/TextField";
+import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
 import Menu from '@material-ui/core/Menu';
@@ -156,7 +155,7 @@ const EditIcon = styled.div`
     display: inline-block;
     color: blue;
   }
-`
+`;
 
 const StatusIcon = styled.div`
   display: inline-block;
@@ -170,7 +169,7 @@ const DialogContainer = styled.div`
     font-size: 16px;
     font-weight: bold;
   }
-`
+`;
 
 const ViewButtons = styled.div`
   margin-bottom: 30px;
@@ -178,15 +177,15 @@ const ViewButtons = styled.div`
   .text {
     font-size: 14px;
   }
-`
+`;
 
 const Expander = styled.div`
   cursor: pointer;
-  color: #6C7882;
+  color: #6c7882;
   display: flex;
   justify-content: center;
   align-items: center;
-`
+`;
 
 const ConfigContainer = styled(Box)`
   display: flex;
@@ -199,7 +198,7 @@ const ConfigContainer = styled(Box)`
     justify-content: space-around;
     width: 50%;
   }
-`
+`;
 
 const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, schemaData, setSchemaData }) => {
   const { scopes } = useSelector((state: AppState) => state.databases);
@@ -221,33 +220,50 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     forms,
     agents,
     views,
-    schemaName,
+    schemaName
   } = schemaData;
   const [isInUse, setIsInUse] = useState(false);
   const [isConfigLoading, setIsConfigLoading] = useState(true);
   const [desc, setDesc] = useState(description);
   const formula = dqlFormula && dqlFormula.formula ? dqlFormula.formula : '@True';
   const [dqlFormulaValue, setDqlFormulaValue] = useState(formula);
-  const selectedDB = useMemo(() => ({
-    apiName,
-    description,
-    nsfPath,
-    iconName,
-    dqlAccess,
-    openAccess,
-    allowCode,
-    allowDecryption,
-    formulaEngine,
-    dqlFormula,
-    requireRevisionToUpdate,
-    icon,
-    isActive,
-    applicationAccessApprovers: undefined,
-    configuredForms: [],
-    excludedViews: undefined,
-    owners: [],
-    storedProcedures: [],
-  }), [apiName, description, nsfPath, iconName, dqlAccess, openAccess, allowCode, allowDecryption, formulaEngine, dqlFormula, requireRevisionToUpdate, icon, isActive]);
+  const selectedDB = useMemo(
+    () => ({
+      apiName,
+      description,
+      nsfPath,
+      iconName,
+      dqlAccess,
+      openAccess,
+      allowCode,
+      allowDecryption,
+      formulaEngine,
+      dqlFormula,
+      requireRevisionToUpdate,
+      icon,
+      isActive,
+      applicationAccessApprovers: undefined,
+      configuredForms: [],
+      excludedViews: undefined,
+      owners: [],
+      storedProcedures: []
+    }),
+    [
+      apiName,
+      description,
+      nsfPath,
+      iconName,
+      dqlAccess,
+      openAccess,
+      allowCode,
+      allowDecryption,
+      formulaEngine,
+      dqlFormula,
+      requireRevisionToUpdate,
+      icon,
+      isActive
+    ]
+  );
   const [dbContext, setDbContext] = useState(selectedDB);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(1);
@@ -255,7 +271,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
   const [displayIcon, setDisplayIcon] = useState(checkIcon(iconName) ? icon : appIcons['beach']);
   const dispatch = useDispatch();
   const [editOpen, setEditOpen] = useState(false);
-  const [discardDialog, setDiscardDialog]= useState(false);
+  const [discardDialog, setDiscardDialog] = useState(false);
   const [viewMore, setViewMore] = useState(false);
 
   const handleChange = (propName: any, status: any) => {
@@ -265,12 +281,12 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
         [propName]: {
           formulaType: formulaEngine,
           formula: status
-        },
+        }
       });
     } else {
       setDbContext({
         ...dbContext,
-        [propName]: status,
+        [propName]: status
       });
     }
   };
@@ -285,12 +301,12 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
 
   useEffect(() => {
     const schemasWithScopes = scopes.map((scope) => {
-      return scope.nsfPath + ":" + scope.schemaName;
+      return scope.nsfPath + ':' + scope.schemaName;
     });
-    let inuse = schemasWithScopes.includes(nsfPath + ":" + schemaName);
+    let inuse = schemasWithScopes.includes(nsfPath + ':' + schemaName);
     setIsInUse(inuse);
   }, [scopes, nsfPath, schemaName]);
-  
+
   const apiStatus = isInUse ? '(Used by Scopes)' : '(Not used by Scopes)';
 
   const updateSchemaSetting = () => {
@@ -307,10 +323,11 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       dqlFormula,
       requireRevisionToUpdate,
       excludedViews,
-      owners,
+      owners
     } = dbContext;
     const filterEmptyModeForms = forms ? forms.filter((form) => form.formModes.length > 0) : [];
-    const formData = filterEmptyModeForms.map((form) => _.omit(form, 'dbName'));
+
+    const formData = filterEmptyModeForms.map((form) => form);
     const updatedSchema = {
       apiName,
       schemaName: dbName,
@@ -330,30 +347,29 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       views,
       excludedViews,
       owners,
-      forms: formData,
+      forms: formData
     };
     dispatch(updateSchema(updatedSchema, setSchemaData) as any);
   };
-  
+
   useEffect(() => {
-    if (openAccess !== null
-      && dqlAccess !== null
-      && allowCode !== null
-      && allowDecryption !== null
-      && dbContext.openAccess === null
-      && dbContext.dqlAccess === null
-      && dbContext.allowCode === null
-      && dbContext.allowDecryption === null) {
+    if (
+      openAccess !== null &&
+      dqlAccess !== null &&
+      allowCode !== null &&
+      allowDecryption !== null &&
+      dbContext.openAccess === null &&
+      dbContext.dqlAccess === null &&
+      dbContext.allowCode === null &&
+      dbContext.allowDecryption === null
+    ) {
       setDbContext(selectedDB);
       setIsConfigLoading(false);
-    };
-    if (openAccess !== null
-      && dqlAccess !== null
-      && allowCode !== null
-      && allowDecryption !== null) {
+    }
+    if (openAccess !== null && dqlAccess !== null && allowCode !== null && allowDecryption !== null) {
       setIsConfigLoading(false);
     }
-  }, [allowCode, allowDecryption, dqlAccess, openAccess, dbContext, selectedDB])
+  }, [allowCode, allowDecryption, dqlAccess, openAccess, dbContext, selectedDB]);
 
   const handleSelectIcon = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -363,10 +379,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     setAnchorEl(null);
   };
 
-  const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLElement>,
-    index: number
-  ) => {
+  const handleMenuItemClick = (event: React.MouseEvent<HTMLElement>, index: number) => {
     setSelectedIndex(index);
     setAnchorEl(null);
     const _iconName = Object.keys(appIcons)[index];
@@ -376,12 +389,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
 
   const IconDropDown = (
     <InputContainer>
-      <Button
-        aria-controls="icons-menu"
-        aria-haspopup="true"
-        onClick={handleSelectIcon}
-        className="icon-select"
-      >
+      <Button aria-controls="icons-menu" aria-haspopup="true" onClick={handleSelectIcon} className="icon-select">
         <img
           className="icon-image"
           src={`data:image/svg+xml;base64, ${appIcons[displayIconName]}`}
@@ -394,19 +402,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
         />
         <ChevronDown style={{ fontSize: 18 }} />
       </Button>
-      <Menu
-        id="lock-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
+      <Menu id="lock-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
         {Object.keys(appIcons).map((iconName, index) => (
-          <MenuItem
-            key={iconName}
-            selected={index === selectedIndex}
-            onClick={(event) => handleMenuItemClick(event, index)}
-          >
+          <MenuItem key={iconName} selected={index === selectedIndex} onClick={(event) => handleMenuItemClick(event, index)}>
             <>
               <img
                 className="icon-image"
@@ -416,7 +414,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   color: getTheme(themeMode).hoverColor,
                   height: 35,
                   width: 35,
-                  marginRight: 10,
+                  marginRight: 10
                 }}
               />
               {iconName}
@@ -434,7 +432,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       alt="db-icon"
       style={{
         color: getTheme(themeMode).hoverColor,
-        width: '89px',
+        width: '89px'
       }}
     />
   );
@@ -442,7 +440,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
   const handleClickSave = () => {
     updateSchemaSetting();
     setEditOpen(false);
-  }
+  };
 
   const clearEdits = () => {
     setEditOpen(false);
@@ -451,30 +449,31 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     setDqlFormulaValue(formula);
     setDesc(description);
     setDisplayIconName(checkIcon(iconName) ? iconName : 'beach');
-  }
+  };
 
   return (
     <Box>
       <Title>
         {SchemaIcon}
         <StatusIcon>
-            <Tooltip title={apiStatus.slice(1, apiStatus.length - 1)}>
-              <SchemaIconStatus isActive={isInUse ? true : false} style={{ width: '14px', height: '14px' }} />
-            </Tooltip>
-          </StatusIcon>
+          <Tooltip title={apiStatus.slice(1, apiStatus.length - 1)}>
+            <SchemaIconStatus isActive={isInUse ? true : false} style={{ width: '14px', height: '14px' }} />
+          </Tooltip>
+        </StatusIcon>
         <Typography className="api-name" component="p" variant="h5">
-          <Box className='api-schema'>
-            {dbName}
-          </Box>
-          <EditIcon onClick={() => {setEditOpen(true)}}>
-            <FiEdit className='icon' />
+          <Box className="api-schema">{dbName}</Box>
+          <EditIcon
+            onClick={() => {
+              setEditOpen(true);
+            }}>
+            <FiEdit className="icon" />
           </EditIcon>
         </Typography>
         <Typography className="api-nsf" component="p" variant="body2">
           {nsfPath}
         </Typography>
       </Title>
-      <hr color='#d1d1d1' />
+      <hr color="#d1d1d1" />
       <Information>
         <Heading>
           <Typography className="heading" component="p" variant="h6">
@@ -486,17 +485,19 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
           </Typography>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             {description.length > 180 &&
-                (!viewMore ? (<Expander onClick={() => setViewMore(true)}>
-                View More
-                <ExpandMoreIcon />
-              </Expander>)
-              : (<Expander onClick={() => setViewMore(false)}>
-                View Less
-                <ExpandLessIcon />
-              </Expander>))}
+              (!viewMore ? (
+                <Expander onClick={() => setViewMore(true)}>
+                  View More
+                  <ExpandMoreIcon />
+                </Expander>
+              ) : (
+                <Expander onClick={() => setViewMore(false)}>
+                  View Less
+                  <ExpandLessIcon />
+                </Expander>
+              ))}
           </div>
-          <ViewButtons>            
-          </ViewButtons>
+          <ViewButtons></ViewButtons>
         </Heading>
         <Heading>
           <Typography className="heading" component="p" variant="h6">
@@ -510,172 +511,208 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
           <Typography className="heading" component="p" variant="h6">
             Configuration
           </Typography>
-          {isConfigLoading
-          ?
-          <CircularProgress size={20} />
-          :
-          <ListConfig>
-            <Config>
-              <Box style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
-                <Box className='title-container'>
-                  <Typography
-                  color="textPrimary"
-                  className={dqlAccess ? `title` : `title unchecked`}
-                  component="p"
-                  variant="body2"
-                  noWrap={true}
-                >
-                  DQL Access
-                </Typography>
-                </Box>
-                <Box style={{ width: '5%' }}>
-                  {dqlAccess ? <Check className='checkbox' /> : <False className='checkbox unchecked' />}
-                </Box>
-              </Box>
-            </Config>
-            <Config>
-              <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                <Box className='title-container'>
-                  <Tooltip title="Include this in $DATA scope">
+          {isConfigLoading ? (
+            <CircularProgress size={20} />
+          ) : (
+            <ListConfig>
+              <Config>
+                <Box style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
+                  <Box className="title-container">
                     <Typography
                       color="textPrimary"
-                      className={openAccess ? `title` : `title unchecked`}
+                      className={dqlAccess ? `title` : `title unchecked`}
                       component="p"
                       variant="body2"
-                      noWrap={true}
-                    >
-                      In $DATA Scope
-                    </Typography >
-                  </Tooltip>
+                      noWrap={true}>
+                      DQL Access
+                    </Typography>
+                  </Box>
+                  <Box style={{ width: '5%' }}>
+                    {dqlAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                  </Box>
                 </Box>
-                <Box style={{ width: '5%' }}>
-                  {openAccess ? <Check className='checkbox' /> : <False className='checkbox unchecked' />}
+              </Config>
+              <Config>
+                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
+                  <Box className="title-container">
+                    <Tooltip title="Include this in $DATA scope">
+                      <Typography
+                        color="textPrimary"
+                        className={openAccess ? `title` : `title unchecked`}
+                        component="p"
+                        variant="body2"
+                        noWrap={true}>
+                        In $DATA Scope
+                      </Typography>
+                    </Tooltip>
+                  </Box>
+                  <Box style={{ width: '5%' }}>
+                    {openAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                  </Box>
                 </Box>
-              </Box>
-            </Config>
-            <Config>
-              <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                <Box className='title-container'>
-                  <Typography
-                    color="textPrimary"
-                    className={allowCode ? `title` : `title unchecked`}
-                    component="p"
-                    variant="body2"
-                    noWrap={true}
-                  >
-                    Enable Code
+              </Config>
+              <Config>
+                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
+                  <Box className="title-container">
+                    <Typography
+                      color="textPrimary"
+                      className={allowCode ? `title` : `title unchecked`}
+                      component="p"
+                      variant="body2"
+                      noWrap={true}>
+                      Enable Code
+                    </Typography>
+                  </Box>
+                  <Box style={{ width: '5%' }}>
+                    {allowCode ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                  </Box>
+                </Box>
+              </Config>
+              <Config>
+                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
+                  <Box className="title-container">
+                    <Typography
+                      color="textPrimary"
+                      className={allowDecryption ? `title` : `title unchecked`}
+                      component="p"
+                      variant="body2"
+                      noWrap={true}>
+                      Allow Decryption
+                    </Typography>
+                  </Box>
+                  <Box style={{ width: '5%' }}>
+                    {allowDecryption ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                  </Box>
+                </Box>
+              </Config>
+              <Config>
+                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
+                  <Box className="title-container">
+                    <Typography
+                      color="textPrimary"
+                      className={requireRevisionToUpdate ? `title` : `title unchecked`}
+                      component="p"
+                      variant="body2"
+                      noWrap={true}>
+                      Require Revision
+                    </Typography>
+                  </Box>
+                  <Box style={{ width: '5%' }}>
+                    {requireRevisionToUpdate ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                  </Box>
+                </Box>
+              </Config>
+              <Config>
+                <FormulaBox>
+                  <Typography className="subtitle" component="p" variant="body2">
+                    DQL Formula
                   </Typography>
-                </Box>
-                <Box style={{ width: '5%' }}>{allowCode ? <Check className='checkbox' /> : <False className='checkbox unchecked' />}</Box>
-              </Box>
-            </Config>
-            <Config>
-              <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                <Box className='title-container'>
-                  <Typography
-                    color="textPrimary"
-                    className={allowDecryption ? `title` : `title unchecked`}
-                    component="p"
-                    variant="body2"
-                    noWrap={true}
-                  >
-                    Allow Decryption
-                  </Typography>  
-                </Box>
-                <Box style={{ width: '5%' }}>{allowDecryption ? <Check className='checkbox' /> : <False className='checkbox unchecked' />}</Box>
-              </Box>
-            </Config>
-            <Config>
-              <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                <Box className='title-container'>
-                  <Typography
-                    color="textPrimary"
-                    className={requireRevisionToUpdate ? `title` : `title unchecked`}
-                    component="p"
-                    variant="body2"
-                    noWrap={true}
-                  >
-                    Require Revision
+                  <Typography className="formula" component="div" variant="body2">
+                    {formula}
                   </Typography>
-                </Box>
-                <Box style={{ width: '5%' }}>{requireRevisionToUpdate ? <Check className='checkbox' /> : <False className='checkbox unchecked' />}</Box>
-              </Box>
-            </Config>
-            <Config>
-              <FormulaBox>
-                <Typography className="subtitle" component="p" variant="body2">
-                  DQL Formula
-                </Typography>
-                <Typography className="formula" component="div" variant="body2">
-                  {formula}
-                </Typography>
-              </FormulaBox>
-            </Config>
-          </ListConfig>
-          }
+                </FormulaBox>
+              </Config>
+            </ListConfig>
+          )}
         </Heading>
       </Information>
-      <Dialog 
-        open={editOpen} 
-        fullScreen 
+      <Dialog
+        open={editOpen}
+        fullScreen
         style={{ height: '70vh', width: '40vw', position: 'absolute', left: '30vw', top: '15vh' }}
         PaperProps={{ style: { borderRadius: '10px' } }}
-        onClose={() => setDiscardDialog(true)}
-      >
+        onClose={() => setDiscardDialog(true)}>
         <DialogTitle style={{ padding: '0 0' }}>
           <div style={{ padding: '16px 24px 0 24px' }}>
             Edit Schema
-            <IoMdClose onClick={() => setDiscardDialog(true)} style={{ position: 'absolute', left: '37vw', transform: 'translateY(10%)', cursor: 'pointer' }}/>
+            <IoMdClose
+              onClick={() => setDiscardDialog(true)}
+              style={{ position: 'absolute', left: '37vw', transform: 'translateY(10%)', cursor: 'pointer' }}
+            />
           </div>
           <hr />
         </DialogTitle>
         <DialogContent>
           <DialogContainer>
-            <DialogContentText color='textPrimary'>
-              <div className='title'>Icon</div>
+            <DialogContentText color="textPrimary">
+              <div className="title">Icon</div>
               <div style={{ textAlign: 'center', marginBottom: '30px' }}>{IconDropDown}</div>
-              <div className='title'>Description</div>
-              <textarea 
-                value={desc} 
-                style={{ fontSize: '16px', 
-                          borderColor: '#b8b8b8', 
-                          borderRadius: '5px', 
-                          padding: '16px 14px', 
-                          width: '100%', 
-                          height: '20vh', 
-                          resize: 'none',
-                          marginTop: '5px',
-                          marginBottom: '30px' }}
+              <div className="title">Description</div>
+              <textarea
+                value={desc}
+                style={{
+                  fontSize: '16px',
+                  borderColor: '#b8b8b8',
+                  borderRadius: '5px',
+                  padding: '16px 14px',
+                  width: '100%',
+                  height: '20vh',
+                  resize: 'none',
+                  marginTop: '5px',
+                  marginBottom: '30px'
+                }}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
               />
-              <Box className='title'>Configuration</Box>
+              <Box className="title">Configuration</Box>
               <ConfigContainer style={{ display: 'flex', width: '100%', marginBottom: '40px', flexWrap: 'wrap' }}>
-                <Box className='row'>
+                <Box className="row">
                   <Box style={{ width: '50%' }}>DQL Access</Box>
-                  <Box style={{ width: '50%' }}><BlueSwitch size='small' checked={dbContext.dqlAccess} onClick={() => {handleChange('dqlAccess', !dbContext.dqlAccess)}} /></Box>
+                  <Box style={{ width: '50%' }}>
+                    <BlueSwitch
+                      size="small"
+                      checked={dbContext.dqlAccess}
+                      onClick={() => {
+                        handleChange('dqlAccess', !dbContext.dqlAccess);
+                      }}
+                    />
+                  </Box>
                 </Box>
-                <Box className='row'>
+                <Box className="row">
                   <Box style={{ width: '50%' }}>In $DATA Scope</Box>
-                  <Box style={{ width: '50%' }}><BlueSwitch size='small' checked={dbContext.openAccess} onClick={() => handleChange('openAccess', !dbContext.openAccess)} /></Box>
+                  <Box style={{ width: '50%' }}>
+                    <BlueSwitch
+                      size="small"
+                      checked={dbContext.openAccess}
+                      onClick={() => handleChange('openAccess', !dbContext.openAccess)}
+                    />
+                  </Box>
                 </Box>
-                <Box className='row'>
+                <Box className="row">
                   <Box style={{ width: '50%' }}>Enable Code</Box>
-                  <Box style={{ width: '50%' }}><BlueSwitch size='small' checked={dbContext.allowCode} onClick={() => handleChange('allowCode', !dbContext.allowCode)} /></Box>
+                  <Box style={{ width: '50%' }}>
+                    <BlueSwitch
+                      size="small"
+                      checked={dbContext.allowCode}
+                      onClick={() => handleChange('allowCode', !dbContext.allowCode)}
+                    />
+                  </Box>
                 </Box>
-                <Box className='row'>
+                <Box className="row">
                   <Box style={{ width: '50%' }}>Allow Decryption</Box>
-                  <Box style={{ width: '50%' }}><BlueSwitch size='small' checked={dbContext.allowDecryption} onClick={() => handleChange('allowDecryption', !dbContext.allowDecryption)}/></Box>
+                  <Box style={{ width: '50%' }}>
+                    <BlueSwitch
+                      size="small"
+                      checked={dbContext.allowDecryption}
+                      onClick={() => handleChange('allowDecryption', !dbContext.allowDecryption)}
+                    />
+                  </Box>
                 </Box>
-                <Box className='row'>
+                <Box className="row">
                   <Box style={{ width: '50%' }}>Require Revision</Box>
-                  <Box style={{ width: '50%' }}><BlueSwitch size='small' checked={dbContext.requireRevisionToUpdate} onClick={() => handleChange('requireRevisionToUpdate', !dbContext.requireRevisionToUpdate)} /></Box>
+                  <Box style={{ width: '50%' }}>
+                    <BlueSwitch
+                      size="small"
+                      checked={dbContext.requireRevisionToUpdate}
+                      onClick={() => handleChange('requireRevisionToUpdate', !dbContext.requireRevisionToUpdate)}
+                    />
+                  </Box>
                 </Box>
               </ConfigContainer>
-              <TextField 
-                id='dql-formula' 
-                label="DQL Formula" 
-                variant='outlined' 
-                value={dqlFormulaValue} 
+              <TextField
+                id="dql-formula"
+                label="DQL Formula"
+                variant="outlined"
+                value={dqlFormulaValue}
                 onChange={(e) => handleDQLFormulaChange(e.target.value)}
               />
             </DialogContentText>
@@ -683,26 +720,36 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
         </DialogContent>
         <DialogActions>
           <Buttons>
-            <Button className='cancel text' onClick={() => {setDiscardDialog(true)}}>Cancel</Button>
-            <Button className='save text' onClick={handleClickSave}>Save</Button>
+            <Button
+              className="cancel text"
+              onClick={() => {
+                setDiscardDialog(true);
+              }}>
+              Cancel
+            </Button>
+            <Button className="save text" onClick={handleClickSave}>
+              Save
+            </Button>
           </Buttons>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={discardDialog}
-      >
-        <DialogTitle>
-          Discard Changes
-        </DialogTitle>
+      <Dialog open={discardDialog}>
+        <DialogTitle>Discard Changes</DialogTitle>
         <DialogContent>
-          <DialogContentText color='textPrimary'>
-            Are you sure you want to discard the changes you made?
-          </DialogContentText>
+          <DialogContentText color="textPrimary">Are you sure you want to discard the changes you made?</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Buttons>
-            <Button className='cancel text' onClick={() => {setDiscardDialog(false)}}>No</Button>
-            <Button className='save text' onClick={clearEdits}>Yes</Button>
+            <Button
+              className="cancel text"
+              onClick={() => {
+                setDiscardDialog(false);
+              }}>
+              No
+            </Button>
+            <Button className="save text" onClick={clearEdits}>
+              Yes
+            </Button>
           </Buttons>
         </DialogActions>
       </Dialog>
