@@ -455,6 +455,7 @@ class SourceTree extends LitElement {
     const newKey = e.target.closest('div#main').querySelector('#new-key').value
     let newValue = e.target.closest('div#main').querySelector('#new-value').value
     let obj = this.editedContent
+    const parentIsArray = Array.isArray(getValueAtPath(this.editedContent, paths.slice(0, -1).join('.')))
 
     const type = e.target.closest('div#main').querySelector('sl-option[aria-selected="true"]').value
     switch (type) {
@@ -475,7 +476,11 @@ class SourceTree extends LitElement {
       for (let i = 0; i < paths.length - 1; i++) {
         if (i === paths.length - 2) {
           // If we're at the last key in the path, add the new key-value pair
-          obj[paths[i]][newKey] = newValue
+          if (parentIsArray) {
+            obj[paths[i]].push(newValue)
+          } else {
+            obj[paths[i]][newKey] = newValue
+          }
           e.target.closest('div#main').querySelector('dialog').close()
         } else {
           // Otherwise, move to the next level of the object
