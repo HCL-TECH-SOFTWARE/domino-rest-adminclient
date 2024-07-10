@@ -5,13 +5,13 @@
  * ========================================================================== */
 
 import React, { KeyboardEventHandler } from 'react';
-import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import styled, { css } from 'styled-components';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import DBIcon from '@material-ui/icons/Storage';
+import DBIcon from '@mui/icons-material/Storage';
 import { AppState } from '../../../store';
 import { getTheme } from '../../../store/styles/action';
 import appIcons from '../../../styles/app-icons';

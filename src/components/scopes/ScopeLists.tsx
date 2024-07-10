@@ -6,9 +6,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import AddIcon from '@material-ui/icons/Add';
-import CachedIcon from '@material-ui/icons/Cached';
-import { Button, Typography} from '@material-ui/core';
+import AddIcon from '@mui/icons-material/Add';
+import CachedIcon from '@mui/icons-material/Cached';
+import { Button, Typography} from '@mui/material';
 import { AppState } from '../../store';
 import { toggleDrawer } from '../../store/drawer/action';
 import { clearDBError,

@@ -6,16 +6,17 @@
 
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Drawer from '@material-ui/core/Drawer';
+import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
 import { BlueSwitch, ButtonNeutral, ButtonYes, DrawerFormContainer, HorizontalDivider } from '../../styles/CommonStyles';
-import { Box, Checkbox, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography, makeStyles, withStyles } from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import { Box, Checkbox, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import { makeStyles, withStyles } from '@mui/styles';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -219,7 +220,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               <Box style={{ display: 'flex', flexFlow: 'row wrap', width: '100%' }}>
                 {
                   collectScopes(consents).map(scope => (
-                    <Box width='50%'>
+                    <Box width='50%' key={scope}>
                       <FormControlLabel
                         key={scope}
                         control={<Checkbox style={{ color: '#0E5FDC' }} defaultChecked={scopes.includes(scope)} onChange={e => {

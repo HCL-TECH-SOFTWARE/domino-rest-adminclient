@@ -6,8 +6,8 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import MenuIcon from '@material-ui/icons/Menu';
-import CloseMenuIcon from '@material-ui/icons/ChevronLeft';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseMenuIcon from '@mui/icons-material/ChevronLeft';
 import ProfileMenuDialog from '../sidenav/ProfileMenuDialog';
 import { IMG_DIR } from '../../config.dev';
 

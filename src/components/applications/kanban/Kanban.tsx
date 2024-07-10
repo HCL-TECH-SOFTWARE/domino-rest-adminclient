@@ -8,8 +8,8 @@ import React, { useState, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import AddIcon from '@material-ui/icons/Add';
-import { Button, ButtonBase, Dialog, Typography } from '@material-ui/core';
+import AddIcon from '@mui/icons-material/Add';
+import { Button, ButtonBase, Dialog, Typography } from '@mui/material';
 import styled from 'styled-components';
 import {
   deleteApplication,

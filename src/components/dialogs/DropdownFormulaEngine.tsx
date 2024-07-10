@@ -5,8 +5,8 @@
  * ========================================================================== */
 
 /* eslint-disable no-use-before-define */
-import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/lab/Autocomplete';
 import styled from 'styled-components';
 
 const AutoContainer = styled.div`

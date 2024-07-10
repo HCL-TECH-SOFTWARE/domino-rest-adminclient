@@ -6,17 +6,16 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import SwipeableViews from 'react-swipeable-views';
-import Box from '@material-ui/core/Box';
-import { MenuItem, CircularProgress, Select, Tooltip } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import { MenuItem, CircularProgress, Select, Tooltip, Theme } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SearchIcon from '@material-ui/icons/Search';
+import SearchIcon from '@mui/icons-material/Search';
 import { MdLibraryAdd } from 'react-icons/md';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import { makeStyles } from '@material-ui/core/styles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import SingleFieldContainer from './SingleFieldContainer';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
@@ -24,6 +23,7 @@ import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, HorizontalDivider, SearchContainer, SearchInput } from '../../styles/CommonStyles';
+import { makeStyles } from '@mui/styles';
 
 const FieldContainer = styled.div<{ theme: string }>`
   border: 1px solid ${(props) => getTheme(props.theme).borderColor};
@@ -143,33 +143,21 @@ const IconButton = styled.button`
   }
 `;
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-    paddingTop: '0px',
-    paddingBottom: '0px',
-    fontSize: '14px'
-  },
-  form: {
-    backgroundColor: '#f9fbff',
-    borderTop: '2px solid #e6e8f1',
-    borderBottom: '2px solid #e6e8f1',
-    color: '#1966B3',
-    paddingLeft: '10px',
-    height: '50px',
-    fontSize: '14px'
-  },
-  text: {
-    fontSize: '14px'
-  },
-  field: {
-    paddingBottom: '2px'
-  },
-  spacer: {
-    paddingTop: '0px'
-  }
+const ListRoot = styled(List)(({ theme }) => ({
+  width: "100%",
+  maxWidth: 360,
+  // backgroundColor: theme.palette.background.paper,
+  paddingTop: "0px",
+  paddingBottom: "0px",
+  fontSize: "14px",
+}));
+
+const ListItemField = styled(ListItem)(({ theme: Theme }) => ({
+  paddingBottom: "2px",
+}));
+
+const DivSpacer = styled("div")(({ theme: Theme }) => ({
+  paddingTop: "0px",
 }));
 
 const anchorEmoji = '⚓';
@@ -244,8 +232,6 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
   formsSorted.unshift(allFieldObj);
 
   const { activeFields, newForm } = useSelector((state: AppState) => state.databases);
-
-  const classes = useStyles();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const initialFormState = formsInDb.length > 0 ? formName : 'Not Selected';
@@ -434,37 +420,41 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
       ) : (
         <SwipeableViews axis="x" index={tabValue} style={{ borderRadius: '10px' }}>
           {fieldsDisplayed.map((item: any, index: any) => (
-            <List key={`${item.formName}-${index}`} component="nav" className={classes.root}>
-              {
-                <div className={classes.spacer}>
-                  <List component="div" disablePadding>
-                    <ListItem className={classes.field}>
-                      <FieldList className="fields-list">
-                        {item.fields.length > 0 ? (
-                          item.fields.map(
-                            (item: any, index: any) =>
-                              !item.content.startsWith('@') &&
-                              !item.content.startsWith('~#') &&
-                              !item.content.startsWith('Formula') && (
-                                <SingleFieldContainer
-                                  key={`${item.content}-${index}`}
-                                  moveTo={moveTo}
-                                  item={{
-                                    name: item.content,
-                                    ...item
-                                  }}
-                                />
-                              )
-                          )
-                        ) : (
-                          <SingleFieldContainer key="0" moveTo={() => {}} item={noFieldObj} />
-                        )}
-                      </FieldList>
-                    </ListItem>
-                  </List>
-                </div>
-              }
-            </List>
+            <ListRoot key={`${item.formName}-${index}`}>
+            {
+              <DivSpacer>
+                <List component="div" disablePadding>
+                  <ListItemField>
+                    <FieldList className="fields-list">
+                      {item.fields.length > 0 ? (
+                        item.fields.map(
+                          (item: any, index: any) =>
+                            !item.content.startsWith("@") &&
+                            !item.content.startsWith("~#") &&
+                            !item.content.startsWith("Formula") && (
+                              <SingleFieldContainer
+                                key={`${item.content}-${index}`}
+                                moveTo={moveTo}
+                                item={{
+                                  name: item.content,
+                                  ...item,
+                                }}
+                              />
+                            )
+                        )
+                      ) : (
+                        <SingleFieldContainer
+                          key="0"
+                          moveTo={() => {}}
+                          item={noFieldObj}
+                        />
+                      )}
+                    </FieldList>
+                  </ListItemField>
+                </List>
+              </DivSpacer>
+            }
+          </ListRoot>
           ))}
         </SwipeableViews>
       )}

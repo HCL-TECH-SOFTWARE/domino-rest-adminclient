@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 import React from 'react';
-import SearchIcon from '@material-ui/icons/Search';
+import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';

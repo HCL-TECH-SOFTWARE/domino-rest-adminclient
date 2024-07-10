@@ -5,8 +5,8 @@
  * ========================================================================== */
 
 import React from 'react';
-import DashboardIcon from '@material-ui/icons/Email';
-import Typography from '@material-ui/core/Typography';
+import DashboardIcon from '@mui/icons-material/Email';
+import Typography from '@mui/material/Typography';
 import { FormContainer } from '../../styles/CommonStyles';
 
 const Mail = () => {

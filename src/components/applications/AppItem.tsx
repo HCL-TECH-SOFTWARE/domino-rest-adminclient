@@ -7,7 +7,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, ButtonBase, DialogActions, DialogContent, DialogContentText, DialogTitle, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
+import { Box, ButtonBase, DialogActions, DialogContent, DialogContentText, DialogTitle, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
@@ -142,14 +142,6 @@ const AppItem: React.FC<AppItemProps> = ({
     }
     setHasAppSecret(true)
   }
-
-  useEffect(() => {
-    console.log(appSecret)
-  }, [appSecret])
-
-  useEffect(() => {
-    console.log(app.appHasSecret)
-  }, [app.appHasSecret])
 
   const regenerateSecret = () => {
     dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret) as any)

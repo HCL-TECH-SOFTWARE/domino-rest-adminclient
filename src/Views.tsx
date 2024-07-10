@@ -24,7 +24,7 @@ import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
 import ConsentsContainer from './components/applications/ConsentsContainer';
-import { Home } from '@material-ui/icons';
+import { Home } from '@mui/icons-material';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -45,7 +45,6 @@ const ViewContainer = styled.main`
 `;
 
 interface ViewsProps {
-  classes: any;
   open: boolean;
 }
 

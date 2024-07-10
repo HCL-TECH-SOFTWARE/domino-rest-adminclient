@@ -5,15 +5,15 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import DialogContent from '@material-ui/core/DialogContent';
+import DialogContent from '@mui/material/DialogContent';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { BlueSwitch, DeleteIcon, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import SearchIcon from '@material-ui/icons/Search';
+import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import { Database, Field } from '../../store/databases/types';
-import { Box, Button, Dialog, MenuItem, Select, Tooltip } from '@material-ui/core';
+import { Box, Button, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
 import { AiOutlinePlus } from 'react-icons/ai';
 
 const DialogContainer = styled(Dialog)`

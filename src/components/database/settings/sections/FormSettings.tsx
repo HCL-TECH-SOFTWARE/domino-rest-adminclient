@@ -6,7 +6,7 @@
 
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { SettingContext } from '../SettingContext';
 
 const FormSettingsContainer = styled.div`

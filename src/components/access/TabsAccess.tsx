@@ -5,15 +5,15 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DeleteIcon from '@material-ui/icons/Delete';
-import AddIcon from '@material-ui/icons/Add';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import { Menu, MenuItem, Tooltip } from '@material-ui/core';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { Menu, MenuItem, Tooltip } from '@mui/material';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
 import AddModeDialog from './AddModeDialog';

@@ -6,12 +6,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import { useSelector, useDispatch } from 'react-redux';
-import DBIcon from '@material-ui/icons/Storage';
-import Tooltip from '@material-ui/core/Tooltip';
+import DBIcon from '@mui/icons-material/Storage';
+import Tooltip from '@mui/material/Tooltip';
 import { DeleteIcon, FormSearchContainer, ModeLogo, Options, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 import { getTheme } from '../../store/styles/action';
 import { checkIcon } from '../../styles/scripts';
@@ -22,8 +22,8 @@ import {
   SchemaCardHeader,
   SchemaDBImage,
 } from './SchemaStyles';
-import SearchIcon from '@material-ui/icons/Search';
-import { Box } from '@material-ui/core';
+import SearchIcon from '@mui/icons-material/Search';
+import { Box } from '@mui/material';
 import styled from 'styled-components';
 import { toggleAlert } from '../../store/alerts/action';
 import { toggleDeleteDialog } from '../../store/dialog/action';
@@ -154,7 +154,7 @@ const NsfCard: React.FC<NsfCardProps> = ({
             </Typography>
           </Tooltip>
         </SchemaCardHeader>
-        <FormSearchContainer theme={themeMode} variant="outlined" style={{ marginTop: 25, marginBottom: 16 }}>
+        <FormSearchContainer theme={themeMode} style={{ marginTop: 25, marginBottom: 16 }}>
           <SearchContainer style={{ padding: '12px 17px', backgroundColor: '#F9F9F9', border: '1px solid #A5AFBE', borderRadius: '10px' }}>
             <SearchIcon color="primary" className="search-icon" style={{ marginRight: '10px' }} />
             <SearchInput
@@ -185,7 +185,7 @@ const NsfCard: React.FC<NsfCardProps> = ({
               }
             };
             return (
-              <div key={database.schemaName + database.nsfPath}>
+              <div key={database.schemaName + database.nsfPath + index}>
                 <SchemaRow>
                   {isSchema && <Tooltip title={status}>
                     <Box className={`api-status ${schemasWithScopes?.includes(database.nsfPath + ":" + database.schemaName) ? '' : 'unused'}`} />

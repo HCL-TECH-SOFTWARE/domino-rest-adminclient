@@ -7,13 +7,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink, useLocation } from 'react-router-dom';
-import Typography from '@material-ui/core/Typography';
-import FlashOnIcon from '@material-ui/icons/FlashOn';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@mui/material/Typography';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -27,6 +27,7 @@ import { getTheme } from '../../store/styles/action';
 import { AppState } from '../../store';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
+import { SideNavContainer } from '../../styles/CommonStyles';
 
 const SideContainer = styled.aside`
   background: white;
@@ -107,13 +108,11 @@ const Copyright = styled.div`
 
 interface SidenavProps {
   open: boolean;
-  classes: any;
   toggleMenu: () => void;
 }
 
 const MobileSidebar: React.FC<SidenavProps> = ({
   open,
-  classes,
   toggleMenu
 }) => {
   const location = useLocation();
@@ -129,10 +128,11 @@ const MobileSidebar: React.FC<SidenavProps> = ({
   };
 
   return (
+    <SideNavContainer>
     <SideContainer
-      className={clsx(classes.drawer, {
-        [classes.drawerOpen]: open,
-        [classes.drawerClose]: !open
+      className={clsx('drawer', {
+        'open': open,
+        'close': !open
       })}
     >
       <LinksContainer>
@@ -399,6 +399,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({
         </SidebarContainer>
       </LinksContainer>
     </SideContainer>
+    </SideNavContainer>
   );
 };
 

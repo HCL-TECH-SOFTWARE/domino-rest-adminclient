@@ -7,14 +7,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import Typography from '@material-ui/core/Typography';
-import { Box, ButtonBase, Dialog, Grid, TextField } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
+import { Box, ButtonBase, Dialog, Grid, TextField } from '@mui/material';
 import { ButtonNeutral, ButtonYes, DialogContainer, HorizontalDivider } from '../../styles/CommonStyles';
 import styled from 'styled-components';
-import CloseMenuIcon from '@material-ui/icons/Close';
+import CloseMenuIcon from '@mui/icons-material/Close';
 import { useDispatch } from 'react-redux';
 import { addSchema } from '../../store/databases/action';
-import { Autocomplete } from '@material-ui/lab';
+import { Autocomplete } from '@mui/material';
 import appIcons from '../../styles/app-icons';
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';

@@ -6,7 +6,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@material-ui/core';
+import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { RiDeleteBinLine } from 'react-icons/ri';
 

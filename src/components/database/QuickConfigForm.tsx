@@ -5,21 +5,21 @@
  * ========================================================================== */
 
 import React, { useState, useEffect } from 'react';
-import Paper from '@material-ui/core/Paper';
-import TextField from '@material-ui/core/TextField';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import CloseIcon from '@material-ui/icons/Close';
-import ClearIcon from '@material-ui/icons/Clear';
-import { FormControlLabel, Checkbox, IconButton } from '@material-ui/core';
-import CheckboxIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import MenuItem from '@material-ui/core/MenuItem';
-import { Typography, Tooltip } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
-import StorageIcon from '@material-ui/icons/Storage';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import CloseIcon from '@mui/icons-material/Close';
+import ClearIcon from '@mui/icons-material/Clear';
+import { FormControlLabel, Checkbox, IconButton } from '@mui/material';
+import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import MenuItem from '@mui/material/MenuItem';
+import { Typography, Tooltip } from '@mui/material';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
+import StorageIcon from '@mui/icons-material/Storage';
+import { Alert, AlertTitle } from '@mui/lab';
 import { FormikProps } from 'formik';
 import FileContentsTree from './FileContentsTree';
 import { AppState } from '../../store';

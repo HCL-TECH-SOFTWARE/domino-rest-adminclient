@@ -6,12 +6,12 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import AddIcon from '@material-ui/icons/Add';
-import GroupsIcon from '@material-ui/icons/Group';
-import Button from '@material-ui/core/Button';
-import EditIcon from '@material-ui/icons/Edit';
-import Tooltip from '@material-ui/core/Tooltip';
-import RemoveIcon from '@material-ui/icons/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import GroupsIcon from '@mui/icons-material/Group';
+import Button from '@mui/material/Button';
+import EditIcon from '@mui/icons-material/Edit';
+import Tooltip from '@mui/material/Tooltip';
+import RemoveIcon from '@mui/icons-material/Delete';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import { DataGrid, GridCellParams, GridApi } from '@material-ui/data-grid';

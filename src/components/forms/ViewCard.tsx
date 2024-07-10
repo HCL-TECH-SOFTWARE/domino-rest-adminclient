@@ -5,8 +5,8 @@
  * ========================================================================== */
 
 import React from 'react';
-import CardContent from '@material-ui/core/CardContent';
-import Tooltip from '@material-ui/core/Tooltip';
+import CardContent from '@mui/material/CardContent';
+import Tooltip from '@mui/material/Tooltip';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../store';
 import {

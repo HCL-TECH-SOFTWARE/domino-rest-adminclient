@@ -7,12 +7,11 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import styled from 'styled-components';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { ThemeProvider } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import { useSelector, useDispatch } from 'react-redux';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useStyles } from './components/sidenav/style';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Header from './components/header/Header';
 import SideNav from './components/sidenav/SideNav';
 import LoginPage from './components/login/LoginPage';
@@ -32,9 +31,9 @@ import { TokenProps } from './store/account/types';
 import theme from './theme';
 import Footer from './Footer';
 import Notification from './components/alerts/Notification';
-import CollapseMenuIcon from '@material-ui/icons/ChevronLeftRounded';
-import ExpandMenuIcon from '@material-ui/icons/ChevronRightRounded';
-import { IconButton } from '@material-ui/core';
+import CollapseMenuIcon from '@mui/icons-material/ChevronLeftRounded';
+import ExpandMenuIcon from '@mui/icons-material/ChevronRightRounded';
+import { IconButton } from '@mui/material';
 
 
 
@@ -87,7 +86,6 @@ const RightPanel = styled.div<{ open: boolean; theme: string }>`
 `;
 
 const App: React.FC = () => {
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [valid, setValid] = useState(false);
   const dispatch = useDispatch();
@@ -147,13 +145,11 @@ const App: React.FC = () => {
                 <Notification />
                 <SideNav
                   toggleMenu={toggleMenu}
-                  classes={classes}
                   open={open}
                 />
                 {matches && (
                   <MobileSidebar
                     toggleMenu={toggleMenu}
-                    classes={classes}
                     open={open}
                   />
                 )}
@@ -178,7 +174,7 @@ const App: React.FC = () => {
                       )
                   )}
 
-                <Views open={open} classes={classes} />
+                <Views open={open} />
                 </RightPanel>
                 {!ipadMatches && <Footer />}
               </AppContainer>

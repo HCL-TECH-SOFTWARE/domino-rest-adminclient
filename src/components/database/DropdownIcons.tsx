@@ -6,10 +6,10 @@
 
 /* eslint-disable no-use-before-define */
 import React, { useContext } from 'react';
-import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import Typography from '@material-ui/core/Typography';
-import DBIcon from '@material-ui/icons/Storage';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/lab/Autocomplete';
+import Typography from '@mui/material/Typography';
+import DBIcon from '@mui/icons-material/Storage';
 import appIcons from '../../styles/app-icons';
 import { checkIcon } from '../../styles/scripts';
 import { SettingContext } from './settings/SettingContext';
@@ -34,18 +34,18 @@ const DropdownIcons: React.FC<DropdownIconsProps> = () => {
         options={Object.keys(appIcons)}
         value={iconName}
         getOptionLabel={(option) => option}
-        closeIcon={false}
+        // closeIcon={false}
         onChange={onTagsChange}
         renderOption={(option) => {
           return (
             <>
               <img
                 style={{ height: 30, marginRight: 10 }}
-                src={`data:image/svg+xml;base64, ${appIcons[option]}`}
+                src={`data:image/svg+xml;base64, ${appIcons[option.key]}`}
                 alt="database-icon"
               />
               <Typography color="textPrimary" noWrap>
-                {option}
+                {option.key}
               </Typography>
             </>
           );

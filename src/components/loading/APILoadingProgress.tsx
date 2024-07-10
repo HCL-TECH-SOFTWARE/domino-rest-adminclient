@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { CircularProgress, Typography } from '@material-ui/core';
+import { CircularProgress, Typography } from '@mui/material';
 import styled from 'styled-components';
 
 const LoadingContainer = styled.div`

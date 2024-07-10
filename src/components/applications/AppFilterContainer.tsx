@@ -6,16 +6,17 @@
 
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Drawer from '@material-ui/core/Drawer';
+import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
 import { ButtonNeutral, ButtonNo, ButtonYes, DrawerFormContainer, HorizontalDivider } from '../../styles/CommonStyles';
-import { Box, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography, makeStyles, withStyles } from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import { Box, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { fetchMyApps } from '../../store/applications/action';
+import { makeStyles, withStyles } from '@mui/styles';
 
 const FilterContainer = styled(Box)`
   display: flex;

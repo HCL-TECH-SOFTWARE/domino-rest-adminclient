@@ -4,11 +4,12 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { Theme } from '@mui/material/styles';
+import { createStyles, makeStyles } from '@mui/styles';
 
 export const drawerWidth = 242;
 
-export const useStyles = makeStyles((theme: Theme) =>
+export const useStyles = makeStyles((theme: Theme) => 
   createStyles({
     root: {
       display: 'flex',

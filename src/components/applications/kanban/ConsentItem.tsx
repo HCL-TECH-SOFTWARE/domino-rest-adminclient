@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, ButtonBase, Collapse, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
+import { Box, ButtonBase, Collapse, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { AppState } from '../../../store';
 import { toggleDeleteConsent } from '../../../store/consents/action';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'

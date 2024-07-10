@@ -9,11 +9,11 @@ import { GridCellParams, DataGrid, GridApi } from '@material-ui/data-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
-import { Button, Tooltip } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
-import DelIcon from '@material-ui/icons/Delete';
-import PeopleIcon from '@material-ui/icons/Person';
-import AddIcon from '@material-ui/icons/Add';
+import { Button, Tooltip } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DelIcon from '@mui/icons-material/Delete';
+import PeopleIcon from '@mui/icons-material/Person';
+import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import { AppState } from '../../store';
 import {

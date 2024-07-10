@@ -4,14 +4,14 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import DatabaseIcon from '@material-ui/icons/Storage';
-import ScopeIcon from '@material-ui/icons/Album';
-import Mail from '@material-ui/icons/Email';
-import Home from '@material-ui/icons/Home';
-import Apps from '@material-ui/icons/Apps';
-import Groups from '@material-ui/icons/Group';
-import People from '@material-ui/icons/Person';
-import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
+import DatabaseIcon from '@mui/icons-material/Storage';
+import ScopeIcon from '@mui/icons-material/Album';
+import Mail from '@mui/icons-material/Email';
+import Home from '@mui/icons-material/Home';
+import Apps from '@mui/icons-material/Apps';
+import Groups from '@mui/icons-material/Group';
+import People from '@mui/icons-material/Person';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 /**
  * Route.ts provides menu entries for each of the main pages in the Admin UI.
  *

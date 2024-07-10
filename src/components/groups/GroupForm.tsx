@@ -5,17 +5,17 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
-import GroupsIcon from '@material-ui/icons/Group';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import Button from '@material-ui/core/Button';
-import CloseIcon from '@material-ui/icons/Close';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import GroupsIcon from '@mui/icons-material/Group';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import Button from '@mui/material/Button';
+import CloseIcon from '@mui/icons-material/Close';
 import { FormikProps } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
-import { Alert, AlertTitle } from '@material-ui/lab';
-import Box from '@material-ui/core/Box';
+import { Alert, AlertTitle } from '@mui/lab';
+import Box from '@mui/material/Box';
 import { DataGrid } from '@material-ui/data-grid';
 import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';

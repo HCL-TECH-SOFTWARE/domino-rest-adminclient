@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { SubSectionTitleContainer } from '../../styles/CommonStyles';
 
 const SettingTitle: React.FC = ({ children }) => {
