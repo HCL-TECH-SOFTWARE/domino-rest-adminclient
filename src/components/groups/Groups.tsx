@@ -14,7 +14,7 @@ import Tooltip from '@mui/material/Tooltip';
 import RemoveIcon from '@mui/icons-material/Delete';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
-import { DataGrid, GridCellParams, GridApi } from '@material-ui/data-grid';
+import { DataGrid, GridCellParams, GridApi } from '@mui/x-data-grid';
 import * as Yup from 'yup';
 import FormDrawer from '../applications/FormDrawer';
 import DeleteApplicationDialog from '../applications/DeleteApplicationDialog';
@@ -103,16 +103,7 @@ const Groups: React.FC = () => {
       renderCell: (params: GridCellParams) => {
         // Fetch the current row of the DataGrid
         const fetchCurrentRow = () => {
-          const api: GridApi = params.api;
-          const fields = api
-            .getAllColumns()
-            .map((c) => c.field)
-            .filter((c) => c !== '__check__' && !!c);
-          const thisRow: Array<any> = [];
-          fields.forEach((f, index) => {
-            thisRow[index] = params.getValue(params.row.id, f);
-          });
-          return thisRow;
+          return params.row
         };
 
         // onUpdate Event
@@ -441,8 +432,7 @@ const Groups: React.FC = () => {
                 rowHeight={42}
                 rows={groupsRows}
                 columns={columns}
-                pageSize={9}
-                rowsPerPageOptions={[9]}
+                pageSizeOptions={[5, 10, 15]}
                 onRowClick={(param) => handleOnClick(param.row)}
               />
             </div>

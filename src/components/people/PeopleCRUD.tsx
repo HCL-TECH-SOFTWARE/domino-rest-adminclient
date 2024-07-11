@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useContext, useEffect } from 'react';
-import { GridCellParams, DataGrid, GridApi } from '@material-ui/data-grid';
+import { GridCellParams, DataGrid, GridApi } from '@mui/x-data-grid';
 import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
@@ -107,16 +107,7 @@ const PeopleCRUD: React.FC = () => {
       renderCell: (params: GridCellParams) => {
         // Fetch the current row of the DataGrid
         const fetchCurrentRow = () => {
-          const api: GridApi = params.api;
-          const fields = api
-            .getAllColumns()
-            .map((c) => c.field)
-            .filter((c) => c !== '__check__' && !!c);
-          let thisRow: Array<any> = [];
-          fields.forEach((f, index) => {
-            thisRow[index] = params.getValue(params.row.id, f);
-          });
-          return thisRow;
+          return params.row
         };
 
         // onUpdate Event
@@ -392,8 +383,7 @@ const PeopleCRUD: React.FC = () => {
               rowHeight={42}
               rows={peopleRows}
               columns={columns}
-              pageSize={9}
-              rowsPerPageOptions={[9]}
+              pageSizeOptions={[9]}
               onRowClick={(viewParam) => handleClickView(viewParam.row)}
             />
           </div>

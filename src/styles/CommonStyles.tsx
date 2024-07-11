@@ -364,7 +364,7 @@ export const CardContainer = styled(Card)<{}>`
   }
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor};
+    border: 1px solid ${(props) => getTheme(props.theme.palette.mode).hoverColor};
 
     .more {
       visibility: visible;
@@ -372,7 +372,7 @@ export const CardContainer = styled(Card)<{}>`
   }
 
   &:focus {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor};
+    border: 1px solid ${(props) => getTheme(props.theme.palette.mode).hoverColor};
 
     .more {
       visibility: visible;

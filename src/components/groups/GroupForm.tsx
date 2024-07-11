@@ -16,7 +16,7 @@ import { FormikProps } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { Alert, AlertTitle } from '@mui/lab';
 import Box from '@mui/material/Box';
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from '../applications/ApplicationContext';
@@ -152,7 +152,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                     rowHeight={28}
                     rows={formik.values.groupMembers}
                     columns={columns}
-                    pageSize={8}
+                    pageSizeOptions={[8]}
                     hideFooterSelectedRowCount
                   />
                 </div>
@@ -264,7 +264,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                       rowHeight={28}
                       rows={formik.values.groupMembers}
                       columns={columns}
-                      pageSize={8}
+                      pageSizeOptions={[8]}
                       hideFooterSelectedRowCount
                     />
                   </div>

@@ -49,14 +49,14 @@ const SidebarContainer = styled(List)`
   .route-active {
     .link-container {
       border-left: 4px solid KEEP_ADMIN_BASE_COLOR;
-      // FIXME new ui: border-left: 4px solid ${(props) => getTheme(props.theme).sidenav.border};
+      // FIXME new ui: border-left: 4px solid ${(props) => getTheme(props.theme.palette.mode).sidenav.border};
 
       background: #addfff;
-      //FIXME new ui： background: ${(props) => getTheme(props.theme).sidenav.active};
+      //FIXME new ui： background: ${(props) => getTheme(props.theme.palette.mode).sidenav.active};
 
       .text-link {
         margin-left: -4px;
-        color: ${(props) => getTheme(props.theme).hoverColor} !important;
+        color: ${(props) => getTheme(props.theme.palette.mode).hoverColor} !important;
         font-size: 20px;
       }
       .keep-icon {
@@ -65,7 +65,7 @@ const SidebarContainer = styled(List)`
 
       svg {
         margin-left: -4px;
-        color: ${(props) => getTheme(props.theme).hoverColor} !important;
+        color: ${(props) => getTheme(props.theme.palette.mode).hoverColor} !important;
         font-size: 20px;
         cursor: pointer;
         font-weight: 800;
