@@ -6,7 +6,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import Error400 from './400.svg';
 import Error403 from './403.png';
 import Error404 from './404.svg';

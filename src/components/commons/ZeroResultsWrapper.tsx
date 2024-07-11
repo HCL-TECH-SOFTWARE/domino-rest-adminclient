@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components';
 

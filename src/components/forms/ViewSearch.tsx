@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import SearchIcon from '@material-ui/icons/Search';
+import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
@@ -27,7 +27,6 @@ const ViewSearch: React.FC<ViewSearchProps> = ({ handleSearchView }) => {
     <FormSearchContainer
       style={{ pointerEvents: scopePull ? 'auto' : 'none' }}
       theme={themeMode}
-      variant="outlined"
     >
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />

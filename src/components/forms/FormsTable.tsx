@@ -12,7 +12,7 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { Box, Button, ButtonBase, Tooltip, Typography } from "@material-ui/core";
+import { Box, Button, ButtonBase, Tooltip, Typography } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";

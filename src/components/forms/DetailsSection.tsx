@@ -5,27 +5,27 @@
  * ========================================================================== */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import Check from '@material-ui/icons/CheckCircle';
-import False from '@material-ui/icons/Block';
-import TextField from '@material-ui/core/TextField';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import Check from '@mui/icons-material/CheckCircle';
+import False from '@mui/icons-material/Block';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import appIcons from '../../styles/app-icons';
 import { checkIcon } from '../../styles/scripts';
 import { Database } from '../../store/databases/types';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import { updateSchema } from '../../store/databases/action';
 import { BlueSwitch, Buttons, InputContainer, SchemaIconStatus } from '../../styles/CommonStyles';
 import { FiEdit } from 'react-icons/fi';
-import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
+import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { IoMdClose } from 'react-icons/io';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';

@@ -6,7 +6,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useSelector } from 'react-redux';
 import { IMG_DIR } from '../../config.dev';
 import MobileHeader from './MobileHeader';

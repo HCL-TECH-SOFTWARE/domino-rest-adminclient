@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Card } from '@material-ui/core';
+import { Card } from '@mui/material';
 import styled, { css } from 'styled-components';
 import { getTheme } from '../../../../../store/styles/action';
 

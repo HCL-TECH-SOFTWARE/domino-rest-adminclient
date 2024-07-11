@@ -6,8 +6,8 @@
 
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import Typography from '@material-ui/core/Typography';
-import UserIcon from '@material-ui/icons/AccountCircleOutlined';
+import Typography from '@mui/material/Typography';
+import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import styled from 'styled-components';
 import OptionList from './OptionList';
 import { AppState } from '../../store';

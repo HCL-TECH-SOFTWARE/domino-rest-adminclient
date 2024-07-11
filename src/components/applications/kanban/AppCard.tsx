@@ -5,18 +5,18 @@
  * ========================================================================== */
 
 import React, { useState, useRef, useContext } from 'react';
-import Typography from '@material-ui/core/Typography';
-import EditIcon from '@material-ui/icons/Edit';
-import ApplicationIcon from '@material-ui/icons/Apps';
-import GenerateIcon from '@material-ui/icons/RotateLeft';
-import RemoveIcon from '@material-ui/icons/Delete';
-import SecurityIcon from '@material-ui/icons/Security';
+import Typography from '@mui/material/Typography';
+import EditIcon from '@mui/icons-material/Edit';
+import ApplicationIcon from '@mui/icons-material/Apps';
+import GenerateIcon from '@mui/icons-material/RotateLeft';
+import RemoveIcon from '@mui/icons-material/Delete';
+import SecurityIcon from '@mui/icons-material/Security';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormikProps } from 'formik';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
 import styled from 'styled-components';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import { AppProp, AppFormProp } from '../../../store/applications/types';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
 import { AppState } from '../../../store';

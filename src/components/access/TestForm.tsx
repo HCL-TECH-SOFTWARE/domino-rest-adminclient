@@ -5,14 +5,14 @@
  * ========================================================================== */
 
 import React from 'react';
-import TextField from '@material-ui/core/TextField';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import CheckboxIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import CloseIcon from '@material-ui/icons/Close';
+import TextField from '@mui/material/TextField';
+import Checkbox from '@mui/material/Checkbox';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { FormikProps } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';

@@ -5,11 +5,11 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import MenuItem from '@material-ui/core/MenuItem';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { convert2FieldType } from './functions';
-import { Box, Tooltip } from '@material-ui/core';
+import { Box, Tooltip } from '@mui/material';
 import styled from 'styled-components';
 import { BlueSwitch, HorizontalDivider } from '../../styles/CommonStyles';
 

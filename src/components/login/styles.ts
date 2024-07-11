@@ -4,8 +4,9 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, Theme } from '@mui/material/styles';
 import { IMG_DIR } from '../../config.dev';
+import { makeStyles } from '@mui/styles';
 
 export const CASTLE_BACKGROUND = `url(${IMG_DIR}/castlebg.jpg)`;
 
@@ -19,7 +20,7 @@ export const useStyles = makeStyles((theme: Theme) =>
       backgroundImage: CASTLE_BACKGROUND,
       backgroundRepeat: 'no-repeat',
       backgroundColor:
-        theme.palette.type === 'dark'
+        theme.palette.mode === 'dark'
           ? theme.palette.grey[900]
           : theme.palette.grey[50],
       backgroundSize: 'cover',

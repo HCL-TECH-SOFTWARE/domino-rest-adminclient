@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../store';
 import { fetchMyApps } from '../../store/applications/action';
 import styled from 'styled-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import Consents from './kanban/Consents';
 import { useNavigate } from 'react-router-dom';
 import { fetchUsers } from '../../store/access/action';

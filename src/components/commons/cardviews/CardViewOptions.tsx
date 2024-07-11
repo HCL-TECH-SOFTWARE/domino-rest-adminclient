@@ -5,9 +5,9 @@
  * ========================================================================== */
 
 import React, { useState }  from 'react';
-import { Button, Menu, MenuItem } from '@material-ui/core';
+import { Button, Menu, MenuItem } from '@mui/material';
 import { useLocation } from 'react-router-dom';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { MultiCardViewContainer } from './CarViewstyles';
@@ -44,7 +44,6 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
     <MultiCardViewContainer
       style={{ width: '200px', height: '43px', pointerEvents: scopePull ? 'auto' : 'none' }}
       theme={themeMode}
-      variant="outlined"
     >
       <Button
           className='view-dropdown'
@@ -53,7 +52,7 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
           onClick={handleClick}
-          style={{textTransform: 'none', paddingLeft: '15px', width: '100%', fontSize: '16px', justifyContent: 'space-between'}}
+          style={{textTransform: 'none', paddingLeft: '15px', width: '100%', fontSize: '16px', justifyContent: 'space-between', color: '#000'}}
        >
         {view === "nsf" ? view.toUpperCase() : view.charAt(0).toUpperCase() + view.slice(1)} View
         <ArrowDropDownIcon style={{ color: '#2B2B2B' }}/>
@@ -64,11 +63,6 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
           keepMounted
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          PaperProps={{
-            style: {
-              width: '170px',
-            },
-          }}
         >
           {views.map((key) => (
               <MenuItem key={key}

@@ -5,11 +5,12 @@
  * ========================================================================== */
 
 import styled from 'styled-components';
-import Card from '@material-ui/core/Card';
-import Paper from '@material-ui/core/Paper';
+import Card from '@mui/material/Card';
+import Paper from '@mui/material/Paper';
 import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 import { getTheme } from '../store/styles/action';
-import { Box, Button, Dialog, Switch, withStyles } from '@material-ui/core';
+import { Box, Button, Dialog, Switch } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 export const FormContainer = styled.div`
   padding: 0 0px;
@@ -126,7 +127,7 @@ export const AutoContainer = styled.div`
   margin: 20px 0;
 `;
 
-export const FormSearchContainer = styled(Paper)<{ theme: string }>`
+export const FormSearchContainer = styled('div')<{ theme: string }>`
   display: flex;
   flex: 1;
   height: 43px;
@@ -276,6 +277,7 @@ export const FormContentContainer = styled.div`
   }
   .icon-select {
     text-transform: capitalize;
+    color: #000;
   }
   .form-heading {
     font-size: 26px;
@@ -362,7 +364,7 @@ export const CardContainer = styled(Card)<{}>`
   }
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor};
+    border: 1px solid ${(props) => getTheme(props.theme.palette.mode).hoverColor};
 
     .more {
       visibility: visible;
@@ -370,7 +372,7 @@ export const CardContainer = styled(Card)<{}>`
   }
 
   &:focus {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor};
+    border: 1px solid ${(props) => getTheme(props.theme.palette.mode).hoverColor};
 
     .more {
       visibility: visible;
@@ -654,7 +656,7 @@ export const Buttons = styled.div`
   }
 `
 
-export const ButtonYes = styled(Button)`
+export const ButtonYes = styled(Button)<{ theme: string }>`
   padding: 6px 16px;
   min-width: 93px;
   height: 31px;
@@ -850,6 +852,37 @@ export const DialogContainer = styled(Box)`
     width: 100%;
     align-items: flex-end;
     padding-right: 30px;
+  }
+`
+
+export const SideNavContainer = styled.div`
+  width: 242;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  .drawer {
+    width: 242px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .open {
+    transition: width 225ms ease-in;
+    
+    @media only screen and (min-width: 0px) and (max-width: 768px) {
+      width: 80%;
+    }
+  }
+
+  .close {
+    transition: width 195ms ease-in;
+    overflow-x: hidden;
+    width: 57px;
+    background-color: yellow;
+
+    @media only screen and (min-width: 0px) and (max-width: 768px) {
+      width: 0;
+    }
   }
 `
 

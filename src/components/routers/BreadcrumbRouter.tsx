@@ -5,16 +5,16 @@
  * ========================================================================== */
 
 import React from 'react';
-import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Tooltip from '@material-ui/core/Tooltip';
-import Home from '@material-ui/icons/Home';
+import Tooltip from '@mui/material/Tooltip';
+import Home from '@mui/icons-material/Home';
 import { useSelector } from 'react-redux';
-import StorageIcon from '@material-ui/icons/Storage';
-import ApplicationIcon from '@material-ui/icons/Apps';
-import ScopeIcon from '@material-ui/icons/Album';
+import StorageIcon from '@mui/icons-material/Storage';
+import ApplicationIcon from '@mui/icons-material/Apps';
+import ScopeIcon from '@mui/icons-material/Album';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { ActionHeader, PageTitle, TopBanner } from '../../styles/CommonStyles';

@@ -5,13 +5,13 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef } from 'react';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { Buttons } from '../../styles/CommonStyles';
 import styled from 'styled-components';

@@ -5,10 +5,10 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Popper from '@material-ui/core/Popper';
-import Paper from '@material-ui/core/Paper';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Typography from '@material-ui/core/Typography';
+import Popper from '@mui/material/Popper';
+import Paper from '@mui/material/Paper';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
 import { AppState } from '../../../../../store';

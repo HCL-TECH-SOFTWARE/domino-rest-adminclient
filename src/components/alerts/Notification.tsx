@@ -5,13 +5,13 @@
  * ========================================================================== */
 
 import { useSelector, useDispatch } from 'react-redux';
-import Snackbar from '@material-ui/core/Snackbar';
-import Slide from '@material-ui/core/Slide';
+import Snackbar from '@mui/material/Snackbar';
+import Slide from '@mui/material/Slide';
 import { AppState } from '../../store';
 import { closeSnackbar } from '../../store/alerts/action';
 
 function TransitionDown(props: {}) {
-  return <Slide {...props} direction="down" />;
+  return <Slide children={<div></div>} {...props} direction="down" />;
 }
 
 const Notification = () => {

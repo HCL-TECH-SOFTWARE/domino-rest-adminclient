@@ -7,11 +7,11 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { TextEditorContainer } from './styles';
-import { Box, Button, ButtonBase, TextField, Typography } from '@material-ui/core';
+import { Box, Button, ButtonBase, TextField, Typography } from '@mui/material';
 import { FiEdit2 } from 'react-icons/fi';
-import CloseIcon from '@material-ui/icons/Close';
+import CloseIcon from '@mui/icons-material/Close';
 import { BlueSwitch, ButtonNeutral, ButtonYes } from '../../styles/CommonStyles';
-import TestIcon from '@material-ui/icons/PlayArrow';
+import TestIcon from '@mui/icons-material/PlayArrow';
 
 const AccessContainer = styled.div`
   border: 1px solid #A5AFBE;

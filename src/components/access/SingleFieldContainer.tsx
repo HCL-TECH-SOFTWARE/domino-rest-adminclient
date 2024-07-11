@@ -5,9 +5,9 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import AddIcon from '@material-ui/icons/Add';
+import AddIcon from '@mui/icons-material/Add';
 import styled from 'styled-components';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import { ItemContainer } from './styles';
 import { AccessContext } from './AccessContext';
 import { capitalizeFirst } from '../../utils/common';

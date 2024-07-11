@@ -15,7 +15,7 @@ import {
   DialogContentText,
   DialogTitle,
   TextField,
-} from "@material-ui/core";
+} from "@mui/material";
 import { AppState } from "../../store";
 import { validateFormSchemaName } from "../../store/databases/scripts";
 import styled from "styled-components";

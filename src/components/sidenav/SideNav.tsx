@@ -9,14 +9,14 @@
   import { NavLink, useLocation } from 'react-router-dom';
   import clsx from 'clsx';
   import { useDispatch, useSelector } from 'react-redux';
-  import Typography from '@material-ui/core/Typography';
-  import List from '@material-ui/core/List';
-  import ListItem from '@material-ui/core/ListItem';
-  import ListItemIcon from '@material-ui/core/ListItemIcon';
-  import ListItemText from '@material-ui/core/ListItemText';
-  import Tooltip from '@material-ui/core/Tooltip';
-  import Divider from '@material-ui/core/Divider';
-  import FlashOnIcon from '@material-ui/icons/FlashOn';
+  import Typography from '@mui/material/Typography';
+  import List from '@mui/material/List';
+  import ListItem from '@mui/material/ListItem';
+  import ListItemIcon from '@mui/material/ListItemIcon';
+  import ListItemText from '@mui/material/ListItemText';
+  import Tooltip from '@mui/material/Tooltip';
+  import Divider from '@mui/material/Divider';
+  import FlashOnIcon from '@mui/icons-material/FlashOn';
   import { getTheme } from '../../store/styles/action';
   import { fetchKeepDatabases } from '../../store/databases/action';
   import { AppState } from '../../store';
@@ -33,8 +33,14 @@
   import { IMG_DIR } from '../../config.dev';
   import { showPages } from '../../store/account/action';
   import { toggleQuickConfigDrawer } from '../../store/drawer/action';
+  import { Theme } from '@mui/material/styles';
+  import { SideNavContainer } from '../../styles/CommonStyles';
 
   const SideContainer = styled.aside<{ theme: string }>`
+    width: 242;
+    flex-shrink: 0;
+    white-space: nowrap;
+
     height: calc(100vh - 23px);
     border-right: 1px solid ${(props) => getTheme(props.theme).sidenav.border};
     background-image: ${(props) => getTheme(props.theme).sidenav.background};
@@ -132,12 +138,11 @@
   `;
 
   interface SidenavProps {
-    classes: any;
     open: boolean;
     toggleMenu: () => void;
   }
 
-  const SideNav: React.FC<SidenavProps> = ({ classes, open, toggleMenu }) => {
+  const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
     const location = useLocation();
     const { navitems } = useSelector((state: AppState) => state.account);
     const { databasePull } = useSelector((state: AppState) => state.databases);
@@ -155,11 +160,13 @@
     };
 
     return (
+      <SideNavContainer>
       <SideContainer
-        className={clsx(classes.drawer, {
-          [classes.drawerOpen]: open,
-          [classes.drawerClose]: !open
+        className={clsx('drawer', {
+          'open': open,
+          'close': !open
         })}
+        // className={`drawer ${open ? 'open' : 'close'}`}
         theme={themeMode}
       >
         <SidebarContainer theme={themeMode}>
@@ -328,46 +335,6 @@
               );
             })}
 
-          {/* {navitems.apps &&
-            consents.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  key={route.label}
-                  
-                  className={
-                    `/${location.pathname.split('/')[1]}` === `${route.uri}`
-                      ? 'route-active'
-                      : ''
-                  }
-                  to={route.uri}
-                >
-                  <Tooltip
-                    enterDelay={700}
-                    placement="right"
-                    title={route.label}
-                    arrow
-                  >
-                    <ListItem className="link-container" button key={route.label}>
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).sidenav.iconColor,
-                            fontSize: 19
-                          }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <Typography className="text-link" style={{color: getTheme(themeMode).sidenav.textColor}}>
-                          {route.label}
-                        </Typography>
-                      </ListItemText>
-                    </ListItem>
-                  </Tooltip>
-                </NavLink>
-              );
-            })} */}
-
           {navitems.users &&
             people.map((route) => {
               const Icon = route.icon;
@@ -495,6 +462,7 @@
           {open ? <ProfileMenu /> : <ProfileMenuDialog /> }
         </Proflie>
       </SideContainer>
+      </SideNavContainer>
     );
   };
 

@@ -6,9 +6,9 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import Typography from '@material-ui/core/Typography';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import Typography from '@mui/material/Typography';
 import ColumnDetails from './ColumnDetails';
 import { useDispatch } from 'react-redux';
 import { fetchViews, updateSchema } from '../../store/databases/action';
@@ -25,7 +25,7 @@ import APILoadingProgress from '../loading/APILoadingProgress';
 import { FiSave, FiPlusSquare, FiRefreshCcw, FiPlus } from 'react-icons/fi';
 import { BsCheck2Circle } from 'react-icons/bs';
 import { IoMdClose } from 'react-icons/io';
-import { Box, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
+import { Box, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { Buttons } from '../../styles/CommonStyles';
 import { fullEncode } from '../../utils/common';
 

@@ -7,8 +7,8 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import Button from '@mui/material/Button';
 import { AppState } from '../../store';
 import styled from 'styled-components';
 import { handleDatabaseAgents } from '../../store/databases/action';

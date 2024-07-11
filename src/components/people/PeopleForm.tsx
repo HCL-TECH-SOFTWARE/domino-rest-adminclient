@@ -5,16 +5,16 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import { FormikProps } from 'formik';
-import PeopleIcon from '@material-ui/icons/Person';
+import PeopleIcon from '@mui/icons-material/Person';
 import { useSelector, useDispatch } from 'react-redux';
-import CloseIcon from '@material-ui/icons/Close';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import { Typography, InputAdornment, IconButton } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
-import { Alert, AlertTitle } from '@material-ui/lab';
-import Visibility from '@material-ui/icons/Visibility';
+import CloseIcon from '@mui/icons-material/Close';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { Typography, InputAdornment, IconButton } from '@mui/material';
+import Button from '@mui/material/Button';
+import { Alert, AlertTitle } from '@mui/lab';
+import Visibility from '@mui/icons-material/Visibility';
 import { AppState } from '../../store';
 import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';

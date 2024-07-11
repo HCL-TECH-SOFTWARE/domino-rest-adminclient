@@ -15,15 +15,15 @@ import {
   DialogTitle,
   Tooltip,
   Typography
-} from '@material-ui/core';
+} from '@mui/material';
 import styled from 'styled-components';
-import CloseIcon from '@material-ui/icons/Close';
+import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { RxDividerVertical } from 'react-icons/rx';
 import { CiFilter } from 'react-icons/ci';
 import ConsentsTable from './ConsentsTable';
-import KeyboardBackspaceIcon from '@material-ui/icons/KeyboardBackspace';
+import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import { CommonDialog } from '../../../styles/CommonStyles';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';

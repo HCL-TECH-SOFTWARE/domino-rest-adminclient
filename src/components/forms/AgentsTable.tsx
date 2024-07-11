@@ -13,7 +13,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import ActivateSwitch from './ActivateSwitch';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({

@@ -8,8 +8,8 @@ import React, { useState, useEffect } from 'react';
 import { v4 as uuid } from 'uuid';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { useLocation } from 'react-router-dom';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import Typography from '@material-ui/core/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import Fields from './Fields';
 import { reorder, copy, move } from './functions';
@@ -30,7 +30,7 @@ import { TopContainer } from '../../styles/CommonStyles';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import GenericLoading from '../loading/GenericLoading';
 import styled from 'styled-components';
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import ModeCompare from './ModeCompare';
 
 const ModeCompareButton = styled(Button)`

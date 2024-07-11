@@ -5,17 +5,17 @@
  * ========================================================================== */
 
 import React, { useRef, useState } from 'react';
-import Typography from '@material-ui/core/Typography';
-import { Box, Tooltip, TextField, Button, Checkbox, ButtonBase } from '@material-ui/core';
-import { TabsProps } from '@material-ui/core/Tabs';
+import Typography from '@mui/material/Typography';
+import { Box, Tooltip, TextField, Button, Checkbox, ButtonBase } from '@mui/material';
+import { TabsProps } from '@mui/material/Tabs';
 import styled from 'styled-components';
-import AddIcon from '@material-ui/icons/Add';
+import AddIcon from '@mui/icons-material/Add';
 import { ButtonNeutral, ButtonYes, HorizontalDivider, WarningIcon } from '../../styles/CommonStyles';
 import { capitalizeFirst, insertCharacter } from '../../utils/common';
 import FieldContainer from './FieldContainer';
 import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
-import CloseIcon from '@material-ui/icons/Close';
+import CloseIcon from '@mui/icons-material/Close';
 import { toggleAlert } from '../../store/alerts/action';
 
 const SelectedFieldsContainer = styled.div`

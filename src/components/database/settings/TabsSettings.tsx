@@ -6,18 +6,18 @@
 
 import React, { useContext, useState } from 'react';
 import SwipeableViews from 'react-swipeable-views';
-import { useTheme } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
+import { useTheme } from '@mui/material/styles';
+import Grid from '@mui/material/Grid';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import Button from '@material-ui/core/Button';
-import EditIcon from '@material-ui/icons/Edit';
-import SaveIcon from '@material-ui/icons/Save';
-import CloseIcon from '@material-ui/icons/Close';
+import Button from '@mui/material/Button';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
 import AccessSection from './sections/Access';
 import DBSetting from './sections/DBSetting';
 import { KEEP_ADMIN_BASE_COLOR } from '../../../config.dev';

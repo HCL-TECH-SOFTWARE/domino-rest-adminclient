@@ -4,11 +4,11 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Button, Menu, MenuItem } from '@material-ui/core';
+import { Button, Menu, MenuItem } from '@mui/material';
 import appIcons from '../../styles/app-icons';
 import { InputContainer } from '../../styles/CommonStyles';
 import { getTheme } from '../../store/styles/action';
-import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
+import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
@@ -52,7 +52,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                     height: `${size}px`
                     }}
                 />
-                <span style={{ textTransform: 'capitalize', paddingLeft: '11px' }}>{displayIconName.toLowerCase()}</span>
+                <span style={{ textTransform: 'capitalize', paddingLeft: '11px', color: '#000' }}>{displayIconName.toLowerCase()}</span>
                 <ChevronDown style={{ fontSize: 18 }} />
             </Button>
             <Menu
