@@ -27,7 +27,6 @@ export default function DropdownFormulaEngine() {
         options={engines}
         value={engines[0]}
         getOptionLabel={(option) => option.title}
-        closeIcon={false}
         renderInput={(params) => (
           <TextField {...params} variant="outlined" fullWidth />
         )}

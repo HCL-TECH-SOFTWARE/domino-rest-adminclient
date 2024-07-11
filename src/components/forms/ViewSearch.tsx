@@ -27,7 +27,6 @@ const ViewSearch: React.FC<ViewSearchProps> = ({ handleSearchView }) => {
     <FormSearchContainer
       style={{ pointerEvents: scopePull ? 'auto' : 'none' }}
       theme={themeMode}
-      variant="outlined"
     >
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />

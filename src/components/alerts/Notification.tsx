@@ -11,7 +11,7 @@ import { AppState } from '../../store';
 import { closeSnackbar } from '../../store/alerts/action';
 
 function TransitionDown(props: {}) {
-  return <Slide {...props} direction="down" />;
+  return <Slide children={<div></div>} {...props} direction="down" />;
 }
 
 const Notification = () => {

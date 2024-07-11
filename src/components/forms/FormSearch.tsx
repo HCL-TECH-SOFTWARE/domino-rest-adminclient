@@ -28,7 +28,6 @@ const FormSearch: React.FC<DatabaseSearchProps> = ({
     <FormSearchContainer
       style={{ pointerEvents: databasePull ? 'auto' : 'none' }}
       theme={themeMode}
-      variant="outlined"
     >
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />
