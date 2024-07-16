@@ -1,0 +1,19 @@
+{
+   "title": "HCL Domino REST API Admin UI",
+   "motivation": "AdminUI managing the Domino REST API configuration, showcase of HTTP client app",
+   "contribution": [
+      "Bugfixes",
+      "Features",
+      "Enhancement",
+      "Infrastructure"
+   ],
+   "skills": [
+      "JavaScript",
+      "TypeScript",
+      "ReactJS",
+      "Vite"
+   ],
+   "owner_Id": "jason.gary@hcl-software.com",
+   "docs": "https://github01.hclpnp.com/pages/Volt-MX-GO/domino-rest-api-documentation-public/",
+   "language": "TypeScript"
+}
