@@ -23,7 +23,6 @@ import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, HorizontalDivider, SearchContainer, SearchInput } from '../../styles/CommonStyles';
-import { makeStyles } from '@mui/styles';
 
 const FieldContainer = styled.div<{ theme: string }>`
   border: 1px solid ${(props) => getTheme(props.theme).borderColor};

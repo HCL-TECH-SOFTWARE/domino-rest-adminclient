@@ -9,7 +9,7 @@ import Card from '@mui/material/Card';
 import Paper from '@mui/material/Paper';
 import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 import { getTheme } from '../store/styles/action';
-import { Box, Button, Dialog, Switch } from '@mui/material';
+import { Box, Button, Dialog, Radio, RadioProps, Switch } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
 export const FormContainer = styled.div`
@@ -905,3 +905,14 @@ export const WarningIcon = () => {
       </defs>
     </svg>
 )}
+
+export const StyledRadio = styled(Radio)<RadioProps>`
+  color: #0E5FDC;
+  &.Mui-checked {
+    color: #0E5FDC;
+  }
+  .MuiRadio-label {
+    padding: 0;
+    font-size: 14px;
+  }
+`;
