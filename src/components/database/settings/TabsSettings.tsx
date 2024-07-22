@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useContext, useState } from 'react';
-import SwipeableViews from 'react-swipeable-views';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Tabs from '@mui/material/Tabs';
@@ -160,13 +159,13 @@ const TabsSettings: React.FC<TabsSettingsProps> = () => {
           <Tab label="Forms" {...a11yProps(2)} />
         </Tabs>
         <Grid item md={12}>
-          <SwipeableViews axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'} index={value} onChangeIndex={handleChangeIndex}>
+          <div>
             {tabPanels.map((panel, index) => (
               <TabPanel key={panel.section.name} value={value} index={index} dir={theme.direction}>
                 <panel.section />
               </TabPanel>
             ))}
-          </SwipeableViews>
+          </div>
           <FooterDrawer>
             <Button
               style={{

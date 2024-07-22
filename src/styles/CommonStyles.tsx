@@ -6,11 +6,9 @@
 
 import styled from 'styled-components';
 import Card from '@mui/material/Card';
-import Paper from '@mui/material/Paper';
 import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 import { getTheme } from '../store/styles/action';
 import { Box, Button, Dialog, Radio, RadioProps, Switch } from '@mui/material';
-import { withStyles } from '@mui/styles';
 
 export const FormContainer = styled.div`
   padding: 0 0px;
@@ -714,23 +712,19 @@ export const SchemaIconStatus = styled.div`
 export const InUseSymbol = `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiM4MkRDNzMiLz4KPC9zdmc+Cg==')`
 export const NotInUseSymbol = `url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiNENjQ2NkYiLz4KPC9zdmc+Cg==")`
 
-export const BlueSwitch = withStyles({
-  switchBase: {
-    color: 'white',
-    '&$checked' : {
-      color: '#3874cb',
-      '& + $track':{
-        opacity: 1,
-        backgroundColor: '#9cbae5',
-      }
-    },
-    '&$checked + $track': {
-      backgroundColor: 'black',
-    },
-  },
-  checked: {},
-  track: {},
-})(Switch);
+export const BlueSwitch = styled(Switch)`
+  color: white;
+  &.Mui-checked {
+    color: #3874cb;
+    & + .MuiSwitch-track {
+      opacity: 1;
+      background-color: #9cbae5;
+    }
+  }
+  &.Mui-checked + .MuiSwitch-track {
+    background-color: black;
+  }
+`;
 
 export const DeleteIcon = styled.div`
   width: 20px;
