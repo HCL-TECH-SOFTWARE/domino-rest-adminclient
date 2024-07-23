@@ -183,7 +183,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           />
           {formik.errors.appName && formik.touched.appName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appName}
+              {`${formik.errors.appName}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -201,7 +201,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           />
           {formik.errors.appDescription && formik.touched.appDescription ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appDescription}
+              {`${formik.errors.appDescription}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -223,7 +223,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           {formik.errors.appCallbackUrlsStr &&
           formik.touched.appCallbackUrlsStr ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appCallbackUrlsStr}
+              {`${formik.errors.appCallbackUrlsStr}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -241,7 +241,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           />
           {formik.errors.appStartPage && formik.touched.appStartPage ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appStartPage}
+              {`${formik.errors.appStartPage}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -270,7 +270,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
                 id="typeahead-scope"
                 options={scopeList}
                 fullWidth
-                renderInput={(params: any) => <TextField {...params} placeholder="Scope" label="" />}
+                renderInput={(params: any) => <TextField {...params} placeholder="Scope" label="" variant='standard' />}
                 onInputChange={HandleScopeInputChange}
                 inputValue={scopeValuePlaceholder}
               />
@@ -283,7 +283,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           </ScopeField>
           {!formik.values.appScope && formik.touched.appScope ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appScope}
+              {`${formik.errors.appScope}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -318,7 +318,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           />
           {formik.errors.appContactsStr && formik.touched.appContactsStr ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appContactsStr}
+              {`${formik.errors.appContactsStr}`}
             </Typography>
           ) : null}
         </InputContainer>

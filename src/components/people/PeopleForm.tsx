@@ -91,10 +91,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 name="firstName"
                 color="primary"
                 label="First Name"
+                variant='standard'
               />
               {formik.errors.firstName && formik.touched.firstName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.firstName}
+                  {`${formik.errors.firstName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -107,10 +108,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.lastName}
+                variant='standard'
               />
               {formik.errors.lastName && formik.touched.lastName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.lastName}
+                  {`${formik.errors.lastName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -123,10 +125,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.shortName}
+                variant='standard'
               />
               {formik.errors.shortName && formik.touched.shortName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.shortName}
+                  {`${formik.errors.shortName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -137,6 +140,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 label="Password"
                 color="primary"
                 type={values.showPassword ? 'text' : 'password'}
+                variant='standard'
                 InputProps={{
                   readOnly: true,
                   endAdornment: (
@@ -160,7 +164,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
               />
               {formik.errors.password && formik.touched.password ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.password}
+                  {`${formik.errors.password}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -173,10 +177,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.companyName}
+                variant='standard'
               />
               {formik.errors.companyName && formik.touched.companyName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.companyName}
+                  {`${formik.errors.companyName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -189,10 +194,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.phoneNumber}
+                variant='standard'
               />
               {formik.errors.phoneNumber && formik.touched.phoneNumber ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.phoneNumber}
+                  {`${formik.errors.phoneNumber}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -205,11 +211,12 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.internet}
+                variant='standard'
               />
               {formik.errors.internetAddress &&
               formik.touched.internetAddress ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.internetAddress}
+                  {`${formik.errors.internetAddress}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -222,10 +229,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.mailAddress}
+                variant='standard'
               />
               {formik.errors.mailAddress && formik.touched.mailAddress ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.mailAddress}
+                  {`${formik.errors.mailAddress}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -256,7 +264,6 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 ? ' Update New Person'
                 : ' View Person Details'}
             </Typography>
-
             <InputContainer style={{ marginTop: 10 }}>
               <TextField
                 fullWidth
@@ -265,10 +272,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 name="firstName"
                 color="primary"
                 label="First Name"
+                variant='standard'
               />
               {formik.errors.firstName && formik.touched.firstName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.firstName}
+                  {`${formik.errors.firstName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -280,10 +288,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.lastName}
+                variant='standard'
               />
               {formik.errors.lastName && formik.touched.lastName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.lastName}
+                  {`${formik.errors.lastName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -295,10 +304,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.shortName}
+                variant='standard'
               />
               {formik.errors.shortName && formik.touched.shortName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.shortName}
+                  {`${formik.errors.shortName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -309,6 +319,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 label="Password"
                 color="primary"
                 type={values.showPassword ? 'text' : 'password'}
+                variant='standard'
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -331,7 +342,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
               />
               {formik.errors.password && formik.touched.password ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.password}
+                  {`${formik.errors.password}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -343,10 +354,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.companyName}
+                variant='standard'
               />
               {formik.errors.companyName && formik.touched.companyName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.companyName}
+                  {`${formik.errors.companyName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -358,10 +370,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.phoneNumber}
+                variant='standard'
               />
               {formik.errors.phoneNumber && formik.touched.phoneNumber ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.phoneNumber}
+                  {`${formik.errors.phoneNumber}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -373,11 +386,12 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.internet}
+                variant='standard'
               />
               {formik.errors.internetAddress &&
               formik.touched.internetAddress ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.internetAddress}
+                  {`${formik.errors.internetAddress}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -389,10 +403,11 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 onChange={formik.handleChange}
                 value={formik.values.mailAddress}
+                variant='standard'
               />
               {formik.errors.mailAddress && formik.touched.mailAddress ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.mailAddress}
+                  {`${formik.errors.mailAddress}`}
                 </Typography>
               ) : null}
             </InputContainer>

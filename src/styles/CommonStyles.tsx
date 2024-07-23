@@ -712,19 +712,17 @@ export const SchemaIconStatus = styled.div`
 export const InUseSymbol = `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiM4MkRDNzMiLz4KPC9zdmc+Cg==')`
 export const NotInUseSymbol = `url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiNENjQ2NkYiLz4KPC9zdmc+Cg==")`
 
-export const BlueSwitch = styled(Switch)`
-  color: white;
-  &.Mui-checked {
-    color: #3874cb;
-    & + .MuiSwitch-track {
-      opacity: 1;
-      background-color: #9cbae5;
-    }
-  }
-  &.Mui-checked + .MuiSwitch-track {
-    background-color: black;
-  }
-`;
+export const BlueSwitch = styled(Switch)(({ theme }) => ({
+  '& .MuiSwitch-switchBase.Mui-checked': {
+    color: '#3874cb',
+    '&:hover': {
+      backgroundColor: '#9cbae5',
+    },
+  },
+  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+    backgroundColor: '#3874cb',
+  },
+}));
 
 export const DeleteIcon = styled.div`
   width: 20px;
