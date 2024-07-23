@@ -301,7 +301,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
         </InputContainer>
         {!schemaName && formik.touched.apiName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.schemaName}
+              {`${formik.errors.schemaName}`}
             </Typography>
           ) : null}
         <InputContainer style={{ marginTop: 5 }}>
@@ -313,11 +313,12 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             color="primary"
             disabled={isEdit}
             label={`${itemType} Name`}
+            variant='standard'
             fullWidth
           />
           {formik.errors.apiName && formik.touched.apiName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.apiName}
+              {`${formik.errors.apiName}`}
             </Typography>
           ) : (scopeNameError ? (
             <Typography className="validation-error" color="textPrimary">
@@ -334,10 +335,11 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             onChange={handleDescriptionChange}
             value={formik.values.description}
             id="description"
+            variant='standard'
           />
           {formik.errors.description && formik.touched.description ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.description}
+              {`${formik.errors.description}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -349,10 +351,11 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             color="primary"
             onChange={handleServerChange}
             value={formik.values.server}
+            variant='standard'
           />
           {formik.errors.server && formik.touched.server ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.server}
+              {`${formik.errors.server}`}
             </Typography>
           ) : null}
         </InputContainer>

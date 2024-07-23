@@ -280,7 +280,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         </InputContainer>
         {!nsfPath && formik.touched.schemaName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.nsfPath}
+              {`${formik.errors.nsfPath}`}
             </Typography>
           ) : null}
         <InputContainer style={{ marginTop: 5 }}>
@@ -291,11 +291,12 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             color="primary"
             id={`${itemType} Name`}
             label={`${itemType} Name`}
+            variant='standard'
             fullWidth
           />
           {formik.errors.schemaName && formik.touched.schemaName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.schemaName}
+              {`${formik.errors.schemaName}`}
             </Typography>
           ) : (schemaNameError ? (
             <Typography className="validation-error" color="textPrimary">
@@ -311,10 +312,11 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             color="primary"
             onChange={handleScopeNameChange}
             value={formik.values.scopeName}
+            variant='standard'
           />
           {formik.errors.scopeName && formik.touched.scopeName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.scopeName}
+              {`${formik.errors.scopeName}`}
             </Typography>
           ) : (scopeNameError ? (
             <Typography className="validation-error" color="textPrimary">
@@ -330,10 +332,11 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             color="primary"
             onChange={handleDescriptionChange}
             value={formik.values.description}
+            variant='standard'
           />
           {formik.errors.description && formik.touched.description ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.description}
+              {`${formik.errors.description}`}
             </Typography>
           ) : null}
         </InputContainer>

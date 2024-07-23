@@ -10,8 +10,6 @@ import LogoutIcon from '@mui/icons-material/ExitToApp';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/account/action';
 import styled from 'styled-components';
-import { makeStyles } from '@mui/styles';
-import { Theme } from '@mui/material';
 
 const OptionListContainer = styled.div`
 `;

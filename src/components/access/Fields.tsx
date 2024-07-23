@@ -8,9 +8,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
-import SwipeableViews from 'react-swipeable-views';
 import Box from '@mui/material/Box';
-import { MenuItem, CircularProgress, Select, Tooltip, Theme } from '@mui/material';
+import { MenuItem, CircularProgress, Select, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 import { MdLibraryAdd } from 'react-icons/md';
@@ -23,7 +22,6 @@ import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, HorizontalDivider, SearchContainer, SearchInput } from '../../styles/CommonStyles';
-import { makeStyles } from '@mui/styles';
 
 const FieldContainer = styled.div<{ theme: string }>`
   border: 1px solid ${(props) => getTheme(props.theme).borderColor};
@@ -418,7 +416,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
           </div>
         </div>
       ) : (
-        <SwipeableViews axis="x" index={tabValue} style={{ borderRadius: '10px' }}>
+        <div style={{ overflowY: 'scroll' }}>
           {fieldsDisplayed.map((item: any, index: any) => (
             <ListRoot key={`${item.formName}-${index}`}>
             {
@@ -456,7 +454,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
             }
           </ListRoot>
           ))}
-        </SwipeableViews>
+        </div>
       )}
     </FieldContainer>
   );

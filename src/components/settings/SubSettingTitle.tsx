@@ -8,7 +8,11 @@ import React from 'react';
 import Typography from '@mui/material/Typography';
 import { SubSectionTitleContainer } from '../../styles/CommonStyles';
 
-const SubSettingTitle: React.FC = ({ children }) => {
+type SubSettingTitleProps = {
+  children: React.ReactNode;
+};
+
+const SubSettingTitle: React.FC<SubSettingTitleProps> = ({ children }) => {
   return (
     <SubSectionTitleContainer>
       <Typography className="title" color="textPrimary">

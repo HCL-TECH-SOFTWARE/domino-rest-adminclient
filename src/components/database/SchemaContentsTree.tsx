@@ -7,7 +7,6 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import DBIcon from '@mui/icons-material/Storage';
 import ArrowRightIcon from '@mui/icons-material/ChevronRight';
@@ -16,7 +15,6 @@ import ArrowDropDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import { AvailableDatabases } from '../../store/databases/types';
 import APILoadingProgress from '../loading/APILoadingProgress';
-import { createStyles, makeStyles } from '@mui/styles';
 import { SimpleTreeView, TreeItem, TreeItemProps } from '@mui/x-tree-view';
 
 declare module 'csstype' {
@@ -33,78 +31,23 @@ type StyledTreeItemProps = TreeItemProps & {
   labelText: string;
 };
 
-const useTreeItemStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      color: theme.palette.text.secondary,
-      '&:focus > $content': {
-        backgroundColor: `var(--tree-view-bg-color, ${theme.palette.grey[400]})`,
-        color: 'var(--tree-view-color)',
-      },
-    },
-    content: {
-      color: theme.palette.text.secondary,
-      borderTopRightRadius: theme.spacing(2),
-      borderBottomRightRadius: theme.spacing(2),
-      paddingRight: theme.spacing(1),
-      // There is a style problem in @material/styles(it defines Theme.Typography.fontWeightMedium as string)
-      // Disable type check for now
-      // @ts-ignore
-      fontWeight: theme.typography.fontWeightMedium,
-      '$expanded > &': {
-        fontWeight: theme.typography.fontWeightRegular,
-      },
-    },
-    group: {
-      marginLeft: 0,
-      '& $content': {
-        paddingLeft: theme.spacing(2),
-      },
-    },
-    expanded: {},
-    label: {
-      fontWeight: 'inherit',
-      color: 'inherit',
-    },
-    labelRoot: {
-      display: 'flex',
-      alignItems: 'center',
-      padding: theme.spacing(0.5, 0),
-    },
-    labelIcon: {
-      marginRight: theme.spacing(1),
-    },
-    labelText: {
-      fontWeight: 'inherit',
-      flexGrow: 1,
-    },
-  })
-);
-
 function StyledTreeItem(props: StyledTreeItemProps) {
-  const classes = useTreeItemStyles();
   const { labelText, labelIcon: LabelIcon, color, bgColor, ...other } = props;
 
   return (
     <TreeItem
       label={
-        <div className={classes.labelRoot}>
-          <LabelIcon color="primary" className={classes.labelIcon} />
+        <div style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
+          <LabelIcon color="primary" sx={{ marginRight: '8px' }} />
           <Typography
             variant="body2"
             color="textPrimary"
-            className={classes.labelText}
+            sx={{ fontWeight: 'inherit', flexGrow: 1 }}
           >
             {labelText}
           </Typography>
         </div>
       }
-      classes={{
-        root: classes.root,
-        content: classes.content,
-        expanded: classes.expanded,
-        label: classes.label,
-      }}
       {...other}
     />
   );

@@ -55,7 +55,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
                 <NsfCard
                   openDatabase={openSchema}
                   open={open}
-                  key={`${database.schemaName}-${database.nsfPath}`}
+                  key={database.fileName}
                   aria-describedby={id}
                   database={database}
                   setSelectedDB={setSelectedDB}

@@ -17,7 +17,7 @@ import {
   ScopeCardHeader,
   SchemaDBImage
 } from '../ScopeStyles';
-import { ModeLogo, SchemaIconStatus } from '../../../../../../styles/CommonStyles';
+import { InUseSymbol, ModeLogo, NotInUseSymbol, SchemaIconStatus } from '../../../../../../styles/CommonStyles';
 import appIcons from '../../../../../../styles/app-icons';
 import { AppState } from '../../../../../../store';
 import { checkIcon } from '../../../../../../styles/scripts';
@@ -66,7 +66,7 @@ const SchemaCardV2: React.FC<SchemaCardV2Props> = ({
       onKeyDown={handleKeyPress}
     >
       <Tooltip title={database.isActive ? 'Active' : 'Inactive'}>
-        <SchemaIconStatus isActive={database.isActive ? true : false} style={{ position: 'absolute', right: '20px', top: '20px' }} />  
+        <SchemaIconStatus style={{ position: 'absolute', right: '20px', top: '20px', backgroundImage: database.isActive ? InUseSymbol : NotInUseSymbol }} />  
       </Tooltip>
       <ScopeCardWrapper>
         <CardContent onClick={() => openDatabase(database)}>

@@ -136,6 +136,23 @@ const theme = (
           },
         },
       },
+      MuiSwitch: {
+        styleOverrides: {
+          switchBase: {
+            color: 'white',
+            '&$checked' : {
+              color: '#3874cb',
+              '& + $track':{
+                opacity: 1,
+                backgroundColor: '#9cbae5',
+              }
+            },
+            '&$checked + $track': {
+              backgroundColor: 'black',
+            },
+          }
+        }
+      }
     },
   });
 };

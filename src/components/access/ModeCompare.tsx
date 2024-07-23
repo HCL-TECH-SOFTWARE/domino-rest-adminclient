@@ -493,7 +493,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               {selectedModeNames.map((modeName: string, idx: number) => {
                 if (modeName === '') {
                   return (
-                    <Box draggable className="card-top">
+                    <Box draggable className="card-top" key={`${modeName}-${idx}`}>
                       <Box style={{ display: 'flex', paddingTop: '9px', paddingBottom: '20px' }}>
                         <div style={{ display: 'flex', width: 'calc(50% + 103px)', justifyContent: 'end' }}>
                           <div style={{ width: '103px', height: '7px', borderRadius: '50px', background: '#FFF' }} />

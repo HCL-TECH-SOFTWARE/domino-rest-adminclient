@@ -305,7 +305,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />
         <Box style={{ width: '100%', height: '10vh' }}>
           <TextField
-            value={value}
+            value={value ? value : ""}
             onChange={handleFormNameInput}
             variant="outlined"
             error={formNameError}

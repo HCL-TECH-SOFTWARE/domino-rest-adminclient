@@ -38,7 +38,7 @@ const AppIcons: React.FC<DropdownIconsProps> = ({ formik }) => {
                 <InputAdornment position="start">
                   <>
                     {
-                      formik.values.appIcon == null ? '' :
+                      formik.values.appIcon == null ? 'beach' :
                       <img
                         style={{ height: 30, marginRight: 10 }}
                         src={`data:image/svg+xml;base64, ${appIcons[formik.values.appIcon]}`}

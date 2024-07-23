@@ -19,6 +19,7 @@ const MasterGreeting = styled.div`
 `;
 
 interface IErrorWrapper {
+  children: any,
   errorStatus: {
     status: number;
     statusText: string;

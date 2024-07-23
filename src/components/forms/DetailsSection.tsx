@@ -23,7 +23,7 @@ import { checkIcon } from '../../styles/scripts';
 import { Database } from '../../store/databases/types';
 import Button from '@mui/material/Button';
 import { updateSchema } from '../../store/databases/action';
-import { BlueSwitch, Buttons, InputContainer, SchemaIconStatus } from '../../styles/CommonStyles';
+import { BlueSwitch, Buttons, InputContainer, InUseSymbol, NotInUseSymbol, SchemaIconStatus } from '../../styles/CommonStyles';
 import { FiEdit } from 'react-icons/fi';
 import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { IoMdClose } from 'react-icons/io';
@@ -457,7 +457,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
         {SchemaIcon}
         <StatusIcon>
           <Tooltip title={apiStatus.slice(1, apiStatus.length - 1)}>
-            <SchemaIconStatus isActive={isInUse ? true : false} style={{ width: '14px', height: '14px' }} />
+            <SchemaIconStatus style={{ width: '14px', height: '14px', backgroundImage: isInUse ? InUseSymbol : NotInUseSymbol }} />
           </Tooltip>
         </StatusIcon>
         <Typography className="api-name" component="p" variant="h5">

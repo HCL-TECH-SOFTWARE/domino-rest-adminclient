@@ -9,14 +9,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
-import { BlueSwitch, ButtonNeutral, ButtonYes, DrawerFormContainer, HorizontalDivider } from '../../styles/CommonStyles';
+import { BlueSwitch, ButtonNeutral, ButtonYes, DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
 import { Box, Checkbox, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { makeStyles, withStyles } from '@mui/styles';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -70,32 +69,6 @@ const ButtonsContainer = styled(Box)`
   gap: 20px;
 `
 
-const StyledRadio = withStyles({
-  root: {
-    color: '#0E5FDC',
-    '&$checked': {
-      color: '#0E5FDC',
-    },
-  },
-  label: {
-    padding: 0,
-    backgroundColor: 'yellow',
-    fontSize: '14px',
-  },
-  checked: {},
-})((props: RadioProps) => <Radio color="default" {...props} />)
-
-const useStyles = makeStyles({
-  label: {
-    padding: 0,
-    fontSize: '14px',
-  },
-  root: {
-    padding: 0,
-    backgroundColor: 'yellow',
-  }
-})
-
 interface ConsentFilterContainerProps {
   setStatus: (status: string) => void;
   showWithApps: boolean;
@@ -131,8 +104,6 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
   const [filterExp, setFilterExp] = useState(exp)
   const [filterTokenExp, setFilterTokenExp] = useState(tokenExp)
   const [filterScopes, setFilterScopes] = useState([""])
-
-  const classes = useStyles()
 
   React.useEffect(() => {
     if (consentsDrawer) {
@@ -182,8 +153,28 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
             <Section>
               <Typography className='header'>Status</Typography>
               <RadioGroup value={filterStatus} onChange={(e) => setFilterStatus(e.currentTarget.value)} className='radio-group'>
-                <FormControlLabel value='All' control={<StyledRadio size='small' />} label='All' classes={{ label: classes.label }} />
-                <FormControlLabel value='Active' control={<StyledRadio size='small' />} label='Active' classes={{ label: classes.label }} />
+                <FormControlLabel
+                  value='All'
+                  control={<StyledRadio size='small' />}
+                  label='All'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='Active'
+                  control={<StyledRadio size='small' />}
+                  label='Active'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
               </RadioGroup>
             </Section>
             <HorizontalDivider />
@@ -198,9 +189,39 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
             <Section>
               <Typography className='header'>Expiration</Typography>
               <RadioGroup value={filterExp.expiration} onChange={(e) => setFilterExp({ expiration: e.currentTarget.value, date: filterExp.date })} className='radio-group'>
-                <FormControlLabel value='All' control={<StyledRadio size='small' />} label='All' classes={{ label: classes.label }} />
-                <FormControlLabel value='None' control={<StyledRadio size='small' />} label='None' classes={{ label: classes.label }} />
-                <FormControlLabel value='Custom' control={<StyledRadio size='small' />} label='Custom' classes={{ label: classes.label }} />
+                <FormControlLabel
+                  value='All'
+                  control={<StyledRadio size='small' />}
+                  label='All'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='None'
+                  control={<StyledRadio size='small' />}
+                  label='None'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='Custom'
+                  control={<StyledRadio size='small' />}
+                  label='Custom'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
               </RadioGroup>
               {filterExp.expiration !== "All" && filterExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterExp.date)} onChange={e => setFilterExp({ expiration: filterExp.expiration, date: e ? e.toDate() : filterExp.date})} />}
             </Section>
@@ -208,9 +229,39 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
             <Section>
               <Typography className='header'>Token Expiration</Typography>
               <RadioGroup value={filterTokenExp.expiration} onChange={(e) => setFilterTokenExp({ expiration: e.currentTarget.value, date: filterTokenExp.date })} className='radio-group'>
-                <FormControlLabel value='All' control={<StyledRadio size='small' />} label='All' classes={{ label: classes.label }} />
-                <FormControlLabel value='None' control={<StyledRadio size='small' />} label='None' classes={{ label: classes.label }} />
-                <FormControlLabel value='Custom' control={<StyledRadio size='small' />} label='Custom' classes={{ label: classes.label }} />
+                <FormControlLabel
+                  value='All'
+                  control={<StyledRadio size='small' />}
+                  label='All'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='None'
+                  control={<StyledRadio size='small' />}
+                  label='None'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='Custom'
+                  control={<StyledRadio size='small' />}
+                  label='Custom'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
               </RadioGroup>
               {filterTokenExp.expiration !== "All" && filterTokenExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterTokenExp.date)} onChange={e => setFilterTokenExp({ expiration: filterTokenExp.expiration, date: e ? e.toDate() : filterTokenExp.date }) } />}
             </Section>
