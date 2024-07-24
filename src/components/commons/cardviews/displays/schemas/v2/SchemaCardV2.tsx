@@ -6,18 +6,18 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
-import DBIcon from '@material-ui/icons/Storage';
-import Tooltip from '@material-ui/core/Tooltip';
+import DBIcon from '@mui/icons-material/Storage';
+import Tooltip from '@mui/material/Tooltip';
 
 import {
   SchemaCardContainer,
   SchemaCardHeader,
   SchemaDBImage
 } from '../SchemaStyles';
-import { ModeLogo, Options, OptionsIcon, SchemaIconStatus, DeleteIcon } from '../../../../../../styles/CommonStyles';
+import { ModeLogo, Options, OptionsIcon, SchemaIconStatus, DeleteIcon, InUseSymbol, NotInUseSymbol } from '../../../../../../styles/CommonStyles';
 import '../../../../../../styles/text-manipulation.css';
 import appIcons from '../../../../../../styles/app-icons';
 import { AppState } from '../../../../../../store';
@@ -115,7 +115,7 @@ const SchemaCardV2: React.FC<SchemaCardV2Props> = ({
     >
       <OptionsIcon>
         <Tooltip title={inUse ? 'Used by Scopes' : 'Not used by Scopes'}>
-          <SchemaIconStatus isActive={inUse} style={{ position: 'absolute', right: '20px', top: '20px' }} />
+          <SchemaIconStatus style={{ position: 'absolute', right: '20px', top: '20px', backgroundImage: inUse ? InUseSymbol : NotInUseSymbol }} />
         </Tooltip>
       </OptionsIcon>
       <SchemaCardWrapper onKeyDown={handleKeyPress} tabIndex={1}>

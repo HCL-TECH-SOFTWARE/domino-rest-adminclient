@@ -5,27 +5,27 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Paper from '@material-ui/core/Paper';
-import TextField from '@material-ui/core/TextField';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import CloseIcon from '@material-ui/icons/Close';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
+import CloseIcon from '@mui/icons-material/Close';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 import {
   Typography,
   Tooltip,
   Checkbox,
   FormControlLabel
-} from '@material-ui/core';
-import CheckboxIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
-import StorageIcon from '@material-ui/icons/Storage';
-import { Alert, AlertTitle } from '@material-ui/lab';
+} from '@mui/material';
+import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
+import StorageIcon from '@mui/icons-material/Storage';
+import { Alert, AlertTitle } from '@mui/lab';
 import { FormikProps } from 'formik';
 import SchemaContentsTree from './SchemaContentsTree';
 import { AppState } from '../../store';
@@ -301,7 +301,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
         </InputContainer>
         {!schemaName && formik.touched.apiName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.schemaName}
+              {`${formik.errors.schemaName}`}
             </Typography>
           ) : null}
         <InputContainer style={{ marginTop: 5 }}>
@@ -313,11 +313,12 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             color="primary"
             disabled={isEdit}
             label={`${itemType} Name`}
+            variant='standard'
             fullWidth
           />
           {formik.errors.apiName && formik.touched.apiName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.apiName}
+              {`${formik.errors.apiName}`}
             </Typography>
           ) : (scopeNameError ? (
             <Typography className="validation-error" color="textPrimary">
@@ -334,10 +335,11 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             onChange={handleDescriptionChange}
             value={formik.values.description}
             id="description"
+            variant='standard'
           />
           {formik.errors.description && formik.touched.description ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.description}
+              {`${formik.errors.description}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -349,10 +351,11 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             color="primary"
             onChange={handleServerChange}
             value={formik.values.server}
+            variant='standard'
           />
           {formik.errors.server && formik.touched.server ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.server}
+              {`${formik.errors.server}`}
             </Typography>
           ) : null}
         </InputContainer>

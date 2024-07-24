@@ -5,18 +5,18 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
-import GroupsIcon from '@material-ui/icons/Group';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import Button from '@material-ui/core/Button';
-import CloseIcon from '@material-ui/icons/Close';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import GroupsIcon from '@mui/icons-material/Group';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import Button from '@mui/material/Button';
+import CloseIcon from '@mui/icons-material/Close';
 import { FormikProps } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
-import { Alert, AlertTitle } from '@material-ui/lab';
-import Box from '@material-ui/core/Box';
-import { DataGrid } from '@material-ui/data-grid';
+import { Alert, AlertTitle } from '@mui/lab';
+import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
 import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from '../applications/ApplicationContext';
@@ -99,10 +99,11 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 maxRows={2}
                 onChange={formik.handleChange}
                 value={formik.values.groupName}
+                variant='standard'
               />
               {formik.errors.groupName && formik.touched.groupName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.groupName}
+                  {`${formik.errors.groupName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -118,10 +119,11 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 maxRows={2}
                 onChange={formik.handleChange}
                 value={formik.values.groupCategory}
+                variant='standard'
               />
               {formik.errors.groupCategory && formik.touched.groupCategory ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.groupCategory}
+                  {`${formik.errors.groupCategory}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -137,11 +139,12 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 maxRows={3}
                 onChange={formik.handleChange}
                 value={formik.values.groupDescription}
+                variant='standard'
               />
               {formik.errors.groupDescription &&
               formik.touched.groupDescription ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.groupDescription}
+                  {`${formik.errors.groupDescription}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -152,7 +155,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                     rowHeight={28}
                     rows={formik.values.groupMembers}
                     columns={columns}
-                    pageSize={8}
+                    pageSizeOptions={[8]}
                     hideFooterSelectedRowCount
                   />
                 </div>
@@ -201,10 +204,11 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 maxRows={2}
                 onChange={formik.handleChange}
                 value={formik.values.groupName}
+                variant='standard'
               />
               {formik.errors.groupName && formik.touched.groupName ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.groupName}
+                  {`${formik.errors.groupName}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -219,10 +223,11 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 maxRows={2}
                 onChange={formik.handleChange}
                 value={formik.values.groupCategory}
+                variant='standard'
               />
               {formik.errors.groupCategory && formik.touched.groupCategory ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.groupCategory}
+                  {`${formik.errors.groupCategory}`}
                 </Typography>
               ) : null}
             </InputContainer>
@@ -237,15 +242,15 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 maxRows={3}
                 onChange={formik.handleChange}
                 value={formik.values.groupDescription}
+                variant='standard'
               />
               {formik.errors.groupDescription &&
               formik.touched.groupDescription ? (
                 <Typography className="validation-error" color="textPrimary">
-                  {formik.errors.groupDescription}
+                  {`${formik.errors.groupDescription}`}
                 </Typography>
               ) : null}
             </InputContainer>
-
             <Box display="flex" justifyContent="center">
               <Box borderRadius={16} {...defaultProps}>
                 <PeopleSelector />
@@ -264,7 +269,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                       rowHeight={28}
                       rows={formik.values.groupMembers}
                       columns={columns}
-                      pageSize={8}
+                      pageSizeOptions={[8]}
                       hideFooterSelectedRowCount
                     />
                   </div>

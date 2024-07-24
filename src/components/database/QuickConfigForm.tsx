@@ -5,21 +5,21 @@
  * ========================================================================== */
 
 import React, { useState, useEffect } from 'react';
-import Paper from '@material-ui/core/Paper';
-import TextField from '@material-ui/core/TextField';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import CloseIcon from '@material-ui/icons/Close';
-import ClearIcon from '@material-ui/icons/Clear';
-import { FormControlLabel, Checkbox, IconButton } from '@material-ui/core';
-import CheckboxIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import MenuItem from '@material-ui/core/MenuItem';
-import { Typography, Tooltip } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
-import Menu from '@material-ui/core/Menu';
-import ChevronDown from '@material-ui/icons/KeyboardArrowDown';
-import StorageIcon from '@material-ui/icons/Storage';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import CloseIcon from '@mui/icons-material/Close';
+import ClearIcon from '@mui/icons-material/Clear';
+import { FormControlLabel, Checkbox, IconButton } from '@mui/material';
+import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import MenuItem from '@mui/material/MenuItem';
+import { Typography, Tooltip } from '@mui/material';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
+import StorageIcon from '@mui/icons-material/Storage';
+import { Alert, AlertTitle } from '@mui/lab';
 import { FormikProps } from 'formik';
 import FileContentsTree from './FileContentsTree';
 import { AppState } from '../../store';
@@ -280,7 +280,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         </InputContainer>
         {!nsfPath && formik.touched.schemaName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.nsfPath}
+              {`${formik.errors.nsfPath}`}
             </Typography>
           ) : null}
         <InputContainer style={{ marginTop: 5 }}>
@@ -291,11 +291,12 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             color="primary"
             id={`${itemType} Name`}
             label={`${itemType} Name`}
+            variant='standard'
             fullWidth
           />
           {formik.errors.schemaName && formik.touched.schemaName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.schemaName}
+              {`${formik.errors.schemaName}`}
             </Typography>
           ) : (schemaNameError ? (
             <Typography className="validation-error" color="textPrimary">
@@ -311,10 +312,11 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             color="primary"
             onChange={handleScopeNameChange}
             value={formik.values.scopeName}
+            variant='standard'
           />
           {formik.errors.scopeName && formik.touched.scopeName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.scopeName}
+              {`${formik.errors.scopeName}`}
             </Typography>
           ) : (scopeNameError ? (
             <Typography className="validation-error" color="textPrimary">
@@ -330,10 +332,11 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             color="primary"
             onChange={handleDescriptionChange}
             value={formik.values.description}
+            variant='standard'
           />
           {formik.errors.description && formik.touched.description ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.description}
+              {`${formik.errors.description}`}
             </Typography>
           ) : null}
         </InputContainer>

@@ -13,7 +13,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import ActivateSwitch from './ActivateSwitch';
-import { Button, Tooltip } from '@material-ui/core';
+import { Button, Tooltip } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { useDispatch } from 'react-redux';

@@ -6,13 +6,13 @@
 
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import Popper from '@material-ui/core/Popper';
-import Fade from '@material-ui/core/Fade';
-import Paper from '@material-ui/core/Paper';
-import Tooltip from '@material-ui/core/Tooltip';
-import Typography from '@material-ui/core/Typography';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import UserIcon from '@material-ui/icons/AccountCircleOutlined';
+import Popper from '@mui/material/Popper';
+import Fade from '@mui/material/Fade';
+import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
+import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import styled from 'styled-components';
 import OptionList from './OptionList';
 import { AppState } from '../../store';

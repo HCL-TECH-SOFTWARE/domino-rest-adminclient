@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';

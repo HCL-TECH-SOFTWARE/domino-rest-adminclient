@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import Drawer from '@material-ui/core/Drawer';
+import Drawer from '@mui/material/Drawer';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormikProps } from 'formik';
 import { AppState } from '../../store';

@@ -4,11 +4,11 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Paper } from '@material-ui/core';
+import { Paper } from '@mui/material';
 import styled from 'styled-components';
 import { getTheme } from '../../../store/styles/action';
 
-export const MultiCardViewContainer = styled(Paper)<{ theme: string }>`
+export const MultiCardViewContainer = styled('div')<{ theme: string }>`
   display: flex;
   height: 35px;
   justify-content: center;

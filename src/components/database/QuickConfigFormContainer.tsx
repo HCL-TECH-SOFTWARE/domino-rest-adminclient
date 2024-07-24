@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Drawer from '@material-ui/core/Drawer';
+import Drawer from '@mui/material/Drawer';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import QuickConfigForm from './QuickConfigForm';

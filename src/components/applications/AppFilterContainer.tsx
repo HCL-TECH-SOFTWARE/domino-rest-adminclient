@@ -6,12 +6,12 @@
 
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Drawer from '@material-ui/core/Drawer';
+import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
-import { ButtonNeutral, ButtonNo, ButtonYes, DrawerFormContainer, HorizontalDivider } from '../../styles/CommonStyles';
-import { Box, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography, makeStyles, withStyles } from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import { ButtonNeutral, ButtonNo, ButtonYes, DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
+import { Box, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -69,32 +69,6 @@ const ButtonsContainer = styled(Box)`
   gap: 20px;
 `
 
-const StyledRadio = withStyles({
-  root: {
-    color: '#0E5FDC',
-    '&$checked': {
-      color: '#0E5FDC',
-    },
-  },
-  label: {
-    padding: 0,
-    backgroundColor: 'yellow',
-    fontSize: '14px',
-  },
-  checked: {},
-})((props: RadioProps) => <Radio color="default" {...props} />)
-
-const useStyles = makeStyles({
-  label: {
-    padding: 0,
-    fontSize: '14px',
-  },
-  root: {
-    padding: 0,
-    backgroundColor: 'yellow',
-  }
-})
-
 interface AppFilterContainerProps {
   status: string;
   setStatus: (status: string) => void;
@@ -114,8 +88,6 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
 
   const [filterStatus, setFilterStatus] = useState(status)
   const [filterAppSecret, setFilterAppSecret] = useState(appSecret)
-
-  const classes = useStyles()
 
   React.useEffect(() => {
     if (appFilterDrawer) {
@@ -163,18 +135,78 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             <Section>
               <Typography className='header'>Status</Typography>
               <RadioGroup value={filterStatus} onChange={(e) => setFilterStatus(e.currentTarget.value)} className='radio-group'>
-                <FormControlLabel value='All' control={<StyledRadio size='small' />} label='All' classes={{ label: classes.label }} />
-                <FormControlLabel value='Active' control={<StyledRadio size='small' />} label='Active' classes={{ label: classes.label }} />
-                <FormControlLabel value='Inactive' control={<StyledRadio size='small' />} label='Inactive' classes={{ label: classes.label }} />
+                <FormControlLabel
+                  value='All'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='All'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='Active'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='Active'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='Inactive'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='Inactive'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
               </RadioGroup>
             </Section>
             <HorizontalDivider />
             <Section>
               <Typography className='header'>App Secret</Typography>
               <RadioGroup value={filterAppSecret} onChange={(e) => setFilterAppSecret(e.currentTarget.value)} className='radio-group'>
-                <FormControlLabel value='All' control={<StyledRadio size='small' />} label='All' classes={{ label: classes.label }} />
-                <FormControlLabel value='Generated' control={<StyledRadio size='small' />} label='Generated' classes={{ label: classes.label }} />
-                <FormControlLabel value='Not Generated' control={<StyledRadio size='small' />} label='Not Generated' classes={{ label: classes.label }} />
+                <FormControlLabel
+                  value='All'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='All'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='Generated'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='Generated'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='Not Generated'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='Not Generated'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
               </RadioGroup>
             </Section>
             <HorizontalDivider />

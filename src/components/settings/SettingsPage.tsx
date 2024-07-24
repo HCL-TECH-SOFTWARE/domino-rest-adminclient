@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
 import { Route, NavLink } from 'react-router-dom';
 import { AppState } from '../../store';

@@ -7,7 +7,7 @@
 import React from 'react';
 import { FormikProps } from 'formik';
 import styled from 'styled-components';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import { StackContainer, Flex } from '../../styles/CommonStyles';
 import AppCard from './kanban/AppCard';
 

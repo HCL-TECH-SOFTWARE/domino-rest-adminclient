@@ -6,10 +6,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import AddIcon from '@material-ui/icons/Add';
-import CachedIcon from '@material-ui/icons/Cached';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
+import AddIcon from '@mui/icons-material/Add';
+import CachedIcon from '@mui/icons-material/Cached';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 import { AppState } from '../../store';
 import {
   fetchKeepDatabases,
@@ -29,7 +29,7 @@ import SchemasMultiView from '../commons/cardviews/displays/schemas/SchemasMulti
 import { toggleAlert } from '../../store/alerts/action';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip } from '@mui/material';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
 

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import SettingTitle from '../SettingTitle';
 import {
   SettingsDescription,

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { ExtraFlex } from '../../../../flex';
 import NsfCard from '../../../../schemas/NsfCard';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';

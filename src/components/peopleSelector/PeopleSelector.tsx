@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppState } from '../../store';
@@ -47,7 +47,7 @@ const PeopleSelector: React.FC = () => {
           rowHeight={28}
           rows={peopleRows}
           columns={columns}
-          pageSize={8}
+          pageSizeOptions={[5, 10, 15]}
           hideFooterSelectedRowCount
         />
       </div>

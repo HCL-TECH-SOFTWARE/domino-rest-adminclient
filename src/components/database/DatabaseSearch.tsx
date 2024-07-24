@@ -5,16 +5,17 @@
  * ========================================================================== */
 
 import React, { useState }  from 'react';
-import { IconButton, Tooltip } from '@material-ui/core';
-import ClearIcon from '@material-ui/icons/Clear'
-import SearchIcon from '@material-ui/icons/Search';
+import { IconButton, Tooltip } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear'
+import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
-import { Button, Menu, MenuItem } from '@material-ui/core';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Divider from '@material-ui/core/Divider';
+import { Button, Menu, MenuItem } from '@mui/material';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import Divider from '@mui/material/Divider';
+import { useTheme } from '@mui/material/styles';
 import {
   FormSearchContainer,
   SearchContainer,
@@ -32,6 +33,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
   changeSearchType,
   searchType
 }) => {
+  const theme = useTheme()
   const [hideClearIcon, setHideClearIcon] = React.useState(true); 
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const { themeMode } = useSelector((state: AppState) => state.styles);
@@ -75,7 +77,6 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
     <FormSearchContainer
       style={{ pointerEvents: scopePull ? 'auto' : 'none' }}
       theme={themeMode}
-      variant="outlined"
     >
       <SearchContainer>
         <Button

@@ -5,10 +5,10 @@
  * ========================================================================== */
 
 import React from 'react';
-import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import Typography from '@material-ui/core/Typography';
-import { FormikProps } from 'formik';
+import TextField from '@mui/material/TextField';
+import { Autocomplete, Box } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import { FormikProps, useFormikContext } from 'formik';
 import appIcons from '../../styles/app-icons';
 import { AutoContainer } from '../../styles/CommonStyles';
 import { InputAdornment } from "@mui/material";
@@ -21,29 +21,13 @@ const AppIcons: React.FC<DropdownIconsProps> = ({ formik }) => {
   return (
     <AutoContainer>
       <Autocomplete
-        size="small"
-        style={{ width: 200 }}
-        id="databases-icon"
-        value={formik.values.appIcon}
+        disablePortal
+        size='small'
         options={Object.keys(appIcons)}
         getOptionLabel={(option) => option}
         defaultValue={formik.values.appIcons}
         onChange={(event, value) => {
           formik.setFieldValue('appIcon', value);
-        }}
-        renderOption={(option) => {
-          return (
-            <>
-              <img
-                style={{ height: 30, marginRight: 10 }}
-                src={`data:image/svg+xml;base64, ${appIcons[option]}`}
-                alt="database-icon"
-              />
-              <Typography color="textPrimary" noWrap>
-                {option}
-              </Typography>
-            </>
-          );
         }}
         renderInput={(params) => (
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -54,7 +38,7 @@ const AppIcons: React.FC<DropdownIconsProps> = ({ formik }) => {
                 <InputAdornment position="start">
                   <>
                     {
-                      formik.values.appIcon == null ? '' :
+                      formik.values.appIcon == null ? 'beach' :
                       <img
                         style={{ height: 30, marginRight: 10 }}
                         src={`data:image/svg+xml;base64, ${appIcons[formik.values.appIcon]}`}
@@ -64,10 +48,29 @@ const AppIcons: React.FC<DropdownIconsProps> = ({ formik }) => {
                   </>
                 </InputAdornment>
               ),
-            }}>
+              }}
+            >
             </TextField>
           </div>
         )}
+        renderOption={(option) => {
+          const { key, ...optionProps } = option;
+          return (
+            <Box
+              key={key}
+              component="li"
+              sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
+              {...optionProps}
+            >
+              <img
+                style={{ height: 30, marginRight: 10 }}
+                src={`data:image/svg+xml;base64, ${appIcons[key]}`}
+                alt="database-icon"
+              />
+              {key}
+            </Box>
+          );
+        }}
       />
     </AutoContainer>
   );

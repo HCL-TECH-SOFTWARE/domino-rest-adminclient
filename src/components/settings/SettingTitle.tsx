@@ -5,10 +5,14 @@
  * ========================================================================== */
 
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { SubSectionTitleContainer } from '../../styles/CommonStyles';
 
-const SettingTitle: React.FC = ({ children }) => {
+type SettingTitleProps = {
+  children: React.ReactNode;
+};
+
+const SettingTitle: React.FC<SettingTitleProps> = ({ children }) => {
   return (
     <SubSectionTitleContainer>
       <Typography className="title" color="textPrimary">

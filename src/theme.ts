@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { createTheme } from '@material-ui/core/styles';
+import { createTheme } from '@mui/material/styles';
 
 const theme = (
   authenticated: boolean,
@@ -45,79 +45,114 @@ const theme = (
         fontSize: 14,
       },
     },
-    overrides: {
+    components: {
       MuiTooltip: {
-        tooltip: {
-          fontSize: 12,
+        styleOverrides: {
+          tooltip: {
+            fontSize: 12,
+          },
         },
       },
       MuiBadge: {
-        badge: {
-          color: getTheme(themeMode).badgeColor.color,
-          backgroundColor: getTheme(themeMode).badgeColor.background,
+        styleOverrides: {
+          badge: {
+            color: getTheme(themeMode).badgeColor.color,
+            backgroundColor: getTheme(themeMode).badgeColor.background,
+          },
         },
       },
       MuiDialogTitle: {
-        root: {
-          color: getTheme(themeMode).dialog.title,
+        styleOverrides: {
+          root: {
+            color: getTheme(themeMode).dialog.title,
+          },
         },
       },
       MuiButton: {
-        textPrimary: {
-          color: getTheme(themeMode).button.primary,
-          textTransform: 'capitalize',
-          fontSize: 16,
-        },
-        textSecondary: {
-          color: getTheme(themeMode).button.secondary,
-          textTransform: 'capitalize',
-          fontSize: 16,
+        styleOverrides: {
+          textPrimary: {
+            color: getTheme(themeMode).button.primary,
+            textTransform: 'capitalize',
+            fontSize: 16,
+          },
+          textSecondary: {
+            color: getTheme(themeMode).button.secondary,
+            textTransform: 'capitalize',
+            fontSize: 16,
+          },
         },
       },
       MuiPaper: {
-        root: {
-          backgroundColor: getTheme(themeMode).secondary,
+        styleOverrides: {
+          root: {
+            backgroundColor: getTheme(themeMode).secondary,
+          },
         },
       },
       MuiListItemIcon: {
-        root: {
-          color: getTheme(themeMode).textPrimary,
+        styleOverrides: {
+          root: {
+            color: getTheme(themeMode).textPrimary,
+          },
         },
       },
       MuiCircularProgress: {
-        colorPrimary: {
-          color: getTheme(themeMode).loading,
+        styleOverrides: {
+          colorPrimary: {
+            color: getTheme(themeMode).loading,
+          },
         },
       },
       MuiBreadcrumbs: {
-        root: {
-          background: getTheme(themeMode).breadcrumb.background,
+        styleOverrides: {
+          root: {
+            background: getTheme(themeMode).breadcrumb.background,
+          },
         },
       },
       MuiInputBase: {
-        input: {
-          color: getTheme(themeMode).textColorPrimary,
+        styleOverrides: {
+          input: {
+            color: getTheme(themeMode).textColorPrimary,
+          },
         },
       },
       MuiTab: {
-        root: {
-          '@media (min-width: 600px)': {
-            minWidth: 0
-          }
+        styleOverrides: {
+          root: {
+            '@media (min-width: 600px)': {
+              minWidth: 0
+            }
+          },
+          textColorPrimary: {
+            color: getTheme(themeMode).textColorPrimary,
+          },
         },
-        textColorPrimary: {
-          color: getTheme(themeMode).textColorPrimary,
-        },
-        wrapper: {
-          flexDirection: "row",
-          justifyContent: "flex-start"
-        }
       },
       MuiFormLabel: {
-        root: {
-          color: getTheme(themeMode).textColorPrimary,
+        styleOverrides: {
+          root: {
+            color: getTheme(themeMode).textColorPrimary,
+          },
         },
       },
+      MuiSwitch: {
+        styleOverrides: {
+          switchBase: {
+            color: 'white',
+            '&$checked' : {
+              color: '#3874cb',
+              '& + $track':{
+                opacity: 1,
+                backgroundColor: '#9cbae5',
+              }
+            },
+            '&$checked + $track': {
+              backgroundColor: 'black',
+            },
+          }
+        }
+      }
     },
   });
 };

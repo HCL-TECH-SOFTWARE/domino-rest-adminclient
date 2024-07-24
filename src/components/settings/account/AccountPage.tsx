@@ -5,8 +5,8 @@
  * ========================================================================== */
 
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
-import Switch from '@material-ui/core/Switch';
+import Typography from '@mui/material/Typography';
+import Switch from '@mui/material/Switch';
 import SettingTitle from '../SettingTitle';
 import {
   SettingsDescription,

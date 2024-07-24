@@ -4,30 +4,28 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useContext, useState } from "react";
-import SwipeableViews from "react-swipeable-views";
-import { useTheme } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
-import Typography from "@material-ui/core/Typography";
-import Box from "@material-ui/core/Box";
-import styled from "styled-components";
-import _ from "lodash";
-import { useSelector, useDispatch } from "react-redux";
-import Button from "@material-ui/core/Button";
-import EditIcon from "@material-ui/icons/Edit";
-import SaveIcon from "@material-ui/icons/Save";
-import CloseIcon from "@material-ui/icons/Close";
-import AccessSection from "./sections/Access";
-import DBSetting from "./sections/DBSetting";
-import { KEEP_ADMIN_BASE_COLOR } from "../../../config.dev";
-import FormSettings from "./sections/FormSettings";
-import { AppState } from "../../../store";
-import { SettingContext } from "./SettingContext";
-import { clearForms, updateScope } from "../../../store/databases/action";
-import { DrawerContainer } from "../../../styles/CommonStyles";
-import { toggleSettings } from "../../../store/dbsettings/action";
+import React, { useContext, useState } from 'react';
+import { useTheme } from '@mui/material/styles';
+import Grid from '@mui/material/Grid';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import Button from '@mui/material/Button';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import AccessSection from './sections/Access';
+import DBSetting from './sections/DBSetting';
+import { KEEP_ADMIN_BASE_COLOR } from '../../../config.dev';
+import FormSettings from './sections/FormSettings';
+import { AppState } from '../../../store';
+import { SettingContext } from './SettingContext';
+import { clearForms, updateScope } from '../../../store/databases/action';
+import { DrawerContainer } from '../../../styles/CommonStyles';
+import { toggleSettings } from '../../../store/dbsettings/action';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,8 +44,7 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
-      {...other}
-    >
+      {...other}>
       {value === index && <Box p={3}>{children}</Box>}
     </Typography>
   );
@@ -56,7 +53,7 @@ function TabPanel(props: TabPanelProps) {
 function a11yProps(index: any) {
   return {
     id: `full-width-tab-${index}`,
-    "aria-controls": `full-width-tabpanel-${index}`,
+    'aria-controls': `full-width-tabpanel-${index}`
   };
 }
 
@@ -110,18 +107,12 @@ const FooterDrawer = styled.div`
   display: flex;
 `;
 
-const tabPanels = [
-  { section: DBSetting },
-  { section: AccessSection },
-  { section: FormSettings },
-];
+const tabPanels = [{ section: DBSetting }, { section: AccessSection }, { section: FormSettings }];
 
 interface TabsSettingsProps {}
 
 const TabsSettings: React.FC<TabsSettingsProps> = () => {
-  const { databases, contextViewIndex } = useSelector(
-    (state: AppState) => state.databases
-  );
+  const { databases, contextViewIndex } = useSelector((state: AppState) => state.databases);
   const dispatch = useDispatch();
   const theme = useTheme();
   const [value, setValue] = useState(0);
@@ -138,35 +129,19 @@ const TabsSettings: React.FC<TabsSettingsProps> = () => {
 
   const updateSetting = () => {
     dispatch(clearForms());
-    const keepData = _.omit(context, "forms");
+    const { forms, ...keepData } = context;
     dispatch(updateScope(keepData.isActive, keepData) as any);
   };
 
   return (
     <DrawerContainer>
-      <CloseIcon
-        cursor="pointer"
-        className="float-right"
-        onClick={() => dispatch(toggleSettings())}
-      />
+      <CloseIcon cursor="pointer" className="float-right" onClick={() => dispatch(toggleSettings())} />
       <SettingHeader className="header-title">
-        <EditIcon
-          className="pencil-icon"
-          color="primary"
-          style={{ color: "white" }}
-        />
-        <Typography
-          className="apiName"
-          color="textPrimary"
-          style={{ color: "white" }}
-        >
+        <EditIcon className="pencil-icon" color="primary" style={{ color: 'white' }} />
+        <Typography className="apiName" color="textPrimary" style={{ color: 'white' }}>
           {databases[contextViewIndex].apiName}
         </Typography>
-        <Typography
-          className="settings"
-          color="textPrimary"
-          style={{ color: "white" }}
-        >
+        <Typography className="settings" color="textPrimary" style={{ color: 'white' }}>
           Settings
         </Typography>
       </SettingHeader>
@@ -178,29 +153,19 @@ const TabsSettings: React.FC<TabsSettingsProps> = () => {
           indicatorColor="primary"
           textColor="primary"
           variant="fullWidth"
-          aria-label="Database Settings"
-        >
+          aria-label="Database Settings">
           <Tab label="Database" {...a11yProps(0)} />
           <Tab label="Config" {...a11yProps(1)} />
           <Tab label="Forms" {...a11yProps(2)} />
         </Tabs>
         <Grid item md={12}>
-          <SwipeableViews
-            axis={theme.direction === "rtl" ? "x-reverse" : "x"}
-            index={value}
-            onChangeIndex={handleChangeIndex}
-          >
+          <div>
             {tabPanels.map((panel, index) => (
-              <TabPanel
-                key={panel.section.name}
-                value={value}
-                index={index}
-                dir={theme.direction}
-              >
+              <TabPanel key={panel.section.name} value={value} index={index} dir={theme.direction}>
                 <panel.section />
               </TabPanel>
             ))}
-          </SwipeableViews>
+          </div>
           <FooterDrawer>
             <Button
               style={{
@@ -208,10 +173,9 @@ const TabsSettings: React.FC<TabsSettingsProps> = () => {
                 marginTop: 50,
                 height: 40,
                 backgroundColor: KEEP_ADMIN_BASE_COLOR,
-                color: "white",
+                color: 'white'
               }}
-              onClick={updateSetting}
-            >
+              onClick={updateSetting}>
               <SaveIcon style={{ fontSize: 18, marginRight: 5 }} />
               Update
             </Button>
@@ -221,13 +185,12 @@ const TabsSettings: React.FC<TabsSettingsProps> = () => {
                 marginTop: 50,
                 height: 40,
                 backgroundColor: KEEP_ADMIN_BASE_COLOR,
-                color: "white",
-                marginLeft: 20,
+                color: 'white',
+                marginLeft: 20
               }}
               onClick={() => {
                 dispatch(toggleSettings());
-              }}
-            >
+              }}>
               Close
             </Button>
           </FooterDrawer>

@@ -5,12 +5,12 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import Typography from '@material-ui/core/Typography';
-import InputBase from '@material-ui/core/InputBase';
-import TextareaAutosize from '@material-ui/core/TextareaAutosize';
-import Switch from '@material-ui/core/Switch';
+import Typography from '@mui/material/Typography';
+import InputBase from '@mui/material/InputBase';
+import TextareaAutosize from '@mui/material/TextareaAutosize';
+import Switch from '@mui/material/Switch';
 import { useSelector } from 'react-redux';
-import TextField from '@material-ui/core/TextField';
+import TextField from '@mui/material/TextField';
 import {
   SettingsDescription,
   SettingsList,

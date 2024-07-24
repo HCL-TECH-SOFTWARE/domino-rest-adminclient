@@ -5,20 +5,20 @@
  * ========================================================================== */
 
 import React, { useEffect, useContext } from 'react';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import RemoveIcon from '@material-ui/icons/Delete';
-import SettingsIcon from '@material-ui/icons/Settings';
-import DeactivateIcon from '@material-ui/icons/Lock';
-import EyeIcon from '@material-ui/icons/Visibility';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import RemoveIcon from '@mui/icons-material/Delete';
+import SettingsIcon from '@mui/icons-material/Settings';
+import DeactivateIcon from '@mui/icons-material/Lock';
+import EyeIcon from '@mui/icons-material/Visibility';
+import CircularProgress from '@mui/material/CircularProgress';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { Divider } from '@material-ui/core';
+import { Divider } from '@mui/material';
 import { Database } from '../../../store/databases/types';
 import { AppState } from '../../../store';
 import { toggleSettings } from '../../../store/dbsettings/action';

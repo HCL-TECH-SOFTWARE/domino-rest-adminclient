@@ -4,18 +4,18 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 import { useFormik } from 'formik';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import * as Yup from 'yup';
-import { Alert, AlertTitle } from '@material-ui/lab';
-import LoginIcon from '@material-ui/icons/ExitToApp';
+import { Alert, AlertTitle } from '@mui/lab';
+import LoginIcon from '@mui/icons-material/ExitToApp';
 import { useSelector, useDispatch } from 'react-redux';
 import { Navigate, Route } from 'react-router-dom';
 import {
@@ -23,12 +23,12 @@ import {
   KEEP_ADMIN_BASE_COLOR,
   BUILD_VERSION,
 } from '../../config.dev';
-import { useStyles } from './styles';
+import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
 import { login, set401Error, setLoginError, setToken } from '../../store/account/action';
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
-import { Link } from '@material-ui/core';
+import { Link } from '@mui/material';
 import React, { useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
@@ -119,8 +119,29 @@ const PasskeySignUpContainer = styled.div`
   }
 `;
 
+const GridRoot = styled(Grid)(({ theme }) => ({
+  height: "100vh",
+}));
+
+const DivPaper = styled("div")(({ theme }) => ({
+  margin: "64px 32px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+}));
+
+const StyledForm = styled("form")(({ theme }) => ({
+  // Fix IE 11 issue.
+  width: "100%",
+
+  marginTop: "8px",
+}));
+
+const ButtonSubmit = styled(Button)(({ theme }) => ({
+  margin: "24px 0 16px 0",
+}));
+
 const LoginPage = () => {
-  const classes = useStyles();
   const { error, error401 } = useSelector((state: AppState) => state.account);
   const dispatch = useDispatch();
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
@@ -279,14 +300,15 @@ const LoginPage = () => {
   }, [dispatch, passkeyLogin])
 
   return (
-    <Grid container component="main" className={classes.root}>
+    <GridRoot container>
       <Navigate to="/" />
       <CssBaseline />
       <Grid
         style={{
-          padding: '90px',
-          flexBasis: '100%',
-          maxWidth: matches ? '100%' : '60%',
+          padding: "90px",
+          flexBasis: "100%",
+          maxWidth: matches ? "100%" : "60%",
+          height: '100%',
         }}
         item
         xs={12}
@@ -296,14 +318,11 @@ const LoginPage = () => {
         elevation={6}
         square
       >
-        <div className={classes.paper}>
+        <DivPaper>
           <KeepLogoContainer>
             <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="Domino REST API logo" />
-            <Typography
-              component="h1"
-              variant="h5"
-            >
-            HCL Domino REST API
+            <Typography component="h1" variant="h5">
+              HCL Domino REST API
             </Typography>
           </KeepLogoContainer>
           <div style={{ flex: 1 }}>
@@ -318,7 +337,7 @@ const LoginPage = () => {
               Login your account
             </Typography>
             {error401 && (
-              <Alert style={{ margin: '5px 0' }} severity="error">
+              <Alert style={{ margin: "5px 0" }} severity="error">
                 <AlertTitle>Whoops: Something went wrong!</AlertTitle>
                 <Typography
                   style={{ fontSize: 18 }}
@@ -330,7 +349,7 @@ const LoginPage = () => {
               </Alert>
             )}
             {error && (
-              <Alert style={{ margin: '5px 0' }} severity="error">
+              <Alert style={{ margin: "5px 0" }} severity="error">
                 <AlertTitle>Whoops: Something went wrong!</AlertTitle>
                 <Typography
                   style={{ fontSize: 18 }}
@@ -341,15 +360,17 @@ const LoginPage = () => {
                 </Typography>
               </Alert>
             )}
-            {((touched.username && touched.password && !isValid) || (noPasswordPasskey || noUsernamePasskey)) && (
-              <Alert style={{ margin: '5px 0' }} severity="error">
+            {((touched.username && touched.password && !isValid) ||
+              noPasswordPasskey ||
+              noUsernamePasskey) && (
+              <Alert style={{ margin: "5px 0" }} severity="error">
                 <AlertTitle>Whoops: Something went wrong!</AlertTitle>
                 {((errors.username && touched.username) || noUsernamePasskey) && (
                   <Typography
                     style={{
                       fontSize: 16,
-                      margin: '5px 0',
-                      color: '#d32f2f',
+                      margin: "5px 0",
+                      color: "#d32f2f",
                     }}
                     component="p"
                     variant="caption"
@@ -361,8 +382,8 @@ const LoginPage = () => {
                   <Typography
                     style={{
                       fontSize: 16,
-                      margin: '5px 0',
-                      color: '#d32f2f',
+                      margin: "5px 0",
+                      color: "#d32f2f",
                     }}
                     component="p"
                     variant="caption"
@@ -372,11 +393,7 @@ const LoginPage = () => {
                 )}
               </Alert>
             )}
-            <form
-              onSubmit={formik.handleSubmit}
-              className={classes.form}
-              noValidate
-            >
+            <StyledForm onSubmit={formik.handleSubmit} noValidate>
               <TextField
                 variant="outlined"
                 margin="normal"
@@ -390,75 +407,113 @@ const LoginPage = () => {
                 onChange={formik.handleChange}
                 value={username ? username : formik.values.username}
               />
-              {!passkeyLogin && <TextField
-                variant="outlined"
-                margin="normal"
-                size="small"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                onChange={formik.handleChange}
-                value={formik.values.password}
-                autoComplete="off"
-                autoFocus={error}
-              />}
-              {!passkeyLogin && <Button
-                style={{ padding: '7px 0', background: KEEP_ADMIN_BASE_COLOR }}
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-              >
-                <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                Log In
-              </Button>}
-              {passkeyLogin && <Button
-                style={{ padding: '7px 0', background: KEEP_ADMIN_BASE_COLOR }}
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-                onClick={handleLogInWithPasskey}
-              >
-                <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                Log In with Passkey
-              </Button>}
-            </form>
+              {!passkeyLogin && (
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  size="small"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  onChange={formik.handleChange}
+                  value={formik.values.password}
+                  autoComplete="off"
+                  autoFocus={error}
+                />
+              )}
+              {!passkeyLogin && (
+                <ButtonSubmit
+                  style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                >
+                  <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
+                  Log In
+                </ButtonSubmit>
+              )}
+              {passkeyLogin && (
+                <ButtonSubmit
+                  style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  onClick={handleLogInWithPasskey}
+                >
+                  <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
+                  Log In with Passkey
+                </ButtonSubmit>
+              )}
+            </StyledForm>
             <PasskeySignUpContainer>
-              {!passkeyLogin && isHttps && <Button fullWidth className='text-button'>
-                <Typography className='sign-up-text' display="inline" onClick={handleSignUpWithPasskey}>
-                  Sign up with Passkey
-                </Typography>
-                <Link href="https://passkey.org" target="_blank">
-                  <FiInfo className='passkey-icon' size='1.5em' />
-                </Link>
-              </Button>}
-              {passkeyLogin && <Button fullWidth className='text-button'>
-                <Typography className='sign-up-text' display="block" onClick={handleClearPasskey}>
-                  Clear Passkey
-                </Typography>
-              </Button>}
-              {passkeyLogin && <Button fullWidth className='text-button'>
-                <Typography className='sign-up-text' display="block" onClick={() => {setPasskeyLogin(false)}}>
-                  Log In with Username and Password
-                </Typography>
-              </Button>}
+              {!passkeyLogin && isHttps && (
+                <Button fullWidth className="text-button">
+                  <Typography
+                    className="sign-up-text"
+                    display="inline"
+                    onClick={handleSignUpWithPasskey}
+                  >
+                    Sign up with Passkey
+                  </Typography>
+                  <Link href="https://passkey.org" target="_blank">
+                    <FiInfo className="passkey-icon" size="1.5em" />
+                  </Link>
+                </Button>
+              )}
+              {passkeyLogin && (
+                <Button fullWidth className="text-button">
+                  <Typography
+                    className="sign-up-text"
+                    display="block"
+                    onClick={handleClearPasskey}
+                  >
+                    Clear Passkey
+                  </Typography>
+                </Button>
+              )}
+              {passkeyLogin && (
+                <Button fullWidth className="text-button">
+                  <Typography
+                    className="sign-up-text"
+                    display="block"
+                    onClick={() => {
+                      setPasskeyLogin(false);
+                    }}
+                  >
+                    Log In with Username and Password
+                  </Typography>
+                </Button>
+              )}
             </PasskeySignUpContainer>
-            <Box mt={5}>
+            <Box mt={7}>
               <Copyright />
             </Box>
           </div>
-        </div>
+        </DivPaper>
       </Grid>
-      {!matches && (
-        <Grid item xs={false} sm={4} md={7} className={classes.image} />
-      )}
-    </Grid>
+      {!matches && <Grid
+        item
+        xs={false}
+        sm={4}
+        md={7}
+        sx={{
+          backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],
+          width: "40%",
+          backgroundImage: CASTLE_BACKGROUND,
+          backgroundRepeat: "no-repeat",
+
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          flexBasis: "44%",
+          maxWidth: "40%",
+        }}
+      />}
+    </GridRoot>
   );
 };
 

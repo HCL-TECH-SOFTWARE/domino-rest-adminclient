@@ -6,14 +6,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
-import DBIcon from '@material-ui/icons/Storage';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import DBIcon from '@mui/icons-material/Storage';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { checkIcon } from '../../../../../styles/scripts';
 import appIcons from '../../../../../styles/app-icons';
 import { Scope } from '../../../../../store/databases/types';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../../../../store';
 import { DeleteIcon } from '../../../../../styles/CommonStyles';

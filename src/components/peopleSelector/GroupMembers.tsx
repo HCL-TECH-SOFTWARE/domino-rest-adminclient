@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { DataGrid } from '@material-ui/data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppFormContext } from '../applications/ApplicationContext';
@@ -34,7 +34,7 @@ const GroupMembers: React.FC = () => {
           rowHeight={28}
           rows={memberRows}
           columns={columns}
-          pageSize={8}
+          pageSizeOptions={[8]}
           hideFooterSelectedRowCount
         />
       </div>

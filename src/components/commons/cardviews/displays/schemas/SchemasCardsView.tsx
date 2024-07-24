@@ -14,7 +14,7 @@ import SchemaCardV2 from './v2/SchemaCardV2';
 import { Database } from '../../../../../store/databases/types';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
-import { ClickAwayListener, Paper, Popper } from '@material-ui/core';
+import { ClickAwayListener, Paper, Popper } from '@mui/material';
 import MenuOptions from '../../../../database/menu/MenuOptions';
 import { SchemasMainContainer } from './SchemaStyles';
 

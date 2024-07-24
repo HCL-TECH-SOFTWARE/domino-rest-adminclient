@@ -4,20 +4,20 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext } from 'react';
-import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import React, { useState, useContext, SyntheticEvent } from 'react';
+import TextField from '@mui/material/TextField';
+import { Autocomplete } from '@mui/material';
 import styled from 'styled-components';
 import { FormikProps } from 'formik';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import CloseIcon from '@material-ui/icons/Close';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
-import { Alert, AlertTitle } from '@material-ui/lab';
-import ApplicationIcon from '@material-ui/icons/Apps';
-import AddIcon from '@material-ui/icons/Add';
-import CheckboxIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import { Checkbox, FormControlLabel } from '@material-ui/core';
+import { Alert, AlertTitle } from '@mui/lab';
+import ApplicationIcon from '@mui/icons-material/Apps';
+import AddIcon from '@mui/icons-material/Add';
+import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import { Checkbox, FormControlLabel } from '@mui/material';
 import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import AppIcons from './AppIcons';
 import { clearAppError } from '../../store/applications/action';
@@ -131,8 +131,8 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
     setScopeValuePlaceholder('');
   };
 
-  const HandleScopeInputChange = (event: any, value: any) => {
-    if(event.type !== 'blur') {
+  const HandleScopeInputChange = (event: SyntheticEvent, value: any) => {
+    if(event !== null && event.type !== 'blur') {
       setScopeValuePlaceholder(value);
     }
   };
@@ -179,10 +179,11 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             size="small"
             onChange={formik.handleChange}
             value={formik.values.appName}
+            variant='standard'
           />
           {formik.errors.appName && formik.touched.appName ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appName}
+              {`${formik.errors.appName}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -196,10 +197,11 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             id="app-description"
             onChange={formik.handleChange}
             value={formik.values.appDescription}
+            variant='standard'
           />
           {formik.errors.appDescription && formik.touched.appDescription ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appDescription}
+              {`${formik.errors.appDescription}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -221,7 +223,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           {formik.errors.appCallbackUrlsStr &&
           formik.touched.appCallbackUrlsStr ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appCallbackUrlsStr}
+              {`${formik.errors.appCallbackUrlsStr}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -235,10 +237,11 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             label="Startup Page"
             onChange={formik.handleChange}
             value={formik.values.appStartPage}
+            variant='standard'
           />
           {formik.errors.appStartPage && formik.touched.appStartPage ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appStartPage}
+              {`${formik.errors.appStartPage}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -250,7 +253,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           </Typography>
           <PillBoxRow>
               {scopeValues.map((scope, idx) => (
-                <PillBox key={idx}>
+                <PillBox key={`${scope}-${idx}`}>
                   <Typography>
                     {scope}
                   </Typography>
@@ -267,7 +270,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
                 id="typeahead-scope"
                 options={scopeList}
                 fullWidth
-                renderInput={(params: any) => <TextField {...params} placeholder="Scope" label="" />}
+                renderInput={(params: any) => <TextField {...params} placeholder="Scope" label="" variant='standard' />}
                 onInputChange={HandleScopeInputChange}
                 inputValue={scopeValuePlaceholder}
               />
@@ -280,7 +283,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           </ScopeField>
           {!formik.values.appScope && formik.touched.appScope ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appScope}
+              {`${formik.errors.appScope}`}
             </Typography>
           ) : null}
         </InputContainer>
@@ -315,11 +318,10 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           />
           {formik.errors.appContactsStr && formik.touched.appContactsStr ? (
             <Typography className="validation-error" color="textPrimary">
-              {formik.errors.appContactsStr}
+              {`${formik.errors.appContactsStr}`}
             </Typography>
           ) : null}
         </InputContainer>
-
         <AppIcons formik={formik} />
       </PanelContent>
       <ActionButtonBar>

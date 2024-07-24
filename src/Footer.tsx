@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { BUILD_VERSION } from './config.dev';
 
 const FooterContainer = styled.div`

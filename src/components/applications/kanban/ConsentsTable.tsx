@@ -12,13 +12,13 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, ButtonBase, IconButton, TableFooter, TablePagination, Typography } from '@material-ui/core';
+import { Box, ButtonBase, IconButton, TableFooter, TablePagination, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
 import { Consent } from '../../../store/consents/types';
 import ConsentItem from './ConsentItem';
-import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@material-ui/icons';
+import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import ConsentFilterContainer from '../../consents/ConsentFilterContainer';
 import { FaSort } from "react-icons/fa";
 

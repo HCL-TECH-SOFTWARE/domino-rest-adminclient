@@ -6,18 +6,18 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
-import DBIcon from '@material-ui/icons/Storage';
-import Tooltip from '@material-ui/core/Tooltip';
+import DBIcon from '@mui/icons-material/Storage';
+import Tooltip from '@mui/material/Tooltip';
 
 import {
   SchemaCardContainer,
   ScopeCardHeader,
   SchemaDBImage
 } from '../ScopeStyles';
-import { ModeLogo, SchemaIconStatus } from '../../../../../../styles/CommonStyles';
+import { InUseSymbol, ModeLogo, NotInUseSymbol, SchemaIconStatus } from '../../../../../../styles/CommonStyles';
 import appIcons from '../../../../../../styles/app-icons';
 import { AppState } from '../../../../../../store';
 import { checkIcon } from '../../../../../../styles/scripts';
@@ -66,7 +66,7 @@ const SchemaCardV2: React.FC<SchemaCardV2Props> = ({
       onKeyDown={handleKeyPress}
     >
       <Tooltip title={database.isActive ? 'Active' : 'Inactive'}>
-        <SchemaIconStatus isActive={database.isActive ? true : false} style={{ position: 'absolute', right: '20px', top: '20px' }} />  
+        <SchemaIconStatus style={{ position: 'absolute', right: '20px', top: '20px', backgroundImage: database.isActive ? InUseSymbol : NotInUseSymbol }} />  
       </Tooltip>
       <ScopeCardWrapper>
         <CardContent onClick={() => openDatabase(database)}>

@@ -6,10 +6,10 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Typography from '@material-ui/core/Typography';
+import DialogTitle from '@mui/material/DialogTitle';
+import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
-import CloseMenuIcon from '@material-ui/icons/Close';
+import CloseMenuIcon from '@mui/icons-material/Close';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 

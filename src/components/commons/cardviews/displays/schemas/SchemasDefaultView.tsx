@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 import { ExtraFlex } from '../../../../flex';
 import NsfCard from '../../../../schemas/NsfCard';
@@ -55,7 +55,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
                 <NsfCard
                   openDatabase={openSchema}
                   open={open}
-                  key={database.schemaName}
+                  key={database.fileName}
                   aria-describedby={id}
                   database={database}
                   setSelectedDB={setSelectedDB}

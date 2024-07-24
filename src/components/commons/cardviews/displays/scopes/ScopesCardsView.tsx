@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';
@@ -14,7 +14,7 @@ import ScopeCardV2 from './v2/ScopeCardV2';
 import { Database } from '../../../../../store/databases/types';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
-import { ClickAwayListener, Paper, Popper } from '@material-ui/core';
+import { ClickAwayListener, Paper, Popper } from '@mui/material';
 import MenuOptions from '../../../../database/menu/MenuOptions';
 import { SchemasMainContainer } from './ScopeStyles';
 

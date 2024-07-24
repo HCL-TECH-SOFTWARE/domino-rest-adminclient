@@ -6,26 +6,20 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
-import _ from 'lodash';
-import SwipeableViews from 'react-swipeable-views';
-import Box from '@material-ui/core/Box';
-import { MenuItem, CircularProgress, Select, Tooltip } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import { MenuItem, CircularProgress, Select, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SearchIcon from '@material-ui/icons/Search';
-import { MdLibraryAdd } from "react-icons/md";
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import { makeStyles } from '@material-ui/core/styles';
+import SearchIcon from '@mui/icons-material/Search';
+import { MdLibraryAdd } from 'react-icons/md';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import SingleFieldContainer from './SingleFieldContainer';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { setLoading } from '../../store/loading/action';
-import {
-  fetchFields,
-  getAllFieldsByNsf,
-} from '../../store/databases/action';
+import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, HorizontalDivider, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 
@@ -103,20 +97,20 @@ const FieldsDropDown = styled.div`
   }
 
   .dropdown {
-    border: 1px solid #FFF;
+    border: 1px solid #fff;
     border-radius: 10px;
     width: 100%;
   }
 
   .main-search-container {
-    border: 0px solid #A5AFBE;
+    border: 0px solid #a5afbe;
     box-shadow: none;
   }
 
   .search-container {
-    background-color: #F9F9F9;
+    background-color: #f9f9f9;
     border-radius: 10px;
-    border: 1px solid #A5AFBE;
+    border: 1px solid #a5afbe;
     width: 100%;
     align-items: center;
   }
@@ -147,33 +141,21 @@ const IconButton = styled.button`
   }
 `;
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-    paddingTop: '0px',
-    paddingBottom: '0px',
-    fontSize: '14px',
-  },
-  form: {
-    backgroundColor: '#f9fbff',
-    borderTop: '2px solid #e6e8f1',
-    borderBottom: '2px solid #e6e8f1',
-    color: '#1966B3',
-    paddingLeft: '10px',
-    height: '50px',
-    fontSize: '14px',
-  },
-  text: {
-    fontSize: '14px',
-  },
-  field: {
-    paddingBottom: '2px',
-  },
-  spacer: {
-    paddingTop: '0px',
-  },
+const ListRoot = styled(List)(({ theme }) => ({
+  width: "100%",
+  maxWidth: 360,
+  // backgroundColor: theme.palette.background.paper,
+  paddingTop: "0px",
+  paddingBottom: "0px",
+  fontSize: "14px",
+}));
+
+const ListItemField = styled(ListItem)(({ theme: Theme }) => ({
+  paddingBottom: "2px",
+}));
+
+const DivSpacer = styled("div")(({ theme: Theme }) => ({
+  paddingTop: "0px",
 }));
 
 const anchorEmoji = '⚓';
@@ -194,8 +176,7 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
-      {...other}
-    >
+      {...other}>
       {value === index && <Box>{children}</Box>}
     </div>
   );
@@ -204,7 +185,7 @@ function TabPanel(props: TabPanelProps) {
 interface FieldsProps {
   fields: any;
   moveTo: (item: any, from: string) => void;
-  addField:(from: string, item: any) => string;
+  addField: (from: string, item: any) => string;
   schemaName: string;
   nsfPath: string;
   formName: string;
@@ -213,15 +194,7 @@ interface FieldsProps {
   setTabValue: (index: number) => void;
 }
 
-const Fields: React.FC<FieldsProps> = ({
-  moveTo,
-  addField,
-  schemaName,
-  nsfPath,
-  formName,
-  tabValue,
-  setTabValue,
-}) => {
+const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, formName, tabValue, setTabValue }) => {
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
@@ -235,7 +208,7 @@ const Fields: React.FC<FieldsProps> = ({
       dbName: schemaName,
       designType: 'forms',
       name: form['@name'],
-      externalName: form['@name'],
+      externalName: form['@name']
     });
   });
 
@@ -245,41 +218,39 @@ const Fields: React.FC<FieldsProps> = ({
       dbName: schemaName,
       designType: 'subforms',
       name: subform['@name'],
-      externalName: `${anchorEmoji}${subform['@name']}`,
+      externalName: `${anchorEmoji}${subform['@name']}`
     });
   });
 
   const allFieldObj = {
     dbName: schemaName,
     name: 'keep_internal_form_for_allFields',
-    externalName: 'keep_internal_form_for_allFields',
-  }
+    externalName: 'keep_internal_form_for_allFields'
+  };
   formsSorted.unshift(allFieldObj);
 
   const { activeFields, newForm } = useSelector((state: AppState) => state.databases);
-
-  const classes = useStyles();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const initialFormState = formsInDb.length > 0 ? formName : 'Not Selected';
   const [currentFormValue, setCurrentFormValue] = useState(initialFormState || 'N/A');
   const [searchFieldKey, setSearchFieldKey] = useState('');
 
-  const { loading } = useSelector( (state: AppState) => state.loading );
+  const { loading } = useSelector((state: AppState) => state.loading);
 
   useEffect(() => {
     const designFormNames = [
-      ...formsInDb.map((form: { '@alias': Array<string>, '@flags': string, '@name': string, '@unid': string }) => form['@name']),
-      ...subformsInDb.map((form: { '@alias': Array<string>, '@flags': string, '@name': string, '@unid': string }) => form['@name']),
-    ]
+      ...formsInDb.map((form: { '@alias': Array<string>; '@flags': string; '@name': string; '@unid': string }) => form['@name']),
+      ...subformsInDb.map((form: { '@alias': Array<string>; '@flags': string; '@name': string; '@unid': string }) => form['@name'])
+    ];
 
     if (!designFormNames.includes(formName)) {
-      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
-      dispatch(setLoading({ status: false }))
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
+      dispatch(setLoading({ status: false }));
     } else if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
       dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
     } else if (!newForm.enabled) {
-      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any)
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
     }
   }, [schemaName, nsfPath, formName, formsInDb, subformsInDb, newForm, dispatch]);
 
@@ -295,18 +266,12 @@ const Fields: React.FC<FieldsProps> = ({
     onAddExistForm(schemaName, nsfPath, form.name, form.externalName, form.designType);
     handleFieldListOnClose();
     showFieldListTab();
-  }
+  };
 
   /**
    * onAddExistForm is called when we pick another form
    */
-  const onAddExistForm = async (
-    schemaName: string,
-    nsfPath: any,
-    formName: string,
-    externalName: string,
-    designType: string
-  ) => {
+  const onAddExistForm = async (schemaName: string, nsfPath: any, formName: string, externalName: string, designType: string) => {
     dispatch(setLoading({ status: true }));
     if (formName === 'keep_internal_form_for_allFields') {
       await dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
@@ -314,7 +279,7 @@ const Fields: React.FC<FieldsProps> = ({
       await dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, externalName, designType) as any);
     }
     dispatch(setLoading({ status: false }));
-  }
+  };
 
   const handleRefreshFields = async () => {
     dispatch(setLoading({ status: true }));
@@ -326,132 +291,145 @@ const Fields: React.FC<FieldsProps> = ({
     let allFields: any[] = [];
 
     currentActiveFields.forEach((item: any) => {
-      item.fields.filter((fld: any) => {
-        if (!fld.content.startsWith('@') && !fld.content.startsWith('~#')) {
-          return true
-        } else {
-          return false
-        }
-      }).forEach((fld: any) => {
-        allFields.push({
-          ...fld,
-          name: fld.content
+      item.fields
+        .filter((fld: any) => {
+          if (!fld.content.startsWith('@') && !fld.content.startsWith('~#')) {
+            return true;
+          } else {
+            return false;
+          }
+        })
+        .forEach((fld: any) => {
+          allFields.push({
+            ...fld,
+            name: fld.content
+          });
         });
-      });
     });
     moveTo(allFields, 'read');
-  }
+  };
 
   const handleSearchField = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.value;
     setSearchFieldKey(key);
-  }
+  };
 
   const showFieldListTab = () => {
     setTabValue(0);
   };
   // By default should be only one active fields, if we need multi ones will need to update SwipeableViews
   const currentActiveFields = activeFields.filter((item) => item.formName === currentFormValue);
-  const [fieldsDisplayed, setFieldsDisplayed] = useState(currentActiveFields)
+  const [fieldsDisplayed, setFieldsDisplayed] = useState(currentActiveFields);
 
   const noFieldObj = { item: { content: 'No Field Available' } };
 
   useEffect(() => {
-    const currentActiveFields = activeFields.filter((item) => item.formName === currentFormValue)
+    const currentActiveFields = activeFields.filter((item) => item.formName === currentFormValue);
     const filteredFields = currentActiveFields.map((form) => {
-      const newFields = form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(searchFieldKey.toLowerCase()) !== - 1)
+      const newFields = form.fields.filter(
+        (field: any) => !!field.content && field.content.toLowerCase().indexOf(searchFieldKey.toLowerCase()) !== -1
+      );
       return {
         ...form,
-        fields: newFields.length > 0 ? newFields : (() => {
-          for (let i = searchFieldKey.length; i >= 0; i--) {
-            const slicedSearchFieldKey = searchFieldKey.slice(0, i).toLowerCase();
-            const filteredFields = form.fields.filter((field: any) => !!field.content && field.content.toLowerCase().indexOf(slicedSearchFieldKey) !== -1);
-            if (filteredFields.length > 0) {
-              return filteredFields;
-            }
-          }
-          return [];
-        })()
-      }
-    })
+        fields:
+          newFields.length > 0
+            ? newFields
+            : (() => {
+                for (let i = searchFieldKey.length; i >= 0; i--) {
+                  const slicedSearchFieldKey = searchFieldKey.slice(0, i).toLowerCase();
+                  const filteredFields = form.fields.filter(
+                    (field: any) => !!field.content && field.content.toLowerCase().indexOf(slicedSearchFieldKey) !== -1
+                  );
+                  if (filteredFields.length > 0) {
+                    return filteredFields;
+                  }
+                }
+                return [];
+              })()
+      };
+    });
     if (searchFieldKey !== '') {
-      setFieldsDisplayed(filteredFields)
+      setFieldsDisplayed(filteredFields);
     } else {
-      setFieldsDisplayed(currentActiveFields)
+      setFieldsDisplayed(currentActiveFields);
     }
-  }, [searchFieldKey, activeFields, currentFormValue])
+  }, [searchFieldKey, activeFields, currentFormValue]);
 
   return (
     <FieldContainer theme={themeMode} className="field-container">
-      <Box padding='0 23.5px'>
+      <Box padding="0 23.5px">
         <FieldsDropDownHeader style={{ justifyContent: 'center' }}>
           <Typography className="mode-header">Show fields from:</Typography>
           <Tooltip title="Refresh List of Fields" arrow>
-            <IconButton className='icon-button' onClick={handleRefreshFields}>
-              <RefreshIcon className='icon' />
+            <IconButton className="icon-button" onClick={handleRefreshFields}>
+              <RefreshIcon className="icon" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Add All Fields" arrow>
-            <IconButton className='icon-button' onClick={handleAddAll}>
-              <MdLibraryAdd className='icon' />
+            <IconButton className="icon-button" onClick={handleAddAll}>
+              <MdLibraryAdd className="icon" />
             </IconButton>
           </Tooltip>
         </FieldsDropDownHeader>
         <FieldsDropDown>
-          <Select 
-            value={currentFormValue} 
-            onChange={handleFieldListOnClick} 
-            variant='outlined' 
-            className='dropdown'
-            SelectDisplayProps={{ style: { 
-              paddingTop: '10px', 
-              paddingBottom: '10px', 
-              borderRadius: '10px', 
-              border: '1px solid #323A3D',
-              justifyContent: 'center' } 
-            }}
-          >
+          <Select
+            value={currentFormValue}
+            onChange={handleFieldListOnClick}
+            variant="outlined"
+            className="dropdown"
+            SelectDisplayProps={{
+              style: {
+                paddingTop: '10px',
+                paddingBottom: '10px',
+                borderRadius: '10px',
+                border: '1px solid #323A3D',
+                justifyContent: 'center'
+              }
+            }}>
             {formsSorted.map((form: any, idx: any) => (
               <MenuItem
                 key={`${form.externalName}-${idx}`}
-                value={!!form.externalName ? form.externalName : "All Fields"}
-                onClick={() => {handleFormListOnSelect(form)}}
-              >
-                {form.externalName === "keep_internal_form_for_allFields" ? "All Fields" : form.externalName}
-              </MenuItem>))}
+                value={!!form.externalName ? form.externalName : 'All Fields'}
+                onClick={() => {
+                  handleFormListOnSelect(form);
+                }}>
+                {form.externalName === 'keep_internal_form_for_allFields' ? 'All Fields' : form.externalName}
+              </MenuItem>
+            ))}
           </Select>
         </FieldsDropDown>
         <FieldsDropDown>
-          <FormSearchContainer className='main-search-container'>
-            <SearchContainer className='search-container'>
-              <SearchIcon color='primary' className='search-icon' />
-              <SearchInput 
-                placeholder="Search Field"
-                onChange={handleSearchField}
-              />
+          <FormSearchContainer className="main-search-container">
+            <SearchContainer className="search-container">
+              <SearchIcon color="primary" className="search-icon" />
+              <SearchInput placeholder="Search Field" onChange={handleSearchField} />
             </SearchContainer>
           </FormSearchContainer>
         </FieldsDropDown>
       </Box>
       <HorizontalDivider />
-      {loading.status ? (<div className='field-config'>
-            <CircularProgress color="primary" />
-            <div className='loading-container'>
-              <Typography color="textPrimary">Loading fields...</Typography>
-            </div>
-          </div>) :
-        (<SwipeableViews axis="x" index={tabValue} style={{ borderRadius: '10px' }}>
+      {loading.status ? (
+        <div className="field-config">
+          <CircularProgress color="primary" />
+          <div className="loading-container">
+            <Typography color="textPrimary">Loading fields...</Typography>
+          </div>
+        </div>
+      ) : (
+        <div style={{ overflowY: 'scroll' }}>
           {fieldsDisplayed.map((item: any, index: any) => (
-            <List key={`${item.formName}-${index}`} component="nav" className={classes.root}>
-              {(
-                <div className={classes.spacer}>
-                  <List component="div" disablePadding>
-                    <ListItem className={classes.field}>
-                      <FieldList className="fields-list">
-                        {item.fields.length > 0
-                          ?
-                          item.fields.map((item: any, index: any) =>
-                            (!item.content.startsWith('@') && !item.content.startsWith('~#')) && !item.content.startsWith('Formula') && (
+            <ListRoot key={`${item.formName}-${index}`}>
+            {
+              <DivSpacer>
+                <List component="div" disablePadding>
+                  <ListItemField>
+                    <FieldList className="fields-list">
+                      {item.fields.length > 0 ? (
+                        item.fields.map(
+                          (item: any, index: any) =>
+                            !item.content.startsWith("@") &&
+                            !item.content.startsWith("~#") &&
+                            !item.content.startsWith("Formula") && (
                               <SingleFieldContainer
                                 key={`${item.content}-${index}`}
                                 moveTo={moveTo}
@@ -460,23 +438,24 @@ const Fields: React.FC<FieldsProps> = ({
                                   ...item,
                                 }}
                               />
-                          ))
-                          : (
-                            <SingleFieldContainer
-                                key="0"
-                                moveTo={() => {}}
-                                item={noFieldObj}
-                            />
-                          )
-                        }
-                      </FieldList>
-                    </ListItem>
-                  </List>
-                </div>
-              )}
-            </List>
+                            )
+                        )
+                      ) : (
+                        <SingleFieldContainer
+                          key="0"
+                          moveTo={() => {}}
+                          item={noFieldObj}
+                        />
+                      )}
+                    </FieldList>
+                  </ListItemField>
+                </List>
+              </DivSpacer>
+            }
+          </ListRoot>
           ))}
-      </SwipeableViews>)}
+        </div>
+      )}
     </FieldContainer>
   );
 };
