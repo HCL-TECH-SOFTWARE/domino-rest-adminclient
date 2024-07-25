@@ -10,13 +10,13 @@
         "webjars": {
             "/admin/ui/*": {
                 "type": "single",
-                "path": "/admin/index.html",
+                "path": "/index.html",
                 "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:",
                 "Content-Type": "text/html; charset=utf-8"
             },
             "/admin/ui": {
                 "type": "single",
-                "path": "/admin/index.html",
+                "path": "/index.html",
                 "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:",
                 "Content-Type": "text/html; charset=utf-8"
             },

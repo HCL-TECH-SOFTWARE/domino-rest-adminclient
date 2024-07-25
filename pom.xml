@@ -43,9 +43,6 @@
 			<resource>
 				<directory>dist</directory>
 				<filtering>false</filtering>
-				<excludes>
-					<exclude>admin/**</exclude>
-				</excludes>
 			</resource>
 			<resource>
 				<directory>dist/admin</directory>
