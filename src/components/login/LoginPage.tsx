@@ -497,16 +497,11 @@ const LoginPage = () => {
         </DivPaper>
       </Grid>
       {!matches && <Grid
-        item
-        xs={false}
-        sm={4}
-        md={7}
         sx={{
           backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],
           width: "40%",
           backgroundImage: CASTLE_BACKGROUND,
           backgroundRepeat: "no-repeat",
-
           backgroundSize: "cover",
           backgroundPosition: "center",
           flexBasis: "44%",
