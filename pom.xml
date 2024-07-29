@@ -40,14 +40,6 @@
 				<directory>build</directory>
 				<filtering>false</filtering>
 			</resource>
-			<resource>
-				<directory>dist</directory>
-				<filtering>false</filtering>
-			</resource>
-			<resource>
-				<directory>dist/admin</directory>
-				<filtering>false</filtering>
-			</resource>
 			<!-- Direct into the JAR -->
 			<resource>
 				<directory>jar</directory>
@@ -56,6 +48,87 @@
 		</resources>
 
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dist</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>
+										${maven.multiModuleProjectDirectory}/dist</directory>
+									<filtering>false</filtering>
+									<excludes>
+										<exclude>assets/**</exclude>
+										<exclude>img/**</exclude>
+									</excludes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-assets</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/classes/admin/assets</outputDirectory>
+							<resources>
+								<resource>
+									<directory>
+										${maven.multiModuleProjectDirectory}/dist/assets</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-img</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>							
+							<outputDirectory>${project.build.directory}/classes/admin/img</outputDirectory>
+							<resources>
+								<resource>
+									<directory>
+										${maven.multiModuleProjectDirectory}/dist/img</directory>
+									<filtering>false</filtering>
+								</resource>								
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-index</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>												
+							<outputDirectory>${project.build.directory}/classes/admin</outputDirectory>
+							<resources>
+								<resource>
+									<directory>
+										${maven.multiModuleProjectDirectory}/dist</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>index.html</include>
+									</includes>
+								</resource>
+							</resources>								
+						</configuration>
+					</execution>		
+				</executions>					
+			</plugin>	
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>

@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react-swc';
 export default defineConfig({
   plugins: [react()],
   build: {
-    assetsDir: 'admin/assets'
+	assetsDir: 'admin/assets'
   },
   server: {
     proxy: {
