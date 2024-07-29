@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, render } from 'lit';
 
 // Import Shoelace theme (light/dark)
 import '@shoelace-style/shoelace/dist/themes/light.css';
@@ -172,8 +172,7 @@ class SourceTree extends LitElement {
         const fullPath = path ? `${path}.${key}` : key;
         if (typeof value === 'object' && value !== null) {
           return html`
-            <sl-tree-item>
-              ${generateTreeItems(value, fullPath)}
+            <sl-tree-item lazy @sl-lazy-load="${(e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems)}">
               <section class="object-array-container">
                 ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}` }`}
                 <sl-dropdown>
@@ -449,6 +448,18 @@ class SourceTree extends LitElement {
       }
     }
     this.editedContent = parentObj
+  }
+
+  handleLazyLoad(e, value, fullPath, generate) {
+    const treeItem = e.target.closest('sl-tree-item')
+    treeItem.lazy = false
+    console.log(treeItem)
+    const section = treeItem.querySelector('section.object-array-container')
+
+    const child = generate(value, fullPath)
+    const container = document.createElement('section')
+    render(child, container)
+    section.appendChild(container)
   }
   
 }
