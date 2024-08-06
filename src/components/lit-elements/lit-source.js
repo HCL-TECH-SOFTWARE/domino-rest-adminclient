@@ -300,7 +300,7 @@ class SourceTree extends LitElement {
     return html`
       <div>
         <sl-tree>
-            ${generateTreeItems(this.editedContent)}
+          ${generateTreeItems(this.editedContent)}
         </sl-tree>
       </div>
     `;
@@ -451,15 +451,21 @@ class SourceTree extends LitElement {
   }
 
   handleLazyLoad(e, value, fullPath, generate) {
-    const treeItem = e.target.closest('sl-tree-item')
-    treeItem.lazy = false
-    console.log(treeItem)
-    const section = treeItem.querySelector('section.object-array-container')
+    const treeItem = e.target.closest('sl-tree-item[lazy]')
+    
+    // Prevent re-rendering the same tree item
+    if (treeItem.hasAttribute('data-processed')) return
 
+    // Generate the tree items for the object
+    const section = document.createElement('sl-tree-item')
     const child = generate(value, fullPath)
     const container = document.createElement('section')
     render(child, container)
     section.appendChild(container)
+    treeItem.append(section)
+    treeItem.lazy = false
+
+    treeItem.setAttribute('data-processed', 'true')
   }
   
 }
