@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, render } from 'lit';
 
 // Import Shoelace theme (light/dark)
 import '@shoelace-style/shoelace/dist/themes/light.css';
@@ -172,8 +172,7 @@ class SourceTree extends LitElement {
         const fullPath = path ? `${path}.${key}` : key;
         if (typeof value === 'object' && value !== null) {
           return html`
-            <sl-tree-item>
-              ${generateTreeItems(value, fullPath)}
+            <sl-tree-item lazy @sl-lazy-load="${(e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems)}">
               <section class="object-array-container">
                 ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}` }`}
                 <sl-dropdown>
@@ -301,7 +300,7 @@ class SourceTree extends LitElement {
     return html`
       <div>
         <sl-tree>
-            ${generateTreeItems(this.editedContent)}
+          ${generateTreeItems(this.editedContent)}
         </sl-tree>
       </div>
     `;
@@ -449,6 +448,24 @@ class SourceTree extends LitElement {
       }
     }
     this.editedContent = parentObj
+  }
+
+  handleLazyLoad(e, value, fullPath, generate) {
+    const treeItem = e.target.closest('sl-tree-item[lazy]')
+    
+    // Prevent re-rendering the same tree item
+    if (treeItem.hasAttribute('data-processed')) return
+
+    // Generate the tree items for the object
+    const section = document.createElement('sl-tree-item')
+    const child = generate(value, fullPath)
+    const container = document.createElement('section')
+    render(child, container)
+    section.appendChild(container)
+    treeItem.append(section)
+    treeItem.lazy = false
+
+    treeItem.setAttribute('data-processed', 'true')
   }
   
 }
