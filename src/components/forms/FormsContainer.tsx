@@ -48,7 +48,7 @@ import { FiSave } from 'react-icons/fi';
 import { ImCancelCircle } from 'react-icons/im';
 import { BiExport } from 'react-icons/bi';
 import EditViewDialog from './EditView';
-import { LitSource } from '../lit-elements/LitElements';
+import { LitSource, LitSourceTree } from '../lit-elements/LitElements';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -368,7 +368,8 @@ const FormsContainer = () => {
 
   const handleClickSave = async () => {
     if (litsourceRef.current && litsourceRef.current.shadowRoot) {
-      setEditedContent(litsourceRef.current.editedContent)
+      setEditedContent(litsourceRef.current.content)
+      setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
     }
     setSaveChangesDialog(true);
   }
@@ -379,15 +380,16 @@ const FormsContainer = () => {
   }
 
   const handleClickCancel = () => {
+    if (litsourceRef.current && litsourceRef.current.shadowRoot) {
+      setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
+    }
     setDiscardChangesDialog(true)
-    setSourceTabContent(JSON.stringify(editedContent, null, 1))
   }
 
   const handleDiscardChanges = () => {
-    setSourceTabContent(JSON.stringify(editedContent, null, 1))
+    setSourceTabContent(JSON.stringify(schemaData, null, 1))
     setDiscardChangesDialog(false);
     setUnsavedChanges(false);
-    setButtonsEnabled(false);
   }
 
   const handleClickNo = () => {
@@ -640,101 +642,39 @@ const FormsContainer = () => {
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />
-                <div>
-                  <ToggleContainer>
-                    <div className='toggle-container' onClick={handleToggle}>
-                      <Button className={`toggle-btn ${!styledObjMode ? 'disable' : ''}`}>{ styledObjMode ? "Styled Object" : "Text Mode" }</Button>
-                      <Button className={`unchecked ${styledObjMode ? 'left' : ''}`}>{ styledObjMode ? "Text Mode" : "Styled Object" }</Button>
-                    </div>
-                    <Buttons>
-                      <Button 
-                        onClick={handleClickSave} 
-                        // disabled={!buttonsEnabled} 
-                        className={styledObjMode ? 'btn' : 'hidden'}
-                        style={{right: 'calc(93px + 2% + 93px)'}}
-                      >
-                        <FiSave />
-                        <span className='text'>
-                          Save
-                        </span>
-                      </Button>
-                      <Button 
-                        onClick={handleClickCancel} 
-                        disabled={!buttonsEnabled} 
-                        className={styledObjMode ? 'btn' : 'hidden'}
-                        style={{right: 'calc(93px + 2%)'}}
-                      >
-                        <ImCancelCircle />
-                        <span className='text'>
-                          Cancel
-                        </span>
-                      </Button>
-                      <Button
-                        onClick={handleClickExport}
-                        className='btn'
-                        style={{right: '2%'}}
-                      >
-                        <BiExport />
-                        <span className='text'>
-                          Export
-                        </span>
-                      </Button>
-                    </Buttons>
-                  </ToggleContainer>
-                </div>
-                {
-                  styledObjMode && 
-                  <JsonEditorContainer>
-                    {/* <JsonEditor 
-                      jsonObject={sourceTabContent}
-                      onChange={(output: any) => {handleChangeContent(output)}}
-                    /> */}
-                    {/* <SlIcon name="0-circle"></SlIcon> */}
-                    <LitSource content={JSON.parse(sourceTabContent)} ref={litsourceRef} />
-                    {/* <lit-source></lit-source> */}
-                    <Dialog open={saveChangesDialog}>
-                      <DialogContainer>
-                        <DialogTitle className='title'>
-                          <Typography className='title'>
-                            Save changes?
-                          </Typography>
-                          {/* Save changes? */}
-                        </DialogTitle>
-                        <DialogContent>
-                          Are you sure you want to save the changes made to the schema? Click Yes to continue.
-                        </DialogContent>
-                        <DialogActions className='actions'>
-                          <ButtonNeutral onClick={handleClickNo}>No</ButtonNeutral>
-                          <ButtonYes onClick={handleSaveChanges}>Yes</ButtonYes>
-                        </DialogActions>
-                      </DialogContainer>
-                    </Dialog>
-                    <Dialog open={discardChangesDialog}>
-                      <DialogContainer>
-                        <DialogTitle className='title'>
-                          <Typography className='title'>
-                            Discard changes?
-                          </Typography>
-                        </DialogTitle>
-                        <DialogContent>
-                          WARNING: Clicking Cancel will discard the changes you've made to the schema. Continue?
-                        </DialogContent>
-                        <DialogActions className='actions'>
-                          <ButtonNo onClick={handleDiscardChanges}>Discard Changes</ButtonNo>
-                          <ButtonYes onClick={() => {setDiscardChangesDialog(false)}}>Keep Editing</ButtonYes>
-                        </DialogActions>
-                      </DialogContainer>
-                    </Dialog>
-                  </JsonEditorContainer>
-                }
-                {
-                  !styledObjMode &&
-                  <textarea 
-                    className="textarea" 
-                    value={JSON.stringify(JSON.parse(sourceTabContent), null, 4)} 
-                    disabled 
-                  /> 
-                }
+                <LitSource content={JSON.parse(sourceTabContent)} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} />
+                <Dialog open={saveChangesDialog}>
+                  <DialogContainer>
+                    <DialogTitle className='title'>
+                      <Typography className='title'>
+                        Save changes?
+                      </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                      Are you sure you want to save the changes made to the schema? Click Yes to continue.
+                    </DialogContent>
+                    <DialogActions className='actions'>
+                      <ButtonNeutral onClick={handleClickNo}>No</ButtonNeutral>
+                      <ButtonYes onClick={handleSaveChanges}>Yes</ButtonYes>
+                    </DialogActions>
+                  </DialogContainer>
+                </Dialog>
+                <Dialog open={discardChangesDialog}>
+                  <DialogContainer>
+                    <DialogTitle className='title'>
+                      <Typography className='title'>
+                        Discard changes?
+                      </Typography>
+                    </DialogTitle>
+                    <DialogContent>
+                      WARNING: Clicking Cancel will discard the changes you've made to the schema. Continue?
+                    </DialogContent>
+                    <DialogActions className='actions'>
+                      <ButtonNo onClick={handleDiscardChanges}>Discard Changes</ButtonNo>
+                      <ButtonYes onClick={() => {setDiscardChangesDialog(false)}}>Keep Editing</ButtonYes>
+                    </DialogActions>
+                  </DialogContainer>
+                </Dialog>
               </TabPanel>
             </Stack>
           </>

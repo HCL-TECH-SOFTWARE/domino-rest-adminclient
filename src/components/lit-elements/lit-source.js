@@ -19,26 +19,16 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 // Import setBasePath for Shoelace assets
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
 
-function removeEmpty(obj) {
-  Object.keys(obj).forEach(key => {
-    if (obj[key] && typeof obj[key] === 'object') {
-      removeEmpty(obj[key]);
-      if ((Object.keys(obj[key]).length === 0 && obj[key].constructor === Object) || (Array.isArray(obj[key]) && obj[key].length === 0)) {
-        delete obj[key];
-      }
-    } else if (obj[key] == null) {
-      delete obj[key];
-    }
-  });
-  return obj;
-}
-
 class SourceTree extends LitElement {
   static properties = {
     content: { type: Object },
   };
 
   static styles = css`
+    main {
+      border: 1px solid #D2D2D2;
+    }
+
     sl-tree {
       --sl-font-size-small: 12px;
       --sl-font-size-medium: 14px;
@@ -298,11 +288,11 @@ class SourceTree extends LitElement {
     };
 
     return html`
-      <div>
+      <main>
         <sl-tree>
           ${generateTreeItems(this.editedContent)}
         </sl-tree>
-      </div>
+      </main>
     `;
   }
 
@@ -470,6 +460,6 @@ class SourceTree extends LitElement {
   
 }
 
-customElements.define('lit-source', SourceTree)
+customElements.define('lit-source-tree', SourceTree)
 
 export default SourceTree
