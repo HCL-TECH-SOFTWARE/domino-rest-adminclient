@@ -15,7 +15,7 @@
     "@mui/x-date-pickers": "^7.9.0",
     "@mui/x-tree-view": "^7.9.0",
     "@redux-devtools/extension": "^3.3.0",
-    "@shoelace-style/shoelace": "^2.15.1",
+    "@shoelace-style/shoelace": "^2.16.0",
     "axios": "^1.7.2",
     "dayjs": "^1.11.12",
     "formik": "^2.4.5",
