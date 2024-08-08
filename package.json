@@ -5,7 +5,7 @@
   "proxy": "http://localhost:8880",
   "homepage": ".",
   "dependencies": {
-    "@emotion/react": "^11.11.4",
+    "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.11.5",
     "@lit/react": "^1.0.5",
     "@mui/icons-material": "^5.16.0",
