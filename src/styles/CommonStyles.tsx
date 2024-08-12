@@ -908,3 +908,17 @@ export const StyledRadio = styled(Radio)<RadioProps>`
     font-size: 14px;
   }
 `;
+
+export const EncryptSignOptions = styled.section`
+  width: 45%;
+  font-size: 14px;
+
+  .main-row {
+    display: flex;
+  }
+
+  .warning-text {
+    color: #616161;
+    font-size: 12px;
+  }
+`

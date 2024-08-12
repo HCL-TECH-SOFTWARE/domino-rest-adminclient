@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import { Box, Tooltip, TextField, Button, Checkbox, ButtonBase } from '@mui/material';
 import { TabsProps } from '@mui/material/Tabs';
@@ -341,6 +341,10 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
       setDeleteFields([])
     }
   }
+
+  useEffect(() => {
+    setEditField(state[stateList[0]][0] || null)
+  }, [state])
 
   return (
     <Box height='100%' display='flex' style={{ gap: '16px' }}>

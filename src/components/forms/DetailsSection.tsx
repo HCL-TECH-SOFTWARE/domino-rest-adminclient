@@ -573,23 +573,6 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   <Box className="title-container">
                     <Typography
                       color="textPrimary"
-                      className={allowDecryption ? `title` : `title unchecked`}
-                      component="p"
-                      variant="body2"
-                      noWrap={true}>
-                      Allow Decryption
-                    </Typography>
-                  </Box>
-                  <Box style={{ width: '5%' }}>
-                    {allowDecryption ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
-                  </Box>
-                </Box>
-              </Config>
-              <Config>
-                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                  <Box className="title-container">
-                    <Typography
-                      color="textPrimary"
                       className={requireRevisionToUpdate ? `title` : `title unchecked`}
                       component="p"
                       variant="body2"
@@ -684,16 +667,6 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                       size="small"
                       checked={dbContext.allowCode}
                       onClick={() => handleChange('allowCode', !dbContext.allowCode)}
-                    />
-                  </Box>
-                </Box>
-                <Box className="row">
-                  <Box style={{ width: '50%' }}>Allow Decryption</Box>
-                  <Box style={{ width: '50%' }}>
-                    <BlueSwitch
-                      size="small"
-                      checked={dbContext.allowDecryption}
-                      onClick={() => handleChange('allowDecryption', !dbContext.allowDecryption)}
                     />
                   </Box>
                 </Box>

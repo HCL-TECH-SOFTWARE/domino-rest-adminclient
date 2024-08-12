@@ -159,6 +159,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     deleteAccessFormula: modes[currentModeIndex].deleteAccessFormula,
     onLoad: modes[currentModeIndex].onLoad,
     onSave: modes[currentModeIndex].onSave,
+    sign: modes[currentModeIndex].sign,
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentModeValue, setCurrentModeValue] = useState(
@@ -197,6 +198,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       deleteAccessFormula: modes[newCardIndex].deleteAccessFormula,
       onLoad: modes[newCardIndex].onLoad,
       onSave: modes[newCardIndex].onSave,
+      sign: modes[newCardIndex].sign,
     });
     handleFieldListOnClose();
   };

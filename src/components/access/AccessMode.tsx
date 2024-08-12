@@ -96,6 +96,16 @@ const AccessMode: React.FC = () => {
     const forms = schemaData.forms
     const allForms = newForm.form ? [...forms, newForm.form] : forms
     setAllModes(allForms.length > 0 ? allForms.filter((form) => form.formName === formName)[0].formModes : [])
+    if (allModes.length > 0) {
+      const currentModes = allForms.filter((form) => form.formName === formName)[0].formModes || []
+      const chosenMode = currentModes[currentModeIndex]
+      const chosenFields = chosenMode.fields
+      const currentKey = Object.keys(state)[0]
+      setstate({
+        ...state,
+        [currentKey]: chosenFields,
+      })
+    }
   }, [schemaData, newForm.form, formName])
 
   useEffect(() => {
