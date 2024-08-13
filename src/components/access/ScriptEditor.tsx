@@ -7,11 +7,12 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { TextEditorContainer } from './styles';
-import { Box, Button, ButtonBase, TextField, Typography } from '@mui/material';
+import { Box, Button, ButtonBase, TextField, Tooltip, Typography } from '@mui/material';
 import { FiEdit2 } from 'react-icons/fi';
 import CloseIcon from '@mui/icons-material/Close';
-import { BlueSwitch, ButtonNeutral, ButtonYes } from '../../styles/CommonStyles';
+import { BlueSwitch, ButtonNeutral, ButtonYes, EncryptSignOptions } from '../../styles/CommonStyles';
 import TestIcon from '@mui/icons-material/PlayArrow';
+import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 
 const AccessContainer = styled.div`
   border: 1px solid #A5AFBE;
@@ -131,6 +132,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
   const [formulaTitle, setFormulaTitle] = useState("")
   const [formula, setFormula] = useState("")
   const [formComputed, setFormComputed] = useState(data.computeWithForm)
+  const [sign, setSign] = useState(data.sign || false)
   const ref = useRef<HTMLDialogElement>(null);
 
   const handleClose = () => {
@@ -199,10 +201,18 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
     setFormComputed(event.target.checked)
   }
 
+  const handleToggleSign = (event: any) => {
+    setSign(event.target.checked)
+    setScripts({
+      ...data,
+      sign: event.target.checked,
+    })
+  }
+
   return (
     <TextEditorContainer>
       <Box className='settings-header'>
-        <Typography className='settings-text'>Mode Formula Settings</Typography>
+        <Typography className='settings-text'>Mode Settings</Typography>
         <Button onClick={test}>
           <TestIcon className='action-icon' color='primary' />
           <Typography variant='body2' color='textPrimary'>
@@ -283,6 +293,20 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
           {data.onSave?.formula !== "" && <Typography className='formula-container'>{data.onSave.formula}</Typography>}
           {data.onSave?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
         </AccessContainer>
+        <EncryptSignOptions>
+          <section className='main-row'>
+            <text>
+              Sign Document
+            </text>
+            <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
+              <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '16px' }} />
+            </Tooltip>
+            <BlueSwitch size='small' checked={sign} onChange={handleToggleSign} />
+          </section>
+          <text className='warning-text'>
+            Please understand this option before enabling
+          </text>
+        </EncryptSignOptions>
       </Box>
       <EditFormulaDialog ref={ref} onClose={handleClose}>
         <Box className='header'>

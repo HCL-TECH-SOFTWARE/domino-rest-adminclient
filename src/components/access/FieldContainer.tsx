@@ -11,7 +11,8 @@ import Typography from '@mui/material/Typography';
 import { convert2FieldType } from './functions';
 import { Box, Tooltip } from '@mui/material';
 import styled from 'styled-components';
-import { BlueSwitch, HorizontalDivider } from '../../styles/CommonStyles';
+import { BlueSwitch, EncryptSignOptions, HorizontalDivider } from '../../styles/CommonStyles';
+import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 
 interface SingleFieldContainerProps {
   item?: any;
@@ -86,6 +87,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   });
 
   const [isMultiValue, setIsMultiValue] = React.useState(item.isMultiValue ? item.isMultiValue : item.type === "array");
+  const [encrypt, setEncrypt] = useState(item.encryptedField)
   const [formatValue, setFormatValue] = React.useState(() => {
     if (item.type === 'array') {
       if (!!item.items) {
@@ -109,6 +111,10 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   useEffect(() => {
     setEditedItem({...item})
   }, [item])
+
+  useEffect(() => {
+    setEncrypt(item.encryptedField)
+  }, [item.encryptedField])
 
   useEffect(() => {
     let fmt = 'string'
@@ -187,6 +193,14 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
     update(itemIndex, droppableIndex, newItem);
     setEditedItem(newItem)
   };
+
+  const toggleEncrypt = (event: any) => {
+    const encrypt = event.target.checked;
+    setEncrypt(encrypt);
+    const newItem = {...editedItem, "encryptedField": encrypt};
+    update(itemIndex, droppableIndex, newItem);
+    setEditedItem(newItem)
+  }
 
   return (
     <ConfigFieldContainer>
@@ -283,6 +297,20 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               />
             </Box>
           </Tooltip>
+          <EncryptSignOptions>
+            <section className='main-row'>
+              <text>
+                Encrypt
+              </text>
+              <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
+                <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '16px' }} />
+              </Tooltip>
+              <BlueSwitch size='small' checked={encrypt} onChange={toggleEncrypt} />
+            </section>
+            <text className='warning-text'>
+              Please understand this option before enabling
+            </text>
+          </EncryptSignOptions>
         </Box>
       </Box>
     </ConfigFieldContainer>
