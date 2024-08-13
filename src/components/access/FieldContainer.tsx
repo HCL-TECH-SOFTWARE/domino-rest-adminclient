@@ -302,7 +302,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               <text>
                 Encrypt
               </text>
-              <Tooltip arrow title='Please refer to the documentation before using this feature.'>
+              <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
                 <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '16px' }} />
               </Tooltip>
               <BlueSwitch size='small' checked={encrypt} onChange={toggleEncrypt} />
