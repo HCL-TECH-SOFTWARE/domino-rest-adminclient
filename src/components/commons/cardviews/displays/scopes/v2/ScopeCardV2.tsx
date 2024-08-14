@@ -71,7 +71,7 @@ const SchemaCardV2: React.FC<SchemaCardV2Props> = ({
       <ScopeCardWrapper>
         <CardContent onClick={() => openDatabase(database)}>
           <ScopeCardHeader>
-            <ModeLogo onClick={onContextMenu}>
+            <ModeLogo>
               {checkIcon(database.iconName) ? (
                 <SchemaDBImage
                   src={`data:image/svg+xml;base64, ${

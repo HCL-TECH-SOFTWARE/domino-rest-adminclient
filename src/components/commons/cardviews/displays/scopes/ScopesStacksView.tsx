@@ -12,7 +12,6 @@ import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
 import { AppState } from '../../../../../store';
-import MenuOptions from '../../../../database/menu/MenuOptions';
 import SlimDatabaseCard from '../../../../database/views/SlimDatabaseCard';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { setDbIndex } from '../../../../../store/databases/action';
@@ -67,31 +66,6 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
       <>
         <ExtraFlex>
           <>
-            <Popper
-              style={{ zIndex: 1 }}
-              placement="right-start"
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-            >
-              <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
-                <Paper
-                  elevation={1}
-                  style={{
-                    width: 300,
-                    margin: '-20px 15px 0 15px',
-                  }}
-                >
-                  <MenuOptions
-                    onMenuHide={() => setAnchorEl(null)}
-                    openDatabase={() =>
-                      openScope(databases[contextViewIndex])
-                    }
-                    data={databases[contextViewIndex]}
-                  />
-                </Paper>
-              </ClickAwayListener>
-            </Popper>
             {databases.filter((db) => db.isActive).length > 0 ? (
               databases
                 .filter((db) => db.isActive)
@@ -128,31 +102,6 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
       <>
         <ExtraFlex>
           <>
-            <Popper
-              style={{ zIndex: 1 }}
-              placement="right-start"
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-            >
-              <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
-                <Paper
-                  elevation={1}
-                  style={{
-                    width: 300,
-                    margin: '-20px 15px 0 15px',
-                  }}
-                >
-                  <MenuOptions
-                    onMenuHide={() => setAnchorEl(null)}
-                    openDatabase={() =>
-                      openScope(databases[contextViewIndex])
-                    }
-                    data={databases[contextViewIndex]}
-                  />
-                </Paper>
-              </ClickAwayListener>
-            </Popper>
             {databases.filter((db) => !db.isActive).length > 0 ? (
               databases
                 .filter((db) => !db.isActive)
