@@ -15,7 +15,6 @@ import { Database } from '../../../../../store/databases/types';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { ClickAwayListener, Paper, Popper } from '@mui/material';
-import MenuOptions from '../../../../database/menu/MenuOptions';
 import { SchemasMainContainer } from './SchemaStyles';
 
 type SchemasCardsViewProps = {
@@ -69,29 +68,6 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
   return (
     <SchemasMainContainer>
       <ExtraFlex>
-        <Popper
-          style={{ zIndex: 1 }}
-          placement="right-start"
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-        >
-          <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
-            <Paper
-              elevation={1}
-              style={{
-                width: 300,
-                margin: '-20px 15px 0 15px',
-              }}
-            >
-              <MenuOptions
-                onMenuHide={() => setAnchorEl(null)}
-                openDatabase={() => openSchema(databases[contextViewIndex])}
-                data={databases[contextViewIndex]}
-              />
-            </Paper>
-          </ClickAwayListener>
-        </Popper>
         {
           databases.map((database: any, index: any) => {
             // console.log(database.schemaName + ':' + database.nsfPath)

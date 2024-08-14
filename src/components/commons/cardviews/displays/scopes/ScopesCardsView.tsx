@@ -14,8 +14,6 @@ import ScopeCardV2 from './v2/ScopeCardV2';
 import { Database } from '../../../../../store/databases/types';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
-import { ClickAwayListener, Paper, Popper } from '@mui/material';
-import MenuOptions from '../../../../database/menu/MenuOptions';
 import { SchemasMainContainer } from './ScopeStyles';
 
 type ScopesCardsViewProps = {
@@ -27,16 +25,12 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
   databases,
   openScope
 }) => {
-  const { contextViewIndex } = useSelector(
-    (state: AppState) => state.databases
-  );
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const setOption = useState({})[1];
 
   const [selectedDB, setSelectedDB] = useState('');
-  const [selectedNsf, setSelectedNsf] = useState('');
   const dispatch = useDispatch();
 
   const open = Boolean(anchorEl);
@@ -49,7 +43,6 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
     setAnchorEl(anchorEl ? null : event.currentTarget);
     setOption(database);
     setSelectedDB(database.schemaName);
-    setSelectedNsf(database.nsfPath);
 
     // Set Selected Database Index to Redux Store
     dispatch(
@@ -68,29 +61,6 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
         HCL Domino REST API Databases Scope
       </Typography>
       <ExtraFlex>
-        <Popper
-          style={{ zIndex: 1 }}
-          placement="right-start"
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-        >
-          <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
-            <Paper
-              elevation={1}
-              style={{
-                width: 300,
-                margin: '-20px 15px 0 15px'
-              }}
-            >
-              <MenuOptions
-                onMenuHide={() => setAnchorEl(null)}
-                openDatabase={() => openScope(databases[contextViewIndex])}
-                data={databases[contextViewIndex]}
-              />
-            </Paper>
-          </ClickAwayListener>
-        </Popper>
         {databases.length > 0 ? (
           databases.map((database: any, index: any) => {
             return (
