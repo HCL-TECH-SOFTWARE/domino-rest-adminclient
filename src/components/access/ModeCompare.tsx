@@ -676,7 +676,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 }
               })}
             </Box>
-            <Box className={`field-row`}>
+            <Box className={`field-row ${showDiffOnly && !(diffFormulas.length > 0) ? 'hidden' : ''}`}>
               {selectedModeNames.map((modeName: string) => {
                 if (modeName === '') {
                   return <Box className={`field-detail`} />
