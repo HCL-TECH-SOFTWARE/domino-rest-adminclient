@@ -15,6 +15,7 @@ import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/datab
 import { Database, Field } from '../../store/databases/types';
 import { Box, Button, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
 import { AiOutlinePlus } from 'react-icons/ai';
+import { Mode } from 'fs';
 
 const DialogContainer = styled(Dialog)`
   border: 1px solid white;
@@ -219,6 +220,7 @@ interface ModeCompareProps {
 const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentModeIndex, schemaData }) => {
   const urls = useLocation();
   const formName = decodeURIComponent(urls.pathname.split('/')[4]);
+  const formulas = ['computeWithForm', 'onLoad', 'onSave', 'readAccessFormula', 'writeAccessFormula']
 
   const { forms } = schemaData;
   const allModes = forms[getFormIndex(forms, formName)].formModes;
@@ -227,6 +229,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
   });
   const [selectedModeNames, setSelectedModeNames] = useState(Array<any>); // ensure all selected mode names are unique
   const [diffFields, setdiffFields] = useState({});
+  const [diffFormulas, setDiffFormulas] = useState(Array<String>)
   const [allFieldNames, setAllFieldNames] = useState(Array<string | unknown>);
   const [showDiffOnly, setShowDiffOnly] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -282,6 +285,32 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
       return Array.from(fieldNames);
     }
 
+    // Deep compare two objects
+    function deepEqual(obj1: any, obj2: any): boolean {
+      if (obj1 === obj2) {
+        return true
+      }
+    
+      if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
+        return false
+      }
+    
+      const keys1 = Object.keys(obj1)
+      const keys2 = Object.keys(obj2)
+    
+      if (keys1.length !== keys2.length) {
+        return false
+      }
+    
+      for (const key of keys1) {
+        if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
+          return false
+        }
+      }
+    
+      return true
+    }
+
     // Check if field is equal across all modes
     function isFieldEqual(fieldName: string) {
       let fieldEqual = true;
@@ -296,16 +325,34 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
 
         let modeContents = allModes[getFormModeIndex(allModes, selectedModeNames[i])];
         let fieldtoCompare = modeContents.fields[getFieldIndex(modeContents.fields, fieldName)];
-        //TODO: Check if lodash isEqual can be realy replaced here
-        //_.isEqual(baseField, fieldtoCompare)
-        if (baseField === fieldtoCompare) {
-          fieldEqual = true;
+        if (baseField && fieldtoCompare) {
+          return deepEqual(JSON.parse(JSON.stringify(baseField)), JSON.parse(JSON.stringify(fieldtoCompare)))
         } else {
           return false;
         }
       }
 
       return fieldEqual;
+    }
+
+    // Check if field is equal across all modes
+    function isFormulaEqual(formula: string) {
+      let formulaEqual = true;
+
+      let baseModeContents = allModes[getFormModeIndex(allModes, selectedModeNames[0])];
+      let baseFormula = baseModeContents[formula as keyof Mode];
+
+      for (let i = 1; i < selectedModeNames.length; i++) {
+        if (selectedModeNames[i] === '') {
+          return false;
+        }
+
+        let modeContents = allModes[getFormModeIndex(allModes, selectedModeNames[i])];
+        let formulatoCompare = modeContents[formula as keyof Mode];
+        return deepEqual(JSON.parse(JSON.stringify(baseFormula)), JSON.parse(JSON.stringify(formulatoCompare)))
+      }
+
+      return formulaEqual
     }
 
     function getFieldKeys(selectedModes: Array<string>, fieldName: string) {
@@ -392,6 +439,15 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
 
         setdiffFields(diffFieldsBuffer);
       });
+
+      let diffFormulasBuffer: String[] = []
+      formulas.forEach((formula: string) => {
+        if (!isFormulaEqual(formula)) {
+          diffFormulasBuffer.push(formula)
+        }
+
+        setDiffFormulas(diffFormulasBuffer);
+      })
     }
   }, [selectedModeNames, allModes]);
 
@@ -445,24 +501,10 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
   }
 
   function getProperKey(key: string) {
-    switch (key) {
-      case 'fieldAccess':
-        return 'Field Access';
-      case 'itemFlags':
-        return 'Item Flags';
-      case 'summaryField':
-        return 'Summary Field';
-      case 'type':
-        return 'Type';
-      case 'items':
-        return 'Items';
-      case 'format':
-        return 'Format';
-      case 'multiValue':
-        return 'Multi-Value';
-      default:
-        return `${key.charAt(0).toUpperCase()}${key.slice(1)}`;
-    }
+    return key
+      .replace(/([A-Z])/g, ' $1') // Insert space before each uppercase letter
+      .replace(/^./, str => str.toUpperCase()) // Capitalize the first letter
+      .trim(); // Remove any leading/trailing spaces
   }
 
   return (
@@ -631,6 +673,64 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                       </Box>
                     </Box>
                   );
+                }
+              })}
+            </Box>
+            <Box className={`field-row`}>
+              {selectedModeNames.map((modeName: string) => {
+                if (modeName === '') {
+                  return <Box className={`field-detail`} />
+                } else {
+                  return (
+                    <Box className={`field-detail ${diffFormulas.length > 0 ? 'diff' : ''}`}>
+                      <Box className="field-name">Formulas</Box>
+                      {formulas.map((formula: string) => {
+                        return (
+                          <Box style={{ display: 'flex', flexDirection: 'column' }}>
+                            <Box style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px 0' }}>
+                              <Box style={{ width: '15px' }}>
+                                {diffFormulas.includes(
+                                  formula
+                                ) && (
+                                  <img
+                                    src={`data:image/svg+xml;base64, PHN2ZyB3aWR0aD0iOSIgaGVpZ2h0PSI4IiB2aWV3Qm94PSIwIDAgOSA4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8Y2lyY2xlIGlkPSJFbGxpcHNlIDMyIiBjeD0iNC4wNzcxMiIgY3k9IjQiIHI9IjQiIGZpbGw9IiNDMzMzNUYiLz4KPC9zdmc+Cg==`}
+                                    alt="key-marker"
+                                    style={{
+                                      color: '#C3335F',
+                                      width: '8px',
+                                      height: '8px'
+                                    }}
+                                  />
+                                )}
+                              </Box>
+                              <Box style={{ width: 'calc(0.4*(100% - 15px))', overflowWrap: 'break-word' }}>
+                                <span
+                                  style={{ color: '#323A3D', fontSize: '14px', lineHeight: 'normal' }}>{`${getProperKey(
+                                  formula
+                                )}:`}</span>
+                              </Box>
+                              <Box
+                                style={{
+                                  width: 'calc(0.6*(100% - 15px))',
+                                  height: 'fit-content',
+                                  overflowWrap: 'break-word'
+                                }}>
+                                <span
+                                  className={`key-text ${
+                                    diffFormulas.includes(formula)
+                                      ? 'key-diff'
+                                      : ''
+                                  }`}
+                                >
+                                  {`${JSON.stringify(allModes[getFormModeIndex(allModes, modeName)][formula as keyof Mode])}`}
+                                </span>
+                              </Box>
+                            </Box>
+                          </Box>
+                        )
+                      })}
+                    </Box>
+                  )
                 }
               })}
             </Box>
