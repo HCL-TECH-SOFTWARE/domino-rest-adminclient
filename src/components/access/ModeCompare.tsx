@@ -526,7 +526,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               </div>
             </div>
             <div className="toggle-container">
-              Show only fields with differences
+              Show only fields and formulas with differences
               <BlueSwitch size="small" checked={showDiffOnly} onChange={handleShowDiff} />
             </div>
           </div>
