@@ -686,7 +686,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                       <Box className="field-name">Formulas</Box>
                       {formulas.map((formula: string) => {
                         return (
-                          <Box style={{ display: 'flex', flexDirection: 'column' }}>
+                          <Box style={{ display: 'flex', flexDirection: 'column', width: '100%', alignContent: 'center' }}>
                             <Box style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px 0' }}>
                               <Box style={{ width: '15px' }}>
                                 {diffFormulas.includes(
@@ -712,8 +712,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                               <Box
                                 style={{
                                   width: 'calc(0.6*(100% - 15px))',
-                                  height: 'fit-content',
-                                  overflowWrap: 'break-word'
+                                  overflowWrap: 'break-word',
                                 }}>
                                 <span
                                   className={`key-text ${
@@ -721,6 +720,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                                       ? 'key-diff'
                                       : ''
                                   }`}
+                                  style={{ lineHeight: 'normal' }}
                                 >
                                   {`${JSON.stringify(allModes[getFormModeIndex(allModes, modeName)][formula as keyof Mode])}`}
                                 </span>
