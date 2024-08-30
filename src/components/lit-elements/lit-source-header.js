@@ -152,18 +152,18 @@ class SourceContents extends LitElement {
             </select>
             <section class="buttons-container">
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
-                    <button title="Copy" style="color: #000;" @click="${this.handleCopyClick}"><sl-icon name="copy"></sl-icon></button>
-                    <button title="Download" style="color: #000;" @click="${this.handleDownloadClick}"><sl-icon name="download"></sl-icon></button>
+                    <button title="Copy" style="color: #000;" @click="${this.handleCopyClick}"><sl-icon src="/img/shoelace/copy.svg"></sl-icon></button>
+                    <button title="Download" style="color: #000;" @click="${this.handleDownloadClick}"><sl-icon src="/img/shoelace/download.svg"></sl-icon></button>
                 </section>
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
                     <section>
                         <button title="Cancel" style="color: ${this.selectedOption === 'tree' ? '#ED0000' : '#A9A9A9'};" @click="${this.handleCancelClick}" ?disabled="${this.selectedOption !== 'tree'}">
-                            <sl-icon name="x-lg"></sl-icon>
+                            <sl-icon src="/img/shoelace/x-lg.svg"></sl-icon>
                         </button>
                     </section>
                     <section>
                         <button title="Save" style="color: ${this.selectedOption === 'tree' ? '#007E0D' : '#A9A9A9'};" @click="${this.handleSaveClick}" ?disabled="${this.selectedOption !== 'tree'}">
-                            <sl-icon name="floppy"></sl-icon>
+                            <sl-icon src="/img/shoelace/floppy.svg"></sl-icon>
                         </button>
                     </section>
                 </section>
