@@ -28,6 +28,7 @@ const SectionContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 100px;
   }
 `;
 
@@ -42,6 +43,7 @@ const FeatureContainer = styled.div`
 
   @media only screen and (max-width: 768px) {
     flex-direction: column;
+    gap: 20px;
   }
 `;
 
