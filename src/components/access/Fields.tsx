@@ -55,7 +55,6 @@ const FieldContainer = styled.div<{ theme: string }>`
   }
   .field-list {
     height: 100%;
-    background-color: yellow;
   }
 `;
 

@@ -40,40 +40,6 @@ const QuickConfigButton = styled.div`
 
 `;
 
-const SidebarContainer = styled(List)`
-  a {
-    text-decoration: none !important;
-    color: #82cafa;
-  }
-
-  .route-active {
-    .link-container {
-      border-left: 4px solid KEEP_ADMIN_BASE_COLOR;
-      // FIXME new ui: border-left: 4px solid ${(props) => getTheme(props.theme.palette.mode).sidenav.border};
-
-      background: #addfff;
-      //FIXME new ui： background: ${(props) => getTheme(props.theme.palette.mode).sidenav.active};
-
-      .text-link {
-        margin-left: -4px;
-        color: ${(props) => getTheme(props.theme.palette.mode).hoverColor} !important;
-        font-size: 20px;
-      }
-      .keep-icon {
-        width: 30px;
-      }
-
-      svg {
-        margin-left: -4px;
-        color: ${(props) => getTheme(props.theme.palette.mode).hoverColor} !important;
-        font-size: 20px;
-        cursor: pointer;
-        font-weight: 800;
-      }
-    }
-  }
-`;
-
 const Logo = styled.div`
   display: flex;
   justify-content: center;
@@ -126,6 +92,38 @@ const MobileSidebar: React.FC<SidenavProps> = ({
     }
     dispatch(toggleQuickConfigDrawer());
   };
+
+  const SidebarContainer = styled(List)`
+    a {
+      text-decoration: none !important;
+      color: #82cafa;
+    }
+
+    .route-active {
+      .link-container {
+        border-left: 4px solid KEEP_ADMIN_BASE_COLOR;
+        
+        background: #addfff;
+
+        .text-link {
+          margin-left: -4px;
+          color: ${getTheme(themeMode).hoverColor} !important;
+          font-size: 20px;
+        }
+        .keep-icon {
+          width: 30px;
+        }
+
+        svg {
+          margin-left: -4px;
+          color: ${getTheme(themeMode).hoverColor} !important;
+          font-size: 20px;
+          cursor: pointer;
+          font-weight: 800;
+        }
+      }
+    }
+  `;
 
   return (
     <SideNavContainer>

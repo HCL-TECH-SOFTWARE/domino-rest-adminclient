@@ -869,7 +869,6 @@ export const SideNavContainer = styled.div`
     transition: width 195ms ease-in;
     overflow-x: hidden;
     width: 57px;
-    background-color: yellow;
 
     @media only screen and (min-width: 0px) and (max-width: 768px) {
       width: 0;
