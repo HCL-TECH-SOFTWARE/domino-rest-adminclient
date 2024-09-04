@@ -36,6 +36,10 @@ class SourceTree extends LitElement {
       padding: 0;
       margin: 0;
     }
+    .custom-icons sl-tree-item::part(expand-button) {
+      /* Disable the expand/collapse animation */
+      rotate: none;
+    }
 
     input.tree {
       background: transparent;
@@ -166,7 +170,7 @@ class SourceTree extends LitElement {
               <section class="object-array-container">
                 ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}` }`}
                 <sl-dropdown>
-                  <sl-icon-button class="icon-button" slot="trigger" name="caret-down-square" label="Context Menu"></sl-icon-button>
+                  <sl-icon-button class="icon-button" slot="trigger" src="/admin/img/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
                   <sl-menu>
                     <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
                       Add
@@ -223,19 +227,19 @@ class SourceTree extends LitElement {
                   <sl-menu>
                     <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
                       Add
-                      <sl-icon slot="prefix" name="plus-circle"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/plus-circle.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${(e) => {this.handleClickEdit(e, key, value, fullPath)}}">
                       Edit
-                      <sl-icon slot="prefix" name="pencil"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/pencil.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item disabled>
                       Duplicate
-                      <sl-icon slot="prefix" name="copy"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/copy.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
                       Remove
-                      <sl-icon slot="prefix" name="trash"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/trash.svg"></sl-icon>
                     </sl-menu-item>
                     <!--
                     <sl-divider></sl-divider>
@@ -289,7 +293,9 @@ class SourceTree extends LitElement {
 
     return html`
       <main>
-        <sl-tree>
+        <sl-tree class="custom-icons">
+          <sl-icon src="/admin/img/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
+          <sl-icon src="/admin/img/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
           ${generateTreeItems(this.editedContent)}
         </sl-tree>
       </main>
