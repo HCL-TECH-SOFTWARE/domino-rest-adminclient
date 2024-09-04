@@ -10,6 +10,8 @@ jobs:
   publish:
     name: Deploy Snapshot to ghcr.io
     runs-on: ubuntu-latest
+    env:
+      REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
     permissions:
       contents: read
       packages: write
@@ -40,7 +42,7 @@ jobs:
       - run: npm run build
       - run: npm run test
       - name: Set Mend Product name
-        run:  echo "WS_PRODUCTNAME=${{ env.PRODUCT_NAME }}" >> $GITHUB_ENV      
+        run: echo "WS_PRODUCTNAME=${{ env.PRODUCT_NAME }}" >> $GITHUB_ENV
       - name: Run Mend Scan
         uses: TheAxZim/Whitesource-Scan-Action@v1.0.0
         with:
