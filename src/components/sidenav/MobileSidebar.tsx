@@ -10,18 +10,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  appRoutes as routes,
-  apps,
-  databases,
-  groups,
-  people} from './Routes';
+import { appRoutes as routes, apps, databases, groups, people } from './Routes';
 import { IMG_DIR, BUILD_VERSION } from '../../config.dev';
 import { getTheme } from '../../store/styles/action';
 import { AppState } from '../../store';
@@ -36,9 +31,7 @@ const SideContainer = styled.aside`
   z-index: 100;
 `;
 
-const QuickConfigButton = styled.div`
-
-`;
+const QuickConfigButton = styled.div``;
 
 const Logo = styled.div`
   display: flex;
@@ -46,11 +39,11 @@ const Logo = styled.div`
   align-items: center;
   margin-bottom: 10px;
   column-gap: 20px;
-  
+
   img {
     width: 40px;
   }
-  
+
   .title {
     font-size: 1.4rem;
     font-weight: bold;
@@ -71,16 +64,12 @@ const Copyright = styled.div`
   justify-content: center;
 `;
 
-
 interface SidenavProps {
   open: boolean;
   toggleMenu: () => void;
 }
 
-const MobileSidebar: React.FC<SidenavProps> = ({
-  open,
-  toggleMenu
-}) => {
+const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
   const location = useLocation();
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const { databasePull } = useSelector((state: AppState) => state.databases);
@@ -102,7 +91,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({
     .route-active {
       .link-container {
         border-left: 4px solid KEEP_ADMIN_BASE_COLOR;
-        
+
         background: #addfff;
 
         .text-link {
@@ -127,88 +116,29 @@ const MobileSidebar: React.FC<SidenavProps> = ({
 
   return (
     <SideNavContainer>
-    <SideContainer
-      className={clsx('drawer', {
-        'open': open,
-        'close': !open
-      })}
-    >
-      <LinksContainer>
-        <SidebarContainer>
-          <Logo>
-            <img
-              src={`${IMG_DIR}/KeepNewIcon.png`}
-              alt="HCL Domino REST API Icon"
-            />
-            <Typography className="title" color="textPrimary">
-              HCL Domino REST API
-            </Typography>
-          </Logo>
-          {routes.map((route) => {
-            const Icon = route.icon;
-            return (
-              <NavLink
-                onClick={toggleMenu}
-                key={route.label}
-                
-                className={
-                  `/${location.pathname.split('/')[1]}` === `${route.uri}`
-                    ? 'route-active'
-                    : ''
-                }
-                to={route.uri}
-              >
-                <Tooltip
-                  enterDelay={700}
-                  placement="right"
-                  title={route.label}
-                  arrow
-                >
-                  <ListItem className="link-container" button key={route.label}>
-                    <ListItemIcon>
-                      <Icon
-                        style={{
-                          color: getTheme(themeMode).textColorPrimary,
-                          fontSize: 19
-                        }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText>
-                      <Typography className="text-link" color="textPrimary">
-                        {route.label}
-                      </Typography>
-                    </ListItemText>
-                  </ListItem>
-                </Tooltip>
-              </NavLink>
-            );
-          })}
-          {navitems.databases &&
-            databases.map((route) => {
+      <SideContainer
+        className={clsx('drawer', {
+          open: open,
+          close: !open
+        })}>
+        <LinksContainer>
+          <SidebarContainer>
+            <Logo>
+              <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="HCL Domino REST API Icon" />
+              <Typography className="title" color="textPrimary">
+                HCL Domino REST API
+              </Typography>
+            </Logo>
+            {routes.map((route) => {
               const Icon = route.icon;
               return (
                 <NavLink
                   onClick={toggleMenu}
                   key={route.label}
-                  
-                  className={
-                    `/${location.pathname.split('/')[1]}` === `${route.uri}`
-                      ? 'route-active'
-                      : ''
-                  }
-                  to={route.uri}
-                >
-                  <Tooltip
-                    enterDelay={700}
-                    placement="right"
-                    title={route.label}
-                    arrow
-                  >
-                    <ListItem
-                      className="link-container"
-                      button
-                      key={route.label}
-                    >
+                  className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+                  to={route.uri}>
+                  <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                    <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
                         <Icon
                           style={{
@@ -222,181 +152,158 @@ const MobileSidebar: React.FC<SidenavProps> = ({
                           {route.label}
                         </Typography>
                       </ListItemText>
-                    </ListItem>
+                    </ListItemButton>
                   </Tooltip>
                 </NavLink>
               );
             })}
+            {navitems.databases &&
+              databases.map((route) => {
+                const Icon = route.icon;
+                return (
+                  <NavLink
+                    onClick={toggleMenu}
+                    key={route.label}
+                    className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+                    to={route.uri}>
+                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                      <ListItemButton className="link-container" key={route.label}>
+                        <ListItemIcon>
+                          <Icon
+                            style={{
+                              color: getTheme(themeMode).textColorPrimary,
+                              fontSize: 19
+                            }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText>
+                          <Typography className="text-link" color="textPrimary">
+                            {route.label}
+                          </Typography>
+                        </ListItemText>
+                      </ListItemButton>
+                    </Tooltip>
+                  </NavLink>
+                );
+              })}
 
-          <QuickConfigButton
-            className="quick-config">
-            <Tooltip
-              enterDelay={700}
-              placement="right"
-              title="Quick Config"
-              arrow
-            >
-              <ListItem className="link-container" button key="Quick Config"
-              onClick={handleQuickConfig}>
-                <ListItemIcon>
-                  <FlashOnIcon
-                    style={{
-                      color: getTheme(themeMode).textColorPrimary,
-                      fontSize: 19
-                    }}
-                  />
-                </ListItemIcon>
-                <ListItemText>
-                  <Typography className="text-link" color="textPrimary">
-                    Quick Config
-                  </Typography>
-                </ListItemText>
-              </ListItem>
-            </Tooltip>
-          </QuickConfigButton>
+            <QuickConfigButton className="quick-config">
+              <Tooltip enterDelay={700} placement="right" title="Quick Config" arrow>
+                <ListItemButton className="link-container" key="Quick Config" onClick={handleQuickConfig}>
+                  <ListItemIcon>
+                    <FlashOnIcon
+                      style={{
+                        color: getTheme(themeMode).textColorPrimary,
+                        fontSize: 19
+                      }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <Typography className="text-link" color="textPrimary">
+                      Quick Config
+                    </Typography>
+                  </ListItemText>
+                </ListItemButton>
+              </Tooltip>
+            </QuickConfigButton>
 
-          {navitems.apps &&
-            apps.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  onClick={toggleMenu}
-                  key={route.label}
-                  
-                  className={
-                    `/${location.pathname.split('/')[1]}` === `${route.uri}`
-                      ? 'route-active'
-                      : ''
-                  }
-                  to={route.uri}
-                >
-                  <Tooltip
-                    enterDelay={700}
-                    placement="right"
-                    title={route.label}
-                    arrow
-                  >
-                    <ListItem
-                      className="link-container"
-                      button
-                      key={route.label}
-                    >
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).textColorPrimary,
-                            fontSize: 19
-                          }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <Typography className="text-link" color="textPrimary">
-                          {route.label}
-                        </Typography>
-                      </ListItemText>
-                    </ListItem>
-                  </Tooltip>
-                </NavLink>
-              );
-            })}
+            {navitems.apps &&
+              apps.map((route) => {
+                const Icon = route.icon;
+                return (
+                  <NavLink
+                    onClick={toggleMenu}
+                    key={route.label}
+                    className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+                    to={route.uri}>
+                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                      <ListItemButton className="link-container" key={route.label}>
+                        <ListItemIcon>
+                          <Icon
+                            style={{
+                              color: getTheme(themeMode).textColorPrimary,
+                              fontSize: 19
+                            }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText>
+                          <Typography className="text-link" color="textPrimary">
+                            {route.label}
+                          </Typography>
+                        </ListItemText>
+                      </ListItemButton>
+                    </Tooltip>
+                  </NavLink>
+                );
+              })}
 
-          {navitems.users &&
-            people.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  onClick={toggleMenu}
-                  key={route.label}
-                  
-                  className={
-                    `/${location.pathname.split('/')[1]}` === `${route.uri}`
-                      ? 'route-active'
-                      : ''
-                  }
-                  to={route.uri}
-                >
-                  <Tooltip
-                    enterDelay={700}
-                    placement="right"
-                    title={route.label}
-                    arrow
-                  >
-                    <ListItem
-                      className="link-container"
-                      button
-                      key={route.label}
-                    >
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).textColorPrimary,
-                            fontSize: 19
-                          }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <Typography className="text-link" color="textPrimary">
-                          {route.label}
-                        </Typography>
-                      </ListItemText>
-                    </ListItem>
-                  </Tooltip>
-                </NavLink>
-              );
-            })}
+            {navitems.users &&
+              people.map((route) => {
+                const Icon = route.icon;
+                return (
+                  <NavLink
+                    onClick={toggleMenu}
+                    key={route.label}
+                    className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+                    to={route.uri}>
+                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                      <ListItemButton className="link-container" key={route.label}>
+                        <ListItemIcon>
+                          <Icon
+                            style={{
+                              color: getTheme(themeMode).textColorPrimary,
+                              fontSize: 19
+                            }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText>
+                          <Typography className="text-link" color="textPrimary">
+                            {route.label}
+                          </Typography>
+                        </ListItemText>
+                      </ListItemButton>
+                    </Tooltip>
+                  </NavLink>
+                );
+              })}
 
-          {navitems.groups &&
-            groups.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  onClick={toggleMenu}
-                  key={route.label}
-                  
-                  className={
-                    `/${location.pathname.split('/')[1]}` === `${route.uri}`
-                      ? 'route-active'
-                      : ''
-                  }
-                  to={route.uri}
-                >
-                  <Tooltip
-                    enterDelay={700}
-                    placement="right"
-                    title={route.label}
-                    arrow
-                  >
-                    <ListItem
-                      className="link-container"
-                      button
-                      key={route.label}
-                    >
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).textColorPrimary,
-                            fontSize: 19
-                          }}
-                        />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <Typography className="text-link" color="textPrimary">
-                          {route.label}
-                        </Typography>
-                      </ListItemText>
-                    </ListItem>
-                  </Tooltip>
-                </NavLink>
-              );
-            })}
-          <Copyright>
-            <Typography variant="caption" component="p" color="textPrimary">
-              {`© ${new Date().getFullYear()}. HCL Software - Build ${BUILD_VERSION}`}
-            </Typography>
-          </Copyright>
-        </SidebarContainer>
-      </LinksContainer>
-    </SideContainer>
+            {navitems.groups &&
+              groups.map((route) => {
+                const Icon = route.icon;
+                return (
+                  <NavLink
+                    onClick={toggleMenu}
+                    key={route.label}
+                    className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+                    to={route.uri}>
+                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                      <ListItemButton className="link-container" key={route.label}>
+                        <ListItemIcon>
+                          <Icon
+                            style={{
+                              color: getTheme(themeMode).textColorPrimary,
+                              fontSize: 19
+                            }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText>
+                          <Typography className="text-link" color="textPrimary">
+                            {route.label}
+                          </Typography>
+                        </ListItemText>
+                      </ListItemButton>
+                    </Tooltip>
+                  </NavLink>
+                );
+              })}
+            <Copyright>
+              <Typography variant="caption" component="p" color="textPrimary">
+                {`© ${new Date().getFullYear()}. HCL Software - Build ${BUILD_VERSION}`}
+              </Typography>
+            </Copyright>
+          </SidebarContainer>
+        </LinksContainer>
+      </SideContainer>
     </SideNavContainer>
   );
 };
