@@ -352,6 +352,16 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             onChange={handleServerChange}
             value={formik.values.server}
             variant='standard'
+            FormHelperTextProps={{
+              sx: { color: 'primary.main', fontSize: 12 }
+            }}
+            helperText={
+              <div>
+                <span>Server name must be heirarchical or canonical format. For example:</span>
+                <li>Server/Org</li>
+                <li>CN=Server/O=Org</li>
+              </div>
+            }
           />
           {formik.errors.server && formik.touched.server ? (
             <Typography className="validation-error" color="textPrimary">
