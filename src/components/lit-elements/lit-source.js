@@ -170,19 +170,19 @@ class SourceTree extends LitElement {
                   <sl-menu>
                     <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
                       Add
-                      <sl-icon slot="prefix" src="/img/shoelace/plus-circle.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/plus-circle.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item disabled>
                       Edit
-                      <sl-icon slot="prefix" src="/img/shoelace/pencil.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/pencil.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${(e) => {this.handleClickDuplicate(e, fullPath, key, value)}}">
                       Duplicate
-                      <sl-icon slot="prefix" src="/img/shoelace/copy.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/copy.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
                       Remove
-                      <sl-icon slot="prefix" src="/img/shoelace/trash.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="/admin/img/shoelace/trash.svg"></sl-icon>
                     </sl-menu-item>
                     <!--
                     <sl-divider></sl-divider>
@@ -219,7 +219,7 @@ class SourceTree extends LitElement {
                   @contextmenu="${this.handleRightClick}"
                 >
                 <sl-dropdown>
-                  <sl-icon-button class="icon-button" slot="trigger" src="/img/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
+                  <sl-icon-button class="icon-button" slot="trigger" src="/admin/img/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
                   <sl-menu>
                     <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
                       Add
