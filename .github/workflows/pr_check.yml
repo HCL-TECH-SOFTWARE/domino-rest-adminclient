@@ -11,6 +11,8 @@ jobs:
   build:
     name: PR preflight check
     runs-on: ubuntu-latest
+    env:
+      REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

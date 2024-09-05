@@ -9,6 +9,8 @@ jobs:
   publish:
     name: Publish to ghcr.io
     runs-on: ubuntu-latest
+    env:
+      REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
     permissions:
       contents: read
       packages: write
