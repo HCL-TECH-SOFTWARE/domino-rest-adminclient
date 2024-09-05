@@ -18,6 +18,7 @@ import '@shoelace-style/shoelace/dist/components/option/option.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 // Import setBasePath for Shoelace assets
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
+import { IMG_DIR } from '../../config.dev';
 
 class SourceTree extends LitElement {
   static properties = {
@@ -166,27 +167,29 @@ class SourceTree extends LitElement {
         const fullPath = path ? `${path}.${key}` : key;
         if (typeof value === 'object' && value !== null) {
           return html`
-            <sl-tree-item lazy @sl-lazy-load="${(e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems)}">
+            <sl-tree-item class="custom-icons" lazy @sl-lazy-load="${(e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems)}">
+              <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
+              <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
               <section class="object-array-container">
                 ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}` }`}
                 <sl-dropdown>
-                  <sl-icon-button class="icon-button" slot="trigger" src="/admin/img/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
+                  <sl-icon-button class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
                   <sl-menu>
                     <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
                       Add
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/plus-circle.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item disabled>
                       Edit
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/pencil.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${(e) => {this.handleClickDuplicate(e, fullPath, key, value)}}">
                       Duplicate
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/copy.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
                       Remove
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/trash.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
                     </sl-menu-item>
                     <!--
                     <sl-divider></sl-divider>
@@ -206,7 +209,9 @@ class SourceTree extends LitElement {
           `;
         } else {
           return html`
-            <sl-tree-item>
+            <sl-tree-item class="custom-icons">
+              <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
+              <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
               <section class="key-value-container ${this.currentInputValues[fullPath] !== value ? 'modified' : ''}">
                 <span>${key}:</span>
                 <input
@@ -223,23 +228,23 @@ class SourceTree extends LitElement {
                   @contextmenu="${this.handleRightClick}"
                 >
                 <sl-dropdown>
-                  <sl-icon-button class="icon-button" slot="trigger" src="/admin/img/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
+                  <sl-icon-button class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
                   <sl-menu>
                     <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
                       Add
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/plus-circle.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${(e) => {this.handleClickEdit(e, key, value, fullPath)}}">
                       Edit
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/pencil.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item disabled>
                       Duplicate
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/copy.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
                     </sl-menu-item>
                     <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
                       Remove
-                      <sl-icon slot="prefix" src="/admin/img/shoelace/trash.svg"></sl-icon>
+                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
                     </sl-menu-item>
                     <!--
                     <sl-divider></sl-divider>
@@ -294,8 +299,8 @@ class SourceTree extends LitElement {
     return html`
       <main>
         <sl-tree class="custom-icons">
-          <sl-icon src="/admin/img/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
-          <sl-icon src="/admin/img/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
+          <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
+          <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
           ${generateTreeItems(this.editedContent)}
         </sl-tree>
       </main>
