@@ -23,14 +23,14 @@
             "/adminui.json": {
                 "type": "config",
                 "path": "/adminUI",
-                "csp": "default-src 'self'; font-src 'self' https://fonts.gstatic.com;",
+                "csp": "default-src 'self';",
                 "Content-Type": "application/json; charset=utf-8"
             },
-           "/admin/*" : {
+            "/admin/*": {
                 "type": "path",
                 "path": "/admin",
                 "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:"
             }
-		}
+        }
     }
 }
