@@ -103,6 +103,10 @@ const SidebarContainer = styled(List)<{ theme: string }>`
   }
 `;
 
+const ContentWrapper = styled.div`
+  flex-grow: 1;
+`;
+
 const Logo = styled.div`
   display: flex;
   justify-content: center;
@@ -111,7 +115,7 @@ const Logo = styled.div`
   cursor: pointer;
 `;
 
-const Proflie = styled.div`
+const Profile = styled.div`
   height: 187px;
   display: flex;
   flex-direction: column-reverse;
@@ -175,6 +179,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
             </KeepAdmin>
           )}
 
+          <ContentWrapper>
           <ListItemButton className={open ? 'expandSeparator' : 'collapseSeparator'}></ListItemButton>
 
           {/* Overview */}
@@ -373,8 +378,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                 </NavLink>
               );
             })}
+            </ContentWrapper>
         </SidebarContainer>
-        <Proflie>{open ? <ProfileMenu /> : <ProfileMenuDialog />}</Proflie>
+        <Profile>{open ? <ProfileMenu /> : <ProfileMenuDialog />}</Profile>
       </SideContainer>
     </SideNavContainer>
   );
