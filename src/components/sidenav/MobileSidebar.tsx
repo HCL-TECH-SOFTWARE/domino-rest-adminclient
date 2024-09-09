@@ -89,6 +89,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
     }
 
     .route-active {
+      background-collor: yellow;
       .link-container {
         border-left: 4px solid KEEP_ADMIN_BASE_COLOR;
 
@@ -114,6 +115,10 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
     }
   `;
 
+  const ContentWrapper = styled.div`
+    flex-grow: 1;
+  `;
+
   return (
     <SideNavContainer>
       <SideContainer
@@ -129,6 +134,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                 HCL Domino REST API
               </Typography>
             </Logo>
+            <ContentWrapper>
             {routes.map((route) => {
               const Icon = route.icon;
               return (
@@ -296,6 +302,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   </NavLink>
                 );
               })}
+            </ContentWrapper>
             <Copyright>
               <Typography variant="caption" component="p" color="textPrimary">
                 {`© ${new Date().getFullYear()}. HCL Software - Build ${BUILD_VERSION}`}
