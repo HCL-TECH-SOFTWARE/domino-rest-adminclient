@@ -80,7 +80,7 @@ const AccessMode: React.FC = () => {
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { loadedFields, newForm } = useSelector((state: AppState) => state.databases);
   const forms: any[] = []
-  const allForms = newForm.form ? [...forms, newForm.form] : forms
+  const allForms = (newForm.enabled && newForm.form) ? [...forms, newForm.form] : forms
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
   const [allModes, setAllModes] = useState(allForms.length > 0 ? allForms.filter((form) => form.formName === formName)[0].formModes : [])
   const currentDesign = nsfDesigns[nsfPath];
@@ -96,7 +96,7 @@ const AccessMode: React.FC = () => {
     const forms = schemaData.forms
     const allForms = newForm.form ? [...forms, newForm.form] : forms
     setAllModes(allForms.length > 0 ? allForms.filter((form) => form.formName === formName)[0].formModes : [])
-    if (allModes.length > 0) {
+    if (allModes.length > 0 && !newForm.enabled) {
       const currentModes = allForms.filter((form) => form.formName === formName)[0].formModes || []
       const chosenMode = currentModes[currentModeIndex]
       const chosenFields = chosenMode.fields
