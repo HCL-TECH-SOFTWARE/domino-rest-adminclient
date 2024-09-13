@@ -21,7 +21,7 @@ import { Database } from "../../store/databases/types";
 import ActivateMenu from "./ActivateMenu";
 import { ButtonNeutral, ButtonYes, WarningIcon } from "../../styles/CommonStyles";
 import { IoMdClose } from "react-icons/io";
-import { handleDatabaseForms } from "../../store/databases/action";
+import { addForm, handleDatabaseForms } from "../../store/databases/action";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   paddingLeft: "30px",
   paddingRight: "30px",
@@ -182,6 +182,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
   const navigate = useNavigate();
   const openForm = (formName: string, modeLength: number) => {
     if (modeLength > 0) {
+      dispatch(addForm(false) as any)
       navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`);
     } else {
       setActivateFormName(formName)
