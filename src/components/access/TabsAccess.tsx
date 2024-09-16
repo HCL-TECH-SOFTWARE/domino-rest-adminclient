@@ -300,6 +300,10 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     }
   };
 
+  useEffect(() => {
+    setCurrentModeValue(modes[currentModeIndex].modeName)
+  }, [currentModeIndex])
+
   /**
    * gatherFormData harvests form data from the Formulas page
    */
