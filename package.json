@@ -11,7 +11,7 @@
     "@mui/icons-material": "6.0.2",
     "@mui/lab": "^6.0.0-beta.9",
     "@mui/material": "6.0.2",
-    "@mui/x-data-grid": "^7.16.0",
+    "@mui/x-data-grid": "^7.17.0",
     "@mui/x-date-pickers": "^7.9.0",
     "@mui/x-tree-view": "^7.16.0",
     "@redux-devtools/extension": "^3.3.0",
