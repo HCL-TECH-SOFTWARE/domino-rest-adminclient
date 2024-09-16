@@ -342,10 +342,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
     }
   }
 
-  useEffect(() => {
-    setEditField(state[stateList[0]][0] || null)
-  }, [state])
-
   return (
     <Box height='100%' display='flex' style={{ gap: '16px' }}>
       <SelectedFieldsContainer>
