@@ -107,7 +107,11 @@ const NsfCard: React.FC<NsfCardProps> = ({
     let schemas = databases.slice();
     if(searchKey) {
       schemas = schemas.filter((schema: any) => {
-        return schema.schemaName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1;
+        if (isSchema) {
+          return schema.schemaName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1;
+        } else {
+          return schema.apiName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1;
+        }
       })
     }
     setResults(schemas);
