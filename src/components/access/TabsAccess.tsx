@@ -203,6 +203,18 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     handleFieldListOnClose();
   };
 
+  useEffect(() => {
+    setScripts({
+      computeWithForm: modes[currentModeIndex].computeWithForm,
+      readAccessFormula: modes[currentModeIndex].readAccessFormula,
+      writeAccessFormula: modes[currentModeIndex].writeAccessFormula,
+      deleteAccessFormula: modes[currentModeIndex].deleteAccessFormula,
+      onLoad: modes[currentModeIndex].onLoad,
+      onSave: modes[currentModeIndex].onSave,
+      sign: modes[currentModeIndex].sign,
+    })
+  }, [modes, currentModeIndex])
+
   const urls = useLocation();
   const navigate = useNavigate()
 
@@ -269,6 +281,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               deleteAccessFormula: {formulaType: "domino", formula: "@False"},
               onLoad: {formulaType: "domino", formula: ""},
               onSave: {formulaType: "domino", formula: ""},
+              sign: false,
             }],
           }
         ]

@@ -132,7 +132,6 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
   const [formulaTitle, setFormulaTitle] = useState("")
   const [formula, setFormula] = useState("")
   const [formComputed, setFormComputed] = useState(data.computeWithForm)
-  const [sign, setSign] = useState(data.sign || false)
   const ref = useRef<HTMLDialogElement>(null);
 
   const handleClose = () => {
@@ -202,7 +201,6 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
   }
 
   const handleToggleSign = (event: any) => {
-    setSign(event.target.checked)
     setScripts({
       ...data,
       sign: event.target.checked,
@@ -301,7 +299,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
             <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
               <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '16px' }} />
             </Tooltip>
-            <BlueSwitch size='small' checked={sign} onChange={handleToggleSign} />
+            <BlueSwitch size='small' checked={data.sign} onChange={handleToggleSign} />
           </section>
           <text className='warning-text'>
             Please understand this option before enabling
@@ -332,8 +330,8 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
         </Box>
         <hr style={{ height: '1px', background: '#CBCBCB' }} />
         <Box className='buttons'>
-          <ButtonYes onClick={handleClickSave}><Typography className='button-text'>Save</Typography></ButtonYes>
-          <ButtonNeutral onClick={handleClickCancel}>Cancel</ButtonNeutral>
+          <ButtonYes sx={{ backgroundColor: '#0F5FDC' }} onClick={handleClickSave}><Typography className='button-text'>Save</Typography></ButtonYes>
+          <ButtonNeutral sx={{ border: '1px solid #000' }} onClick={handleClickCancel}>Cancel</ButtonNeutral>
         </Box>
       </EditFormulaDialog>
     </TextEditorContainer>
