@@ -218,8 +218,6 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               value={editedItem.externalName} 
               style={{"width":"50%"}}
               onChange={handleFieldNameChange} 
-              InputProps={{ style: { fontSize: '14px' }}} 
-              InputLabelProps={{ shrink: true }}
               id="field-name"
             />
           </Box>
@@ -230,7 +228,6 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               style={{"width":"50%"}}
               label="Field Type"
               select
-              InputProps={{ style: { fontSize: '14px' }}} 
               id='field-type'
             >
               <MenuItem value={"authors"}>authors</MenuItem>
@@ -257,7 +254,6 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               style={{"width":"50%"}}
               label="Access"
               select
-              InputProps={{ style: { fontSize: '14px' }}} 
               id='field-access'
             >
               <MenuItem value={"RW"}>Read/Write</MenuItem>
@@ -290,9 +286,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 value={editedItem.fieldGroup} 
                 style={{ "width":"50%" }}
                 onChange={handleFieldGroupChange} 
-                InputProps={{ style: { fontSize: '14px' }}} 
                 disabled={!isMultiValue} 
-                InputLabelProps={{ shrink: true }}
                 id='field-group'
               />
             </Box>
