@@ -223,7 +223,7 @@ class SourceTree extends LitElement {
                       ...this.currentInputValues,
                       [fullPath]: e.target.value
                     }
-                    this.updateEditedContent(key, this.editedContent, e.target.value)
+                    this.updateEditedContent(e, key, this.editedContent, e.target.value, fullPath)
                   }}
                   value=${value}
                   @contextmenu="${this.handleRightClick}"
@@ -448,17 +448,21 @@ class SourceTree extends LitElement {
     this.requestUpdate()
   }
 
-  updateEditedContent(key, parentObj, newValue) {
-    if (parentObj.hasOwnProperty(key)) {
-      parentObj[key] = newValue;
+  updateEditedContent(e, key, parentObj, newValue, fullPath) {
+    const paths = fullPath.split('.')
+    if (paths.length === 1) {
+      parentObj[key] = newValue
     } else {
-      for (let prop in parentObj) {
-        if (typeof parentObj[prop] === 'object' && parentObj[prop] !== null) {
-          this.updateEditedContent(key, parentObj[prop], newValue);
+      for (let i = 0; i < paths.length - 1; i++) {
+        if (i === paths.length - 2) {
+          // If we're at the last key in the path, add the new key-value pair
+          parentObj[paths[i]][key] = newValue
+        } else {
+          // Otherwise, move to the next level of the object
+          parentObj = parentObj[paths[i]]
         }
       }
     }
-    this.editedContent = parentObj
   }
 
   handleLazyLoad(e, value, fullPath, generate) {
