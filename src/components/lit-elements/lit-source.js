@@ -216,13 +216,14 @@ class SourceTree extends LitElement {
                 <span>${key}:</span>
                 <input
                   id="input-${fullPath}"
+                  data-id="input-${fullPath}"
                   class="tree"
                   @input=${(e) => {
                     this.currentInputValues = {
                       ...this.currentInputValues,
                       [fullPath]: e.target.value
                     }
-                    this.updateEditedContent(key, this.editedContent, e.target.value)
+                    this.updateEditedContent(e, key, this.editedContent, e.target.value, fullPath)
                   }}
                   value=${value}
                   @contextmenu="${this.handleRightClick}"
@@ -260,7 +261,7 @@ class SourceTree extends LitElement {
                   </sl-menu>
                 </sl-dropdown>
               </section>
-              <dialog id="${key}">
+              <dialog id="${fullPath}">
                 <section class="dialog-content">
                   <section class="dialog-input">
                     Key
@@ -427,7 +428,16 @@ class SourceTree extends LitElement {
   }
 
   handleClickDialogEdit(e, key, fullPath) {
-    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+    const treeItem = e.target.closest('sl-tree-item')
+    const newKey = treeItem.querySelector('#new-key').value
+    const section = treeItem.querySelector('section.key-value-container')
+    const inputField = section.querySelector(`input`)
+    let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    const dialog = treeItem.querySelector(`dialog`)
+    if (dialog.id === fullPath)  {
+      newValue = dialog.querySelector('#new-value').value
+    }
+    inputField.value = newValue
 
     this.insertItem(e, fullPath)
     if (newKey !== key)  {
@@ -438,17 +448,21 @@ class SourceTree extends LitElement {
     this.requestUpdate()
   }
 
-  updateEditedContent(key, parentObj, newValue) {
-    if (parentObj.hasOwnProperty(key)) {
-      parentObj[key] = newValue;
+  updateEditedContent(e, key, parentObj, newValue, fullPath) {
+    const paths = fullPath.split('.')
+    if (paths.length === 1) {
+      parentObj[key] = newValue
     } else {
-      for (let prop in parentObj) {
-        if (typeof parentObj[prop] === 'object' && parentObj[prop] !== null) {
-          this.updateEditedContent(key, parentObj[prop], newValue);
+      for (let i = 0; i < paths.length - 1; i++) {
+        if (i === paths.length - 2) {
+          // If we're at the last key in the path, add the new key-value pair
+          parentObj[paths[i]][key] = newValue
+        } else {
+          // Otherwise, move to the next level of the object
+          parentObj = parentObj[paths[i]]
         }
       }
     }
-    this.editedContent = parentObj
   }
 
   handleLazyLoad(e, value, fullPath, generate) {
