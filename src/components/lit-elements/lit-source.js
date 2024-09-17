@@ -216,6 +216,7 @@ class SourceTree extends LitElement {
                 <span>${key}:</span>
                 <input
                   id="input-${fullPath}"
+                  data-id="input-${fullPath}"
                   class="tree"
                   @input=${(e) => {
                     this.currentInputValues = {
@@ -260,7 +261,7 @@ class SourceTree extends LitElement {
                   </sl-menu>
                 </sl-dropdown>
               </section>
-              <dialog id="${key}">
+              <dialog id="${fullPath}">
                 <section class="dialog-content">
                   <section class="dialog-input">
                     Key
@@ -427,7 +428,16 @@ class SourceTree extends LitElement {
   }
 
   handleClickDialogEdit(e, key, fullPath) {
-    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+    const treeItem = e.target.closest('sl-tree-item')
+    const newKey = treeItem.querySelector('#new-key').value
+    const section = treeItem.querySelector('section.key-value-container')
+    const inputField = section.querySelector(`input`)
+    let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    const dialog = treeItem.querySelector(`dialog`)
+    if (dialog.id === fullPath)  {
+      newValue = dialog.querySelector('#new-value').value
+    }
+    inputField.value = newValue
 
     this.insertItem(e, fullPath)
     if (newKey !== key)  {
