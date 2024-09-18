@@ -29,7 +29,7 @@ import { login, set401Error, setLoginError, setToken } from '../../store/account
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { LOGIN } from '../../store/account/types';
@@ -203,6 +203,14 @@ const LoginPage = () => {
     setPasskeyLogin(false);
   }
 
+  const handleClickLogInWithUserPass = (event: any)  => {
+    event.preventDefault();
+    setUsername('');
+    setNoUsernamePasskey(false)
+    setNoPasswordPasskey(false);
+    setPasskeyLogin(false);
+  }
+
   const handleLogInWithPasskey = (event: any) => {
     event.preventDefault();
 
@@ -297,7 +305,7 @@ const LoginPage = () => {
         setUsername(user ? user : '');
       })
       .catch((e) => dispatch(toggleAlert(e)));
-  }, [dispatch, passkeyLogin])
+  }, [])
 
   return (
     <GridRoot container>
@@ -481,9 +489,7 @@ const LoginPage = () => {
                   <Typography
                     className="sign-up-text"
                     display="block"
-                    onClick={() => {
-                      setPasskeyLogin(false);
-                    }}
+                    onClick={handleClickLogInWithUserPass}
                   >
                     Log In with Username and Password
                   </Typography>
