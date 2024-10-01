@@ -205,6 +205,38 @@ class SourceTree extends LitElement {
                   </sl-menu>
                 </sl-dropdown>
               </section>
+              <dialog id="${fullPath}">
+                <section class="dialog-content">
+                  <section class="dialog-input">
+                    Key
+                    <sl-input id="new-key"></sl-input>
+                  </section>
+                  <section class="dialog-p">
+                    <p>:</p>
+                  </section>
+                  <section class="dialog-input">
+                    Type
+                    <sl-select hoist placement="bottom" value="String">
+                      <sl-option value="String">String</sl-option>
+                      <sl-option value="Boolean">Boolean</sl-option>
+                      <sl-option value="Number">Number</sl-option>
+                      <!--
+                      <sl-option value="Array">Array</sl-option>
+                      <sl-option value="Object">Object</sl-option>
+                      -->
+                    </sl-select>
+                  </section>
+                  <section class="dialog-input">
+                    Value
+                    <sl-input id="new-value"></sl-input>
+                  </section>
+                </section>
+                <section class="dialog-content buttons">
+                  <button id="dialog-insert" style="display:none;" @click="${(e) => this.handleClickInsert(e, fullPath)}">Insert</button>
+                  <button id="dialog-edit" style="display:none;" @click="${(e) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
+                  <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
+                </section>
+              </dialog>
             </sl-tree-item>
           `;
         } else {
