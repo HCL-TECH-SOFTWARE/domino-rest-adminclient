@@ -20,6 +20,36 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
 import { IMG_DIR } from '../../config.dev';
 
+function parseStringToArray(input) {
+  return input.split(',').map(item => {
+    item = item.trim();
+
+    // Check for boolean values
+    if (item.toLowerCase() === 'true') return true;
+    if (item.toLowerCase() === 'false') return false;
+
+    // Check for number values
+    if (!isNaN(item) && item !== '') return Number(item);
+
+    // Check for array values (recursively parse)
+    if (item.startsWith('[') && item.endsWith(']')) {
+      return parseStringToArray(item.slice(1, -1));
+    }
+
+    // Check for object values (using JSON.parse)
+    if (item.startsWith('{') && item.endsWith('}')) {
+      try {
+        return JSON.parse(item);
+      } catch (e) {
+        console.error('Invalid JSON object:', item);
+      }
+    }
+
+    // Default to string
+    return item;
+  });
+}
+
 class SourceTree extends LitElement {
   static properties = {
     content: { type: Object },
@@ -216,14 +246,12 @@ class SourceTree extends LitElement {
                   </section>
                   <section class="dialog-input">
                     Type
-                    <sl-select hoist placement="bottom" value="String">
+                    <sl-select hoist id="new-type" placement="bottom" value="String">
                       <sl-option value="String">String</sl-option>
                       <sl-option value="Boolean">Boolean</sl-option>
                       <sl-option value="Number">Number</sl-option>
-                      <!--
                       <sl-option value="Array">Array</sl-option>
                       <sl-option value="Object">Object</sl-option>
-                      -->
                     </sl-select>
                   </section>
                   <section class="dialog-input">
@@ -304,7 +332,7 @@ class SourceTree extends LitElement {
                   </section>
                   <section class="dialog-input">
                     Type
-                    <sl-select hoist placement="bottom" value="String">
+                    <sl-select hoist id="new-type" placement="bottom" value="String">
                       <sl-option value="String">String</sl-option>
                       <sl-option value="Boolean">Boolean</sl-option>
                       <sl-option value="Number">Number</sl-option>
@@ -426,8 +454,29 @@ class SourceTree extends LitElement {
   insertItem(e, fullPath) {
     const paths = fullPath.split('.')
     const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
-    const newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    console.log(e.target.closest('sl-tree-item'))
+    const newType = e.target.closest('sl-tree-item').querySelector('#new-type').value
+    console.log(newType)
     let obj = this.editedContent
+
+    if (newType === 'Boolean') {
+      console.log(newValue)
+      if (newValue === 'true' || newValue === 'True') {
+        newValue = true
+      } else if (newValue === 'false' || newValue === 'False') {
+        newValue = false
+      }
+      console.log(newValue)
+    } else if (newType === 'Number') {
+      newValue = Number(newValue)
+    } else if (newType === 'Array') {
+      newValue = parseStringToArray(newValue)
+      console.log(newValue)
+    } else if (newType === 'Object') {
+      newValue = JSON.parse(newValue)
+      console.log(newValue)
+    }
     
     if (paths.length === 1) {
       obj[newKey] = newValue
@@ -444,6 +493,8 @@ class SourceTree extends LitElement {
         }
       }
     }
+
+    console.log(obj)
   }
 
   handleClickInsert(e, fullPath, edit = false) {

@@ -10,7 +10,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import axios, { AxiosResponse } from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import PropTypes from 'prop-types';
@@ -40,15 +40,12 @@ import ErrorWrapper from '../wrapper/ErrorWrapper';
 import TabForms from './TabForms';
 import TabViews from './TabViews';
 import TabAgents from './TabAgents';
-import { ButtonNeutral, ButtonNo, ButtonYes, Buttons, DialogContainer, TopNavigator } from '../../styles/CommonStyles';
+import { ButtonNeutral, ButtonNo, ButtonYes, DialogContainer, TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
-import { FiSave } from 'react-icons/fi';
-import { ImCancelCircle } from 'react-icons/im';
-import { BiExport } from 'react-icons/bi';
 import EditViewDialog from './EditView';
-import { LitSource, LitSourceTree } from '../lit-elements/LitElements';
+import { LitSource } from '../lit-elements/LitElements';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -127,75 +124,6 @@ const Stack = styled.div`
 const TabContainer = styled.div`
   padding-left: 1px;
 `;
-
-const ToggleContainer = styled.div`
-  margin-bottom: 6px;
-
-  .toggle-container {
-    position: relative;
-    width: 257px;
-    height: 34px;
-    background-color: #e6ebf5;
-    cursor: pointer;
-    user-select: none;
-    border-radius: 5px;
-    padding: 5px;
-    display: inline-block;
-  }
-
-  .toggle-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    width: 128px;
-    height: 24px;
-    font-size: 14px;
-    line-height: 16px;
-    cursor: pointer;
-    color: #fff;
-    background-color: #79a3e8;
-    box-shadow: 0 2px 4px rgb(0, 0, 0, 0.25);
-    padding: 8px 12px;
-    border-radius: 5px;
-    position: absolute;
-    transition: all 0.2s ease;
-    left: 128px;
-    overflow-x: visible;
-    text-transform: none;
-  }
-
-  .disable {
-    left: 2px;
-  }
-
-  .unchecked {
-    left: 134px;
-    position: absolute;
-    color: #6c7882;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    line-height: 16px;
-    padding: 4px 12px;
-    text-transform: none;
-  }
-
-  .left {
-    left: 20px;
-  }
-
-  .hidden {
-    display: none;
-  }
-`
-
-const JsonEditorContainer = styled.div`
-  border: "solid 1px #dddddd";
-  height: 60vh;
-  overflow-y: auto;
-`
 
 /**
  * Displays the Database Forms, Views and Agents Pages
