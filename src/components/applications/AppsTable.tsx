@@ -17,13 +17,13 @@ import { useSelector } from 'react-redux';
 import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { FaSort } from "react-icons/fa";
 import { AppState } from '../../store';
-import APILoadingProgress from '../loading/APILoadingProgress';
 import { AppProp } from '../../store/applications/types';
 import AppItem from './AppItem';
 import { FormikProps } from 'formik';
 import AppFilterContainer from './AppFilterContainer';
 import { fetchMyApps } from '../../store/applications/action';
 import { useDispatch } from 'react-redux';
+import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid #B8B8B8;
@@ -195,7 +195,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
   return (
     <>
       {apps.length === 0 ? 
-        <APILoadingProgress label="Applications" />
+        <ZeroResultsWrapper mainLabel='There are currently no apps to display.' secondaryLabel="Click 'Add Application' to create an app." />
         :
         <StyledTableContainer>
           <Table aria-label="consents table">
