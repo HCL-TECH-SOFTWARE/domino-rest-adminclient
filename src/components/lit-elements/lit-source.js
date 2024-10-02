@@ -21,35 +21,88 @@ import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
 import { IMG_DIR } from '../../config.dev';
 
 function parseStringToArray(input) {
-  return input.split(',').map(item => {
-    item = item.trim();
+  // Ensure the input is encased in []
+  if (!input.startsWith('[') || !input.endsWith(']')) {
+    throw new Error('Input must be encased in []');
+  }
 
-    // Check for boolean values
-    if (item.toLowerCase() === 'true') return true;
-    if (item.toLowerCase() === 'false') return false;
+  // Remove the enclosing []
+  input = input.slice(1, -1).trim();
 
-    // Check for number values
-    if (!isNaN(item) && item !== '') return Number(item);
+  const result = [];
+  let currentItem = '';
+  let inString = false;
+  let inObject = false;
+  let inArray = false;
+  let stack = [];
 
-    // Check for array values (recursively parse)
-    if (item.startsWith('[') && item.endsWith(']')) {
-      return parseStringToArray(item.slice(1, -1));
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+
+    if (char === '"' && input[i - 1] !== '\\') {
+      inString = !inString;
     }
 
-    // Check for object values (using JSON.parse)
-    if (item.startsWith('{') && item.endsWith('}')) {
-      try {
-        return JSON.parse(item);
-      } catch (e) {
-        console.error('Invalid JSON object:', item);
+    if (!inString) {
+      if (char === '{') {
+        inObject = true;
+        stack.push(char);
+      } else if (char === '}') {
+        stack.pop();
+        if (stack.length === 0) {
+          inObject = false;
+        }
+      } else if (char === '[') {
+        inArray = true;
+        stack.push(char);
+      } else if (char === ']') {
+        stack.pop();
+        if (stack.length === 0) {
+          inArray = false;
+        }
+      } else if (char === ',' && stack.length === 0) {
+        result.push(parseItem(currentItem.trim()));
+        currentItem = '';
+        continue;
       }
     }
 
-    // Default to string
-    return item;
-  });
+    currentItem += char;
+  }
+
+  if (currentItem.trim()) {
+    result.push(parseItem(currentItem.trim()));
+  }
+
+  return result;
 }
 
+function parseItem(item) {
+  // Check for object values (using JSON.parse)
+  if (item.startsWith('{') && item.endsWith('}')) {
+    try {
+      return JSON.parse(item);
+    } catch (e) {
+      console.error('Invalid JSON object:', item);
+      throw new Error('Invalid JSON object');
+    }
+  }
+
+  // Check for boolean values
+  if (item.toLowerCase() === 'true') return true;
+  if (item.toLowerCase() === 'false') return false;
+
+  // Check for number values
+  if (!isNaN(item) && item !== '') return Number(item);
+
+  // Check for array values (recursively parse)
+  if (item.startsWith('[') && item.endsWith(']')) {
+    return parseStringToArray(item);
+  }
+
+  // Default to string
+  return item;
+}
 class SourceTree extends LitElement {
   static properties = {
     content: { type: Object },
@@ -455,27 +508,21 @@ class SourceTree extends LitElement {
     const paths = fullPath.split('.')
     const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
     let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
-    console.log(e.target.closest('sl-tree-item'))
     const newType = e.target.closest('sl-tree-item').querySelector('#new-type').value
-    console.log(newType)
     let obj = this.editedContent
 
     if (newType === 'Boolean') {
-      console.log(newValue)
       if (newValue === 'true' || newValue === 'True') {
         newValue = true
       } else if (newValue === 'false' || newValue === 'False') {
         newValue = false
       }
-      console.log(newValue)
     } else if (newType === 'Number') {
       newValue = Number(newValue)
     } else if (newType === 'Array') {
       newValue = parseStringToArray(newValue)
-      console.log(newValue)
     } else if (newType === 'Object') {
       newValue = JSON.parse(newValue)
-      console.log(newValue)
     }
     
     if (paths.length === 1) {
@@ -493,8 +540,6 @@ class SourceTree extends LitElement {
         }
       }
     }
-
-    console.log(obj)
   }
 
   handleClickInsert(e, fullPath, edit = false) {
