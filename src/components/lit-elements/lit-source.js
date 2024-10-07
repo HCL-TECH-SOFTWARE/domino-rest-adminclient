@@ -244,6 +244,23 @@ class SourceTree extends LitElement {
     }
   }
 
+  updatePattern(event) {
+    const selectElement = event.target;
+    const selectedType = selectElement.value;
+    const inputElement = event.target.closest('sl-tree-item').querySelector('#new-value');
+
+    const patterns = {
+      String: '.*',
+      Boolean: '^(true|True|false|False)$',
+      Number: '^-?\\d+$',
+      Array: '^\\[.*\\]$',
+      Object: '^\\{.*\\}$'
+    }
+    if (inputElement) {
+      inputElement.pattern = patterns[selectedType] || '.*';
+    }
+  }
+
   render() {
     const generateTreeItems = (obj, path = '') => {
       return Object.entries(obj).map(([key, value]) => {
@@ -307,7 +324,7 @@ class SourceTree extends LitElement {
                     <p>:</p>
                   </section>
                   <section class="dialog-input">
-                    <sl-select label="Type" hoist id="new-type" placement="bottom" value="String">
+                    <sl-select label="Type" hoist id="new-type" placement="bottom" value="String" @sl-change="${this.updatePattern}">
                       <sl-option value="String">String</sl-option>
                       <sl-option value="Boolean">Boolean</sl-option>
                       <sl-option value="Number">Number</sl-option>
@@ -316,11 +333,11 @@ class SourceTree extends LitElement {
                     </sl-select>
                   </section>
                   <section class="dialog-input">
-                    <sl-input label="Value" required id="new-value" pattern="^\[.*\]$"></sl-input>
+                    <sl-input label="Value" required id="new-value" pattern=".*"></sl-input>
                   </section>
                 </section>
                 <section class="dialog-content buttons">
-                  <button id="dialog-insert" style="display:none;" @click="${(e) => this.handleClickInsert(e, fullPath)}">Insert</button>
+                  <button id="dialog-insert" style="display:none;" @click="${(e) => this.handleInsertButtonClick(e, fullPath)}">Insert</button>
                   <button id="dialog-edit" style="display:none;" @click="${(e) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
                   <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
@@ -474,6 +491,35 @@ class SourceTree extends LitElement {
   
     // Trigger a re-render
     this.requestUpdate()
+  }
+
+  async handleInsertButtonClick(e, fullPath) {
+    const errorMessage = {
+      String: 'string',
+      Boolean: 'true | false',
+      Number: '12345',
+      Array: '[1, 2, 3, "one", "two", "three", { "key": "value" }]',
+      Object: '{ "key": "value" }'
+    }
+    const form = e.target.closest('sl-tree-item').querySelector('.input-validation-pattern');
+    
+    // Wait for controls to be defined before attaching form listeners
+    await Promise.all([
+      customElements.whenDefined('sl-button'),
+      customElements.whenDefined('sl-input')
+    ]);
+
+    if (form.checkValidity()) {
+      this.handleClickInsert(e, fullPath);
+    } else {
+      const keyInputElement = e.target.closest('sl-tree-item').querySelector('#new-key');
+      const typeInputElement = e.target.closest('sl-tree-item').querySelector('#new-type');
+      const valueInputElement = e.target.closest('sl-tree-item').querySelector('#new-value');
+      console.log(keyInputElement.validity)
+      console.log(valueInputElement.validity)
+      // valueInputElement.setCustomValidity(`This input field is required. Make sure to follow the appropriate format: ${errorMessage[typeInputElement.value]}`);
+      // alert('Please fill out all required fields correctly.');
+    }
   }
 
   handleClickDialogEdit(e, key, fullPath) {
