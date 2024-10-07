@@ -247,85 +247,18 @@ class SourceTree extends LitElement {
   render() {
     const generateTreeItems = (obj, path = '') => {
       return Object.entries(obj).map(([key, value]) => {
-        const fullPath = path ? `${path}.${key}` : key;
-        if (typeof value === 'object' && value !== null) {
-          return html`
-            <sl-tree-item class="custom-icons" lazy @sl-lazy-load="${(e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems)}">
-              <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
-              <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
-              <section class="object-array-container">
-                ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}` }`}
-                <sl-dropdown>
-                  <sl-icon-button class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
-                  <sl-menu>
-                    <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
-                      Add
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item disabled>
-                      Edit
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item @click="${(e) => {this.handleClickDuplicate(e, fullPath, key, value)}}">
-                      Duplicate
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
-                      Remove
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
-                    </sl-menu-item>
-                    <!--
-                    <sl-divider></sl-divider>
-                    <sl-menu-item>
-                      Insert Before
-                      <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item>
-                      Insert After
-                      <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
-                    </sl-menu-item>
-                    -->
-                  </sl-menu>
-                </sl-dropdown>
-              </section>
-              <dialog id="${fullPath}">
-                <section class="dialog-content">
-                  <section class="dialog-input">
-                    Key
-                    <sl-input id="new-key"></sl-input>
-                  </section>
-                  <section class="dialog-p">
-                    <p>:</p>
-                  </section>
-                  <section class="dialog-input">
-                    Type
-                    <sl-select hoist id="new-type" placement="bottom" value="String">
-                      <sl-option value="String">String</sl-option>
-                      <sl-option value="Boolean">Boolean</sl-option>
-                      <sl-option value="Number">Number</sl-option>
-                      <sl-option value="Array">Array</sl-option>
-                      <sl-option value="Object">Object</sl-option>
-                    </sl-select>
-                  </section>
-                  <section class="dialog-input">
-                    Value
-                    <sl-input id="new-value"></sl-input>
-                  </section>
-                </section>
-                <section class="dialog-content buttons">
-                  <button id="dialog-insert" style="display:none;" @click="${(e) => this.handleClickInsert(e, fullPath)}">Insert</button>
-                  <button id="dialog-edit" style="display:none;" @click="${(e) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
-                  <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
-                </section>
-              </dialog>
-            </sl-tree-item>
-          `;
-        } else {
-          return html`
-            <sl-tree-item class="custom-icons">
-              <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
-              <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
-              <section class="key-value-container ${this.currentInputValues[fullPath] !== value ? 'modified' : ''}">
+        const fullPath = path ? `${path}.${key}` : key
+        const isObjectOrArray = typeof value === 'object' && value !== null;
+        const isModified = this.currentInputValues[fullPath] !== value;
+
+        return html`
+          <sl-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @sl-lazy-load="${isObjectOrArray ? (e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
+            <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
+            <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
+            <section class="${isObjectOrArray ? 'object-array-container' : `key-value-container ${isModified ? 'modified' : ''}`}">
+              ${isObjectOrArray ? html`
+                ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
+              ` : html`
                 <span>${key}:</span>
                 <input
                   id="input-${fullPath}"
@@ -341,51 +274,40 @@ class SourceTree extends LitElement {
                   value=${value}
                   @contextmenu="${this.handleRightClick}"
                 >
-                <sl-dropdown>
-                  <sl-icon-button class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
-                  <sl-menu>
-                    <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
-                      Add
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item @click="${(e) => {this.handleClickEdit(e, key, value, fullPath)}}">
-                      Edit
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item disabled>
-                      Duplicate
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
-                      Remove
-                      <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
-                    </sl-menu-item>
-                    <!--
-                    <sl-divider></sl-divider>
-                    <sl-menu-item>
-                      Insert Before
-                      <sl-icon slot="prefix" name="arrow-up-circle"></sl-icon>
-                    </sl-menu-item>
-                    <sl-menu-item>
-                      Insert After
-                      <sl-icon slot="prefix" name="arrow-down-circle"></sl-icon>
-                    </sl-menu-item>
-                    -->
-                  </sl-menu>
-                </sl-dropdown>
-              </section>
-              <dialog id="${fullPath}">
+              `}
+              <sl-dropdown>
+                <sl-icon-button class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
+                <sl-menu>
+                  <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
+                    Add
+                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></sl-icon>
+                  </sl-menu-item>
+                  <sl-menu-item ?disabled=${isObjectOrArray}>
+                    Edit
+                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></sl-icon>
+                  </sl-menu-item>
+                  <sl-menu-item ?disabled=${!isObjectOrArray} @click="${isObjectOrArray ? (e) => {this.handleClickDuplicate(e, fullPath, key, value)} : null}">
+                    Duplicate
+                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
+                  </sl-menu-item>
+                  <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
+                    Remove
+                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
+                  </sl-menu-item>
+                </sl-menu>
+              </sl-dropdown>
+            </section>
+            <dialog id="${fullPath}">
+              <form class="input-validation-pattern">
                 <section class="dialog-content">
                   <section class="dialog-input">
-                    Key
-                    <sl-input id="new-key"></sl-input>
+                    <sl-input label="Key" required id="new-key"></sl-input>
                   </section>
                   <section class="dialog-p">
                     <p>:</p>
                   </section>
                   <section class="dialog-input">
-                    Type
-                    <sl-select hoist id="new-type" placement="bottom" value="String">
+                    <sl-select label="Type" hoist id="new-type" placement="bottom" value="String">
                       <sl-option value="String">String</sl-option>
                       <sl-option value="Boolean">Boolean</sl-option>
                       <sl-option value="Number">Number</sl-option>
@@ -394,8 +316,7 @@ class SourceTree extends LitElement {
                     </sl-select>
                   </section>
                   <section class="dialog-input">
-                    Value
-                    <sl-input id="new-value"></sl-input>
+                    <sl-input label="Value" required id="new-value" pattern="^\[.*\]$"></sl-input>
                   </section>
                 </section>
                 <section class="dialog-content buttons">
@@ -403,12 +324,12 @@ class SourceTree extends LitElement {
                   <button id="dialog-edit" style="display:none;" @click="${(e) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
                   <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
-              </dialog>
-            </sl-tree-item>
-          `;
-        }
-      });
-    };
+              </form>
+            </dialog>
+          </sl-tree-item>
+        `;
+      })
+    }
 
     return html`
       <main>
