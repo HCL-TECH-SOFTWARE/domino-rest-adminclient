@@ -188,7 +188,10 @@ class SourceTree extends LitElement {
       flex-direction: row;
       cursor: default;
     }
-
+    .dialog-error {
+      color: red;
+      font-size: 12px;
+    }
     .dialog-content {
       display: flex;
       flex-direction: row;
@@ -197,6 +200,36 @@ class SourceTree extends LitElement {
     .dialog-content.buttons {
       flex-direction: row-reverse;
       padding: 20px 0 10px 0;
+    }
+
+    /* user invalid styles */
+    .input-validation-pattern sl-input[data-user-invalid]::part(base) {
+      border-color: var(--sl-color-danger-600);
+    }
+
+    .input-validation-pattern [data-user-invalid]::part(form-control-label),
+    .input-validation-pattern [data-user-invalid]::part(form-control-help-text) {
+      color: var(--sl-color-danger-700);
+    }
+
+    .input-validation-pattern sl-input:focus-within[data-user-invalid]::part(base) {
+      border-color: var(--sl-color-danger-600);
+      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-300);
+    }
+
+    /* User valid styles */
+    .input-validation-pattern sl-input[data-user-valid]::part(base) {
+      border-color: var(--sl-color-success-600);
+    }
+
+    .input-validation-pattern [data-user-valid]::part(form-control-label),
+    .input-validation-pattern [data-user-valid]::part(form-control-help-text) {
+      color: var(--sl-color-success-700);
+    }
+
+    .input-validation-pattern sl-input:focus-within[data-user-valid]::part(base) {
+      border-color: var(--sl-color-success-600);
+      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-success-300);
     }
 
     sl-select {
@@ -318,7 +351,8 @@ class SourceTree extends LitElement {
               <form class="input-validation-pattern">
                 <section class="dialog-content">
                   <section class="dialog-input">
-                    <sl-input label="Key" required id="new-key"></sl-input>
+                    <sl-input label="Key" required id="new-key" @sl-invalid="${this.handleInvalid}"></sl-input>
+                    <div id="key-error" class="dialog-error" aria-live="polite" hidden></div>
                   </section>
                   <section class="dialog-p">
                     <p>:</p>
@@ -333,7 +367,8 @@ class SourceTree extends LitElement {
                     </sl-select>
                   </section>
                   <section class="dialog-input">
-                    <sl-input label="Value" required id="new-value" pattern=".*"></sl-input>
+                    <sl-input label="Value" required id="new-value" pattern=".*" @sl-invalid="${this.handleInvalid}"></sl-input>
+                    <div id="value-error" class="dialog-error" aria-live="polite" hidden></div>
                   </section>
                 </section>
                 <section class="dialog-content buttons">
@@ -481,6 +516,7 @@ class SourceTree extends LitElement {
   }
 
   handleClickInsert(e, fullPath, edit = false) {
+    e.preventDefault()
     const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
 
     this.insertItem(e, fullPath)
@@ -493,7 +529,10 @@ class SourceTree extends LitElement {
     this.requestUpdate()
   }
 
-  async handleInsertButtonClick(e, fullPath) {
+  handleInvalid(e) {
+    // Suppress the browser's constraint validation message
+    e.preventDefault();
+
     const errorMessage = {
       String: 'string',
       Boolean: 'true | false',
@@ -501,6 +540,35 @@ class SourceTree extends LitElement {
       Array: '[1, 2, 3, "one", "two", "three", { "key": "value" }]',
       Object: '{ "key": "value" }'
     }
+
+    if (e.target.id === 'new-key') {
+      const keyError = e.target.closest('sl-tree-item').querySelector('#key-error');
+      keyError.textContent = `Error: This input field is required.`;
+      keyError.hidden = false;
+      return
+    } else if (e.target.id === 'new-value') {
+      const typeInputElement = e.target.closest('sl-tree-item').querySelector('#new-type')
+      const valueInputElement = e.target.closest('sl-tree-item').querySelector('#new-value')
+      const valueError = e.target.closest('sl-tree-item').querySelector('#value-error');
+      if (valueInputElement.validity.patternMismatch) {
+        valueError.textContent = `Error: Make sure to follow the appropriate format - ${errorMessage[typeInputElement.value]}`;
+        valueError.hidden = false;
+      } else {
+        valueError.textContent = `Error: This input field is required.`;
+        valueError.hidden = false;
+      }
+    }
+
+    e.target.focus();
+  }
+
+  async handleInsertButtonClick(e, fullPath) {
+    // Hide the error messages
+    const keyError = e.target.closest('sl-tree-item').querySelector('#key-error')
+    const valueError = e.target.closest('sl-tree-item').querySelector('#value-error')
+    keyError.hidden = true
+    valueError.hidden = true
+    
     const form = e.target.closest('sl-tree-item').querySelector('.input-validation-pattern');
     
     // Wait for controls to be defined before attaching form listeners
@@ -510,15 +578,8 @@ class SourceTree extends LitElement {
     ]);
 
     if (form.checkValidity()) {
+      // Insert the new key-value pair
       this.handleClickInsert(e, fullPath);
-    } else {
-      const keyInputElement = e.target.closest('sl-tree-item').querySelector('#new-key');
-      const typeInputElement = e.target.closest('sl-tree-item').querySelector('#new-type');
-      const valueInputElement = e.target.closest('sl-tree-item').querySelector('#new-value');
-      console.log(keyInputElement.validity)
-      console.log(valueInputElement.validity)
-      // valueInputElement.setCustomValidity(`This input field is required. Make sure to follow the appropriate format: ${errorMessage[typeInputElement.value]}`);
-      // alert('Please fill out all required fields correctly.');
     }
   }
 
