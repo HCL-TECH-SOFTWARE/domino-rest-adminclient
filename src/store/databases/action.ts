@@ -586,7 +586,8 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
                 isMultiValue: isMultiValue,
                 fieldAccess: 'RO',
                 format: 'string',
-                type: type
+                type: type,
+                kind: "",
               });
             } else {
               let field = res.data[key];
@@ -603,7 +604,8 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
                 isMultiValue: allowMultiValues,
                 fieldAccess: fieldAccess,
                 format: format,
-                type: type
+                type: type,
+                kind: field.kind,
               });
             }
           }

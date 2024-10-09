@@ -7,10 +7,11 @@
 import React, { useContext } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import styled from 'styled-components';
-import { Typography } from '@mui/material';
+import { Button, Tooltip, Typography } from '@mui/material';
 import { ItemContainer } from './styles';
 import { AccessContext } from './AccessContext';
 import { capitalizeFirst } from '../../utils/common';
+import { InfoOutlined } from '@mui/icons-material';
 
 const FieldInfo = styled.div`
   display: flex;
@@ -68,6 +69,10 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
       moveTo([item], 'read');
     }
   };
+  const kindReadableText = {
+    computedfordisplay: "computed with display",
+    computedwhencomposed: "computed when composed",
+  }
 
   return (
     <ItemContainer onClick={(e: React.MouseEvent<HTMLElement>) => {
@@ -94,6 +99,9 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
           {capitalizeFirst(item.format)}
         </Typography>
       </FieldInfo>
+      {item.kind.length > 0 && <Tooltip arrow className='add-field' title={`This field is ${item.kind in kindReadableText ? kindReadableText[item.kind as keyof typeof kindReadableText] : item.kind}`}>
+        <InfoOutlined />
+      </Tooltip>}
     </ItemContainer>
   );
 };
