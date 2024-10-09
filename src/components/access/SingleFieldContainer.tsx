@@ -70,7 +70,7 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
     }
   };
   const kindReadableText = {
-    computedfordisplay: "computed with display",
+    computedfordisplay: "computed for display",
     computedwhencomposed: "computed when composed",
   }
 
