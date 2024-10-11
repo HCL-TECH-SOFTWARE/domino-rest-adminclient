@@ -50,7 +50,7 @@ export const TextEditorContainer = styled.div`
   overflow-y: scroll;
   border-radius: 5px;
   border: 1px solid #BFBFBF;
-  padding: 20px;
+  padding: 5px 20px;
   gap: 16px;
   background-color: #FFF;
 
@@ -59,11 +59,13 @@ export const TextEditorContainer = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0;
   }
 
   .settings-text {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
+    padding: 0;
   }
 
   .formulas-container {

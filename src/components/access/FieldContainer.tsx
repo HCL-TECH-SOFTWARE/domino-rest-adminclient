@@ -37,13 +37,13 @@ const ConfigFieldContainer = styled.div`
   }
 
   .name {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
     color: #000;
   }
 
   .setting {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #000;
     width: 100%;
@@ -54,6 +54,7 @@ const ConfigFieldContainer = styled.div`
     padding: 10px 20px 0 20px;
     display: flex;
     flex-wrap: wrap;
+    row-gap: 8px;
   }
 
   .input {
@@ -209,16 +210,20 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
         <Typography className='name'>{item.name}</Typography>
       </Box>
       <HorizontalDivider />
-      <Box style={{ height: '100%' }}>
+      <Box>
         <Typography className='setting'>Field Setting</Typography>
         <Box className='details'>
           <Box className='input'>
             <TextField 
               label="Field Name" 
-              value={editedItem.externalName} 
-              style={{"width":"50%"}}
+              value={editedItem.content} 
+              style={{ "width": "50%", fontSize: '14px' }}
               onChange={handleFieldNameChange} 
               id="field-name"
+              size='small'
+              slotProps={{
+                input: { style: { fontSize: '14px' } }
+              }}
             />
           </Box>
           <Box className='input'>
@@ -229,6 +234,10 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               label="Field Type"
               select
               id='field-type'
+              size='small'
+              slotProps={{
+                input: { style: { fontSize: '14px' } }
+              }}
             >
               <MenuItem value={"authors"}>authors</MenuItem>
               <MenuItem value={"binary"}>binary</MenuItem>
@@ -255,6 +264,10 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               label="Access"
               select
               id='field-access'
+              size='small'
+              slotProps={{
+                input: { style: { fontSize: '14px' } }
+              }}
             >
               <MenuItem value={"RW"}>Read/Write</MenuItem>
               <MenuItem value={"RO"}>Read Only</MenuItem>
@@ -267,7 +280,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             arrow
           >
             <Box className='input' style={{ display: 'flex', alignItems: 'center' }}>
-              <Typography style={{ width: 'fit-content' }}>
+              <Typography style={{ width: 'fit-content', fontSize: '14px' }}>
                 Multi-Value?
               </Typography>
               <BlueSwitch 
@@ -288,16 +301,20 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 onChange={handleFieldGroupChange} 
                 disabled={!isMultiValue} 
                 id='field-group'
+                size='small'
+                slotProps={{
+                  input: { style: { fontSize: '14px' } }
+                }}
               />
             </Box>
           </Tooltip>
           <EncryptSignOptions>
             <section className='main-row'>
-              <text>
+              <text style={{ fontSize: '14px' }}>
                 Encrypt
               </text>
               <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
-                <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '16px' }} />
+                <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '14px' }} />
               </Tooltip>
               <BlueSwitch size='small' checked={encrypt} onChange={toggleEncrypt} />
             </section>
