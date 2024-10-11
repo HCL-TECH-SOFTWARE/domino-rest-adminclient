@@ -24,23 +24,23 @@ const AccessContainer = styled.div`
   gap: 10px;
 
   .title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
   }
 
   .formula-container {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
   }
 
   .no-formula {
     font-weight: 300;
     color: #7B808D;
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .computed {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
     font-style: italic;
     color: #475155;

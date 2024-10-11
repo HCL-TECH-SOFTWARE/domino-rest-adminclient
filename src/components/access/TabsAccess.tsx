@@ -96,8 +96,9 @@ const PagerAction = styled.div`
   justify-content: flex-end;
 
   .action-icon {
-    font-size: 18px;
+    font-size: 16px;
     margin-right: 5px;
+    padding: 0;
   }
   .MuiButton-text {
     white-space: nowrap;
