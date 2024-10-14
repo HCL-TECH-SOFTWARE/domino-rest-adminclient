@@ -4,19 +4,9 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-export function fullEncode (name: string) {
-  let encodedName = "";
-  for (let i = 0; i < name.length; i++) {
-    if (name[i] === '[' || name[i] === '!' || name[i] === ']' || name[i] === '(' || name[i] === ')' || name[i] === '*' || name[i] === '\\' || name[i] === '/' || name[i] === '$' || name[i] === '&') {
-      encodedName += '%' + name[i].charCodeAt(0).toString(16);
-    } else if (name[i] === undefined) {
-      encodedName += ''
-    } else {
-      encodedName += name[i]
-    }
-  };
-  return encodedName
-};
+export function fullEncode(name: string): string {
+  return name.replace(/[\[\]!()\*\\\/$&']/g, (char) => '%' + char.charCodeAt(0).toString(16));
+}
 
 // Function to insert a character or string inside another string for every interval of characters
 export function insertCharacter (inputString: string, interval: number, insertChar: string) {
