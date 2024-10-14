@@ -321,6 +321,10 @@ class SourceTree extends LitElement {
         const fullPath = path ? `${path}.${key}` : key
         const isObjectOrArray = typeof value === 'object' && value !== null;
         const isModified = this.currentInputValues[fullPath] !== value;
+        const keyNames = fullPath.split('.')
+        const element = keyNames[keyNames.length - 2]
+        const isArrayChild = !isNaN(keyNames[keyNames.length - 1])
+        const label = isArrayChild && isObjectOrArray ? value[getLabelName(element, key)] : key
 
         return html`
           <sl-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @sl-lazy-load="${isObjectOrArray ? (e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
@@ -328,9 +332,9 @@ class SourceTree extends LitElement {
             <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
             <section class="${isObjectOrArray ? 'object-array-container' : `key-value-container ${isModified ? 'modified' : ''}`}">
               ${isObjectOrArray ? html`
-                ${`${key} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
+                ${`${label} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
               ` : html`
-                <span>${key}:</span>
+                <span>${label}:</span>
                 <input
                   id="input-${fullPath}"
                   data-id="input-${fullPath}"
