@@ -103,6 +103,27 @@ function parseItem(item) {
   // Default to string
   return item;
 }
+
+function getLabelName(arrayName, key) {
+  switch (arrayName) {
+    case 'forms':
+      return 'formName'
+    case 'views':
+    case 'agents':
+    case 'fields':
+    case 'readAccessFields':
+    case 'writeAccessFields':
+    case 'columns':
+      return 'name'
+    case 'formModes':
+      return 'modeName'
+    case 'itemFlags':
+    case 'alias':
+      return '0'
+    default:
+      return key
+  }
+}
 class SourceTree extends LitElement {
   static properties = {
     content: { type: Object },
