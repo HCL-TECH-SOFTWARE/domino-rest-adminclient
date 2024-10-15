@@ -7,12 +7,14 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { TextEditorContainer } from './styles';
-import { Box, Button, ButtonBase, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, ButtonBase, Collapse, TextField, Tooltip, Typography } from '@mui/material';
 import { FiEdit2 } from 'react-icons/fi';
 import CloseIcon from '@mui/icons-material/Close';
 import { BlueSwitch, ButtonNeutral, ButtonYes, EncryptSignOptions } from '../../styles/CommonStyles';
 import TestIcon from '@mui/icons-material/PlayArrow';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const AccessContainer = styled.div`
   border: 1px solid #A5AFBE;
@@ -131,6 +133,7 @@ interface ScriptEditorProps {
 const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) => {
   const [formulaTitle, setFormulaTitle] = useState("")
   const [formula, setFormula] = useState("")
+  const [expanded, setExpanded] = useState(false)
   const [formComputed, setFormComputed] = useState(data.computeWithForm)
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -207,17 +210,27 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
     })
   }
 
+  const handleClickExpand = () => {
+    setExpanded(!expanded)
+  }
+
   return (
     <TextEditorContainer>
       <Box className='settings-header'>
         <Typography className='settings-text'>Mode Settings</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
         <Button onClick={test}>
           <TestIcon className='action-icon' color='primary' />
           <Typography variant='body2' color='textPrimary'>
             Test Formulas
           </Typography>
         </Button>
+        <Button className='expand-button' onClick={handleClickExpand}>
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </Button>
+        </Box>
       </Box>
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
       <Box className='formulas-container'>
         <AccessContainer>
           <FormulaHeader>
@@ -334,6 +347,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test }) =
           <ButtonNeutral sx={{ border: '1px solid #000' }} onClick={handleClickCancel}>Cancel</ButtonNeutral>
         </Box>
       </EditFormulaDialog>
+      </Collapse>
     </TextEditorContainer>
   );
 };
