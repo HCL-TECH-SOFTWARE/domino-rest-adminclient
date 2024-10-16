@@ -2323,7 +2323,7 @@ export const saveNewForm = (
       fields: form.fields
     };
     await axios
-      .put(`${SETUP_KEEP_API_URL}/design/forms/${form.formName}?nsfPath=${nsfPath}`, formData, {
+      .put(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${nsfPath}`, formData, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
           'Content-Type': 'application/json'
