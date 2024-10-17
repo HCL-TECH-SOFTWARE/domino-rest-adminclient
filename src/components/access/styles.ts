@@ -72,6 +72,12 @@ export const TextEditorContainer = styled.div`
     display: flex;
     width: 100%;
     justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .expand-button {
+    padding: 0;
+    margin: 0;
   }
 `;
 
