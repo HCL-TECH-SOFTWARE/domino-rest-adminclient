@@ -17,7 +17,7 @@ export interface HistoryState {
 // Describing the different ACTION NAMES available
 export const ADD_HISTORY = 'ADD_HISTORY';
 
-interface AddHistory {
+export interface AddHistory {
   type: typeof ADD_HISTORY;
   payload: KeepHistory;
 }
