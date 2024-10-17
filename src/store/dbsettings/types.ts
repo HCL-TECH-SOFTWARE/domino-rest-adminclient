@@ -11,7 +11,7 @@ export interface DBSettingDialogState {
 // Describing the different ACTION NAMES available
 export const TOGGLE_DBSETTING_DIALOG = 'TOGGLE_DBSETTING_DIALOG';
 
-interface ToggleDialog {
+export interface ToggleDialog {
   type: typeof TOGGLE_DBSETTING_DIALOG;
 }
 

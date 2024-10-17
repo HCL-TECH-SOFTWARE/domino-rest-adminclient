@@ -15,7 +15,7 @@ export interface InterceptorState {
 
 export const SET_CALL_STATUS = 'SET_CALL_STATUS';
 
-interface SetCallStatus {
+export interface SetCallStatus {
   type: typeof SET_CALL_STATUS;
   payload: IResponseProp;
 }
