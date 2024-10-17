@@ -1,10 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import App from "./App";
-import configureStore from "./store";
 import { Provider } from "react-redux";
+import { store } from "./store";
 
 test("renders home page", () => {
-  const store = configureStore();
 
   render(<Provider store={store}><App /></Provider>);
   const linkElement = screen.getByText(/login your account/i);
