@@ -305,6 +305,10 @@ const FormsContainer = () => {
   const handleSaveChanges = async () => {
     setSaveChangesDialog(false)
     dispatch(updateSchema(editedContent, setSchemaData) as any)
+    pullForms()
+    pullSubForms()
+    dispatch(fetchViews(dbName, nsfPath) as any)
+    dispatch(fetchAgents(dbName, nsfPath) as any)
   }
 
   const handleClickCancel = () => {
