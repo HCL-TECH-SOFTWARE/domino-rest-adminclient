@@ -46,6 +46,7 @@ import { TopContainer } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
 import EditViewDialog from './EditView';
 import { LitSource } from '../lit-elements/LitElements';
+import { Editor } from '@monaco-editor/react';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -570,7 +571,8 @@ const FormsContainer = () => {
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />
-                <LitSource content={JSON.parse(sourceTabContent)} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} />
+                {/* <LitSource content={JSON.parse(sourceTabContent)} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} /> */}
+                <Editor height="90vh" defaultLanguage="json" defaultValue="// some comment" />
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer>
                     <DialogTitle className='title'>
