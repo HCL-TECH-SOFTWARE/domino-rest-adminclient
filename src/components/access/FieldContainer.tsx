@@ -171,7 +171,8 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   };
 
   const handleFieldNameChange = (event: any) => {
-    const newItem = {...editedItem, "externalName": event.target.value};
+    const newValue = event.target.value;
+    const newItem = {...editedItem, "externalName": newValue === '' ? '' : newValue, "content": newValue === '' ? '' : newValue};
     update(itemIndex, droppableIndex, newItem);
     setEditedItem(newItem)
   }
@@ -216,7 +217,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
           <Box className='input'>
             <TextField 
               label="Field Name" 
-              value={!!editedItem.externalName ? editedItem.externalName : editedItem.content} 
+              value={!!editedItem.externalName ? editedItem.externalName || '' : editedItem.content || ''} 
               style={{ "width": "50%", fontSize: '14px' }}
               onChange={handleFieldNameChange} 
               id="field-name"
