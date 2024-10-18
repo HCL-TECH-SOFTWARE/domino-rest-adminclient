@@ -216,7 +216,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
           <Box className='input'>
             <TextField 
               label="Field Name" 
-              value={editedItem.content} 
+              value={!!editedItem.externalName ? editedItem.externalName : editedItem.content} 
               style={{ "width": "50%", fontSize: '14px' }}
               onChange={handleFieldNameChange} 
               id="field-name"
