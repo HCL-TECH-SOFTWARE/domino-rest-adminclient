@@ -183,6 +183,8 @@ const FormsContainer = () => {
   const [editedContent, setEditedContent] = useState({})
   
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
+  const [monacoEditorContent, setMonacoEditorContent] = useState(JSON.stringify(schemaData, null, 4))
+  const [parsedContent, setParsedContent] = useState({})
   const [buttonsEnabled, setButtonsEnabled] = useState(false);
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
   const [discardChangesDialog, setDiscardChangesDialog] = useState(false);
@@ -191,6 +193,8 @@ const FormsContainer = () => {
 
   const [viewOpen, setViewOpen] = useState(false);
   const [openViewName, setOpenViewName] = useState('');
+
+  const editorRef = useRef<any>(null)
 
   const pullSubForms = async () => {
     try {
@@ -217,7 +221,17 @@ const FormsContainer = () => {
 
   useEffect(() => {
     setSourceTabContent(JSON.stringify(schemaData, null, 1))
+    setMonacoEditorContent(JSON.stringify(schemaData, null, 1))
   }, [dbName, nsfPathDecode, schemaData])
+
+  // useEffect(() => {
+  //   console.log(sourceTabContent)
+  //   try {
+  //     setParsedContent(JSON.parse(sourceTabContent))
+  //   } catch (e) {
+  //     setParsedContent(schemaData)
+  //   }
+  // }, [sourceTabContent])
 
   /**
    * Retrieve the information for a particular database and
@@ -296,6 +310,8 @@ const FormsContainer = () => {
   };
 
   const handleClickSave = async () => {
+    // showValue();
+    setSourceTabContent(showValue())
     if (litsourceRef.current && litsourceRef.current.shadowRoot) {
       setEditedContent(litsourceRef.current.content)
       setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
@@ -509,6 +525,24 @@ const FormsContainer = () => {
     setStyledObjMode(!styledObjMode);
   };
 
+  const handleMonacoEditorChange = (value: any) => {
+    // console.log(value)
+    // setMonacoEditorContent(value)
+    // setUnsavedChanges(true)
+  }
+
+  const handleMonacoEditorValidate = (markers: any) => {
+    console.log(markers)
+  }
+
+  const handleEditorDidMount = (editor: any, monaco: any) => {
+    editorRef.current = editor;
+  }
+
+  const showValue = () => {
+    return editorRef.current.getValue()
+  }
+
   useEffect(() => {
     dispatch(fetchFolders(dbName, nsfPath) as any)
   }, [dbName, dispatch, nsfPath])
@@ -575,8 +609,21 @@ const FormsContainer = () => {
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />
-                {/* <LitSource content={JSON.parse(sourceTabContent)} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} /> */}
-                <Editor height="90vh" defaultLanguage="json" defaultValue="// some comment" />
+                <LitSource content={sourceTabContent} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} />
+                <Editor
+                  height='70vh'
+                  defaultLanguage="json"
+                  defaultValue={monacoEditorContent}
+                  onMount={handleEditorDidMount}
+                  // onChange={handleMonacoEditorChange}
+                />
+                <button onClick={showValue}>Click me for the value</button>
+                {/* <Editor
+                  height='70vh'
+                  defaultLanguage="json"
+                  defaultValue='// some comment'
+                  onChange={(value) => console.log(value)}
+                /> */}
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer>
                     <DialogTitle className='title'>
