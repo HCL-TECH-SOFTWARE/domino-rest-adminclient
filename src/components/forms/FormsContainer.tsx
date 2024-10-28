@@ -182,7 +182,7 @@ const FormsContainer = () => {
   const [editedContent, setEditedContent] = useState({})
   
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
-  const [buttonsEnabled, setButtonsEnabled] = useState(false);
+  const [selectedOption, setSelectedOption] = useState('tree');
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
   const [discardChangesDialog, setDiscardChangesDialog] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
@@ -574,7 +574,14 @@ const FormsContainer = () => {
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />
-                <LitSource content={JSON.parse(sourceTabContent)} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} />
+                <LitSource
+                  content={JSON.parse(sourceTabContent)}
+                  selectedOption={selectedOption}
+                  onSave={handleClickSave}
+                  onCancel={handleClickCancel}
+                  onDropdownChange={setSelectedOption}
+                  ref={litsourceRef}
+                />
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer>
                     <DialogTitle className='title'>

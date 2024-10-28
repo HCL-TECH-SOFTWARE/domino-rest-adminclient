@@ -75,27 +75,26 @@ class SourceContents extends LitElement {
     content: { type: Object },
     onSave: { type: Function },
     onCancel: { type: Function },
+    onDropdownChange: { type: Function },
   };
 
   constructor() {
     super()
-    this.selectedOption = 'tree'
+    this.selectedOption = ''
     this.content = {}
     this.onSave = () => {}
     this.onCancel = () => {}
+    this.onDropdownChange = (newOption) => {}
   }
 
   handleDropdownChange(event) {
     const newOption = event.target.value
-    if (newOption === 'text' && this.selectedOption !== 'text') {
-        const confirmSwitch = confirm('Switching to text view will discard any current changes. Do you want to proceed?');
-        if (confirmSwitch) {
-            this.selectedOption = newOption
-        } else {
-            event.target.value = this.selectedOption
-        }
-    } else {
+    const confirmSwitch = confirm('Switching the view will discard any current changes. Do you want to proceed?');
+    if (confirmSwitch) {
         this.selectedOption = newOption
+        this.onDropdownChange(newOption)
+    } else {
+        event.target.value = this.selectedOption
     }
   }
 
@@ -147,7 +146,7 @@ class SourceContents extends LitElement {
   render() {
     return html`
         <header>
-            <select @change="${this.handleDropdownChange}">
+            <select @change="${this.handleDropdownChange}" .value="${this.selectedOption}">
                 <option value="tree">Tree View</option>
                 <option value="text">Text View</option>
             </select>
@@ -158,12 +157,12 @@ class SourceContents extends LitElement {
                 </section>
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
                     <section>
-                        <button title="Cancel" style="color: ${this.selectedOption === 'tree' ? '#ED0000' : '#A9A9A9'};" @click="${this.handleCancelClick}" ?disabled="${this.selectedOption !== 'tree'}">
+                        <button title="Cancel" style="color: #ED0000" @click="${this.handleCancelClick}" ?disabled="${this.selectedOption !== 'tree'}">
                             <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg"></sl-icon>
                         </button>
                     </section>
                     <section>
-                        <button title="Save" style="color: ${this.selectedOption === 'tree' ? '#007E0D' : '#A9A9A9'};" @click="${this.handleSaveClick}" ?disabled="${this.selectedOption !== 'tree'}">
+                        <button title="Save" style="color: #007E0D" @click="${this.handleSaveClick}" ?disabled="${this.selectedOption !== 'tree'}">
                             <sl-icon src="${IMG_DIR}/shoelace/floppy.svg"></sl-icon>
                         </button>
                     </section>
@@ -174,7 +173,7 @@ class SourceContents extends LitElement {
             ${this.selectedOption === 'tree' ? html`
                 <lit-source-tree .content="${this.content}"></lit-source-tree>
                 ` : html`
-                <textarea disabled>${JSON.stringify(this.content, null, 2)}</textarea>
+                <section></section>
             `}
         </main>
     `;
