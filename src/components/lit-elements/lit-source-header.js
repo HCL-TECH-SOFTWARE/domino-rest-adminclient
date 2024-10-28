@@ -157,12 +157,12 @@ class SourceContents extends LitElement {
                 </section>
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
                     <section>
-                        <button title="Cancel" style="color: #ED0000" @click="${this.handleCancelClick}" ?disabled="${this.selectedOption !== 'tree'}">
+                        <button title="Cancel" style="color: #ED0000" @click="${this.handleCancelClick}">
                             <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg"></sl-icon>
                         </button>
                     </section>
                     <section>
-                        <button title="Save" style="color: #007E0D" @click="${this.handleSaveClick}" ?disabled="${this.selectedOption !== 'tree'}">
+                        <button title="Save" style="color: #007E0D" @click="${this.handleSaveClick}">
                             <sl-icon src="${IMG_DIR}/shoelace/floppy.svg"></sl-icon>
                         </button>
                     </section>
