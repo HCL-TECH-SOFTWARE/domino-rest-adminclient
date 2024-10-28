@@ -311,16 +311,20 @@ const FormsContainer = () => {
 
   const handleClickSave = async () => {
     // showValue();
-    setSourceTabContent(showValue())
     if (litsourceRef.current && litsourceRef.current.shadowRoot) {
+      // console.log(litsourceRef.current.selectedOption)
+      // console.log(showValue())
       setEditedContent(litsourceRef.current.content)
       setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
+      // setEditedContent(JSON.parse(showValue()))
+      // setSourceTabContent(showValue())
     }
     setSaveChangesDialog(true);
   }
 
   const handleSaveChanges = async () => {
     setSaveChangesDialog(false)
+    console.log(editedContent)
     dispatch(updateSchema(editedContent, setSchemaData) as any)
     pullForms()
     pullSubForms()
@@ -540,6 +544,7 @@ const FormsContainer = () => {
   }
 
   const showValue = () => {
+    // Return value is a string, will need to parse after calling this
     return editorRef.current.getValue()
   }
 
@@ -610,19 +615,12 @@ const FormsContainer = () => {
               <TabPanel value={value} index={3}>
                 <TopNavigator />
                 <LitSource content={sourceTabContent} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} />
-                <Editor
-                  height='70vh'
-                  defaultLanguage="json"
-                  defaultValue={monacoEditorContent}
-                  onMount={handleEditorDidMount}
-                  // onChange={handleMonacoEditorChange}
-                />
-                <button onClick={showValue}>Click me for the value</button>
                 {/* <Editor
                   height='70vh'
                   defaultLanguage="json"
-                  defaultValue='// some comment'
-                  onChange={(value) => console.log(value)}
+                  defaultValue={sourceTabContent}
+                  onMount={handleEditorDidMount}
+                  // onChange={handleMonacoEditorChange}
                 /> */}
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer>
