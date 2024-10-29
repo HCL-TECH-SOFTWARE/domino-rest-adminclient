@@ -75,27 +75,28 @@ class SourceContents extends LitElement {
     content: { type: Object },
     onSave: { type: Function },
     onCancel: { type: Function },
+    onDropdownChange: { type: Function },
+    getExternalContent: { type: Function },
   };
 
   constructor() {
     super()
-    this.selectedOption = 'tree'
+    this.selectedOption = ''
     this.content = {}
     this.onSave = () => {}
     this.onCancel = () => {}
+    this.onDropdownChange = (newOption) => {}
+    this.getExternalContent = () => {}
   }
 
   handleDropdownChange(event) {
     const newOption = event.target.value
-    if (newOption === 'text' && this.selectedOption !== 'text') {
-        const confirmSwitch = confirm('Switching to text view will discard any current changes. Do you want to proceed?');
-        if (confirmSwitch) {
-            this.selectedOption = newOption
-        } else {
-            event.target.value = this.selectedOption
-        }
-    } else {
+    const confirmSwitch = confirm('Switching the view will discard any current changes. Do you want to proceed?');
+    if (confirmSwitch) {
         this.selectedOption = newOption
+        this.onDropdownChange(newOption)
+    } else {
+        event.target.value = this.selectedOption
     }
   }
 
@@ -114,7 +115,12 @@ class SourceContents extends LitElement {
   }
 
   handleCopyClick() {
-    const content = this.getEditedContent();
+    let content;
+    if (this.selectedOption === 'tree') {
+        content = this.getEditedContent();
+    } else {
+        content = JSON.parse(this.getExternalContent());
+    }
     navigator.clipboard.writeText(JSON.stringify(content, null, 2))
       .then(() => {
         alert('Schema copied to clipboard!')
@@ -125,7 +131,12 @@ class SourceContents extends LitElement {
   }
 
   handleDownloadClick() {
-    const content = this.getEditedContent()
+    let content;
+    if (this.selectedOption === 'tree') {
+        content = this.getEditedContent();
+    } else {
+        content = JSON.parse(this.getExternalContent());
+    }
     const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -147,7 +158,7 @@ class SourceContents extends LitElement {
   render() {
     return html`
         <header>
-            <select @change="${this.handleDropdownChange}">
+            <select @change="${this.handleDropdownChange}" .value="${this.selectedOption}">
                 <option value="tree">Tree View</option>
                 <option value="text">Text View</option>
             </select>
@@ -158,12 +169,12 @@ class SourceContents extends LitElement {
                 </section>
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
                     <section>
-                        <button title="Cancel" style="color: ${this.selectedOption === 'tree' ? '#ED0000' : '#A9A9A9'};" @click="${this.handleCancelClick}" ?disabled="${this.selectedOption !== 'tree'}">
+                        <button title="Cancel" style="color: #ED0000" @click="${this.handleCancelClick}">
                             <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg"></sl-icon>
                         </button>
                     </section>
                     <section>
-                        <button title="Save" style="color: ${this.selectedOption === 'tree' ? '#007E0D' : '#A9A9A9'};" @click="${this.handleSaveClick}" ?disabled="${this.selectedOption !== 'tree'}">
+                        <button title="Save" style="color: #007E0D" @click="${this.handleSaveClick}">
                             <sl-icon src="${IMG_DIR}/shoelace/floppy.svg"></sl-icon>
                         </button>
                     </section>
@@ -174,7 +185,7 @@ class SourceContents extends LitElement {
             ${this.selectedOption === 'tree' ? html`
                 <lit-source-tree .content="${this.content}"></lit-source-tree>
                 ` : html`
-                <textarea disabled>${JSON.stringify(this.content, null, 2)}</textarea>
+                <section></section>
             `}
         </main>
     `;

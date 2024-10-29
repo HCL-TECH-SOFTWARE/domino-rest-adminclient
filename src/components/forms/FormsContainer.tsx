@@ -46,6 +46,7 @@ import { TopContainer } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
 import EditViewDialog from './EditView';
 import { LitSource } from '../lit-elements/LitElements';
+import { Editor } from '@monaco-editor/react';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -182,7 +183,7 @@ const FormsContainer = () => {
   const [editedContent, setEditedContent] = useState({})
   
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
-  const [buttonsEnabled, setButtonsEnabled] = useState(false);
+  const [selectedOption, setSelectedOption] = useState('tree');
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
   const [discardChangesDialog, setDiscardChangesDialog] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
@@ -190,6 +191,8 @@ const FormsContainer = () => {
 
   const [viewOpen, setViewOpen] = useState(false);
   const [openViewName, setOpenViewName] = useState('');
+
+  const editorRef = useRef<any>(null)
 
   const pullSubForms = async () => {
     try {
@@ -296,8 +299,13 @@ const FormsContainer = () => {
 
   const handleClickSave = async () => {
     if (litsourceRef.current && litsourceRef.current.shadowRoot) {
-      setEditedContent(litsourceRef.current.content)
-      setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
+      if (selectedOption === 'text') {
+        setEditedContent(JSON.parse(showValue()))
+        setSourceTabContent(showValue())
+      } else if (selectedOption === 'tree') {
+        setEditedContent(litsourceRef.current.content)
+        setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
+      }
     }
     setSaveChangesDialog(true);
   }
@@ -327,6 +335,15 @@ const FormsContainer = () => {
   const handleClickNo = () => {
     setSourceTabContent(JSON.stringify(editedContent, null, 1))
     setSaveChangesDialog(false)
+  }
+
+  const handleEditorDidMount = (editor: any, monaco: any) => {
+    editorRef.current = editor;
+  }
+
+  const showValue = () => {
+    // Return value is a string, will need to parse after calling this
+    return editorRef.current.getValue()
   }
 
   const handleClickExport = () => {
@@ -388,7 +405,6 @@ const FormsContainer = () => {
   useEffect(() => {
     if (updateSchemaError) {
       setSourceTabContent(JSON.stringify(schemaData, null, 1));
-      setButtonsEnabled(true);
     }
   }, [updateSchemaError, schemaData, dbName, nsfPathDecode])
 
@@ -574,7 +590,21 @@ const FormsContainer = () => {
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />
-                <LitSource content={JSON.parse(sourceTabContent)} onSave={handleClickSave} onCancel={handleClickCancel} ref={litsourceRef} />
+                <LitSource
+                  content={JSON.parse(sourceTabContent)}
+                  selectedOption={selectedOption}
+                  onSave={handleClickSave}
+                  onCancel={handleClickCancel}
+                  onDropdownChange={setSelectedOption}
+                  getExternalContent={showValue}
+                  ref={litsourceRef}
+                />
+                {selectedOption === 'text' && <Editor
+                  height='70vh'
+                  defaultLanguage="json"
+                  defaultValue={sourceTabContent}
+                  onMount={handleEditorDidMount}
+                />}
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer>
                     <DialogTitle className='title'>
