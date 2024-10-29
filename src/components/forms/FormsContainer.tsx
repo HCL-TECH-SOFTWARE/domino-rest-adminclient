@@ -596,6 +596,7 @@ const FormsContainer = () => {
                   onSave={handleClickSave}
                   onCancel={handleClickCancel}
                   onDropdownChange={setSelectedOption}
+                  getExternalContent={showValue}
                   ref={litsourceRef}
                 />
                 {selectedOption === 'text' && <Editor

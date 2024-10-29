@@ -76,6 +76,7 @@ class SourceContents extends LitElement {
     onSave: { type: Function },
     onCancel: { type: Function },
     onDropdownChange: { type: Function },
+    getExternalContent: { type: Function },
   };
 
   constructor() {
@@ -85,6 +86,7 @@ class SourceContents extends LitElement {
     this.onSave = () => {}
     this.onCancel = () => {}
     this.onDropdownChange = (newOption) => {}
+    this.getExternalContent = () => {}
   }
 
   handleDropdownChange(event) {
@@ -113,7 +115,12 @@ class SourceContents extends LitElement {
   }
 
   handleCopyClick() {
-    const content = this.getEditedContent();
+    let content;
+    if (this.selectedOption === 'tree') {
+        content = this.getEditedContent();
+    } else {
+        content = JSON.parse(this.getExternalContent());
+    }
     navigator.clipboard.writeText(JSON.stringify(content, null, 2))
       .then(() => {
         alert('Schema copied to clipboard!')
@@ -124,7 +131,12 @@ class SourceContents extends LitElement {
   }
 
   handleDownloadClick() {
-    const content = this.getEditedContent()
+    let content;
+    if (this.selectedOption === 'tree') {
+        content = this.getEditedContent();
+    } else {
+        content = JSON.parse(this.getExternalContent());
+    }
     const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
