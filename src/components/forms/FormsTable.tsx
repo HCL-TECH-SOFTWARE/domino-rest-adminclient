@@ -241,7 +241,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
           [...schemaData.forms, newForm],
           setSchemaData,
           `${formName} activated successfully.`,
-          () => {navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(formName)}/access`)},
+          () => {navigate(`/schema/${fullEncode(nsfPath)}/${dbName}/${fullEncode(formName)}/access`)},
         ) as any
       );
     } else {

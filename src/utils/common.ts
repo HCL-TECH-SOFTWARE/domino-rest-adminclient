@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 export function fullEncode(name: string): string {
-  return name.replace(/[\[\]!()\*\\\/$&']/g, (char) => '%' + char.charCodeAt(0).toString(16));
+  return name.replace(/[\[\]!()\*\\\/$&'#]/g, (char) => '%' + char.charCodeAt(0).toString(16));
 }
 
 // Function to insert a character or string inside another string for every interval of characters
