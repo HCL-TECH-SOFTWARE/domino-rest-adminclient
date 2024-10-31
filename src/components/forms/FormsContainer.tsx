@@ -47,6 +47,9 @@ import { toggleAlert } from '../../store/alerts/action';
 import EditViewDialog from './EditView';
 import { LitSource } from '../lit-elements/LitElements';
 import { Editor } from '@monaco-editor/react';
+import { loader } from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
+loader.config({ monaco });
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
