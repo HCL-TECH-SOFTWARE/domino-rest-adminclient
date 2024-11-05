@@ -48,9 +48,35 @@ import EditViewDialog from './EditView';
 import { LitSource } from '../lit-elements/LitElements';
 import { Editor } from '@monaco-editor/react';
 import loader from '@monaco-editor/loader';
-import * as monaco from 'monaco-editor';
+import * as monaco from '../../modules/monaco-editor';
+import editorWorker from '../../modules/monaco-editor/esm/vs/editor/editor.worker.js';
+import jsonWorker from '../../modules/monaco-editor/esm/vs/language/json/json.worker.js';
+import cssWorker from '../../modules/monaco-editor/esm/vs/language/css/css.worker?worker';
+import htmlWorker from '../../modules/monaco-editor/esm/vs/language/html/html.worker?worker';
+import tsWorker from '../../modules/monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+
+self.MonacoEnvironment = {
+  getWorker(_, label) {
+    if (label === 'json') {
+      return new jsonWorker();
+    }
+    if (label === 'css' || label === 'scss' || label === 'less') {
+      return new cssWorker();
+    }
+    if (label === 'html' || label === 'handlebars' || label === 'razor') {
+      return new htmlWorker();
+    }
+    if (label === 'typescript' || label === 'javascript') {
+      return new tsWorker();
+    }
+    return new editorWorker();
+  },
+};
 
 loader.config({ monaco });
+
+// loader.config({ paths: { vs: `${MONACO_EDITOR_DIR}/min/vs` } });
+loader.config({ paths: { vs: `../../modules/monaco-editor/min/vs` } });
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
