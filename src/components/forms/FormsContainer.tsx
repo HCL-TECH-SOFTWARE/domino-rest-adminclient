@@ -21,7 +21,7 @@ import {
 import { AppState } from '../../store';
 import { getDatabaseIndex } from '../../store/databases/scripts';
 import DetailsSection from './DetailsSection';
-import { KEEP_ADMIN_BASE_COLOR, SETUP_KEEP_API_URL } from '../../config.dev';
+import { KEEP_ADMIN_BASE_COLOR, MONACO_EDITOR_DIR, SETUP_KEEP_API_URL } from '../../config.dev';
 import {
   setForms,
   setCurrentForms,
@@ -47,6 +47,9 @@ import { toggleAlert } from '../../store/alerts/action';
 import EditViewDialog from './EditView';
 import { LitSource } from '../lit-elements/LitElements';
 import { Editor } from '@monaco-editor/react';
+import loader from '@monaco-editor/loader';
+
+loader.config({ paths: { vs: `${MONACO_EDITOR_DIR}` } });
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
