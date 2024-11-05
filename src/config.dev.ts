@@ -17,6 +17,7 @@ export const ADMIN_KEEP_API_URL = '/api/admin-v1';
 
 // ASSETS DIRECTORY
 export const IMG_DIR = '/admin/img';
+export const MONACO_EDITOR_DIR = '/admin/monaco-editor-core';
 
 // Theming
 export const KEEP_ADMIN_BASE_COLOR = '#5F1EBE';
