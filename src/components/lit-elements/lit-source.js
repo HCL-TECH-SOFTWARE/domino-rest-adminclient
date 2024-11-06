@@ -377,7 +377,11 @@ class SourceTree extends LitElement {
               <form class="input-validation-pattern">
                 <section class="dialog-content">
                   <section class="dialog-input">
-                    <sl-input label="Key" required id="new-key" @sl-invalid="${this.handleInvalid}"></sl-input>
+                    ${type === 'array' ? 
+                      html`<sl-input label="Key" disabled title="Key is not required when adding to an array"></sl-input>
+                      <sl-input disabled id="new-key" value="${value.length}" style="display: none;"></sl-input>` 
+                      : 
+                      html`<sl-input label="Key" required id="new-key" @sl-invalid="${this.handleInvalid}"></sl-input>`}
                     <div id="key-error" class="dialog-error" aria-live="polite" hidden></div>
                   </section>
                   <section class="dialog-p">
