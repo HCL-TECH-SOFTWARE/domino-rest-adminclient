@@ -325,6 +325,7 @@ class SourceTree extends LitElement {
         const element = keyNames[keyNames.length - 2]
         const isArrayChild = !isNaN(keyNames[keyNames.length - 1])
         const label = isArrayChild && isObjectOrArray ? value[getLabelName(element, key)] : key
+        const type = isObjectOrArray ? Array.isArray(value) ? 'array' : 'object' : 'other'
 
         return html`
           <sl-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @sl-lazy-load="${isObjectOrArray ? (e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
@@ -372,11 +373,15 @@ class SourceTree extends LitElement {
                 </sl-menu>
               </sl-dropdown>
             </section>
-            <dialog id="${fullPath}">
+            <dialog id="${fullPath}" aria-label="${type}">
               <form class="input-validation-pattern">
                 <section class="dialog-content">
                   <section class="dialog-input">
-                    <sl-input label="Key" required id="new-key" @sl-invalid="${this.handleInvalid}"></sl-input>
+                    ${type === 'array' ? 
+                      html`<sl-input label="Key" disabled title="Key is not required when adding to an array"></sl-input>
+                      <sl-input disabled id="new-key" value="${value.length}" style="display: none;"></sl-input>` 
+                      : 
+                      html`<sl-input label="Key" required id="new-key" @sl-invalid="${this.handleInvalid}"></sl-input>`}
                     <div id="key-error" class="dialog-error" aria-live="polite" hidden></div>
                   </section>
                   <section class="dialog-p">
@@ -504,6 +509,7 @@ class SourceTree extends LitElement {
 
   insertItem(e, fullPath) {
     const paths = fullPath.split('.')
+    const keyType = e.target.closest('dialog').getAttribute('aria-label')
     const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
     let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
     const newType = e.target.closest('sl-tree-item').querySelector('#new-type').value
@@ -523,12 +529,13 @@ class SourceTree extends LitElement {
       newValue = JSON.parse(newValue)
     }
     
+    const lastIndex = keyType === "object" || keyType === "array" ? paths.length - 1 : paths.length - 2;
     if (paths.length === 1) {
-      obj[newKey] = newValue
+      keyType === "object" || keyType === "array" ? obj[paths[0]][newKey] = newValue : obj[newKey] = newValue
       e.target.closest('sl-tree-item').querySelector('dialog').close()
     } else {
-      for (let i = 0; i < paths.length - 1; i++) {
-        if (i === paths.length - 2) {
+      for (let i = 0; i <= lastIndex; i++) {
+        if (i === lastIndex) {
           // If we're at the last key in the path, add the new key-value pair
           obj[paths[i]][newKey] = newValue
           e.target.closest('sl-tree-item').querySelector('dialog').close()
