@@ -49,8 +49,6 @@ import { LitSource } from '../lit-elements/LitElements';
 import { Editor } from '@monaco-editor/react';
 import loader from '@monaco-editor/loader';
 
-loader.config({ paths: { vs: `${MONACO_EDITOR_DIR}` } });
-
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
   display: flex;
@@ -219,6 +217,26 @@ const FormsContainer = () => {
       });
     }
   }
+
+  useEffect(() => {
+    // Override the createElement method to set the type attribute on script tags
+    const originalCreateElement = document.createElement.bind(document);
+    document.createElement = (tagName: string, options: any) => {
+      const element = originalCreateElement(tagName, options);
+      if (tagName === 'script') {
+        (element as HTMLScriptElement).type = 'application/javascript';
+      }
+      return element;
+    };
+  
+    // Configure the loader to use the correct path for the copied version
+    loader.config({ paths: { vs: `${MONACO_EDITOR_DIR}` } });
+  
+    // Cleanup function to restore the original createElement method
+    return () => {
+      document.createElement = originalCreateElement;
+    };
+  }, []);
 
   useEffect(() => {
     setSourceTabContent(JSON.stringify(schemaData, null, 1))
