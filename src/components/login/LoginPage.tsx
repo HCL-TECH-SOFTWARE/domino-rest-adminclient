@@ -146,7 +146,6 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
-  const [passkeyLogin, setPasskeyLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [noUsernamePasskey, setNoUsernamePasskey] = useState(false);
   const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
@@ -194,22 +193,6 @@ const LoginPage = () => {
         dispatch(toggleAlert(e));
       })
   };
-
-  const handleClearPasskey = (event: any) => {
-    event.preventDefault();
-    localStorage.removeItem('use_keep_webauth');
-    localStorage.removeItem('keep_user');
-    setUsername('');
-    setPasskeyLogin(false);
-  }
-
-  const handleClickLogInWithUserPass = (event: any)  => {
-    event.preventDefault();
-    setUsername('');
-    setNoUsernamePasskey(false)
-    setNoPasswordPasskey(false);
-    setPasskeyLogin(false);
-  }
 
   const handleLogInWithPasskey = (event: any) => {
     event.preventDefault();
@@ -300,7 +283,6 @@ const LoginPage = () => {
 
     canDoPasskey()
       .then((result: any) => {
-        setPasskeyLogin(result);
         const user = localStorage.getItem('keep_user');
         setUsername(user ? user : '');
       })
@@ -415,36 +397,32 @@ const LoginPage = () => {
                 onChange={formik.handleChange}
                 value={username ? username : formik.values.username}
               />
-              {!passkeyLogin && (
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  size="small"
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  onChange={formik.handleChange}
-                  value={formik.values.password}
-                  autoComplete="off"
-                  autoFocus={error}
-                />
-              )}
-              {!passkeyLogin && (
-                <ButtonSubmit
-                  style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                >
-                  <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                  Log In
-                </ButtonSubmit>
-              )}
-              {passkeyLogin && (
+              <TextField
+                variant="outlined"
+                margin="normal"
+                size="small"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                onChange={formik.handleChange}
+                value={formik.values.password}
+                autoComplete="off"
+                autoFocus={error}
+              />
+              <ButtonSubmit
+                style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+              >
+                <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
+                Log In With Password
+              </ButtonSubmit>
+              {isHttps && (
                 <ButtonSubmit
                   style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
                   type="submit"
@@ -459,7 +437,7 @@ const LoginPage = () => {
               )}
             </StyledForm>
             <PasskeySignUpContainer>
-              {!passkeyLogin && isHttps && (
+              {isHttps && (
                 <Button fullWidth className="text-button">
                   <Typography
                     className="sign-up-text"
@@ -471,28 +449,6 @@ const LoginPage = () => {
                   <Link href="https://passkey.org" target="_blank">
                     <FiInfo className="passkey-icon" size="1.5em" />
                   </Link>
-                </Button>
-              )}
-              {passkeyLogin && (
-                <Button fullWidth className="text-button">
-                  <Typography
-                    className="sign-up-text"
-                    display="block"
-                    onClick={handleClearPasskey}
-                  >
-                    Clear Passkey
-                  </Typography>
-                </Button>
-              )}
-              {passkeyLogin && (
-                <Button fullWidth className="text-button">
-                  <Typography
-                    className="sign-up-text"
-                    display="block"
-                    onClick={handleClickLogInWithUserPass}
-                  >
-                    Log In with Username and Password
-                  </Typography>
                 </Button>
               )}
             </PasskeySignUpContainer>
