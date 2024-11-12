@@ -30,6 +30,11 @@
                 "type": "path",
                 "path": "/admin",
                 "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:"
+            },
+			"/monaco-editor-core/*" : {
+                "type": "path",
+                "path": "/monaco-editor-core",
+                "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:"
             }
 		}
     }
