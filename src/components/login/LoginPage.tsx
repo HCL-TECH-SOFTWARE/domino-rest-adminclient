@@ -216,6 +216,11 @@ const LoginPage = () => {
       })
   }
 
+  const handleUsernameChange = (event: any) => {
+    formik.handleChange(event);
+    setUsername(event.target.value);
+  }
+
   const formik = useFormik({
     initialValues: {
       username: '',
@@ -394,7 +399,7 @@ const LoginPage = () => {
                 name="username"
                 size="small"
                 autoFocus
-                onChange={formik.handleChange}
+                onChange={handleUsernameChange}
                 value={username ? username : formik.values.username}
               />
               <TextField
