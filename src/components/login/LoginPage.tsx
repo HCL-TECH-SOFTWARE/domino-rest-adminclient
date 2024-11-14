@@ -267,6 +267,14 @@ const LoginPage = () => {
         });
     });
 
+  const handleLogInWithPassword = (event: any) => {
+    event.preventDefault();
+    if (formik.values.username === '' && username.length > 0) {
+      formik.values.username = username;
+    }
+    formik.handleSubmit();
+  }
+
   React.useEffect(() => {
     const canDoPasskey = () =>
       new Promise((resolve, reject) => {
@@ -423,6 +431,7 @@ const LoginPage = () => {
                 fullWidth
                 variant="contained"
                 color="primary"
+                onClick={handleLogInWithPassword}
               >
                 <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
                 Log In With Password
