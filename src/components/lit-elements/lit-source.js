@@ -533,12 +533,18 @@ class SourceTree extends LitElement {
     if (paths.length === 1) {
       keyType === "object" || keyType === "array" ? obj[paths[0]][newKey] = newValue : obj[newKey] = newValue
       e.target.closest('sl-tree-item').querySelector('dialog').close()
+      if (!isNaN(newKey) && newKey.trim() !== '') {
+        e.target.closest('sl-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
+      }
     } else {
       for (let i = 0; i <= lastIndex; i++) {
         if (i === lastIndex) {
           // If we're at the last key in the path, add the new key-value pair
           obj[paths[i]][newKey] = newValue
           e.target.closest('sl-tree-item').querySelector('dialog').close()
+          if (!isNaN(newKey) && newKey.trim() !== '') {
+            e.target.closest('sl-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
+          }
         } else {
           // Otherwise, move to the next level of the object
           obj = obj[paths[i]]
