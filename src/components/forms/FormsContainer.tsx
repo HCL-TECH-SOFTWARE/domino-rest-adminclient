@@ -341,7 +341,9 @@ const FormsContainer = () => {
   }
 
   const handleClickCancel = () => {
-    if (litsourceRef.current && litsourceRef.current.shadowRoot) {
+    if (selectedOption === 'text') {
+      setSourceTabContent(showValue())
+    } else if (litsourceRef.current && litsourceRef.current.shadowRoot) {
       setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
     }
     setDiscardChangesDialog(true)
@@ -351,6 +353,15 @@ const FormsContainer = () => {
     setSourceTabContent(JSON.stringify(schemaData, null, 1))
     setDiscardChangesDialog(false);
     setUnsavedChanges(false);
+  }
+
+  const handleKeepEditing = () => {
+    if (selectedOption === 'text') {
+      setSourceTabContent(showValue())
+    } else if (selectedOption === 'tree') {
+      setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
+    }
+    setDiscardChangesDialog(false)
   }
 
   const handleClickNo = () => {
@@ -428,6 +439,13 @@ const FormsContainer = () => {
       setSourceTabContent(JSON.stringify(schemaData, null, 1));
     }
   }, [updateSchemaError, schemaData, dbName, nsfPathDecode])
+
+  // Reset the source tab content (i.e. discard edits) when switching views
+  useEffect(() => {
+    if (selectedOption === 'tree' || selectedOption === 'text') {
+      setSourceTabContent(JSON.stringify(schemaData, null, 1));
+    }
+  }, [selectedOption, schemaData])
 
   function TabPanel(props: any) {
     const { children, value, index, ...other } = props;
@@ -654,7 +672,7 @@ const FormsContainer = () => {
                     </DialogContent>
                     <DialogActions className='actions'>
                       <ButtonNo onClick={handleDiscardChanges}>Discard Changes</ButtonNo>
-                      <ButtonYes onClick={() => {setDiscardChangesDialog(false)}}>Keep Editing</ButtonYes>
+                      <ButtonYes onClick={handleKeepEditing}>Keep Editing</ButtonYes>
                     </DialogActions>
                   </DialogContainer>
                 </Dialog>
