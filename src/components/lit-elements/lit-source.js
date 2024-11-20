@@ -366,7 +366,7 @@ class SourceTree extends LitElement {
                     Duplicate
                     <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
                   </sl-menu-item>
-                  <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent)}">
+                  <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent, fullPath)}">
                     Remove
                     <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
                   </sl-menu-item>
@@ -450,20 +450,40 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleClickRemove(key, parentObj)  {
-    this.removeItem(key, parentObj)
+  handleClickRemove(key, parentObj, fullPath)  {
+    this.removeItem(key, parentObj, fullPath)
     this.editedContent = parentObj
 
     this.requestUpdate()
   }
 
-  removeItem(key, parentObj) {
-    if (parentObj.hasOwnProperty(key)) {
+  removeItem(key, parentObj, fullPath) {
+    const keys = fullPath.split('.')
+    // Traverse the parentObj using the keys array
+    const lastKey = keys.pop();
+    const targetObj = keys.reduce((obj, k) => (obj && obj[k] !== 'undefined') ? obj[k] : undefined, parentObj);
+    if (targetObj && lastKey !== undefined) {
+      if (Array.isArray(targetObj)) {
+        const index = parseInt(key, 10);
+        if (!isNaN(index) && index >= 0 && index < targetObj.length) {
+          targetObj.splice(index, 1);
+          // Set the new value of the parentObj following the original path
+          keys.reduce((obj, k, i) => {
+            if (i === keys.length - 1) {
+              obj[k] = targetObj;
+            }
+            return obj[k];
+          }, parentObj);
+        }
+      } else if (targetObj.hasOwnProperty(lastKey)) {
+        delete targetObj[lastKey];
+      }
+    } else if (parentObj.hasOwnProperty(key)) {
       delete parentObj[key]
     } else {
       for (let prop in parentObj) {
         if (typeof parentObj[prop] === 'object' && parentObj[prop] !== null) {
-          this.removeItem(key, parentObj[prop])
+          this.removeItem(key, parentObj[prop], fullPath)
         }
       }
     }
@@ -644,6 +664,7 @@ class SourceTree extends LitElement {
 
   updateEditedContent(e, key, parentObj, newValue, fullPath) {
     const paths = fullPath.split('.')
+    newValue = newValue === "true" ? true : newValue === "false" ? false : newValue
     if (paths.length === 1) {
       parentObj[key] = newValue
     } else {
