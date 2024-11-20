@@ -412,9 +412,10 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
 
   const handleClickAddAll = () => {
     let updatedColumns = fetchedColumns.map((column) => {
+      const matchingColumn = chosenColumns.find(chosenColumn => chosenColumn.name === column.name);
       return {
         name: column.name,
-        externalName: !!column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
+        externalName: matchingColumn ? matchingColumn.externalName : (!!column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_')),
       }
     });
     setChosenColumns(updatedColumns);
