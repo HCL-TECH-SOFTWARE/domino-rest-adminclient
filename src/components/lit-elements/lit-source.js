@@ -324,7 +324,7 @@ class SourceTree extends LitElement {
         const keyNames = fullPath.split('.')
         const element = keyNames[keyNames.length - 2]
         const isArrayChild = !isNaN(keyNames[keyNames.length - 1])
-        const label = isArrayChild && isObjectOrArray ? value[getLabelName(element, key)] : key
+        const label = isArrayChild && isObjectOrArray ? (value[getLabelName(element, key)] || key) : key
         const type = isObjectOrArray ? Array.isArray(value) ? 'array' : 'object' : 'other'
 
         return html`
@@ -358,7 +358,7 @@ class SourceTree extends LitElement {
                     Add
                     <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></sl-icon>
                   </sl-menu-item>
-                  <sl-menu-item ?disabled=${isObjectOrArray}>
+                  <sl-menu-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e) => {this.handleClickEdit(e, key, value, fullPath)}}">
                     Edit
                     <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></sl-icon>
                   </sl-menu-item>
@@ -642,6 +642,7 @@ class SourceTree extends LitElement {
   }
 
   handleClickDialogEdit(e, key, fullPath) {
+    e.preventDefault()
     const treeItem = e.target.closest('sl-tree-item')
     const newKey = treeItem.querySelector('#new-key').value
     const section = treeItem.querySelector('section.key-value-container')
