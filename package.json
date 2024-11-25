@@ -11,7 +11,7 @@
     "@monaco-editor/loader": "^1.4.0",
     "@monaco-editor/react": "^4.6.0",
     "@mui/icons-material": "6.0.2",
-    "@mui/lab": "^6.0.0-beta.9",
+    "@mui/lab": "^6.0.0-beta.16",
     "@mui/material": "6.0.2",
     "@mui/x-data-grid": "^7.18.0",
     "@mui/x-date-pickers": "^7.20.0",
