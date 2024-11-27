@@ -790,6 +790,7 @@ export const DialogContainer = styled(Box)`
   vertical-align: middle;
   width: 100%;
   height: 100%;
+  background-color: #FFF;
 
   .title {
     display: flex;
