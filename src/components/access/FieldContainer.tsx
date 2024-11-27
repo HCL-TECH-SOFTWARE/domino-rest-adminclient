@@ -19,6 +19,8 @@ interface SingleFieldContainerProps {
   itemIndex: any;
   droppableIndex: any;
   update: any;
+  required: string[];
+  setRequired: (required: string[]) => void;
 }
 
 const ConfigFieldContainer = styled.div`
@@ -26,9 +28,7 @@ const ConfigFieldContainer = styled.div`
   border: 1px solid #BFBFBF;
   background: #FFF;
   padding: 0;
-  height: 45%;
   width: 100%;
-  overflow-y: scroll;
 
   .title {
     font-size: 12px;
@@ -72,6 +72,8 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   update,
   itemIndex,
   droppableIndex,
+  required,
+  setRequired,
 }) => {
   const [rwMode, setRWMode] = React.useState(() => {
     if (item.fieldAccess == null || item.fieldAccess.trim() === "") {
@@ -195,6 +197,23 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
     update(itemIndex, droppableIndex, newItem);
     setEditedItem(newItem)
   };
+
+  const toggleRequired = (event: any) => {
+    const isRequired = event.target.checked;
+    let newRequired = [...required];
+    if (isRequired) {
+      // If editedItem.content is already in required, do nothing
+      if (!newRequired.includes(editedItem.content)) {
+        newRequired.push(editedItem.content);
+      }
+    } else {
+      // If editedItem.content doesn't already exist in required, do nothing
+      if (newRequired.includes(editedItem.content)) {
+        newRequired = newRequired.filter((item) => item !== editedItem.content);
+      }
+    }
+    setRequired(newRequired);
+  }
 
   const toggleEncrypt = (event: any) => {
     const encrypt = event.target.checked;
@@ -323,6 +342,17 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               Please understand this option before enabling
             </text>
           </EncryptSignOptions>
+          <Box className='input' style={{ display: 'flex', alignItems: 'center' }}>
+            <Typography style={{ width: 'fit-content', fontSize: '14px' }}>
+              Required?
+            </Typography>
+            <BlueSwitch 
+              size='small' 
+              checked={required.includes(editedItem.content)} 
+              onChange={toggleRequired} 
+              id='required'
+            />
+          </Box>
         </Box>
       </Box>
     </ConfigFieldContainer>

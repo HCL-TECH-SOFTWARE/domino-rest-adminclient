@@ -36,6 +36,52 @@ export interface Mode {
     strictInput: boolean;
     configuredForms: Array<string>;
   }>;
+  computeWithForm: boolean;
+  deleteAccessFormula: {
+    formulaType: string;
+    formula: string;
+  };
+  onLoad: {
+    formulaType: string;
+    formula: string;
+  };
+  onSave: {
+    formulaType: string;
+    formula: string;
+  };
+  sign: boolean;
+  validationRules: Array<any>;
+  readAccessFields: Array<{
+    encyrptedField: false;
+    externalName: string;
+    fieldAccess: string;
+    format: string;
+    itemFlags: Array<string>;
+    name: string;
+    protectedField: boolean;
+    summaryField: boolean;
+    type: string;
+  }>;
+  writeAccessFields: Array<{
+    encyrptedField: false;
+    externalName: string;
+    fieldAccess: string;
+    format: string;
+    itemFlags: Array<string>;
+    name: string;
+    protectedField: boolean;
+    summaryField: boolean;
+    type: string;
+  }>;
+  readAccessFormula: {
+    formulaType: string;
+    formula: string;
+  };
+  writeAccessFormula: {
+    formulaType: string;
+    formula: string;
+  };
+  required: Array<string>;
 }
 
 export interface Form {

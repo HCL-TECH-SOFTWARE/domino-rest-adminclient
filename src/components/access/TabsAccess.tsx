@@ -229,6 +229,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const [modeText, setModeText] = useState('');
   const [formError, setFormError] = useState('');
   const [newModeOpen, setNewModeOpen] = useState(false);
+  const [required, setRequired] = useState(modes[currentModeIndex].required)
 
   /**
    * save is called when the Save button is clicked.  It gathers up the
@@ -241,6 +242,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     if (newForm.enabled && !saveEnabled) {
       return
     }
+
+    const newRequired = required
 
     // Check if creating new form schema or editing a form
     // Then save it off and post an alert
@@ -283,6 +286,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               onLoad: {formulaType: "domino", formula: ""},
               onSave: {formulaType: "domino", formula: ""},
               sign: false,
+              required: required,
             }],
           }
         ]
@@ -312,11 +316,17 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       setPageIndex(oriCardIndex);
       setCurrentModeValue(formModes[oriCardIndex].modeName);
     }
+
+    setRequired(newRequired)
   };
 
   useEffect(() => {
     setCurrentModeValue(modes[currentModeIndex].modeName)
   }, [currentModeIndex])
+
+  useEffect(() => {
+    setRequired(modes[currentModeIndex].required)
+  }, [modes, currentModeIndex])
 
   /**
    * gatherFormData harvests form data from the Formulas page
@@ -332,6 +342,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       ...scripts,
       fields: readAccessFields,
       strictInput: true,
+      required: required,
     };
     return formData;
   };
@@ -708,7 +719,17 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           </PagerAction>
         </TabsContainer>
         <LoadTabContainer>
-          <FieldDNDContainer remove={remove} update={update} state={state} addField={addField} data={scripts} setScripts={setScripts} test={test} />
+          <FieldDNDContainer
+            remove={remove}
+            update={update}
+            state={state}
+            addField={addField}
+            data={scripts}
+            setScripts={setScripts}
+            test={test}
+            required={required}
+            setRequired={setRequired}
+          />
         </LoadTabContainer>
       </TabNavigator>
       <FormDrawer formName='TestForm' formik={formik} />

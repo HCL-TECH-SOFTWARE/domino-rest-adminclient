@@ -166,8 +166,6 @@ const CustomItem = styled.div`
   .field-meta-data {
     font-size: 12px;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     text-align: left;
   }
 `;
@@ -248,9 +246,11 @@ interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   data: any;
   setScripts: (data: any) => void;
   test: () => void;
+  required: string[];
+  setRequired: (required: string[]) => void;
 }
 
-const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, addField, data, setScripts, test }) => {
+const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, addField, data, setScripts, test, required, setRequired }) => {
   const stateList = Object.keys(state);
 
   const [customFieldError, setCustomFieldError] = useState('')
@@ -440,11 +440,12 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
                     ...item,
                     delete: false,
                   }
+                  const isRequired = required.includes(item.content)
                   return (
                     <CustomItem onClick={() => setEditField(item)} key={`${item.name}-${idx}`}>
                       <div className="field-info" onChange={(e) => {handleSelectField(e, item)}}>
                         <div className="field-name">{item.name}</div>
-                        <div className="field-meta-data">{`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup}`}</div>
+                        <div className="field-meta-data">{`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}</div>
                       </div>
                       {batchDelete && <Checkbox 
                         className='field-checkbox' 
@@ -469,6 +470,8 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
             update={update} 
             droppableIndex={stateList[0]} 
             itemIndex={state[stateList[0]].findIndex((field: Field) => field.name === editField.name)} 
+            required={required}
+            setRequired={setRequired}
         />}
         {!editField && <ConfigFieldContainer>
           <Typography className='setting'>Field Setting</Typography>
