@@ -25,6 +25,7 @@ const AddImportDialogContainer = styled(Dialog)`
   width: 50vw;
   height: fit-content;
   margin-left: 25vw;
+  margin-top: ${() => (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) ? '50vh' : '0')};
 
   .option-container {
     border: 1px solid #AFAFAF;
@@ -33,6 +34,7 @@ const AddImportDialogContainer = styled(Dialog)`
     display: flex;
     gap: 23px;
     align-items: center;
+    background-color: #FFF;
 
     &:hover {
       cursor: pointer;
@@ -48,6 +50,7 @@ const DialogContentContainer = styled(Box)`
   display: flex;
   flex-direction: column;
   gap: 30px;
+  background-color: #FFF;
 
   .detail-title {
     font-size: 16px;
@@ -382,12 +385,12 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       </DialogContentContainer>
       <HorizontalDivider />
       <DialogContentContainer>
-        <Box style={{ display: 'flex', flexDirection: 'row' }}>
-          <Box style={{ flexDirection: 'row', width: '40%' }}>
+        <Box style={{ display: 'flex', flexDirection: 'row' }} sx={{ bgcolor: '#FFF' }}>
+          <Box style={{ flexDirection: 'row', width: '40%' }} sx={{ bgcolor: '#FFF' }}>
             <Typography className='detail-title'>
               Icon
             </Typography>
-            <Box>
+            <Box sx={{ bgcolor: '#FFF' }}>
               <IconDropdown
                 handleSelectIcon={handleSelectIcon}
                 displayIconName={iconName}
@@ -399,11 +402,11 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
               />
             </Box>
           </Box>
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '60%' }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '60%' }} sx={{ bgcolor: '#FFF' }}>
             <Typography className='detail-title'>
               Schema Name
             </Typography>
-            <Box style={{ height: '41px' }}>
+            <Box style={{ height: '41px' }} sx={{ bgcolor: '#FFF' }}>
               <TextField 
                 onChange={handleSchemaNameChange} 
                 error={!!formik.errors.schemaName && formik.touched.schemaName}
@@ -417,7 +420,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             </Box>
           </Box>
         </Box>
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }} sx={{ bgcolor: '#FFF' }}>
           <Typography className='detail-title'>
             Schema Description
           </Typography>
@@ -434,7 +437,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             style={{ width: '100%', overflowY: 'scroll' }} 
           />
         </Box>
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }} sx={{ bgcolor: '#FFF' }}>
           <Typography className='detail-title'>
             Formula Engine
           </Typography>
@@ -450,7 +453,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         </Box>
       </DialogContentContainer>
       <HorizontalDivider />
-      <DialogActionsContainer>
+      <DialogActionsContainer sx={{ bgcolor: '#FFF' }}>
         <ButtonNeutral onClick={handleClickBack}>Back</ButtonNeutral>
         <ButtonYes onClick={handleClickSaveSchema}>Save Schema</ButtonYes>
       </DialogActionsContainer>
@@ -473,7 +476,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   return (
     <>
-      <AddImportDialogContainer fullScreen open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', marginTop: `${importDialogOpen ? '4vh' : '30vh'}`, maxHeight: '95vh' }}}>
+      <AddImportDialogContainer fullWidth open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', marginTop: `${importDialogOpen ? '4vh' : '30vh'}`, maxHeight: '95vh' }}}>
         <DialogContainer>
           {Title}
           {!importDialogOpen && InitialDialog}
