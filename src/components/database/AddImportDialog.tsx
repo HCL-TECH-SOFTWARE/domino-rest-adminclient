@@ -23,9 +23,8 @@ import { LitAutocomplete } from '../lit-elements/LitElements';
 
 const AddImportDialogContainer = styled(Dialog)`
   width: 50vw;
-  height: fit-content;
+  height: 100%;
   margin-left: 25vw;
-  margin-top: ${() => (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) ? '50vh' : '0')};
 
   .option-container {
     border: 1px solid #AFAFAF;
@@ -462,22 +461,22 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const Title = (
     <>
-      <Grid container className='title' style={{ display: 'flex', flexDirection: 'row' }}>
-        <Grid item xs={11} style={{ padding: '20px 25px 15px 25px', fontWeight: 'normal', fontSize: '20px' }}>
+      <div className='title' style={{ display: 'flex', flexDirection: 'row' }}>
+        <div style={{ width: '90%', padding: '20px 25px 15px 25px', fontWeight: 'normal', fontSize: '20px' }}>
           {!importDialogOpen && `Add New Schema`}
           {importDialogOpen && `${importFlag ? "Import Schema" : "Create Schema"}`}
-        </Grid>
-        <Grid item xs={1} style={{ paddingTop: '20px', cursor: 'pointer' }}>
+        </div>
+        <div style={{ width: '10%', paddingTop: '20px', cursor: 'pointer' }}>
           <CloseMenuIcon onClick={handleCloseDialog} />
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </>
   )
 
   return (
     <>
-      <AddImportDialogContainer fullWidth open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', marginTop: `${importDialogOpen ? '4vh' : '30vh'}`, maxHeight: '95vh' }}}>
-        <DialogContainer>
+      <AddImportDialogContainer open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', maxHeight: '95vh' }}}>
+        <DialogContainer sx={{ borderRadius: '10px', overflowY: 'auto' }}>
           {Title}
           {!importDialogOpen && InitialDialog}
           {importDialogOpen && ImportDialog}

@@ -174,6 +174,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
             onClose={() => {setResetForm(false)}}
             aria-labelledby="reset-view-dialog"
             aria-describedby='reset-view-description'
+            sx={{ overflowY: 'auto' }}
         >
             <DialogTitle>
               <Box style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

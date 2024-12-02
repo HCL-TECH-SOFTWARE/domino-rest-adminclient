@@ -662,7 +662,7 @@ const FormsContainer = () => {
                   onMount={handleEditorDidMount}
                 />}
                 <Dialog open={saveChangesDialog}>
-                  <DialogContainer>
+                  <DialogContainer sx={{ overflowY: 'auto' }}>
                     <DialogTitle className='title'>
                       <Typography className='title'>
                         Save changes?
@@ -678,7 +678,7 @@ const FormsContainer = () => {
                   </DialogContainer>
                 </Dialog>
                 <Dialog open={discardChangesDialog}>
-                  <DialogContainer>
+                  <DialogContainer sx={{ overflowY: 'auto' }}>
                     <DialogTitle className='title'>
                       <Typography className='title'>
                         Discard changes?
