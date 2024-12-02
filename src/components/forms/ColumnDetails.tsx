@@ -28,17 +28,17 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 const ColumnDetailsContainer = styled.div`
   box-sizing: border-box;
 
-  position: absolute;
   width: 75%;
-  height: 87%;
+  height: 100%;
   
   background: #FFF;
   border: 1px solid #B4B4B4;
   border-radius: 10px;
   left: 23%;
   margin: 2% 2% 2% 0;
+  padding: 0;
 
-  overflow-y: scroll;
+  overflow-y: auto;
 
   .delete-icon {
     cursor: pointer;

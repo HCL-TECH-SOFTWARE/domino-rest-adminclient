@@ -130,6 +130,7 @@ const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, tog
         onClose={() => {setResetView(false)}}
         aria-labelledby="reset-view-dialog"
         aria-describedby='reset-view-description'
+        sx={{ overflowY: 'auto' }}
       >
         <DialogTitle id="reset-view-dialog-title">
           {"Reset View Columns?"}

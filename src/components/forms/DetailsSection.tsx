@@ -602,7 +602,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       <Dialog
         open={editOpen}
         fullScreen
-        style={{ height: '70vh', width: '40vw', position: 'absolute', left: '30vw', top: '15vh' }}
+        style={{ height: '70vh', width: '40vw', position: 'absolute', left: '30vw', top: '15vh', overflowY: 'auto' }}
         PaperProps={{ style: { borderRadius: '10px' } }}
         onClose={() => setDiscardDialog(true)}>
         <DialogTitle style={{ padding: '0 0' }}>

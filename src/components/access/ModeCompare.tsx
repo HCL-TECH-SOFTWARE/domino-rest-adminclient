@@ -21,19 +21,17 @@ const DialogContainer = styled(Dialog)`
   border: 1px solid white;
 
   width: 100vw;
-  position: relative;
   max-width: 100vw;
   height: 100vh;
-  max-height: 100vh;
   margin: 0;
-  overflow-y: hidden;
+  overflow-y: scroll;
 
   background-color: #fafafa;
+  background-color: green;
 
   .content-container {
     padding: 0;
     margin: 0;
-    height: fit-content;
   }
 
   .search-add-row {
@@ -86,17 +84,33 @@ const DialogContainer = styled(Dialog)`
 `;
 
 const ModeCardsContainer = styled.div`
-  margin: 13px 0 0 0;
   padding: 0;
-  margin-top: 100px;
-  padding-right: 20px;
-  padding-top: 10px;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 77vh;
+  height: 75vh;
   gap: 0 10px;
   overflow-y: scroll;
+
+  @media (max-height: 500px) {
+    height: 50vh;
+  }
+
+  @media (min-height: 501px) and (max-height: 600px) {
+    height: 60vh;
+  }
+
+  @media (min-height: 601px) and (max-height: 900px) {
+    height: 65vh;
+  }
+
+  @media (min-height: 901px) and (max-height: 1200px) {
+    height: 75vh;
+  }
+
+  @media (min-height: 1201px) {
+    height: 80vh;
+  }
 
   .row {
     display: flex;
@@ -509,10 +523,10 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
 
   return (
     <DialogContainer open={open} onClose={handleClose} fullScreen>
-      <Box style={{ padding: '30px' }}>
+      <Box style={{ padding: '30px' }} sx={{ height: '100%' }}>
         <FormDialogHeader title={`Mode Compare - ${formName} Form`} onClose={handleClose} />
         <DialogContent className="content-container">
-          <div style={{ position: 'fixed', width: '95vw', marginBottom: '20%' }}>
+          <div style={{ width: '95vw' }}>
             <div className="search-add-row">
               <SearchContainer className="search-bar">
                 <SearchIcon color="primary" className="search-icon" style={{ marginRight: '10px' }} />

@@ -740,6 +740,7 @@ export const CommonDialog = styled(Dialog)`
   flex-direction: row;
   padding: 0;
   margin: 0;
+  overflow-y: auto;
 
   .title {
     flex: 1;

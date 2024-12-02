@@ -126,6 +126,7 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
         onClose={() => {setResetAllAgents(false)}}
         aria-labelledby="reset-view-dialog"
         aria-describedby='reset-view-description'
+        sx={{ overflowY: 'auto' }}
       >
         <DialogTitle id="reset-view-dialog-title">
           {"Reset ALL Agents?"}

@@ -31,7 +31,7 @@ import { fullEncode } from '../../utils/common';
 
 const EditViewDialogContainer = styled.div`
   width: 100%;
-  height: 1022px;
+  height: 90vh;
 
   background: #F8F8F8;
   border-radius: 10px;
@@ -44,6 +44,34 @@ const EditViewDialogContainer = styled.div`
     position: absolute;
     top: 1%;
     right: 2%;
+  }
+
+  .details-container {
+    margin-top: 10px;
+    height: 87%;
+    display: flex;
+    flex-direction: row;
+    overflow-y: visible;
+
+    @media (max-height: 500px) {
+      height: 70%;
+    }
+
+    @media (min-height: 501px) and (max-height: 600px) {
+      height: 75%;
+    }
+
+    @media (min-height: 601px) and (max-height: 900px) {
+      height: 82%;
+    }
+
+    @media (min-height: 901px) and (max-height: 1200px) {
+      height: 87%;
+    }
+
+    @media (min-height: 1201px) {
+      height: 87%;
+    }
   }
 `
 
@@ -69,12 +97,11 @@ const DialogTitleContainer = styled.div`
 const ColumnBarContainer = styled.div`
   box-sizing: border-box;
 
-  position: absolute;
   width: 20%;
-  height: 87%;
+  height: 100%;
   margin: 2%;
-  overflow-y: scroll;
-  overflow-x: scroll;
+  overflow-y: auto;
+  overflow-x: auto;
   
   background: #FFFFFF;
   
@@ -126,7 +153,6 @@ const AllColumnsList = styled.div`
     font-size: 1.4em;
     transform: translateY(60%);
     margin: 0;
-    position: absolute;
   }
 
   .icons-column {
@@ -567,10 +593,11 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     <>
       <Dialog 
         fullScreen 
-        style={{ height: '90vh', width: '95vw', position: 'absolute', left: '2.5vw', top: '4vh' }} 
+        style={{ height: '90vh', width: '95vw', left: '2.5vw', top: '4vh' }} 
         PaperProps={{ style: { borderRadius: '5px' } }}
         open={open} 
         onClose={handleClickClose}
+        sx={{ overflowY: 'auto' }}
       >
         <EditViewDialogContainer>
           <div className='close-btn' onClick={handleClickClose}>
@@ -604,7 +631,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
             </Buttons>
             </Typography>
           </DialogTitleContainer>
-          <div>
+          <div className='details-container'>
             <ColumnBarContainer>
               <Box className='add-all-container' onClick={handleClickAddAll}>
                 <div className='add-all-icon'><FiPlus size={'1.2em'} /></div>
