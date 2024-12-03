@@ -248,9 +248,23 @@ interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   test: () => void;
   required: string[];
   setRequired: (required: string[]) => void;
+  validationRules: Array<{ formula: String, formulaType: String, message: String }>;
+  setValidationRules: (data: Array<{ formula: String, formulaType: String, message: String }>) => void;
 }
 
-const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, addField, data, setScripts, test, required, setRequired }) => {
+const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
+  state,
+  remove,
+  update,
+  addField,
+  data,
+  setScripts,
+  test,
+  required,
+  setRequired,
+  validationRules,
+  setValidationRules,
+}) => {
   const stateList = Object.keys(state);
 
   const [customFieldError, setCustomFieldError] = useState('')
@@ -479,7 +493,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({ state, remove, update, ad
             <Typography>No field found. Please select a field.</Typography>
           </Box>
         </ConfigFieldContainer>}
-        <ScriptEditor setScripts={setScripts} data={data} test={test} />
+        <ScriptEditor setScripts={setScripts} data={data} test={test} validationRules={validationRules} setValidationRules={setValidationRules} />
       </Box>
       <RemoveFieldDialog ref={ref}>
         <Box className='header-close'>
