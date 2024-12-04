@@ -230,6 +230,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const [formError, setFormError] = useState('');
   const [newModeOpen, setNewModeOpen] = useState(false);
   const [required, setRequired] = useState(modes[currentModeIndex].required)
+  const [validationRules, setValidationRules] = useState(modes[currentModeIndex].validationRules)
 
   /**
    * save is called when the Save button is clicked.  It gathers up the
@@ -287,6 +288,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               onSave: {formulaType: "domino", formula: ""},
               sign: false,
               required: required,
+              validationRules: validationRules,
             }],
           }
         ]
@@ -326,6 +328,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
 
   useEffect(() => {
     setRequired(modes[currentModeIndex].required)
+    setValidationRules(modes[currentModeIndex].validationRules)
   }, [modes, currentModeIndex])
 
   /**
@@ -343,6 +346,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       fields: readAccessFields,
       strictInput: true,
       required: required,
+      validationRules: validationRules,
     };
     return formData;
   };
@@ -729,6 +733,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             test={test}
             required={required}
             setRequired={setRequired}
+            validationRules={validationRules}
+            setValidationRules={setValidationRules}
           />
         </LoadTabContainer>
       </TabNavigator>

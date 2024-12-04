@@ -34,7 +34,7 @@ class Autocomplete extends LitElement {
       width: 100%;
       z-index: 9999;
       max-height: 30vh;
-      overflow: scroll;
+      overflow: auto;
     }
     .dropdown.show {
       visibility: visible;
