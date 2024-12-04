@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import './lit-autocomplete.js';
 
 class TextForm extends LitElement {
   static styles = css`
@@ -26,6 +27,10 @@ class TextForm extends LitElement {
       width: 100%;
       box-sizing: border-box;
     }
+
+    lit-autocomplete {
+      padding: 0;
+    }
   `;
 
   static properties = {
@@ -38,7 +43,12 @@ class TextForm extends LitElement {
   }
 
   handleInputChange(key, event) {
-    const newValue = event.target.value;
+    let newValue
+    if (key === 'formulaType') {
+      newValue = event.target.selectedOption
+    } else {
+      newValue = event.target.value
+    }
     this.data = { ...this.data, [key]: newValue };
     this.dispatchEvent(new CustomEvent('data-changed', { detail: this.data }))
   }
@@ -50,11 +60,13 @@ class TextForm extends LitElement {
           <div class="row">
             <div class="key">${key}</div>
             <div class="value">
-              <input
-                type="text"
-                .value=${this.data[key]}
-                @input=${(event) => this.handleInputChange(key, event)}
-              />
+              ${key === 'formulaType' ? html`
+                  <lit-autocomplete .options=${["domino"]} .initialOption="${this.data[key]}" @input=${(event) => this.handleInputChange(key, event)}></lit-autocomplete>`
+                :
+                html`
+                  <input type="text" .value=${this.data[key]} @input=${(event) => this.handleInputChange(key, event)} />
+                `
+              }
             </div>
           </div>
         `

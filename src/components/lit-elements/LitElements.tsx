@@ -5,6 +5,9 @@ import SourceTree from './lit-source';
 import SourceContents from './lit-source-header';
 import TextForm from './lit-textform';
 import TextFormArray from './lit-textform-array';
+import ButtonYes from './lit-button-yes';
+import ButtonNo from './lit-button-no';
+import ButtonNeutral from './lit-button-neutral';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -39,5 +42,23 @@ export const LitTextform = createComponent({
 export const LitTextformArray = createComponent({
   tagName: 'lit-textform-array',
   elementClass: TextFormArray,
+  react: React,
+});
+
+export const LitButtonYes = createComponent({
+  tagName: 'lit-button-yes',
+  elementClass: ButtonYes,
+  react: React,
+});
+
+export const LitButtonNo = createComponent({
+  tagName: 'lit-button-no',
+  elementClass: ButtonNo,
+  react: React,
+});
+
+export const LitButtonNeutral = createComponent({
+  tagName: 'lit-button-neutral',
+  elementClass: ButtonNeutral,
   react: React,
 });
