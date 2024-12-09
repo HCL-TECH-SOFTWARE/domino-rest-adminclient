@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@swc/core": "^1.7.24",
-    "@swc/jest": "^0.2.36",
+    "@swc/jest": "^0.2.37",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "@types/jest": "^29.5.12",
