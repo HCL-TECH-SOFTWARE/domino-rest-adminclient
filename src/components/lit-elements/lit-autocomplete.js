@@ -141,7 +141,7 @@ class Autocomplete extends LitElement {
   render() {
     return html`
       <div class="parent-container">
-        <section class="autocomplete-container" @focusout="${this._handleFocusOut}">
+        <section class="autocomplete-container">
           <section class="input-container ${this.error ? 'error' : ''}">
             <input
               list="autocomplete-options"
@@ -172,7 +172,7 @@ class Autocomplete extends LitElement {
               </button>
             </section>
           </section>
-          <section class="dropdown ${this.showDropdown ? 'show' : ''}">
+          <section class="dropdown ${this.showDropdown ? 'show' : ''}" @focusout="${this._handleFocusOut}">
             <ul>
               ${this.filteredOptions.map((option, index) => html`
                 <li
