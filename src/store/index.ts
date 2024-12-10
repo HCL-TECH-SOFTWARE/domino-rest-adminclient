@@ -4,9 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-import thunkMiddleware from 'redux-thunk';
-import { composeWithDevTools } from '@redux-devtools/extension';
+import { combineReducers } from 'redux';
 import databaseReducer from './databases/reducer';
 import historyReducer from './history/reducer';
 import drawerReducer from './drawer/reducer';
@@ -25,7 +23,7 @@ import memberReducer from './peopleSelector/reducer';
 import consentsReducer from './consents/reducer';
 import usersReducer from './access/reducer';
 
-const rootReducer = combineReducers({
+export const rootReducer = combineReducers({
   databases: databaseReducer,
   histories: historyReducer,
   drawer: drawerReducer,
@@ -46,15 +44,3 @@ const rootReducer = combineReducers({
 });
 
 export type AppState = ReturnType<typeof rootReducer>;
-
-export default function configureStore() {
-  const middlewares = [thunkMiddleware];
-  const middleWareEnhancer = applyMiddleware(...middlewares);
-
-  const store = createStore(
-    rootReducer,
-    composeWithDevTools(middleWareEnhancer)
-  );
-
-  return store;
-}
