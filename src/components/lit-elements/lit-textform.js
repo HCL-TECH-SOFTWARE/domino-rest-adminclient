@@ -24,8 +24,12 @@ class TextForm extends LitElement {
     }
 
     input[type="text"] {
+      padding: 15px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
       width: 100%;
       box-sizing: border-box;
+      font-size: 14;
     }
 
     lit-autocomplete {
@@ -40,6 +44,12 @@ class TextForm extends LitElement {
   constructor() {
     super()
     this.data = {};
+
+    this.conversion = {
+      formulaType: 'Formula Type',
+      formula: 'Formula',
+      message: 'Error Message',
+    }
   }
 
   handleInputChange(key, event) {
@@ -58,7 +68,7 @@ class TextForm extends LitElement {
       ${Object.keys(this.data).map(
         (key) => html`
           <div class="row">
-            <div class="key">${key}</div>
+            <div class="key">${!!this.conversion[key] ? this.conversion[key] : key}</div>
             <div class="value">
               ${key === 'formulaType' ? html`
                   <lit-autocomplete .options=${["domino"]} .initialOption="${this.data[key]}" @input=${(event) => this.handleInputChange(key, event)}></lit-autocomplete>`

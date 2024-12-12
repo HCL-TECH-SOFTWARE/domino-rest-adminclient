@@ -2,6 +2,9 @@ import { LitElement, html, css } from 'lit';
 import './lit-textform.js';
 import './lit-button-yes.js';
 import './lit-button-neutral.js';
+import './lit-dialog-content.js';
+import './lit-dialog-header.js';
+import './lit-dialog-actions.js';
 // Import Shoelace theme (light/dark)
 import '@shoelace-style/shoelace/dist/themes/light.css';
 // Import Shoelace components
@@ -60,12 +63,34 @@ class TextFormArray extends LitElement {
           text-color: #FFFFFF;
         }
       }
+
+      .close {
+        border: none;
+        display: block;
+      }
+    }
+
+    button.close {
+      border: none;
+      display: block;
+    }
+
+    h3 {
+      font-weight: 400;
     }
 
     dialog {
         border: none;
         border-radius: 10px;
-        padding: 20px;
+        padding: 20px 0;
+    }
+
+    dialog#add {
+      padding-top: 0;
+      padding-bottom: 0;
+      min-width: 50vw;
+      min-height: 30vh;
+      overflow: auto;
     }
 
     header {
@@ -135,6 +160,10 @@ class TextFormArray extends LitElement {
     dialog.close()
   }
 
+  handleCloseDialog(e) {
+    this.handleCancelAdd(e.detail);
+  }
+
   render() {
     return html`
       <div class="container">
@@ -165,14 +194,21 @@ class TextFormArray extends LitElement {
           </section>
         </dialog>
         <dialog id="add">
-          Add Rule
-          <section>
+          <lit-dialog-header>
+            <header>
+              <h3>Add Rule</h3>
+          </header>
+          <button class="close" @click=${this.handleCancelAdd}>
+              <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></sl-icon>
+          </button>
+          </lit-dialog-header>
+          <lit-dialog-content>
             <lit-textform .data=${{formulaType: 'domino', formula: '', message: ''}}></lit-textform>
-          </section>
-          <section class="buttons-container">
+          </lit-dialog-content>
+          <lit-dialog-actions>
             <lit-button-yes text="Add" @click=${this.handleAdd}></lit-button-yes>
             <lit-button-neutral text="Cancel" @click=${this.handleCancelAdd}></lit-button-neutral>
-          </section>
+          </lit-dialog-actions>
         </dialog>
       </div>
     `;
