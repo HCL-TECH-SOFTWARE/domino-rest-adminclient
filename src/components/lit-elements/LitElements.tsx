@@ -8,6 +8,9 @@ import TextFormArray from './lit-textform-array';
 import ButtonYes from './lit-button-yes';
 import ButtonNo from './lit-button-no';
 import ButtonNeutral from './lit-button-neutral';
+import DialogHeader from './lit-dialog-header';
+import DialogContent from './lit-dialog-content';
+import DialogActions from './lit-dialog-actions';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -60,5 +63,23 @@ export const LitButtonNo = createComponent({
 export const LitButtonNeutral = createComponent({
   tagName: 'lit-button-neutral',
   elementClass: ButtonNeutral,
+  react: React,
+});
+
+export const LitDialogContent = createComponent({
+  tagName: 'lit-dialog-content',
+  elementClass: DialogContent,
+  react: React,
+});
+
+export const LitDialogHeader = createComponent({
+  tagName: 'lit-dialog-header',
+  elementClass: DialogHeader,
+  react: React,
+});
+
+export const LitDialogActions = createComponent({
+  tagName: 'lit-dialog-actions',
+  elementClass: DialogActions,
   react: React,
 });
