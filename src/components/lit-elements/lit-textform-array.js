@@ -194,7 +194,7 @@ class TextFormArray extends LitElement {
           </section>
         </dialog>
         <dialog id="add">
-          <lit-dialog-header heading="Add Rule" .closeFunction=${(e) => this.handleCancelAdd(e)} @close-dialog=${this.handleCloseDialog}>
+          <lit-dialog-header>
             <header>
               <h3>Add Rule</h3>
           </header>
