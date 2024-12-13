@@ -316,7 +316,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             <Box className='input'>
               <TextField 
                 label="Field Group" 
-                value={editedItem.fieldGroup} 
+                value={editedItem.fieldGroup || ''} 
                 style={{ "width":"50%" }}
                 onChange={handleFieldGroupChange} 
                 disabled={!isMultiValue} 
