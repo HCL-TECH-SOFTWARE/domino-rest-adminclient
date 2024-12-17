@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import Typography from '@mui/material/Typography';
@@ -67,7 +67,6 @@ const SchemaContentsTree: React.FC<SchemaContentsTreeProps> = ({
   const { databasePull } = useSelector(
     (state: AppState) => state.databases
   );
-  useEffect(() => {}, []);
   const handleTreeOnClick = (data: any) => {
     const { nsfpath, api } = data;
     setNsfPath(nsfpath);
@@ -91,8 +90,8 @@ const SchemaContentsTree: React.FC<SchemaContentsTreeProps> = ({
           labelText={content.title}
           labelIcon={DBIcon}
         >
-          {content.apinames.length > 0 &&
-            content.apinames.map((api) => (
+          {[...new Set(content.apinames)].length > 0 &&
+            [...new Set(content.apinames)].map((api) => (
               <StyledTreeItem
                 key={api}
                 itemId={api}
