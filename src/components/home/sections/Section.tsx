@@ -15,6 +15,7 @@ import people from './database.jpg';
 import { databases, apps as app, people as users } from '../../sidenav/Routes';
 import { AppState } from '../../../store';
 import { showPages } from '../../../store/account/action';
+import { IMG_DIR } from '../../../config.dev';
 
 const SectionContainer = styled.div`
   padding: 0px 20px;
@@ -34,6 +35,13 @@ const SectionContainer = styled.div`
 
 const TipContainer = styled.div`
   padding: 15px 0;
+
+  .diagram {
+    display: flex;
+    width: 100%;
+    flex: 1;
+    justify-content: center;
+  }
 `;
 
 const FeatureContainer = styled.div`
@@ -56,6 +64,9 @@ const Section = () => {
   return (
     <SectionContainer>
       <TipContainer>
+        <section className='diagram'>
+          <img src={`${IMG_DIR}/home/keepblockdiagram.svg`} alt='DRAPI Block Diagram' width='50%' />
+        </section>
         <FeatureContainer>
           {navitems.databases &&
             databases.map((route) => {
