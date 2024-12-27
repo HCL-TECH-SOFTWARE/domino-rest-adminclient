@@ -16,7 +16,8 @@ import {
   RENEW_TOKEN,
   REMOVE_AUTH,
   NAVITEMS,
-  PageListObj
+  PageListObj,
+  SET_IDP_LOGIN,
 } from './types';
 import { BASE_KEEP_API_URL } from '../../config.dev';
 import {
@@ -230,4 +231,11 @@ export async function getIdpList() {
     );
   const resJson = await res.json()
   return resJson
+}
+
+export function setIdpLogin(idpLogin: boolean) {
+  return {
+    type: SET_IDP_LOGIN,
+    payload: idpLogin,
+  }
 }

@@ -17,7 +17,6 @@ import * as Yup from 'yup';
 import { Alert, AlertTitle } from '@mui/lab';
 import LoginIcon from '@mui/icons-material/ExitToApp';
 import { useSelector, useDispatch } from 'react-redux';
-import { Navigate, Route } from 'react-router-dom';
 import {
   IMG_DIR,
   KEEP_ADMIN_BASE_COLOR,
@@ -25,7 +24,7 @@ import {
 } from '../../config.dev';
 import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
-import { getIdpList, login, set401Error, setIdpLogin, setLoginError, setToken } from '../../store/account/action';
+import { getIdpList, login, set401Error, setLoginError, setToken } from '../../store/account/action';
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
@@ -278,7 +277,6 @@ const LoginPage = () => {
   }
 
   const handleLogInUsingIdp = async (idp: any) => {
-    await dispatch(setIdpLogin(true) as any)
     await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, window.location.href.replace('login', 'callback'))
   }
 
@@ -319,7 +317,6 @@ const LoginPage = () => {
 
   return (
     <GridRoot container>
-      <Navigate to="/" />
       <CssBaseline />
       <Grid
         style={{

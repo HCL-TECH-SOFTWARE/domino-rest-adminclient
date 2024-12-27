@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import styled from 'styled-components';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useSelector, useDispatch } from 'react-redux';
@@ -34,8 +34,8 @@ import Notification from './components/alerts/Notification';
 import CollapseMenuIcon from '@mui/icons-material/ChevronLeftRounded';
 import ExpandMenuIcon from '@mui/icons-material/ChevronRightRounded';
 import { IconButton } from '@mui/material';
-
-
+import CallbackPage from './components/login/CallbackPage';
+import { PrivateRoutes } from './components/routers/ProtectedRoute';
 
 const AppContainer = styled.main`
   display: flex;
@@ -128,60 +128,66 @@ const App: React.FC = () => {
     }
   }, [dispatch]);
 
+  const HomeElement = <>
+    {matches && (
+      <Header
+        toggleMobileMenu={toggleMenu}
+        open={open}
+      />
+    )}
+    <AppContainer>
+      <Notification />
+      <SideNav
+        toggleMenu={toggleMenu}
+        open={open}
+      />
+      {matches && (
+        <MobileSidebar
+          toggleMenu={toggleMenu}
+          open={open}
+        />
+      )}
+      <RightPanel theme={getTheme(themeMode)} open={open}>
+        {!matches && (
+            open ? (
+              <IconButton 
+                aria-label="collapse menu"
+                className='toggle-button'
+                onClick={toggleMenu}
+              >
+                <CollapseMenuIcon />
+              </IconButton>
+            ) : (
+              <IconButton 
+                aria-label="expand menu"
+                className='toggle-button'
+                onClick={toggleMenu}
+              >
+                <ExpandMenuIcon />
+              </IconButton>
+            )
+        )}
+
+      <Views open={open} />
+      </RightPanel>
+      {!ipadMatches && <Footer />}
+    </AppContainer>
+  </>
+
   return (
     <ThemeProvider theme={theme(authenticated, getTheme, themeMode)}>
       <CssBaseline />
       {valid ? (
         <Router basename="/admin/ui">
-          {authenticated ? (
-            <>
-              {matches && (
-                <Header
-                  toggleMobileMenu={toggleMenu}
-                  open={open}
-                />
-              )}
-              <AppContainer>
-                <Notification />
-                <SideNav
-                  toggleMenu={toggleMenu}
-                  open={open}
-                />
-                {matches && (
-                  <MobileSidebar
-                    toggleMenu={toggleMenu}
-                    open={open}
-                  />
-                )}
-                <RightPanel theme={getTheme(themeMode)} open={open}>
-                  {!matches && (
-                      open ? (
-                        <IconButton 
-                          aria-label="collapse menu"
-                          className='toggle-button'
-                          onClick={toggleMenu}
-                        >
-                          <CollapseMenuIcon />
-                        </IconButton>
-                      ) : (
-                        <IconButton 
-                          aria-label="expand menu"
-                          className='toggle-button'
-                          onClick={toggleMenu}
-                        >
-                          <ExpandMenuIcon />
-                        </IconButton>
-                      )
-                  )}
-
-                <Views open={open} />
-                </RightPanel>
-                {!ipadMatches && <Footer />}
-              </AppContainer>
-            </>
-          ) : (
-            <LoginPage />
-          )}
+          <Routes>
+              <Route element={<PrivateRoutes />}>
+                <Route path='/' element={
+                  HomeElement
+                } />
+              </Route>
+              <Route path='/login' element={<LoginPage/>}/>
+              <Route path='/callback' element={<CallbackPage/>}/>
+          </Routes>
         </Router>
       ) : (
         <PageLoading message="loading page" />
