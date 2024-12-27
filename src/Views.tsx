@@ -25,6 +25,7 @@ import ScopeLists from './components/scopes/ScopeLists';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
 import ConsentsContainer from './components/applications/ConsentsContainer';
 import { Home } from '@mui/icons-material';
+import CallbackPage from './components/login/CallbackPage';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -117,6 +118,7 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
           <Route path='/scope' element={<ScopeLists />} />
           <Route path='/apps' element={<ApplicationsContainer />} />
           <Route path='/apps/consents' element={<ConsentsContainer />} />
+          <Route path='/callback' element={<CallbackPage />} />
         </Routes>
         
         {/* 

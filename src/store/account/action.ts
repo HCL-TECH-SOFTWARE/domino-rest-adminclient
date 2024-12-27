@@ -218,3 +218,16 @@ export function showPages() {
       });
   };
 }
+
+// Get list of available IdPs
+// Each IdP should be a button in Admin UI to login
+export async function getIdpList() {
+  const res = await fetch(
+      `${BASE_KEEP_API_URL}/auth/idpList?configFor=adminui`,
+      {
+        method: 'GET'
+      }
+    );
+  const resJson = await res.json()
+  return resJson
+}

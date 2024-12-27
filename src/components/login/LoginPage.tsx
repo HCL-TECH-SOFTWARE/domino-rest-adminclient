@@ -25,7 +25,7 @@ import {
 } from '../../config.dev';
 import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
-import { login, set401Error, setLoginError, setToken } from '../../store/account/action';
+import { getIdpList, login, set401Error, setIdpLogin, setLoginError, setToken } from '../../store/account/action';
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
@@ -33,6 +33,7 @@ import React, { useEffect, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { LOGIN } from '../../store/account/types';
+import { initiateAuthorizationRequest } from './pkce';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -150,6 +151,7 @@ const LoginPage = () => {
   const [noUsernamePasskey, setNoUsernamePasskey] = useState(false);
   const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
   const isHttps = protocol === "https"
+  const [idpList, setIdpList] = useState([]);
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -275,6 +277,11 @@ const LoginPage = () => {
     formik.handleSubmit();
   }
 
+  const handleLogInUsingIdp = async (idp: any) => {
+    await dispatch(setIdpLogin(true) as any)
+    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, window.location.href.replace('login', 'callback'))
+  }
+
   React.useEffect(() => {
     const canDoPasskey = () =>
       new Promise((resolve, reject) => {
@@ -300,6 +307,14 @@ const LoginPage = () => {
         setUsername(user ? user : '');
       })
       .catch((e) => dispatch(toggleAlert(e)));
+  }, [])
+
+  useEffect(() => {
+    async function getIdps() {
+      const fetchedIdps = await getIdpList()
+      setIdpList(fetchedIdps)
+    }
+    getIdps();
   }, [])
 
   return (
@@ -450,6 +465,21 @@ const LoginPage = () => {
                 </ButtonSubmit>
               )}
             </StyledForm>
+            {idpList.length > 0 &&
+                idpList.map((idp: any, index: number) => (
+                  <ButtonSubmit
+                    key={index}
+                    style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleLogInUsingIdp(idp)}
+                  >
+                    <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
+                    {`Log in with ${idp.name}`}
+                  </ButtonSubmit>
+              ))}
             <PasskeySignUpContainer>
               {isHttps && (
                 <Button fullWidth className="text-button">
