@@ -21,6 +21,15 @@ export interface TokenProps {
   issueDate: number;
 }
 
+export interface IdP {
+  name: string;
+  wellKnown: string;
+  adminui_config: {
+    active: boolean;
+    client_id: string;
+    scope: Array<string>;
+  }
+}
 export interface AccountState {
   navitems: {
 	  apps: boolean;
@@ -28,11 +37,12 @@ export interface AccountState {
     groups: boolean;
     users: boolean;
   };
-
   authenticated: boolean;
   error: boolean;
   error401: boolean;
   token: string;
+  idpLogin: boolean;
+  currentIdp: any;
 }
 
  export interface PageListObj {
@@ -51,6 +61,8 @@ export const SET_LOGIN_ERROR = 'SET_LOGIN_ERROR';
 export const SET_401_ERROR = 'SET_401_ERROR';
 export const RENEW_TOKEN = 'RENEW_TOKEN';
 export const NAVITEMS = 'NAVITEMS';
+export const SET_IDP_LOGIN = 'SET_IDP_LOGIN';
+export const CURRENT_IDP = 'CURRENT_IDP';
 
 interface LogIn {
   type: typeof LOGIN;
@@ -94,6 +106,16 @@ interface RenewToken {
   payload: string;
 }
 
+interface SetIdpLogin {
+  type: typeof SET_IDP_LOGIN;
+  payload: boolean;
+}
+
+interface SetCurrentIdp {
+  type: typeof CURRENT_IDP;
+  payload: IdP;
+}
+
 export type AccountActionTypes =
   | LogIn
   | LogOut
@@ -103,4 +125,6 @@ export type AccountActionTypes =
   | Authenticate
   | RenewToken
   | SetToken
-  | RemoveAuth;
+  | RemoveAuth
+  | SetIdpLogin
+  | SetCurrentIdp;

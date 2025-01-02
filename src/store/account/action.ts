@@ -18,6 +18,7 @@ import {
   NAVITEMS,
   PageListObj,
   SET_IDP_LOGIN,
+  IdP,
 } from './types';
 import { BASE_KEEP_API_URL } from '../../config.dev';
 import {
@@ -61,6 +62,10 @@ export function setToken(token: string) {
 }
 
 export const getToken = () => {
+  const userToken = JSON.parse(localStorage.getItem('user_token') as string)
+  if (!!userToken.access_token) {
+    return userToken.access_token
+  }
   return JSON.parse(localStorage.getItem('user_token') as string).bearer;
 };
 
@@ -102,7 +107,7 @@ export function renewToken() {
 // Create User Session
 // Add Token To Local Storage
 // Redirect to Main Page
-export function login(credentials: Credentials) {
+export function login(credentials: Credentials, successCallback: () => void) {
   const instance = axios.create();
   return async (dispatch: Dispatch) => {
     instance
@@ -117,6 +122,7 @@ export function login(credentials: Credentials) {
         });
         dispatch(setToken(jwtData));
         delete axios.defaults.headers.common.Authorization;
+        successCallback()
       })
       .catch((err) => {
         // delete axios.defaults.headers.common['content-type'];
@@ -237,5 +243,31 @@ export function setIdpLogin(idpLogin: boolean) {
   return {
     type: SET_IDP_LOGIN,
     payload: idpLogin,
+  }
+}
+
+export function setCurrentIdp(idp: IdP) {
+  return {
+    type: 'CURRENT_IDP',
+    payload: idp,
+  }
+}
+
+export function setPkceToken(token: any) {
+  return {
+    type: 'SET_PKCE_TOKEN',
+    payload: token,
+  }
+}
+
+export function loginWithPkce(token: any) {
+  return async (dispatch: Dispatch) => {
+    dispatch(setPkceToken(token))
+    localStorage.setItem('user_token', JSON.stringify(token));
+    dispatch(setIdpLogin(true))
+    dispatch(authenticate())
+    dispatch({
+      type: LOGIN
+    });
   }
 }

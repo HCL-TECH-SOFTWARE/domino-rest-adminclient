@@ -16,6 +16,8 @@ import {
   RENEW_TOKEN,
   REMOVE_AUTH,
   SET_401_ERROR,
+  SET_IDP_LOGIN,
+  CURRENT_IDP,
 } from './types';
 
 const initialState: AccountState = {
@@ -29,6 +31,16 @@ const initialState: AccountState = {
   error: false,
   error401: false,
   token: '',
+  idpLogin: false,
+  currentIdp: {
+    name: '',
+    wellKnown: '',
+    adminui_config: {
+      active: false,
+      client_id: '',
+      scope: [],
+    },
+  }
 };
 
 export default function accountReducer(
@@ -36,6 +48,13 @@ export default function accountReducer(
   action: AccountActionTypes
 ): AccountState {
   switch (action.type) {
+    case CURRENT_IDP:
+      console.log("setting the current idp")
+      console.log(action.payload)
+      return {
+        ...state,
+        currentIdp: action.payload,
+      };
     case LOGIN:
       return {
         ...state,
@@ -67,6 +86,13 @@ export default function accountReducer(
       return {
         ...state,
         error: action.payload,
+      };
+    case SET_IDP_LOGIN:
+      console.log("in reducer")
+      console.log(action.payload)
+      return {
+        ...state,
+        idpLogin: action.payload,
       };
     case SET_401_ERROR:
       return {

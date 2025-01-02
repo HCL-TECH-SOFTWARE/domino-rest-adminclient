@@ -24,7 +24,7 @@ import {
 } from '../../config.dev';
 import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
-import { getIdpList, login, set401Error, setLoginError, setToken } from '../../store/account/action';
+import { getIdpList, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
@@ -33,6 +33,7 @@ import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
+import { useNavigate } from 'react-router-dom';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -142,8 +143,9 @@ const ButtonSubmit = styled(Button)(({ theme }) => ({
 }));
 
 const LoginPage = () => {
-  const { error, error401 } = useSelector((state: AppState) => state.account);
+  const { error, error401, currentIdp } = useSelector((state: AppState) => state.account);
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
   const [username, setUsername] = useState('');
@@ -236,7 +238,7 @@ const LoginPage = () => {
       dispatch(set401Error(false));
       const data = JSON.stringify(values, null, 2);
       const parseData = JSON.parse(data);
-      await dispatch(login(parseData) as any);
+      await dispatch(login(parseData, () => navigate('/')) as any);
     },
   });
 
@@ -277,7 +279,16 @@ const LoginPage = () => {
   }
 
   const handleLogInUsingIdp = async (idp: any) => {
-    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, window.location.href.replace('login', 'callback'))
+    await dispatch(setCurrentIdp(idp) as any)
+    sessionStorage.setItem('oidc_config_url', idp.wellKnown)
+    sessionStorage.setItem('client_id', idp.adminui_config.client_id)
+    sessionStorage.setItem('redirect_uri', window.location.href.replace('admin/ui', 'admin/ui/callback'))
+    const scopePrepend = idp.adminui_config.application_id_uri ?? "";
+    let scope = '';
+    if (Array.isArray(idp.adminui_config.scope)) {
+      scope = idp.adminui_config.scope.map((s: String) => scopePrepend + s).join(" ");
+    }
+    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, window.location.href.replace('admin/ui', 'admin/ui/callback'), scope)
   }
 
   React.useEffect(() => {
