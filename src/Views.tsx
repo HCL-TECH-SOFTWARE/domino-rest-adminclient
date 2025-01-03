@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import AccessMode from './components/access/AccessMode';
 import ApplicationsContainer from './components/applications/Applications';
@@ -24,8 +24,9 @@ import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
 import ConsentsContainer from './components/applications/ConsentsContainer';
-import { Home } from '@mui/icons-material';
 import CallbackPage from './components/login/CallbackPage';
+import { PrivateRoutes } from './components/routers/ProtectedRoute';
+import LoginPage from './components/login/LoginPage';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -111,14 +112,16 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
     <ViewContainer id="main-stack">
         <PageRouters />
         <Routes>
-          <Route path='/' element={<Homepage />} />
-          <Route path='/schema' element={<SchemasLists />} />
-          <Route path='/schema/:nsfPath/:dbName' element={<FormsContainer />} />
-          <Route path='/schema/:nsfPath/:dbName/:formName/access' element={<AccessMode />}/>
-          <Route path='/scope' element={<ScopeLists />} />
-          <Route path='/apps' element={<ApplicationsContainer />} />
-          <Route path='/apps/consents' element={<ConsentsContainer />} />
-          <Route path='/callback' element={<CallbackPage />} />
+          <Route element={<PrivateRoutes />}>
+            <Route path='/' element={<Homepage />} />
+            <Route path='/schema' element={<SchemasLists />} />
+            <Route path='/schema/:nsfPath/:dbName' element={<FormsContainer />} />
+            <Route path='/schema/:nsfPath/:dbName/:formName/access' element={<AccessMode />}/>
+            <Route path='/scope' element={<ScopeLists />} />
+            <Route path='/apps' element={<ApplicationsContainer />} />
+            <Route path='/apps/consents' element={<ConsentsContainer />} />
+          </Route>
+          <Route path='/callback' element={<CallbackPage/>}/>
         </Routes>
         
         {/* 

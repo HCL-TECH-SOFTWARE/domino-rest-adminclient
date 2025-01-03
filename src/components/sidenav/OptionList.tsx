@@ -10,6 +10,7 @@ import LogoutIcon from '@mui/icons-material/ExitToApp';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/account/action';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const OptionListContainer = styled.div`
 `;
@@ -28,6 +29,7 @@ interface OptionListProps {
 
 const OptionList: React.FC<OptionListProps> = ({ theme, toggleMenu }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   
   /* Themes are off for now
   const [open, setOpen] = useState(false);
@@ -50,6 +52,7 @@ const OptionList: React.FC<OptionListProps> = ({ theme, toggleMenu }) => {
 
   const logoutUser = () => {
     dispatch(logout() as any);
+    navigate('/')
   };
 
   return (

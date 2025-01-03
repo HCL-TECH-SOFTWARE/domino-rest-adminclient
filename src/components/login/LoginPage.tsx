@@ -143,7 +143,7 @@ const ButtonSubmit = styled(Button)(({ theme }) => ({
 }));
 
 const LoginPage = () => {
-  const { error, error401, currentIdp } = useSelector((state: AppState) => state.account);
+  const { error, error401, idpLogin } = useSelector((state: AppState) => state.account);
   const dispatch = useDispatch();
   const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
@@ -282,13 +282,14 @@ const LoginPage = () => {
     await dispatch(setCurrentIdp(idp) as any)
     sessionStorage.setItem('oidc_config_url', idp.wellKnown)
     sessionStorage.setItem('client_id', idp.adminui_config.client_id)
-    sessionStorage.setItem('redirect_uri', window.location.href.replace('admin/ui', 'admin/ui/callback'))
+    const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
+    sessionStorage.setItem('redirect_uri', redirectUri)
     const scopePrepend = idp.adminui_config.application_id_uri ?? "";
     let scope = '';
     if (Array.isArray(idp.adminui_config.scope)) {
       scope = idp.adminui_config.scope.map((s: String) => scopePrepend + s).join(" ");
     }
-    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, window.location.href.replace('admin/ui', 'admin/ui/callback'), scope)
+    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
   }
 
   React.useEffect(() => {
@@ -362,7 +363,7 @@ const LoginPage = () => {
             <Typography style={{ fontSize: 18 }} component="h1" variant="h5">
               Login your account
             </Typography>
-            {error401 && (
+            {error401 && !idpLogin && (
               <Alert style={{ margin: "5px 0" }} severity="error">
                 <AlertTitle>Whoops: Something went wrong!</AlertTitle>
                 <Typography

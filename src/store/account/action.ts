@@ -26,6 +26,8 @@ import {
 } from '../databases/action';
 import { AppState } from '..';
 import { clearForms } from '../databases/action';
+import { ThunkAction } from 'redux-thunk';
+import { AnyAction } from 'redux';
 
 export function setLoginError(error: boolean) {
   return {
@@ -271,3 +273,9 @@ export function loginWithPkce(token: any) {
     });
   }
 }
+
+// Thunk action to get the current idpLogin state
+export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, AnyAction> => (dispatch, getState) => {
+  const { idpLogin } = getState().account;
+  return idpLogin;
+};

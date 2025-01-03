@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import axios, { AxiosResponse, AxiosError } from 'axios';
-import { removeAuth, set401Error } from '../store/account/action';
+import { getCurrentIdpLogin, removeAuth, set401Error } from '../store/account/action';
 import { initState } from '../store/databases/action';
 
 import { setCallStatus } from '../store/interceptor/action';
@@ -30,7 +30,10 @@ export default function injectInterceptor(dispatch: any) {
 
         if (error.response!.status === 401) {
           dispatch(set401Error(true));
-          dispatch(removeAuth());
+          const idpLogin = getCurrentIdpLogin()
+          if (!idpLogin) {
+            dispatch(removeAuth());
+          }
           dispatch(initState());
         }
 
