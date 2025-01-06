@@ -45,7 +45,7 @@
     </defs>
     <g>
         <!-- Element Auxilliary services-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/"
+        <a xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="651.154" height="140.753"
                 transform="scale(1,1) translate(205.267,423.872)">
@@ -67,7 +67,7 @@
 
         <!-- Element KeepConfig.nsf BOX-->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/understanding.html#databases-schemas-and-scopes"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/understanding.html#databases-schemas-and-scopes"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="111.394" height="258.697"
                 transform="scale(1,1) translate(323.139,124.394)">
@@ -95,7 +95,7 @@
         </g>
         <!-- Element DRAPI Schema -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="85.201" height="56.966"
                 transform="scale(1,1) translate(576.199,231.327)">
@@ -116,7 +116,8 @@
             </g>
         </a>
         <!-- Element Identity Provider -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/idp.html"
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/idp.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(226.539,456.089)">
@@ -142,7 +143,8 @@
             </g>
         </a>
         <!-- Element Big NSF icon-->
-        <a href="https://help.hcl-software.com/domino/14.0.0/admin/admn_managingdatabases_c.html"
+        <a
+            xlink:href="https://help.hcl-software.com/domino/14.0.0/admin/admn_managingdatabases_c.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="132.391" height="173.983"
                 transform="scale(1,1) translate(724.029,213.368)">
@@ -169,7 +171,7 @@
         </a>
         <!-- Element Forms* -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/formdefinitions.html"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/formdefinitions.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(469.117,272.912)">
@@ -191,7 +193,7 @@
         </a>
         <!-- Element Views** -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/viewdefinitions.html"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/viewdefinitions.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(555.543,328.54)">
@@ -213,7 +215,7 @@
         </a>
         <!-- Element Agents** -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/agentdefinitions.html"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/agentdefinitions.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(643.194,328.54)">
@@ -284,7 +286,8 @@
             </g>
         </g>
         <!-- Element KeepConfig.nsf server icon-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/references/usingwebui/index.html"
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/usingwebui/index.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="86.571" height="105.345"
                 transform="scale(1,1) translate(332.349,248.392)">
@@ -311,7 +314,7 @@
         </a>
         <!-- Element DRAPI Scope -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#scope"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#scope"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="85.201" height="56.966"
                 transform="scale(1,1) translate(343.963,137.01)">
@@ -332,7 +335,7 @@
             </g>
         </a>
         <!-- Element Form Modes -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/formmodes.html"
+        <a xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/formmodes.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(469.117,328.54)">
@@ -441,7 +444,7 @@
         </g>
         <!-- Element Speechbubble on top of big nsf icon-->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="115.794" height="106.933"
                 transform="scale(1,1) translate(656.152,124.394)">
@@ -484,7 +487,7 @@
             </g>
         </a>
         <!-- Element HTTP/2 Box-->
-        <a href="https://en.wikipedia.org/wiki/HTTP/2" target="_blank">
+        <a xlink:href="https://en.wikipedia.org/wiki/HTTP/2" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="257.32" height="46.69"
                 transform="rotate(270,229.278,253.72) scale(1,1) translate(100.618,230.375)">
                 <g id="a80a0959-24cf-4eb1-8a33-0557c49c9231">
@@ -504,7 +507,7 @@
             </g>
         </a>
         <!-- Line HTTP/2 to user -->
-        <a href="https://caniuse.com/http2" target="_blank">
+        <a xlink:href="https://caniuse.com/http2" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="36.264" height="60.989"
                 transform="scale(1,1) translate(169.669,253.72)">
                 <g id="b0746dbf-6b44-42ab-858b-2d902f745fce">
@@ -524,7 +527,7 @@
             </g>
         </a>
         <!-- Element Rest User-->
-        <a href="https://www.youtube.com/watch?v=Ng1U4LMZz7Y" target="_blank">
+        <a xlink:href="https://www.youtube.com/watch?v=Ng1U4LMZz7Y" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="112.5" height="105.667"
                 transform="scale(1,1) translate(57.169,288.293)">
                 <g id="6e431620-b1d8-4f3a-80c1-a774d313c152">
@@ -595,7 +598,8 @@
             </g>
         </a>
         <!-- Element WebDAV-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/webdav.html"
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/webdav.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(335.621,456.089)">
@@ -621,7 +625,8 @@
             </g>
         </a>
         <!-- Element OData -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/odata.html"
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/odata.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(444.702,456.089)">
@@ -648,7 +653,7 @@
         </a>
         <!-- Element Management Console -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/management.html"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/management.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(771.946,456.089)">
@@ -674,7 +679,8 @@
             </g>
         </a>
         <!-- Element iCal -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/ical.html"
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/ical.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(553.784,456.089)">
@@ -701,7 +707,7 @@
         </a>
         <!-- Element Health & metrics -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/healthmetrics.html"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/healthmetrics.html"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(662.865,456.089)">
@@ -727,7 +733,7 @@
             </g>
         </a>
         <!-- Line HTTP/2 to OpenAPI -->
-        <a href="https://en.wikipedia.org/wiki/Proxy_server" target="_blank">
+        <a xlink:href="https://en.wikipedia.org/wiki/Proxy_server" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="10.756" height="3"
                 transform="scale(1,1) translate(252.624,253.72)">
                 <g>
@@ -746,7 +752,7 @@
         </a>
         <!-- Element Text with * and ** -->
         <a
-            href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
             target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="353.483" height="31.25"
                 transform="scale(1,1) translate(332.349,387.351)">
@@ -765,7 +771,7 @@
             </g>
         </a>
         <!-- Element OpenAPI 3.x-->
-        <a href="https://swagger.io/specification/v3/" target="_blank">
+        <a xlink:href="https://swagger.io/specification/v3/" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="257.32" height="46.69"
                 transform="rotate(270,286.725,253.72) scale(1,1) translate(158.065,230.375)">
                 <g id="2c877364-5d69-4f8b-8f48-d4c445d6b71f">
