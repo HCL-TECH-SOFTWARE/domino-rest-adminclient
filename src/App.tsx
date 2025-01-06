@@ -21,6 +21,7 @@ import {
   setToken,
   renewToken,
   removeAuth,
+  getCurrentIdpLogin,
 } from './store/account/action';
 import PageLoading from './components/loaders/PageLoading';
 import injectInterceptor from './utils/api-interceptor';
@@ -61,7 +62,10 @@ const App: React.FC = () => {
       if (today < storageTokenTime) {
         dispatch(renewToken() as any);
       } else {
-        dispatch(removeAuth());
+        const idpLogin = getCurrentIdpLogin()
+        if (!idpLogin) {
+          dispatch(removeAuth());
+        }
       }
     }
   }, [dispatch]);
