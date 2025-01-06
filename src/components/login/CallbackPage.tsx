@@ -22,14 +22,21 @@ const CallbackPage: React.FC = () => {
     const error = searchParams.get('error');
     if (code) {
       async function getTokenResponse() {
-        const newToken = await handleCallback(oidcConfigUrl, clientId, redirectUri)
-        if (newToken.error) {
-          console.error('Fetched token error:', newToken.error)
+        const token = await handleCallback(oidcConfigUrl, clientId, redirectUri)
+        const { refresh_token, refresh_expires_in, 'not-before-policy': notBeforePolicy, ...userToken } = token
+        const refreshToken = {
+          refresh_token: refresh_token,
+          refresh_expires_in: refresh_expires_in,
+          'not-before-policy': notBeforePolicy,
+        }
+        if (userToken.error) {
+          console.error('Fetched token error:', userToken.error)
           setDisplayText("Error fetching token. Please try again.")
         } else {
-          localStorage.setItem('user_token', JSON.stringify(newToken))
-          await dispatch(loginWithPkce(newToken) as any)
-          setTokenResponse(newToken)
+          localStorage.setItem('user_token', JSON.stringify(userToken))
+          localStorage.setItem('refresh_token', JSON.stringify(refreshToken))
+          await dispatch(loginWithPkce(userToken) as any)
+          setTokenResponse(userToken)
           setDisplayText("Successfully authenticated! You can now access Admin UI.")
         }
       }

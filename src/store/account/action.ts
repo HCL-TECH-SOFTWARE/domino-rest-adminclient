@@ -51,6 +51,7 @@ export function authenticate() {
 
 export function removeAuth() {
   localStorage.removeItem('user_token');
+  localStorage.removeItem('refresh_token')
   return {
     type: REMOVE_AUTH
   };
@@ -151,6 +152,7 @@ export function logout() {
       )
       .then((response) => {
         dispatch(removeAuth());
+        dispatch(setIdpLogin(false))
         dispatch(initState());
 
         // Clearing form results

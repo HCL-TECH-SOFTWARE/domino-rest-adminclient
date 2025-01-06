@@ -42,6 +42,7 @@ const ProfileMenu = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const [open, setOpen] = useState(false);
+  const { idpLogin } = useSelector((state: AppState) => state.account);
 
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -54,16 +55,25 @@ const ProfileMenu = () => {
 
   // Get the current user from the auth token
   let user: string = '';
-  const jwtToken = localStorage.getItem('user_token') as string;
-  if (jwtToken) {
-    const jsonToken = JSON.parse(jwtToken) as TokenProps;
-    if (
-      jsonToken != null &&
-      jsonToken.claims != null &&
-      jsonToken.claims.sub != null
-    ) {
-      const currentUser = jsonToken.claims.sub;
-      user = currentUser.split('/')[0].split('=')[1];
+  const token = localStorage.getItem('user_token') as string;
+  if (token) {
+    if (idpLogin) {
+      const accessToken = JSON.parse(atob(JSON.parse(token).access_token.split('.')[1]))
+      if (!!accessToken.email) {
+        user = accessToken.email
+      } else if (!!accessToken.CN) {
+        user = accessToken.CN
+      }
+    } else {
+      const jsonToken = JSON.parse(token) as TokenProps;
+      if (
+        jsonToken != null &&
+        jsonToken.claims != null &&
+        jsonToken.claims.sub != null
+      ) {
+        const currentUser = jsonToken.claims.sub;
+        user = currentUser.split('/')[0].split('=')[1];
+      }
     }
   }
   return (
