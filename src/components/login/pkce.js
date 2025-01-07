@@ -1,5 +1,7 @@
 // PKCE Implementation in JavaScript
 
+import { getToken } from "../../store/account/action";
+
 // Generate Code Verifier
 function dec2hex(dec) {
     return ("0" + dec.toString(16)).substr(-2);
@@ -101,7 +103,6 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
     })
     .then(res => res.json())
     .then(data => {
-        console.log(data);
         return data;
     })
     .catch(err => {
@@ -112,5 +113,29 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
     return tokenResponse;
 }
 
-// window.initiateAuthorizationRequest = initiateAuthorizationRequest;
-// window.handleCallback = handleCallback;
+// Refresh Access Token
+export async function refreshToken() {
+    const oidcConfigUrl = localStorage.getItem('oidc_config_url');
+    const clientId = localStorage.getItem('client_id');
+    const refreshToken = getToken().refreshToken;
+    const { token_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
+
+    await fetch(token_endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            client_id: clientId,
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken,
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        localStorage.setItem('access_token', data);
+        return data;
+    })
+    .catch(err => {
+        console.error(err);
+        return { error: err.message }
+    });
+}

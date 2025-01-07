@@ -28,6 +28,7 @@ import { IoMdClose } from 'react-icons/io';
 import { Box, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { Buttons } from '../../styles/CommonStyles';
 import { fullEncode } from '../../utils/common';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 
 const EditViewDialogContainer = styled.div`
   width: 100%;
@@ -504,28 +505,58 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       const folderNames = folders.map((folder) => {return folder.viewName});
       const isFolder = folderNames.includes(viewName);
 
-      await axios
-        .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            "Content-Type": 'application/json'
-          }
-        })
-        .then((res) => {
-          const items = Object.keys(res.data);
-          let fetchedColumnsBuffer: any[];
-          items.forEach((item: any) => {
-            // skip items with '@' at the start of the key, it is metadata
-            if (!(item[0] === '@')) {
-              let newColumn = {
-                ...res.data[item],
-                name: item,
-              };
-              fetchedColumnsBuffer = !!fetchedColumnsBuffer ? [...fetchedColumnsBuffer, newColumn] : [newColumn];
-              setFetchedColumns(fetchedColumnsBuffer);
+      try {
+        const response = await apiRequestWithRetry(() =>
+          axios.get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              "Content-Type": 'application/json'
             }
-          });
+          })
+        );
+  
+        const items = Object.keys(response.data);
+        let fetchedColumnsBuffer: any[] = [];
+        items.forEach((item: any) => {
+          // skip items with '@' at the start of the key, it is metadata
+          if (!(item[0] === '@')) {
+            let newColumn = {
+              ...response.data[item],
+              name: item,
+            };
+            fetchedColumnsBuffer = [...fetchedColumnsBuffer, newColumn];
+          }
         });
+        setFetchedColumns(fetchedColumnsBuffer)
+      } catch (error: any) {
+        console.error('Error fetching columns:', error);
+        // Handle error appropriately
+      } finally {
+        dispatch(setLoading({ status: false }));
+      }
+
+      // await axios
+      //   .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
+      //     headers: {
+      //       Authorization: `Bearer ${getToken()}`,
+      //       "Content-Type": 'application/json'
+      //     }
+      //   })
+      //   .then((res) => {
+      //     const items = Object.keys(res.data);
+      //     let fetchedColumnsBuffer: any[];
+      //     items.forEach((item: any) => {
+      //       // skip items with '@' at the start of the key, it is metadata
+      //       if (!(item[0] === '@')) {
+      //         let newColumn = {
+      //           ...res.data[item],
+      //           name: item,
+      //         };
+      //         fetchedColumnsBuffer = !!fetchedColumnsBuffer ? [...fetchedColumnsBuffer, newColumn] : [newColumn];
+      //         setFetchedColumns(fetchedColumnsBuffer);
+      //       }
+      //     });
+      //   });
 
       dispatch(setLoading({status: false}));
     }
