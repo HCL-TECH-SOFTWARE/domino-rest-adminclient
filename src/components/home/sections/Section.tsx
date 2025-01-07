@@ -65,7 +65,9 @@ const Section = () => {
     <SectionContainer>
       <TipContainer>
         <section className='diagram'>
-          <img src={`${IMG_DIR}/home/keepblockdiagram.svg`} alt='DRAPI Block Diagram' width='50%' />
+          <object type="image/svg+xml" data={`${IMG_DIR}/home/keepblockdiagram.svg`} width="50%">
+            Open the <a href={`${IMG_DIR}/home/keepblockdiagram.svg`}>overview</a>
+          </object>
         </section>
         <FeatureContainer>
           {navitems.databases &&
