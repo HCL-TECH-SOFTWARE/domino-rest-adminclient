@@ -19,6 +19,7 @@ import { getToken } from '../account/action';
 import { toggleAlert } from '../alerts/action';
 import { TOGGLE_DELETE_DIALOG } from '../dialog/types';
 import { toggleApplicationDrawer } from '../drawer/action';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 
 /**
  * action.ts provides the action methods for the People page
@@ -33,39 +34,36 @@ import { toggleApplicationDrawer } from '../drawer/action';
  */
 export function fetchPeople() {
   return async (dispatch: Dispatch) => {
-    axios
-      .get(`${PIM_KEEP_API_URL}/public/people?documents=true`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json',
-        },
-      })
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${PIM_KEEP_API_URL}/public/people?documents=true`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json',
+            },
+          })
+      )
+      // Use the data to build a list of rows for display
+      const peopleRows = buildRows(response.data);
 
-      // Handle a valid response
-      .then((response) => {
-        // Use the data to build a list of rows for display
-        const peopleRows = buildRows(response.data);
+      // Update People state
+      dispatch(savePeoplesList(peopleRows));
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error reading People: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error reading People: ${err.response.statusText}`)
+        );
+      }
 
-        // Update People state
-        dispatch(savePeoplesList(peopleRows));
-      })
-
-      // Handle an error response
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error reading People: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error reading People: ${err.response.statusText}`)
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error reading People: ${err.message}`);
-          dispatch(toggleAlert(`Error reading People: ${err.message}`));
-        }
-      });
+      // Otherwise use the generic error
+      else {
+        console.log(`Error reading People: ${err.message}`);
+        dispatch(toggleAlert(`Error reading People: ${err.message}`));
+      }
+    }
   };
 }
 
@@ -108,49 +106,50 @@ export function savePeoplesList(peopleRows: any) {
  */
 export const addPeople = (peopleData: any) => {
   return async (dispatch: Dispatch) => {
-    axios
-      .post(`${PIM_KEEP_API_URL}/public/person`, peopleData, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((response) => {
-        const peopleReduxData: PeopleRedux = {
-          id: response.data.unid,
-          firstName: peopleData.FirstName,
-          lastName: peopleData.LastName,
-          shortName: peopleData.ShortName,
-          password: peopleData.HTTPPassword,
-          companyName: peopleData.CompanyName,
-          phoneNumber: peopleData.PhoneNumber,
-          internetAddress: peopleData.InternetAddress,
-          mailAddress: peopleData.MailAddress,
-        };
-        dispatch({
-          type: ADD_USER,
-          payload: peopleReduxData,
-        });
-        dispatch(toggleApplicationDrawer());
-        dispatch(
-          toggleAlert(`${peopleData.FirstName} has been successfully created`)
-        );
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error Creating People: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error Creating People: ${err.response.statusText}`)
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error Creating People: ${err.message}`);
-          dispatch(toggleAlert(`Error Creating People: ${err.message}`));
-        }
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(`${PIM_KEEP_API_URL}/public/person`, peopleData, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+          })
+      )
+      const peopleReduxData: PeopleRedux = {
+        id: response.data.unid,
+        firstName: peopleData.FirstName,
+        lastName: peopleData.LastName,
+        shortName: peopleData.ShortName,
+        password: peopleData.HTTPPassword,
+        companyName: peopleData.CompanyName,
+        phoneNumber: peopleData.PhoneNumber,
+        internetAddress: peopleData.InternetAddress,
+        mailAddress: peopleData.MailAddress,
+      };
+      dispatch({
+        type: ADD_USER,
+        payload: peopleReduxData,
       });
+      dispatch(toggleApplicationDrawer());
+      dispatch(
+        toggleAlert(`${peopleData.FirstName} has been successfully created`)
+      );
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error Creating People: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error Creating People: ${err.response.statusText}`)
+        );
+      }
+
+      // Otherwise use the generic error
+      else {
+        console.log(`Error Creating People: ${err.message}`);
+        dispatch(toggleAlert(`Error Creating People: ${err.message}`));
+      }
+    }
   };
 };
 /**
@@ -176,48 +175,49 @@ export function toggleDeleteDialog() {
  */
 export function updatePeople(personId: string, peopleData: any) {
   return async (dispatch: Dispatch) => {
-    axios
-      .post(`${PIM_KEEP_API_URL}/public/person/${personId}`, peopleData, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((response) => {
-        const peopleReduxData: PeopleRedux = {
-          id: response.data.unid,
-          firstName: peopleData.FirstName,
-          lastName: peopleData.LastName,
-          shortName: peopleData.ShortName,
-          password: peopleData.HTTPPassword,
-          companyName: peopleData.CompanyName,
-          phoneNumber: peopleData.PhoneNumber,
-          internetAddress: peopleData.InternetAddress,
-          mailAddress: peopleData.MailAddress,
-        };
-        dispatch({
-          type: UPDATE_USER,
-          payload: peopleReduxData,
-        });
-        dispatch(toggleApplicationDrawer());
-        dispatch(
-          toggleAlert(`${peopleData.FirstName} has been updated successfully`)
-        );
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error Updating People: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error Updating People: ${err.response.statusText}`)
-          );
-        }
-        // Otherwise use the generic error
-        else {
-          console.log(`Error Updating People: ${err.message}`);
-          dispatch(toggleAlert(`Error Updating People: ${err.message}`));
-        }
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(`${PIM_KEEP_API_URL}/public/person/${personId}`, peopleData, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+          })
+      )
+      const peopleReduxData: PeopleRedux = {
+        id: response.data.unid,
+        firstName: peopleData.FirstName,
+        lastName: peopleData.LastName,
+        shortName: peopleData.ShortName,
+        password: peopleData.HTTPPassword,
+        companyName: peopleData.CompanyName,
+        phoneNumber: peopleData.PhoneNumber,
+        internetAddress: peopleData.InternetAddress,
+        mailAddress: peopleData.MailAddress,
+      };
+      dispatch({
+        type: UPDATE_USER,
+        payload: peopleReduxData,
       });
+      dispatch(toggleApplicationDrawer());
+      dispatch(
+        toggleAlert(`${peopleData.FirstName} has been updated successfully`)
+      );
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error Updating People: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error Updating People: ${err.response.statusText}`)
+        );
+      }
+      // Otherwise use the generic error
+      else {
+        console.log(`Error Updating People: ${err.message}`);
+        dispatch(toggleAlert(`Error Updating People: ${err.message}`));
+      }
+    }
   };
 }
 
@@ -228,41 +228,37 @@ export function updatePeople(personId: string, peopleData: any) {
  */
 export function deletePeople(personId: string) {
   return async (dispatch: Dispatch) => {
-    // Delete User
-    axios
-      .delete(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
+    try {
+      await apiRequestWithRetry(() =>
+        axios
+          .delete(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+          })
+      )
+      dispatch({ type: DELETE_USER, payload: personId });
+      dispatch(toggleAlert(`User Deleted Successfully`));
+      // Close the Delete confirmation Dialog
+      dispatch(toggleDeleteDialog());
+    } catch (err: any) {
+      // Close the Delete confirmation Dialog
+      dispatch(toggleDeleteDialog());
 
-      // Handle a valid response
-      .then(() => {
-        dispatch({ type: DELETE_USER, payload: personId });
-        dispatch(toggleAlert(`User Deleted Successfully`));
-        // Close the Delete confirmation Dialog
-        dispatch(toggleDeleteDialog());
-      })
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error deleting in User: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error deleting in User: ${err.response.statusText}`)
+        );
+      }
 
-      // Handle an error response
-      .catch((err) => {
-        // Close the Delete confirmation Dialog
-        dispatch(toggleDeleteDialog());
-
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error deleting in User: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error deleting in User: ${err.response.statusText}`)
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error deleting in User: ${err.message}`);
-          dispatch(toggleAlert(`Error deleting in User: ${err.message}`));
-        }
-      });
+      // Otherwise use the generic error
+      else {
+        console.log(`Error deleting in User: ${err.message}`);
+        dispatch(toggleAlert(`Error deleting in User: ${err.message}`));
+      }
+    }
   };
 }

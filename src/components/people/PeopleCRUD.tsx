@@ -38,6 +38,7 @@ import {
   FormContainer,
   TopBanner,
 } from '../../styles/CommonStyles';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 
 /**
  * PeopleCRUD.tsx provides support for CRUD Operations
@@ -218,7 +219,7 @@ const PeopleCRUD: React.FC = () => {
   /**
    * updateAction is called when the Update User icon is clicked.
    */
-  const updateAction = (currentRow: Array<any>) => {
+  const updateAction = async (currentRow: Array<any>) => {
     const updateValues: any = {
       personId: '',
       firstName: '',
@@ -234,38 +235,39 @@ const PeopleCRUD: React.FC = () => {
     const personId: string = currentRow[0];
 
     // Fetch the current values
-    axios
-      .get(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((response) => {
-        updateValues.personId = personId;
-        updateValues.firstName = response.data.FirstName;
-        updateValues.lastName = response.data.LastName;
-        updateValues.shortName = response.data.ShortName;
-        updateValues.password = response.data.HTTPPassword;
-        updateValues.companyName = response.data.CompanyName;
-        updateValues.phoneNumber = response.data.HomePhone;
-        updateValues.internetAddress = response.data.InternetAddress;
-        updateValues.mailAddress = response.data.MailAddress;
-        formik.setValues(updateValues);
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+          })
+      )
+      updateValues.personId = personId;
+      updateValues.firstName = response.data.FirstName;
+      updateValues.lastName = response.data.LastName;
+      updateValues.shortName = response.data.ShortName;
+      updateValues.password = response.data.HTTPPassword;
+      updateValues.companyName = response.data.CompanyName;
+      updateValues.phoneNumber = response.data.HomePhone;
+      updateValues.internetAddress = response.data.InternetAddress;
+      updateValues.mailAddress = response.data.MailAddress;
+      formik.setValues(updateValues);
 
-        // open drawer
-        dispatch(toggleApplicationDrawer());
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error in reading user: ${err.response.statusText}`);
-        }
-        // Otherwise use the generic error
-        else {
-          console.log(`Error in reading user: ${err.message}`);
-        }
-      });
+      // open drawer
+      dispatch(toggleApplicationDrawer());
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error in reading user: ${err.response.statusText}`);
+      }
+      // Otherwise use the generic error
+      else {
+        console.log(`Error in reading user: ${err.message}`);
+      }
+    }
   };
 
   /**
@@ -273,7 +275,7 @@ const PeopleCRUD: React.FC = () => {
    * Opens a drawer with user data which is uneditable
    *
    */
-  const handleClickView = (rowData: any) => {
+  const handleClickView = async (rowData: any) => {
     setFormContext('View');
     const updateValues: any = {
       personId: '',
@@ -290,37 +292,38 @@ const PeopleCRUD: React.FC = () => {
     const personId: string = rowData.id;
 
     // Fetch the current values
-    axios
-      .get(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((response) => {
-        updateValues.personId = personId;
-        updateValues.firstName = response.data.FirstName;
-        updateValues.lastName = response.data.LastName;
-        updateValues.shortName = response.data.ShortName;
-        updateValues.password = response.data.HTTPPassword;
-        updateValues.companyName = response.data.CompanyName;
-        updateValues.phoneNumber = response.data.HomePhone;
-        updateValues.internetAddress = response.data.InternetAddress;
-        updateValues.mailAddress = response.data.MailAddress;
-        formik.setValues(updateValues);
-        // open drawer
-        dispatch(toggleApplicationDrawer());
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error in viewing user: ${err.response.statusText}`);
-        }
-        // Otherwise use the generic error
-        else {
-          console.log(`Error in viewing user: ${err.message}`);
-        }
-      });
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+          })
+      )
+      updateValues.personId = personId;
+      updateValues.firstName = response.data.FirstName;
+      updateValues.lastName = response.data.LastName;
+      updateValues.shortName = response.data.ShortName;
+      updateValues.password = response.data.HTTPPassword;
+      updateValues.companyName = response.data.CompanyName;
+      updateValues.phoneNumber = response.data.HomePhone;
+      updateValues.internetAddress = response.data.InternetAddress;
+      updateValues.mailAddress = response.data.MailAddress;
+      formik.setValues(updateValues);
+      // open drawer
+      dispatch(toggleApplicationDrawer());
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error in viewing user: ${err.response.statusText}`);
+      }
+      // Otherwise use the generic error
+      else {
+        console.log(`Error in viewing user: ${err.message}`);
+      }
+    }
   };
 
   /**

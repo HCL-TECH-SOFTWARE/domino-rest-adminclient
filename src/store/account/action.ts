@@ -28,6 +28,7 @@ import { AppState } from '..';
 import { clearForms } from '../databases/action';
 import { ThunkAction } from 'redux-thunk';
 import { AnyAction } from 'redux';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 
 export function setLoginError(error: boolean) {
   return {
@@ -139,27 +140,31 @@ export function login(credentials: Credentials, successCallback: () => void) {
 // Redirect to Login Page
 export function logout() {
   return async (dispatch: Dispatch) => {
-    axios
-      .post(
-        `${BASE_KEEP_API_URL}/auth/logout?dataSource=keepconfig`,
-        { logout: 'Yes' },
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
-        }
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(
+            `${BASE_KEEP_API_URL}/auth/logout?dataSource=keepconfig`,
+            { logout: 'Yes' },
+            {
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          )
       )
-      .then((response) => {
-        dispatch(removeAuth());
-        dispatch(setIdpLogin(false))
-        dispatch(initState());
+      dispatch(removeAuth());
+      dispatch(setIdpLogin(false))
+      dispatch(initState());
 
-        // Clearing form results
-        dispatch(clearForms());
+      // Clearing form results
+      dispatch(clearForms());
 
-        return response;
-      });
+      return response;
+    } catch (error) {
+      console.error("Error logging out:", error)
+    }
   };
 }
 
@@ -176,57 +181,54 @@ const pageList: PageListObj = {
  */
 export function showPages() {
   return async (dispatch: Dispatch) => {
-    axios
-      .get(`/adminui.json`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json'
-        }
-      })
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`/adminui.json`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      // If we have a configuration setting then use it
+      if (response.data.apps != null) {
+        pageList.apps = response.data.apps;
+      }
+      if (response.data.databases != null) {
+        pageList.databases = response.data.databases;
+      }
+      if (response.data.groups != null) {
+        pageList.groups = response.data.groups;
+      }
+      if (response.data.users != null) {
+        pageList.users = response.data.users;
+      }
 
-      // Handle a valid response
-      .then((response) => {
-        // If we have a configuration setting then use it
-        if (response.data.apps != null) {
-          pageList.apps = response.data.apps;
-        }
-        if (response.data.databases != null) {
-          pageList.databases = response.data.databases;
-        }
-        if (response.data.groups != null) {
-          pageList.groups = response.data.groups;
-        }
-        if (response.data.users != null) {
-          pageList.users = response.data.users;
-        }
-
-        // Save page state
-        dispatch({
-          type: NAVITEMS,
-          payload: pageList
-        });
-      })
-
-      // Handle an error response
-      .catch((err) => {
-        // If no configruation settings were found, use the default
-        dispatch({
-          type: NAVITEMS,
-          payload: pageList
-        });
-
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(
-            `Error reading page configuration: ${err.response.statusText}`
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error reading page configuration: ${err.message}`);
-        }
+      // Save page state
+      dispatch({
+        type: NAVITEMS,
+        payload: pageList
       });
+    } catch (err: any) {
+      // If no configruation settings were found, use the default
+      dispatch({
+        type: NAVITEMS,
+        payload: pageList
+      });
+
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(
+          `Error reading page configuration: ${err.response.statusText}`
+        );
+      }
+
+      // Otherwise use the generic error
+      else {
+        console.log(`Error reading page configuration: ${err.message}`);
+      }
+    }
   };
 }
 
