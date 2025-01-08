@@ -45,7 +45,8 @@
     </defs>
     <g>
         <!-- Element Auxilliary services-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="651.154" height="140.753"
                 transform="scale(1,1) translate(205.267,423.872)">
                 <g id="d96a2ff6-2111-4d3a-83ce-4449c41ca99e">
@@ -65,7 +66,9 @@
         </a>
 
         <!-- Element KeepConfig.nsf BOX-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/understanding.html#databases-schemas-and-scopes"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="111.394" height="258.697"
                 transform="scale(1,1) translate(323.139,124.394)">
                 <g id="901f3526-56ad-4e4d-86a7-f5793cb0bf34">
@@ -79,21 +82,21 @@
             </g>
         </a>
         <!-- Element Domino database Box -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="338.974" height="164.053"
-                transform="scale(1,1) translate(445.723,219.038)">
-                <g id="6ad9386c-fc79-4ccb-8e40-fde23a93f56b">
-                    <g transform="scale(1,1) translate(0,0)" stroke="#B4B4B4" stroke-opacity="1"
-                        fill="#E0EFDE" fill-opacity="1">
-                        <path
-                            d="M0,5 a5,5 0 0,1 5,-5 l328.974,0 a5,5 0 0,1 5,5 l0,154.053 a5,5 0 0,1 -5,5 l-328.974,0 a5,5 0 0,1 -5,-5 z"
-                            stroke-width="1.333" stroke-dasharray="none" />
-                    </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="338.974" height="164.053"
+            transform="scale(1,1) translate(445.723,219.038)">
+            <g id="6ad9386c-fc79-4ccb-8e40-fde23a93f56b">
+                <g transform="scale(1,1) translate(0,0)" stroke="#B4B4B4" stroke-opacity="1"
+                    fill="#E0EFDE" fill-opacity="1">
+                    <path
+                        d="M0,5 a5,5 0 0,1 5,-5 l328.974,0 a5,5 0 0,1 5,5 l0,154.053 a5,5 0 0,1 -5,5 l-328.974,0 a5,5 0 0,1 -5,-5 z"
+                        stroke-width="1.333" stroke-dasharray="none" />
                 </g>
             </g>
-        </a>
-        <!-- Element DRAPI Schema-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        </g>
+        <!-- Element DRAPI Schema -->
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="85.201" height="56.966"
                 transform="scale(1,1) translate(576.199,231.327)">
                 <g>
@@ -113,7 +116,9 @@
             </g>
         </a>
         <!-- Element Identity Provider -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/idp.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(226.539,456.089)">
                 <g>
@@ -138,7 +143,9 @@
             </g>
         </a>
         <!-- Element Big NSF icon-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://help.hcl-software.com/domino/14.0.0/admin/admn_managingdatabases_c.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="132.391" height="173.983"
                 transform="scale(1,1) translate(724.029,213.368)">
                 <g>
@@ -163,7 +170,9 @@
             </g>
         </a>
         <!-- Element Forms* -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/formdefinitions.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(469.117,272.912)">
                 <g id="ec3aa241-1512-439f-8efd-98de9459b630">
@@ -183,7 +192,9 @@
             </g>
         </a>
         <!-- Element Views** -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/viewdefinitions.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(555.543,328.54)">
                 <g>
@@ -203,7 +214,9 @@
             </g>
         </a>
         <!-- Element Agents** -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/schemacomponents/agentdefinitions.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(643.194,328.54)">
                 <g>
@@ -223,63 +236,59 @@
             </g>
         </a>
         <!-- Line DRAPI Schema to Forms* -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="86.797" height="5.854"
-                transform="scale(1,1) translate(532.002,288.293)">
-                <g>
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path d="M0,5.854 L86.797,0" fill="none" stroke-width="3"
-                            stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,2.854L3,2.854L3,8.854L-3,8.854z" stroke-width="0"
-                                    fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="86.797" height="5.854"
+            transform="scale(1,1) translate(532.002,288.293)">
+            <g>
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path d="M0,5.854 L86.797,0" fill="none" stroke-width="3"
+                        stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,2.854L3,2.854L3,8.854L-3,8.854z" stroke-width="0"
+                                fill="none" />
                         </g>
                     </g>
                 </g>
             </g>
-        </a>
+        </g>
         <!-- Line DRAPI Schemas to Views** -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="31.809" height="40.247"
-                transform="scale(1,1) translate(586.99,288.293)">
-                <g>
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path d="M0,40.247 L31.809,0" fill="none" stroke-width="3"
-                            stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,37.247L3,37.247L3,43.247L-3,43.247z" stroke-width="0"
-                                    fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="31.809" height="40.247"
+            transform="scale(1,1) translate(586.99,288.293)">
+            <g>
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path d="M0,40.247 L31.809,0" fill="none" stroke-width="3"
+                        stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,37.247L3,37.247L3,43.247L-3,43.247z" stroke-width="0"
+                                fill="none" />
                         </g>
                     </g>
                 </g>
             </g>
-        </a>
+        </g>
         <!-- Line DRAPI Schemas to Agents** -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="55.842" height="40.247"
-                transform="scale(1,1) translate(618.799,288.293)">
-                <g>
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path d="M0,0 L55.842,40.247" fill="none" stroke-width="3"
-                            stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="55.842" height="40.247"
+            transform="scale(1,1) translate(618.799,288.293)">
+            <g>
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path d="M0,0 L55.842,40.247" fill="none" stroke-width="3"
+                        stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
                         </g>
                     </g>
                 </g>
             </g>
-        </a>
+        </g>
         <!-- Element KeepConfig.nsf server icon-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/references/usingwebui/index.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="86.571" height="105.345"
                 transform="scale(1,1) translate(332.349,248.392)">
                 <g id="3f76c799-54b6-4def-88fe-36cc98e2b1f7">
@@ -304,7 +313,9 @@
             </g>
         </a>
         <!-- Element DRAPI Scope -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#scope"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="85.201" height="56.966"
                 transform="scale(1,1) translate(343.963,137.01)">
                 <g>
@@ -324,7 +335,8 @@
             </g>
         </a>
         <!-- Element Form Modes -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/formmodes.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="62.894" height="42.47"
                 transform="scale(1,1) translate(469.117,328.54)">
                 <g id="9c647119-cdc0-469a-8eb8-987721b1ddf9">
@@ -344,101 +356,96 @@
             </g>
         </a>
         <!-- Line form to modes -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="0" height="13.158"
-                transform="scale(1,1) translate(500.564,315.381)">
-                <g>
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path d="M0,0 L0,13.158" fill="none" stroke-width="3"
-                            stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="0" height="13.158"
+            transform="scale(1,1) translate(500.564,315.381)">
+            <g>
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path d="M0,0 L0,13.158" fill="none" stroke-width="3"
+                        stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
                         </g>
                     </g>
                 </g>
             </g>
-        </a>
+        </g>
         <!-- Line n:1 DRAPI Schema to database icons -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="62.638" height="40.84"
-                transform="scale(1,1) translate(661.391,259.81)">
-                <g>
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path d="M0,0 L62.638,40.84" fill="none" stroke-width="3"
-                            stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="62.638" height="40.84"
+            transform="scale(1,1) translate(661.391,259.81)">
+            <g>
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path d="M0,0 L62.638,40.84" fill="none" stroke-width="3"
+                        stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
                         </g>
                     </g>
-                    <g stroke-width="0" stroke-dasharray="none" fill="#FFFFFF" opacity="1"
-                        width="21.303" height="17.625"
-                        transform="scale(1,1) translate(20.667,11.607)">
-                        <rect width="21.303" height="17.625" />
-                    </g>
-                    <g width="19.30338478088379" height="40.83977448206588"
-                        transform="scale(1,1) translate(21.667,12.607)">
-                        <text width="19.30338478088379" height="15.624999046325684"
-                            transform="scale(1,1) translate(0,0)" xml:space="preserve"><tspan xml:space="preserve" text-rendering="optimizeSpeed" font-size="13.88888888888889" font-weight="normal" font-style="normal" text-decoration="none" fill="#333333" opacity="1" x="0" text-anchor="start" y="12.5" textLength="19.30338478088379" style="font-family: Arial, Helvetica Neue, Helvetica, sans-serif;">n:1</tspan></text>
-                    </g>
+                </g>
+                <g stroke-width="0" stroke-dasharray="none" fill="#FFFFFF" opacity="1"
+                    width="21.303" height="17.625"
+                    transform="scale(1,1) translate(20.667,11.607)">
+                    <rect width="21.303" height="17.625" />
+                </g>
+                <g width="19.30338478088379" height="40.83977448206588"
+                    transform="scale(1,1) translate(21.667,12.607)">
+                    <text width="19.30338478088379" height="15.624999046325684"
+                        transform="scale(1,1) translate(0,0)" xml:space="preserve"><tspan xml:space="preserve" text-rendering="optimizeSpeed" font-size="13.88888888888889" font-weight="normal" font-style="normal" text-decoration="none" fill="#333333" opacity="1" x="0" text-anchor="start" y="12.5" textLength="19.30338478088379" style="font-family: Arial, Helvetica Neue, Helvetica, sans-serif;">n:1</tspan></text>
                 </g>
             </g>
-        </a>
+        </g>
         <!-- Line n:1 Scope to DRAPI Schemas -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="189.644" height="65.834"
-                transform="scale(1,1) translate(429.155,165.493)">
-                <g>
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path
-                            d="M0,0 L184.644,0 L184.644,0 L186.245,0.263 L186.877,0.526 L187.341,0.789 L187.713,1.053 L188.025,1.316 L188.291,1.579 L188.521,1.842 L188.721,2.105 L188.896,2.368 L189.048,2.632 L189.179,2.895 L189.293,3.158 L189.388,3.421 L189.468,3.684 L189.532,3.947 L189.581,4.211 L189.616,4.474 L189.637,4.737 L189.644,5 L189.644,65.834"
-                            fill="none" stroke-width="3" stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="189.644" height="65.834"
+            transform="scale(1,1) translate(429.155,165.493)">
+            <g>
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path
+                        d="M0,0 L184.644,0 L184.644,0 L186.245,0.263 L186.877,0.526 L187.341,0.789 L187.713,1.053 L188.025,1.316 L188.291,1.579 L188.521,1.842 L188.721,2.105 L188.896,2.368 L189.048,2.632 L189.179,2.895 L189.293,3.158 L189.388,3.421 L189.468,3.684 L189.532,3.947 L189.581,4.211 L189.616,4.474 L189.637,4.737 L189.644,5 L189.644,65.834"
+                        fill="none" stroke-width="3" stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,-3L3,-3L3,3L-3,3z" stroke-width="0" fill="none" />
                         </g>
                     </g>
-                    <g stroke-width="0" stroke-dasharray="none" fill="#FFFFFF" opacity="1"
-                        width="21.303" height="17.625"
-                        transform="scale(1,1) translate(84.17,-8.812)">
-                        <rect width="21.303" height="17.625" />
-                    </g>
-                    <g width="19.30338478088379" height="65.83439746879864"
-                        transform="scale(1,1) translate(85.17,-7.812)">
-                        <text width="19.30338478088379" height="15.624999046325684"
-                            transform="scale(1,1) translate(0,0)" xml:space="preserve"><tspan xml:space="preserve" text-rendering="optimizeSpeed" font-size="13.88888888888889" font-weight="normal" font-style="normal" text-decoration="none" fill="#333333" opacity="1" x="0" text-anchor="start" y="12.5" textLength="19.30338478088379" style="font-family: Arial, Helvetica Neue, Helvetica, sans-serif;">n:1</tspan></text>
-                    </g>
+                </g>
+                <g stroke-width="0" stroke-dasharray="none" fill="#FFFFFF" opacity="1"
+                    width="21.303" height="17.625"
+                    transform="scale(1,1) translate(84.17,-8.812)">
+                    <rect width="21.303" height="17.625" />
+                </g>
+                <g width="19.30338478088379" height="65.83439746879864"
+                    transform="scale(1,1) translate(85.17,-7.812)">
+                    <text width="19.30338478088379" height="15.624999046325684"
+                        transform="scale(1,1) translate(0,0)" xml:space="preserve"><tspan xml:space="preserve" text-rendering="optimizeSpeed" font-size="13.88888888888889" font-weight="normal" font-style="normal" text-decoration="none" fill="#333333" opacity="1" x="0" text-anchor="start" y="12.5" textLength="19.30338478088379" style="font-family: Arial, Helvetica Neue, Helvetica, sans-serif;">n:1</tspan></text>
                 </g>
             </g>
-        </a>
+        </g>
+
         <!-- Line DRAPI scope to KeepConfig.nsf icon -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="0.759" height="56.502"
-                transform="scale(1,1) translate(385.804,193.975)">
-                <g id="fdd0be51-d2b6-4c7c-87f0-4289f3da97d6">
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path d="M0,56.502 L0.759,0" fill="none" stroke-width="3"
-                            stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,53.502L3,53.502L3,59.502L-3,59.502z" stroke-width="0"
-                                    fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="0.759" height="56.502"
+            transform="scale(1,1) translate(385.804,193.975)">
+            <g id="fdd0be51-d2b6-4c7c-87f0-4289f3da97d6">
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path d="M0,56.502 L0.759,0" fill="none" stroke-width="3"
+                        stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,53.502L3,53.502L3,59.502L-3,59.502z" stroke-width="0"
+                                fill="none" />
                         </g>
                     </g>
                 </g>
             </g>
-        </a>
+        </g>
         <!-- Element Speechbubble on top of big nsf icon-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="115.794" height="106.933"
                 transform="scale(1,1) translate(656.152,124.394)">
                 <g>
@@ -480,7 +487,7 @@
             </g>
         </a>
         <!-- Element HTTP/2 Box-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a xlink:href="https://en.wikipedia.org/wiki/HTTP/2" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="257.32" height="46.69"
                 transform="rotate(270,229.278,253.72) scale(1,1) translate(100.618,230.375)">
                 <g id="a80a0959-24cf-4eb1-8a33-0557c49c9231">
@@ -500,7 +507,7 @@
             </g>
         </a>
         <!-- Line HTTP/2 to user -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a xlink:href="https://caniuse.com/http2" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="36.264" height="60.989"
                 transform="scale(1,1) translate(169.669,253.72)">
                 <g id="b0746dbf-6b44-42ab-858b-2d902f745fce">
@@ -520,7 +527,7 @@
             </g>
         </a>
         <!-- Element Rest User-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a xlink:href="https://www.youtube.com/watch?v=Ng1U4LMZz7Y" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="112.5" height="105.667"
                 transform="scale(1,1) translate(57.169,288.293)">
                 <g id="6e431620-b1d8-4f3a-80c1-a774d313c152">
@@ -591,7 +598,9 @@
             </g>
         </a>
         <!-- Element WebDAV-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/webdav.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(335.621,456.089)">
                 <g>
@@ -616,7 +625,9 @@
             </g>
         </a>
         <!-- Element OData -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/odata.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(444.702,456.089)">
                 <g id="bb542dff-8314-4b15-8f9a-cb40f4978311">
@@ -641,7 +652,9 @@
             </g>
         </a>
         <!-- Element Management Console -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/management.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(771.946,456.089)">
                 <g>
@@ -666,7 +679,9 @@
             </g>
         </a>
         <!-- Element iCal -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/ical.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(553.784,456.089)">
                 <g id="1a51a811-3863-47d8-8a25-f2be37af674a">
@@ -691,7 +706,9 @@
             </g>
         </a>
         <!-- Element Health & metrics -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/auxiliary/healthmetrics.html"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="64.714" height="68.898"
                 transform="scale(1,1) translate(662.865,456.089)">
                 <g>
@@ -716,7 +733,7 @@
             </g>
         </a>
         <!-- Line HTTP/2 to OpenAPI -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a xlink:href="https://en.wikipedia.org/wiki/Proxy_server" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="10.756" height="3"
                 transform="scale(1,1) translate(252.624,253.72)">
                 <g>
@@ -734,7 +751,9 @@
             </g>
         </a>
         <!-- Element Text with * and ** -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a
+            xlink:href="https://opensource.hcltechsw.com/Domino-rest-api/topicguides/schemascope.html#schema"
+            target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="353.483" height="31.25"
                 transform="scale(1,1) translate(332.349,387.351)">
                 <g id="33c87ee0-cc90-4ea8-8d54-f340c4910a97">
@@ -752,7 +771,7 @@
             </g>
         </a>
         <!-- Element OpenAPI 3.x-->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
+        <a xlink:href="https://swagger.io/specification/v3/" target="_blank">
             <g xmlns="http://www.w3.org/2000/svg" width="257.32" height="46.69"
                 transform="rotate(270,286.725,253.72) scale(1,1) translate(158.065,230.375)">
                 <g id="2c877364-5d69-4f8b-8f48-d4c445d6b71f">
@@ -772,24 +791,22 @@
             </g>
         </a>
         <!-- Line OpenAPI to DRAPI Scope -->
-        <a href="https://opensource.hcltechsw.com/Domino-rest-api/" target="_blank">
-            <g xmlns="http://www.w3.org/2000/svg" width="33.901" height="88.228"
-                transform="scale(1,1) translate(310.07,165.493)">
-                <g id="cc5748b7-f893-410f-845f-24686182fd75">
-                    <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
-                        stroke-opacity="1">
-                        <path
-                            d="M0,88.228 L20.808,88.228 L20.808,88.228 L22.409,87.965 L23.041,87.702 L23.505,87.438 L23.877,87.175 L24.188,86.912 L24.455,86.649 L24.685,86.386 L24.885,86.123 L25.06,85.859 L25.212,85.596 L25.343,85.333 L25.456,85.07 L25.552,84.807 L25.632,84.544 L25.696,84.281 L25.745,84.017 L25.78,83.754 L25.801,83.491 L25.808,83.228 L25.808,3.237 L25.808,3.237 L25.813,3.067 L25.826,2.896 L25.849,2.726 L25.881,2.556 L25.922,2.385 L25.974,2.215 L26.036,2.044 L26.109,1.874 L26.194,1.704 L26.293,1.533 L26.406,1.363 L26.535,1.193 L26.684,1.022 L26.857,0.852 L27.058,0.681 L27.299,0.511 L27.599,0.341 L28.009,0.17 L29.045,0 L33.901,0"
-                            fill="none" stroke-width="3" stroke-dasharray="none" />
-                        <g>
-                            <g stroke-dasharray="none">
-                                <path d="M-3,85.228L3,85.228L3,91.228L-3,91.228z" stroke-width="0"
-                                    fill="none" />
-                            </g>
+        <g xmlns="http://www.w3.org/2000/svg" width="33.901" height="88.228"
+            transform="scale(1,1) translate(310.07,165.493)">
+            <g id="cc5748b7-f893-410f-845f-24686182fd75">
+                <g transform="scale(1,1) translate(0,0)" fill="#838383" stroke="#838383"
+                    stroke-opacity="1">
+                    <path
+                        d="M0,88.228 L20.808,88.228 L20.808,88.228 L22.409,87.965 L23.041,87.702 L23.505,87.438 L23.877,87.175 L24.188,86.912 L24.455,86.649 L24.685,86.386 L24.885,86.123 L25.06,85.859 L25.212,85.596 L25.343,85.333 L25.456,85.07 L25.552,84.807 L25.632,84.544 L25.696,84.281 L25.745,84.017 L25.78,83.754 L25.801,83.491 L25.808,83.228 L25.808,3.237 L25.808,3.237 L25.813,3.067 L25.826,2.896 L25.849,2.726 L25.881,2.556 L25.922,2.385 L25.974,2.215 L26.036,2.044 L26.109,1.874 L26.194,1.704 L26.293,1.533 L26.406,1.363 L26.535,1.193 L26.684,1.022 L26.857,0.852 L27.058,0.681 L27.299,0.511 L27.599,0.341 L28.009,0.17 L29.045,0 L33.901,0"
+                        fill="none" stroke-width="3" stroke-dasharray="none" />
+                    <g>
+                        <g stroke-dasharray="none">
+                            <path d="M-3,85.228L3,85.228L3,91.228L-3,91.228z" stroke-width="0"
+                                fill="none" />
                         </g>
                     </g>
                 </g>
             </g>
-        </a>
+        </g>
     </g>
 </svg>
