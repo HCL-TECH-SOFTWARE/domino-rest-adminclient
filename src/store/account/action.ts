@@ -29,6 +29,7 @@ import { clearForms } from '../databases/action';
 import { ThunkAction } from 'redux-thunk';
 import { AnyAction } from 'redux';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
 
 export function setLoginError(error: boolean) {
   return {
@@ -67,10 +68,15 @@ export function setToken(token: string) {
 
 export const getToken = () => {
   const userToken = JSON.parse(localStorage.getItem('user_token') as string)
-  if (!!userToken.access_token) {
-    return userToken.access_token
+  if (!!userToken) {
+    if (Object.keys(userToken).includes('access_token')) {
+      return userToken.access_token
+    } else {
+      return JSON.parse(localStorage.getItem('user_token') as string).bearer;
+    }
+  } else {
+    return null
   }
-  return JSON.parse(localStorage.getItem('user_token') as string).bearer;
 };
 
 export function renewToken() {
@@ -104,6 +110,7 @@ export function renewToken() {
 
         // Apply new token on local storage
         localStorage.setItem('user_token', JSON.stringify(newToken));
+        emitTokenEvent(newToken)
       });
   };
 }
@@ -121,6 +128,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
       .then((response) => {
         const jwtData = response.data;
         localStorage.setItem('user_token', JSON.stringify(jwtData));
+        emitTokenEvent(jwtData)
         dispatch({
           type: LOGIN
         });
@@ -181,12 +189,16 @@ const pageList: PageListObj = {
  */
 export function showPages() {
   return async (dispatch: Dispatch) => {
+    let token = getToken()
+    if (token === null) {
+      token = await waitForToken()
+    }
     try {
       const response = await apiRequestWithRetry(() =>
         axios
           .get(`/adminui.json`, {
             headers: {
-              Authorization: `Bearer ${getToken()}`,
+              Authorization: `Bearer ${token}`,
               Accept: 'application/json'
             }
           })
@@ -270,6 +282,7 @@ export function loginWithPkce(token: any) {
   return async (dispatch: Dispatch) => {
     dispatch(setPkceToken(token))
     localStorage.setItem('user_token', JSON.stringify(token));
+    emitTokenEvent(token)
     dispatch(setIdpLogin(true))
     dispatch(authenticate())
     dispatch({

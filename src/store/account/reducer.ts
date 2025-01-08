@@ -49,8 +49,6 @@ export default function accountReducer(
 ): AccountState {
   switch (action.type) {
     case CURRENT_IDP:
-      console.log("setting the current idp")
-      console.log(action.payload)
       return {
         ...state,
         currentIdp: action.payload,
@@ -88,8 +86,6 @@ export default function accountReducer(
         error: action.payload,
       };
     case SET_IDP_LOGIN:
-      console.log("in reducer")
-      console.log(action.payload)
       return {
         ...state,
         idpLogin: action.payload,

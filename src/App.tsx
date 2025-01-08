@@ -36,7 +36,7 @@ const App: React.FC = () => {
   const dispatch = useDispatch();
   const { themeMode } = useSelector((state: AppState) => state.styles);
 
-  const { authenticated } = useSelector((state: AppState) => state.account);
+  const { authenticated, idpLogin } = useSelector((state: AppState) => state.account);
 
   useEffect(() => {
     // Handle Axios Interceptor
@@ -59,10 +59,9 @@ const App: React.FC = () => {
       const today = new Date().getTime();
 
       dispatch(authenticate());
-      if (today < storageTokenTime) {
+      if ((today < storageTokenTime) && !idpLogin) {
         dispatch(renewToken() as any);
       } else {
-        const idpLogin = getCurrentIdpLogin()
         if (!idpLogin) {
           dispatch(removeAuth());
         }
