@@ -19,6 +19,7 @@ import { PIM_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleAlert } from '../alerts/action';
 import { toggleApplicationDrawer } from '../drawer/action';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 
 /**
  * action.ts provides the action methods for group members
@@ -36,41 +37,38 @@ import { toggleApplicationDrawer } from '../drawer/action';
 export function fetchGroupMembers(currentRow: Array<any>) {
   return async (dispatch: Dispatch) => {
     const groupId: string = currentRow[0];
-    axios
-      .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json',
-        },
-      })
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json',
+            },
+          })
+      )
+      // Use the data to build a list of rows for display
+      const memberRows = {
+        id: response.data.unid,
+        fullName: response.data.Members,
+      };
+      // Update People state
+      dispatch(saveMembersList(memberRows));
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error reading Member: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error reading Member: ${err.response.statusText}`)
+        );
+      }
 
-      // Handle a valid response
-      .then((response) => {
-        // Use the data to build a list of rows for display
-        const memberRows = {
-          id: response.data.unid,
-          fullName: response.data.Members,
-        };
-        // Update People state
-        dispatch(saveMembersList(memberRows));
-      })
-
-      // Handle an error response
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error reading Member: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error reading Member: ${err.response.statusText}`)
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error reading Member: ${err.message}`);
-          dispatch(toggleAlert(`Error reading Member: ${err.message}`));
-        }
-      });
+      // Otherwise use the generic error
+      else {
+        console.log(`Error reading Member: ${err.message}`);
+        dispatch(toggleAlert(`Error reading Member: ${err.message}`));
+      }
+    }
   };
 }
 
@@ -107,42 +105,43 @@ export function saveMembersList(memberRows: any) {
  */
 export const addMember = (membersData: any) => {
   return async (dispatch: Dispatch) => {
-    axios
-      .post(`${PIM_KEEP_API_URL}/public/group`, membersData, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((response) => {
-        const MemberReduxData: MemberRedux = {
-          id: response.data.unid,
-          fullName: membersData.Members,
-        };
-        dispatch({
-          type: ADD_MEMBER,
-          payload: MemberReduxData,
-        });
-        dispatch(toggleApplicationDrawer());
-        dispatch(
-          toggleAlert(`${membersData.FirstName} has been successfully added`)
-        );
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error in Adding Member: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error in Adding Member: ${err.response.statusText}`)
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error in Adding Member: ${err.message}`);
-          dispatch(toggleAlert(`Error in Adding Member: ${err.message}`));
-        }
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+        .post(`${PIM_KEEP_API_URL}/public/group`, membersData, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      )
+      const MemberReduxData: MemberRedux = {
+        id: response.data.unid,
+        fullName: membersData.Members,
+      };
+      dispatch({
+        type: ADD_MEMBER,
+        payload: MemberReduxData,
       });
+      dispatch(toggleApplicationDrawer());
+      dispatch(
+        toggleAlert(`${membersData.FirstName} has been successfully added`)
+      );
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error in Adding Member: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error in Adding Member: ${err.response.statusText}`)
+        );
+      }
+
+      // Otherwise use the generic error
+      else {
+        console.log(`Error in Adding Member: ${err.message}`);
+        dispatch(toggleAlert(`Error in Adding Member: ${err.message}`));
+      }
+    }
   };
 };
 
@@ -171,41 +170,38 @@ export function toggleDeleteDialog() {
 export function removeMember(memberId: string) {
   return async (dispatch: Dispatch) => {
     // Delete User
-    axios
-      .delete(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
+    try {
+      await apiRequestWithRetry(() =>
+        axios
+          .delete(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+          })
+      )
+      dispatch({ type: REMOVE_MEMBER, payload: memberId });
+      dispatch(toggleAlert(`Member Removed Successfully!`));
+      // Close the Delete confirmation Dialog
+      dispatch(toggleDeleteDialog());
+    } catch (err: any) {
+      // Close the Delete confirmation Dialog
+      dispatch(toggleDeleteDialog());
 
-      // Handle a valid response
-      .then(() => {
-        dispatch({ type: REMOVE_MEMBER, payload: memberId });
-        dispatch(toggleAlert(`Member Removed Successfully!`));
-        // Close the Delete confirmation Dialog
-        dispatch(toggleDeleteDialog());
-      })
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error in removing Member: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error in removing Member: ${err.response.statusText}`)
+        );
+      }
 
-      // Handle an error response
-      .catch((err) => {
-        // Close the Delete confirmation Dialog
-        dispatch(toggleDeleteDialog());
-
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error in removing Member: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error in removing Member: ${err.response.statusText}`)
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error in removing Member: ${err.message}`);
-          dispatch(toggleAlert(`Error in removing Member: ${err.message}`));
-        }
-      });
+      // Otherwise use the generic error
+      else {
+        console.log(`Error in removing Member: ${err.message}`);
+        dispatch(toggleAlert(`Error in removing Member: ${err.message}`));
+      }
+    }
   };
 }
 /**
@@ -216,40 +212,37 @@ export function removeMember(memberId: string) {
 export function removeAllMembers(memberId: string) {
   return async (dispatch: Dispatch) => {
     // Remove Member
-    axios
-      .delete(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json',
-        },
-      })
+    try {
+      await apiRequestWithRetry(() =>
+        axios
+          .delete(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+          })
+      )
+      dispatch({ type: REMOVE_ALL_MEMBERS, payload: memberId });
+      dispatch(toggleAlert(`Members Removed Successfully!`));
+      // Close the Delete confirmation Dialog
+      dispatch(toggleDeleteDialog());
+    } catch (err: any) {
+      // Close the Delete confirmation Dialog
+      dispatch(toggleDeleteDialog());
 
-      // Handle a valid response
-      .then(() => {
-        dispatch({ type: REMOVE_ALL_MEMBERS, payload: memberId });
-        dispatch(toggleAlert(`Members Removed Successfully!`));
-        // Close the Delete confirmation Dialog
-        dispatch(toggleDeleteDialog());
-      })
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error in removing Members: ${err.response.statusText}`);
+        dispatch(
+          toggleAlert(`Error in removing Members: ${err.response.statusText}`)
+        );
+      }
 
-      // Handle an error response
-      .catch((err) => {
-        // Close the Delete confirmation Dialog
-        dispatch(toggleDeleteDialog());
-
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error in removing Members: ${err.response.statusText}`);
-          dispatch(
-            toggleAlert(`Error in removing Members: ${err.response.statusText}`)
-          );
-        }
-
-        // Otherwise use the generic error
-        else {
-          console.log(`Error in removing Members: ${err.message}`);
-          dispatch(toggleAlert(`Error in removing Members: ${err.message}`));
-        }
-      });
+      // Otherwise use the generic error
+      else {
+        console.log(`Error in removing Members: ${err.message}`);
+        dispatch(toggleAlert(`Error in removing Members: ${err.message}`));
+      }
+    }
   };
 }
