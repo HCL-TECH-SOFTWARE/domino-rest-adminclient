@@ -280,8 +280,8 @@ const LoginPage = () => {
 
   const handleLogInUsingIdp = async (idp: any) => {
     await dispatch(setCurrentIdp(idp) as any)
-    sessionStorage.setItem('oidc_config_url', idp.wellKnown)
-    sessionStorage.setItem('client_id', idp.adminui_config.client_id)
+    localStorage.setItem('oidc_config_url', idp.wellKnown)
+    localStorage.setItem('client_id', idp.adminui_config.client_id)
     const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
     sessionStorage.setItem('redirect_uri', redirectUri)
     const scopePrepend = idp.adminui_config.application_id_uri ?? "";

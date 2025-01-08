@@ -451,7 +451,7 @@ export const fetchScopes = () => {
     };
 
     try {
-      const scopes = await apiRequestWithRetry(() =>
+      const response = await apiRequestWithRetry(() =>
         axios
           .get(`${SETUP_KEEP_API_URL}/admin/scopes?adminInfo=true`, {
             headers: {
@@ -460,6 +460,7 @@ export const fetchScopes = () => {
             }
           })
       )
+      const scopes = response.data;
       var pulled = false;
       if (scopes && scopes.length > 0) {
         let simpleSchemas = scopes
@@ -2723,7 +2724,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
 export const fetchKeepPermissions = () => {
   return async (dispatch: Dispatch) => {
     try {
-      const data = await apiRequestWithRetry(() =>
+      const response = await apiRequestWithRetry(() =>
         axios
           .get(`${SETUP_KEEP_API_URL}/admin/access`, {
             headers: {
@@ -2732,6 +2733,7 @@ export const fetchKeepPermissions = () => {
             }
           })
       )
+      const data = response.data
       dispatch({
         type: FETCH_KEEP_PERMISSIONS,
         payload: {

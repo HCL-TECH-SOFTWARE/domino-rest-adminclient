@@ -51,13 +51,11 @@ async function generateCodeVerifierAndChallenge() {
 
 // Step 2: Initiate Authorization Request
 export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redirectUri, scope) {
-    console.log(redirectUri)
     const { authorization_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
     const { codeVerifier, codeChallenge } = await generateCodeVerifierAndChallenge();
     
-    sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-    console.log("hello")
-
+    localStorage.setItem('pkce_code_verifier', codeVerifier);
+    
     const authUrl = `${authorization_endpoint}?` +
         new URLSearchParams({
             client_id: clientId,
@@ -82,7 +80,7 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
         throw new Error('Authorization code not found in callback URL');
     }
 
-    const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
+    const codeVerifier = localStorage.getItem('pkce_code_verifier');
 
     if (!codeVerifier) {
         throw new Error('Code verifier not found in session storage');

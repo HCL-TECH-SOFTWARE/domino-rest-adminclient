@@ -40,8 +40,8 @@ const CallbackPage: React.FC = () => {
           setDisplayText("Successfully authenticated! You can now access Admin UI.")
         }
       }
-      const oidcConfigUrl = sessionStorage.getItem('oidc_config_url');
-      const clientId = sessionStorage.getItem('client_id');
+      const oidcConfigUrl = localStorage.getItem('oidc_config_url');
+      const clientId = localStorage.getItem('client_id');
       const redirectUri = sessionStorage.getItem('redirect_uri');
       getTokenResponse()
     } else if (error) {
