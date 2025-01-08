@@ -77,6 +77,7 @@ import { convert2FieldType, convertDesignType2Format } from '../../components/ac
 import { fullEncode } from '../../utils/common';
 import appIcons from '../../styles/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 
 /**
  * action.ts provides the action methods for the Database page
@@ -111,30 +112,31 @@ function getErrorMsg(error: any) {
 export function deleteScope(apiName: string) {
   return async (dispatch: Dispatch) => {
     dispatch(setApiLoading(true));
-    // NEED UPDATE DEL
-    axios
-      .delete(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      .then(() => {
-        dispatch({
-          type: DELETE_SCOPE,
-          payload: apiName
-        });
-        dispatch(setApiLoading(false));
-        dispatch(toggleDeleteDialog());
-        dispatch(toggleDrawer());
-        dispatch(toggleAlert(`${apiName} has been successfully deleted.`));
-      })
-      .catch((error: any) => {
-        dispatch(setApiLoading(false));
-        dispatch(toggleDeleteDialog());
-        const errorMsg = getErrorMsg(error);
-        dispatch(toggleAlert(`Delete scope failed! ${errorMsg}`));
+    try {
+      // NEED UPDATE DEL
+      await apiRequestWithRetry(() =>
+        axios
+          .delete(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
+            }
+          })
+      )
+      dispatch({
+        type: DELETE_SCOPE,
+        payload: apiName
       });
+      dispatch(setApiLoading(false));
+      dispatch(toggleDeleteDialog());
+      dispatch(toggleDrawer());
+      dispatch(toggleAlert(`${apiName} has been successfully deleted.`));
+    } catch (error) {
+      dispatch(setApiLoading(false));
+      dispatch(toggleDeleteDialog());
+      const errorMsg = getErrorMsg(error);
+      dispatch(toggleAlert(`Delete scope failed! ${errorMsg}`));
+    }
   };
 }
 
@@ -145,31 +147,32 @@ export function deleteSchema(dbData: any) {
     const { nsfPath, schemaName } = dbData;
     if (nsfPath && schemaName) {
       try {
-        axios
-          .delete(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
+        try {
+          await apiRequestWithRetry(() =>
+            axios
+              .delete(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              })
+          )
+          dispatch({
+            type: DELETE_SCHEMA,
+            payload: {
+              schemaName: dbData.schemaName,
+              nsfPath: dbData.nsfPath
             }
-          })
-          .then(() => {
-            dispatch({
-              type: DELETE_SCHEMA,
-              payload: {
-                schemaName: dbData.schemaName,
-                nsfPath: dbData.nsfPath
-              }
-            });
-            dispatch(toggleDeleteDialog());
-            dispatch(setApiLoading(false));
-            dispatch(toggleAlert(`${dbData.schemaName} has been successfully deleted.`));
-          })
-          .catch((error: any) => {
-            dispatch(setApiLoading(false));
-            dispatch(toggleDeleteDialog());
-            const errorMsg = getErrorMsg(error);
-            dispatch(toggleAlert(`Delete schema failed! ${errorMsg}`));
           });
+          dispatch(toggleDeleteDialog());
+          dispatch(setApiLoading(false));
+          dispatch(toggleAlert(`${dbData.schemaName} has been successfully deleted.`));
+        } catch (error) {
+          dispatch(setApiLoading(false));
+          dispatch(toggleDeleteDialog());
+          const errorMsg = getErrorMsg(error);
+          dispatch(toggleAlert(`Delete schema failed! ${errorMsg}`));
+        }
       } catch (err: any) {
         dispatch(setApiLoading(false));
         dispatch(toggleDeleteDialog());
@@ -195,28 +198,33 @@ export const setPullScope = (scopePull: boolean) => {
 
 export const fetchScope = async (scopeData: any) => {
   const { apiName } = scopeData;
-  const scopes = await axios
-    .get(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    .then((res) => res.data);
-  const { schemaName, nsfPath, isActive, icon, iconName, description, formulaEngine } = scopes;
-  return {
-    apiName: apiName,
-    schemaName: schemaName,
-    nsfPath,
-    description,
-    isActive: isActive,
-    icon,
-    iconName,
-    formulaEngine,
-    isFetch: false,
-    isModeFetch: false,
-    modes: []
-  };
+  try {
+    const scopes = await apiRequestWithRetry(() =>
+      axios
+        .get(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          }
+        })
+    )
+    const { schemaName, nsfPath, isActive, icon, iconName, description, formulaEngine } = scopes;
+    return {
+      apiName: apiName,
+      schemaName: schemaName,
+      nsfPath,
+      description,
+      isActive: isActive,
+      icon,
+      iconName,
+      formulaEngine,
+      isFetch: false,
+      isModeFetch: false,
+      modes: []
+    };
+  } catch (error) {
+    console.error(`Error fetching scope ${apiName}:`, error);
+  }
 };
 
 /**
@@ -230,20 +238,20 @@ export const fetchScope = async (scopeData: any) => {
 export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: (schemaData: any) => void) => {
   return async (dispatch: Dispatch) => {
     try {
-      await axios
-        .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
-        })
-        .then((res) => {
-          setSchemaData(res.data);
-          dispatch({
-            type: SET_API_LOADING,
-            payload: false
-          });
-        });
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      setSchemaData(response.data);
+      dispatch({
+        type: SET_API_LOADING,
+        payload: false
+      });
     } catch (err) {
       console.log(err);
     }
@@ -397,16 +405,22 @@ export const fetchKeepDatabases = () => {
       return scope.nsfPath + ':' + scope.schemaName;
     });
 
-    fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    }).then(async function respond(response) {
+    try {
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+      )
       processResponse(response, dispatch, scopeList);
-    });
+    } catch (error) {
+      console.error('Error fetching databases:', error);
+      dispatch(setLoading({ status: false }));
+    }
   };
 };
 
@@ -436,55 +450,57 @@ export const fetchScopes = () => {
       onlyConfigured: false
     };
 
-    const scopes = await axios
-      .get(`${SETUP_KEEP_API_URL}/admin/scopes?adminInfo=true`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json'
-        }
-      })
-      .then(async (res) => res.data)
-      .catch((err) => {
-        if (err.response && err.response.status === 401) throw err;
-        dispatch(toggleErrorDialog(`${err.code}: ${err.message}`));
-      });
-
-    var pulled = false;
-    if (scopes && scopes.length > 0) {
-      let simpleSchemas = scopes
-        .filter((scope: any) => scope.apiName !== 'keepconfig')
-        .map((scope: any) => {
-          return {
-            agents: [],
-            forms: [],
-            views: [],
-            modes: [],
-            schemaName: scope.schemaName,
-            nsfPath: scope.nsfPath,
-            isActive: scope.isActive
-          };
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/admin/scopes?adminInfo=true`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      const scopes = response.data;
+      var pulled = false;
+      if (scopes && scopes.length > 0) {
+        let simpleSchemas = scopes
+          .filter((scope: any) => scope.apiName !== 'keepconfig')
+          .map((scope: any) => {
+            return {
+              agents: [],
+              forms: [],
+              views: [],
+              modes: [],
+              schemaName: scope.schemaName,
+              nsfPath: scope.nsfPath,
+              isActive: scope.isActive
+            };
+          });
+        sortAndRemoveDupSchemas(simpleSchemas);
+        // Once summary of scopes and schemas fetched, dispatch them to refresh UI first
+        dispatch({
+          type: FETCH_KEEP_DATABASES,
+          payload: []
         });
-      sortAndRemoveDupSchemas(simpleSchemas);
-      // Once summary of scopes and schemas fetched, dispatch them to refresh UI first
-      dispatch({
-        type: FETCH_KEEP_DATABASES,
-        payload: []
-      });
-      dispatch({
-        type: FETCH_KEEP_SCOPES,
-        payload: scopes
-      });
+        dispatch({
+          type: FETCH_KEEP_SCOPES,
+          payload: scopes
+        });
 
-      // Begin fetch detailed schemas and refresh store
-      simpleSchemas.forEach((schema: any) => {
-        dispatch(setPullScope(true));
-        if (!pulled) {
-          pulled = true;
+        // Begin fetch detailed schemas and refresh store
+        simpleSchemas.forEach((schema: any) => {
           dispatch(setPullScope(true));
-        }
-      });
-    } else {
-      dispatch(setPullScope(true));
+          if (!pulled) {
+            pulled = true;
+            dispatch(setPullScope(true));
+          }
+        });
+      } else {
+        dispatch(setPullScope(true));
+      }
+    } catch (err: any) {
+      if (err.response && err.response.status === 401) throw err;
+        dispatch(toggleErrorDialog(`${err.code}: ${err.message}`));
     }
   };
 };
@@ -560,74 +576,74 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
     try {
       // Encode the form name
       const encodedFormName = fullEncode(formName);
-      await axios
+      const res = await apiRequestWithRetry(() =>
+        axios
         .get(`${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json'
           }
         })
-        .then((res) => {
-          // Add uuids for React
-          const transformFields = [];
-          // Set default value for fields otherwise those field cannot be saved properly once added
-          for (const key in res.data as any) {
-            if (key.startsWith('@')) {
-              let type = 'string';
-              let isMultiValue = false;
-              if (key === 'alias') {
-                type = 'array';
-                isMultiValue = true;
-              }
-              transformFields.push({
-                id: uuid(),
-                content: key,
-                name: key,
-                isMultiValue: isMultiValue,
-                fieldAccess: 'RO',
-                format: 'string',
-                type: type,
-                kind: "",
-              });
-            } else {
-              let field = res.data[key];
-              let format = key === '$FILES' ? 'string' : convertDesignType2Format(field.type, field.attributes);
-              let allowMultiValues = field.allowmultivalues;
-              let type = convert2FieldType(format, allowMultiValues);
-              let fieldAccess = 'RO';
-              if (field.kind === 'editable') {
-                fieldAccess = 'RW';
-              }
-              transformFields.push({
-                id: uuid(),
-                content: key,
-                isMultiValue: allowMultiValues,
-                fieldAccess: fieldAccess,
-                format: format,
-                type: type,
-                kind: field.kind,
-              });
-            }
+      )
+      // Add uuids for React
+      const transformFields = [];
+      // Set default value for fields otherwise those field cannot be saved properly once added
+      for (const key in res.data as any) {
+        if (key.startsWith('@')) {
+          let type = 'string';
+          let isMultiValue = false;
+          if (key === 'alias') {
+            type = 'array';
+            isMultiValue = true;
           }
-
-          // Strip away @alias, @hide, and @name
-          const draggableFields: Array<any> = transformFields.filter((value, idx) => {
-            return idx > 2;
+          transformFields.push({
+            id: uuid(),
+            content: key,
+            name: key,
+            isMultiValue: isMultiValue,
+            fieldAccess: 'RO',
+            format: 'string',
+            type: type,
+            kind: "",
           });
-
-          // Save active form and fields for left panel
-          dispatch<any>(setActiveForm(schemaName, formName));
-          dispatch<any>(addActiveFields(externalName, draggableFields));
-          dispatch<any>(setLoadedForm(schemaName, formName));
-          dispatch<any>(setLoadedFields(externalName, draggableFields) as any);
-
-          dispatch({
-            type: SET_VALUE,
-            payload: {
-              status: false
-            }
+        } else {
+          let field = res.data[key];
+          let format = key === '$FILES' ? 'string' : convertDesignType2Format(field.type, field.attributes);
+          let allowMultiValues = field.allowmultivalues;
+          let type = convert2FieldType(format, allowMultiValues);
+          let fieldAccess = 'RO';
+          if (field.kind === 'editable') {
+            fieldAccess = 'RW';
+          }
+          transformFields.push({
+            id: uuid(),
+            content: key,
+            isMultiValue: allowMultiValues,
+            fieldAccess: fieldAccess,
+            format: format,
+            type: type,
+            kind: field.kind,
           });
-        });
+        }
+      }
+
+      // Strip away @alias, @hide, and @name
+      const draggableFields: Array<any> = transformFields.filter((value, idx) => {
+        return idx > 2;
+      });
+
+      // Save active form and fields for left panel
+      dispatch<any>(setActiveForm(schemaName, formName));
+      dispatch<any>(addActiveFields(externalName, draggableFields));
+      dispatch<any>(setLoadedForm(schemaName, formName));
+      dispatch<any>(setLoadedFields(externalName, draggableFields) as any);
+
+      dispatch({
+        type: SET_VALUE,
+        payload: {
+          status: false
+        }
+      });
     } catch (err: any) {
       console.log(err);
       dispatch(toggleErrorDialog(`${err.code}: ${err.message}`));
@@ -644,37 +660,37 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
 export const fetchViews = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
-      await axios
-        .get(`${SETUP_KEEP_API_URL}/designlist/views?nsfPath=${nsfPath}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
-        })
-        .then((res) => {
-          dispatch(
-            setViews(
-              dbName,
-              res.data.views.map((view: any) => {
-                let aliasArray: Array<any> = [];
-                if (view['@alias'] != null && view['@alias'].length > 0) {
-                  if (Array.isArray(view['@alias'])) {
-                    aliasArray = view['@alias'];
-                  } else {
-                    aliasArray.push(view['@alias']);
-                  }
-                }
-                return {
-                  viewName: view['@name'],
-                  viewAlias: aliasArray,
-                  viewUnid: view['@unid'],
-                  viewUpdated: view['columns'] && view['columns'].length ? true : false,
-                  viewSelectionFormula: view['@selectionformula']
-                };
-              })
-            ) as any
-          );
-        });
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/designlist/views?nsfPath=${nsfPath}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      dispatch(
+        setViews(
+          dbName,
+          response.data.views.map((view: any) => {
+            let aliasArray: Array<any> = [];
+            if (view['@alias'] != null && view['@alias'].length > 0) {
+              if (Array.isArray(view['@alias'])) {
+                aliasArray = view['@alias'];
+              } else {
+                aliasArray.push(view['@alias']);
+              }
+            }
+            return {
+              viewName: view['@name'],
+              viewAlias: aliasArray,
+              viewUnid: view['@unid'],
+              viewUpdated: view['columns'] && view['columns'].length ? true : false,
+              viewSelectionFormula: view['@selectionformula']
+            };
+          })
+        ) as any
+      );
     } catch (err) {
       console.log(err);
     }
@@ -691,36 +707,36 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
 export const fetchFolders = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
-      await axios
-        .get(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
-        })
-        .then((res) => {
-          dispatch(
-            setFolders(
-              dbName,
-              res.data.folders.map((folder: any) => {
-                let aliasArray: Array<any> = [];
-                if (folder['@alias'] != null && folder['@alias'].length > 0) {
-                  if (Array.isArray(folder['@alias'])) {
-                    aliasArray = folder['@alias'];
-                  } else {
-                    aliasArray.push(folder['@alias']);
-                  }
-                }
-                return {
-                  viewName: folder['@name'],
-                  viewAlias: aliasArray,
-                  viewUnid: folder['@unid'],
-                  viewUpdated: folder['columns'] && folder['columns'].length ? true : false
-                };
-              })
-            ) as any
-          );
-        });
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      dispatch(
+        setFolders(
+          dbName,
+          response.data.folders.map((folder: any) => {
+            let aliasArray: Array<any> = [];
+            if (folder['@alias'] != null && folder['@alias'].length > 0) {
+              if (Array.isArray(folder['@alias'])) {
+                aliasArray = folder['@alias'];
+              } else {
+                aliasArray.push(folder['@alias']);
+              }
+            }
+            return {
+              viewName: folder['@name'],
+              viewAlias: aliasArray,
+              viewUnid: folder['@unid'],
+              viewUpdated: folder['columns'] && folder['columns'].length ? true : false
+            };
+          })
+        ) as any
+      );
     } catch (err) {
       console.log(err);
     }
@@ -737,35 +753,35 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
 export const fetchAgents = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
-      await axios
-        .get(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${nsfPath}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
-        })
-        .then((res) => {
-          dispatch(
-            setAgents(
-              dbName,
-              res.data.agents.map((agent: any) => {
-                let aliasArray: Array<any> = [];
-                if (agent['@alias'] != null && agent['@alias'].length > 0) {
-                  if (Array.isArray(agent['@alias'])) {
-                    aliasArray = agent['@alias'];
-                  } else {
-                    aliasArray.push(agent['@alias']);
-                  }
-                }
-                return {
-                  agentName: agent['@name'],
-                  agentAlias: aliasArray,
-                  agentUnid: agent['@unid']
-                };
-              })
-            ) as any
-          );
-        });
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${nsfPath}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      dispatch(
+        setAgents(
+          dbName,
+          response.data.agents.map((agent: any) => {
+            let aliasArray: Array<any> = [];
+            if (agent['@alias'] != null && agent['@alias'].length > 0) {
+              if (Array.isArray(agent['@alias'])) {
+                aliasArray = agent['@alias'];
+              } else {
+                aliasArray.push(agent['@alias']);
+              }
+            }
+            return {
+              agentName: agent['@name'],
+              agentAlias: aliasArray,
+              agentUnid: agent['@unid']
+            };
+          })
+        ) as any
+      );
     } catch (err) {
       console.log(err);
     }
@@ -779,118 +795,118 @@ export const quickConfig = (dbData: any) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(`${SETUP_KEEP_API_URL}/admin/quickconfig`, dbData, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        .then((response) => {
-          const propertiesToOmit = [
-            '@noteid',
-            '@created',
-            '@lastmodified',
-            '@revision',
-            '@lastaccessed',
-            '@size',
-            '@unread',
-            '@etag',
-            '$UpdatedBy'
-          ];
-
-          const keepData = Object.keys(response.data).reduce((acc, key) => {
-            if (!propertiesToOmit.includes(key)) {
-              acc[key] = response.data[key];
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(`${SETUP_KEEP_API_URL}/admin/quickconfig`, dbData, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
             }
-            return acc;
-          }, {} as { [key: string]: any });
+          })
+      )
+      const propertiesToOmit = [
+        '@noteid',
+        '@created',
+        '@lastmodified',
+        '@revision',
+        '@lastaccessed',
+        '@size',
+        '@unread',
+        '@etag',
+        '$UpdatedBy'
+      ];
 
-          const {
-            unid,
-            agents,
-            allowCode,
-            allowDecryption,
-            description,
-            dqlAccess,
-            dalFormula,
-            forms,
-            formulaEngine,
-            icon,
-            iconName,
-            isActive,
-            nsfPath,
-            openAccess,
-            owners,
-            requireRevisionToUpdate,
-            schemaName,
-            views,
-            Form,
-            Type,
-            apiName,
-            server
-          } = keepData;
-          const meta = keepData['@meta'];
-          const schemaData = {
-            unid,
-            agents,
-            allowCode,
-            allowDecryption,
-            description,
-            dqlAccess,
-            dalFormula,
-            forms,
-            formulaEngine,
-            icon,
-            iconName,
-            isActive,
-            nsfPath,
-            openAccess,
-            owners,
-            requireRevisionToUpdate,
-            schemaName,
-            views
-          };
-          const scopeData = {
-            '@meta': meta,
-            Form,
-            Type,
-            apiName,
-            description,
-            icon,
-            iconName,
-            isActive,
-            nsfPath,
-            schemaName,
-            server
-          };
+      const keepData = Object.keys(response.data).reduce((acc, key) => {
+        if (!propertiesToOmit.includes(key)) {
+          acc[key] = response.data[key];
+        }
+        return acc;
+      }, {} as { [key: string]: any });
 
-          dispatch({
-            type: ADD_SCHEMA,
-            payload: schemaData
-          });
+      const {
+        unid,
+        agents,
+        allowCode,
+        allowDecryption,
+        description,
+        dqlAccess,
+        dalFormula,
+        forms,
+        formulaEngine,
+        icon,
+        iconName,
+        isActive,
+        nsfPath,
+        openAccess,
+        owners,
+        requireRevisionToUpdate,
+        schemaName,
+        views,
+        Form,
+        Type,
+        apiName,
+        server
+      } = keepData;
+      const meta = keepData['@meta'];
+      const schemaData = {
+        unid,
+        agents,
+        allowCode,
+        allowDecryption,
+        description,
+        dqlAccess,
+        dalFormula,
+        forms,
+        formulaEngine,
+        icon,
+        iconName,
+        isActive,
+        nsfPath,
+        openAccess,
+        owners,
+        requireRevisionToUpdate,
+        schemaName,
+        views
+      };
+      const scopeData = {
+        '@meta': meta,
+        Form,
+        Type,
+        apiName,
+        description,
+        icon,
+        iconName,
+        isActive,
+        nsfPath,
+        schemaName,
+        server
+      };
 
-          dispatch({
-            type: ADD_SCOPE,
-            payload: scopeData
-          });
+      dispatch({
+        type: ADD_SCHEMA,
+        payload: schemaData
+      });
 
-          dispatch(toggleQuickConfigDrawer());
+      dispatch({
+        type: ADD_SCOPE,
+        payload: scopeData
+      });
 
-          if (response.status === 200) {
-            dispatch({
-              type: ADD_NEW_SCHEMA_TO_STATE,
-              payload: {
-                schemaName: schemaName,
-                nsfPath: nsfPath
-              }
-            });
+      dispatch(toggleQuickConfigDrawer());
+
+      if (response.status === 200) {
+        dispatch({
+          type: ADD_NEW_SCHEMA_TO_STATE,
+          payload: {
+            schemaName: schemaName,
+            nsfPath: nsfPath
           }
-
-          dispatch(toggleAlert(`${schemaName} and ${dbData.scopeName} have been successfully created.`));
-
-          dispatch(setApiLoading(false));
         });
+      }
+
+      dispatch(toggleAlert(`${schemaName} and ${dbData.scopeName} have been successfully created.`));
+
+      dispatch(setApiLoading(false));
       dispatch(clearDBError());
     } catch (err: any) {
       // Use the response error if it's available
@@ -912,40 +928,40 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, dbData, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        .then((response) => {
-          const { data } = response;
-          dispatch({
-            type: ADD_SCHEMA,
-            payload: data
-          });
-
-          if (response.status === 200) {
-            dispatch({
-              type: ADD_NEW_SCHEMA_TO_STATE,
-              payload: {
-                schemaName: data.schemaName,
-                nsfPath: data.nsfPath
-              }
-            });
-            dispatch({
-              type: CLEAR_SCHEMA_FORM,
-              payload: true
-            });
-            if (resetCallback) {
-              resetCallback();
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, dbData, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
             }
-          }
-          dispatch(toggleAlert(`${dbData.schemaName} has been successfully created.`));
+          })
+      )
+      const { data } = response;
+      dispatch({
+        type: ADD_SCHEMA,
+        payload: data
+      });
 
-          dispatch(setApiLoading(false));
+      if (response.status === 200) {
+        dispatch({
+          type: ADD_NEW_SCHEMA_TO_STATE,
+          payload: {
+            schemaName: data.schemaName,
+            nsfPath: data.nsfPath
+          }
         });
+        dispatch({
+          type: CLEAR_SCHEMA_FORM,
+          payload: true
+        });
+        if (resetCallback) {
+          resetCallback();
+        }
+      }
+      dispatch(toggleAlert(`${dbData.schemaName} has been successfully created.`));
+
+      dispatch(setApiLoading(false));
       dispatch(clearDBError());
     } catch (err: any) {
       // Use the response error if it's available
@@ -969,36 +985,37 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         type: UPDATE_ERROR,
         payload: false
       });
-      await axios
-        .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, schemaData, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
+      try {
+        const response = await apiRequestWithRetry(() =>
+          axios
+            .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, schemaData, {
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+              }
+            })
+        )
+        const { data } = response;
+        if (!!setSchemaData) {
+          setSchemaData(data);
+        }
+        dispatch({
+          type: ADD_NEW_SCHEMA_TO_STATE,
+          payload: {
+            schemaName: data.schemaName,
+            nsfPath: data.nsfPath
           }
-        })
-        .then((response) => {
-          const { data } = response;
-          if (!!setSchemaData) {
-            setSchemaData(data);
-          }
-          dispatch({
-            type: ADD_NEW_SCHEMA_TO_STATE,
-            payload: {
-              schemaName: data.schemaName,
-              nsfPath: data.nsfPath
-            }
-          });
-          dispatch(setApiLoading(false));
-          dispatch(toggleAlert(`Schema has been successfully updated.`));
-        })
-        .catch((error) => {
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Update schema failed! ${errorMsg}`));
-          dispatch({
-            type: UPDATE_ERROR,
-            payload: true
-          });
         });
+        dispatch(setApiLoading(false));
+        dispatch(toggleAlert(`Schema has been successfully updated.`));
+      } catch (error) {
+        const errorMsg = getErrorMsg(error);
+        dispatch(toggleAlert(`Update schema failed! ${errorMsg}`));
+        dispatch({
+          type: UPDATE_ERROR,
+          payload: true
+        });
+      }
     } catch (err: any) {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
@@ -1140,35 +1157,41 @@ export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispat
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const apiData = await axios.get(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json'
-        }
-      });
+      const apiData = await apiRequestWithRetry(() =>
+        axios.get(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json'
+          }
+        })
+      )
       if (apiData) {
         dispatch(addNsfDesign(nsfPath, apiData.data));
 
         // Get list of configured forms
-        axios
-          .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
-          .then((response) => {
-            // Loop through configured forms and fetch their modes
-            configformsList = response.data.forms;
-            if (configformsList != null && configformsList.length > 0) {
-              loadConfiguredForms(configformsList, allForms, dbName, apiData, setData, dispatch);
-            } else {
-              // Add unconfigured forms
-              loadUnconfiguredForms(apiData, allForms, dbName, setData, dispatch);
-            }
-            setActiveViews(dbName, response.data.views);
-            setActiveAgents(dbName, response.data.agents);
-          });
+        try {
+          const response = await apiRequestWithRetry(() =>
+            axios
+              .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              })
+          )
+          // Loop through configured forms and fetch their modes
+          configformsList = response.data.forms;
+          if (configformsList != null && configformsList.length > 0) {
+            loadConfiguredForms(configformsList, allForms, dbName, apiData, setData, dispatch);
+          } else {
+            // Add unconfigured forms
+            loadUnconfiguredForms(apiData, allForms, dbName, setData, dispatch);
+          }
+          setActiveViews(dbName, response.data.views);
+          setActiveAgents(dbName, response.data.agents);
+        } catch (error) {
+          console.error("Error fetching list of configured forms:", error)
+        }
       }
     } catch (err: any) {
       // Use the response error if it's available
@@ -1207,40 +1230,41 @@ const updateForms = (
     };
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-          newSchemaData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        )
-        .then((response) => {
-          const { data } = response;
-          setSchemaData(data);
-          configformsList = response.data.forms.map((form: any) => {
-            return { ...form, dbName };
-          });
-
-          dispatch(
-            dispatch({
-              type: SET_FORMS,
-              payload: {
-                db: dbName,
-                forms: configformsList
+      try {
+        const response = await apiRequestWithRetry(() =>
+          axios
+            .post(
+              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
+              newSchemaData,
+              {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
               }
-            })
-          );
-          dispatch(setApiLoading(false));
-          dispatch(toggleAlert(successMsg));
-        })
-        .catch((error) => {
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Update forms failed! ${errorMsg}`));
+            )
+        )
+        const { data } = response;
+        setSchemaData(data);
+        configformsList = response.data.forms.map((form: any) => {
+          return { ...form, dbName };
         });
+
+        dispatch(
+          dispatch({
+            type: SET_FORMS,
+            payload: {
+              db: dbName,
+              forms: configformsList
+            }
+          })
+        );
+        dispatch(setApiLoading(false));
+        dispatch(toggleAlert(successMsg));
+      } catch (error) {
+        const errorMsg = getErrorMsg(error);
+        dispatch(toggleAlert(`Update forms failed! ${errorMsg}`));
+      }
       dispatch(clearDBError());
       if (successCallback) {
         successCallback();
@@ -1340,39 +1364,40 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
     };
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-          newSchemaData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          }
+      try {
+        let response = await apiRequestWithRetry(() =>
+          axios
+            .post(
+              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
+              newSchemaData,
+              {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            )
         )
-        .then((response) => {
-          const { data } = response;
-          dispatch(toggleAlert(`Views have been successfully saved.`));
-          setSchemaData({
-            ...data,
-            nsfPath: newSchemaData.nsfPath,
-            schemaName: newSchemaData.schemaName
-          });
-          return {
-            ...data,
-            nsfPath: newSchemaData.nsfPath,
-            schemaName: newSchemaData.schemaName
-          };
-        })
-        .catch((error) => {
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Update views failed! ${errorMsg}`));
-          dispatch({
-            type: VIEWS_ERROR,
-            payload: true
-          });
+        const { data } = response;
+        dispatch(toggleAlert(`Views have been successfully saved.`));
+        setSchemaData({
+          ...data,
+          nsfPath: newSchemaData.nsfPath,
+          schemaName: newSchemaData.schemaName
         });
+        response = {
+          ...data,
+          nsfPath: newSchemaData.nsfPath,
+          schemaName: newSchemaData.schemaName
+        };
+      } catch (error) {
+        const errorMsg = getErrorMsg(error);
+        dispatch(toggleAlert(`Update views failed! ${errorMsg}`));
+        dispatch({
+          type: VIEWS_ERROR,
+          payload: true
+        });
+      }
       dispatch(setApiLoading(false));
       dispatch(clearDBError());
     } catch (err: any) {
@@ -1429,18 +1454,20 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
 
 // Get view elements by calling the design API
 async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolean) {
-  const res = await fetch(
-    `${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
+  const response = await apiRequestWithRetry(() =>
+    fetch(
+      `${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json'
+        }
       }
-    }
-  );
+    )
+  )
 
-  const obj = await res.json();
+  const obj = await response.json();
   return obj;
 }
 
@@ -1629,31 +1656,32 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
     };
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-          newSchemaData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          }
+      try {
+        const response = await apiRequestWithRetry(() =>
+          axios
+            .post(
+              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
+              newSchemaData,
+              {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            )
         )
-        .then((response) => {
-          const { data } = response;
+        const { data } = response;
 
-          dispatch(setApiLoading(false));
-          dispatch(toggleAlert(`Agents have been successfully saved.`));
-        })
-        .catch((error) => {
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Update agents failed! ${errorMsg}`));
-          dispatch({
-            type: AGENTS_ERROR,
-            payload: true
-          });
+        dispatch(setApiLoading(false));
+        dispatch(toggleAlert(`Agents have been successfully saved.`));
+      } catch (error) {
+        const errorMsg = getErrorMsg(error);
+        dispatch(toggleAlert(`Update agents failed! ${errorMsg}`));
+        dispatch({
+          type: AGENTS_ERROR,
+          payload: true
         });
+      }
       dispatch(clearDBError());
     } catch (err: any) {
       // Use the response error if it's available
@@ -1722,38 +1750,39 @@ export const updateFormMode = (
     };
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-          newSchemaData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          }
+      try {
+        const response = await apiRequestWithRetry(() =>
+          axios
+            .post(
+              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
+              newSchemaData,
+              {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            )
         )
-        .then((response) => {
-          const { data } = response;
+        const { data } = response;
 
-          if (formIdx !== -1) {
-            setSchemaData(data);
-            dispatch(appendConfiguredForm(formIdx, formModeData));
-          }
-          if (!clone) {
-            setSchemaData(data);
-            dispatch(toggleAlert(`${formModeData.modeName} mode has been successfully ${isNew ? 'added' : 'updated'}.`));
-          } else {
-            setSchemaData(data);
-            dispatch(toggleAlert(`Mode successfully cloned to ${formModeData.modeName}`));
-          }
+        if (formIdx !== -1) {
+          setSchemaData(data);
+          dispatch(appendConfiguredForm(formIdx, formModeData));
+        }
+        if (!clone) {
+          setSchemaData(data);
+          dispatch(toggleAlert(`${formModeData.modeName} mode has been successfully ${isNew ? 'added' : 'updated'}.`));
+        } else {
+          setSchemaData(data);
+          dispatch(toggleAlert(`Mode successfully cloned to ${formModeData.modeName}`));
+        }
 
-          dispatch(setApiLoading(false));
-        })
-        .catch((error) => {
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Update form mode failed! ${errorMsg}`));
-        });
+        dispatch(setApiLoading(false));
+      } catch (error) {
+        const errorMsg = getErrorMsg(error);
+        dispatch(toggleAlert(`Update form mode failed! ${errorMsg}`));
+      }
       dispatch(clearDBError());
     } catch (err: any) {
       // Use the response error if it's available
@@ -1803,31 +1832,32 @@ export const deleteFormMode = (
     };
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-          newSchemaData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          }
+      try {
+        const response = await apiRequestWithRetry(() => 
+          axios
+            .post(
+              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
+              newSchemaData,
+              {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            )
         )
-        .then((response) => {
-          const { data } = response;
-          setSchemaData(data);
+        const { data } = response;
+        setSchemaData(data);
 
-          dispatch(setApiLoading(false));
-          dispatch(toggleDeleteDialog());
-          dispatch(toggleAlert(`${formModeName} mode has been deleted!`));
-        })
-        .catch((error: any) => {
-          dispatch(setApiLoading(false));
-          dispatch(toggleDeleteDialog());
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Delete form mode failed! ${errorMsg}`));
-        });
+        dispatch(setApiLoading(false));
+        dispatch(toggleDeleteDialog());
+        dispatch(toggleAlert(`${formModeName} mode has been deleted!`));
+      } catch (error) {
+        dispatch(setApiLoading(false));
+        dispatch(toggleDeleteDialog());
+        const errorMsg = getErrorMsg(error);
+        dispatch(toggleAlert(`Delete form mode failed! ${errorMsg}`));
+      }
       dispatch(clearDBError());
     } catch (err: any) {
       dispatch(toggleDeleteDialog());
@@ -1865,44 +1895,42 @@ export const deleteForm = (
     };
     try {
       dispatch(setApiLoading(true));
-      await axios
-        .post(
-          `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-          newSchemaData,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          }
+      try {
+        const response = await apiRequestWithRetry(() =>
+          axios
+            .post(
+              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
+              newSchemaData,
+              {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            )
         )
-        .then((response) => {
-          if (!!setSchemaData) {
-            setSchemaData({
-              ...response.data
+        if (!!setSchemaData) {
+          setSchemaData({
+            ...response.data
+          });
+          if (customForm) {
+            dispatch({
+              type: RESET_FORM,
+              payload: formName
             });
-            if (customForm) {
-              dispatch({
-                type: RESET_FORM,
-                payload: formName
-              });
-              dispatch(toggleAlert(`Successfully deleted form ${formName}.`));
-            } else {
-              dispatch(toggleAlert(`Successfully deactivated form ${formName}.`));
-            }
+            dispatch(toggleAlert(`Successfully deleted form ${formName}.`));
+          } else {
+            dispatch(toggleAlert(`Successfully deactivated form ${formName}.`));
           }
-          dispatch(setApiLoading(false));
+        }
+        dispatch(setApiLoading(false));
 
-          // dispatch(toggleDeleteDialog());
-          dispatch(unConfigForm(newSchemaData.schemaName, formName));
-        })
-        .catch((error: any) => {
-          dispatch(setApiLoading(false));
-          // dispatch(toggleDeleteDialog());
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Delete form failed! ${errorMsg}`));
-        });
-      dispatch(clearDBError());
+        dispatch(unConfigForm(newSchemaData.schemaName, formName));
+      } catch (error) {
+        dispatch(setApiLoading(false));
+        const errorMsg = getErrorMsg(error);
+        dispatch(toggleAlert(`Delete form failed! ${errorMsg}`));
+      }
     } catch (err: any) {
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
@@ -1922,50 +1950,51 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
     try {
       dispatch(setApiLoading(true));
       dispatch(clearDBError());
-      await axios
-        .post(`${SETUP_KEEP_API_URL}/admin/scope`, dbData, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
+      try {
+        const response = await apiRequestWithRetry(() =>
+          axios
+            .post(`${SETUP_KEEP_API_URL}/admin/scope`, dbData, {
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+              }
+            })
+        )
+        const omitKeys = [
+          '@noteid',
+          '@created',
+          '@lastmodified',
+          '@revision',
+          '@lastaccessed',
+          '@size',
+          '@unread',
+          '@etag',
+          '$UpdatedBy'
+        ];
+        const keepData = Object.keys(response.data).reduce((acc, key) => {
+          if (!omitKeys.includes(key)) {
+            acc[key] = response.data[key];
           }
-        })
-        .then((response) => {
-          const omitKeys = [
-            '@noteid',
-            '@created',
-            '@lastmodified',
-            '@revision',
-            '@lastaccessed',
-            '@size',
-            '@unread',
-            '@etag',
-            '$UpdatedBy'
-          ];
-          const keepData = Object.keys(response.data).reduce((acc, key) => {
-            if (!omitKeys.includes(key)) {
-              acc[key] = response.data[key];
-            }
-            return acc;
-          }, {} as { [key: string]: any });
-          dispatch({
-            type: isEdit ? UPDATE_SCOPE : ADD_SCOPE,
-            payload: keepData
-          });
-
-          dispatch({
-            type: TOGGLE_DRAWER
-          });
-          dispatch(
-            isEdit
-              ? toggleAlert(`${dbData.apiName} has been successfully updated.`)
-              : toggleAlert(`${dbData.apiName} has been successfully created.`)
-          );
-
-          dispatch(setApiLoading(false));
-        })
-        .catch((error: any) => {
-          dispatch(setDBError(getErrorMsg(error)));
+          return acc;
+        }, {} as { [key: string]: any });
+        dispatch({
+          type: isEdit ? UPDATE_SCOPE : ADD_SCOPE,
+          payload: keepData
         });
+  
+        dispatch({
+          type: TOGGLE_DRAWER
+        });
+        dispatch(
+          isEdit
+            ? toggleAlert(`${dbData.apiName} has been successfully updated.`)
+            : toggleAlert(`${dbData.apiName} has been successfully created.`)
+        );
+  
+        dispatch(setApiLoading(false));
+      } catch (error) {
+        dispatch(setDBError(getErrorMsg(error)));
+      }
     } catch (err: any) {
       // Use the response error if it's available
       dispatch(setDBError(getErrorMsg(err)));
@@ -1977,14 +2006,15 @@ export const fetchDBConfig = (config: string) => {
   return async (dispatch: Dispatch) => {
     dispatch(setApiLoading(true));
     try {
-      const dbConfig = await axios
+      const dbConfig = await apiRequestWithRetry(() =>
+        axios
         .get(`${BASE_KEEP_API_URL}/scope?dataSource=${config}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json'
           }
         })
-        .then((res) => res.data);
+      )
 
       dispatch({
         type: FETCH_DB_CONFIG,
@@ -2029,22 +2059,26 @@ export const updateScope = (active: boolean, data?: any) => {
         }
       });
 
-    axios
-      .post(`${SETUP_KEEP_API_URL}/admin/scope/`, apiData, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      .then((response) => {
-        dispatch(setApiLoading(false));
-        dispatch({
-          type: UPDATE_SCOPE,
-          payload: { ...response.data, index: contextViewIndex }
-        });
-        dispatch(toggleAlert(`${apiName} has been successfully updated.`));
-        if (data) dispatch(toggleSettings());
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(`${SETUP_KEEP_API_URL}/admin/scope/`, apiData, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
+            }
+          })
+      )
+      dispatch(setApiLoading(false));
+      dispatch({
+        type: UPDATE_SCOPE,
+        payload: { ...response.data, index: contextViewIndex }
       });
+      dispatch(toggleAlert(`${apiName} has been successfully updated.`));
+      if (data) dispatch(toggleSettings());
+    } catch (error) {
+      console.error("Error updating scope:", error)
+    }
   };
 };
 
@@ -2074,141 +2108,139 @@ export const processViewsAgents = (
 ) => {
   return async (dispatch: Dispatch) => {
     try {
-      axios
-        .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        .then((response) => {
-          // Initialize Views and Agents
-          if (action === 'init') {
-            // Get list of Active Views and Agents
-            let views: Array<any> = response.data.availableViews;
-            let agents: Array<any> = response.data.agents;
-
-            // Build Active View list
-            const viewsList: Array<any> = [];
-            Object.values(views).forEach((view) => {
-              let alias = view.alias != null && view.alias.length > 0 ? view.alias[0] : '';
-
-              // Suppress alias when it's a duplicate of the name LABS-1903
-              alias = alias === view.name ? '' : alias;
-              let viewUpdatedBool = view.columns && view.columns.length > 0 ? true : false;
-              viewsList.push({
-                viewName: view.name,
-                viewAlias: alias,
-                viewUnid: view.unid,
-                viewActive: true,
-                viewUpdated: viewUpdatedBool
-              });
-            });
-
-            // Build Active Agent list
-            const agentsList: Array<any> = [];
-            Object.values(agents).forEach((agent) => {
-              let alias = agent.alias != null && agent.alias.length > 0 ? agent.alias[0] : '';
-
-              // Suppress alias when it's a duplicate of the name LABS-1903
-              alias = alias === agent.name ? '' : alias;
-              agentsList.push({
-                agentName: agent.name,
-                agentAlias: alias,
-                agentUnid: agent.unid,
-                agentActive: true
-              });
-            });
-
-            // Save Active Views \ Agents Data
-            dispatch({
-              type: SET_ACTIVEVIEWS,
-              payload: {
-                db: dbName,
-                activeViews: viewsList
-              }
-            });
-            dispatch({
-              type: SET_ACTIVEAGENTS,
-              payload: {
-                db: dbName,
-                activeAgents: agentsList
-              }
-            });
-
-            // Mark Active Views (left Panel)
-            allViewsList.forEach((view: ViewObj) => {
-              if (isActiveView(view.viewUnid, viewsList)) {
-                const viewData: ViewObj = {
-                  viewName: view.viewName,
-                  viewAlias: view.viewAlias,
-                  viewUnid: view.viewUnid,
-                  viewActive: true,
-                  viewUpdated: view.viewUpdated
-                };
-                dispatch({
-                  type: UPDATE_VIEW,
-                  payload: {
-                    db: dbName,
-                    view: viewData
-                  }
-                });
-              }
-            });
-
-            // Mark Active Agents (left Panel)
-            allAgentsList.forEach((agent: AgentObj) => {
-              if (isActiveAgent(agent.agentUnid, agentsList)) {
-                const agentData: AgentObj = {
-                  agentName: agent.agentName,
-                  agentAlias: agent.agentAlias,
-                  agentUnid: agent.agentUnid,
-                  agentActive: true
-                };
-                dispatch({
-                  type: UPDATE_AGENT,
-                  payload: {
-                    db: dbName,
-                    agent: agentData
-                  }
-                });
-              }
-            });
-          }
-
-          // Save Views and Agents
-          else {
-            // Build data
-            if (type === 'views') {
-              response.data.availableViews = viewData;
-            } else {
-              response.data.agents = agentData;
+      let response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
             }
+          })
+      )
+      // Initialize Views and Agents
+      if (action === 'init') {
+        // Get list of Active Views and Agents
+        let views: Array<any> = response.data.availableViews;
+        let agents: Array<any> = response.data.agents;
 
-            try {
-              axios
-                .post(`${SETUP_KEEP_API_URL}/admin/scope`, response.data, {
-                  headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                  }
-                })
-                .then((response) => {
-                  // Notify user
-                  if (type === 'views') {
-                    dispatch(toggleAlert('Activated Views have been saved'));
-                  } else {
-                    dispatch(toggleAlert('Activated Agents have been saved'));
-                  }
-                  return response;
-                });
-            } catch (e: any) {
-              console.log(`Error in saveViewsAgents: ${e.response.status}`);
-              console.log(`Error text: ${e.response.statusText}`);
-            }
-          }
-          return response;
+        // Build Active View list
+        const viewsList: Array<any> = [];
+        Object.values(views).forEach((view) => {
+          let alias = view.alias != null && view.alias.length > 0 ? view.alias[0] : '';
+
+          // Suppress alias when it's a duplicate of the name LABS-1903
+          alias = alias === view.name ? '' : alias;
+          let viewUpdatedBool = view.columns && view.columns.length > 0 ? true : false;
+          viewsList.push({
+            viewName: view.name,
+            viewAlias: alias,
+            viewUnid: view.unid,
+            viewActive: true,
+            viewUpdated: viewUpdatedBool
+          });
         });
+
+        // Build Active Agent list
+        const agentsList: Array<any> = [];
+        Object.values(agents).forEach((agent) => {
+          let alias = agent.alias != null && agent.alias.length > 0 ? agent.alias[0] : '';
+
+          // Suppress alias when it's a duplicate of the name LABS-1903
+          alias = alias === agent.name ? '' : alias;
+          agentsList.push({
+            agentName: agent.name,
+            agentAlias: alias,
+            agentUnid: agent.unid,
+            agentActive: true
+          });
+        });
+
+        // Save Active Views \ Agents Data
+        dispatch({
+          type: SET_ACTIVEVIEWS,
+          payload: {
+            db: dbName,
+            activeViews: viewsList
+          }
+        });
+        dispatch({
+          type: SET_ACTIVEAGENTS,
+          payload: {
+            db: dbName,
+            activeAgents: agentsList
+          }
+        });
+
+        // Mark Active Views (left Panel)
+        allViewsList.forEach((view: ViewObj) => {
+          if (isActiveView(view.viewUnid, viewsList)) {
+            const viewData: ViewObj = {
+              viewName: view.viewName,
+              viewAlias: view.viewAlias,
+              viewUnid: view.viewUnid,
+              viewActive: true,
+              viewUpdated: view.viewUpdated
+            };
+            dispatch({
+              type: UPDATE_VIEW,
+              payload: {
+                db: dbName,
+                view: viewData
+              }
+            });
+          }
+        });
+
+        // Mark Active Agents (left Panel)
+        allAgentsList.forEach((agent: AgentObj) => {
+          if (isActiveAgent(agent.agentUnid, agentsList)) {
+            const agentData: AgentObj = {
+              agentName: agent.agentName,
+              agentAlias: agent.agentAlias,
+              agentUnid: agent.agentUnid,
+              agentActive: true
+            };
+            dispatch({
+              type: UPDATE_AGENT,
+              payload: {
+                db: dbName,
+                agent: agentData
+              }
+            });
+          }
+        });
+      }
+
+      // Save Views and Agents
+      else {
+        // Build data
+        if (type === 'views') {
+          response.data.availableViews = viewData;
+        } else {
+          response.data.agents = agentData;
+        }
+
+        try {
+          await apiRequestWithRetry(() =>
+            axios
+              .post(`${SETUP_KEEP_API_URL}/admin/scope`, response.data, {
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                }
+              })
+          )
+          // Notify user
+          if (type === 'views') {
+            dispatch(toggleAlert('Activated Views have been saved'));
+          } else {
+            dispatch(toggleAlert('Activated Agents have been saved'));
+          }
+        } catch (e: any) {
+          console.log(`Error in saveViewsAgents: ${e.response.status}`);
+          console.log(`Error text: ${e.response.statusText}`);
+        }
+      }
     } catch (e: any) {
       console.log(`Error in processViewsAgents: ${e.response.status}`);
       console.log(`Error text: ${e.response.statusText}`);
@@ -2322,21 +2354,20 @@ export const saveNewForm = (
       alias: '',
       fields: form.fields
     };
-    await axios
-      .put(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${nsfPath}`, formData, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      .then((res) => {
-        const data = { res };
-
-        dispatch(toggleAlert('New form schema created!'));
-      })
-      .catch((err: string) => {
-        console.log(err);
-      });
+    try {
+      await apiRequestWithRetry(() =>
+        axios
+          .put(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${nsfPath}`, formData, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
+            }
+          })
+      )
+      dispatch(toggleAlert('New form schema created!'));
+    } catch (error) {
+      console.error("Error creating new form schema:", error);
+    }
   };
 };
 
@@ -2497,30 +2528,27 @@ export const unConfigForm = (schemaName: string, formName: string) => {
 export const testFormula = (dataSource: string, formulaData: any, formulaType: string) => {
   return async (dispatch: Dispatch) => {
     // Run Formula test
-    axios
-      .post(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, formulaData, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      // Handle valid response
-      .then((response) => {
-        dispatch(saveResult(formulaType, response.data.result[0].result[0]));
-      })
-
-      // Handle error response
-      .catch((err) => {
-        // Use the response error if it's available
-        if (err.response && err.response.data && err.response.data.message) {
-          dispatch(saveResult(formulaType, err.response.data.message));
-        }
-        // Otherwise use the generic error
-        else {
-          dispatch(saveResult(formulaType, `Error: ${err.message}`));
-        }
-      });
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, formulaData, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
+            }
+          })
+      )
+      dispatch(saveResult(formulaType, response.data.result[0].result[0]));
+    } catch (err: any) {
+      // Use the response error if it's available
+      if (err.response && err.response.data && err.response.data.message) {
+        dispatch(saveResult(formulaType, err.response.data.message));
+      }
+      // Otherwise use the generic error
+      else {
+        dispatch(saveResult(formulaType, `Error: ${err.message}`));
+      }
+    }
   };
 };
 
@@ -2602,110 +2630,120 @@ export function setOnlyShowSchemasWithScopes(onlyShowSchemasWithScopes: boolean)
  */
 export const getAllFieldsByNsf = (nsfPath: any) => {
   return async (dispatch: Dispatch) => {
-    const allFields = await axios
-      .get(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json'
-        }
-      })
-      .then(async (res) => {
-        return res.data[0];
-      });
-    const mapping = {
-      TYPE_TEXT: 'string',
-      TYPE_NUMBER: 'number',
-      TYPE_TIME: 'date-time',
-      TYPE_TEXT_LIST: 'string',
-      TYPE_NUMBER_LIST: 'number',
-      TYPE_TIME_RANGE: 'date-time'
-    };
-    const allFieldsKey = Object.keys(allFields);
-    let requiredFields: any[] = [];
-    let finalFields: {
-      content: any;
-      name: any;
-      isMultiValue: boolean;
-      fieldAccess: string;
-      format: string;
-      type: string;
-    }[] = [];
-    allFieldsKey.forEach((allFieldKey) => {
-      if (mapping.hasOwnProperty(allFieldKey)) {
-        //@ts-ignore
-        const fieldValue = allFields[allFieldKey];
-        let format = 'string';
-        let type = 'string';
-        let isMultiValue = false;
-        if (allFieldKey === 'TYPE_NUMBER' || allFieldKey === 'TYPE_NUMBER_RANGE') {
-          format = 'float';
-          type = 'number';
-        }
-        if (allFieldKey === 'TYPE_NUMBER_RANGE' || allFieldKey === 'TYPE_TIME_RANGE' || allFieldKey === 'TYPE_TEXT_LIST') {
-          isMultiValue = true;
-          type = 'array';
-        }
-        if (allFieldKey === 'TYPE_TIME' || allFieldKey === 'TYPE_TIME_RANGE') {
-          format = 'date-time';
-        }
-        if (allFieldKey === 'TYPE_MIME_PART') {
-          format = 'richtext';
-        }
-        if (allFieldKey === 'TYPE_COMPOSITE' || allFieldKey === 'TYPE_OBJECT') {
-          format = 'binary';
-          type = 'object';
-        }
-
-        for (const field in fieldValue as any) {
-          if (!fieldValue[field].startsWith('$')) {
-            const convertedField = {
-              content: fieldValue[field],
-              name: fieldValue[field],
-              isMultiValue: isMultiValue,
-              fieldAccess: 'RO',
-              format: format,
-              type: type
-            };
-            finalFields.push(convertedField);
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      const allFields = response.data[0]
+      const mapping = {
+        TYPE_TEXT: 'string',
+        TYPE_NUMBER: 'number',
+        TYPE_TIME: 'date-time',
+        TYPE_TEXT_LIST: 'string',
+        TYPE_NUMBER_LIST: 'number',
+        TYPE_TIME_RANGE: 'date-time'
+      };
+      const allFieldsKey = Object.keys(allFields);
+      let requiredFields: any[] = [];
+      let finalFields: {
+        content: any;
+        name: any;
+        isMultiValue: boolean;
+        fieldAccess: string;
+        format: string;
+        type: string;
+      }[] = [];
+      allFieldsKey.forEach((allFieldKey) => {
+        if (mapping.hasOwnProperty(allFieldKey)) {
+          //@ts-ignore
+          const fieldValue = allFields[allFieldKey];
+          let format = 'string';
+          let type = 'string';
+          let isMultiValue = false;
+          if (allFieldKey === 'TYPE_NUMBER' || allFieldKey === 'TYPE_NUMBER_RANGE') {
+            format = 'float';
+            type = 'number';
+          }
+          if (allFieldKey === 'TYPE_NUMBER_RANGE' || allFieldKey === 'TYPE_TIME_RANGE' || allFieldKey === 'TYPE_TEXT_LIST') {
+            isMultiValue = true;
+            type = 'array';
+          }
+          if (allFieldKey === 'TYPE_TIME' || allFieldKey === 'TYPE_TIME_RANGE') {
+            format = 'date-time';
+          }
+          if (allFieldKey === 'TYPE_MIME_PART') {
+            format = 'richtext';
+          }
+          if (allFieldKey === 'TYPE_COMPOSITE' || allFieldKey === 'TYPE_OBJECT') {
+            format = 'binary';
+            type = 'object';
+          }
+  
+          for (const field in fieldValue as any) {
+            if (!fieldValue[field].startsWith('$')) {
+              const convertedField = {
+                content: fieldValue[field],
+                name: fieldValue[field],
+                isMultiValue: isMultiValue,
+                fieldAccess: 'RO',
+                format: format,
+                type: type
+              };
+              finalFields.push(convertedField);
+            }
           }
         }
+      });
+      const checkSymbolFileFieldExist = finalFields.filter((field: any) => field.content === '$FILE');
+      if (!checkSymbolFileFieldExist || checkSymbolFileFieldExist.length <= 0) {
+        const symbolFileField = {
+          id: uuid(),
+          content: '$FILE',
+          name: '$FILE',
+          isMultiValue: false,
+          fieldAccess: 'RW',
+          format: 'binary',
+          type: 'object'
+        };
+        finalFields.push(symbolFileField);
       }
-    });
-    const checkSymbolFileFieldExist = finalFields.filter((field: any) => field.content === '$FILE');
-    if (!checkSymbolFileFieldExist || checkSymbolFileFieldExist.length <= 0) {
-      const symbolFileField = {
-        id: uuid(),
-        content: '$FILE',
-        name: '$FILE',
-        isMultiValue: false,
-        fieldAccess: 'RW',
-        format: 'binary',
-        type: 'object'
-      };
-      finalFields.push(symbolFileField);
+  
+      dispatch<any>(addActiveFields('keep_internal_form_for_allFields', finalFields));
+    } catch (error) {
+      // console.error("Error fetching all fields:", error)
     }
-
-    dispatch<any>(addActiveFields('keep_internal_form_for_allFields', finalFields));
   };
 };
 
 export const fetchKeepPermissions = () => {
   return async (dispatch: Dispatch) => {
-    const data = await axios
-      .get(`${SETUP_KEEP_API_URL}/admin/access`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json'
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${SETUP_KEEP_API_URL}/admin/access`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
+          })
+      )
+      const data = response.data
+      dispatch({
+        type: FETCH_KEEP_PERMISSIONS,
+        payload: {
+          createDbMapping: data.CreateDbMapping,
+          deleteDbMapping: data.DeleteDbMapping
         }
-      })
-      .then((res) => res.data);
-    dispatch({
-      type: FETCH_KEEP_PERMISSIONS,
-      payload: {
-        createDbMapping: data.CreateDbMapping,
-        deleteDbMapping: data.DeleteDbMapping
-      }
-    });
+      });
+    } catch (error) {
+      // console.error("Error fetching Keep permissions:", error)
+    }
   };
 };
 

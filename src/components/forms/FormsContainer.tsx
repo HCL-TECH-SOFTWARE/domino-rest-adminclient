@@ -48,6 +48,7 @@ import EditViewDialog from './EditView';
 import { LitSource } from '../lit-elements/LitElements';
 import { Editor } from '@monaco-editor/react';
 import loader from '@monaco-editor/loader';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -195,34 +196,35 @@ const FormsContainer = () => {
 
   const editorRef = useRef<any>(null)
 
-  // Override console.error to suppress error messages
-  console.error = () => {};
+  // // Override console.error to suppress error messages
+  // console.error = () => {};
 
-  // Override window.onerror to suppress uncaught errors
-  useEffect(() => {
-    const originalOnError = window.onerror;
-    window.onerror = (message, source, lineno, colno, error) => {
-      // Suppress the error
-      return true;
-    };
+  // // Override window.onerror to suppress uncaught errors
+  // useEffect(() => {
+  //   const originalOnError = window.onerror;
+  //   window.onerror = (message, source, lineno, colno, error) => {
+  //     // Suppress the error
+  //     return true;
+  //   };
 
-    // Cleanup function to restore the original window.onerror
-    return () => {
-      window.onerror = originalOnError;
-    };
-  }, []);
+  //   // Cleanup function to restore the original window.onerror
+  //   return () => {
+  //     window.onerror = originalOnError;
+  //   };
+  // }, []);
 
   const pullSubForms = async () => {
     try {
-      const response = await axios.get(
-        `${SETUP_KEEP_API_URL}/designlist/subforms?nsfPath=${nsfPath}`,
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
+      const response = await apiRequestWithRetry(() =>
+        axios.get(
+          `${SETUP_KEEP_API_URL}/designlist/subforms?nsfPath=${nsfPath}`,
+          {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json'
+            }
           }
-        }
-      );
+      ));
 
       if (response) {
         dispatch(addNsfDesign(nsfPathDecode, response.data));
@@ -270,7 +272,8 @@ const FormsContainer = () => {
       let allForms: Array<any> = [];
       let configformsList: Array<any> = [];
 
-      const apiData = await axios.get(
+      const apiData = await apiRequestWithRetry(() =>
+        axios.get(
         `${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`,
         {
           headers: {
@@ -278,25 +281,28 @@ const FormsContainer = () => {
             Accept: 'application/json'
           }
         }
-      );
+      ));
 
       if (apiData) {
         setNsfForms(apiData.data.forms.map((form: any) => form['@name']))
         dispatch(addNsfDesign(nsfPathDecode, apiData.data));
 
         // Get list of configured forms
-        axios
-          .get(
-            `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`,
-            {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-              }
-            }
+        try {
+          const response = await apiRequestWithRetry(() =>
+            axios
+              .get(
+                `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                  }
+                }
+              )
           )
-          .then((response) => {
-            setErrorStatus({ status: 200, statusText: 'success' });
+
+          setErrorStatus({ status: 200, statusText: 'success' });
             setSchemaData({
               ...response.data,
               nsfPath: nsfPathDecode,
@@ -325,7 +331,9 @@ const FormsContainer = () => {
             }
             setActiveViews(dbName, response.data.views);
             setActiveAgents(dbName, response.data.agents);
-          });
+        } catch (error) {
+          console.error("Error fetching configured forms:", error);
+        }
       }
     } catch (e: any) {
       setErrorStatus({

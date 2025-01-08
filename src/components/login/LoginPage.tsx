@@ -17,7 +17,6 @@ import * as Yup from 'yup';
 import { Alert, AlertTitle } from '@mui/lab';
 import LoginIcon from '@mui/icons-material/ExitToApp';
 import { useSelector, useDispatch } from 'react-redux';
-import { Navigate, Route } from 'react-router-dom';
 import {
   IMG_DIR,
   KEEP_ADMIN_BASE_COLOR,
@@ -25,7 +24,7 @@ import {
 } from '../../config.dev';
 import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
-import { login, set401Error, setLoginError, setToken } from '../../store/account/action';
+import { getIdpList, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
@@ -33,6 +32,8 @@ import React, { useEffect, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { LOGIN } from '../../store/account/types';
+import { initiateAuthorizationRequest } from './pkce';
+import { useNavigate } from 'react-router-dom';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -142,14 +143,16 @@ const ButtonSubmit = styled(Button)(({ theme }) => ({
 }));
 
 const LoginPage = () => {
-  const { error, error401 } = useSelector((state: AppState) => state.account);
+  const { error, error401, idpLogin } = useSelector((state: AppState) => state.account);
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
   const [username, setUsername] = useState('');
   const [noUsernamePasskey, setNoUsernamePasskey] = useState(false);
   const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
   const isHttps = protocol === "https"
+  const [idpList, setIdpList] = useState([]);
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -235,7 +238,7 @@ const LoginPage = () => {
       dispatch(set401Error(false));
       const data = JSON.stringify(values, null, 2);
       const parseData = JSON.parse(data);
-      await dispatch(login(parseData) as any);
+      await dispatch(login(parseData, () => navigate('/')) as any);
     },
   });
 
@@ -275,6 +278,20 @@ const LoginPage = () => {
     formik.handleSubmit();
   }
 
+  const handleLogInUsingIdp = async (idp: any) => {
+    await dispatch(setCurrentIdp(idp) as any)
+    localStorage.setItem('oidc_config_url', idp.wellKnown)
+    localStorage.setItem('client_id', idp.adminui_config.client_id)
+    const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
+    sessionStorage.setItem('redirect_uri', redirectUri)
+    const scopePrepend = idp.adminui_config.application_id_uri ?? "";
+    let scope = '';
+    if (Array.isArray(idp.adminui_config.scope)) {
+      scope = idp.adminui_config.scope.map((s: String) => scopePrepend + s).join(" ");
+    }
+    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
+  }
+
   React.useEffect(() => {
     const canDoPasskey = () =>
       new Promise((resolve, reject) => {
@@ -302,9 +319,16 @@ const LoginPage = () => {
       .catch((e) => dispatch(toggleAlert(e)));
   }, [])
 
+  useEffect(() => {
+    async function getIdps() {
+      const fetchedIdps = await getIdpList()
+      setIdpList(fetchedIdps)
+    }
+    getIdps();
+  }, [])
+
   return (
     <GridRoot container>
-      <Navigate to="/" />
       <CssBaseline />
       <Grid
         style={{
@@ -339,7 +363,7 @@ const LoginPage = () => {
             <Typography style={{ fontSize: 18 }} component="h1" variant="h5">
               Login your account
             </Typography>
-            {error401 && (
+            {error401 && !idpLogin && (
               <Alert style={{ margin: "5px 0" }} severity="error">
                 <AlertTitle>Whoops: Something went wrong!</AlertTitle>
                 <Typography
@@ -450,6 +474,21 @@ const LoginPage = () => {
                 </ButtonSubmit>
               )}
             </StyledForm>
+            {idpList.length > 0 &&
+                idpList.map((idp: any, index: number) => (
+                  <ButtonSubmit
+                    key={index}
+                    style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleLogInUsingIdp(idp)}
+                  >
+                    <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
+                    {`Log in with ${idp.name}`}
+                  </ButtonSubmit>
+              ))}
             <PasskeySignUpContainer>
               {isHttps && (
                 <Button fullWidth className="text-button">

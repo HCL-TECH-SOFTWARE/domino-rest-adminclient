@@ -40,6 +40,7 @@ import {
   FormContainer,
   TopBanner
 } from '../../styles/CommonStyles';
+import { apiRequestWithRetry } from '../../utils/api-retry';
 /**
  * Groups.tsx provides support for Domino groups
  *
@@ -254,7 +255,7 @@ const Groups: React.FC = () => {
    *
    * @param currentRow the values from selected Group grid row
    */
-  const updateAction = (currentRow: Array<any>) => {
+  const updateAction = async (currentRow: Array<any>) => {
     // Initial form values
     const updateValues: any = {
       groupId: '',
@@ -267,54 +268,55 @@ const Groups: React.FC = () => {
     const groupId: string = currentRow[0];
 
     // Fetch the current values
-    axios
-      .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      .then((response) => {
-        // Set the form values
-        updateValues.groupId = groupId;
-        updateValues.groupName = response.data.ListName;
-        updateValues.groupCategory = response.data.ListCategory;
-        updateValues.groupDescription = response.data.ListDescription;
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
+            }
+          })
+      )
+      // Set the form values
+      updateValues.groupId = groupId;
+      updateValues.groupName = response.data.ListName;
+      updateValues.groupCategory = response.data.ListCategory;
+      updateValues.groupDescription = response.data.ListDescription;
 
-        // Put each member in Datagrid rows
+      // Put each member in Datagrid rows
 
-        let i: number = 0;
-        const memberList: Array<any> = [];
-        response.data.Members.length === 0
-          ? (updateValues.groupMembers = [])
-          : response.data.Members.forEach((member: any) => {
-              memberList.push({
-                id: i,
-                memberName: member
-              });
-              i++;
+      let i: number = 0;
+      const memberList: Array<any> = [];
+      response.data.Members.length === 0
+        ? (updateValues.groupMembers = [])
+        : response.data.Members.forEach((member: any) => {
+            memberList.push({
+              id: i,
+              memberName: member
             });
-        updateValues.groupMembers = memberList;
+            i++;
+          });
+      updateValues.groupMembers = memberList;
 
-        formik.setValues(updateValues);
+      formik.setValues(updateValues);
 
-        // Open the drawer with the form
-        dispatch(toggleApplicationDrawer());
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error reading Groups: ${err.response.statusText}`);
-        }
-        // Otherwise use the generic error
-        else {
-          console.log(`Error reading Groups: ${err.message}`);
-        }
-      });
+      // Open the drawer with the form
+      dispatch(toggleApplicationDrawer());
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error reading Groups: ${err.response.statusText}`);
+      }
+      // Otherwise use the generic error
+      else {
+        console.log(`Error reading Groups: ${err.message}`);
+      }
+    }
   };
 
   // onView Event
-  function handleOnClick(rowData: any) {
+  async function handleOnClick(rowData: any) {
     setformContext('View');
     const updateValues: any = {
       groupId: '',
@@ -327,50 +329,51 @@ const Groups: React.FC = () => {
     const groupId: string = rowData.id;
 
     // Fetch the current values
-    axios
-      .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      .then((response) => {
-        // Set the form values
-        updateValues.groupId = rowData;
-        updateValues.groupName = response.data.ListName;
-        updateValues.groupCategory = response.data.ListCategory;
-        updateValues.groupDescription = response.data.ListDescription;
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json'
+            }
+          })
+      )
+      // Set the form values
+      updateValues.groupId = rowData;
+      updateValues.groupName = response.data.ListName;
+      updateValues.groupCategory = response.data.ListCategory;
+      updateValues.groupDescription = response.data.ListDescription;
 
-        // Put each member in Datagrid rows
+      // Put each member in Datagrid rows
 
-        let i: number = 0;
-        const memberList: Array<any> = [];
-        response.data.Members.length === 0
-          ? (updateValues.groupMembers = [])
-          : response.data.Members.forEach((member: any) => {
-              memberList.push({
-                id: i,
-                memberName: member
-              });
-              i++;
+      let i: number = 0;
+      const memberList: Array<any> = [];
+      response.data.Members.length === 0
+        ? (updateValues.groupMembers = [])
+        : response.data.Members.forEach((member: any) => {
+            memberList.push({
+              id: i,
+              memberName: member
             });
-        updateValues.groupMembers = memberList;
+            i++;
+          });
+      updateValues.groupMembers = memberList;
 
-        formik.setValues(updateValues);
+      formik.setValues(updateValues);
 
-        // Open the drawer with the form
-        dispatch(toggleApplicationDrawer());
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          console.log(`Error reading Groups: ${err.response.statusText}`);
-        }
-        // Otherwise use the generic error
-        else {
-          console.log(`Error reading Groups: ${err.message}`);
-        }
-      });
+      // Open the drawer with the form
+      dispatch(toggleApplicationDrawer());
+    } catch (err: any) {
+      // Use the Keep response error if it's available
+      if (err.response && err.response.statusText) {
+        console.log(`Error reading Groups: ${err.response.statusText}`);
+      }
+      // Otherwise use the generic error
+      else {
+        console.log(`Error reading Groups: ${err.message}`);
+      }
+    }
   }
   /**
    * deleteAction is called when the Delete Group icon is clicked.

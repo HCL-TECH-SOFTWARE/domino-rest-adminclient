@@ -34,6 +34,7 @@ import {
 } from '../../../styles/CommonStyles';
 import { checkIcon } from '../../../styles/scripts';
 import { getTheme } from '../../../store/styles/action';
+import { apiRequestWithRetry } from '../../../utils/api-retry';
 
 const AppImage = styled.img`
   margin-top: 8px;
@@ -126,39 +127,41 @@ const AppCard: React.FC<AppCardProps> = ({
     window.open(item.appStartPage);
   };
 
-  const generate = (appId: string, status: string) => {
+  const generate = async (appId: string, status: string) => {
     setGenerating(true);
-    axios
-      .post(
-        `${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`,
-        {
-          status: status
-          //TODO: warn if secret exists ask for confirmation
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${getToken()}`
-          }
-        }
+    
+    try {
+      const response = await apiRequestWithRetry(() =>
+        axios
+          .post(
+            `${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`,
+            {
+              status: status
+              //TODO: warn if secret exists ask for confirmation
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${getToken()}`
+              }
+            }
+          )
       )
-      .then((res) => {
-        setGenerating(false);
-        setAppSecret(res.data.client_secret);
-      })
-      .catch((err) => {
-        // Use the Keep response error if it's available
-        if (err.response && err.response.statusText) {
-          dispatch(
-            toggleAlert(
-              `Error Generating App Secret: ${err.response.statusText}`
-            )
-          );
-        }
-        // Otherwise use the generic error
-        else {
-          dispatch(toggleAlert(`Error Generating App Secret: ${err.message}`));
-        }
-      });
+
+      setGenerating(false);
+      setAppSecret(response.data.client_secret);
+    } catch (err: any) {
+      if (err.response && err.response.statusText) {
+        dispatch(
+          toggleAlert(
+            `Error Generating App Secret: ${err.response.statusText}`
+          )
+        );
+      }
+      // Otherwise use the generic error
+      else {
+        dispatch(toggleAlert(`Error Generating App Secret: ${err.message}`));
+      }
+    }
   };
 
   const handleKeyPress = (e: any, callback: any, focus?: boolean) => {
