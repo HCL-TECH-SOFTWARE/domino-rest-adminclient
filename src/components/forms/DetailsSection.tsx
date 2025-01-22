@@ -129,7 +129,6 @@ const Config = styled.div`
 
   .title {
     margin-right: 10px;
-    width: 130px;
   }
 
   svg {
@@ -192,11 +191,17 @@ const ConfigContainer = styled(Box)`
   width: 100%;
   margin-bottom: 40px;
   flex-wrap: wrap;
+  gap: 10%;
 
   .row {
     display: flex;
-    justify-content: space-around;
-    width: 50%;
+    justify-content: space-between;
+    width: 40%;
+  }
+
+  .two-columns {
+    justify-content: space-between;
+    background-color: yellow;
   }
 `;
 
@@ -220,13 +225,15 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     forms,
     agents,
     views,
-    schemaName
+    schemaName,
+    prohibitRefresh,
   } = schemaData;
   const [isInUse, setIsInUse] = useState(false);
   const [isConfigLoading, setIsConfigLoading] = useState(true);
   const [desc, setDesc] = useState(description);
   const formula = dqlFormula && dqlFormula.formula ? dqlFormula.formula : '@True';
   const [dqlFormulaValue, setDqlFormulaValue] = useState(formula);
+  const [prohibitRefreshValue, setprohibitRefreshValue] = useState(prohibitRefresh === undefined ? true : prohibitRefresh);
   const selectedDB = useMemo(
     () => ({
       apiName,
@@ -246,7 +253,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       configuredForms: [],
       excludedViews: undefined,
       owners: [],
-      storedProcedures: []
+      storedProcedures: [],
+      prohibitRefresh: prohibitRefreshValue,
     }),
     [
       apiName,
@@ -261,7 +269,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       dqlFormula,
       requireRevisionToUpdate,
       icon,
-      isActive
+      isActive,
+      prohibitRefresh,
     ]
   );
   const [dbContext, setDbContext] = useState(selectedDB);
@@ -298,6 +307,14 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     handleChange('dqlFormula', value);
     setDqlFormulaValue(value);
   };
+  const handleprohibitRefreshChange = () => {
+    const newValue = prohibitRefresh === undefined ? false : !prohibitRefreshValue;
+    setprohibitRefreshValue(newValue)
+    setSchemaData({
+      ...schemaData,
+      prohibitRefresh: newValue,
+    })
+  }
 
   useEffect(() => {
     const schemasWithScopes = scopes.map((scope) => {
@@ -323,7 +340,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       dqlFormula,
       requireRevisionToUpdate,
       excludedViews,
-      owners
+      owners,
     } = dbContext;
     const filterEmptyModeForms = forms ? forms.filter((form) => form.formModes.length > 0) : [];
 
@@ -347,7 +364,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       views,
       excludedViews,
       owners,
-      forms: formData
+      forms: formData,
+      prohibitRefresh: prohibitRefreshValue,
     };
     dispatch(updateSchema(updatedSchema, setSchemaData) as any);
   };
@@ -586,6 +604,23 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                 </Box>
               </Config>
               <Config>
+                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
+                  <Box className="title-container">
+                    <Typography
+                      color="textPrimary"
+                      className={prohibitRefresh === undefined || prohibitRefresh === null ? `title` : prohibitRefresh ? `title` : `title unchecked`}
+                      component="p"
+                      variant="body2"
+                      noWrap={true}>
+                      Prevent Design Refresh
+                    </Typography>
+                  </Box>
+                  <Box style={{ width: '5%' }}>
+                    {(prohibitRefresh === undefined || prohibitRefresh === null) ? <Check className="checkbox" /> : prohibitRefresh ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                  </Box>
+                </Box>
+              </Config>
+              <Config>
                 <FormulaBox>
                   <Typography className="subtitle" component="p" variant="body2">
                     DQL Formula
@@ -639,8 +674,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
               <Box className="title">Configuration</Box>
               <ConfigContainer style={{ display: 'flex', width: '100%', marginBottom: '40px', flexWrap: 'wrap' }}>
                 <Box className="row">
-                  <Box style={{ width: '50%' }}>DQL Access</Box>
-                  <Box style={{ width: '50%' }}>
+                  <Box>DQL Access</Box>
+                  <Box>
                     <BlueSwitch
                       size="small"
                       checked={dbContext.dqlAccess}
@@ -651,8 +686,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   </Box>
                 </Box>
                 <Box className="row">
-                  <Box style={{ width: '50%' }}>In $DATA Scope</Box>
-                  <Box style={{ width: '50%' }}>
+                  <Box>In $DATA Scope</Box>
+                  <Box>
                     <BlueSwitch
                       size="small"
                       checked={dbContext.openAccess}
@@ -661,8 +696,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   </Box>
                 </Box>
                 <Box className="row">
-                  <Box style={{ width: '50%' }}>Enable Code</Box>
-                  <Box style={{ width: '50%' }}>
+                  <Box>Enable Code</Box>
+                  <Box>
                     <BlueSwitch
                       size="small"
                       checked={dbContext.allowCode}
@@ -671,12 +706,22 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   </Box>
                 </Box>
                 <Box className="row">
-                  <Box style={{ width: '50%' }}>Require Revision</Box>
-                  <Box style={{ width: '50%' }}>
+                  <Box>Require Revision</Box>
+                  <Box>
                     <BlueSwitch
                       size="small"
                       checked={dbContext.requireRevisionToUpdate}
                       onClick={() => handleChange('requireRevisionToUpdate', !dbContext.requireRevisionToUpdate)}
+                    />
+                  </Box>
+                </Box>
+                <Box className="row">
+                  <Box>Prevent Design Refresh</Box>
+                  <Box>
+                    <BlueSwitch
+                      size="small"
+                      checked={prohibitRefreshValue}
+                      onClick={handleprohibitRefreshChange}
                     />
                   </Box>
                 </Box>

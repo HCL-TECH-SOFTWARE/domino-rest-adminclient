@@ -135,6 +135,7 @@ export interface Database {
   activeViews?: Array<string>;
   agents?: Array<string>;
   activeAgents?: Array<string>;
+  prohibitRefresh?: boolean;
 }
 
 export interface DatabaseOverview {
