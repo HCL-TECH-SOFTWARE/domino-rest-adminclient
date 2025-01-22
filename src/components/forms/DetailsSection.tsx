@@ -608,7 +608,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   <Box className="title-container">
                     <Typography
                       color="textPrimary"
-                      className={!(!!prohibitRefreshValue) ? `title` : prohibitRefreshValue ? `title` : `title unchecked`}
+                      className={prohibitRefresh === undefined || prohibitRefresh === null ? `title` : prohibitRefresh ? `title` : `title unchecked`}
                       component="p"
                       variant="body2"
                       noWrap={true}>
@@ -616,7 +616,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                     </Typography>
                   </Box>
                   <Box style={{ width: '5%' }}>
-                    {!(!!prohibitRefreshValue) ? <Check className="checkbox" /> : prohibitRefreshValue ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                    {(prohibitRefresh === undefined || prohibitRefresh === null) ? <Check className="checkbox" /> : prohibitRefresh ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
                   </Box>
                 </Box>
               </Config>
