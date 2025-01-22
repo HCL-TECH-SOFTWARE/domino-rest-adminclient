@@ -226,14 +226,14 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     agents,
     views,
     schemaName,
-    preventDesignRefresh,
+    prohibitRefresh,
   } = schemaData;
   const [isInUse, setIsInUse] = useState(false);
   const [isConfigLoading, setIsConfigLoading] = useState(true);
   const [desc, setDesc] = useState(description);
   const formula = dqlFormula && dqlFormula.formula ? dqlFormula.formula : '@True';
   const [dqlFormulaValue, setDqlFormulaValue] = useState(formula);
-  const [preventDesignRefreshValue, setPreventDesignRefreshValue] = useState(preventDesignRefresh === undefined ? true : preventDesignRefresh);
+  const [prohibitRefreshValue, setprohibitRefreshValue] = useState(prohibitRefresh === undefined ? true : prohibitRefresh);
   const selectedDB = useMemo(
     () => ({
       apiName,
@@ -254,7 +254,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       excludedViews: undefined,
       owners: [],
       storedProcedures: [],
-      preventDesignRefresh: preventDesignRefreshValue,
+      prohibitRefresh: prohibitRefreshValue,
     }),
     [
       apiName,
@@ -270,7 +270,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       requireRevisionToUpdate,
       icon,
       isActive,
-      preventDesignRefresh,
+      prohibitRefresh,
     ]
   );
   const [dbContext, setDbContext] = useState(selectedDB);
@@ -307,12 +307,12 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     handleChange('dqlFormula', value);
     setDqlFormulaValue(value);
   };
-  const handlePreventDesignRefreshChange = () => {
-    const newValue = preventDesignRefresh === undefined ? false : !preventDesignRefreshValue;
-    setPreventDesignRefreshValue(newValue)
+  const handleprohibitRefreshChange = () => {
+    const newValue = prohibitRefresh === undefined ? false : !prohibitRefreshValue;
+    setprohibitRefreshValue(newValue)
     setSchemaData({
       ...schemaData,
-      preventDesignRefresh: newValue,
+      prohibitRefresh: newValue,
     })
   }
 
@@ -341,7 +341,6 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       requireRevisionToUpdate,
       excludedViews,
       owners,
-      preventDesignRefresh,
     } = dbContext;
     const filterEmptyModeForms = forms ? forms.filter((form) => form.formModes.length > 0) : [];
 
@@ -366,7 +365,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       excludedViews,
       owners,
       forms: formData,
-      preventDesignRefresh: preventDesignRefreshValue,
+      prohibitRefresh: prohibitRefreshValue,
     };
     dispatch(updateSchema(updatedSchema, setSchemaData) as any);
   };
@@ -609,7 +608,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   <Box className="title-container">
                     <Typography
                       color="textPrimary"
-                      className={!(!!preventDesignRefreshValue) ? `title` : preventDesignRefreshValue ? `title` : `title unchecked`}
+                      className={!(!!prohibitRefreshValue) ? `title` : prohibitRefreshValue ? `title` : `title unchecked`}
                       component="p"
                       variant="body2"
                       noWrap={true}>
@@ -617,7 +616,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                     </Typography>
                   </Box>
                   <Box style={{ width: '5%' }}>
-                    {!(!!preventDesignRefreshValue) ? <Check className="checkbox" /> : preventDesignRefreshValue ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                    {!(!!prohibitRefreshValue) ? <Check className="checkbox" /> : prohibitRefreshValue ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
                   </Box>
                 </Box>
               </Config>
@@ -721,8 +720,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                   <Box>
                     <BlueSwitch
                       size="small"
-                      checked={preventDesignRefreshValue}
-                      onClick={handlePreventDesignRefreshChange}
+                      checked={prohibitRefreshValue}
+                      onClick={handleprohibitRefreshChange}
                     />
                   </Box>
                 </Box>
