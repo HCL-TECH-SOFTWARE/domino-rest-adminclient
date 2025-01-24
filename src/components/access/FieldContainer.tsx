@@ -250,7 +250,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             <TextField
               value={formatValue}
               onChange={handleFieldTypeChange}
-              style={{"width":"50%"}}
+              style={{ width: "50%", zIndex: 0 }}
               label="Field Type"
               select
               id='field-type'
