@@ -284,12 +284,7 @@ const LoginPage = () => {
     localStorage.setItem('client_id', idp.adminui_config.client_id)
     const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
     sessionStorage.setItem('redirect_uri', redirectUri)
-    const scopePrepend = idp.adminui_config.application_id_uri ?? "";
-    let scope = '';
-    if (Array.isArray(idp.adminui_config.scope)) {
-      scope = idp.adminui_config.scope.map((s: String) => scopePrepend + s).join(" ");
-    }
-    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
+    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
   }
 
   React.useEffect(() => {
