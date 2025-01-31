@@ -50,7 +50,7 @@ async function generateCodeVerifierAndChallenge() {
 }
 
 // Step 2: Initiate Authorization Request
-export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redirectUri, scope) {
+export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redirectUri) {
     const { authorization_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
     const { codeVerifier, codeChallenge } = await generateCodeVerifierAndChallenge();
     
@@ -63,12 +63,9 @@ export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redi
             response_type: 'code',
             code_challenge: codeChallenge,
             code_challenge_method: 'S256',
-            scope: scope,
         });
 
     window.location.href = authUrl;
-
-    // handleCallback(oidcConfigUrl, clientId, redirectUri);
 }
 
 // Step 3: Handle Callback and Exchange Authorization Code for Token
