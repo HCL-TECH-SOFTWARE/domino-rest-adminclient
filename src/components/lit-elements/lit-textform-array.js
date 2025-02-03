@@ -82,12 +82,10 @@ class TextFormArray extends LitElement {
     dialog {
         border: none;
         border-radius: 10px;
-        padding: 20px 0;
+        padding: 0;
     }
 
     dialog#add {
-      padding-top: 0;
-      padding-bottom: 0;
       min-width: 50vw;
       min-height: 30vh;
       overflow: auto;
@@ -187,20 +185,30 @@ class TextFormArray extends LitElement {
           `
         )}
         <dialog id="delete">
-          Delete Rule: <strong>${this.deleteRule}</strong>?
-          <section class="buttons-container">
+          <lit-dialog-header>
+            <header>
+              <h3>Delete Rule</h3>
+            </header>
+            <button class="close" @click=${this.handleCancel}>
+              <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></sl-icon>
+            </button>
+          </lit-dialog-header>
+          <lit-dialog-content>
+            Are you sure you want to delete this validation rule: <strong>${this.deleteRule}</strong>?
+          </lit-dialog-content>
+          <lit-dialog-actions>
             <lit-button-yes text="Delete" @click=${this.handleDelete}></lit-button-yes>
             <lit-button-neutral text="Cancel" @click=${this.handleCancel}></lit-button-neutral>
-          </section>
+          </lit-dialog-actions>
         </dialog>
         <dialog id="add">
           <lit-dialog-header>
             <header>
               <h3>Add Rule</h3>
-          </header>
-          <button class="close" @click=${this.handleCancelAdd}>
-              <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></sl-icon>
-          </button>
+            </header>
+            <button class="close" @click=${this.handleCancelAdd}>
+                <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></sl-icon>
+            </button>
           </lit-dialog-header>
           <lit-dialog-content>
             <lit-textform .data=${{formulaType: 'domino', formula: '', message: ''}}></lit-textform>
