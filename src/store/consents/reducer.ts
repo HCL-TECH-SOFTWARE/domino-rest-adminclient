@@ -45,10 +45,10 @@ export default function consentsReducer(
       return {
         ...state,
         deleteConsentDialog: !state.deleteConsentDialog,
-        deleteUnid: action.payload,
-        appName: action.payload,
-        username: action.payload,
-        scope: action.payload,
+        deleteUnid: action.payload.unid,
+        appName: action.payload.appName,
+        username: action.payload.username,
+        scope: action.payload.scope,
       }
     case INIT_STATE:
       return {
