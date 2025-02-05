@@ -45,7 +45,12 @@ interface DeleteConsent {
 
 interface ToggleDeleteConsent {
   type: typeof TOGGLE_DELETE_CONSENT;
-  payload: string
+  payload: {
+    unid: string,
+    appName: string,
+    username: string,
+    scope: string,
+  }
 }
 
 interface InitConsentsState {
