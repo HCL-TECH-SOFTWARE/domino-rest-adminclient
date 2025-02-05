@@ -11,6 +11,7 @@ import ButtonNeutral from './lit-button-neutral';
 import DialogHeader from './lit-dialog-header';
 import DialogContent from './lit-dialog-content';
 import DialogActions from './lit-dialog-actions';
+import Button from './lit-button';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -81,5 +82,11 @@ export const LitDialogHeader = createComponent({
 export const LitDialogActions = createComponent({
   tagName: 'lit-dialog-actions',
   elementClass: DialogActions,
+  react: React,
+});
+
+export const LitButton = createComponent({
+  tagName: 'lit-button',
+  elementClass: Button,
   react: React,
 });
