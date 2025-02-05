@@ -31,6 +31,10 @@ import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
 import { FiFilter } from "react-icons/fi";
+import SlButton from '@shoelace-style/shoelace/dist/react/button';
+import SlIcon from '@shoelace-style/shoelace/dist/react/icon';
+import { IMG_DIR } from '../../../config.dev';
+import { LitButton } from '../../lit-elements/LitElements';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -176,21 +180,17 @@ const Kanban: React.FC = () => {
             Application Management
           </Typography>
           <OptionsContainer>
-            <Button
-              color="primary"
-              className="button-create"
+            <LitButton
+              src={`${IMG_DIR}/shoelace/plus.svg`}
               onClick={createAction}
             >
-              <AddIcon style={{ margin: '0 5px' }} />
               Add Application
-            </Button>
-            <Button
-              color="primary"
-              className="button-create"
+            </LitButton>
+            <LitButton
               onClick={handleOpenConsents}
             >
               OAuth Consents
-            </Button>
+            </LitButton>
             <div style={{ height: '46px', width: '1px', backgroundColor: '#000' }} />
             <ButtonBase onClick={() => dispatch(toggleAppFilterDrawer())} className='option'>
               <FiFilter size='2em' />

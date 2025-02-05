@@ -32,6 +32,8 @@ import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import { Tooltip } from '@mui/material';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
+import { IMG_DIR } from '../../config.dev';
+import { LitButton } from '../lit-elements/LitElements';
 
 const SchemasLists = () => {
   const { scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview, databasePull } = useSelector(
@@ -160,21 +162,12 @@ const SchemasLists = () => {
               >
                 Schema Management
               </Typography>
-              <Button
-                className="button-create"
-                color="primary"
-                onClick={handleRefresh}
-              >
-                <CachedIcon style={{ margin: '0 5px' }} />Refresh
-              </Button>
-              <Button
-                className="button-create"
-                color="primary"
-                onClick={handleClickOpen}
-              >
-                <AddIcon style={{ margin: '0 5px' }} />
+              <LitButton onClick={handleRefresh} src={`${IMG_DIR}/shoelace/rotate.svg`}>
+                Refresh
+              </LitButton>
+              <LitButton src={`${IMG_DIR}/shoelace/plus.svg`} onClick={handleClickOpen}>
                 Add Schema
-              </Button>
+              </LitButton>
             </TopContainer>
             <TopContainer style={{ marginTop: 0 }}>
               <DatabaseSearch handleSearchDatabase={handleSearchDatabase} changeSearchType={changeSearchType} searchType={searchType}/>

@@ -28,6 +28,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiView';
 import { toggleAlert } from '../../store/alerts/action';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
+import { IMG_DIR } from '../../config.dev';
+import { LitButton } from '../lit-elements/LitElements';
 
 const ScopeLists = () => {
   const { databasePull, scopePull, scopes, permissions } = useSelector(
@@ -133,22 +135,15 @@ const ScopeLists = () => {
               >
                 Scope Management
               </Typography>
-              <Button
-                className="button-create"
-                color="primary"
-                onClick={handleRefresh}
-              >
-                <CachedIcon style={{ margin: '0 5px' }} />
+              <LitButton src={`${IMG_DIR}/shoelace/rotate.svg`} onClick={handleRefresh}>
                 Refresh
-              </Button>
-              <Button
-                className="button-create"
-                color="primary"
+              </LitButton>
+              <LitButton
                 onClick={handleClickOpen}
+                src={`${IMG_DIR}/shoelace/plus.svg`}
               >
-                <AddIcon style={{ margin: '0 5px' }} />
                 Add Scope
-              </Button>
+              </LitButton>
             </TopContainer>
             <TopContainer style={{ marginTop: 0 }}>
               <DatabaseSearch handleSearchDatabase={handleSearchDatabase}  changeSearchType={changeSearchType}  searchType={searchType} />
