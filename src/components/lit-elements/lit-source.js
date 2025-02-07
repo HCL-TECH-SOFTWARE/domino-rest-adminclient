@@ -285,7 +285,7 @@ class SourceTree extends LitElement {
 
   constructor() {
     super();
-    setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/')
+    setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/')
     this.content = {}
     this.editedContent = JSON.parse(JSON.stringify(this.content))
     this.currentInputValues = {}
