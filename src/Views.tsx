@@ -12,11 +12,7 @@ import AccessMode from './components/access/AccessMode';
 import ApplicationsContainer from './components/applications/Applications';
 import FormsContainer from './components/forms/FormsContainer';
 import { AppState } from './store';
-import Groups from './components/groups/Groups';
-import People from './components/people/People';
-import Mail from './components/mail/Mail';
 import { setLoading } from './store/loading/action';
-import SettingsPage from './components/settings/SettingsPage';
 import Homepage from './components/home/Homepage';
 import PageRouters from './components/routers/PageRouters';
 import SchemasLists from './components/schemas/SchemasLists';
@@ -26,7 +22,6 @@ import QuickConfigFormContainer from './components/database/QuickConfigFormConta
 import ConsentsContainer from './components/applications/ConsentsContainer';
 import CallbackPage from './components/login/CallbackPage';
 import { PrivateRoutes } from './components/routers/ProtectedRoute';
-import LoginPage from './components/login/LoginPage';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -60,6 +55,7 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
   const [scopePulling, setScopePulling] = useState(false);
   const [databasePulling, setDatabasePulling] = useState(false);
   const [fetchedPermission, setFetchedPermission] = useState(false);
+  const { idpLogin } = useSelector((state: AppState) => state.account);
 
   useEffect(() => {
     var subTitle = 'Overview';
@@ -107,6 +103,13 @@ const Views: React.FC<ViewsProps> = ({ open }) => {
       }
     }
   }, [scopePull, dispatch, url, scopePulling, databasePull, onlyShowSchemasWithScopes, fetchedPermission, databasePulling]);
+
+  useEffect(() => {
+    if (idpLogin) {
+      dispatch(fetchScopes() as any);
+      dispatch(fetchKeepPermissions() as any)
+    }
+  }, [idpLogin])
 
   return (
     <ViewContainer id="main-stack">
