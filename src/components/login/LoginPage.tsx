@@ -24,7 +24,7 @@ import {
 } from '../../config.dev';
 import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
-import { getIdpList, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
+import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
@@ -153,6 +153,7 @@ const LoginPage = () => {
   const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
   const isHttps = protocol === "https"
   const [idpList, setIdpList] = useState([]);
+  const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -315,11 +316,21 @@ const LoginPage = () => {
   }, [])
 
   useEffect(() => {
-    async function getIdps() {
+    async function handleIdps() {
       const fetchedIdps = await getIdpList()
       setIdpList(fetchedIdps)
+
+      const display = await getKeepIdpActive()
+      if (display) {
+        setDisplayKeepIdp(true)
+      } else if (fetchedIdps.length === 0) {
+        setDisplayKeepIdp(true)
+      } else {
+        setDisplayKeepIdp(false)
+      }
+      setDisplayKeepIdp(false)
     }
-    getIdps();
+    handleIdps()
   }, [])
 
   return (
@@ -428,6 +439,7 @@ const LoginPage = () => {
                 autoFocus
                 onChange={handleUsernameChange}
                 value={username ? username : formik.values.username}
+                disabled={!displayKeepIdp}
               />
               <TextField
                 variant="outlined"
@@ -443,6 +455,7 @@ const LoginPage = () => {
                 value={formik.values.password}
                 autoComplete="off"
                 autoFocus={error}
+                disabled={!displayKeepIdp}
               />
               <ButtonSubmit
                 style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
@@ -451,6 +464,7 @@ const LoginPage = () => {
                 variant="contained"
                 color="primary"
                 onClick={handleLogInWithPassword}
+                disabled={!displayKeepIdp}
               >
                 <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
                 Log In With Password
@@ -463,6 +477,7 @@ const LoginPage = () => {
                   variant="contained"
                   color="primary"
                   onClick={handleLogInWithPasskey}
+                  disabled={!displayKeepIdp}
                 >
                   <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
                   Log In with Passkey
@@ -486,7 +501,7 @@ const LoginPage = () => {
               ))}
             <PasskeySignUpContainer>
               {isHttps && (
-                <Button fullWidth className="text-button">
+                <Button fullWidth className="text-button" disabled={!displayKeepIdp}>
                   <Typography
                     className="sign-up-text"
                     display="inline"
