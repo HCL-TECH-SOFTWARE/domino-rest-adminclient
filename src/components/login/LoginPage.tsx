@@ -328,7 +328,6 @@ const LoginPage = () => {
       } else {
         setDisplayKeepIdp(false)
       }
-      setDisplayKeepIdp(false)
     }
     handleIdps()
   }, [])
