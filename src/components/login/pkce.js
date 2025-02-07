@@ -50,20 +50,25 @@ async function generateCodeVerifierAndChallenge() {
 }
 
 // Step 2: Initiate Authorization Request
-export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redirectUri) {
+export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redirectUri, scope = "") {
     const { authorization_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
     const { codeVerifier, codeChallenge } = await generateCodeVerifierAndChallenge();
     
     localStorage.setItem('pkce_code_verifier', codeVerifier);
     
-    const authUrl = `${authorization_endpoint}?` +
-        new URLSearchParams({
-            client_id: clientId,
-            redirect_uri: redirectUri,
-            response_type: 'code',
-            code_challenge: codeChallenge,
-            code_challenge_method: 'S256',
-        });
+    const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+    });
+
+    if (scope.length > 0) {
+        params.append('scope', scope)
+    }
+
+    const authUrl = `${authorization_endpoint}?${params.toString()}`;
 
     window.location.href = authUrl;
 }
