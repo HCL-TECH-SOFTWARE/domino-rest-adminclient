@@ -20,7 +20,7 @@ import {
   SET_IDP_LOGIN,
   IdP,
 } from './types';
-import { BASE_KEEP_API_URL } from '../../config.dev';
+import { BASE_KEEP_API_URL, IDP_KEEP_API_URL } from '../../config.dev';
 import {
   initState,
 } from '../databases/action';
@@ -297,3 +297,14 @@ export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, AnyAc
   const { idpLogin } = getState().account;
   return idpLogin;
 };
+
+export const getKeepIdpActive = async () => {
+  const res = await fetch(
+    `${IDP_KEEP_API_URL}/active`,
+    {
+      method: 'GET'
+    }
+  );
+  const resJson = await res.json()
+  return resJson
+}

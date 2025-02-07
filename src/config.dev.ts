@@ -14,6 +14,7 @@ export const BASE_KEEP_API_URL = '/api/v1';
 export const SETUP_KEEP_API_URL = '/api/setup-v1';
 export const PIM_KEEP_API_URL = '/api/pim-v1';
 export const ADMIN_KEEP_API_URL = '/api/admin-v1';
+export const IDP_KEEP_API_URL = '/api/keepidp-v1'
 
 // ASSETS DIRECTORY
 export const IMG_DIR = '/admin/img';
