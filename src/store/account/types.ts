@@ -27,7 +27,7 @@ export interface IdP {
   adminui_config: {
     active: boolean;
     client_id: string;
-    scope: Array<string>;
+    application_id_uri?: string;
   }
 }
 export interface AccountState {

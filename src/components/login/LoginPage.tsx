@@ -31,7 +31,7 @@ import { Link } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
-import { LOGIN } from '../../store/account/types';
+import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from 'react-router-dom';
 
@@ -279,14 +279,15 @@ const LoginPage = () => {
     formik.handleSubmit();
   }
 
-  const handleLogInUsingIdp = async (idp: any) => {
+  const handleLogInUsingIdp = async (idp: IdP) => {
     await dispatch(setCurrentIdp(idp) as any)
     localStorage.setItem('oidc_config_url', idp.wellKnown)
     localStorage.setItem('client_id', idp.adminui_config.client_id)
     const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
     sessionStorage.setItem('redirect_uri', redirectUri)
     if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
-      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, idp.scope)
+      const scope = idp.adminui_config.application_id_uri + ".default"
+      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
     } else {
       await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
     }
