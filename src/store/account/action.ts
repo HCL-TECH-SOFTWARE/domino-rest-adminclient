@@ -288,6 +288,7 @@ export function loginWithPkce(token: any) {
     dispatch({
       type: LOGIN
     });
+    dispatch(setToken(token))
   }
 }
 

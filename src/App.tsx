@@ -6,12 +6,10 @@
 
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import styled from 'styled-components';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useSelector, useDispatch } from 'react-redux';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import LoginPage from './components/login/LoginPage';
 import Views from './Views';
 import HomeElement from './components/home/HomeElement';
@@ -21,7 +19,7 @@ import {
   setToken,
   renewToken,
   removeAuth,
-  getCurrentIdpLogin,
+  setIdpLogin,
 } from './store/account/action';
 import PageLoading from './components/loaders/PageLoading';
 import injectInterceptor from './utils/api-interceptor';
@@ -36,7 +34,7 @@ const App: React.FC = () => {
   const dispatch = useDispatch();
   const { themeMode } = useSelector((state: AppState) => state.styles);
 
-  const { authenticated, idpLogin } = useSelector((state: AppState) => state.account);
+  const { authenticated } = useSelector((state: AppState) => state.account);
 
   useEffect(() => {
     // Handle Axios Interceptor
@@ -50,6 +48,10 @@ const App: React.FC = () => {
     setValid(true);
 
     if (jwtToken) {
+      // Set IDP login flag to true if token contains "access_token"
+      const idpLogin = !!JSON.parse(jwtToken).access_token
+      if (idpLogin) dispatch(setIdpLogin(true))
+
       const { issueDate, expSeconds } = JSON.parse(jwtToken) as TokenProps;
 
       dispatch(setToken(jwtToken));
