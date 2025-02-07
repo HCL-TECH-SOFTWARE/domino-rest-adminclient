@@ -285,7 +285,11 @@ const LoginPage = () => {
     localStorage.setItem('client_id', idp.adminui_config.client_id)
     const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
     sessionStorage.setItem('redirect_uri', redirectUri)
-    await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
+    if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
+      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, idp.scope)
+    } else {
+      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
+    }
   }
 
   React.useEffect(() => {
