@@ -29,22 +29,8 @@ import { AppState } from '../../store';
 import { TopContainer } from '../../styles/CommonStyles';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import GenericLoading from '../loading/GenericLoading';
-import styled from 'styled-components';
-import { Button } from '@mui/material';
 import ModeCompare from './ModeCompare';
-
-const ModeCompareButton = styled(Button)`
-  .text {
-    font-size: 16px;
-    font-weight: 700;
-    line-height: normal;
-    color: #FFFFFF;
-  }
-
-  .disabled {
-    color: #8291A0;
-  }
-`
+import { LitButton } from '../lit-elements/LitElements';
 
 const AccessMode: React.FC = () => {
   const [state, setstate] = useState({ [uuid()]: [] }) as any;
@@ -374,15 +360,12 @@ const AccessMode: React.FC = () => {
             <Typography className='top-nav' color='textPrimary'>
               Schema Management - {formName}
             </Typography>
-            <ModeCompareButton 
-              className={`button-compare ${modes.length > 1 ? '' : 'compare-disabled'}`} 
+            <LitButton 
               onClick={handleClickOpenModeCompare}
               disabled={modes.length === 1 || newForm === null}
             >
-              <Typography className={`text ${modes.length > 1 ? '' : 'disabled'}`}>
-                Open Mode Compare
-              </Typography>
-          </ModeCompareButton>
+              Open Mode Compare
+          </LitButton>
           </TopContainer>
           <AccessModeContainer>
             {!matches && (

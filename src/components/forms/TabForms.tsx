@@ -31,6 +31,7 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
+import { LitButton } from "../lit-elements/LitElements";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -294,12 +295,12 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
             Deactivate All
           </Button>
         </Box>
-        <Button
+        <LitButton
           onClick={() => setCreateFormOpen(true)}
-          className="button add-form"
+          outline={true}
         >
           Add New Form Schema
-        </Button>
+        </LitButton>
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
         <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />
