@@ -60,7 +60,8 @@ export const fetchMyApps = () => {
           appHasSecret: app.hasSecret,
           appSecret: app.client_secret,
           appStartPage: app.client_uri,
-          appStatus: app.status
+          appStatus: app.status,
+          usePkce: app.token_endpoint_auth_method === 'none',
         });
       });
 
@@ -155,7 +156,8 @@ export function updateApp(appData: any) {
         appHasSecret: res.data.hasSecret ? true : false,
         appSecret: res.data.client_secret,
         appStartPage: res.data.client_uri,
-        appStatus: res.data.status
+        appStatus: res.data.status,
+        usePkce: res.data.token_endpoint_auth_method === 'none',
       };
       dispatch({
         type: UPDATE_APP,
@@ -204,7 +206,8 @@ export function getSingleApp(appId: string) {
         appHasSecret: res.data.hasSecret ? true : false,
         appSecret: res.data.client_secret,
         appStartPage: res.data.client_uri,
-        appStatus: res.data.status
+        appStatus: res.data.status,
+        usePkce: res.data.token_endpoint_auth_method === 'none',
       };
       dispatch({
         type: UPDATE_APP,
@@ -299,7 +302,8 @@ export function addApplication(appData: any) {
         appHasSecret: res.data.hasSecret,
         appSecret: res.data.client_secret,
         appStartPage: res.data.client_uri,
-        appStatus: res.data.status
+        appStatus: res.data.status,
+        usePkce: res.data.token_endpoint_auth_method === 'none',
       };
       dispatch({
         type: ADD_APP,

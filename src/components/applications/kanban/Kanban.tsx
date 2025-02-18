@@ -118,6 +118,7 @@ const Kanban: React.FC = () => {
       appScope: '',
       appContactsStr: '',
       appIcon: icon,
+      usePkce: false,
     },
     // Clear errors if user makes changes
     validate: () => {
@@ -139,6 +140,7 @@ const Kanban: React.FC = () => {
         logo_uri: values.appIcon,
         status: values.appStatus ? 'isActive' : 'disabled',
         contacts: appContactsStr,
+        token_endpoint_auth_method: values.usePkce ? 'none' : 'client_secret_basic'
       };
 
       if (formContext === 'Edit') {

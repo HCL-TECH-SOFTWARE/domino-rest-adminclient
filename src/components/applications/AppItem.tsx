@@ -177,7 +177,8 @@ const AppItem: React.FC<AppItemProps> = ({
       appHasSecret: app.appHasSecret ? true : false,
       appSecret: app.appSecret,
       appCallbackUrlsStr: '',
-      appContactsStr: ''
+      appContactsStr: '',
+      usePkce: app.usePkce
     };
 
     if (app.appStartPage != null && app.appStartPage.length > 0) {
