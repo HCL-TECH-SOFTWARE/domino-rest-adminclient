@@ -517,6 +517,7 @@ export const ActionButtonBar = styled.div`
   margin-top: 0px;
   border-top: 2px solid ${KEEP_ADMIN_BASE_COLOR};
   padding-top: 15px;
+  padding-bottom: 15px;
   display: flex;
   flex-wrap: wrap;
   row-gap: 10px;

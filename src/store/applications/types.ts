@@ -17,6 +17,7 @@ export interface AppProp {
   appSecret: string;
   appStartPage: string;
   appStatus: string;
+  usePkce: boolean;
 }
 
 // State for all Applications
@@ -42,6 +43,7 @@ export interface AppFormProp {
   appStartPage: string;
   appScope: string;
   appIcon: string;
+  usePkce: boolean;
 }
 
 // Describing the different ACTION NAMES available
