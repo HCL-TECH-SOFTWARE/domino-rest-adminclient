@@ -4,24 +4,24 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, ButtonBase, DialogActions, DialogContent, DialogContentText, DialogTitle, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import { Box, DialogActions, DialogContent, DialogContentText, DialogTitle, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
 import { getTheme } from '../../store/styles/action';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
-import { DeleteIcon, CommonDialog, ButtonNeutral, ButtonYes } from '../../styles/CommonStyles';
-import { FiEdit2 } from 'react-icons/fi';
+import { DeleteIcon, CommonDialog } from '../../styles/CommonStyles';
 import { MdRefresh } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import '../webcomponents/app-status';
 import '../webcomponents/copyable-text';
 import { AppFormContext } from './ApplicationContext';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const StyledTableRow = styled(TableRow)`
   .app-name {
@@ -209,13 +209,16 @@ const AppItem: React.FC<AppItemProps> = ({
             <StyledTableRow>
                 <TableCell className='expand'>
                     {app.appStatus === 'isActive' && <Tooltip title={`Launch ${app.appName}`} arrow>
-                        <ButtonBase onClick={launch}>
+                        <button
+                          onClick={launch}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                        >
                             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect width="40" height="40" fill="white"/>
                                 <path d="M20.0007 36.6666C29.2054 36.6666 36.6673 29.2047 36.6673 19.9999C36.6673 10.7952 29.2054 3.33325 20.0007 3.33325C10.7959 3.33325 3.33398 10.7952 3.33398 19.9999C3.33398 29.2047 10.7959 36.6666 20.0007 36.6666Z" fill="#5E1EBE" stroke="#5E1EBE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M16.666 13.3333L26.666 19.9999L16.666 26.6666V13.3333Z" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                        </ButtonBase>
+                        </button>
                     </Tooltip>}
                     {app.appStatus === 'disabled' && <Tooltip title="This application is inactive." arrow>
                         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -286,7 +289,12 @@ const AppItem: React.FC<AppItemProps> = ({
                                 </Tooltip>
                           </> :
                           app.appHasSecret ? <>
-                            <ButtonBase onClick={() => handleClickGenerate(false)}><MdRefresh color='#2873F0' /></ButtonBase>
+                            <button
+                              onClick={() => handleClickGenerate(false)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                            >
+                              <MdRefresh color='#2873F0' />
+                            </button>
                             <Typography className='text' style={{ color: '#505050' }}>********************</Typography>
                           </> : <>
                             {app.appSecret?.length > 0 ? <>
@@ -306,9 +314,12 @@ const AppItem: React.FC<AppItemProps> = ({
                                   </Typography>
                                 </Tooltip>
                             </> : <>
-                            <ButtonBase onClick={() => handleClickGenerate(true)}>
+                            <button
+                              onClick={() => handleClickGenerate(true)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                            >
                               <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
-                            </ButtonBase>
+                            </button>
                             </>}
                           </>
                         }
@@ -341,17 +352,25 @@ const AppItem: React.FC<AppItemProps> = ({
                 <TableCell>
                   <OptionsContainer>
                     <Tooltip title="Edit Application" arrow>
-                      <ButtonBase onClick={viewEdit}>
-                        <FiEdit2 size='1.4em' />
-                      </ButtonBase>
+                      <button
+                        onClick={viewEdit}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                        </svg>
+                      </button>
                     </Tooltip>
                     <Box>
                       <div style={{ height: '31px', width: '1px', backgroundColor: 'black'}}></div>  
                     </Box>
                     <Tooltip title="Delete Application" arrow>
-                      <ButtonBase onClick={() => deleteApplication(app.appId)}>
+                      <button
+                        onClick={() => deleteApplication(app.appId)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                      >
                         <DeleteIcon className='delete-icon' />
-                      </ButtonBase>
+                      </button>
                     </Tooltip>
                   </OptionsContainer>
                 </TableCell>
@@ -365,8 +384,8 @@ const AppItem: React.FC<AppItemProps> = ({
                       </DialogContentText>
                     </DialogContent>
                     <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
-                        <ButtonNeutral onClick = {() => setIsGenerate(false)}>No</ButtonNeutral>
-                        <ButtonYes onClick={regenerateSecret}>Yes</ButtonYes>
+                        <LitButtonNeutral text='No' onClick = {() => setIsGenerate(false)} />
+                        <LitButtonYes text='Yes' onClick={regenerateSecret} />
                     </DialogActions>
                 </DialogTitle>
             </CommonDialog>
