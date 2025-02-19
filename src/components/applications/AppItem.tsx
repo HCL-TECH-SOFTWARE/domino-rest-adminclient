@@ -259,76 +259,80 @@ const AppItem: React.FC<AppItemProps> = ({
                         </Typography>
                       </Tooltip>
                     </AppIdSecretContainer>
-                    <AppIdSecretContainer>
-                      <Typography className='text'>App Secret:</Typography>
-                      {/* {(app.appHasSecret || appSecret !== app.appSecret) && <Tooltip title={clickToGenerateText} arrow>
-                        <ButtonBase onClick={handleClickGenerate}><MdRefresh color='#2873F0' /></ButtonBase>
-                      </Tooltip>} */}
-                      {
-                        hasAppSecret ? <>
-                          <Tooltip 
-                                title="Copy Application Secret" 
-                                tabIndex={1} 
-                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                                arrow
-                              >
-                                <Typography
-                                  className='text id-secret'
-                                  style={{ color: '#2873F0' }}
-                                  ref={appSecretTextRef}
-                                  onClick={copyToClipboard}
-                                >
-                                  {appSecret}
-                                </Typography>
-                              </Tooltip>
-                        </> :
-                        app.appHasSecret ? <>
-                          <ButtonBase onClick={() => handleClickGenerate(false)}><MdRefresh color='#2873F0' /></ButtonBase>
-                          <Typography className='text' style={{ color: '#505050' }}>********************</Typography>
-                        </> : <>
-                          {app.appSecret?.length > 0 ? <>
+                    { app.usePkce ? (
+                      <Typography className='text' fontWeight="bold">PKCE</Typography>
+                    ) : (
+                      <AppIdSecretContainer>
+                        <Typography className='text'>App Secret:</Typography>
+                        {/* {(app.appHasSecret || appSecret !== app.appSecret) && <Tooltip title={clickToGenerateText} arrow>
+                          <ButtonBase onClick={handleClickGenerate}><MdRefresh color='#2873F0' /></ButtonBase>
+                        </Tooltip>} */}
+                        {
+                          hasAppSecret ? <>
                             <Tooltip 
-                                title="Copy Application Secret" 
-                                tabIndex={1} 
-                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                                arrow
-                              >
-                                <Typography
-                                  className='text id-secret'
-                                  style={{ color: '#2873F0' }}
-                                  ref={appSecretTextRef}
-                                  onClick={copyToClipboard}
+                                  title="Copy Application Secret" 
+                                  tabIndex={1} 
+                                  onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                                  arrow
                                 >
-                                  {appSecret}
-                                </Typography>
-                              </Tooltip>
+                                  <Typography
+                                    className='text id-secret'
+                                    style={{ color: '#2873F0' }}
+                                    ref={appSecretTextRef}
+                                    onClick={copyToClipboard}
+                                  >
+                                    {appSecret}
+                                  </Typography>
+                                </Tooltip>
+                          </> :
+                          app.appHasSecret ? <>
+                            <ButtonBase onClick={() => handleClickGenerate(false)}><MdRefresh color='#2873F0' /></ButtonBase>
+                            <Typography className='text' style={{ color: '#505050' }}>********************</Typography>
                           </> : <>
-                          <ButtonBase onClick={() => handleClickGenerate(true)}>
-                            <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
-                          </ButtonBase>
-                          </>}
-                        </>
-                      }
-                      {/* {(app.appHasSecret && (appSecret === app.appSecret || app.appSecret === undefined)) ? <Typography className='text' style={{ color: '#505050' }}>********************</Typography> :
-                          appSecret === app.appSecret ? <ButtonBase onClick={handleClickGenerate}>
-                            <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
-                          </ButtonBase>
-                            : <Tooltip 
-                                title="Copy Application Secret" 
-                                tabIndex={1} 
-                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                                arrow
-                              >
-                                <Typography
-                                  className='text id-secret'
-                                  style={{ color: '#2873F0' }}
-                                  ref={appSecretTextRef}
-                                  onClick={copyToClipboard}
+                            {app.appSecret?.length > 0 ? <>
+                              <Tooltip 
+                                  title="Copy Application Secret" 
+                                  tabIndex={1} 
+                                  onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                                  arrow
                                 >
-                                  {appSecret}
-                                </Typography>
-                              </Tooltip>} */}
-                    </AppIdSecretContainer>
+                                  <Typography
+                                    className='text id-secret'
+                                    style={{ color: '#2873F0' }}
+                                    ref={appSecretTextRef}
+                                    onClick={copyToClipboard}
+                                  >
+                                    {appSecret}
+                                  </Typography>
+                                </Tooltip>
+                            </> : <>
+                            <ButtonBase onClick={() => handleClickGenerate(true)}>
+                              <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
+                            </ButtonBase>
+                            </>}
+                          </>
+                        }
+                        {/* {(app.appHasSecret && (appSecret === app.appSecret || app.appSecret === undefined)) ? <Typography className='text' style={{ color: '#505050' }}>********************</Typography> :
+                            appSecret === app.appSecret ? <ButtonBase onClick={handleClickGenerate}>
+                              <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
+                            </ButtonBase>
+                              : <Tooltip 
+                                  title="Copy Application Secret" 
+                                  tabIndex={1} 
+                                  onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                                  arrow
+                                >
+                                  <Typography
+                                    className='text id-secret'
+                                    style={{ color: '#2873F0' }}
+                                    ref={appSecretTextRef}
+                                    onClick={copyToClipboard}
+                                  >
+                                    {appSecret}
+                                  </Typography>
+                                </Tooltip>} */}
+                      </AppIdSecretContainer>
+                    )}
                   </Box>
                 </TableCell>
                 <TableCell>
