@@ -162,11 +162,17 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
             break
         }
         switch (appSecret) {
-          case "Generated":
-            newApps = newApps.filter((app) => app.appSecret !== null)
+          case "App secret":
+            newApps = newApps.filter((app) => !app.usePkce)
             break
-          case "Not Generated":
-            newApps = newApps.filter((app) => app.appSecret === null)
+          case "App secret generated":
+            newApps = newApps.filter((app) => !app.usePkce && app.appSecret !== null)
+            break
+          case "App secret not generated":
+            newApps = newApps.filter((app) => !app.usePkce && app.appSecret === null)
+            break
+          case "PKCE":
+            newApps = newApps.filter((app) => app.usePkce)
             break
           case "All":
             break
