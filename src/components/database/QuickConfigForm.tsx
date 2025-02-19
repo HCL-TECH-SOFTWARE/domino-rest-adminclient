@@ -30,9 +30,9 @@ import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import {
   FormContentContainer,
   InputContainer,
-  ActionButtonBar,
 } from '../../styles/CommonStyles';
 import { clearDBError } from '../../store/databases/action';
+import { LitButton } from '../lit-elements/LitElements';
 
 const Forms = styled.form`
   display: flex;
@@ -442,20 +442,20 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             style={{ fontSize: 12, paddingLeft: '10px' }}
           />
         </InputContainer>
-        <ActionButtonBar>
-          <Button
-            className="button-style"
+        <section>
+          <LitButton
+            style={{ width: '25%' }}
             onClick={resetForm}
           >
             Close
-          </Button>
-          <Button 
+          </LitButton>
+          <LitButton 
             disabled={isDisabled}
-            className={`button-style ${!isDisabled ? '' : 'button-disabled'}`}
+            style={{ width: '25%' }}
             onClick={handleAdd}>
             Add
-          </Button>
-        </ActionButtonBar>
+          </LitButton>
+        </section>
       </FormContentContainer>
     </Forms>
   );

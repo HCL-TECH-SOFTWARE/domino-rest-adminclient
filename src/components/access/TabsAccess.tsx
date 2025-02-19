@@ -663,18 +663,26 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             ))}
           </Menu>
           <PagerAction>
-            <Button onClick={handleClickCloneMode} style={{ cursor: newForm.enabled ? "default" : "pointer" }} disabled={newForm.enabled}>
+            <button
+              onClick={handleClickCloneMode}
+              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center' }}
+              disabled={newForm.enabled}
+            >
               <BiCopy className='action-icon' />
               <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
                 Clone Mode
               </Typography>
-            </Button>
-            <Button onClick={handleNewModeOpen} style={{ cursor: newForm.enabled ? "default" : "pointer" }} disabled={newForm.enabled}>
+            </button>
+            <button
+              onClick={handleNewModeOpen}
+              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center' }}
+              disabled={newForm.enabled}
+            >
               <AddIcon className='action-icon' />
               <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
                 Add Mode
               </Typography>
-            </Button>
+            </button>
             <AddModeDialog
               handleSave={handleSaveNewMode}
               open={newModeOpen}
@@ -686,12 +694,15 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             />
             {modes[currentModeIndex].modeName !== 'default' && (
               <>
-                <Button onClick={onDeleteClick}>
+                <button
+                  onClick={onDeleteClick}
+                  style={{ cursor: "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center' }}
+                >
                   <DeleteIcon color='primary' className='action-icon' />
                   <Typography color='textPrimary' variant='body2' component='p'>
                     Delete Mode
                   </Typography>
-                </Button>
+                </button>
                 <DeleteApplicationDialog
                   dialogTitle={deleteModeTitle}
                   deleteMessage={deleteModeMessage}
@@ -700,10 +711,16 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               </>
             )}
             <Tooltip title={saveTooltip} arrow>
-              <Button
+              <button
                 onClick={save}
                 style={{
                   cursor: !newForm.enabled ? "pointer" : saveEnabled ? "pointer" : "default",
+                  background: 'none',
+                  border: 'none',
+                  margin: 5,
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
                 }}
                 className='button-disabled'
               >
@@ -718,7 +735,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                 <Typography variant='body2' style={{ color: !newForm.enabled ? getTheme(themeMode).textColorPrimary : saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9" }}>
                   Save
                 </Typography>
-              </Button>
+              </button>
             </Tooltip>
           </PagerAction>
         </TabsContainer>

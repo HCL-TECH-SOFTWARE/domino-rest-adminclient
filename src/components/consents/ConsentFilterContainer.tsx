@@ -9,13 +9,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
-import { BlueSwitch, ButtonNeutral, ButtonYes, DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
-import { Box, Checkbox, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography } from '@mui/material';
+import { BlueSwitch, DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
+import { Box, Checkbox, FormControlLabel, RadioGroup, Tooltip, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -286,8 +287,8 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               </Box>
             </Section>
             <ButtonsContainer>
-              <ButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())}>Cancel</ButtonNeutral>
-              <ButtonYes onClick={handleClickShowResults}>Show Results</ButtonYes>
+              <LitButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())} text='Cancel' />
+              <LitButtonYes onClick={handleClickShowResults} text='Show Results' />
             </ButtonsContainer>
           </FilterContainer>
         </LocalizationProvider>

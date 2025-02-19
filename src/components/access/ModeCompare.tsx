@@ -13,9 +13,10 @@ import { useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import { Database, Field } from '../../store/databases/types';
-import { Box, Button, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
-import { AiOutlinePlus } from 'react-icons/ai';
+import { Box, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
 import { Mode } from 'fs';
+import { LitButton } from '../lit-elements/LitElements';
+import { IMG_DIR } from '../../config.dev';
 
 const DialogContainer = styled(Dialog)`
   border: 1px solid white;
@@ -27,7 +28,6 @@ const DialogContainer = styled(Dialog)`
   overflow-y: scroll;
 
   background-color: #fafafa;
-  background-color: green;
 
   .content-container {
     padding: 0;
@@ -65,6 +65,8 @@ const DialogContainer = styled(Dialog)`
     font-weight: 700;
     line-height: normal;
     padding: 11px 24px;
+    background-color: white;
+    border: none;
   }
 
   .toggle-container {
@@ -533,10 +535,9 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 <SearchInput onChange={handleSearchField} type="text" placeholder={`Search Field`} />
               </SearchContainer>
               <div className="add-container">
-                <Button className="add-column" onClick={handleAddColumn}>
-                  <AiOutlinePlus size="1.5em" style={{ paddingRight: '5px' }} />
+                <LitButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`} outline={true}>
                   Add New Column
-                </Button>
+                </LitButton>
               </div>
             </div>
             <div className="toggle-container">

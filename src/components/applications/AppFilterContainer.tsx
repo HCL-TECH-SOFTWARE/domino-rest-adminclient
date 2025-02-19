@@ -9,13 +9,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
-import { ButtonNeutral, ButtonNo, ButtonYes, DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
-import { Box, FormControlLabel, Radio, RadioGroup, RadioProps, Tooltip, Typography } from '@mui/material';
+import { DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
+import { Box, FormControlLabel, RadioGroup, Tooltip, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { fetchMyApps } from '../../store/applications/action';
+import { LitButtonNeutral, LitButtonNo, LitButtonYes } from '../lit-elements/LitElements';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -233,9 +234,9 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             </Section>
             <HorizontalDivider />
             <ButtonsContainer>
-              <ButtonNeutral onClick={handleClickReset}>Reset</ButtonNeutral>
-              <ButtonNo onClick={() => dispatch(toggleAppFilterDrawer())}>Cancel</ButtonNo>
-              <ButtonYes onClick={handleClickShowResults}>Show Results</ButtonYes>
+              <LitButtonNeutral onClick={handleClickReset} text='Reset' />
+              <LitButtonNo onClick={() => dispatch(toggleAppFilterDrawer())} text='Cancel' />
+              <LitButtonYes onClick={handleClickShowResults} text='Show Results' />
             </ButtonsContainer>
           </FilterContainer>
         </LocalizationProvider>

@@ -12,7 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, ButtonBase, IconButton, TableFooter, TablePagination, Typography } from '@mui/material';
+import { Box, IconButton, TableFooter, TablePagination, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
@@ -318,7 +318,12 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
                       <Typography className='text can-sort'>
                         User
-                        <ButtonBase onClick={handleSortUsers}><FaSort /></ButtonBase>
+                        <button
+                          onClick={handleSortUsers}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                        >
+                          <FaSort />
+                        </button>
                       </Typography>
                       <input type='text' placeholder='Search User' value={user} onChange={(e) => setUser(e.target.value)} className='search-bar' />
                     </Box>
@@ -327,7 +332,12 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
                       <Typography className='text can-sort'>
                         App Name
-                        <ButtonBase onClick={handleSortAppNames}><FaSort /></ButtonBase>
+                        <button
+                          onClick={handleSortAppNames}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                        >
+                          <FaSort />
+                        </button>
                       </Typography>
                       <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
                     </Box>

@@ -7,29 +7,25 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Button,
-  ButtonBase,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Tooltip,
-  Typography
+  Typography,
 } from '@mui/material';
 import styled from 'styled-components';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { RxDividerVertical } from 'react-icons/rx';
-import { CiFilter } from 'react-icons/ci';
 import ConsentsTable from './ConsentsTable';
-import KeyboardBackspaceIcon from '@mui/icons-material/KeyboardBackspace';
 import { CommonDialog } from '../../../styles/CommonStyles';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { useDispatch } from 'react-redux';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
+import { LitButtonNeutral, LitButtonYes } from '../../lit-elements/LitElements';
 const ConsentsContainer = styled.div`
   display: flex;
   gap: 16px;
@@ -65,6 +61,7 @@ const OptionsBar = styled.div`
     align-items: center;
     border-radius: 5px;
     padding: 5px 10px 5px 5px;
+    background: none;
 
     &:hover {
       color: #fff;
@@ -109,26 +106,48 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
     <ConsentsContainer>
       <Header>
         <Typography className="title">OAuth Consents</Typography>
-        <ButtonBase onClick={handleClose}>{dialog && <CloseIcon />}</ButtonBase>
+        <button
+          onClick={handleClose}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+        >
+          {dialog && <CloseIcon />}
+        </button>
       </Header>
       <OptionsBar>
-        <ButtonBase onClick={() => setExpand(true)} className="option">
+        <button
+          onClick={() => setExpand(true)}
+          style={{ border: 'none', cursor: 'pointer' }}
+          className="option"
+        >
           <ExpandMoreIcon style={{ padding: 0 }} />
           Expand all
-        </ButtonBase>
+        </button>
         <RxDividerVertical color="#A0A0A0" size="1.5em" />
-        <ButtonBase onClick={() => setExpand(false)} className="option">
+        <button
+          onClick={() => setExpand(false)}
+          style={{ border: 'none', cursor: 'pointer' }}
+          className="option"
+        >
           <ExpandLessIcon />
           Collapse all
-        </ButtonBase>
+        </button>
         <RxDividerVertical color="#A0A0A0" size="1.5em" />
-        <ButtonBase onClick={() => dispatch(toggleConsentsDrawer())} className="option">
-          <CiFilter size="1.2em" />
+        <button
+          onClick={() => dispatch(toggleConsentsDrawer())}
+          style={{ border: 'none', cursor: 'pointer' }}
+          className="option"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
+          </svg>
           All filters
-        </ButtonBase>
-        <ButtonBase onClick={handleClickReset} style={{ visibility: resetFilters ? 'visible' : 'visible' }}>
+        </button>
+        <button
+          onClick={handleClickReset}
+          style={{ visibility: resetFilters ? 'visible' : 'visible', border: 'none', cursor: 'pointer', background: 'none' }}
+        >
           Reset
-        </ButtonBase>
+        </button>
       </OptionsBar>
       <ConsentsTable
         expand={expand}
@@ -153,12 +172,8 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
-          <Button className="btn right save" onClick={confirmDeleteConsent} style={{ right: 'calc(93px + 5px + 30px)' }}>
-            Yes
-          </Button>
-          <Button className="btn cancel" onClick={handleCloseDialog}>
-            No
-          </Button>
+          <LitButtonYes text='Yes' onClick={confirmDeleteConsent} style={{ right: 'calc(93px + 5px + 30px)', width: '93px' }} />
+          <LitButtonNeutral text='No' onClick={handleCloseDialog} style={{ width: '93px' }} />
         </DialogActions>
       </CommonDialog>
     </ConsentsContainer>

@@ -10,10 +10,7 @@ import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import CloseIcon from '@mui/icons-material/Close';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
 import {
   Typography,
   Tooltip,
@@ -37,9 +34,9 @@ import { toggleDrawer } from '../../store/drawer/action';
 import {
   FormContentContainer,
   InputContainer,
-  ActionButtonBar,
 } from '../../styles/CommonStyles';
 import { clearDBError } from '../../store/databases/action';
+import { LitButton } from '../lit-elements/LitElements';
 
 const Forms = styled.form`
   display: flex;
@@ -473,28 +470,31 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             value={formik.values.isActive}
           />
         </InputContainer>
-        <ActionButtonBar>
-          <Button
-            className="button-style"
-            onClick={() => {
-              formik.resetForm();
-              dispatch(toggleDrawer());
-            }}
-          >
-            Close
-          </Button>
-          <Button 
-            className={`button-style ${onUpdateDisable} ${onAddDisable}`}
-            disabled={updateButtonDisabled || isDisabled} 
-            onClick={() => handleAdd(formik.values.apiName)}>
-              {isEdit ? 'Update' : 'Add'}
-          </Button>
-          { isEdit &&
-          <Button className="button-style" onClick={()=>handleDelete(formik.values.apiName)}>
-            Delete
-          </Button>
-          }
-        </ActionButtonBar>
+        <section>
+          <LitButton
+              style={{ width: '25%' }}
+              onClick={() => {
+                formik.resetForm();
+                dispatch(toggleDrawer());
+              }}
+            >
+              Close
+            </LitButton>
+            <LitButton 
+              style={{ width: '25%' }}
+              disabled={updateButtonDisabled || isDisabled} 
+              onClick={() => handleAdd(formik.values.apiName)}>
+                {isEdit ? 'Update' : 'Add'}
+            </LitButton>
+            { isEdit &&
+              <LitButton
+                style={{ width: '25%' }}
+                onClick={()=>handleDelete(formik.values.apiName)}
+              >
+                Delete
+              </LitButton>
+            }
+        </section>
       </FormContentContainer>
     </Forms>
   );
