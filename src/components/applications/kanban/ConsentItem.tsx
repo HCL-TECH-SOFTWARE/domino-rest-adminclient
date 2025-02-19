@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, ButtonBase, Collapse, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import { Box, Collapse, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { AppState } from '../../../store';
 import { toggleDeleteConsent } from '../../../store/consents/action';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -106,8 +106,20 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
         <>
             <StyledTableRow>
                 <TableCell className='expand off-border'>
-                    {!showDetails && <ButtonBase onClick={() => {setShowDetails(true)}}><ExpandMoreIcon /></ButtonBase>}
-                    {showDetails && <ButtonBase onClick={() => {setShowDetails(false)}}><ExpandLessIcon /></ButtonBase>}
+                    {!showDetails && 
+                    <button
+                      onClick={() => {setShowDetails(true)}}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                    >
+                      <ExpandMoreIcon />
+                    </button>}
+                    {showDetails && 
+                    <button
+                      onClick={() => {setShowDetails(false)}}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                    >
+                      <ExpandLessIcon />
+                    </button>}
                 </TableCell>
                 <TableCell className='user off-border'>{username}</TableCell>
                 <TableCell className='app-name off-border'>{app ? app.appName : "-"}</TableCell>
@@ -131,7 +143,15 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                         <Typography className='text'>{`${new Date(consent.refresh_token_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.refresh_token_expires_at).toUTCString() : "-"}`}</Typography>
                     </Box>
                 </TableCell>
-                <TableCell className='off-border'><ButtonBase onClick={handleClickRevoke} className='revoke'>Revoke</ButtonBase></TableCell>
+                <TableCell className='off-border'>
+                  <button
+                    onClick={handleClickRevoke}
+                    className='revoke'
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                  >
+                    Revoke
+                  </button>
+                </TableCell>
             </StyledTableRow>
             <StyledTableRow>
                 <TableCell colSpan={5}>

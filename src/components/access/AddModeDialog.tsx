@@ -5,16 +5,15 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef } from 'react';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { Buttons } from '../../styles/CommonStyles';
 import styled from 'styled-components';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const DialogContainer = styled.dialog`
   border: 1px solid white;
@@ -36,6 +35,8 @@ const DialogContainer = styled.dialog`
 
   .dialog-buttons {
     padding: 0 30px 30px 30px
+    display: flex;
+    flex-direction: row-reverse;
   }
 `
 
@@ -96,12 +97,8 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Buttons className='dialog-buttons'>
-          <Button onClick={handleClose} className='cancel btn' style={{ right: 'calc(30px + 93px + 5px)' }}>
-            <span>Cancel</span>
-          </Button>
-          <Button onClick={handleSave} className='save btn' style={{ right: '30px' }}>
-            <span style={{ color: 'white' }}>Save</span>
-          </Button>
+          <LitButtonNeutral onClick={handleClose} style={{ right: 'calc(30px + 93px + 5px)' }} text='Cancel' />
+          <LitButtonYes onClick={handleSave} style={{ right: '30px' }} text='Save' />
         </Buttons>
       </DialogActions>
     </DialogContainer>

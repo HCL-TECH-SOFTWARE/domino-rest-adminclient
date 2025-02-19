@@ -15,6 +15,7 @@ import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { Buttons } from '../../styles/CommonStyles';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 interface DeleteApplicationDialogProps {
   dialogTitle: string;
@@ -56,15 +57,11 @@ const DeleteApplicationDialog: React.FC<DeleteApplicationDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Buttons>
-          <Button
+          <LitButtonNeutral
             onClick={() => dispatch(toggleDeleteDialog())}
-            className='cancel text'
-          >
-            No
-          </Button>
-          <Button onClick={handleDelete} className='save text' autoFocus>
-            Yes
-          </Button>
+            text='No'
+          />
+          <LitButtonYes onClick={handleDelete} text='Yes' autoFocus />
         </Buttons>
       </DialogActions>
     </Dialog>

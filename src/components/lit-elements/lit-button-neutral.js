@@ -35,7 +35,7 @@ class ButtonNeutral extends LitElement {
 
   render() {
     return html`
-      <button>${this.text}</button>
+      <button style="${this.getAttribute('style') || ''}">${this.text}</button>
     `;
   }
 }
