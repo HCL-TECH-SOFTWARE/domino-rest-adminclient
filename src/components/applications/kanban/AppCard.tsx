@@ -85,7 +85,8 @@ const AppCard: React.FC<AppCardProps> = ({
     appHasSecret: item.appHasSecret ? true : false,
     appSecret: item.appSecret,
     appCallbackUrlsStr: '',
-    appContactsStr: ''
+    appContactsStr: '',
+    usePkce: item.usePkce
   };
 
   const viewEdit = () => {

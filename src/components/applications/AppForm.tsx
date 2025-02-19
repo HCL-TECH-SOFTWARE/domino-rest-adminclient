@@ -323,6 +323,21 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           ) : null}
         </InputContainer>
         <AppIcons formik={formik} />
+        <InputContainer>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={formik.values.usePkce}
+                color="primary"
+                icon={<CheckboxIcon fontSize="medium" color="primary" />}
+              />
+            }
+            label="use PKCE"
+            name="usePkce"
+            onChange={formik.handleChange}
+            value={formik.values.usePkce}
+          />
+        </InputContainer>
       </PanelContent>
       <ActionButtonBar>
         <Button

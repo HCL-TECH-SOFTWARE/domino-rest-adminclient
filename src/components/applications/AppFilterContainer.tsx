@@ -172,7 +172,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             </Section>
             <HorizontalDivider />
             <Section>
-              <Typography className='header'>App Secret</Typography>
+              <Typography className='header'>Authentication method</Typography>
               <RadioGroup value={filterAppSecret} onChange={(e) => setFilterAppSecret(e.currentTarget.value)} className='radio-group'>
                 <FormControlLabel
                   value='All'
@@ -186,9 +186,9 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                   }}
                 />
                 <FormControlLabel
-                  value='Generated'
+                  value='App secret'
                   control={<StyledRadio color='default' size='small' />}
-                  label='Generated'
+                  label='App secret'
                   sx={{
                     '& .MuiFormControlLabel-label': {
                       fontSize: '14px',
@@ -197,9 +197,31 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                   }}
                 />
                 <FormControlLabel
-                  value='Not Generated'
+                  value='App secret generated'
                   control={<StyledRadio color='default' size='small' />}
-                  label='Not Generated'
+                  label='App secret generated'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='App secret not generated'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='App secret not generated'
+                  sx={{
+                    '& .MuiFormControlLabel-label': {
+                      fontSize: '14px',
+                      padding: 0,
+                    }
+                  }}
+                />
+                <FormControlLabel
+                  value='PKCE'
+                  control={<StyledRadio color='default' size='small' />}
+                  label='PKCE'
                   sx={{
                     '& .MuiFormControlLabel-label': {
                       fontSize: '14px',
