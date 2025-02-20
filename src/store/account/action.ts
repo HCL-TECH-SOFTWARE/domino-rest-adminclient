@@ -165,6 +165,7 @@ export function logout() {
       return response;
     } catch (error) {
       console.error("Error calling logout API:", error)
+    } finally {
       dispatch(removeAuth());
       dispatch(setIdpLogin(false))
       dispatch(initState());
