@@ -162,16 +162,15 @@ export function logout() {
             }
           )
       )
+      return response;
+    } catch (error) {
+      console.error("Error calling logout API:", error)
       dispatch(removeAuth());
       dispatch(setIdpLogin(false))
       dispatch(initState());
 
       // Clearing form results
       dispatch(clearForms());
-
-      return response;
-    } catch (error) {
-      console.error("Error logging out:", error)
     }
   };
 }
