@@ -117,7 +117,7 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
 export async function refreshToken() {
     const oidcConfigUrl = localStorage.getItem('oidc_config_url');
     const clientId = localStorage.getItem('client_id');
-    const refreshToken = getToken().refreshToken;
+    const refreshToken = JSON.parse(localStorage.getItem('refresh_token')).refresh_token;
     const { token_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
 
     await fetch(token_endpoint, {
@@ -131,7 +131,7 @@ export async function refreshToken() {
     })
     .then(res => res.json())
     .then(data => {
-        localStorage.setItem('access_token', data);
+        localStorage.setItem('user_token', JSON.stringify(data));
         return data;
     })
     .catch(err => {

@@ -10,7 +10,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
     try {
         return await apiRequest()
     } catch (error: any) {
-        if (error.message === 'Unauthorized') {
+        if (error.status === 401) {
             await refreshToken()
             return await apiRequest()
         }
