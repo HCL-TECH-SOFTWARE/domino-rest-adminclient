@@ -34,6 +34,7 @@ import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from 'react-router-dom';
+import { LitButton, LitInputText } from '../lit-elements/LitElements';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -363,7 +364,7 @@ const LoginPage = () => {
             </Typography>
           </KeepLogoContainer>
           <div style={{ flex: 1 }}>
-            <Typography
+            {/* <Typography
               style={{ fontSize: 32, fontWeight: 500 }}
               component="h1"
               variant="h5"
@@ -372,7 +373,7 @@ const LoginPage = () => {
             </Typography>
             <Typography style={{ fontSize: 18 }} component="h1" variant="h5">
               Login your account
-            </Typography>
+            </Typography> */}
             {error401 && !idpLogin && (
               <Alert style={{ margin: "5px 0" }} severity="error">
                 <AlertTitle>Whoops: Something went wrong!</AlertTitle>
@@ -430,7 +431,7 @@ const LoginPage = () => {
                 )}
               </Alert>
             )}
-            <StyledForm onSubmit={formik.handleSubmit} noValidate>
+            {/* <StyledForm onSubmit={formik.handleSubmit} noValidate>
               <TextField
                 variant="outlined"
                 margin="normal"
@@ -518,7 +519,15 @@ const LoginPage = () => {
                   </Link>
                 </Button>
               )}
-            </PasskeySignUpContainer>
+            </PasskeySignUpContainer> */}
+            <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
+              <LitButton style={{ width: '100%' }}>LOG IN WITH PASSWORD</LitButton>
+              <LitButton style={{ width: '100%' }}>LOG IN WITH PASSKEY</LitButton>
+              <LitButton style={{ width: '100%' }}>LOG IN WITH OIDC</LitButton>
+            </section>
+            <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
+              <LitInputText label='Username' style={{ width: '100%' }} />
+            </form>
             <Box mt={7}>
               <Copyright />
             </Box>
