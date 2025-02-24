@@ -9,6 +9,7 @@ class Button extends LitElement {
     variant: { type: String },
     disabled: { type: Boolean },
     outline: { type: Boolean },
+    pill: { type: Boolean },
   };
 
   constructor() {
@@ -17,6 +18,7 @@ class Button extends LitElement {
     this.variant = 'primary'
     this.disabled = false
     this.outline = false
+    this.pill = false
   }
 
   render() {
@@ -27,6 +29,7 @@ class Button extends LitElement {
         ?disabled="${this.disabled}"
         style="${this.getAttribute('style') || ''}"
         ?outline="${this.outline}"
+        ?pill="${this.pill}"
     >
         ${this.src ? html`<sl-icon src='${this.src}'></sl-icon>` : ''}
         <slot></slot>

@@ -4,7 +4,7 @@ import '@shoelace-style/shoelace/dist/themes/light.css';
 // Import Shoelace components
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 
-class InputText extends LitElement {
+class InputPassword extends LitElement {
   static styles = css`
     text {
       font-size: 12px;
@@ -29,8 +29,10 @@ class InputText extends LitElement {
         <text>${this.label}</text>
         <sl-input
             style="${this.getAttribute('style') || ''}"
+            type="password"
             help-text="${this.helpText}"
             placeholder="${this.placeholder}"
+            password-toggle
         >
             <slot></slot>
         </sl-input>
@@ -38,6 +40,6 @@ class InputText extends LitElement {
   }
 }
 
-customElements.define('lit-input-text', InputText);
+customElements.define('lit-input-password', InputPassword);
 
-export default InputText
+export default InputPassword

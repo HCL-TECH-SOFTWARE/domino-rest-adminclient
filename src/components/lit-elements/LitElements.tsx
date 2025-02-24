@@ -13,6 +13,8 @@ import DialogContent from './lit-dialog-content';
 import DialogActions from './lit-dialog-actions';
 import Button from './lit-button';
 import InputText from './lit-input-text';
+import InputPassword from './lit-input-password';
+import Dropdown from './lit-dropdown';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -95,5 +97,17 @@ export const LitButton = createComponent({
 export const LitInputText = createComponent({
   tagName: 'lit-input-text',
   elementClass: InputText,
+  react: React,
+});
+
+export const LitInputPassword = createComponent({
+  tagName: 'lit-input-password',
+  elementClass: InputPassword,
+  react: React,
+});
+
+export const LitDropdown = createComponent({
+  tagName: 'lit-dropdown',
+  elementClass: Dropdown,
   react: React,
 });

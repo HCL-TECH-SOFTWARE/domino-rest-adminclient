@@ -34,7 +34,7 @@ import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from 'react-router-dom';
-import { LitButton, LitInputText } from '../lit-elements/LitElements';
+import { LitButton, LitDropdown, LitInputPassword, LitInputText } from '../lit-elements/LitElements';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -121,6 +121,22 @@ const PasskeySignUpContainer = styled.div`
   }
 `;
 
+const LoginForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 40px 10px 0 10px;
+
+  .hidden {
+    visibility: hidden;
+  }
+
+  .removed {
+    display: none;
+  }
+`
+
 const GridRoot = styled(Grid)(({ theme }) => ({
   height: "100vh",
 }));
@@ -202,23 +218,30 @@ const LoginPage = () => {
   const handleLogInWithPasskey = (event: any) => {
     event.preventDefault();
 
-    keepAuthenticator
-      .login({ name: username })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.status) {
-          dispatch(toggleAlert(json.message));
-        } else {
-          localStorage.setItem('user_token', JSON.stringify(json));
-          dispatch({
-            type: LOGIN
-          });
-        }
-      })
-      .catch((err) => {
-        dispatch(toggleAlert(`Authentication failed`));
-        console.error(err);
-      })
+    document.getElementById('form-username')?.classList.remove('removed');
+    document.getElementById('section-password')?.classList.add('hidden');
+    document.getElementById('form-oidc')?.classList.add('removed');
+    document.getElementById('passkey-signup')?.classList.add('hidden');
+    // document.getElementById('passkey-signup')?.classList.add('hidden');
+    // console.log(document.getElementById('section-password'))
+
+    // keepAuthenticator
+    //   .login({ name: username })
+    //   .then((res) => res.json())
+    //   .then((json) => {
+    //     if (json.status) {
+    //       dispatch(toggleAlert(json.message));
+    //     } else {
+    //       localStorage.setItem('user_token', JSON.stringify(json));
+    //       dispatch({
+    //         type: LOGIN
+    //       });
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     dispatch(toggleAlert(`Authentication failed`));
+    //     console.error(err);
+    //   })
   }
 
   const handleUsernameChange = (event: any) => {
@@ -274,24 +297,33 @@ const LoginPage = () => {
 
   const handleLogInWithPassword = (event: any) => {
     event.preventDefault();
-    if (formik.values.username === '' && username.length > 0) {
-      formik.values.username = username;
-    }
-    formik.handleSubmit();
+    document.getElementById('form-username')?.classList.remove('removed');
+    document.getElementById('section-password')?.classList.remove('hidden');
+    document.getElementById('form-oidc')?.classList.add('removed');
+    document.getElementById('passkey-signup')?.classList.remove('hidden');
+    // if (formik.values.username === '' && username.length > 0) {
+    //   formik.values.username = username;
+    // }
+    // formik.handleSubmit();
   }
 
-  const handleLogInUsingIdp = async (idp: IdP) => {
-    await dispatch(setCurrentIdp(idp) as any)
-    localStorage.setItem('oidc_config_url', idp.wellKnown)
-    localStorage.setItem('client_id', idp.adminui_config.client_id)
-    const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
-    sessionStorage.setItem('redirect_uri', redirectUri)
-    if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
-      const scope = idp.adminui_config.application_id_uri + ".default"
-      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
-    } else {
-      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
-    }
+  const handleLogInUsingIdp = async (idp: any) => {
+    document.getElementById('form-username')?.classList.add('removed');
+    document.getElementById('section-password')?.classList.add('hidden');
+    document.getElementById('form-oidc')?.classList.remove('removed');
+    document.getElementById('passkey-signup')?.classList.add('hidden');
+
+    // await dispatch(setCurrentIdp(idp) as any)
+    // localStorage.setItem('oidc_config_url', idp.wellKnown)
+    // localStorage.setItem('client_id', idp.adminui_config.client_id)
+    // const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
+    // sessionStorage.setItem('redirect_uri', redirectUri)
+    // if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
+    //   const scope = idp.adminui_config.application_id_uri + ".default"
+    //   await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
+    // } else {
+    //   await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
+    // }
   }
 
   React.useEffect(() => {
@@ -521,13 +553,49 @@ const LoginPage = () => {
               )}
             </PasskeySignUpContainer> */}
             <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
-              <LitButton style={{ width: '100%' }}>LOG IN WITH PASSWORD</LitButton>
-              <LitButton style={{ width: '100%' }}>LOG IN WITH PASSKEY</LitButton>
-              <LitButton style={{ width: '100%' }}>LOG IN WITH OIDC</LitButton>
+              <LitButton style={{ width: '100%' }} onClick={handleLogInWithPassword} outline>LOG IN WITH PASSWORD</LitButton>
+              <LitButton style={{ width: '100%' }} onClick={handleLogInWithPasskey} outline>LOG IN WITH PASSKEY</LitButton>
+              <LitButton style={{ width: '100%' }} onClick={() => {handleLogInUsingIdp("")}} outline>LOG IN WITH OIDC</LitButton>
             </section>
-            <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
-              <LitInputText label='Username' style={{ width: '100%' }} />
-            </form>
+            <LoginForm>
+              <section style={{ width: '100%' }}>
+                <LitInputText id='form-username' label='Username' style={{ width: '100%' }} />
+                {idpList.length > 0 && <LitDropdown id='form-oidc' choices={idpList.map((idp: IdP) => {return idp.name})} />}
+              </section>
+              <section style={{ width: '100%' }}>
+                <LitInputPassword id='section-password' label='Password' style={{ width: '100%' }} />
+              </section>
+              <LitButton style={{ width: '100%', marginTop: '30px' }} pill={true}>LOG IN</LitButton>
+              <PasskeySignUpContainer id='passkey-signup'>
+                {isHttps && (
+                  <button
+                    className="text-button"
+                    disabled={!displayKeepIdp}
+                    style={{
+                      cursor: "pointer",
+                      background: 'none',
+                      border: 'none',
+                      margin: 5,
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Typography
+                      className="sign-up-text"
+                      display="inline"
+                      onClick={handleSignUpWithPasskey}
+                    >
+                      Sign up with Passkey
+                    </Typography>
+                    <Link href="https://passkey.org" target="_blank">
+                      <FiInfo className="passkey-icon" size="1.5em" />
+                    </Link>
+                  </button>
+                )}
+              </PasskeySignUpContainer>
+            </LoginForm>
             <Box mt={7}>
               <Copyright />
             </Box>
