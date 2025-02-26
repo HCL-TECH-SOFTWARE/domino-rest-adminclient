@@ -28,7 +28,7 @@ import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLog
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
@@ -171,6 +171,11 @@ const LoginPage = () => {
   const isHttps = protocol === "https"
   const [idpList, setIdpList] = useState([]);
   const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
+  const [authType, setAuthType] = useState('password');
+
+  const usernameRef = useRef<any>(null)
+  const passwordRef = useRef<any>(null)
+  const oidcRef = useRef<any>(null)
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -182,11 +187,13 @@ const LoginPage = () => {
    Used for username / password and Webauthn login*/
   const handleSignUpWithPasskey = async (event: any) => {
     event.preventDefault();
-    if (!formik.values.username || !formik.values.password) {
-      if (!formik.values.username) {
+    const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
+    const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+    if (!username || !password) {
+      if (!username) {
         setNoUsernamePasskey(true);
       }
-      if (!formik.values.password) {
+      if (!password) {
         setNoPasswordPasskey(true);
       }
       return;
@@ -204,7 +211,8 @@ const LoginPage = () => {
       .then((json) => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
-        formik.values.username = json.username;
+        // formik.values.username = json.username;
+        usernameRef.current.shadowRoot.querySelector('sl-input').value = json.username;
         dispatch({
           type: LOGIN
         });
@@ -222,6 +230,7 @@ const LoginPage = () => {
     document.getElementById('section-password')?.classList.add('hidden');
     document.getElementById('form-oidc')?.classList.add('removed');
     document.getElementById('passkey-signup')?.classList.add('hidden');
+    setAuthType('passkey')
     // document.getElementById('passkey-signup')?.classList.add('hidden');
     // console.log(document.getElementById('section-password'))
 
@@ -244,6 +253,26 @@ const LoginPage = () => {
     //   })
   }
 
+  const logInWithPasskey = (username: string) => {
+    keepAuthenticator
+      .login({ name: username })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.status) {
+          dispatch(toggleAlert(json.message));
+        } else {
+          localStorage.setItem('user_token', JSON.stringify(json));
+          dispatch({
+            type: LOGIN
+          });
+        }
+      })
+      .catch((err) => {
+        dispatch(toggleAlert(`Authentication failed`));
+        console.error(err);
+      })
+  }
+
   const handleUsernameChange = (event: any) => {
     formik.handleChange(event);
     setUsername(event.target.value);
@@ -262,6 +291,7 @@ const LoginPage = () => {
     onSubmit: async (values, form) => {
       dispatch(set401Error(false));
       const data = JSON.stringify(values, null, 2);
+      console.log(data)
       const parseData = JSON.parse(data);
       await dispatch(login(parseData, () => navigate('/')) as any);
     },
@@ -278,8 +308,8 @@ const LoginPage = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          username: formik.values.username,
-          password: formik.values.password,
+          username: usernameRef.current?.shadowRoot.querySelector('sl-input')?.value,
+          password: passwordRef.current?.shadowRoot.querySelector('sl-input')?.value,
         })
       })
         .then((res) => res.json())
@@ -301,10 +331,47 @@ const LoginPage = () => {
     document.getElementById('section-password')?.classList.remove('hidden');
     document.getElementById('form-oidc')?.classList.add('removed');
     document.getElementById('passkey-signup')?.classList.remove('hidden');
+    setAuthType('password')
+  }
+
+  const logInWithPassword = (username: string, password: string) => {
     // if (formik.values.username === '' && username.length > 0) {
     //   formik.values.username = username;
+    //   formik.values.password = password
     // }
-    // formik.handleSubmit();
+    formik.values.username = username
+    formik.values.password = password
+    formik.handleSubmit();
+    // need validation
+    // dispatch(set401Error(false));
+    // const data = {
+    //   username: username,
+    //   password: password,
+    // }
+    // console.log(data)
+    // const parseData = JSON.parse(data);
+    // await dispatch(login(parseData, () => navigate('/')) as any);
+  }
+
+  const handleClickLogIn = () => {
+    const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
+    const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+    if (authType === 'password') {
+      // Password Login
+      if (username.length > 0 && password.length > 0) {
+        logInWithPassword(username, password);
+      }
+    } else if (authType === 'passkey') {
+      // Passkey Login
+      logInWithPasskey(username)
+    } else if (authType === 'oidc') {
+      // OIDC Login
+      const oidc = oidcRef.current.selected
+      console.log(oidc)
+      const idp = idpList.find((idp: IdP) => idp.name === oidc)
+      console.log(idp)
+      logInUsingIdp(idp)
+    }
   }
 
   const handleLogInUsingIdp = async (idp: any) => {
@@ -312,18 +379,27 @@ const LoginPage = () => {
     document.getElementById('section-password')?.classList.add('hidden');
     document.getElementById('form-oidc')?.classList.remove('removed');
     document.getElementById('passkey-signup')?.classList.add('hidden');
+    setAuthType('oidc')
+  }
 
-    // await dispatch(setCurrentIdp(idp) as any)
-    // localStorage.setItem('oidc_config_url', idp.wellKnown)
-    // localStorage.setItem('client_id', idp.adminui_config.client_id)
-    // const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
-    // sessionStorage.setItem('redirect_uri', redirectUri)
-    // if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
-    //   const scope = idp.adminui_config.application_id_uri + ".default"
-    //   await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
-    // } else {
-    //   await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
-    // }
+  const logInUsingIdp = async (idp: any) => {
+    await dispatch(setCurrentIdp(idp) as any)
+    localStorage.setItem('oidc_config_url', idp.wellKnown)
+    localStorage.setItem('client_id', idp.adminui_config.client_id)
+    const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
+    console.log(redirectUri)
+    sessionStorage.setItem('redirect_uri', redirectUri)
+    if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
+      const scope = idp.adminui_config.application_id_uri + ".default"
+      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
+    } else {
+      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
+    }
+  }
+
+  const handleChooseOidc = (idp: any) => {
+    console.log(idp)
+    console.log(oidcRef.current.shadowRoot.querySelector('sl-dropdown').value)
   }
 
   React.useEffect(() => {
@@ -331,6 +407,7 @@ const LoginPage = () => {
       new Promise((resolve, reject) => {
         const canDo = localStorage.getItem('use_keep_webauth') ? true : false;
         if (!canDo) {
+          console.log(false)
           resolve(false);
           return;
         }
@@ -347,8 +424,15 @@ const LoginPage = () => {
 
     canDoPasskey()
       .then((result: any) => {
-        const user = localStorage.getItem('keep_user');
-        setUsername(user ? user : '');
+        if (result === true) {
+          const user = localStorage.getItem('keep_user');
+          usernameRef.current.shadowRoot.querySelector('sl-input').value = user
+          setAuthType('passkey')
+          document.getElementById('form-username')?.classList.remove('removed');
+          document.getElementById('section-password')?.classList.add('hidden');
+          document.getElementById('form-oidc')?.classList.add('removed');
+          document.getElementById('passkey-signup')?.classList.add('hidden');
+        }
       })
       .catch((e) => dispatch(toggleAlert(e)));
   }, [])
@@ -554,18 +638,46 @@ const LoginPage = () => {
             </PasskeySignUpContainer> */}
             <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
               <LitButton style={{ width: '100%' }} onClick={handleLogInWithPassword} outline>LOG IN WITH PASSWORD</LitButton>
-              <LitButton style={{ width: '100%' }} onClick={handleLogInWithPasskey} outline>LOG IN WITH PASSKEY</LitButton>
+              {isHttps &&
+                <LitButton style={{ width: '100%' }} onClick={handleLogInWithPasskey} outline>LOG IN WITH PASSKEY</LitButton>
+              }
               <LitButton style={{ width: '100%' }} onClick={() => {handleLogInUsingIdp("")}} outline>LOG IN WITH OIDC</LitButton>
             </section>
             <LoginForm>
               <section style={{ width: '100%' }}>
-                <LitInputText id='form-username' label='Username' style={{ width: '100%' }} />
-                {idpList.length > 0 && <LitDropdown id='form-oidc' choices={idpList.map((idp: IdP) => {return idp.name})} />}
+                <LitInputText
+                  id='form-username'
+                  label='Username'
+                  className={displayKeepIdp ? '' : 'removed'}
+                  style={{ width: '100%' }}
+                  onChange={handleUsernameChange}
+                  ref={usernameRef}
+                />
+                {idpList.length > 0 &&
+                  <LitDropdown
+                    id='form-oidc'
+                    choices={idpList.map((idp: IdP) => {return idp.name})}
+                    className={displayKeepIdp ? 'removed' : ''}
+                    ref={oidcRef}
+                    onChange={(e: any) => handleChooseOidc(idpList.find((idp: IdP) => idp.name === e.detail.value))}
+                  />
+                }
               </section>
               <section style={{ width: '100%' }}>
-                <LitInputPassword id='section-password' label='Password' style={{ width: '100%' }} />
+                <LitInputPassword
+                  id='section-password'
+                  label='Password'
+                  style={{ width: '100%' }}
+                  ref={passwordRef}
+                />
               </section>
-              <LitButton style={{ width: '100%', marginTop: '30px' }} pill={true}>LOG IN</LitButton>
+              <LitButton
+                style={{ width: '100%', marginTop: '30px' }}
+                onClick={handleClickLogIn}
+                pill
+              >
+                LOG IN
+              </LitButton>
               <PasskeySignUpContainer id='passkey-signup'>
                 {isHttps && (
                   <button
