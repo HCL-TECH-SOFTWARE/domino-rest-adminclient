@@ -16,6 +16,6 @@ test("renders home page", () => {
   const store = configureStore({ reducer: rootReducer });
 
   render(<Provider store={store}><App /></Provider>);
-  const linkElement = screen.getByText(/login your account/i);
+  const linkElement = screen.getByText(/log in with password/i);
   expect(linkElement).toBeDefined();
 });

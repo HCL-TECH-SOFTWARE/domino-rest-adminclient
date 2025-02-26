@@ -6,7 +6,6 @@
 
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -14,12 +13,9 @@ import Typography from '@mui/material/Typography';
 import { useFormik } from 'formik';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import * as Yup from 'yup';
-import { Alert, AlertTitle } from '@mui/lab';
-import LoginIcon from '@mui/icons-material/ExitToApp';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   IMG_DIR,
-  KEEP_ADMIN_BASE_COLOR,
   BUILD_VERSION,
 } from '../../config.dev';
 import { CASTLE_BACKGROUND } from './styles';
@@ -28,12 +24,13 @@ import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLog
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from 'react-router-dom';
+import { LitButton, LitDropdown, LitInputPassword, LitInputText } from '../lit-elements/LitElements';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -120,6 +117,22 @@ const PasskeySignUpContainer = styled.div`
   }
 `;
 
+const LoginForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 40px 10px 0 10px;
+
+  .hidden {
+    visibility: hidden;
+  }
+
+  .removed {
+    display: none;
+  }
+`
+
 const GridRoot = styled(Grid)(({ theme }) => ({
   height: "100vh",
 }));
@@ -148,12 +161,15 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
-  const [username, setUsername] = useState('');
-  const [noUsernamePasskey, setNoUsernamePasskey] = useState(false);
-  const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
   const isHttps = protocol === "https"
   const [idpList, setIdpList] = useState([]);
   const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
+  const [authType, setAuthType] = useState('password');
+  const [selectedOidc, setSelectedOidc] = useState('');
+
+  const usernameRef = useRef<any>(null)
+  const passwordRef = useRef<any>(null)
+  const oidcRef = useRef<any>(null)
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -165,17 +181,21 @@ const LoginPage = () => {
    Used for username / password and Webauthn login*/
   const handleSignUpWithPasskey = async (event: any) => {
     event.preventDefault();
-    if (!formik.values.username || !formik.values.password) {
-      if (!formik.values.username) {
-        setNoUsernamePasskey(true);
+    const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
+    const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+
+    // Validate inputs
+    const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
+    const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+
+    if (!username || !password) {
+      if (!username) {
+        usernameInput.setAttribute('data-user-invalid', username.length === 0)
       }
-      if (!formik.values.password) {
-        setNoPasswordPasskey(true);
+      if (!password) {
+        passwordInput.setAttribute('data-user-invalid', password.length === 0)
       }
       return;
-    } else {
-      setNoUsernamePasskey(false);
-      setNoPasswordPasskey(false);
     }
     // Login. first
     await logIn()
@@ -187,7 +207,8 @@ const LoginPage = () => {
       .then((json) => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
-        formik.values.username = json.username;
+        // formik.values.username = json.username;
+        usernameRef.current.shadowRoot.querySelector('sl-input').value = json.username;
         dispatch({
           type: LOGIN
         });
@@ -201,6 +222,14 @@ const LoginPage = () => {
   const handleLogInWithPasskey = (event: any) => {
     event.preventDefault();
 
+    document.getElementById('form-username')?.classList.remove('removed');
+    document.getElementById('section-password')?.classList.add('hidden');
+    document.getElementById('form-oidc')?.classList.add('removed');
+    document.getElementById('passkey-signup')?.classList.add('hidden');
+    setAuthType('passkey')
+  }
+
+  const logInWithPasskey = (username: string) => {
     keepAuthenticator
       .login({ name: username })
       .then((res) => res.json())
@@ -222,7 +251,6 @@ const LoginPage = () => {
 
   const handleUsernameChange = (event: any) => {
     formik.handleChange(event);
-    setUsername(event.target.value);
   }
 
   const formik = useFormik({
@@ -243,7 +271,6 @@ const LoginPage = () => {
     },
   });
 
-  const { errors, touched, isValid } = formik;
   const matches = useMediaQuery('(max-width:768px)');
   
   const logIn = () =>
@@ -254,8 +281,8 @@ const LoginPage = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          username: formik.values.username,
-          password: formik.values.password,
+          username: usernameRef.current?.shadowRoot.querySelector('sl-input')?.value,
+          password: passwordRef.current?.shadowRoot.querySelector('sl-input')?.value,
         })
       })
         .then((res) => res.json())
@@ -273,13 +300,64 @@ const LoginPage = () => {
 
   const handleLogInWithPassword = (event: any) => {
     event.preventDefault();
-    if (formik.values.username === '' && username.length > 0) {
-      formik.values.username = username;
-    }
+    document.getElementById('form-username')?.classList.remove('removed');
+    document.getElementById('section-password')?.classList.remove('hidden');
+    document.getElementById('form-oidc')?.classList.add('removed');
+    document.getElementById('passkey-signup')?.classList.remove('hidden');
+    setAuthType('password')
+  }
+
+  const logInWithPassword = (username: string, password: string) => {
+    formik.values.username = username
+    formik.values.password = password
     formik.handleSubmit();
   }
 
-  const handleLogInUsingIdp = async (idp: IdP) => {
+  const handleClickLogIn = () => {
+    const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
+    const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+
+    // Validate inputs
+    const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
+    const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+
+    if (authType === 'password') {
+      // Password Login
+      if (username.length > 0 && password.length > 0) {
+        logInWithPassword(username, password);
+      } else {
+        if (usernameRef.current?.shadowRoot.querySelector('sl-input')) {
+          usernameInput.setAttribute('data-user-invalid', username.length === 0)
+        } else if (passwordRef.current?.shadowRoot.querySelector('sl-input')) {
+          passwordInput.setAttribute('data-user-invalid', password.length === 0)
+        }
+      }
+    } else if (authType === 'passkey') {
+      // Passkey Login
+      if (username.length > 0) {
+        logInWithPasskey(username)
+      } else {
+        if (usernameRef.current?.shadowRoot.querySelector('sl-input')) {
+          usernameInput.setAttribute('data-user-invalid', username.length === 0)
+        }
+      }
+    } else if (authType === 'oidc') {
+      // OIDC Login
+      const oidc = oidcRef.current.selected
+      const idp = idpList.find((idp: IdP) => idp.name === oidc)
+      logInUsingIdp(idp)
+    }
+  }
+
+  const handleLogInUsingIdp = async (idp: any) => {
+    document.getElementById('form-username')?.classList.add('removed');
+    document.getElementById('section-password')?.classList.add('hidden');
+    document.getElementById('form-oidc')?.classList.remove('removed');
+    document.getElementById('passkey-signup')?.classList.add('hidden');
+    setAuthType('oidc')
+  }
+
+  const logInUsingIdp = async (idp: any) => {
     await dispatch(setCurrentIdp(idp) as any)
     localStorage.setItem('oidc_config_url', idp.wellKnown)
     localStorage.setItem('client_id', idp.adminui_config.client_id)
@@ -291,6 +369,10 @@ const LoginPage = () => {
     } else {
       await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
     }
+  }
+
+  const handleChooseOidc = (idp: any) => {
+    
   }
 
   React.useEffect(() => {
@@ -312,10 +394,27 @@ const LoginPage = () => {
           .catch((e) => reject(e));
       });
 
+    const hasOidc = localStorage.getItem('client_id')
+    if (hasOidc) {
+      document.getElementById('form-username')?.classList.add('removed');
+      document.getElementById('section-password')?.classList.add('hidden');
+      document.getElementById('form-oidc')?.classList.remove('removed');
+      document.getElementById('passkey-signup')?.classList.add('hidden');
+      setAuthType('oidc')
+      return
+    }
+
     canDoPasskey()
       .then((result: any) => {
-        const user = localStorage.getItem('keep_user');
-        setUsername(user ? user : '');
+        if (result === true) {
+          const user = localStorage.getItem('keep_user');
+          usernameRef.current.shadowRoot.querySelector('sl-input').value = user
+          setAuthType('passkey')
+          document.getElementById('form-username')?.classList.remove('removed');
+          document.getElementById('section-password')?.classList.add('hidden');
+          document.getElementById('form-oidc')?.classList.add('removed');
+          document.getElementById('passkey-signup')?.classList.add('hidden');
+        }
       })
       .catch((e) => dispatch(toggleAlert(e)));
   }, [])
@@ -336,6 +435,32 @@ const LoginPage = () => {
     }
     handleIdps()
   }, [])
+
+  useEffect(() => {
+    const hasOidc = localStorage.getItem('client_id')
+    if (hasOidc && idpList.length > 0) {
+      document.getElementById('form-username')?.classList.add('removed');
+      document.getElementById('section-password')?.classList.add('hidden');
+      document.getElementById('form-oidc')?.classList.remove('removed');
+      document.getElementById('passkey-signup')?.classList.add('hidden');
+      setAuthType('oidc')
+      return
+    }
+  }, [idpList])
+
+  useEffect(() => {
+    if (error401 && !idpLogin) {
+      const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
+      const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+
+      // Validate inputs
+      const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
+      const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+
+      usernameInput.setAttribute('data-user-invalid', username.length === 0)
+      passwordInput.setAttribute('data-user-invalid', password.length === 0) 
+    }
+  }, [error401, idpLogin])
 
   return (
     <GridRoot container>
@@ -363,162 +488,82 @@ const LoginPage = () => {
             </Typography>
           </KeepLogoContainer>
           <div style={{ flex: 1 }}>
-            <Typography
-              style={{ fontSize: 32, fontWeight: 500 }}
-              component="h1"
-              variant="h5"
-            >
-              Welcome
-            </Typography>
-            <Typography style={{ fontSize: 18 }} component="h1" variant="h5">
-              Login your account
-            </Typography>
-            {error401 && !idpLogin && (
-              <Alert style={{ margin: "5px 0" }} severity="error">
-                <AlertTitle>Whoops: Something went wrong!</AlertTitle>
-                <Typography
-                  style={{ fontSize: 18 }}
-                  component="p"
-                  variant="caption"
-                >
-                  Invalid credentials. Please try to sign in again.
-                </Typography>
-              </Alert>
-            )}
-            {error && (
-              <Alert style={{ margin: "5px 0" }} severity="error">
-                <AlertTitle>Whoops: Something went wrong!</AlertTitle>
-                <Typography
-                  style={{ fontSize: 18 }}
-                  component="p"
-                  variant="caption"
-                >
-                  Invalid username and/or password.
-                </Typography>
-              </Alert>
-            )}
-            {((touched.username && touched.password && !isValid) ||
-              noPasswordPasskey ||
-              noUsernamePasskey) && (
-              <Alert style={{ margin: "5px 0" }} severity="error">
-                <AlertTitle>Whoops: Something went wrong!</AlertTitle>
-                {((errors.username && touched.username) || noUsernamePasskey) && (
-                  <Typography
-                    style={{
-                      fontSize: 16,
-                      margin: "5px 0",
-                      color: "#d32f2f",
-                    }}
-                    component="p"
-                    variant="caption"
-                  >
-                    Username Required
-                  </Typography>
-                )}
-                {((errors.password && touched.password) || noPasswordPasskey) && (
-                  <Typography
-                    style={{
-                      fontSize: 16,
-                      margin: "5px 0",
-                      color: "#d32f2f",
-                    }}
-                    component="p"
-                    variant="caption"
-                  >
-                    Password Required
-                  </Typography>
-                )}
-              </Alert>
-            )}
-            <StyledForm onSubmit={formik.handleSubmit} noValidate>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="username"
-                label="Username"
-                name="username"
-                size="small"
-                autoFocus
-                onChange={handleUsernameChange}
-                value={username ? username : formik.values.username}
-                disabled={!displayKeepIdp}
-              />
-              <TextField
-                variant="outlined"
-                margin="normal"
-                size="small"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                onChange={formik.handleChange}
-                value={formik.values.password}
-                autoComplete="off"
-                autoFocus={error}
-                disabled={!displayKeepIdp}
-              />
-              <ButtonSubmit
-                style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={handleLogInWithPassword}
-                disabled={!displayKeepIdp}
+            <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
+              <LitButton style={{ width: '100%' }} onClick={handleLogInWithPassword} outline>LOG IN WITH PASSWORD</LitButton>
+              {isHttps &&
+                <LitButton style={{ width: '100%' }} onClick={handleLogInWithPasskey} outline>LOG IN WITH PASSKEY</LitButton>
+              }
+              {displayKeepIdp &&
+                <LitButton style={{ width: '100%' }} onClick={() => {handleLogInUsingIdp("")}} outline>LOG IN WITH OIDC</LitButton>
+              }
+            </section>
+            <LoginForm>
+              <section style={{ width: '100%' }}>
+                <LitInputText
+                  id='form-username'
+                  label='Username'
+                  onChange={handleUsernameChange}
+                  ref={usernameRef}
+                  required
+                />
+                {idpList.length > 0 &&
+                  <LitDropdown
+                    id='form-oidc'
+                    choices={idpList.map((idp: IdP) => {return idp.name})}
+                    className='removed'
+                    ref={oidcRef}
+                    onChange={(e: any) => handleChooseOidc(idpList.find((idp: IdP) => idp.name === e.detail.value))}
+                    style={{ width: '100%' }}
+                    selected={selectedOidc}
+                  />
+                }
+              </section>
+              <section style={{ width: '100%' }}>
+                <LitInputPassword
+                  id='section-password'
+                  label='Password'
+                  style={{ width: '100%' }}
+                  ref={passwordRef}
+                  required
+                />
+              </section>
+              <LitButton
+                style={{ width: '100%', marginTop: '30px' }}
+                onClick={handleClickLogIn}
+                pill
               >
-                <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                Log In With Password
-              </ButtonSubmit>
-              {isHttps && (
-                <ButtonSubmit
-                  style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  onClick={handleLogInWithPasskey}
-                  disabled={!displayKeepIdp}
-                >
-                  <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                  Log In with Passkey
-                </ButtonSubmit>
-              )}
-            </StyledForm>
-            {idpList.length > 0 &&
-                idpList.map((idp: any, index: number) => (
-                  <ButtonSubmit
-                    key={index}
-                    style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleLogInUsingIdp(idp)}
+                LOG IN
+              </LitButton>
+              <PasskeySignUpContainer id='passkey-signup'>
+                {isHttps && (
+                  <button
+                    className="text-button"
+                    disabled={!displayKeepIdp}
+                    style={{
+                      cursor: "pointer",
+                      background: 'none',
+                      border: 'none',
+                      margin: 5,
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
                   >
-                    <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                    {`Log in with ${idp.name}`}
-                  </ButtonSubmit>
-              ))}
-            <PasskeySignUpContainer>
-              {isHttps && (
-                <Button fullWidth className="text-button" disabled={!displayKeepIdp}>
-                  <Typography
-                    className="sign-up-text"
-                    display="inline"
-                    onClick={handleSignUpWithPasskey}
-                  >
-                    Sign up with Passkey
-                  </Typography>
-                  <Link href="https://passkey.org" target="_blank">
-                    <FiInfo className="passkey-icon" size="1.5em" />
-                  </Link>
-                </Button>
-              )}
-            </PasskeySignUpContainer>
+                    <Typography
+                      className="sign-up-text"
+                      display="inline"
+                      onClick={handleSignUpWithPasskey}
+                    >
+                      Sign up with Passkey
+                    </Typography>
+                    <Link href="https://passkey.org" target="_blank">
+                      <FiInfo className="passkey-icon" size="1.5em" />
+                    </Link>
+                  </button>
+                )}
+              </PasskeySignUpContainer>
+            </LoginForm>
             <Box mt={7}>
               <Copyright />
             </Box>
