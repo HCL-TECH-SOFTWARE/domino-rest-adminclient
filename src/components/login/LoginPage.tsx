@@ -6,7 +6,6 @@
 
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -14,12 +13,9 @@ import Typography from '@mui/material/Typography';
 import { useFormik } from 'formik';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import * as Yup from 'yup';
-import { Alert, AlertTitle } from '@mui/lab';
-import LoginIcon from '@mui/icons-material/ExitToApp';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   IMG_DIR,
-  KEEP_ADMIN_BASE_COLOR,
   BUILD_VERSION,
 } from '../../config.dev';
 import { CASTLE_BACKGROUND } from './styles';
@@ -165,13 +161,11 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
-  const [username, setUsername] = useState('');
-  const [noUsernamePasskey, setNoUsernamePasskey] = useState(false);
-  const [noPasswordPasskey, setNoPasswordPasskey] = useState(false);
   const isHttps = protocol === "https"
   const [idpList, setIdpList] = useState([]);
   const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
   const [authType, setAuthType] = useState('password');
+  const [selectedOidc, setSelectedOidc] = useState('');
 
   const usernameRef = useRef<any>(null)
   const passwordRef = useRef<any>(null)
@@ -189,17 +183,19 @@ const LoginPage = () => {
     event.preventDefault();
     const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
     const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+
+    // Validate inputs
+    const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
+    const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+
     if (!username || !password) {
       if (!username) {
-        setNoUsernamePasskey(true);
+        usernameInput.setAttribute('data-user-invalid', username.length === 0)
       }
       if (!password) {
-        setNoPasswordPasskey(true);
+        passwordInput.setAttribute('data-user-invalid', password.length === 0)
       }
       return;
-    } else {
-      setNoUsernamePasskey(false);
-      setNoPasswordPasskey(false);
     }
     // Login. first
     await logIn()
@@ -231,26 +227,6 @@ const LoginPage = () => {
     document.getElementById('form-oidc')?.classList.add('removed');
     document.getElementById('passkey-signup')?.classList.add('hidden');
     setAuthType('passkey')
-    // document.getElementById('passkey-signup')?.classList.add('hidden');
-    // console.log(document.getElementById('section-password'))
-
-    // keepAuthenticator
-    //   .login({ name: username })
-    //   .then((res) => res.json())
-    //   .then((json) => {
-    //     if (json.status) {
-    //       dispatch(toggleAlert(json.message));
-    //     } else {
-    //       localStorage.setItem('user_token', JSON.stringify(json));
-    //       dispatch({
-    //         type: LOGIN
-    //       });
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     dispatch(toggleAlert(`Authentication failed`));
-    //     console.error(err);
-    //   })
   }
 
   const logInWithPasskey = (username: string) => {
@@ -275,7 +251,6 @@ const LoginPage = () => {
 
   const handleUsernameChange = (event: any) => {
     formik.handleChange(event);
-    setUsername(event.target.value);
   }
 
   const formik = useFormik({
@@ -291,13 +266,11 @@ const LoginPage = () => {
     onSubmit: async (values, form) => {
       dispatch(set401Error(false));
       const data = JSON.stringify(values, null, 2);
-      console.log(data)
       const parseData = JSON.parse(data);
       await dispatch(login(parseData, () => navigate('/')) as any);
     },
   });
 
-  const { errors, touched, isValid } = formik;
   const matches = useMediaQuery('(max-width:768px)');
   
   const logIn = () =>
@@ -335,41 +308,43 @@ const LoginPage = () => {
   }
 
   const logInWithPassword = (username: string, password: string) => {
-    // if (formik.values.username === '' && username.length > 0) {
-    //   formik.values.username = username;
-    //   formik.values.password = password
-    // }
     formik.values.username = username
     formik.values.password = password
     formik.handleSubmit();
-    // need validation
-    // dispatch(set401Error(false));
-    // const data = {
-    //   username: username,
-    //   password: password,
-    // }
-    // console.log(data)
-    // const parseData = JSON.parse(data);
-    // await dispatch(login(parseData, () => navigate('/')) as any);
   }
 
   const handleClickLogIn = () => {
     const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
     const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+
+    // Validate inputs
+    const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
+    const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+
     if (authType === 'password') {
       // Password Login
       if (username.length > 0 && password.length > 0) {
         logInWithPassword(username, password);
+      } else {
+        if (usernameRef.current?.shadowRoot.querySelector('sl-input')) {
+          usernameInput.setAttribute('data-user-invalid', username.length === 0)
+        } else if (passwordRef.current?.shadowRoot.querySelector('sl-input')) {
+          passwordInput.setAttribute('data-user-invalid', password.length === 0)
+        }
       }
     } else if (authType === 'passkey') {
       // Passkey Login
-      logInWithPasskey(username)
+      if (username.length > 0) {
+        logInWithPasskey(username)
+      } else {
+        if (usernameRef.current?.shadowRoot.querySelector('sl-input')) {
+          usernameInput.setAttribute('data-user-invalid', username.length === 0)
+        }
+      }
     } else if (authType === 'oidc') {
       // OIDC Login
       const oidc = oidcRef.current.selected
-      console.log(oidc)
       const idp = idpList.find((idp: IdP) => idp.name === oidc)
-      console.log(idp)
       logInUsingIdp(idp)
     }
   }
@@ -387,7 +362,6 @@ const LoginPage = () => {
     localStorage.setItem('oidc_config_url', idp.wellKnown)
     localStorage.setItem('client_id', idp.adminui_config.client_id)
     const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
-    console.log(redirectUri)
     sessionStorage.setItem('redirect_uri', redirectUri)
     if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
       const scope = idp.adminui_config.application_id_uri + ".default"
@@ -398,8 +372,7 @@ const LoginPage = () => {
   }
 
   const handleChooseOidc = (idp: any) => {
-    console.log(idp)
-    console.log(oidcRef.current.shadowRoot.querySelector('sl-dropdown').value)
+    
   }
 
   React.useEffect(() => {
@@ -407,7 +380,6 @@ const LoginPage = () => {
       new Promise((resolve, reject) => {
         const canDo = localStorage.getItem('use_keep_webauth') ? true : false;
         if (!canDo) {
-          console.log(false)
           resolve(false);
           return;
         }
@@ -421,6 +393,16 @@ const LoginPage = () => {
           })
           .catch((e) => reject(e));
       });
+
+    const hasOidc = localStorage.getItem('client_id')
+    if (hasOidc) {
+      document.getElementById('form-username')?.classList.add('removed');
+      document.getElementById('section-password')?.classList.add('hidden');
+      document.getElementById('form-oidc')?.classList.remove('removed');
+      document.getElementById('passkey-signup')?.classList.add('hidden');
+      setAuthType('oidc')
+      return
+    }
 
     canDoPasskey()
       .then((result: any) => {
@@ -454,6 +436,32 @@ const LoginPage = () => {
     handleIdps()
   }, [])
 
+  useEffect(() => {
+    const hasOidc = localStorage.getItem('client_id')
+    if (hasOidc && idpList.length > 0) {
+      document.getElementById('form-username')?.classList.add('removed');
+      document.getElementById('section-password')?.classList.add('hidden');
+      document.getElementById('form-oidc')?.classList.remove('removed');
+      document.getElementById('passkey-signup')?.classList.add('hidden');
+      setAuthType('oidc')
+      return
+    }
+  }, [idpList])
+
+  useEffect(() => {
+    if (error401 && !idpLogin) {
+      const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
+      const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+
+      // Validate inputs
+      const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
+      const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+
+      usernameInput.setAttribute('data-user-invalid', username.length === 0)
+      passwordInput.setAttribute('data-user-invalid', password.length === 0) 
+    }
+  }, [error401, idpLogin])
+
   return (
     <GridRoot container>
       <CssBaseline />
@@ -480,186 +488,33 @@ const LoginPage = () => {
             </Typography>
           </KeepLogoContainer>
           <div style={{ flex: 1 }}>
-            {/* <Typography
-              style={{ fontSize: 32, fontWeight: 500 }}
-              component="h1"
-              variant="h5"
-            >
-              Welcome
-            </Typography>
-            <Typography style={{ fontSize: 18 }} component="h1" variant="h5">
-              Login your account
-            </Typography> */}
-            {error401 && !idpLogin && (
-              <Alert style={{ margin: "5px 0" }} severity="error">
-                <AlertTitle>Whoops: Something went wrong!</AlertTitle>
-                <Typography
-                  style={{ fontSize: 18 }}
-                  component="p"
-                  variant="caption"
-                >
-                  Invalid credentials. Please try to sign in again.
-                </Typography>
-              </Alert>
-            )}
-            {error && (
-              <Alert style={{ margin: "5px 0" }} severity="error">
-                <AlertTitle>Whoops: Something went wrong!</AlertTitle>
-                <Typography
-                  style={{ fontSize: 18 }}
-                  component="p"
-                  variant="caption"
-                >
-                  Invalid username and/or password.
-                </Typography>
-              </Alert>
-            )}
-            {((touched.username && touched.password && !isValid) ||
-              noPasswordPasskey ||
-              noUsernamePasskey) && (
-              <Alert style={{ margin: "5px 0" }} severity="error">
-                <AlertTitle>Whoops: Something went wrong!</AlertTitle>
-                {((errors.username && touched.username) || noUsernamePasskey) && (
-                  <Typography
-                    style={{
-                      fontSize: 16,
-                      margin: "5px 0",
-                      color: "#d32f2f",
-                    }}
-                    component="p"
-                    variant="caption"
-                  >
-                    Username Required
-                  </Typography>
-                )}
-                {((errors.password && touched.password) || noPasswordPasskey) && (
-                  <Typography
-                    style={{
-                      fontSize: 16,
-                      margin: "5px 0",
-                      color: "#d32f2f",
-                    }}
-                    component="p"
-                    variant="caption"
-                  >
-                    Password Required
-                  </Typography>
-                )}
-              </Alert>
-            )}
-            {/* <StyledForm onSubmit={formik.handleSubmit} noValidate>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="username"
-                label="Username"
-                name="username"
-                size="small"
-                autoFocus
-                onChange={handleUsernameChange}
-                value={username ? username : formik.values.username}
-                disabled={!displayKeepIdp}
-              />
-              <TextField
-                variant="outlined"
-                margin="normal"
-                size="small"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                onChange={formik.handleChange}
-                value={formik.values.password}
-                autoComplete="off"
-                autoFocus={error}
-                disabled={!displayKeepIdp}
-              />
-              <ButtonSubmit
-                style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={handleLogInWithPassword}
-                disabled={!displayKeepIdp}
-              >
-                <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                Log In With Password
-              </ButtonSubmit>
-              {isHttps && (
-                <ButtonSubmit
-                  style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  onClick={handleLogInWithPasskey}
-                  disabled={!displayKeepIdp}
-                >
-                  <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                  Log In with Passkey
-                </ButtonSubmit>
-              )}
-            </StyledForm>
-            {idpList.length > 0 &&
-                idpList.map((idp: any, index: number) => (
-                  <ButtonSubmit
-                    key={index}
-                    style={{ padding: "7px 0", marginTop: '24px', background: KEEP_ADMIN_BASE_COLOR }}
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleLogInUsingIdp(idp)}
-                  >
-                    <LoginIcon style={{ marginRight: 5 }} fontSize="small" />
-                    {`Log in with ${idp.name}`}
-                  </ButtonSubmit>
-              ))}
-            <PasskeySignUpContainer>
-              {isHttps && (
-                <Button fullWidth className="text-button" disabled={!displayKeepIdp}>
-                  <Typography
-                    className="sign-up-text"
-                    display="inline"
-                    onClick={handleSignUpWithPasskey}
-                  >
-                    Sign up with Passkey
-                  </Typography>
-                  <Link href="https://passkey.org" target="_blank">
-                    <FiInfo className="passkey-icon" size="1.5em" />
-                  </Link>
-                </Button>
-              )}
-            </PasskeySignUpContainer> */}
             <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
               <LitButton style={{ width: '100%' }} onClick={handleLogInWithPassword} outline>LOG IN WITH PASSWORD</LitButton>
               {isHttps &&
                 <LitButton style={{ width: '100%' }} onClick={handleLogInWithPasskey} outline>LOG IN WITH PASSKEY</LitButton>
               }
-              <LitButton style={{ width: '100%' }} onClick={() => {handleLogInUsingIdp("")}} outline>LOG IN WITH OIDC</LitButton>
+              {displayKeepIdp &&
+                <LitButton style={{ width: '100%' }} onClick={() => {handleLogInUsingIdp("")}} outline>LOG IN WITH OIDC</LitButton>
+              }
             </section>
             <LoginForm>
               <section style={{ width: '100%' }}>
                 <LitInputText
                   id='form-username'
                   label='Username'
-                  className={displayKeepIdp ? '' : 'removed'}
-                  style={{ width: '100%' }}
                   onChange={handleUsernameChange}
                   ref={usernameRef}
+                  required
                 />
                 {idpList.length > 0 &&
                   <LitDropdown
                     id='form-oidc'
                     choices={idpList.map((idp: IdP) => {return idp.name})}
-                    className={displayKeepIdp ? 'removed' : ''}
+                    className='removed'
                     ref={oidcRef}
                     onChange={(e: any) => handleChooseOidc(idpList.find((idp: IdP) => idp.name === e.detail.value))}
+                    style={{ width: '100%' }}
+                    selected={selectedOidc}
                   />
                 }
               </section>
@@ -669,6 +524,7 @@ const LoginPage = () => {
                   label='Password'
                   style={{ width: '100%' }}
                   ref={passwordRef}
+                  required
                 />
               </section>
               <LitButton

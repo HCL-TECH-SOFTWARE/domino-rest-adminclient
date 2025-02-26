@@ -9,12 +9,18 @@ class InputPassword extends LitElement {
     text {
       font-size: 12px;
     }
+
+    sl-input[data-user-invalid]::part(base) {
+      border-color: var(--sl-color-danger-600);
+      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-300);
+    }
   `;
 
   static properties = {
     label: { type: String },
     helpText: { type: String },
     placeholder: { type: String },
+    required: { type: Boolean },
   };
 
   constructor() {
@@ -22,6 +28,7 @@ class InputPassword extends LitElement {
     this.label = ''
     this.helpText = ''
     this.placeholder = ''
+    this.required = false
   }
 
   render() {
@@ -33,6 +40,7 @@ class InputPassword extends LitElement {
             help-text="${this.helpText}"
             placeholder="${this.placeholder}"
             password-toggle
+            ?required="${this.required}"
         >
             <slot></slot>
         </sl-input>

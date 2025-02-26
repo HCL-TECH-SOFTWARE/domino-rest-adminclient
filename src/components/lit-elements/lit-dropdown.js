@@ -11,6 +11,18 @@ class Dropdown extends LitElement {
     static styles = css`
       sl-dropdown::part(base) {
         width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+
+      sl-button::part(base) {
+        width: 100%;
+      }
+
+      sl-menu {
+        width: 100%;
       }
     `;
   
