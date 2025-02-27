@@ -267,7 +267,10 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               <Box className='write-formula'>
                 {data.writeAccessFormula?.formula !== "" && <Typography className='formula-container'>{data.writeAccessFormula.formula}</Typography>}
                 {data.writeAccessFormula?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
-                {data.computeWithForm && <Typography className='computed'>Computed with Form</Typography>}
+                {data.computeWithForm ?
+                  <Typography className='computed'>Computed with Form - enabled</Typography> :
+                  <Typography className='computed'>Computed with Form - disabled</Typography>
+                }
               </Box>
             </AccessContainer>
           </Box>
