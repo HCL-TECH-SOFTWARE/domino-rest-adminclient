@@ -457,8 +457,12 @@ const LoginPage = () => {
       const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
       const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
 
-      usernameInput.setAttribute('data-user-invalid', username.length === 0)
-      passwordInput.setAttribute('data-user-invalid', password.length === 0) 
+      if (usernameInput) {
+        usernameInput.setAttribute('data-user-invalid', username.length === 0)
+      }
+      if (passwordInput) {
+        passwordInput.setAttribute('data-user-invalid', password.length === 0)
+      }
     }
   }, [error401, idpLogin])
 
