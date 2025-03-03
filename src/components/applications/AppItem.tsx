@@ -21,7 +21,7 @@ import { toggleApplicationDrawer } from '../../store/drawer/action';
 import '../webcomponents/app-status';
 import '../webcomponents/copyable-text';
 import { AppFormContext } from './ApplicationContext';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { LitAppStatus, LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const StyledTableRow = styled(TableRow)`
   .app-name {
@@ -239,7 +239,7 @@ const AppItem: React.FC<AppItemProps> = ({
                     />
                     <Box style={{ flexDirection: 'column', gap: '2px', display: 'flex' }}>
                         <Typography className='text'>{app.appName}</Typography>
-                        {app.appStatus === 'isActive' ? <app-status status="true" /> : <app-status status="false" />}
+                        {app.appStatus === 'isActive' ? <LitAppStatus status={true} /> : <LitAppStatus status={false} />}
                     </Box>
                   </AppNameContainer>
                 </TableCell>

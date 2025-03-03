@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { v4 as uuid } from 'uuid';
-import { DragDropContext } from 'react-beautiful-dnd';
+// import { DragDropContext } from 'react-beautiful-dnd';
 import { useLocation } from 'react-router-dom';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Typography from '@mui/material/Typography';
@@ -355,7 +355,8 @@ const AccessMode: React.FC = () => {
   return (
     <AccessContext.Provider value={[state, setstate]}>
       {fetchFieldsArray.length > 0 ? (
-        <DragDropContext onDragEnd={onDragEnd}>
+        <div>
+        {/* <DragDropContext onDragEnd={onDragEnd}> */}
           <TopContainer style={{ marginTop: '15px' }}>
             <Typography className='top-nav' color='textPrimary'>
               Schema Management - {formName}
@@ -417,7 +418,8 @@ const AccessMode: React.FC = () => {
               )}
             </div>
           </AccessModeContainer>
-        </DragDropContext>
+        {/* </DragDropContext> */}
+        </div>
       ) : (
         <PageLoading message={`Loading ${formName} Form Access Data`} />
       )}

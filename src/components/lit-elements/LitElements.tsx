@@ -15,6 +15,7 @@ import Button from './lit-button';
 import InputText from './lit-input-text';
 import InputPassword from './lit-input-password';
 import Dropdown from './lit-dropdown';
+import AppStatus from './lit-app-status';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -111,3 +112,9 @@ export const LitDropdown = createComponent({
   elementClass: Dropdown,
   react: React,
 });
+
+export const LitAppStatus = createComponent({
+  tagName: 'app-status',
+  elementClass: AppStatus,
+  react: React,
+})
