@@ -18,17 +18,13 @@ import { DeleteIcon, CommonDialog } from '../../styles/CommonStyles';
 import { MdRefresh } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
-import '../webcomponents/app-status';
 import '../webcomponents/copyable-text';
 import { AppFormContext } from './ApplicationContext';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { LitAppStatus, LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const StyledTableRow = styled(TableRow)`
   .app-name {
-    display: flex;
-    flex-direction: row;
     gap: 10px;
-    width: 100%;
   }
 
   .exp-row {
@@ -239,7 +235,9 @@ const AppItem: React.FC<AppItemProps> = ({
                     />
                     <Box style={{ flexDirection: 'column', gap: '2px', display: 'flex' }}>
                         <Typography className='text'>{app.appName}</Typography>
-                        {app.appStatus === 'isActive' ? <app-status status="true" /> : <app-status status="false" />}
+                        <div style={{ width: '100%' }}>
+                          <LitAppStatus status={app.appStatus === 'isActive'} />
+                        </div>
                     </Box>
                   </AppNameContainer>
                 </TableCell>
@@ -267,9 +265,6 @@ const AppItem: React.FC<AppItemProps> = ({
                     ) : (
                       <AppIdSecretContainer>
                         <Typography className='text'>App Secret:</Typography>
-                        {/* {(app.appHasSecret || appSecret !== app.appSecret) && <Tooltip title={clickToGenerateText} arrow>
-                          <ButtonBase onClick={handleClickGenerate}><MdRefresh color='#2873F0' /></ButtonBase>
-                        </Tooltip>} */}
                         {
                           hasAppSecret ? <>
                             <Tooltip 
@@ -323,25 +318,6 @@ const AppItem: React.FC<AppItemProps> = ({
                             </>}
                           </>
                         }
-                        {/* {(app.appHasSecret && (appSecret === app.appSecret || app.appSecret === undefined)) ? <Typography className='text' style={{ color: '#505050' }}>********************</Typography> :
-                            appSecret === app.appSecret ? <ButtonBase onClick={handleClickGenerate}>
-                              <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
-                            </ButtonBase>
-                              : <Tooltip 
-                                  title="Copy Application Secret" 
-                                  tabIndex={1} 
-                                  onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                                  arrow
-                                >
-                                  <Typography
-                                    className='text id-secret'
-                                    style={{ color: '#2873F0' }}
-                                    ref={appSecretTextRef}
-                                    onClick={copyToClipboard}
-                                  >
-                                    {appSecret}
-                                  </Typography>
-                                </Tooltip>} */}
                       </AppIdSecretContainer>
                     )}
                   </Box>
