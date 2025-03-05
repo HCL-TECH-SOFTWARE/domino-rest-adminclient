@@ -2,6 +2,10 @@ import { LitElement, html, css } from 'lit';
 
 class AppStatus extends LitElement {
 
+  static properties = {
+    status: { type: Boolean },
+  };
+
   static styles = css`
     div {
         display: flex;
@@ -14,12 +18,8 @@ class AppStatus extends LitElement {
         width: fit-content;
         font-size: 12px;
         padding: 0 5px;
-  }
-    `
-
-  static properties = {
-    status: { type: Boolean },
-  };
+    }
+  `;
 
   constructor() {
     super()

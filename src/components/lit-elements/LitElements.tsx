@@ -114,7 +114,7 @@ export const LitDropdown = createComponent({
 });
 
 export const LitAppStatus = createComponent({
-  tagName: 'app-status',
+  tagName: 'lit-app-status',
   elementClass: AppStatus,
   react: React,
 })
