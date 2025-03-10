@@ -11,13 +11,13 @@
             "/admin/ui/*": {
                 "type": "single",
                 "path": "/admin/index.html",
-                "csp": "default-src 'self' data: ; script-src 'self' 'unsafe-inline' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@shoelace-style/; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; img-src 'self' data: gap: ; worker-src 'self' data: blob: ; connect-src 'self' *",
+                "csp": "default-src 'self' data: ; script-src 'self' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@shoelace-style/; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; img-src 'self' data: gap: ; worker-src 'self' data: blob: ; connect-src 'self' data: *",
                 "Content-Type": "text/html; charset=utf-8"
             },
             "/admin/ui": {
                 "type": "single",
                 "path": "/admin/index.html",
-                "csp": "default-src 'self' 'unsafe-inline' data: ; script-src 'self' 'unsafe-inline' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@shoelace-style/; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; img-src 'self' data: gap: ; worker-src 'self' data: blob: ; connect-src 'self' *",
+                "csp": "default-src 'self' data: ; script-src 'self' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@shoelace-style/; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; img-src 'self' data: gap: *; worker-src 'self' data: blob: ; connect-src 'self' data: *",
                 "Content-Type": "text/html; charset=utf-8"
             },
             "/adminui.json": {
@@ -29,12 +29,12 @@
             "/admin/*": {
                 "type": "path",
                 "path": "/admin",
-                "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: ; worker-src 'self' data: blob: "
+                "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: ; worker-src 'self' data: blob: "
             },
 			"/monaco-editor-core/*" : {
                 "type": "path",
                 "path": "/monaco-editor-core",
-                "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: ; worker-src 'self' data: blob: "
+                "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: ; worker-src 'self' data: blob: "
             }
         }
     }
