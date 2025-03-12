@@ -250,6 +250,8 @@ interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   setRequired: (required: string[]) => void;
   validationRules: Array<{ formula: String, formulaType: String, message: String }>;
   setValidationRules: (data: Array<{ formula: String, formulaType: String, message: String }>) => void;
+  fieldIndex: number;
+  setFieldIndex: (fieldIndex: number) => void;
 }
 
 const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
@@ -264,12 +266,14 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
   setRequired,
   validationRules,
   setValidationRules,
+  fieldIndex,
+  setFieldIndex,
 }) => {
   const stateList = Object.keys(state);
 
   const [customFieldError, setCustomFieldError] = useState('')
   const [fieldText, setFieldText] = useState('')
-  const [editField, setEditField] = useState(state[stateList[0]][0] || null)
+  const [editField, setEditField] = useState(state[stateList[0]][fieldIndex] || null)
   const [batchDelete, setBatchDelete] = useState(false)
   const [deleteFields, setDeleteFields]= useState([] as Array<any>)
 
@@ -354,6 +358,11 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
     } else {
       setDeleteFields([])
     }
+  }
+
+  const handleClickField = (item: any, idx: number) => {
+    setEditField(item)
+    setFieldIndex(idx)
   }
 
   return (
@@ -456,7 +465,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                   }
                   const isRequired = required.includes(item.content)
                   return (
-                    <CustomItem onClick={() => setEditField(item)} key={`${item.name}-${idx}`}>
+                    <CustomItem onClick={() => handleClickField(item, index)} key={`${item.name}-${idx}`}>
                       <div className="field-info" onChange={(e) => {handleSelectField(e, item)}}>
                         <div className="field-name">{item.name}</div>
                         <div className="field-meta-data">{`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}</div>
