@@ -62,6 +62,8 @@ const AccessMode: React.FC = () => {
   const formName = decodeURIComponent(urls.pathname.split('/')[4]);
   const dbName = urls.pathname.split('/')[3];
 
+  const [fieldIndex, setFieldIndex] = useState(0)
+
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { loadedFields, newForm } = useSelector((state: AppState) => state.databases);
   const forms: any[] = []
@@ -410,6 +412,8 @@ const AccessMode: React.FC = () => {
                   addField={addField}
                   schemaData={schemaData}
                   setSchemaData={setSchemaData}
+                  fieldIndex={fieldIndex}
+                  setFieldIndex={setFieldIndex}
                 />
               ) : (
                 <GenericLoading />

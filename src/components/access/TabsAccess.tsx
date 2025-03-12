@@ -123,6 +123,8 @@ interface TabsAccessProps {
   addField:(from: string, item: any) => string;
   schemaData: Database;
   setSchemaData: (schemaData: any) => void;
+  fieldIndex: number;
+  setFieldIndex: (fieldIndex: number) => void;
 }
 
 /**
@@ -145,6 +147,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   addField,
   schemaData,
   setSchemaData,
+  fieldIndex,
+  setFieldIndex
 }) => {
   const dispatch = useDispatch();
   const { themeMode } = useSelector((state: AppState) => state.styles);
@@ -236,7 +240,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
    * save is called when the Save button is clicked.  It gathers up the
    * form data and saves it off.
    */
-  const save = () => {
+  const save = async () => {
     // Gather form data from the page
     const formData = gatherFormData();
 
@@ -313,7 +317,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         (mode: any) => currentModeValue === mode.modeName
       );
       setCurrentModeIndex(oriCardIndex);
-      dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode, setSchemaData) as any);
+      await dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode, setSchemaData) as any);
       // After Saved the tab all data will be fetch from latest state again to ensure accuracy
       setPageIndex(oriCardIndex);
       setCurrentModeValue(formModes[oriCardIndex].modeName);
@@ -752,6 +756,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             setRequired={setRequired}
             validationRules={validationRules}
             setValidationRules={setValidationRules}
+            fieldIndex={fieldIndex}
+            setFieldIndex={setFieldIndex}
           />
         </LoadTabContainer>
       </TabNavigator>
