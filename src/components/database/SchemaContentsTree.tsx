@@ -91,10 +91,10 @@ const SchemaContentsTree: React.FC<SchemaContentsTreeProps> = ({
           labelIcon={DBIcon}
         >
           {[...new Set(content.apinames)].length > 0 &&
-            [...new Set(content.apinames)].map((api) => (
+            [...new Set(content.apinames)].map((api, idx) => (
               <StyledTreeItem
-                key={api}
-                itemId={api}
+                key={`${api}-${idx}`}
+                itemId={`${api}-${idx}`}
                 labelText={api}
                 labelIcon={DocumentIcon}
                 onClick={() => handleTreeOnClick({nsfpath: content.nsfpath, api})}
