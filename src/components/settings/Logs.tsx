@@ -4,8 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const LogsContainer = styled.div`
@@ -22,11 +21,12 @@ const Logs = () => {
   const [log, setLog] = useState('');
 
   useEffect(() => {
-    axios
-      .get(
-        'https://cors-anywhere.herokuapp.com/http://frascati.projectkeep.io:8009/log'
-      )
-      .then((res) => setLog(res.data));
+    const getLog = async () => {
+      const response = await fetch('https://cors-anywhere.herokuapp.com/http://frascati.projectkeep.io:8009/log')
+      const data = await response.json()
+      setLog(data)
+    }
+    getLog()
   }, []);
 
   return (

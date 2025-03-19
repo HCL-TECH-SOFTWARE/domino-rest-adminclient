@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Group';
 import Button from '@mui/material/Button';
@@ -270,27 +269,32 @@ const Groups: React.FC = () => {
     // Fetch the current values
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.data()
+
+      if (response.status !== 200) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Set the form values
       updateValues.groupId = groupId;
-      updateValues.groupName = response.data.ListName;
-      updateValues.groupCategory = response.data.ListCategory;
-      updateValues.groupDescription = response.data.ListDescription;
+      updateValues.groupName = data.ListName;
+      updateValues.groupCategory = data.ListCategory;
+      updateValues.groupDescription = data.ListDescription;
 
       // Put each member in Datagrid rows
 
       let i: number = 0;
       const memberList: Array<any> = [];
-      response.data.Members.length === 0
+      data.Members.length === 0
         ? (updateValues.groupMembers = [])
-        : response.data.Members.forEach((member: any) => {
+        : data.Members.forEach((member: any) => {
             memberList.push({
               id: i,
               memberName: member
@@ -303,14 +307,16 @@ const Groups: React.FC = () => {
 
       // Open the drawer with the form
       dispatch(toggleApplicationDrawer());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error reading Groups: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error reading Groups: ${error.statusText}`);
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error reading Groups: ${err.message}`);
+        console.log(`Error reading Groups: ${error.message}`);
       }
     }
   };
@@ -331,27 +337,32 @@ const Groups: React.FC = () => {
     // Fetch the current values
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (response.status !== 200) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Set the form values
       updateValues.groupId = rowData;
-      updateValues.groupName = response.data.ListName;
-      updateValues.groupCategory = response.data.ListCategory;
-      updateValues.groupDescription = response.data.ListDescription;
+      updateValues.groupName = data.ListName;
+      updateValues.groupCategory = data.ListCategory;
+      updateValues.groupDescription = data.ListDescription;
 
       // Put each member in Datagrid rows
 
       let i: number = 0;
       const memberList: Array<any> = [];
-      response.data.Members.length === 0
+      data.Members.length === 0
         ? (updateValues.groupMembers = [])
-        : response.data.Members.forEach((member: any) => {
+        : data.Members.forEach((member: any) => {
             memberList.push({
               id: i,
               memberName: member
@@ -364,14 +375,16 @@ const Groups: React.FC = () => {
 
       // Open the drawer with the form
       dispatch(toggleApplicationDrawer());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error reading Groups: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error reading Groups: ${error.statusText}`);
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error reading Groups: ${err.message}`);
+        console.log(`Error reading Groups: ${error.message}`);
       }
     }
   }

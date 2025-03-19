@@ -8,7 +8,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import axios, { AxiosResponse } from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
@@ -216,24 +215,30 @@ const FormsContainer = () => {
   const pullSubForms = async () => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios.get(
-          `${SETUP_KEEP_API_URL}/designlist/subforms?nsfPath=${nsfPath}`,
-          {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          }
-      ));
+        fetch(`${SETUP_KEEP_API_URL}/designlist/subforms?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
+      );
+      const data = await response.json()
 
-      if (response) {
-        dispatch(addNsfDesign(nsfPathDecode, response.data));
+      if (response.status !== 200) {
+        throw new Error(JSON.stringify(data))
+      }
+
+      if (data) {
+        dispatch(addNsfDesign(nsfPathDecode, data));
       }
     } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       setErrorStatus({
-        status: e.response.status,
-        statusText: e.response.statusText
+        status: error.status,
+        statusText: error.message,
       });
+      console.error("Error fetching subforms:", error);
     }
   }
 
@@ -272,44 +277,48 @@ const FormsContainer = () => {
       let allForms: Array<any> = [];
       let configformsList: Array<any> = [];
 
-      const apiData = await apiRequestWithRetry(() =>
-        axios.get(
-        `${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`,
-        {
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
-        }
-      ));
+            Accept: 'application/json',
+          },
+        })
+      );
+      const apiData = await response.json()
+
+      if (response.status !== 200) {
+        throw new Error(JSON.stringify(apiData))
+      }
 
       if (apiData) {
-        setNsfForms(apiData.data.forms.map((form: any) => form['@name']))
-        dispatch(addNsfDesign(nsfPathDecode, apiData.data));
+        setNsfForms(apiData.forms.map((form: any) => form['@name']))
+        dispatch(addNsfDesign(nsfPathDecode, apiData));
 
         // Get list of configured forms
         try {
           const response = await apiRequestWithRetry(() =>
-            axios
-              .get(
-                `${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                  }
-                }
-              )
+            fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                Accept: 'application/json',
+              },
+            })
           )
+          const data = await response.json()
+
+          if (response.status !== 200) {
+            throw new Error(JSON.stringify(apiData))
+          }
 
           setErrorStatus({ status: 200, statusText: 'success' });
             setSchemaData({
-              ...response.data,
+              ...data,
               nsfPath: nsfPathDecode,
               schemaName: dbName,
             })
             // Loop through configured forms and fetch their modes
-            configformsList = response.data.forms;
+            configformsList = data.forms;
             if (configformsList != null && configformsList.length > 0) {
               loadConfiguredForms(
                 configformsList,
@@ -329,16 +338,21 @@ const FormsContainer = () => {
                 dispatch
               );
             }
-            setActiveViews(dbName, response.data.views);
-            setActiveAgents(dbName, response.data.agents);
-        } catch (error) {
+            setActiveViews(dbName, data.views);
+            setActiveAgents(dbName, data.agents);
+        } catch (e: any) {
+          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+          const error = JSON.parse(err)
           console.error("Error fetching configured forms:", error);
         }
       }
     } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+      console.error("Error fetching forms:", error);
       setErrorStatus({
-        status: e.response.status,
-        statusText: e.response.statusText
+        status: error.status,
+        statusText: error.message,
       });
     }
   };
@@ -733,13 +747,15 @@ const FormsContainer = () => {
 };
 
 function loadUnconfiguredForms(
-  apiData: AxiosResponse<any, any>,
+  apiData: {
+    forms: Array<any>,
+  },
   allForms: any[],
   dbName: string,
   setData: React.Dispatch<React.SetStateAction<string[]>>,
   dispatch: Dispatch<any>
 ) {
-  apiData.data.forms.forEach((form: any) => {
+  apiData.forms.forEach((form: any) => {
     allForms.push({
       dbName,
       formName: form['@name'],
@@ -756,7 +772,7 @@ function loadUnconfiguredForms(
   } catch (e) {}
 
   // Save Forms Data
-  setData(apiData.data.forms);
+  setData(apiData.forms);
   dispatch(setForms(dbName, allForms));
   dispatch(setCurrentForms(dbName, allForms));
 }
@@ -765,7 +781,9 @@ function loadConfiguredForms(
   configformsList: any[],
   allForms: any[],
   dbName: string,
-  apiData: AxiosResponse<any, any>,
+  apiData: {
+    forms: Array<any>,
+  },
   setData: React.Dispatch<React.SetStateAction<string[]>>,
   dispatch: Dispatch<any>
 ) {
@@ -782,7 +800,7 @@ function loadConfiguredForms(
       // and update our state
       // Add unconfigured forms
       let configformsNameList = configformsList.map((form) => form.formName);
-      apiData.data.forms.forEach((form: any) => {
+      apiData.forms.forEach((form: any) => {
         if (!configformsNameList.includes(form['@name']))
           allForms.push({
             dbName,
@@ -796,7 +814,7 @@ function loadConfiguredForms(
         a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1
       );
       // Save Forms Data
-      setData(apiData.data.forms);
+      setData(apiData.forms);
       dispatch(setForms(dbName, allForms));
       dispatch(setCurrentForms(dbName, allForms));
     })
