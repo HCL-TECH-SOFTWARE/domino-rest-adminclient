@@ -12,7 +12,6 @@ import Typography from '@mui/material/Typography';
 import ColumnDetails from './ColumnDetails';
 import { useDispatch } from 'react-redux';
 import { fetchViews, updateSchema } from '../../store/databases/action';
-import axios from 'axios';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../../store/account/action';
 import { useSelector } from 'react-redux';
@@ -507,21 +506,27 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
 
       try {
         const response = await apiRequestWithRetry(() =>
-          axios.get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
+          fetch(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
+            method: 'GET',
             headers: {
               Authorization: `Bearer ${getToken()}`,
-              "Content-Type": 'application/json'
-            }
+              "Content-Type": 'application/json',
+            },
           })
         );
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data.message))
+        }
   
-        const items = Object.keys(response.data);
+        const items = Object.keys(data);
         let fetchedColumnsBuffer: any[] = [];
         items.forEach((item: any) => {
           // skip items with '@' at the start of the key, it is metadata
           if (!(item[0] === '@')) {
             let newColumn = {
-              ...response.data[item],
+              ...data[item],
               name: item,
             };
             fetchedColumnsBuffer = [...fetchedColumnsBuffer, newColumn];
@@ -534,29 +539,6 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       } finally {
         dispatch(setLoading({ status: false }));
       }
-
-      // await axios
-      //   .get(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
-      //     headers: {
-      //       Authorization: `Bearer ${getToken()}`,
-      //       "Content-Type": 'application/json'
-      //     }
-      //   })
-      //   .then((res) => {
-      //     const items = Object.keys(res.data);
-      //     let fetchedColumnsBuffer: any[];
-      //     items.forEach((item: any) => {
-      //       // skip items with '@' at the start of the key, it is metadata
-      //       if (!(item[0] === '@')) {
-      //         let newColumn = {
-      //           ...res.data[item],
-      //           name: item,
-      //         };
-      //         fetchedColumnsBuffer = !!fetchedColumnsBuffer ? [...fetchedColumnsBuffer, newColumn] : [newColumn];
-      //         setFetchedColumns(fetchedColumnsBuffer);
-      //       }
-      //     });
-      //   });
 
       dispatch(setLoading({status: false}));
     }

@@ -14,7 +14,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import DelIcon from '@mui/icons-material/Delete';
 import PeopleIcon from '@mui/icons-material/Person';
 import AddIcon from '@mui/icons-material/Add';
-import axios from 'axios';
 import { AppState } from '../../store';
 import {
   addPeople,
@@ -237,35 +236,42 @@ const PeopleCRUD: React.FC = () => {
     // Fetch the current values
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+        fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       updateValues.personId = personId;
-      updateValues.firstName = response.data.FirstName;
-      updateValues.lastName = response.data.LastName;
-      updateValues.shortName = response.data.ShortName;
-      updateValues.password = response.data.HTTPPassword;
-      updateValues.companyName = response.data.CompanyName;
-      updateValues.phoneNumber = response.data.HomePhone;
-      updateValues.internetAddress = response.data.InternetAddress;
-      updateValues.mailAddress = response.data.MailAddress;
+      updateValues.firstName = data.FirstName;
+      updateValues.lastName = data.LastName;
+      updateValues.shortName = data.ShortName;
+      updateValues.password = data.HTTPPassword;
+      updateValues.companyName = data.CompanyName;
+      updateValues.phoneNumber = data.HomePhone;
+      updateValues.internetAddress = data.InternetAddress;
+      updateValues.mailAddress = data.MailAddress;
       formik.setValues(updateValues);
 
       // open drawer
       dispatch(toggleApplicationDrawer());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       // Use the Keep response error if it's available
       if (err.response && err.response.statusText) {
-        console.log(`Error in reading user: ${err.response.statusText}`);
+        console.log(`Error in reading user: ${error.statusText}`);
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error in reading user: ${err.message}`);
+        console.log(`Error in reading user: ${error.message}`);
       }
     }
   };
@@ -294,34 +300,41 @@ const PeopleCRUD: React.FC = () => {
     // Fetch the current values
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+        fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       updateValues.personId = personId;
-      updateValues.firstName = response.data.FirstName;
-      updateValues.lastName = response.data.LastName;
-      updateValues.shortName = response.data.ShortName;
-      updateValues.password = response.data.HTTPPassword;
-      updateValues.companyName = response.data.CompanyName;
-      updateValues.phoneNumber = response.data.HomePhone;
-      updateValues.internetAddress = response.data.InternetAddress;
-      updateValues.mailAddress = response.data.MailAddress;
+      updateValues.firstName = data.FirstName;
+      updateValues.lastName = data.LastName;
+      updateValues.shortName = data.ShortName;
+      updateValues.password = data.HTTPPassword;
+      updateValues.companyName = data.CompanyName;
+      updateValues.phoneNumber = data.HomePhone;
+      updateValues.internetAddress = data.InternetAddress;
+      updateValues.mailAddress = data.MailAddress;
       formik.setValues(updateValues);
       // open drawer
       dispatch(toggleApplicationDrawer());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error in viewing user: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error in viewing user: ${error.statusText}`);
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error in viewing user: ${err.message}`);
+        console.log(`Error in viewing user: ${error.message}`);
       }
     }
   };

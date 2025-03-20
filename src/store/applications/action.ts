@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import axios from 'axios';
 import {
   AppProp,
   GET_APPS,
@@ -38,17 +37,21 @@ export const fetchMyApps = () => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/admin/applications`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          }))
+        fetch(`${SETUP_KEEP_API_URL}/admin/applications`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json'
+          }
+        })
+      )
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data.message))
+      }
       const appsList: Array<AppProp> = [];
 
       // Set Application state
-      response.data.forEach((app: any) => {
+      data.forEach((app: any) => {
         appsList.push({
           appName: app.client_name,
           appDescription: app.description,
@@ -72,14 +75,14 @@ export const fetchMyApps = () => {
       dispatch(setPullApp(true));
     } catch (err: any) {
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
+      if (err) {
         dispatch(
-          toggleAlert(`Error Fetching Apps: ${err.response.statusText}`)
+          toggleAlert(`Error Fetching Apps: ${err}`)
         );
       }
       // Otherwise use the generic error
       else {
-        dispatch(toggleAlert(`Error Fetching Apps: ${err.message}`));
+        dispatch(toggleAlert(`Error Fetching Apps: ${err}`));
       }
     }
   };
@@ -133,31 +136,37 @@ export function updateApp(appData: any) {
     try {
       // Based on API verb, this is now PUT instead of patch
       const res = await apiRequestWithRetry(() =>
-        axios
-          .put(
-            `${SETUP_KEEP_API_URL}/admin/application/${appData.client_id}`,
-            { ...appData, isActive: appData.status },
-            {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          )
+        fetch(`${SETUP_KEEP_API_URL}/admin/application/${appData.client_id}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...appData,
+            isActive: appData.status,
+          }),
+        })
       )
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(JSON.stringify(data.message))
+      }
+
       const appReduxData: AppProp = {
-        appName: res.data.client_name,
-        appDescription: res.data.description,
-        appCallbackUrls: res.data.redirect_uris,
-        appContacts: res.data.contacts,
-        appId: res.data.client_id,
-        appIcon: res.data.logo_uri,
-        appScope: res.data.scope,
-        appHasSecret: res.data.hasSecret ? true : false,
-        appSecret: res.data.client_secret,
-        appStartPage: res.data.client_uri,
-        appStatus: res.data.status,
-        usePkce: res.data.token_endpoint_auth_method === 'none',
+        appName: data.client_name,
+        appDescription: data.description,
+        appCallbackUrls: data.redirect_uris,
+        appContacts: data.contacts,
+        appId: data.client_id,
+        appIcon: data.logo_uri,
+        appScope: data.scope,
+        appHasSecret: data.hasSecret ? true : false,
+        appSecret: data.client_secret,
+        appStartPage: data.client_uri,
+        appStatus: data.status,
+        usePkce: data.token_endpoint_auth_method === 'none',
       };
       dispatch({
         type: UPDATE_APP,
@@ -167,14 +176,14 @@ export function updateApp(appData: any) {
       dispatch(toggleAlert(`${appData.client_name} has been updated!`));
     } catch (err: any) {
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
+      if (err) {
         dispatch(
-          toggleAlert(`Error Updating App: ${err.response.statusText}`)
+          toggleAlert(`Error Updating App: ${err}`)
         );
       }
       // Otherwise use the generic error
       else {
-        dispatch(toggleAlert(`Error Updating App: ${err.message}`));
+        dispatch(toggleAlert(`Error Updating App: ${err}`));
       }
     }
   };
@@ -184,30 +193,32 @@ export function getSingleApp(appId: string) {
   return async (dispatch: Dispatch) => {
     try {
       const res = await apiRequestWithRetry(() =>
-        axios
-          .get(
-            `${SETUP_KEEP_API_URL}/admin/application/${appId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          )
+        fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          }
+        })
       )
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(JSON.stringify(data.message))
+      }
+
       const appReduxData: AppProp = {
-        appName: res.data.client_name,
-        appDescription: res.data.description,
-        appCallbackUrls: res.data.redirect_uris,
-        appContacts: res.data.contacts,
-        appId: res.data.client_id,
-        appIcon: res.data.logo_uri,
-        appScope: res.data.scope,
-        appHasSecret: res.data.hasSecret ? true : false,
-        appSecret: res.data.client_secret,
-        appStartPage: res.data.client_uri,
-        appStatus: res.data.status,
-        usePkce: res.data.token_endpoint_auth_method === 'none',
+        appName: data.client_name,
+        appDescription: data.description,
+        appCallbackUrls: data.redirect_uris,
+        appContacts: data.contacts,
+        appId: data.client_id,
+        appIcon: data.logo_uri,
+        appScope: data.scope,
+        appHasSecret: data.hasSecret ? true : false,
+        appSecret: data.client_secret,
+        appStartPage: data.client_uri,
+        appStatus: data.status,
+        usePkce: data.token_endpoint_auth_method === 'none',
       };
       dispatch({
         type: UPDATE_APP,
@@ -215,14 +226,14 @@ export function getSingleApp(appId: string) {
       });
     } catch (err: any) {
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
+      if (err) {
         dispatch(
-          toggleAlert(`Error Updating App: ${err.response.statusText}`)
+          toggleAlert(`Error Updating App: ${err}`)
         );
       }
       // Otherwise use the generic error
       else {
-        dispatch(toggleAlert(`Error Updating App: ${err.message}`));
+        dispatch(toggleAlert(`Error Updating App: ${err}`));
       }
     }
   };
@@ -243,15 +254,21 @@ export function deleteApplication(appId: string) {
     dispatch(executing(true));
 
     try {
-      await apiRequestWithRetry(() =>
-        axios
-          .delete(`${SETUP_KEEP_API_URL}/admin/application/${appId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          },
+        })
       )
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data.message))
+      }
+
       dispatch({
         type: DELETE_APP,
         payload: appId
@@ -262,14 +279,14 @@ export function deleteApplication(appId: string) {
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
+      if (err) {
         dispatch(
-          toggleAlert(`Error Deleting App: ${err.response.statusText}`)
+          toggleAlert(`Error Deleting App: ${err}`)
         );
       }
       // Otherwise use the generic error
       else {
-        dispatch(toggleAlert(`Error Deleting App: ${err.message}`));
+        dispatch(toggleAlert(`Error Deleting App: ${err}`));
       }
     }
   };
@@ -283,27 +300,34 @@ export function addApplication(appData: any) {
     dispatch(executing(true));
     try {
       const res = await apiRequestWithRetry(() =>
-        axios
-          .post(`${SETUP_KEEP_API_URL}/admin/application`, appData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/admin/application`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(appData),
+        })
       )
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(JSON.stringify(data.message))
+      }
+
       const appReduxData: AppProp = {
-        appName: res.data.client_name,
-        appDescription: res.data.description,
-        appCallbackUrls: res.data.redirect_uris,
-        appContacts: res.data.contacts,
-        appId: res.data.client_id,
-        appIcon: res.data.logo_uri,
-        appScope: res.data.scope,
-        appHasSecret: res.data.hasSecret,
-        appSecret: res.data.client_secret,
-        appStartPage: res.data.client_uri,
-        appStatus: res.data.status,
-        usePkce: res.data.token_endpoint_auth_method === 'none',
+        appName: data.client_name,
+        appDescription: data.description,
+        appCallbackUrls: data.redirect_uris,
+        appContacts: data.contacts,
+        appId: data.client_id,
+        appIcon: data.logo_uri,
+        appScope: data.scope,
+        appHasSecret: data.hasSecret,
+        appSecret: data.client_secret,
+        appStartPage: data.client_uri,
+        appStatus: data.status,
+        usePkce: data.token_endpoint_auth_method === 'none',
       };
       dispatch({
         type: ADD_APP,
@@ -314,11 +338,11 @@ export function addApplication(appData: any) {
     } catch (err: any) {
       // Use the Keep response error if it's available
       if (err.response && err.response.statusText) {
-        dispatch(toggleAlert(`Error adding App: ${err.response.statusText}`));
+        dispatch(toggleAlert(`Error adding App: ${err}`));
       }
       // Otherwise use the generic error
       else {
-        dispatch(toggleAlert(`Error adding App: ${err.message}`));
+        dispatch(toggleAlert(`Error adding App: ${err}`));
       }
     }
   };
@@ -369,34 +393,36 @@ export const generateSecret = (
 
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .post(
-            `${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`,
-            {
-              status: appStatus
-              //TODO: warn if secret exists ask for confirmation
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${getToken()}`
-              }
-            }
-          )
+        fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          // TODO: warn if secret exists ask for confirmation
+          body: JSON.stringify({ status: appStatus })
+        })
       )
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
       setGenerating(false);
-      setAppSecret(response.data.client_secret);
-    } catch (err: any) {
-      // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
+      setAppSecret(data.client_secret);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+      if (err) {
         dispatch(
           toggleAlert(
-            `Error Generating App Secret: ${err.response.statusText}`
+            `Error Generating App Secret: ${error.message}`
           )
         );
+        console.error(err)
       }
       // Otherwise use the generic error
       else {
-        dispatch(toggleAlert(`Error Generating App Secret: ${err.message}`));
+        dispatch(toggleAlert(`Error Generating App Secret: ${error.message}`));
       }
     }
   }

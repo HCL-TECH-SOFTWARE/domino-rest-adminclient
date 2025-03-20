@@ -14,7 +14,6 @@ import SecurityIcon from '@mui/icons-material/Security';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormikProps } from 'formik';
 import Tooltip from '@mui/material/Tooltip';
-import axios from 'axios';
 import styled from 'styled-components';
 import Button from '@mui/material/Button';
 import { AppProp, AppFormProp } from '../../../store/applications/types';
@@ -133,23 +132,18 @@ const AppCard: React.FC<AppCardProps> = ({
     
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .post(
-            `${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`,
-            {
-              status: status
-              //TODO: warn if secret exists ask for confirmation
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${getToken()}`
-              }
-            }
-          )
+        fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`
+          },
+          body: JSON.stringify({ status: status })
+        })
       )
+      const data = await response.json()
 
       setGenerating(false);
-      setAppSecret(response.data.client_secret);
+      setAppSecret(data.client_secret);
     } catch (err: any) {
       if (err.response && err.response.statusText) {
         dispatch(
