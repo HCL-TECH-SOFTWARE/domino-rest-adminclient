@@ -129,7 +129,6 @@ const AppCard: React.FC<AppCardProps> = ({
 
   const generate = async (appId: string, status: string) => {
     setGenerating(true);
-    console.log("generating secret")
     
     try {
       const response = await apiRequestWithRetry(() =>

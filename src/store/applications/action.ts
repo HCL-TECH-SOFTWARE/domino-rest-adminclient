@@ -45,7 +45,7 @@ export const fetchMyApps = () => {
         })
       )
       const data = await response.json()
-      if (response.status !== 200) {
+      if (!response.ok) {
         throw new Error(JSON.stringify(data.message))
       }
       const appsList: Array<AppProp> = [];
@@ -150,7 +150,7 @@ export function updateApp(appData: any) {
       )
       const data = await res.json()
 
-      if (res.status !== 200) {
+      if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
       }
 
@@ -202,7 +202,7 @@ export function getSingleApp(appId: string) {
       )
       const data = await res.json()
 
-      if (res.status !== 200) {
+      if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
       }
 
@@ -265,7 +265,7 @@ export function deleteApplication(appId: string) {
       )
       const data = await response.json()
       
-      if (response.status !== 200) {
+      if (!response.ok) {
         throw new Error(JSON.stringify(data.message))
       }
 
@@ -298,7 +298,6 @@ export function deleteApplication(appId: string) {
 export function addApplication(appData: any) {
   return async (dispatch: Dispatch) => {
     dispatch(executing(true));
-    console.log("adding application")
     try {
       const res = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application`, {
@@ -312,7 +311,7 @@ export function addApplication(appData: any) {
       )
       const data = await res.json()
 
-      if (res.status !== 200) {
+      if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
       }
 
@@ -405,23 +404,25 @@ export const generateSecret = (
         })
       )
       const data = await response.json()
-      if (response.status !== 200) {
-        throw new Error(JSON.stringify(data.message))
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
       }
       setGenerating(false);
       setAppSecret(data.client_secret);
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       if (err) {
         dispatch(
           toggleAlert(
-            `Error Generating App Secret: ${err}`
+            `Error Generating App Secret: ${error.message}`
           )
         );
         console.error(err)
       }
       // Otherwise use the generic error
       else {
-        dispatch(toggleAlert(`Error Generating App Secret: ${err}`));
+        dispatch(toggleAlert(`Error Generating App Secret: ${error.message}`));
       }
     }
   }

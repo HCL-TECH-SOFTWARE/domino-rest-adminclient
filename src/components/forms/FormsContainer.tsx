@@ -224,7 +224,7 @@ const FormsContainer = () => {
       );
       const data = await response.json()
 
-      if (response.status !== 200) {
+      if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }
 
@@ -287,7 +287,7 @@ const FormsContainer = () => {
       );
       const apiData = await response.json()
 
-      if (response.status !== 200) {
+      if (!response.ok) {
         throw new Error(JSON.stringify(apiData))
       }
 
@@ -307,7 +307,7 @@ const FormsContainer = () => {
           )
           const data = await response.json()
 
-          if (response.status !== 200) {
+          if (!response.ok) {
             throw new Error(JSON.stringify(apiData))
           }
 

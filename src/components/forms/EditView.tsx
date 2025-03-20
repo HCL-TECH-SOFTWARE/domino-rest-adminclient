@@ -516,7 +516,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         );
         const data = await response.json()
 
-        if (response.status !== 200) {
+        if (!response.ok) {
           throw new Error(JSON.stringify(data.message))
         }
   
