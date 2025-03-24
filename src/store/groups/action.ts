@@ -35,16 +35,21 @@ export function fetchGroups() {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/groups?documents=true`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json',
-            },
-          })
+        fetch(`${PIM_KEEP_API_URL}/public/groups?documents=true`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Use the data to build a list of rows for display
-      const groupRows = buildRows(response.data);
+      const groupRows = buildRows(data);
 
       // Upate Groups state
       dispatch(saveGroupsList(groupRows));

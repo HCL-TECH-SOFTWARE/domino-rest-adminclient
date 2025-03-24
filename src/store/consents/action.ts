@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import axios from 'axios';
 import { BASE_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { DELETE_CONSENT, INIT_STATE, SET_CONSENTS, TOGGLE_DELETE_CONSENT } from './types';
@@ -16,40 +15,40 @@ export function getConsents() {
   return async (dispatch: Dispatch) => {
     // toggle on consents loading flag
     dispatch(toggleConsentsLoading());
-    await axios
-      .get(`${BASE_KEEP_API_URL}/consents`, {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json'
-        }
-      })
-      .then((res) => {
-        dispatch({
-          type: SET_CONSENTS,
-          payload: res.data,
-        });
-        // toggle off consents loading flag
-        dispatch(toggleConsentsLoading());
-      });
+    const response = await fetch(`${BASE_KEEP_API_URL}/consents`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        Accept: 'application/json',
+      },
+    })
+    const data = await response.json()
+
+    dispatch({
+      type: SET_CONSENTS,
+      payload: data,
+    });
+    // toggle off consents loading flag
+    dispatch(toggleConsentsLoading());
   }
 }
 
-export function deleteConsent (unid: string) {
+export function deleteConsent (unid: string, successCallback: () => void) {
   return async (dispatch: Dispatch) => {
-    await axios
-      .delete(`${BASE_KEEP_API_URL}/consent/revoke/${encodeURIComponent(unid)}`, {
+    const response = await
+      fetch(`${BASE_KEEP_API_URL}/consent/revoke/${encodeURIComponent(unid)}`, {
+        method: 'DELETE',
         headers: {
           Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json'
-        }
+          Accept: 'application/json',
+        },
       })
-      .then((res) => {
-        dispatch({
-          type: DELETE_CONSENT,
-          payload: res.data,
-        });
-        dispatch(toggleAlert(`Successfully deleted consent for client ID ${unid}`));
-      });
+    const data = await response.json()
+    dispatch({
+      type: DELETE_CONSENT,
+      payload: data,
+    });
+    successCallback()
+    dispatch(toggleAlert(`Successfully deleted consent for client ID ${unid}`));
   }
 }
 

@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import axios from 'axios';
 import {
   Credentials,
   LOGIN,
@@ -88,30 +87,27 @@ export function renewToken() {
     // Old JWT Token
     const oldToken = JSON.parse(token);
 
-    axios
-      .post(
-        `${BASE_KEEP_API_URL}/auth/extend`,
-        localStorage.getItem('user_token'),
-        {
-          headers: {
-            Authorization: `Bearer ${oldToken.bearer}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-      .then((response) => {
-        const newToken = response.data;
+    const response = await
+      fetch(`${BASE_KEEP_API_URL}/auth/extend`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${oldToken.bearer}`,
+          'Content-Type': 'application/json'
+        },
+        body: localStorage.getItem('user_token'),
+      })
+    const data = await response.json()
+    const newToken = data;
 
-        // Set token to account store
-        dispatch({
-          type: RENEW_TOKEN,
-          payload: newToken.bearer
-        });
+    // Set token to account store
+    dispatch({
+      type: RENEW_TOKEN,
+      payload: newToken.bearer
+    });
 
-        // Apply new token on local storage
-        localStorage.setItem('user_token', JSON.stringify(newToken));
-        emitTokenEvent(newToken)
-      });
+    // Apply new token on local storage
+    localStorage.setItem('user_token', JSON.stringify(newToken));
+    emitTokenEvent(newToken)
   };
 }
 
@@ -119,28 +115,30 @@ export function renewToken() {
 // Add Token To Local Storage
 // Redirect to Main Page
 export function login(credentials: Credentials, successCallback: () => void) {
-  const instance = axios.create();
   return async (dispatch: Dispatch) => {
-    instance
-      .post(`${BASE_KEEP_API_URL}/auth`, credentials, {
-        withCredentials: false
+    const response = await
+      fetch(`${BASE_KEEP_API_URL}/auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
       })
-      .then((response) => {
-        const jwtData = response.data;
-        localStorage.setItem('user_token', JSON.stringify(jwtData));
-        emitTokenEvent(jwtData)
-        dispatch({
-          type: LOGIN
-        });
-        dispatch(setToken(jwtData));
-        delete axios.defaults.headers.common.Authorization;
-        successCallback()
-      })
-      .catch((err) => {
-        // delete axios.defaults.headers.common['content-type'];
-        dispatch(setLoginError(true));
-        return err;
+    const data = await response.json()
+
+    if (response.ok) {
+      const jwtData = data;
+      localStorage.setItem('user_token', JSON.stringify(jwtData));
+      emitTokenEvent(jwtData)
+      dispatch({
+        type: LOGIN
       });
+      dispatch(setToken(jwtData));
+      successCallback()
+    } else {
+      dispatch(setLoginError(true));
+      return data;
+    }
   };
 }
 
@@ -150,20 +148,25 @@ export function logout() {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .post(
-            `${BASE_KEEP_API_URL}/auth/logout?dataSource=keepconfig`,
-            { logout: 'Yes' },
-            {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          )
+        fetch(`${BASE_KEEP_API_URL}/auth/logout?dataSource=keepconfig`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ logout: 'Yes' }),
+        })
       )
-      return response;
-    } catch (error) {
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
+      return data;
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       console.error("Error calling logout API:", error)
     } finally {
       dispatch(removeAuth());
@@ -195,26 +198,31 @@ export function showPages() {
     }
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`/adminui.json`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`/adminui.json`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(response))
+      }
+
       // If we have a configuration setting then use it
-      if (response.data.apps != null) {
-        pageList.apps = response.data.apps;
+      if (data.apps != null) {
+        pageList.apps = data.apps;
       }
-      if (response.data.databases != null) {
-        pageList.databases = response.data.databases;
+      if (data.databases != null) {
+        pageList.databases = data.databases;
       }
-      if (response.data.groups != null) {
-        pageList.groups = response.data.groups;
+      if (data.groups != null) {
+        pageList.groups = data.groups;
       }
-      if (response.data.users != null) {
-        pageList.users = response.data.users;
+      if (data.users != null) {
+        pageList.users = data.users;
       }
 
       // Save page state
@@ -222,7 +230,10 @@ export function showPages() {
         type: NAVITEMS,
         payload: pageList
       });
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // If no configruation settings were found, use the default
       dispatch({
         type: NAVITEMS,
@@ -230,15 +241,15 @@ export function showPages() {
       });
 
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
+      if (err) {
         console.log(
-          `Error reading page configuration: ${err.response.statusText}`
+          `Error reading page configuration: ${error.statusText}`
         );
       }
 
       // Otherwise use the generic error
       else {
-        console.log(`Error reading page configuration: ${err.message}`);
+        console.log(`Error reading page configuration: ${error.message}`);
       }
     }
   };
