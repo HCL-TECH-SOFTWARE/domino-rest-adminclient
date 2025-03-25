@@ -114,15 +114,21 @@ export function deleteScope(apiName: string) {
     dispatch(setApiLoading(true));
     try {
       // NEED UPDATE DEL
-      await apiRequestWithRetry(() =>
-        axios
-          .delete(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch({
         type: DELETE_SCOPE,
         payload: apiName
@@ -131,11 +137,12 @@ export function deleteScope(apiName: string) {
       dispatch(toggleDeleteDialog());
       dispatch(toggleDrawer());
       dispatch(toggleAlert(`${apiName} has been successfully deleted.`));
-    } catch (error) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       dispatch(setApiLoading(false));
       dispatch(toggleDeleteDialog());
-      const errorMsg = getErrorMsg(error);
-      dispatch(toggleAlert(`Delete scope failed! ${errorMsg}`));
+      dispatch(toggleAlert(`Delete scope failed! ${error.message}`));
     }
   };
 }
@@ -148,15 +155,21 @@ export function deleteSchema(dbData: any) {
     if (nsfPath && schemaName) {
       try {
         try {
-          await apiRequestWithRetry(() =>
-            axios
-              .delete(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              })
+          const response = await apiRequestWithRetry(() =>
+            fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+              },
+            })
           )
+          const data = await response.json()
+
+          if (!response.ok) {
+            throw new Error(JSON.stringify(data))
+          }
+
           dispatch({
             type: DELETE_SCHEMA,
             payload: {
@@ -167,11 +180,13 @@ export function deleteSchema(dbData: any) {
           dispatch(toggleDeleteDialog());
           dispatch(setApiLoading(false));
           dispatch(toggleAlert(`${dbData.schemaName} has been successfully deleted.`));
-        } catch (error) {
+        } catch (e: any) {
+          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+          const error = JSON.parse(err)
+          
           dispatch(setApiLoading(false));
           dispatch(toggleDeleteDialog());
-          const errorMsg = getErrorMsg(error);
-          dispatch(toggleAlert(`Delete schema failed! ${errorMsg}`));
+          dispatch(toggleAlert(`Delete schema failed! ${error.message}`));
         }
       } catch (err: any) {
         dispatch(setApiLoading(false));
@@ -199,15 +214,20 @@ export const setPullScope = (scopePull: boolean) => {
 export const fetchScope = async (scopeData: any) => {
   const { apiName } = scopeData;
   try {
-    const scopes = await apiRequestWithRetry(() =>
-      axios
-        .get(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          }
-        })
+    const response = await apiRequestWithRetry(() =>
+      fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json',
+        },
+      })
     )
+    const scopes = await response.json()
+
+    if (!response.ok) {
+      throw new Error(JSON.stringify(scopes))
+    }
+
     const { schemaName, nsfPath, isActive, icon, iconName, description, formulaEngine } = scopes;
     return {
       apiName: apiName,
@@ -222,8 +242,10 @@ export const fetchScope = async (scopeData: any) => {
       isModeFetch: false,
       modes: []
     };
-  } catch (error) {
-    console.error(`Error fetching scope ${apiName}:`, error);
+  } catch (e: any) {
+    const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+    const error = JSON.parse(err)
+    console.error(`Error fetching scope ${apiName}:`, error.message);
   }
 };
 
@@ -239,21 +261,29 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
-      setSchemaData(response.data);
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
+      setSchemaData(data);
       dispatch({
         type: SET_API_LOADING,
         payload: false
       });
-    } catch (err) {
-      console.log(err);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
+      console.log(error.message);
     }
   };
 };
@@ -445,22 +475,21 @@ const sortAndRemoveDupSchemas = (origSchemas: Array<any>) => {
 
 export const fetchScopes = () => {
   return async (dispatch: Dispatch) => {
-    const payload = {
-      checkAllNsf: true,
-      onlyConfigured: false
-    };
-
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/admin/scopes?adminInfo=true`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/admin/scopes?adminInfo=true`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
-      const scopes = response.data;
+      const scopes = await response.json();
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(scopes))
+      }
+
       var pulled = false;
       if (scopes && scopes.length > 0) {
         let simpleSchemas = scopes
@@ -498,9 +527,11 @@ export const fetchScopes = () => {
       } else {
         dispatch(setPullScope(true));
       }
-    } catch (err: any) {
-      if (err.response && err.response.status === 401) throw err;
-        dispatch(toggleErrorDialog(`${err.code}: ${err.message}`));
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+      if (err) throw err;
+        dispatch(toggleErrorDialog(`${error.statusCode}: ${error.message}`));
     }
   };
 };
@@ -577,18 +608,23 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
       // Encode the form name
       const encodedFormName = fullEncode(formName);
       const res = await apiRequestWithRetry(() =>
-        axios
-        .get(`${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
+            Accept: 'application/json',
+          },
         })
       )
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Add uuids for React
       const transformFields = [];
       // Set default value for fields otherwise those field cannot be saved properly once added
-      for (const key in res.data as any) {
+      for (const key in data as any) {
         if (key.startsWith('@')) {
           let type = 'string';
           let isMultiValue = false;
@@ -607,7 +643,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
             kind: "",
           });
         } else {
-          let field = res.data[key];
+          let field = data[key];
           let format = key === '$FILES' ? 'string' : convertDesignType2Format(field.type, field.attributes);
           let allowMultiValues = field.allowmultivalues;
           let type = convert2FieldType(format, allowMultiValues);
@@ -644,9 +680,11 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
           status: false
         }
       });
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
       console.log(err);
-      dispatch(toggleErrorDialog(`${err.code}: ${err.message}`));
+      dispatch(toggleErrorDialog(`${error.statusCode}: ${error.message}`));
     }
   };
 };
@@ -661,18 +699,23 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/designlist/views?nsfPath=${nsfPath}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/designlist/views?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch(
         setViews(
           dbName,
-          response.data.views.map((view: any) => {
+          data.views.map((view: any) => {
             let aliasArray: Array<any> = [];
             if (view['@alias'] != null && view['@alias'].length > 0) {
               if (Array.isArray(view['@alias'])) {
@@ -691,8 +734,10 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
           })
         ) as any
       );
-    } catch (err) {
-      console.log(err);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+      console.log(error.message);
     }
   };
 };
@@ -708,18 +753,23 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch(
         setFolders(
           dbName,
-          response.data.folders.map((folder: any) => {
+          data.folders.map((folder: any) => {
             let aliasArray: Array<any> = [];
             if (folder['@alias'] != null && folder['@alias'].length > 0) {
               if (Array.isArray(folder['@alias'])) {
@@ -737,8 +787,10 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
           })
         ) as any
       );
-    } catch (err) {
-      console.log(err);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+      console.log("Error fetching folders:", error)
     }
   };
 };
@@ -754,18 +806,23 @@ export const fetchAgents = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${nsfPath}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch(
         setAgents(
           dbName,
-          response.data.agents.map((agent: any) => {
+          data.agents.map((agent: any) => {
             let aliasArray: Array<any> = [];
             if (agent['@alias'] != null && agent['@alias'].length > 0) {
               if (Array.isArray(agent['@alias'])) {
@@ -782,8 +839,10 @@ export const fetchAgents = (dbName: string, nsfPath: string) => {
           })
         ) as any
       );
-    } catch (err) {
-      console.log(err);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+      console.log("Error fetching agents:", error);
     }
   };
 };
@@ -796,14 +855,21 @@ export const quickConfig = (dbData: any) => {
     try {
       dispatch(setApiLoading(true));
       const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${SETUP_KEEP_API_URL}/admin/quickconfig`, dbData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/admin/quickconfig`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(dbData),
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       const propertiesToOmit = [
         '@noteid',
         '@created',
@@ -816,9 +882,9 @@ export const quickConfig = (dbData: any) => {
         '$UpdatedBy'
       ];
 
-      const keepData = Object.keys(response.data).reduce((acc, key) => {
+      const keepData = Object.keys(data).reduce((acc, key) => {
         if (!propertiesToOmit.includes(key)) {
-          acc[key] = response.data[key];
+          acc[key] = data[key];
         }
         return acc;
       }, {} as { [key: string]: any });
@@ -908,14 +974,13 @@ export const quickConfig = (dbData: any) => {
 
       dispatch(setApiLoading(false));
       dispatch(clearDBError());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the response error if it's available
-      if (err.response && err.response.statusText) {
-        dispatch(setDBError(err.response.statusText));
-      } else if (err.response && err.response.data && err.response.data.message) {
-        dispatch(setDBError(err.response.data.message));
-      } else {
-        dispatch(setDBError(err.message));
+      if (err) {
+        dispatch(setDBError(error.message));
       }
     }
   };
@@ -929,15 +994,21 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
     try {
       dispatch(setApiLoading(true));
       const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, dbData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(dbData),
+        })
       )
-      const { data } = response;
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch({
         type: ADD_SCHEMA,
         payload: data
@@ -963,13 +1034,23 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
 
       dispatch(setApiLoading(false));
       dispatch(clearDBError());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the response error if it's available
-      if (err.response && err.response.statusText) {
-        dispatch(setDBError(err.response.statusText));
+      if (error) {
+        console.log(error)
+        dispatch(setDBError(error.message));
       } else {
-        dispatch(setDBError(err.message));
+        dispatch(setDBError(error));
       }
+
+      dispatch({
+        type: CLEAR_SCHEMA_FORM,
+        payload: false,
+      });
+      dispatch(toggleAlert(`Unable to create schema ${dbData.schemaName}!`))
     }
   };
 };
@@ -987,15 +1068,21 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
       });
       try {
         const response = await apiRequestWithRetry(() =>
-          axios
-            .post(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, schemaData, {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-              }
-            })
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(schemaData),
+          })
         )
-        const { data } = response;
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
+
         if (!!setSchemaData) {
           setSchemaData(data);
         }
@@ -1008,9 +1095,11 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         });
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(`Schema has been successfully updated.`));
-      } catch (error) {
-        const errorMsg = getErrorMsg(error);
-        dispatch(toggleAlert(`Update schema failed! ${errorMsg}`));
+      } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+        
+        dispatch(toggleAlert(`Update schema failed! ${error.message}`));
         dispatch({
           type: UPDATE_ERROR,
           payload: true
@@ -1028,7 +1117,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
 };
 
 function loadUnconfiguredForms(
-  apiData: AxiosResponse<any, any>,
+  apiData: any,
   allForms: any[],
   dbName: string,
   setData: React.Dispatch<React.SetStateAction<string[]>>,
@@ -1049,7 +1138,7 @@ function loadUnconfiguredForms(
   } catch (e) {}
 
   // Save Forms Data
-  setData(apiData.data.forms);
+  setData(apiData.forms);
   dispatch(setForms(dbName, allForms));
   dispatch(setCurrentForms(dbName, allForms));
 }
@@ -1058,7 +1147,7 @@ function loadConfiguredForms(
   configformsList: any[],
   allForms: any[],
   dbName: string,
-  apiData: AxiosResponse<any, any>,
+  apiData: any,
   setData: React.Dispatch<React.SetStateAction<string[]>>,
   dispatch: Dispatch<any>
 ) {
@@ -1075,7 +1164,7 @@ function loadConfiguredForms(
       // and update our state
       // Add unconfigured forms
       let configformsNameList = configformsList.map((form) => form.formName);
-      apiData.data.forms.forEach((form: any) => {
+      apiData.forms.forEach((form: any) => {
         if (!configformsNameList.includes(form['@name']))
           allForms.push({
             dbName,
@@ -1087,7 +1176,7 @@ function loadConfiguredForms(
       // Sort the form names alphabetically
       allForms.sort((a, b) => (a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1));
       // Save Forms Data
-      setData(apiData.data.forms);
+      setData(apiData.forms);
       dispatch(setForms(dbName, allForms));
       dispatch(setCurrentForms(dbName, allForms));
     })
@@ -1157,48 +1246,62 @@ export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispat
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const apiData = await apiRequestWithRetry(() =>
-        axios.get(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
+            Accept: 'application/json',
+          },
         })
       )
-      if (apiData) {
-        dispatch(addNsfDesign(nsfPath, apiData.data));
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      } else {
+        dispatch(addNsfDesign(nsfPath, data));
 
         // Get list of configured forms
         try {
-          const response = await apiRequestWithRetry(() =>
-            axios
-              .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              })
+          const res = await apiRequestWithRetry(() =>
+            fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+              },
+            })
           )
+          const configuredForms = await res.json()
+
+          if (!res.ok) {
+            throw new Error(JSON.stringify(configuredForms))
+          }
+
           // Loop through configured forms and fetch their modes
-          configformsList = response.data.forms;
+          configformsList = configuredForms.forms;
           if (configformsList != null && configformsList.length > 0) {
-            loadConfiguredForms(configformsList, allForms, dbName, apiData, setData, dispatch);
+            loadConfiguredForms(configformsList, allForms, dbName, data, setData, dispatch);
           } else {
             // Add unconfigured forms
-            loadUnconfiguredForms(apiData, allForms, dbName, setData, dispatch);
+            loadUnconfiguredForms(data, allForms, dbName, setData, dispatch);
           }
-          setActiveViews(dbName, response.data.views);
-          setActiveAgents(dbName, response.data.agents);
-        } catch (error) {
-          console.error("Error fetching list of configured forms:", error)
+          setActiveViews(dbName, data.views);
+          setActiveAgents(dbName, data.agents);
+        } catch (e: any) {
+          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+          const error = JSON.parse(err)
+          console.error("Error fetching list of configured forms:", error.message)
         }
       }
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the response error if it's available
-      if (err.response && err.response.statusText) {
-        dispatch(setDBError(err.response.statusText));
+      if (err) {
+        dispatch(setDBError(error.message));
       } else {
-        dispatch(setDBError(err.message));
+        dispatch(setDBError(error));
       }
     }
   };
@@ -1232,21 +1335,23 @@ const updateForms = (
       dispatch(setApiLoading(true));
       try {
         const response = await apiRequestWithRetry(() =>
-          axios
-            .post(
-              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-              newSchemaData,
-              {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newSchemaData),
+          })
         )
-        const { data } = response;
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
+
         setSchemaData(data);
-        configformsList = response.data.forms.map((form: any) => {
+        configformsList = data.forms.map((form: any) => {
           return { ...form, dbName };
         });
 
@@ -1261,9 +1366,11 @@ const updateForms = (
         );
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(successMsg));
-      } catch (error) {
-        const errorMsg = getErrorMsg(error);
-        dispatch(toggleAlert(`Update forms failed! ${errorMsg}`));
+      } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+
+        dispatch(toggleAlert(`Update forms failed! ${error.message}`));
       }
       dispatch(clearDBError());
       if (successCallback) {
@@ -1366,19 +1473,21 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
       dispatch(setApiLoading(true));
       try {
         let response = await apiRequestWithRetry(() =>
-          axios
-            .post(
-              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-              newSchemaData,
-              {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newSchemaData),
+          })
         )
-        const { data } = response;
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
+
         dispatch(toggleAlert(`Views have been successfully saved.`));
         setSchemaData({
           ...data,
@@ -1390,9 +1499,11 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
           nsfPath: newSchemaData.nsfPath,
           schemaName: newSchemaData.schemaName
         };
-      } catch (error) {
-        const errorMsg = getErrorMsg(error);
-        dispatch(toggleAlert(`Update views failed! ${errorMsg}`));
+      } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+
+        dispatch(toggleAlert(`Update views failed! ${error.message}`));
         dispatch({
           type: VIEWS_ERROR,
           payload: true
@@ -1658,25 +1769,28 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
       dispatch(setApiLoading(true));
       try {
         const response = await apiRequestWithRetry(() =>
-          axios
-            .post(
-              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-              newSchemaData,
-              {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newSchemaData),
+          })
         )
-        const { data } = response;
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
 
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(`Agents have been successfully saved.`));
-      } catch (error) {
-        const errorMsg = getErrorMsg(error);
-        dispatch(toggleAlert(`Update agents failed! ${errorMsg}`));
+      } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+
+        dispatch(toggleAlert(`Update agents failed! ${error.message}`));
         dispatch({
           type: AGENTS_ERROR,
           payload: true
@@ -1752,19 +1866,20 @@ export const updateFormMode = (
       dispatch(setApiLoading(true));
       try {
         const response = await apiRequestWithRetry(() =>
-          axios
-            .post(
-              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-              newSchemaData,
-              {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newSchemaData),
+          })
         )
-        const { data } = response;
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
 
         if (formIdx !== -1) {
           setSchemaData(data);
@@ -1784,12 +1899,15 @@ export const updateFormMode = (
         dispatch(toggleAlert(`Update form mode failed! ${errorMsg}`));
       }
       dispatch(clearDBError());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the response error if it's available
-      if (err.response && err.response.statusText) {
-        dispatch(setDBError(err.response.statusText));
+      if (err) {
+        dispatch(setDBError(error.message));
       } else {
-        dispatch(setDBError(err.message));
+        dispatch(setDBError(error));
       }
     }
   };
@@ -1834,29 +1952,33 @@ export const deleteFormMode = (
       dispatch(setApiLoading(true));
       try {
         const response = await apiRequestWithRetry(() => 
-          axios
-            .post(
-              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-              newSchemaData,
-              {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newSchemaData),
+          })
         )
-        const { data } = response;
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
+
         setSchemaData(data);
 
         dispatch(setApiLoading(false));
         dispatch(toggleDeleteDialog());
         dispatch(toggleAlert(`${formModeName} mode has been deleted!`));
-      } catch (error) {
+      } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+
         dispatch(setApiLoading(false));
         dispatch(toggleDeleteDialog());
-        const errorMsg = getErrorMsg(error);
-        dispatch(toggleAlert(`Delete form mode failed! ${errorMsg}`));
+        dispatch(toggleAlert(`Delete form mode failed! ${error.message}`));
       }
       dispatch(clearDBError());
     } catch (err: any) {
@@ -1897,21 +2019,24 @@ export const deleteForm = (
       dispatch(setApiLoading(true));
       try {
         const response = await apiRequestWithRetry(() =>
-          axios
-            .post(
-              `${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`,
-              newSchemaData,
-              {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newSchemaData),
+          })
         )
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
+
         if (!!setSchemaData) {
           setSchemaData({
-            ...response.data
+            ...data,
           });
           if (customForm) {
             dispatch({
@@ -1926,10 +2051,12 @@ export const deleteForm = (
         dispatch(setApiLoading(false));
 
         dispatch(unConfigForm(newSchemaData.schemaName, formName));
-      } catch (error) {
+      } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+
         dispatch(setApiLoading(false));
-        const errorMsg = getErrorMsg(error);
-        dispatch(toggleAlert(`Delete form failed! ${errorMsg}`));
+        dispatch(toggleAlert(`Delete form failed! ${error.message}`));
       }
     } catch (err: any) {
       // Use the response error if it's available
