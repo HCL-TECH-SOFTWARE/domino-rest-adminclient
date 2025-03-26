@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import axios, { AxiosResponse } from 'axios';
 import { v4 as uuid } from 'uuid';
 import {
   Database,
@@ -2079,14 +2078,21 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
       dispatch(clearDBError());
       try {
         const response = await apiRequestWithRetry(() =>
-          axios
-            .post(`${SETUP_KEEP_API_URL}/admin/scope`, dbData, {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-              }
-            })
+          fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dbData),
+          })
         )
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(JSON.stringify(data))
+        }
+
         const omitKeys = [
           '@noteid',
           '@created',
@@ -2098,9 +2104,9 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
           '@etag',
           '$UpdatedBy'
         ];
-        const keepData = Object.keys(response.data).reduce((acc, key) => {
+        const keepData = Object.keys(data).reduce((acc, key) => {
           if (!omitKeys.includes(key)) {
-            acc[key] = response.data[key];
+            acc[key] = data[key];
           }
           return acc;
         }, {} as { [key: string]: any });
@@ -2119,8 +2125,11 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
         );
   
         dispatch(setApiLoading(false));
-      } catch (error) {
-        dispatch(setDBError(getErrorMsg(error)));
+      } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+
+        dispatch(setDBError(getErrorMsg(error.message)));
       }
     } catch (err: any) {
       // Use the response error if it's available
@@ -2133,15 +2142,19 @@ export const fetchDBConfig = (config: string) => {
   return async (dispatch: Dispatch) => {
     dispatch(setApiLoading(true));
     try {
-      const dbConfig = await apiRequestWithRetry(() =>
-        axios
-        .get(`${BASE_KEEP_API_URL}/scope?dataSource=${config}`, {
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${SETUP_KEEP_API_URL}/scope?dataSource=${config}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json'
-          }
+            Accept: 'application/json',
+          },
         })
       )
+      const dbConfig = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(dbConfig))
+      }
 
       dispatch({
         type: FETCH_DB_CONFIG,
@@ -2149,8 +2162,11 @@ export const fetchDBConfig = (config: string) => {
       });
       dispatch(setApiLoading(false));
       dispatch({ type: TOGGLE_DETAILS_LOADING });
-    } catch (err: any) {
-      console.log(err);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
+      console.log(error);
     }
   };
 };
@@ -2188,23 +2204,33 @@ export const updateScope = (active: boolean, data?: any) => {
 
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${SETUP_KEEP_API_URL}/admin/scope/`, apiData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(apiData),
+        })
       )
+      const scopeData = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(scopeData))
+      }
+
       dispatch(setApiLoading(false));
       dispatch({
         type: UPDATE_SCOPE,
-        payload: { ...response.data, index: contextViewIndex }
+        payload: { ...scopeData, index: contextViewIndex }
       });
       dispatch(toggleAlert(`${apiName} has been successfully updated.`));
       if (data) dispatch(toggleSettings());
-    } catch (error) {
-      console.error("Error updating scope:", error)
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
+      console.error("Error updating scope:", error.message)
     }
   };
 };
@@ -2236,19 +2262,24 @@ export const processViewsAgents = (
   return async (dispatch: Dispatch) => {
     try {
       let response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Initialize Views and Agents
       if (action === 'init') {
         // Get list of Active Views and Agents
-        let views: Array<any> = response.data.availableViews;
-        let agents: Array<any> = response.data.agents;
+        let views: Array<any> = data.availableViews;
+        let agents: Array<any> = data.agents;
 
         // Build Active View list
         const viewsList: Array<any> = [];
@@ -2342,21 +2373,28 @@ export const processViewsAgents = (
       else {
         // Build data
         if (type === 'views') {
-          response.data.availableViews = viewData;
+          data.availableViews = viewData;
         } else {
-          response.data.agents = agentData;
+          data.agents = agentData;
         }
 
         try {
-          await apiRequestWithRetry(() =>
-            axios
-              .post(`${SETUP_KEEP_API_URL}/admin/scope`, response.data, {
-                headers: {
-                  Authorization: `Bearer ${getToken()}`,
-                  'Content-Type': 'application/json'
-                }
-              })
+          const res = await apiRequestWithRetry(() =>
+            fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data),
+            })
           )
+          const resData = await res.json()
+
+          if (!res.ok) {
+            throw new Error(JSON.stringify(resData))
+          }
+
           // Notify user
           if (type === 'views') {
             dispatch(toggleAlert('Activated Views have been saved'));
@@ -2364,13 +2402,19 @@ export const processViewsAgents = (
             dispatch(toggleAlert('Activated Agents have been saved'));
           }
         } catch (e: any) {
-          console.log(`Error in saveViewsAgents: ${e.response.status}`);
-          console.log(`Error text: ${e.response.statusText}`);
+          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+          const error = JSON.parse(err)
+
+          console.log(`Error in saveViewsAgents: ${error.statusCode}`);
+          console.log(`Error text: ${error.message}`);
         }
       }
     } catch (e: any) {
-      console.log(`Error in processViewsAgents: ${e.response.status}`);
-      console.log(`Error text: ${e.response.statusText}`);
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
+      console.log(`Error in processViewsAgents: ${error.statusCode}`);
+      console.log(`Error text: ${error.message}`);
     }
   };
 };
@@ -2482,18 +2526,28 @@ export const saveNewForm = (
       fields: form.fields
     };
     try {
-      await apiRequestWithRetry(() =>
-        axios
-          .put(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${nsfPath}`, formData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${fullEncode(nsfPath)}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch(toggleAlert('New form schema created!'));
-    } catch (error) {
-      console.error("Error creating new form schema:", error);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
+      console.error("Error creating new form schema:", error.message);
     }
   };
 };
@@ -2657,23 +2711,33 @@ export const testFormula = (dataSource: string, formulaData: any, formulaType: s
     // Run Formula test
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, formulaData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json'
-            }
-          })
+        fetch(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formulaData),
+        })
       )
-      dispatch(saveResult(formulaType, response.data.result[0].result[0]));
-    } catch (err: any) {
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
+      dispatch(saveResult(formulaType, data.result[0].result[0]));
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the response error if it's available
-      if (err.response && err.response.data && err.response.data.message) {
-        dispatch(saveResult(formulaType, err.response.data.message));
+      if (!!error.message) {
+        dispatch(saveResult(formulaType, error.message));
       }
       // Otherwise use the generic error
       else {
-        dispatch(saveResult(formulaType, `Error: ${err.message}`));
+        dispatch(saveResult(formulaType, `Error: ${error}`));
       }
     }
   };
@@ -2759,15 +2823,20 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
-      const allFields = response.data[0]
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
+      const allFields = data[0]
       const mapping = {
         TYPE_TEXT: 'string',
         TYPE_NUMBER: 'number',
@@ -2842,8 +2911,11 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
       }
   
       dispatch<any>(addActiveFields('keep_internal_form_for_allFields', finalFields));
-    } catch (error) {
-      // console.error("Error fetching all fields:", error)
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
+      console.error("Error fetching all fields:", error.message)
     }
   };
 };
@@ -2852,15 +2924,19 @@ export const fetchKeepPermissions = () => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${SETUP_KEEP_API_URL}/admin/access`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+        fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
-      const data = response.data
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch({
         type: FETCH_KEEP_PERMISSIONS,
         payload: {
@@ -2868,8 +2944,11 @@ export const fetchKeepPermissions = () => {
           deleteDbMapping: data.DeleteDbMapping
         }
       });
-    } catch (error) {
-      // console.error("Error fetching Keep permissions:", error)
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
+      console.error("Error fetching Keep permissions:", error.message)
     }
   };
 };
