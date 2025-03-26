@@ -8,8 +8,18 @@ import { refreshToken } from "../components/login/pkce"
 
 export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
     try {
+        const response = await apiRequest()
+        const data = await response.json()
+        
+        if (!response.ok) {
+            throw new Error(JSON.stringify(data))
+        }
+
         return await apiRequest()
-    } catch (error: any) {
+    } catch (e: any) {
+        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+        const error = JSON.parse(err)
+        
         if (error.status === 401) {
             await refreshToken()
             return await apiRequest()

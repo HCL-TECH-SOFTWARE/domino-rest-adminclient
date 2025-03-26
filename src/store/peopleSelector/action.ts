@@ -4,7 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import axios from 'axios';
 import { Dispatch } from 'redux';
 import {
   ADD_MEMBER,
@@ -39,27 +38,35 @@ export function fetchGroupMembers(currentRow: Array<any>) {
     const groupId: string = currentRow[0];
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json',
-            },
-          })
+        fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Use the data to build a list of rows for display
       const memberRows = {
-        id: response.data.unid,
-        fullName: response.data.Members,
+        id: data.unid,
+        fullName: data.Members,
       };
       // Update People state
       dispatch(saveMembersList(memberRows));
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error reading Member: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error reading Member: ${error.message}`);
         dispatch(
-          toggleAlert(`Error reading Member: ${err.response.statusText}`)
+          toggleAlert(`Error reading Member: ${error.message}`)
         );
       }
 
@@ -107,16 +114,23 @@ export const addMember = (membersData: any) => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await apiRequestWithRetry(() =>
-        axios
-        .post(`${PIM_KEEP_API_URL}/public/group`, membersData, {
+        fetch(`${PIM_KEEP_API_URL}/public/group`, {
+          method: 'POST',
           headers: {
             Authorization: `Bearer ${getToken()}`,
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify(membersData),
         })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       const MemberReduxData: MemberRedux = {
-        id: response.data.unid,
+        id: data.unid,
         fullName: membersData.Members,
       };
       dispatch({
@@ -127,12 +141,15 @@ export const addMember = (membersData: any) => {
       dispatch(
         toggleAlert(`${membersData.FirstName} has been successfully added`)
       );
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error in Adding Member: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error in Adding Member: ${error.message}`);
         dispatch(
-          toggleAlert(`Error in Adding Member: ${err.response.statusText}`)
+          toggleAlert(`Error in Adding Member: ${error.message}`)
         );
       }
 
@@ -171,28 +188,37 @@ export function removeMember(memberId: string) {
   return async (dispatch: Dispatch) => {
     // Delete User
     try {
-      await apiRequestWithRetry(() =>
-        axios
-          .delete(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch({ type: REMOVE_MEMBER, payload: memberId });
       dispatch(toggleAlert(`Member Removed Successfully!`));
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
 
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error in removing Member: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error in removing Member: ${error.message}`);
         dispatch(
-          toggleAlert(`Error in removing Member: ${err.response.statusText}`)
+          toggleAlert(`Error in removing Member: ${error.message}`)
         );
       }
 
@@ -213,28 +239,37 @@ export function removeAllMembers(memberId: string) {
   return async (dispatch: Dispatch) => {
     // Remove Member
     try {
-      await apiRequestWithRetry(() =>
-        axios
-          .delete(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const response = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch({ type: REMOVE_ALL_MEMBERS, payload: memberId });
       dispatch(toggleAlert(`Members Removed Successfully!`));
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
 
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error in removing Members: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error in removing Members: ${error.message}`);
         dispatch(
-          toggleAlert(`Error in removing Members: ${err.response.statusText}`)
+          toggleAlert(`Error in removing Members: ${error.message}`)
         );
       }
 
