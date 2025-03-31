@@ -268,7 +268,7 @@ const Groups: React.FC = () => {
 
     // Fetch the current values
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -276,7 +276,6 @@ const Groups: React.FC = () => {
           },
         })
       )
-      const data = await response.data()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -336,7 +335,7 @@ const Groups: React.FC = () => {
 
     // Fetch the current values
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -344,7 +343,6 @@ const Groups: React.FC = () => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))

@@ -77,6 +77,7 @@ import { fullEncode } from '../../utils/common';
 import appIcons from '../../styles/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { refreshToken } from '../../components/login/pkce';
 
 /**
  * action.ts provides the action methods for the Database page
@@ -113,7 +114,7 @@ export function deleteScope(apiName: string) {
     dispatch(setApiLoading(true));
     try {
       // NEED UPDATE DEL
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
           method: 'DELETE',
           headers: {
@@ -122,7 +123,6 @@ export function deleteScope(apiName: string) {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -154,7 +154,7 @@ export function deleteSchema(dbData: any) {
     if (nsfPath && schemaName) {
       try {
         try {
-          const response = await apiRequestWithRetry(() =>
+          const { response, data } = await apiRequestWithRetry(() =>
             fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
               method: 'DELETE',
               headers: {
@@ -163,7 +163,6 @@ export function deleteSchema(dbData: any) {
               },
             })
           )
-          const data = await response.json()
 
           if (!response.ok) {
             throw new Error(JSON.stringify(data))
@@ -213,7 +212,7 @@ export const setPullScope = (scopePull: boolean) => {
 export const fetchScope = async (scopeData: any) => {
   const { apiName } = scopeData;
   try {
-    const response = await apiRequestWithRetry(() =>
+    const { response, data } = await apiRequestWithRetry(() =>
       fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
@@ -221,7 +220,7 @@ export const fetchScope = async (scopeData: any) => {
         },
       })
     )
-    const scopes = await response.json()
+    const scopes = data
 
     if (!response.ok) {
       throw new Error(JSON.stringify(scopes))
@@ -259,7 +258,7 @@ export const fetchScope = async (scopeData: any) => {
 export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: (schemaData: any) => void) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -267,7 +266,6 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -435,8 +433,20 @@ export const fetchKeepDatabases = () => {
     });
 
     try {
-      const response = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
+      const response = await fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      processResponse(response, dispatch, scopeList);
+    } catch (e: any) {
+        await refreshToken()
+
+        const response = await fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -444,11 +454,7 @@ export const fetchKeepDatabases = () => {
           },
           body: JSON.stringify(payload)
         })
-      )
-      processResponse(response, dispatch, scopeList);
-    } catch (error) {
-      console.error('Error fetching databases:', error);
-      dispatch(setLoading({ status: false }));
+        processResponse(response, dispatch, scopeList);
     }
   };
 };
@@ -475,7 +481,7 @@ const sortAndRemoveDupSchemas = (origSchemas: Array<any>) => {
 export const fetchScopes = () => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/scopes?adminInfo=true`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -483,7 +489,7 @@ export const fetchScopes = () => {
           },
         })
       )
-      const scopes = await response.json();
+      const scopes = data
 
       if (!response.ok) {
         throw new Error(JSON.stringify(scopes))
@@ -606,7 +612,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
     try {
       // Encode the form name
       const encodedFormName = fullEncode(formName);
-      const res = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -614,7 +620,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
           },
         })
       )
-      const data = await res.json()
+      const res = response
 
       if (!res.ok) {
         throw new Error(JSON.stringify(data))
@@ -697,7 +703,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
 export const fetchViews = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/designlist/views?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -705,7 +711,6 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -751,7 +756,7 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
 export const fetchFolders = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -759,7 +764,6 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -804,7 +808,7 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
 export const fetchAgents = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -812,7 +816,6 @@ export const fetchAgents = (dbName: string, nsfPath: string) => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -853,7 +856,7 @@ export const quickConfig = (dbData: any) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/quickconfig`, {
           method: 'POST',
           headers: {
@@ -863,7 +866,6 @@ export const quickConfig = (dbData: any) => {
           body: JSON.stringify(dbData),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -992,7 +994,7 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, {
           method: 'POST',
           headers: {
@@ -1002,7 +1004,6 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
           body: JSON.stringify(dbData),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -1066,7 +1067,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         payload: false
       });
       try {
-        const response = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1076,7 +1077,6 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
             body: JSON.stringify(schemaData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1245,7 +1245,7 @@ export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispat
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -1253,7 +1253,6 @@ export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispat
           },
         })
       )
-      const data = await response.json()
       
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -1262,7 +1261,7 @@ export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispat
 
         // Get list of configured forms
         try {
-          const res = await apiRequestWithRetry(() =>
+          const { response, data } = await apiRequestWithRetry(() =>
             fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
               headers: {
                 Authorization: `Bearer ${getToken()}`,
@@ -1270,7 +1269,8 @@ export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispat
               },
             })
           )
-          const configuredForms = await res.json()
+          const res = response
+          const configuredForms = data
 
           if (!res.ok) {
             throw new Error(JSON.stringify(configuredForms))
@@ -1333,7 +1333,7 @@ const updateForms = (
     try {
       dispatch(setApiLoading(true));
       try {
-        const response = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1343,7 +1343,6 @@ const updateForms = (
             body: JSON.stringify(newSchemaData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1471,7 +1470,7 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
     try {
       dispatch(setApiLoading(true));
       try {
-        let response = await apiRequestWithRetry(() =>
+        let { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1481,7 +1480,6 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
             body: JSON.stringify(newSchemaData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1564,7 +1562,7 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
 
 // Get view elements by calling the design API
 async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolean) {
-  const response = await apiRequestWithRetry(() =>
+  const { response, data } = await apiRequestWithRetry(() =>
     fetch(
       `${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`,
       {
@@ -1577,7 +1575,8 @@ async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolea
     )
   )
 
-  const obj = await response.json();
+  // const obj = await response.json();
+  const obj = data
   return obj;
 }
 
@@ -1767,7 +1766,7 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
     try {
       dispatch(setApiLoading(true));
       try {
-        const response = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1777,7 +1776,6 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
             body: JSON.stringify(newSchemaData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1864,7 +1862,7 @@ export const updateFormMode = (
     try {
       dispatch(setApiLoading(true));
       try {
-        const response = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1874,7 +1872,6 @@ export const updateFormMode = (
             body: JSON.stringify(newSchemaData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1950,7 +1947,7 @@ export const deleteFormMode = (
     try {
       dispatch(setApiLoading(true));
       try {
-        const response = await apiRequestWithRetry(() => 
+        const { response, data } = await apiRequestWithRetry(() => 
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1960,7 +1957,6 @@ export const deleteFormMode = (
             body: JSON.stringify(newSchemaData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -2017,7 +2013,7 @@ export const deleteForm = (
     try {
       dispatch(setApiLoading(true));
       try {
-        const response = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -2027,7 +2023,6 @@ export const deleteForm = (
             body: JSON.stringify(newSchemaData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -2077,7 +2072,7 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
       dispatch(setApiLoading(true));
       dispatch(clearDBError());
       try {
-        const response = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
             method: 'POST',
             headers: {
@@ -2087,7 +2082,6 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
             body: JSON.stringify(dbData),
           })
         )
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -2142,7 +2136,7 @@ export const fetchDBConfig = (config: string) => {
   return async (dispatch: Dispatch) => {
     dispatch(setApiLoading(true));
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/scope?dataSource=${config}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -2150,7 +2144,7 @@ export const fetchDBConfig = (config: string) => {
           },
         })
       )
-      const dbConfig = await response.json()
+      const dbConfig = data
 
       if (!response.ok) {
         throw new Error(JSON.stringify(dbConfig))
@@ -2203,7 +2197,7 @@ export const updateScope = (active: boolean, data?: any) => {
       });
 
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
           method: 'POST',
           headers: {
@@ -2213,7 +2207,7 @@ export const updateScope = (active: boolean, data?: any) => {
           body: JSON.stringify(apiData),
         })
       )
-      const scopeData = await response.json()
+      const scopeData = data
 
       if (!response.ok) {
         throw new Error(JSON.stringify(scopeData))
@@ -2261,7 +2255,7 @@ export const processViewsAgents = (
 ) => {
   return async (dispatch: Dispatch) => {
     try {
-      let response = await apiRequestWithRetry(() =>
+      let { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -2269,7 +2263,6 @@ export const processViewsAgents = (
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -2379,7 +2372,7 @@ export const processViewsAgents = (
         }
 
         try {
-          const res = await apiRequestWithRetry(() =>
+          const { response, data } = await apiRequestWithRetry(() =>
             fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
               method: 'POST',
               headers: {
@@ -2389,7 +2382,8 @@ export const processViewsAgents = (
               body: JSON.stringify(data),
             })
           )
-          const resData = await res.json()
+          const res = response
+          const resData = data
 
           if (!res.ok) {
             throw new Error(JSON.stringify(resData))
@@ -2526,7 +2520,7 @@ export const saveNewForm = (
       fields: form.fields
     };
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${fullEncode(nsfPath)}`, {
           method: 'PUT',
           headers: {
@@ -2536,7 +2530,6 @@ export const saveNewForm = (
           body: JSON.stringify(formData),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -2710,7 +2703,7 @@ export const testFormula = (dataSource: string, formulaData: any, formulaType: s
   return async (dispatch: Dispatch) => {
     // Run Formula test
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, {
           method: 'POST',
           headers: {
@@ -2720,7 +2713,6 @@ export const testFormula = (dataSource: string, formulaData: any, formulaType: s
           body: JSON.stringify(formulaData),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -2822,7 +2814,7 @@ export function setOnlyShowSchemasWithScopes(onlyShowSchemasWithScopes: boolean)
 export const getAllFieldsByNsf = (nsfPath: any) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -2830,7 +2822,6 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -2923,7 +2914,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
 export const fetchKeepPermissions = () => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -2931,7 +2922,6 @@ export const fetchKeepPermissions = () => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))

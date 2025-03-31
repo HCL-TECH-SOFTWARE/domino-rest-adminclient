@@ -17,7 +17,7 @@ export function fetchUsers (startsWith?: string) {
   return async (dispatch: Dispatch) => {
     dispatch(toggleUsersLoading());
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(callUrl, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -25,7 +25,6 @@ export function fetchUsers (startsWith?: string) {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))

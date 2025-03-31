@@ -115,27 +115,35 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
 
 // Refresh Access Token
 export async function refreshToken() {
-    const oidcConfigUrl = localStorage.getItem('oidc_config_url');
-    const clientId = localStorage.getItem('client_id');
-    const refreshToken = JSON.parse(localStorage.getItem('refresh_token')).refresh_token;
-    const { token_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
+    try {
+        const oidcConfigUrl = localStorage.getItem('oidc_config_url');
+        const clientId = localStorage.getItem('client_id');
+        const refreshToken = JSON.parse(localStorage.getItem('refresh_token') || '{}').refresh_token;
 
-    await fetch(token_endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-            client_id: clientId,
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken,
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        localStorage.setItem('user_token', JSON.stringify(data));
-        return data;
-    })
-    .catch(err => {
+        const { token_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
+
+        const response = await fetch(token_endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                client_id: clientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Store the new token and return the data
+            localStorage.setItem('user_token', JSON.stringify(data));
+            return data;
+        } else {
+            // Return an error object if the response is not OK
+            return { error: data.error || "Failed to refresh token" };
+        }
+    } catch (err) {
         console.error(err);
-        return { error: err.message }
-    });
+        return { error: err.message || "An unexpected error occurred during token refresh" };
+    }
 }

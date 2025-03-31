@@ -235,7 +235,7 @@ const PeopleCRUD: React.FC = () => {
 
     // Fetch the current values
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -243,7 +243,6 @@ const PeopleCRUD: React.FC = () => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -299,7 +298,7 @@ const PeopleCRUD: React.FC = () => {
 
     // Fetch the current values
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -307,7 +306,6 @@ const PeopleCRUD: React.FC = () => {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))

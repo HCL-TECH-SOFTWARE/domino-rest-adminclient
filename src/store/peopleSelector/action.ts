@@ -37,7 +37,7 @@ export function fetchGroupMembers(currentRow: Array<any>) {
   return async (dispatch: Dispatch) => {
     const groupId: string = currentRow[0];
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -45,7 +45,6 @@ export function fetchGroupMembers(currentRow: Array<any>) {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -113,7 +112,7 @@ export function saveMembersList(memberRows: any) {
 export const addMember = (membersData: any) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/group`, {
           method: 'POST',
           headers: {
@@ -123,7 +122,6 @@ export const addMember = (membersData: any) => {
           body: JSON.stringify(membersData),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -188,7 +186,7 @@ export function removeMember(memberId: string) {
   return async (dispatch: Dispatch) => {
     // Delete User
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
           method: 'DELETE',
           headers: {
@@ -197,7 +195,6 @@ export function removeMember(memberId: string) {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -239,7 +236,7 @@ export function removeAllMembers(memberId: string) {
   return async (dispatch: Dispatch) => {
     // Remove Member
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/group/${memberId}`, {
           method: 'DELETE',
           headers: {
@@ -248,7 +245,6 @@ export function removeAllMembers(memberId: string) {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))

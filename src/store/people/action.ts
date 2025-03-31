@@ -34,7 +34,7 @@ import { apiRequestWithRetry } from '../../utils/api-retry';
 export function fetchPeople() {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/people?documents=true`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -42,7 +42,6 @@ export function fetchPeople() {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -114,7 +113,7 @@ export function savePeoplesList(peopleRows: any) {
 export const addPeople = (peopleData: any) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/person`, {
           method: 'POST',
           headers: {
@@ -124,7 +123,6 @@ export const addPeople = (peopleData: any) => {
           body: JSON.stringify(peopleData),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -193,7 +191,7 @@ export function toggleDeleteDialog() {
 export function updatePeople(personId: string, peopleData: any) {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
           method: 'POST',
           headers: {
@@ -203,7 +201,6 @@ export function updatePeople(personId: string, peopleData: any) {
           body: JSON.stringify(peopleData),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -256,7 +253,7 @@ export function updatePeople(personId: string, peopleData: any) {
 export function deletePeople(personId: string) {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
           method: 'DELETE',
           headers: {
@@ -265,7 +262,6 @@ export function deletePeople(personId: string) {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))

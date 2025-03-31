@@ -147,7 +147,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
 export function logout() {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${BASE_KEEP_API_URL}/auth/logout?dataSource=keepconfig`, {
           method: 'POST',
           headers: {
@@ -157,7 +157,6 @@ export function logout() {
           body: JSON.stringify({ logout: 'Yes' }),
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -167,7 +166,6 @@ export function logout() {
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
-      console.error("Error calling logout API:", error)
     } finally {
       dispatch(removeAuth());
       dispatch(setIdpLogin(false))
@@ -197,7 +195,7 @@ export function showPages() {
       token = await waitForToken()
     }
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`/adminui.json`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -205,7 +203,6 @@ export function showPages() {
           },
         })
       )
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(response))

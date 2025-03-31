@@ -195,26 +195,26 @@ const FormsContainer = () => {
 
   const editorRef = useRef<any>(null)
 
-  // // Override console.error to suppress error messages
-  // console.error = () => {};
+  // Override console.error to suppress error messages
+  console.error = () => {};
 
-  // // Override window.onerror to suppress uncaught errors
-  // useEffect(() => {
-  //   const originalOnError = window.onerror;
-  //   window.onerror = (message, source, lineno, colno, error) => {
-  //     // Suppress the error
-  //     return true;
-  //   };
+  // Override window.onerror to suppress uncaught errors
+  useEffect(() => {
+    const originalOnError = window.onerror;
+    window.onerror = (message, source, lineno, colno, error) => {
+      // Suppress the error
+      return true;
+    };
 
-  //   // Cleanup function to restore the original window.onerror
-  //   return () => {
-  //     window.onerror = originalOnError;
-  //   };
-  // }, []);
+    // Cleanup function to restore the original window.onerror
+    return () => {
+      window.onerror = originalOnError;
+    };
+  }, []);
 
   const pullSubForms = async () => {
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/designlist/subforms?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -222,7 +222,6 @@ const FormsContainer = () => {
           },
         })
       );
-      const data = await response.json()
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -277,7 +276,7 @@ const FormsContainer = () => {
       let allForms: Array<any> = [];
       let configformsList: Array<any> = [];
 
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -285,7 +284,7 @@ const FormsContainer = () => {
           },
         })
       );
-      const apiData = await response.json()
+      const apiData = data
 
       if (!response.ok) {
         throw new Error(JSON.stringify(apiData))
@@ -297,7 +296,7 @@ const FormsContainer = () => {
 
         // Get list of configured forms
         try {
-          const response = await apiRequestWithRetry(() =>
+          const { response, data } = await apiRequestWithRetry(() =>
             fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
               headers: {
                 Authorization: `Bearer ${getToken()}`,
@@ -305,7 +304,6 @@ const FormsContainer = () => {
               },
             })
           )
-          const data = await response.json()
 
           if (!response.ok) {
             throw new Error(JSON.stringify(apiData))

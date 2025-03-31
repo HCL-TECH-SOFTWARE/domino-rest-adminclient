@@ -505,7 +505,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       const isFolder = folderNames.includes(viewName);
 
       try {
-        const response = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${encodedViewName}?nsfPath=${fullEncode(nsfPathProp)}&raw=false`, {
             method: 'GET',
             headers: {
@@ -514,7 +514,6 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
             },
           })
         );
-        const data = await response.json()
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data.message))
