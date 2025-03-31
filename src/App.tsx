@@ -22,7 +22,6 @@ import {
   setIdpLogin,
 } from './store/account/action';
 import PageLoading from './components/loaders/PageLoading';
-import injectInterceptor from './utils/api-interceptor';
 import { getTheme } from './store/styles/action';
 import { TokenProps } from './store/account/types';
 import theme from './theme';
@@ -37,10 +36,6 @@ const App: React.FC = () => {
   const { authenticated } = useSelector((state: AppState) => state.account);
 
   useEffect(() => {
-    // Handle Axios Interceptor
-    // Handle All API Request on the Page
-    injectInterceptor(dispatch);
-
     // Get JWT TOken from Browser Local Storage
     const jwtToken = localStorage.getItem('user_token') as string;
 
