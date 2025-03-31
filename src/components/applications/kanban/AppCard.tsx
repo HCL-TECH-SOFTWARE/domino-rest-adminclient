@@ -131,7 +131,7 @@ const AppCard: React.FC<AppCardProps> = ({
     setGenerating(true);
     
     try {
-      const response = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`, {
           method: 'POST',
           headers: {
@@ -140,7 +140,6 @@ const AppCard: React.FC<AppCardProps> = ({
           body: JSON.stringify({ status: status })
         })
       )
-      const data = await response.json()
 
       setGenerating(false);
       setAppSecret(data.client_secret);

@@ -8,7 +8,6 @@ npm install @material-ui/lab/Autocomplete --save
 npm install @material-ui/lab/TreeItem --save
 npm install @material-ui/lab/TreeView --save
 npm install @testing-library/react --save
-npm install axios --save
 npm install clsx --save
 npm install formik --save
 npm install immer --save

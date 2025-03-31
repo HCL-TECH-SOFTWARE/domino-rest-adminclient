@@ -4,7 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import axios from 'axios';
 import { Dispatch } from 'redux';
 import {
   FETCH_GROUPS,
@@ -34,17 +33,21 @@ import { apiRequestWithRetry } from '../../utils/api-retry';
 export function fetchGroups() {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/groups?documents=true`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/groups?documents=true`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Use the data to build a list of rows for display
-      const groupRows = buildRows(response.data);
+      const groupRows = buildRows(data);
 
       // Upate Groups state
       dispatch(saveGroupsList(groupRows));
@@ -104,21 +107,26 @@ export function saveGroupsList(groupRows: any) {
 export function createGroup(groupData: object) {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${PIM_KEEP_API_URL}/public/group`, groupData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/group`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Collect values for Redux and update state
       const groupReduxData: GroupRedux = {
-        id: response.data['@unid'],
-        groupName: response.data.ListName,
-        groupCategory: response.data.ListCategory,
-        groupDescription: response.data.ListDescription,
+        id: data['@unid'],
+        groupName: data.ListName,
+        groupCategory: data.ListCategory,
+        groupDescription: data.ListDescription,
       };
 
       dispatch({
@@ -126,12 +134,15 @@ export function createGroup(groupData: object) {
         payload: groupReduxData,
       });
       dispatch(toggleApplicationDrawer());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error creating Group: ${err.response.statusText}`);
+      if (error.message) {
+        console.log(`Error creating Group: ${error.message}`);
         dispatch(
-          toggleAlert(`Error creating Group: ${err.response.statusText}`)
+          toggleAlert(`Error creating Group: ${error}`)
         );
       }
 
@@ -152,21 +163,27 @@ export function createGroup(groupData: object) {
 export function updateGroup(groupId: string, groupData: any) {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${PIM_KEEP_API_URL}/public/group/${groupId}`, groupData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(groupData),
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Collect values for Redux and update state
       let groupReduxData: GroupRedux = {
-        id: response.data['@unid'],
-        groupName: response.data.ListName[0],
-        groupCategory: response.data.ListCategory,
-        groupDescription: response.data.ListDescription,
+        id: data['@unid'],
+        groupName: data.ListName[0],
+        groupCategory: data.ListCategory,
+        groupDescription: data.ListDescription,
       };
 
       dispatch({
@@ -175,12 +192,15 @@ export function updateGroup(groupId: string, groupData: any) {
       });
 
       dispatch(toggleApplicationDrawer());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error updating Group: ${err.response.statusText}`);
+      if (error.message) {
+        console.log(`Error updating Group: ${error.message}`);
         dispatch(
-          toggleAlert(`Error updating Group: ${err.response.statusText}`)
+          toggleAlert(`Error updating Group: ${error}`)
         );
       }
 
@@ -201,30 +221,38 @@ export function updateGroup(groupId: string, groupData: any) {
 export function deleteGroup(groupId: string) {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .delete(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/group/${groupId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Update our state
       dispatch({ type: DELETE_GROUP, payload: groupId });
 
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
       dispatch(toggleAlert(`Group Deleted`));
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
 
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error deleting Group: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error deleting Group: ${error.message}`);
         dispatch(
-          toggleAlert(`Error deleting Group: ${err.response.statusText}`)
+          toggleAlert(`Error deleting Group: ${error.message}`)
         );
       }
 

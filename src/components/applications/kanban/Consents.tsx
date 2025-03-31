@@ -95,7 +95,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
 
   // Handle deleting/revoking consent
   const confirmDeleteConsent = () => {
-    dispatch(deleteConsent(deleteUnid) as any);
+    dispatch(deleteConsent(deleteUnid, handleCloseDialog) as any);
   };
 
   const handleClickReset = () => {

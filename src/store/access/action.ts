@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import axios from 'axios';
 import { ADMIN_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleUsersLoading } from '../loading/action';
@@ -18,22 +17,28 @@ export function fetchUsers (startsWith?: string) {
   return async (dispatch: Dispatch) => {
     dispatch(toggleUsersLoading());
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .get(callUrl, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json'
-            }
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(callUrl, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json'
+          },
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch({
         type: SET_USERS,
-        payload: response.data,
+        payload: data,
       })
       dispatch(toggleUsersLoading());
-    } catch (err) {
-      console.error(err);
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+      console.error(error);
     }
   }
 }

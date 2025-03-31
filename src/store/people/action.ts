@@ -4,7 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import axios from 'axios';
 import { Dispatch } from 'redux';
 import {
   ADD_USER,
@@ -35,26 +34,33 @@ import { apiRequestWithRetry } from '../../utils/api-retry';
 export function fetchPeople() {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .get(`${PIM_KEEP_API_URL}/public/people?documents=true`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              Accept: 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/people?documents=true`, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            Accept: 'application/json',
+          },
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       // Use the data to build a list of rows for display
-      const peopleRows = buildRows(response.data);
+      const peopleRows = buildRows(data);
 
       // Update People state
       dispatch(savePeoplesList(peopleRows));
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error reading People: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error reading People: ${error.message}`);
         dispatch(
-          toggleAlert(`Error reading People: ${err.response.statusText}`)
+          toggleAlert(`Error reading People: ${error.message}`)
         );
       }
 
@@ -107,17 +113,23 @@ export function savePeoplesList(peopleRows: any) {
 export const addPeople = (peopleData: any) => {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${PIM_KEEP_API_URL}/public/person`, peopleData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/person`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(peopleData),
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       const peopleReduxData: PeopleRedux = {
-        id: response.data.unid,
+        id: data.unid,
         firstName: peopleData.FirstName,
         lastName: peopleData.LastName,
         shortName: peopleData.ShortName,
@@ -135,12 +147,15 @@ export const addPeople = (peopleData: any) => {
       dispatch(
         toggleAlert(`${peopleData.FirstName} has been successfully created`)
       );
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error Creating People: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error Creating People: ${error.message}`);
         dispatch(
-          toggleAlert(`Error Creating People: ${err.response.statusText}`)
+          toggleAlert(`Error Creating People: ${error.message}`)
         );
       }
 
@@ -176,17 +191,23 @@ export function toggleDeleteDialog() {
 export function updatePeople(personId: string, peopleData: any) {
   return async (dispatch: Dispatch) => {
     try {
-      const response = await apiRequestWithRetry(() =>
-        axios
-          .post(`${PIM_KEEP_API_URL}/public/person/${personId}`, peopleData, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(peopleData),
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       const peopleReduxData: PeopleRedux = {
-        id: response.data.unid,
+        id: data.unid,
         firstName: peopleData.FirstName,
         lastName: peopleData.LastName,
         shortName: peopleData.ShortName,
@@ -204,18 +225,21 @@ export function updatePeople(personId: string, peopleData: any) {
       dispatch(
         toggleAlert(`${peopleData.FirstName} has been updated successfully`)
       );
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error Updating People: ${err.response.statusText}`);
+      if (error.message) {
+        console.log(`Error Updating People: ${error.message}`);
         dispatch(
-          toggleAlert(`Error Updating People: ${err.response.statusText}`)
+          toggleAlert(`Error Updating People: ${error.message}`)
         );
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error Updating People: ${err.message}`);
-        dispatch(toggleAlert(`Error Updating People: ${err.message}`));
+        console.log(`Error Updating People: ${error}`);
+        dispatch(toggleAlert(`Error Updating People: ${error}`));
       }
     }
   };
@@ -229,28 +253,36 @@ export function updatePeople(personId: string, peopleData: any) {
 export function deletePeople(personId: string) {
   return async (dispatch: Dispatch) => {
     try {
-      await apiRequestWithRetry(() =>
-        axios
-          .delete(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-          })
+      const { response, data } = await apiRequestWithRetry(() =>
+        fetch(`${PIM_KEEP_API_URL}/public/person/${personId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+        })
       )
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(data))
+      }
+
       dispatch({ type: DELETE_USER, payload: personId });
       dispatch(toggleAlert(`User Deleted Successfully`));
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
-    } catch (err: any) {
+    } catch (e: any) {
+      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+      const error = JSON.parse(err)
+
       // Close the Delete confirmation Dialog
       dispatch(toggleDeleteDialog());
 
       // Use the Keep response error if it's available
-      if (err.response && err.response.statusText) {
-        console.log(`Error deleting in User: ${err.response.statusText}`);
+      if (err) {
+        console.log(`Error deleting in User: ${error.message}`);
         dispatch(
-          toggleAlert(`Error deleting in User: ${err.response.statusText}`)
+          toggleAlert(`Error deleting in User: ${error.message}`)
         );
       }
 

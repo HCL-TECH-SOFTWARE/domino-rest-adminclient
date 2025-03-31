@@ -1,6 +1,6 @@
 {
   "name": "@hcl-software/domino-rest-adminclient",
-  "version": "1.38.2-SNAPSHOT",
+  "version": "1.38.3-SNAPSHOT",
   "private": false,
   "proxy": "http://localhost:8880",
   "homepage": ".",
@@ -19,7 +19,6 @@
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.5.0",
     "@shoelace-style/shoelace": "^2.19.1",
-    "axios": "^1.7.9",
     "dayjs": "^1.11.13",
     "events": "^3.3.0",
     "formik": "^2.4.6",
