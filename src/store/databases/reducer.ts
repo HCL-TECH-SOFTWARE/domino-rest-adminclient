@@ -443,16 +443,21 @@ export default function databaseReducer(
     // Save the list of Agents
     case SET_AGENTS:
       return produce(state, (draft: DBState) => {
-        action.payload.agents.forEach((agent) => {
-          agent.agentActive = false;
-          for (let ii = 0; ii < draft.activeAgents.length; ii++) {
-            if (agent.agentUnid === draft.activeAgents[ii].agentUnid) {
-              agent.agentActive = true;
-              break;
-            }
-          }
+        const updatedAgents = action.payload.agents.map((agent) => {
+          const isActive = 
+            agent.agentActive !== undefined
+              ? agent.agentActive // Retain the existing value if it exists
+              : draft.activeAgents.some(
+                  (activeAgent) => activeAgent.agentUnid === agent.agentUnid
+                );
+          return {
+            ...agent, // Spread the original agent properties
+            agentActive: isActive, // Add or update the agentActive property
+          };
         });
-        draft.agents = action.payload.agents;
+    
+        // Assign the updated agents array to the draft state
+        draft.agents = updatedAgents;
       });
     // Update Active Status of an Agent
     case UPDATE_AGENT:

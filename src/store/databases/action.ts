@@ -1637,7 +1637,8 @@ export const handleDatabaseAgents = (
   activeAgents: Array<any>,
   dbName: string,
   schemaData: Database,
-  active: boolean
+  active: boolean,
+  currentAgents: Array<any>,
 ) => {
   return async (dispatch: Dispatch) => {
     // Build redux data
@@ -1679,7 +1680,7 @@ export const handleDatabaseAgents = (
     }
 
     // Send the new agents to the server
-    dispatch(updateAgents(schemaData, agentsList) as any);
+    dispatch(updateAgents(schemaData, agentsList, dbName, currentAgents) as any);
   };
 };
 
@@ -1747,7 +1748,7 @@ function saveAgentDetails(currentAgent: any) {
 /**
  * update agents to server
  */
-export const updateAgents = (schemaData: Database, agentsData: any) => {
+export const updateAgents = (schemaData: Database, agentsData: any, dbName: string, currentAgents: Array<any>) => {
   return async (dispatch: Dispatch) => {
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0)
@@ -1787,19 +1788,21 @@ export const updateAgents = (schemaData: Database, agentsData: any) => {
         const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
         const error = JSON.parse(err)
 
+        dispatch(setApiLoading(false));
+        dispatch(setAgents(dbName, currentAgents) as any)
         dispatch(toggleAlert(`Update agents failed! ${error.message}`));
-        dispatch({
-          type: AGENTS_ERROR,
-          payload: true
-        });
       }
       dispatch(clearDBError());
     } catch (err: any) {
+      dispatch(setApiLoading(false));
+      dispatch(setAgents(dbName, currentAgents) as any)
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
         dispatch(setDBError(err.response.statusText));
+        dispatch(toggleAlert(`Update agents failed! ${err.response.statusText}`));
       } else {
         dispatch(setDBError(err.message));
+        dispatch(toggleAlert(`Update agents failed! ${err.message}`));
       }
     }
   };
