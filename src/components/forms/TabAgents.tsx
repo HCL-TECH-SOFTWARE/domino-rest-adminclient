@@ -4,19 +4,19 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Button from '@mui/material/Button';
 import { AppState } from '../../store';
 import styled from 'styled-components';
-import { handleDatabaseAgents } from '../../store/databases/action';
+import { handleDatabaseAgents, setAgents } from '../../store/databases/action';
 import AgentSearch from './AgentSearch';
 import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
-import { Database } from '../../store/databases/types';
+import { Database, AGENTS_ERROR, SET_AGENTS } from '../../store/databases/types';
 
 /**
  * Database Agents Component
@@ -60,7 +60,7 @@ interface TabAgentsProps {
 
 const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   const { agents } = useSelector((state: AppState) => state.databases);
-  const { activeAgents } = useSelector((state: AppState) => state.databases);
+  const { activeAgents, updateAgentError } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const [filtered, setFiltered] = useState([...agents]);
   const { dbName, nsfPath } = useParams() as { dbName: string, nsfPath: string };
@@ -82,19 +82,19 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   };
 
   const toggleActive = async (agent: any) => {
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, true) as any);
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, true, agents) as any);
   }
 
   const toggleInactive = async (agent: any) => {
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, false) as any);
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, false, agents) as any);
   }
 
   const handleActivateAll = () => {
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, true) as any);
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, true, agents) as any);
   }
 
   const handleDeactivateAll = () => {
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, false) as any);
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, false, agents) as any);
     setResetAllAgents(false);
   }
 
