@@ -1771,7 +1771,7 @@ export const updateAgents = (schemaData: Database, agentsData: any, dbName: stri
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
             method: 'POST',
             headers: {
-              // Authorization: `Bearer ${getToken()}`,
+              Authorization: `Bearer ${getToken()}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(newSchemaData),
@@ -1789,13 +1789,13 @@ export const updateAgents = (schemaData: Database, agentsData: any, dbName: stri
         const error = JSON.parse(err)
 
         dispatch(setApiLoading(false));
-        dispatch(setAgents(dbName, currentAgents))
+        dispatch(setAgents(dbName, currentAgents) as any)
         dispatch(toggleAlert(`Update agents failed! ${error.message}`));
       }
       dispatch(clearDBError());
     } catch (err: any) {
       dispatch(setApiLoading(false));
-      dispatch(setAgents(dbName, currentAgents))
+      dispatch(setAgents(dbName, currentAgents) as any)
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
         dispatch(setDBError(err.response.statusText));
