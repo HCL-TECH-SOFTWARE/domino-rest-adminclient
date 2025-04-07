@@ -1896,6 +1896,7 @@ export const updateFormMode = (
       } catch (error) {
         const errorMsg = getErrorMsg(error);
         dispatch(toggleAlert(`Update form mode failed! ${errorMsg}`));
+        dispatch(setApiLoading(false))
       }
       dispatch(clearDBError());
     } catch (e: any) {
@@ -1908,6 +1909,7 @@ export const updateFormMode = (
       } else {
         dispatch(setDBError(error));
       }
+      dispatch(setApiLoading(false))
     }
   };
 };
