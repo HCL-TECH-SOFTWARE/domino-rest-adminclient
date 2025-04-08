@@ -51,7 +51,11 @@ async function generateCodeVerifierAndChallenge() {
 
 // Step 2: Initiate Authorization Request
 export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redirectUri, scope = "") {
-    const { authorization_endpoint } = await fetch(oidcConfigUrl).then(res => res.json());
+    try {
+        const { authorization_endpoint } = await
+            fetch(oidcConfigUrl)
+                .then(res => res.json()
+    )
     const { codeVerifier, codeChallenge } = await generateCodeVerifierAndChallenge();
     
     localStorage.setItem('pkce_code_verifier', codeVerifier);
@@ -71,6 +75,11 @@ export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redi
     const authUrl = `${authorization_endpoint}?${params.toString()}`;
 
     window.location.href = authUrl;
+
+    return true
+    } catch (err) {
+        return false
+    }
 }
 
 // Step 3: Handle Callback and Exchange Authorization Code for Token
@@ -138,6 +147,17 @@ export async function refreshToken() {
             // Store the new token and return the data
             localStorage.setItem('user_token', JSON.stringify(data));
             return data;
+        } else if (!!data.error) {
+            // Handle specific error cases
+            if (data.error === 'invalid_grant') {
+                alert("Invalid refresh token. Please log in again.");
+                localStorage.removeItem('user_token');
+                window.location.reload();
+            } else if (data.error === 'invalid_client') {
+                alert("Invalid client credentials. Please check your configuration.");
+            } else {
+                alert(`Error: ${data.error}`);
+            }
         } else {
             // Return an error object if the response is not OK
             return { error: data.error || "Failed to refresh token" };
