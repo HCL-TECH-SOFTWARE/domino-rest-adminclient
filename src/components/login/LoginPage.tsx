@@ -30,7 +30,13 @@ import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from 'react-router-dom';
-import { LitButton, LitDropdown, LitInputPassword, LitInputText } from '../lit-elements/LitElements';
+import {
+  LitApiErrorDialog,
+  LitButton,
+  LitDropdown,
+  LitInputPassword,
+  LitInputText
+} from '../lit-elements/LitElements';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -170,6 +176,7 @@ const LoginPage = () => {
   const usernameRef = useRef<any>(null)
   const passwordRef = useRef<any>(null)
   const oidcRef = useRef<any>(null)
+  const ref = useRef<any>(null)
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -357,6 +364,13 @@ const LoginPage = () => {
     setAuthType('oidc')
   }
 
+  const openErrorDialog = () => {
+    const dialogElement = ref.current?.shadowRoot.querySelector('dialog')
+    if (dialogElement) {
+      dialogElement.showModal();
+    }
+  }
+
   const logInUsingIdp = async (idp: any) => {
     await dispatch(setCurrentIdp(idp) as any)
     localStorage.setItem('oidc_config_url', idp.wellKnown)
@@ -365,9 +379,25 @@ const LoginPage = () => {
     sessionStorage.setItem('redirect_uri', redirectUri)
     if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
       const scope = idp.adminui_config.application_id_uri + ".default"
-      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri, scope)
+      const initiatedAuth = await initiateAuthorizationRequest(
+        idp.wellKnown,
+        idp.adminui_config.client_id,
+        redirectUri,
+        scope
+      )
+      if (!initiatedAuth) {
+        openErrorDialog()
+      }
     } else {
-      await initiateAuthorizationRequest(idp.wellKnown, idp.adminui_config.client_id, redirectUri)
+      const initiatedAuth = await initiateAuthorizationRequest(
+        idp.wellKnown,
+        idp.adminui_config.client_id,
+        redirectUri,
+        ""
+      )
+      if (!initiatedAuth) {
+        openErrorDialog()
+      }
     }
   }
 
@@ -571,6 +601,7 @@ const LoginPage = () => {
             <Box mt={7}>
               <Copyright />
             </Box>
+            <LitApiErrorDialog ref={ref} errorMessage='Error initiating authorization request. Check the console or network for more details.' />
           </div>
         </DivPaper>
       </Grid>
