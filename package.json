@@ -59,7 +59,7 @@
     "jest-sonar-reporter": "^2.0.0",
     "jsdom": "^26.0.0",
     "ts-jest": "^29.2.5",
-    "vite": "^6.0.11"
+    "vite": "^6.2.6"
   },
   "scripts": {
     "start": "vite",
