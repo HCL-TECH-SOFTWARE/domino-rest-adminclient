@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { TextEditorContainer } from './styles';
 import { Box, Button, ButtonBase, Collapse, TextField, Tooltip, Typography } from '@mui/material';
@@ -101,9 +101,10 @@ const EditFormulaDialog = styled.dialog`
   }
 
   .compute-line {
-    padding: 10px 0;
+    padding: 5px 0;
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
+    width: 30%;
   }
 `
 
@@ -139,7 +140,13 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
   const [expanded, setExpanded] = useState(false)
   const [validationExpanded, setValidationExpanded] = useState(false)
   const [formComputed, setFormComputed] = useState(data.computeWithForm)
+  const [continueOnError, setContinueOnError] = useState(data.continueOnError)
   const ref = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    setFormComputed(data.computeWithForm)
+    setContinueOnError(data.continueOnError)
+  }, [data])
 
   const handleClose = () => {
     if (ref.current?.close) {
@@ -184,6 +191,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
         formula: formula,
       },
       computeWithForm: formComputed,
+      continueOnError: continueOnError,
     })
 
     if (ref.current?.close) {
@@ -198,6 +206,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
     setFormula("")
     setFormulaTitle("")
     setFormComputed(data.computeWithForm)
+    setContinueOnError(data.continueOnError)
     if (ref.current?.close) {
       ref.current?.close();
     }
@@ -205,6 +214,10 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
 
   const handleToggleCompute = (event: any) => {
     setFormComputed(event.target.checked)
+  }
+
+  const handleToggleContinue = (event: any) => {
+    setContinueOnError(event.target.checked)
   }
 
   const handleToggleSign = (event: any) => {
@@ -341,6 +354,10 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               {formulaTitle === "Formula for Write Access" && <Box className='compute-line'>
                 <Typography className='compute-text'>Compute with Form</Typography>
                 <BlueSwitch size='small' checked={formComputed} onChange={handleToggleCompute} id='compute-with-form' />
+              </Box>}
+              {formulaTitle === "Formula for Write Access" && <Box className='compute-line'>
+                <Typography className='compute-text'>Continue on Error</Typography>
+                <BlueSwitch size='small' checked={continueOnError} onChange={handleToggleContinue} id='continue-on-error' />
               </Box>}
               <TextField 
                 variant='outlined' 

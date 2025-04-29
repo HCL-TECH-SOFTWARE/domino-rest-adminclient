@@ -165,6 +165,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     onLoad: modes[currentModeIndex].onLoad,
     onSave: modes[currentModeIndex].onSave,
     sign: modes[currentModeIndex].sign,
+    continueOnError: !!modes[currentModeIndex].continueOnError ? modes[currentModeIndex].continueOnError : true,
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentModeValue, setCurrentModeValue] = useState(
@@ -204,6 +205,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       onLoad: modes[newCardIndex].onLoad,
       onSave: modes[newCardIndex].onSave,
       sign: modes[newCardIndex].sign,
+      continueOnError: modes[newCardIndex].continueOnError,
     });
     handleFieldListOnClose();
   };
@@ -217,6 +219,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       onLoad: modes[currentModeIndex].onLoad,
       onSave: modes[currentModeIndex].onSave,
       sign: modes[currentModeIndex].sign,
+      continueOnError: modes[currentModeIndex].continueOnError,
     })
   }, [modes, currentModeIndex])
 
@@ -319,7 +322,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       setCurrentModeIndex(oriCardIndex);
       await dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode, setSchemaData) as any);
       // After Saved the tab all data will be fetch from latest state again to ensure accuracy
-      setPageIndex(oriCardIndex);
       setCurrentModeValue(formModes[oriCardIndex].modeName);
     }
 
