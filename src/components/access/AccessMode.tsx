@@ -332,6 +332,11 @@ const AccessMode: React.FC = () => {
       counter++;
     }
 
+    setstate({
+      ...state,
+      ...newDroppables,
+    });
+
     const modesCopy = [...modes];
     setModes(modesCopy);
   };
