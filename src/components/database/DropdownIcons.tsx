@@ -7,7 +7,7 @@
 /* eslint-disable no-use-before-define */
 import React, { useContext } from 'react';
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/lab/Autocomplete';
+import Autocomplete from '@mui/material/Autocomplete';
 import Typography from '@mui/material/Typography';
 import DBIcon from '@mui/icons-material/Storage';
 import appIcons from '../../styles/app-icons';

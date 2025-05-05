@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import StorageIcon from '@mui/icons-material/Storage';
-import { Alert, AlertTitle } from '@mui/lab';
+import { Alert, AlertTitle } from '@mui/material';
 import { FormikProps } from 'formik';
 import FileContentsTree from './FileContentsTree';
 import { AppState } from '../../store';

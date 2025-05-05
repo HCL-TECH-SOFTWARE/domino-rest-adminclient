@@ -6,7 +6,7 @@
 
 /* eslint-disable no-use-before-define */
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/lab/Autocomplete';
+import Autocomplete from '@mui/material/Autocomplete';
 import styled from 'styled-components';
 
 const AutoContainer = styled.div`
