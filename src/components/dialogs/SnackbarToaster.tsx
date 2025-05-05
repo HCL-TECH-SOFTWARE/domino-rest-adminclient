@@ -6,7 +6,7 @@
 
 import React from 'react';
 import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/lab/Alert';
+import MuiAlert from '@mui/material/Alert';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../store';
 import { closeSnackbar } from '../../store/alerts/action';

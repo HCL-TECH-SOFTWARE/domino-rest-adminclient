@@ -158,7 +158,7 @@ const TabsSettings: React.FC<TabsSettingsProps> = () => {
           <Tab label="Config" {...a11yProps(1)} />
           <Tab label="Forms" {...a11yProps(2)} />
         </Tabs>
-        <Grid item md={12}>
+        <Grid>
           <div>
             {tabPanels.map((panel, index) => (
               <TabPanel key={panel.section.name} value={value} index={index} dir={theme.direction}>

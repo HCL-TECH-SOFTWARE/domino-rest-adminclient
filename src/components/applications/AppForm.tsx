@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
-import { Alert, AlertTitle } from '@mui/lab';
+import { Alert, AlertTitle } from '@mui/material';
 import ApplicationIcon from '@mui/icons-material/Apps';
 import AddIcon from '@mui/icons-material/Add';
 import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';

@@ -13,7 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Typography, InputAdornment, IconButton } from '@mui/material';
 import Button from '@mui/material/Button';
-import { Alert, AlertTitle } from '@mui/lab';
+import { Alert, AlertTitle } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import { AppState } from '../../store';
 import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
