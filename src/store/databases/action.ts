@@ -1258,39 +1258,6 @@ export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispat
         throw new Error(JSON.stringify(data))
       } else {
         dispatch(addNsfDesign(nsfPath, data));
-
-        // Get list of configured forms
-        try {
-          const { response, data } = await apiRequestWithRetry(() =>
-            fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json',
-              },
-            })
-          )
-          const res = response
-          const configuredForms = data
-
-          if (!res.ok) {
-            throw new Error(JSON.stringify(configuredForms))
-          }
-
-          // Loop through configured forms and fetch their modes
-          configformsList = configuredForms.forms;
-          if (configformsList != null && configformsList.length > 0) {
-            loadConfiguredForms(configformsList, allForms, dbName, data, setData, dispatch);
-          } else {
-            // Add unconfigured forms
-            loadUnconfiguredForms(data, allForms, dbName, setData, dispatch);
-          }
-          setActiveViews(dbName, data.views);
-          setActiveAgents(dbName, data.agents);
-        } catch (e: any) {
-          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-          const error = JSON.parse(err)
-          console.error("Error fetching list of configured forms:", error.message)
-        }
       }
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
@@ -1348,8 +1315,36 @@ const updateForms = (
           throw new Error(JSON.stringify(data))
         }
 
-        setSchemaData(data);
-        configformsList = data.forms.map((form: any) => {
+        const customForms = data.forms
+        const allForms = schemaData.forms
+
+        let newForms = []
+        if (allForms.length > customForms.length) {
+          newForms = allForms.map((form: any) => {
+            const customForm = customForms.find((customForm: any) => customForm.formName === form.formName);
+            if (customForm) {
+              return {
+                ...form,
+                formModes: customForm.formModes
+              };
+            } else {
+              return {
+                ...form,
+                formModes: [],
+              }
+            }
+          })
+        } else {
+          newForms = data.forms
+        }
+
+        const newData = {
+          ...data,
+          forms: newForms,
+        }
+
+        setSchemaData(newData);
+        configformsList = newForms.map((form: any) => {
           return { ...form, dbName };
         });
 
