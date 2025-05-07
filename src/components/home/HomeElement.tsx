@@ -45,7 +45,6 @@ const AppContainer = styled.main`
 const RightPanel = styled.div<{ open: boolean; theme: string }>`
   position: relative;
   height: 100%;
-  background: ${(props) => props.theme.bodyColor};
   width: calc( 100% - ${(props) => (props.open ? '241px' : '50px')});
   padding: 0 40px;
 
