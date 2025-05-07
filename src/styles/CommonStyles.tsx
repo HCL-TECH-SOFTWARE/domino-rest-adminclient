@@ -362,20 +362,16 @@ export const CardContainer = styled(Card)<{}>`
   }
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme.palette.mode).hoverColor};
-
     .more {
       visibility: visible;
     }
   }
 
   &:focus {
-    border: 1px solid ${(props) => getTheme(props.theme.palette.mode).hoverColor};
-
-    .more {
+  .more {
       visibility: visible;
     }
-  }
+  }  
 `;
 
 export const FilterContainer = styled.div`
