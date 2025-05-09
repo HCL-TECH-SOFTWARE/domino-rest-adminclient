@@ -40,6 +40,7 @@ import { Database } from '../../store/databases/types';
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
+  min-height: fit-content;
   position: absolute;
   top: ${(props) => props.top}%;
   border: 1px solid #D1D1D1;
@@ -51,7 +52,7 @@ const TabAccessContainer = styled.div<{ width: number; top: number }>`
 
 const TabNavigator = styled.div`
   flex: 1;
-  height: 100%;
+  height: auto;
   .MuiButtonBase-root {
     text-transform: inherit;
     font-size: 16px;
