@@ -17,7 +17,7 @@
     "@mui/x-date-pickers": "^8.2.0",
     "@mui/x-tree-view": "^8.0.0-alpha.13",
     "@redux-devtools/extension": "^3.3.0",
-    "@reduxjs/toolkit": "^2.5.0",
+    "@reduxjs/toolkit": "^2.8.1",
     "@shoelace-style/shoelace": "^2.19.1",
     "dayjs": "^1.11.13",
     "events": "^3.3.0",
