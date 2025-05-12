@@ -15,7 +15,7 @@
     "@mui/material": "7.0.2",
     "@mui/x-data-grid": "^8.2.0",
     "@mui/x-date-pickers": "^8.2.0",
-    "@mui/x-tree-view": "^8.0.0-alpha.13",
+    "@mui/x-tree-view": "^8.3.0",
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.5.0",
     "@shoelace-style/shoelace": "^2.19.1",
