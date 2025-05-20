@@ -383,7 +383,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
           <Typography className='settings-text'>Validation Rules</Typography>
           <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
           <Button className='expand-button' onClick={handleClickExpandValidation}>
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            {validationExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </Button>
           </Box>
         </Box>
