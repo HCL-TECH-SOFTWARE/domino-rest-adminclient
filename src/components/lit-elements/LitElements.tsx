@@ -17,6 +17,7 @@ import InputPassword from './lit-input-password';
 import Dropdown from './lit-dropdown';
 import AppStatus from './lit-app-status';
 import ApiErrorDialog from './lit-api-error-dialog';
+import DefaultCard from './lit-default-card';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -123,5 +124,11 @@ export const LitAppStatus = createComponent({
 export const LitApiErrorDialog = createComponent({
   tagName: 'lit-api-error-dialog',
   elementClass: ApiErrorDialog,
+  react: React,
+})
+
+export const LitDefaultCard = createComponent({
+  tagName: 'lit-default-card',
+  elementClass: DefaultCard,
   react: React,
 })
