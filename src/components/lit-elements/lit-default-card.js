@@ -9,8 +9,8 @@ class DefaultCard extends LitElement {
             margin: 0;
             border: none;
             border-radius: 5px;
-            height: auto;
-            width: 295px;
+            // height: auto;
+            width: 315px;
     
             &:hover {
                 cursor: pointer;
@@ -20,14 +20,21 @@ class DefaultCard extends LitElement {
 
         section {
             margin: 5px 0;
+            // background-color: green;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         section.titles {
             display: flex;
             flex-direction: column;
+            width: calc( 100% - 10px);
             gap: 1px;
             line-height: 1.2;
             margin: 0 5px;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
         section.delete {
             display: flex;
@@ -37,13 +44,21 @@ class DefaultCard extends LitElement {
             gap: 5px;
         }
         section.description {
-            margin: 5px 0 50px 0;
+            margin: 5px 0 20px 0;
             width: calc( 100% - 10px);
             text-overflow: ellipsis;
+            white-space: nowrap;
+            height: 70px;
+            overflow-wrap: break-word;
         }
 
         text {
             font-size: 16px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            // background-color: yellow;
+            max-width: 100%;
         }
         text.medium {
             font-size: 14px;
@@ -109,7 +124,7 @@ class DefaultCard extends LitElement {
         this.icon = ''
         this.title = ''
         this.subtitle = ''
-        this.acl = '*Editor'
+        this.acl = ''
         this.description = ''
         this.delete = false
         this.onDelete = () => {}
@@ -128,6 +143,7 @@ class DefaultCard extends LitElement {
                 <section class="titles">
                     <strong><text>${this.title}</text></strong>
                     <text class="medium">${this.subtitle}</text>
+                    ${this.acl ? html`<strong><text>${this.acl}</text></strong>` : ''}
                 </section>
             </div>
             <section class="description">
