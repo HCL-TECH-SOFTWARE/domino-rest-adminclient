@@ -10,13 +10,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
-import SchemaCardV2 from './v2/SchemaCardV2';
 import { Database } from '../../../../../store/databases/types';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
-import { ClickAwayListener, Paper, Popper } from '@mui/material';
 import { SchemasMainContainer } from './SchemaStyles';
-import DefaultCard from '../../../../lit-elements/lit-default-card';
 import { LitDefaultCard } from '../../../../lit-elements/LitElements';
 import appIcons from '../../../../../styles/app-icons';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
@@ -88,7 +85,6 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
           databases.map((database: any, index: any) => {
             return (
               <LitDefaultCard
-                key={database.schemaName + database.nsfPath}
                 title={database.schemaName}
                 subtitle={database.nsfPath}
                 description={database.description}
