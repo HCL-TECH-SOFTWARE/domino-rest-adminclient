@@ -86,21 +86,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
       <ExtraFlex>
         {
           databases.map((database: any, index: any) => {
-            // console.log(database.schemaName + ':' + database.nsfPath)
             return (
-              // <SchemaCardV2
-              //   openDatabase={openSchema}
-              //   open={open}
-              //   selected={selectedDB}
-              //   setSelectedDB={setSelectedDB}
-              //   setSelectedNsf={setSelectedNsf}
-              //   aria-describedby={id}
-              //   database={database}
-              //   onContextMenu={(event) => loadDatabase(event, database)}
-              //   key={database.schemaName + database.nsfPath}
-              //   permissions={permissions}
-              //   inUse = {schemasWithScopes?.includes(database.nsfPath + ":" + database.schemaName)}
-              // />
               <LitDefaultCard
                 key={database.schemaName + database.nsfPath}
                 title={database.schemaName}

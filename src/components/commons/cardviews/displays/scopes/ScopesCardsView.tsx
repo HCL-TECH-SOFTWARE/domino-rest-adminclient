@@ -66,15 +66,6 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
         {databases.length > 0 ? (
           databases.map((database: any, index: any) => {
             return (
-              // <ScopeCardV2
-              //   openDatabase={openScope}
-              //   open={open}
-              //   selected={selectedDB}
-              //   aria-describedby={id}
-              //   database={database}
-              //   onContextMenu={(event) => loadDatabase(event, database)}
-              //   key={index}
-              // />
               <LitDefaultCard
                 status={database.isActive}
                 icon={`data:image/svg+xml;base64, ${
@@ -85,6 +76,7 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
                 acl={`${database.maximumAccessLevel ? database.maximumAccessLevel : '*Editor'}`}
                 description={database.description}
                 delete={false}
+                onClick={() => openScope(database)}
               />
             );
           })

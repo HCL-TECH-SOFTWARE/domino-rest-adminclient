@@ -9,7 +9,6 @@ class DefaultCard extends LitElement {
             margin: 0;
             border: none;
             border-radius: 5px;
-            // height: auto;
             width: 315px;
     
             &:hover {
@@ -20,7 +19,6 @@ class DefaultCard extends LitElement {
 
         section {
             margin: 5px 0;
-            // background-color: green;
             max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -50,18 +48,25 @@ class DefaultCard extends LitElement {
             white-space: nowrap;
             height: 70px;
             overflow-wrap: break-word;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            line-height: 1.5;
         }
 
         text {
             font-size: 16px;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
-            // background-color: yellow;
+            white-space: normal;
             max-width: 100%;
+            display: block;
+            line-height: 1.5;
         }
         text.medium {
             font-size: 14px;
+            display: block;
         }
 
         img {
@@ -143,7 +148,17 @@ class DefaultCard extends LitElement {
                 <section class="titles">
                     <strong><text>${this.title}</text></strong>
                     <text class="medium">${this.subtitle}</text>
-                    ${this.acl ? html`<strong><text>${this.acl}</text></strong>` : ''}
+                    ${this.acl ? 
+                        html`
+                            <strong>
+                                <text
+                                    style="color: ${this.acl === '*Editor' ? 'orange' : 'green'};"
+                                >
+                                    ${this.acl}
+                                </text>
+                            </strong>
+                        ` 
+                        : ''}
                 </section>
             </div>
             <section class="description">
