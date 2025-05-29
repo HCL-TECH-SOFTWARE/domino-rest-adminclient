@@ -6,11 +6,9 @@
 
 import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
-import { AppState } from '../../../../../store';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
-import ScopeCardV2 from './v2/ScopeCardV2';
 import { Database } from '../../../../../store/databases/types';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
