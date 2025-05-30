@@ -44,24 +44,13 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
     const schemasScopes = scopes.map((scope) => {
       return scope.nsfPath + ":" + scope.schemaName;
     });
-    setSchemasWithScopes(schemasScopes);
+    if (schemasWithScopes !== schemasScopes) {
+      setSchemasWithScopes(schemasScopes);
+    }
   }, [scopes]);
 
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
-
-  const loadDatabase = (
-    event: React.MouseEvent<HTMLElement>,
-    database: Database
-  ) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
-    setOption(database);
-    setSelectedDB(database.schemaName);
-    setSelectedNsf(database.nsfPath);
-
-    // Set Selected Database Index to Redux Store
-    dispatch(setDbIndex(getDatabaseIndex(databases, database.schemaName, database.nsfPath)));
-  };
 
   const openSchema = (database: any) => {
     navigate(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);
