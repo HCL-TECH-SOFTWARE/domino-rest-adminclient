@@ -44,7 +44,9 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
     const schemasScopes = scopes.map((scope) => {
       return scope.nsfPath + ":" + scope.schemaName;
     });
-    if schemasWithScopes !== schemasScopes setSchemasWithScopes(schemasScopes);
+    if (schemasWithScopes !== schemasScopes) {
+      setSchemasWithScopes(schemasScopes);
+    }
   }, [scopes]);
 
   const open = Boolean(anchorEl);
