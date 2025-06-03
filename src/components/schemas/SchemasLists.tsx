@@ -43,7 +43,23 @@ const SchemasLists = () => {
   const location = useLocation();
   const { pathname, search } = location;
 
-  const [results, setResults] = useState([]) as any;
+  const [results, setResults] = useState(() => {
+    if (databasesOverview.length === 0) {
+      return [];
+    } else {
+      const schemasWithScopes = scopes.map((scope) => {
+        return scope.nsfPath + ":" + scope.schemaName;
+      });
+  
+      return databasesOverview
+        .filter((schema) => {
+          return schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName);
+        })
+        .sort((schemaA, schemaB) =>
+          schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1
+        );
+    }
+  });
   const [searchKey, setSearchKey] = useState('');
 
   const displayType = search.split('?view=')[1];
