@@ -65,6 +65,7 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
           databases.map((database: any, index: any) => {
             return (
               <LitDefaultCard
+                key={database.apiName + database.schemaName + index}
                 status={database.isActive}
                 icon={`data:image/svg+xml;base64, ${
                   appIcons[database.iconName]

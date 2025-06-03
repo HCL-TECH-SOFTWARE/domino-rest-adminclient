@@ -74,6 +74,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
           databases.map((database: any, index: any) => {
             return (
               <LitDefaultCard
+                key={database.schemaName + database.nsfPath + index}
                 title={database.schemaName}
                 subtitle={database.nsfPath}
                 description={database.description}
