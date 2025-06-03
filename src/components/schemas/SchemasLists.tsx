@@ -6,17 +6,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import AddIcon from '@mui/icons-material/Add';
-import CachedIcon from '@mui/icons-material/Cached';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { AppState } from '../../store';
 import {
   fetchKeepDatabases,
-        setOnlyShowSchemasWithScopes,
-        setPullDatabase,
-        setPullScope,
-       } from '../../store/databases/action';
+  setOnlyShowSchemasWithScopes,
+  setPullDatabase,
+  setPullScope,
+} from '../../store/databases/action';
 import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer, FilterContainer, BlueSwitch } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
@@ -34,6 +31,7 @@ import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
 import { IMG_DIR } from '../../config.dev';
 import { LitButton } from '../lit-elements/LitElements';
+import { areArraysEqual } from '../../utils/common';
 
 const SchemasLists = () => {
   const { scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview, databasePull } = useSelector(
@@ -124,8 +122,15 @@ const SchemasLists = () => {
     }
   }, [dispatch, databasesOverview, databasePull])
 
+  const lastRun = useRef(Date.now());
+
   useEffect(() => {
+    // Throttle logic
+    if (Date.now() - lastRun.current < 250) return; // Throttle interval of 250ms
+    lastRun.current = Date.now();
+
     let schemas = databasesOverview.slice();
+
     if (onlyShowSchemasWithScopes) {
       const schemasWithScopes = scopes.map((scope) => {
         return scope.nsfPath + ":" + scope.schemaName;
@@ -134,22 +139,33 @@ const SchemasLists = () => {
         return schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName);
       });
     }
+
     if (searchKey) {
-      if(searchType.indexOf("NSF") !== -1){
+      if (searchType.indexOf("NSF") !== -1) {
         schemas = schemas.filter((schema) => {
-          return schema.nsfPath.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1;
+          return schema.nsfPath.toLowerCase().includes(searchKey.toLowerCase());
         });
-      }else{
+      } else {
         schemas = schemas.filter((schema) => {
-          return schema.schemaName.toLowerCase().indexOf(searchKey.toLowerCase()) !== -1;
+          return schema.schemaName.toLowerCase().includes(searchKey.toLowerCase());
         });
       }
     }
-    schemas.sort((schemaA, schemaB) => schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1);
-    
-    const uniqueSchemas = [...new Set(schemas)]
-    setResults(uniqueSchemas)
-  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType, dispatch]);
+
+    schemas.sort((schemaA, schemaB) =>
+      schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1
+    );
+
+    const uniqueSchemas = [...new Set(schemas)];
+
+    // Only update state if the new value is different
+    setResults((prevResults: Array<any>) => {
+      if (!areArraysEqual(prevResults, uniqueSchemas)) {
+        return uniqueSchemas;
+      }
+      return prevResults;
+    });
+  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType]);
 
   return (
     <SettingContext.Provider value={[context, setContext]}>
