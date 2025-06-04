@@ -140,22 +140,18 @@ const SchemasLists = () => {
 
   const lastRun = useRef(Date.now());
 
-  useEffect(() => {
-    // Throttle logic
-    if (Date.now() - lastRun.current < 250) return; // Throttle interval of 250ms
-    lastRun.current = Date.now();
-
+  const computeResults = () => {
     let schemas = databasesOverview.slice();
-
+  
     if (onlyShowSchemasWithScopes) {
       const schemasWithScopes = scopes.map((scope) => {
         return scope.nsfPath + ":" + scope.schemaName;
       });
-      schemas = databasesOverview.filter((schema) => {
+      schemas = schemas.filter((schema) => {
         return schemasWithScopes.includes(schema.nsfPath + ":" + schema.schemaName);
       });
     }
-
+  
     if (searchKey) {
       if (searchType.indexOf("NSF") !== -1) {
         schemas = schemas.filter((schema) => {
@@ -167,22 +163,22 @@ const SchemasLists = () => {
         });
       }
     }
-
+  
     schemas.sort((schemaA, schemaB) =>
       schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1
     );
-
-    const uniqueSchemas = [...new Set(schemas)];
-
-    // Only update state if the new value is different
-    setResults((prevResults: Array<any>) => {
-      if (!areArraysEqual(prevResults, uniqueSchemas)) {
-        return uniqueSchemas;
-      }
-      return prevResults;
-    });
-  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType]);
-
+  
+    return [...new Set(schemas)];
+  };
+  
+  useEffect(() => {
+    const uniqueSchemas = computeResults();
+  
+    if (!areArraysEqual(results, uniqueSchemas)) {
+      setResults(uniqueSchemas);
+    }
+  }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType, results]);
+  
   return (
     <SettingContext.Provider value={[context, setContext]}>
       <WrapperContainer>
