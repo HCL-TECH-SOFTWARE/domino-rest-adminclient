@@ -1,6 +1,6 @@
 {
   "name": "@hcl-software/domino-rest-adminclient",
-  "version": "1.39.2-SNAPSHOT",
+  "version": "1.39.5",
   "private": false,
   "proxy": "http://localhost:8880",
   "homepage": ".",
