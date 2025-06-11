@@ -18,6 +18,7 @@ import {
   SET_401_ERROR,
   SET_IDP_LOGIN,
   CURRENT_IDP,
+  SET_ERROR_MESSAGE,
 } from './types';
 
 const initialState: AccountState = {
@@ -30,6 +31,7 @@ const initialState: AccountState = {
   authenticated: false,
   error: false,
   error401: false,
+  errorMessage: '',
   token: '',
   idpLogin: false,
   currentIdp: {
@@ -94,6 +96,11 @@ export default function accountReducer(
       return {
         ...state,
         error401: action.payload,
+      };
+    case SET_ERROR_MESSAGE:
+      return {
+        ...state,
+        errorMessage: action.payload,
       };
     case SET_TOKEN:
       return {

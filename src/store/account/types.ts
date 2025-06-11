@@ -40,6 +40,7 @@ export interface AccountState {
   authenticated: boolean;
   error: boolean;
   error401: boolean;
+  errorMessage: string;
   token: string;
   idpLogin: boolean;
   currentIdp: any;
@@ -63,6 +64,7 @@ export const RENEW_TOKEN = 'RENEW_TOKEN';
 export const NAVITEMS = 'NAVITEMS';
 export const SET_IDP_LOGIN = 'SET_IDP_LOGIN';
 export const CURRENT_IDP = 'CURRENT_IDP';
+export const SET_ERROR_MESSAGE = 'SET_ERROR_MESSAGE';
 
 interface LogIn {
   type: typeof LOGIN;
@@ -116,6 +118,11 @@ interface SetCurrentIdp {
   payload: IdP;
 }
 
+interface SetErrorMessage {
+  type: typeof SET_ERROR_MESSAGE;
+  payload: string;
+}
+
 export type AccountActionTypes =
   | LogIn
   | LogOut
@@ -127,4 +134,5 @@ export type AccountActionTypes =
   | SetToken
   | RemoveAuth
   | SetIdpLogin
-  | SetCurrentIdp;
+  | SetCurrentIdp
+  | SetErrorMessage;

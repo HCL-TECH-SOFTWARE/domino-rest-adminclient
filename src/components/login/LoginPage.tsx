@@ -31,6 +31,7 @@ import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from 'react-router-dom';
 import {
+  LitAlert,
   LitApiErrorDialog,
   LitButton,
   LitDropdown,
@@ -162,7 +163,7 @@ const ButtonSubmit = styled(Button)(({ theme }) => ({
 }));
 
 const LoginPage = () => {
-  const { error, error401, idpLogin } = useSelector((state: AppState) => state.account);
+  const { error, error401, idpLogin, errorMessage } = useSelector((state: AppState) => state.account);
   const dispatch = useDispatch();
   const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
@@ -506,10 +507,6 @@ const LoginPage = () => {
           maxWidth: matches ? "100%" : "60%",
           height: '100%',
         }}
-        // item
-        // xs={12}
-        // sm={8}
-        // md={5}
         component={Paper}
         elevation={6}
         square
@@ -522,6 +519,7 @@ const LoginPage = () => {
             </Typography>
           </KeepLogoContainer>
           <div style={{ flex: 1 }}>
+            {error && <LitAlert variant='danger' heading='Error logging in!' text={errorMessage} />}
             <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
               <LitButton style={{ width: '100%' }} onClick={handleLogInWithPassword} outline>LOG IN WITH PASSWORD</LitButton>
               {isHttps &&
