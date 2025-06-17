@@ -98,13 +98,26 @@ const EditFormulaDialog = styled.dialog`
 
   .compute-text {
     font-size: 15px;
+    width: 50%;
   }
 
   .compute-line {
     padding: 5px 0;
     display: flex;
-    justify-content: space-between;
-    width: 30%;
+    width: 50%;
+  }
+
+  .continue-line {
+    padding-left: 10px;
+  }
+
+  .continue-text {
+    font-size: 14px;
+    width: 50%;
+  }
+
+  .disabled {
+    color: #A5AFBE;
   }
 `
 
@@ -355,9 +368,15 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                 <Typography className='compute-text'>Compute with Form</Typography>
                 <BlueSwitch size='small' checked={formComputed} onChange={handleToggleCompute} id='compute-with-form' />
               </Box>}
-              {formulaTitle === "Formula for Write Access" && <Box className='compute-line'>
-                <Typography className='compute-text'>Continue on Error</Typography>
-                <BlueSwitch size='small' checked={continueOnError} onChange={handleToggleContinue} id='continue-on-error' />
+              {formulaTitle === "Formula for Write Access" && <Box className='compute-line continue-line'>
+                <Typography className={`continue-text ${!formComputed ? 'disabled' : ''}`}>Continue on Error</Typography>
+                <BlueSwitch
+                  size='small'
+                  checked={continueOnError}
+                  onChange={handleToggleContinue}
+                  id='continue-on-error'
+                  disabled={!formComputed}
+                />
               </Box>}
               <TextField 
                 variant='outlined' 
