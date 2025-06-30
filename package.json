@@ -18,7 +18,7 @@
     "@mui/x-tree-view": "^8.5.3",
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.8.2",
-    "@shoelace-style/shoelace": "^2.19.1",
+    "@shoelace-style/shoelace": "^2.20.1",
     "dayjs": "^1.11.13",
     "events": "^3.3.0",
     "formik": "^2.4.6",
