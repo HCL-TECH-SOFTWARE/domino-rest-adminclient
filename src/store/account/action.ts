@@ -18,6 +18,7 @@ import {
   PageListObj,
   SET_IDP_LOGIN,
   IdP,
+  SET_ERROR_MESSAGE,
 } from './types';
 import { BASE_KEEP_API_URL, IDP_KEEP_API_URL } from '../../config.dev';
 import {
@@ -42,6 +43,13 @@ export function set401Error(error401: boolean) {
     type: SET_401_ERROR,
     payload: error401
   }
+}
+
+export function setErrorMessage(errorMessage: string) {
+  return {
+    type: SET_ERROR_MESSAGE,
+    payload: errorMessage,
+  };
 }
 
 export function authenticate() {
@@ -137,6 +145,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
       successCallback()
     } else {
       dispatch(setLoginError(true));
+      dispatch(setErrorMessage(`${data.status} error: ${data.message}`));
       return data;
     }
   };
