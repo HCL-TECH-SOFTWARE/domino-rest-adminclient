@@ -5,11 +5,9 @@
  * ========================================================================== */
 
 import React from 'react';
-import Drawer from '@mui/material/Drawer';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormikProps } from 'formik';
 import { AppState } from '../../store';
-import { toggleApplicationDrawer } from '../../store/drawer/action';
 import AppForm from './AppForm';
 import GroupForm from '../groups/GroupForm';
 import PeopleForm from '../people/PeopleForm';
@@ -17,6 +15,7 @@ import TestForm from '../access/TestForm';
 import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
+import { LitDrawer } from '../lit-elements/LitElements';
 
 interface FormDrawerProps {
   formName: string;
@@ -37,12 +36,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
   const dispatch = useDispatch();
 
   return (
-    <Drawer
-      anchor="right"
-      open={applicationDrawer}
-      onClose={() => dispatch(toggleApplicationDrawer())}
-      style={{ zIndex: 0 }}
-    >
+    <LitDrawer open={applicationDrawer} label="Application Form">
       {(() => {
         switch (formName) {
           // Application form
@@ -78,7 +72,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
             )
         }
       })()}
-    </Drawer>
+    </LitDrawer>
   );
 };
 
