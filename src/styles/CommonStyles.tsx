@@ -215,15 +215,15 @@ export const Header = styled.div`
 `;
 
 export const DrawerFormContainer = styled.div`
-  width: 50vw;
   @media only screen and (max-width: 768px) {
     width: 100vw;
   }
+  max-height: 100%;
 `;
 
 export const FormContentContainer = styled.div`
   padding: 0px 20px;
-  width: 55%;
+  min-width: 55%;
 
   .header-title {
     margin-top: 15px;

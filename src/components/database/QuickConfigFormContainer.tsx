@@ -4,9 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Drawer from '@mui/material/Drawer';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import QuickConfigForm from './QuickConfigForm';
@@ -17,6 +16,7 @@ import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
 import appIcons from '../../styles/app-icons';
+import { LitDrawer } from '../lit-elements/LitElements';
 
 const QuickConfigFormSchema = Yup.object().shape({
   schemaName: Yup.string()
@@ -134,7 +134,7 @@ export default function QuickConfigFormContainer() {
   };
   
   return (
-    <Drawer anchor="right" open={quickConfigDrawer} onClose={handleClickOpen}>
+    <LitDrawer label="Quick Config" open={quickConfigDrawer}>
       <DrawerFormContainer>
         <QuickConfigForm
           isDisabled={isDisabled}
@@ -144,6 +144,6 @@ export default function QuickConfigFormContainer() {
           path={{ nsfPath, setNsfPath: handleNsfPath }}
         />
       </DrawerFormContainer>
-    </Drawer>
+    </LitDrawer>
   );
 }

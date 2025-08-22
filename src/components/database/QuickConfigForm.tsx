@@ -9,7 +9,6 @@ import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import CloseIcon from '@mui/icons-material/Close';
 import ClearIcon from '@mui/icons-material/Clear';
 import { FormControlLabel, Checkbox, IconButton } from '@mui/material';
 import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -39,7 +38,7 @@ const Forms = styled.form`
 `;
 
 const FileStructure = styled.div`
-  width: 45%;
+  width: 40%;
   display: flex;
   padding: 0 0 0 10px;
   flex-direction: column;
@@ -248,13 +247,6 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         </SearchDatabaseContainer>
       </FileStructure>
       <FormContentContainer>
-        <Tooltip arrow title="Close">
-          <CloseIcon
-            cursor="pointer"
-            className="close-icon float-right"
-            onClick={resetForm}
-          />
-        </Tooltip>
 
         <Typography
           className="header-title"

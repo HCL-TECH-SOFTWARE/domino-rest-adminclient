@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
@@ -16,7 +16,7 @@ import styled from 'styled-components';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { fetchMyApps } from '../../store/applications/action';
-import { LitButtonNeutral, LitButtonNo, LitButtonYes } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonNo, LitButtonYes, LitDrawer } from '../lit-elements/LitElements';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -119,20 +119,12 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   }
   
   return (
-    <Drawer anchor="right" open={appFilterDrawer} onClose={handleClickOpen}>
+    <LitDrawer label="Filter" open={appFilterDrawer}>
       <DrawerFormContainer style={{ width: '35vw' }}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
             <Box width='100%' display='flex' justifyContent='flex-end'>
-              <Tooltip arrow title="Close">
-                <CloseIcon
-                  cursor="pointer"
-                  className="close-icon float-right"
-                  onClick={() => dispatch(toggleAppFilterDrawer())}
-                />
-              </Tooltip>
             </Box>
-            <Typography className='title'>Filter</Typography>
             <Section>
               <Typography className='header'>Status</Typography>
               <RadioGroup value={filterStatus} onChange={(e) => setFilterStatus(e.currentTarget.value)} className='radio-group'>
@@ -241,7 +233,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
           </FilterContainer>
         </LocalizationProvider>
       </DrawerFormContainer>
-    </Drawer>
+    </LitDrawer>
   );
 }
 

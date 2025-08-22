@@ -6,20 +6,20 @@
 
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Drawer from '@mui/material/Drawer';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import ScopeForm from './ScopeForm';
 import { AppState } from '../../store';
 import DeleteDialog from '../dialogs/DeleteDialog';
 import { toggleDrawer } from '../../store/drawer/action';
-import { changeScope } from '../../store/databases/action';
+import { changeScope, clearDBError } from '../../store/databases/action';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import appIcons from '../../styles/app-icons';
 import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
+import { LitDrawer } from '../lit-elements/LitElements';
 
 type ScopeFormContainerProps = {
   database?: any;
@@ -134,17 +134,24 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
     }
   }, [visible, isEdit, database]);
   
-  const handleClickOpen = () => {
-    setIsDisabled(false);
-    formik.resetForm();
-    dispatch(toggleDrawer());
-  };
   const handleSetSchema = (schemaNameValue: string) => {
     formik.values.schemaName = schemaNameValue;
     setSchemaName(schemaNameValue);
   };
+  toggleDrawer()
+
+  const handleCLoseDrawer = () => {
+    formik.resetForm();
+    dispatch(clearDBError());
+    dispatch(toggleDrawer());
+  }
+
   return (
-    <Drawer anchor="right" open={visible} onClose={handleClickOpen}>
+    <LitDrawer
+      label={`${isEdit ? 'Edit' : 'Add New'} Scope`}
+      open={visible}
+      closeFn={handleCLoseDrawer}
+    >
       <DrawerFormContainer>
         <ScopeForm
           isDisabled={isDisabled}
@@ -164,7 +171,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
           open={deleteDialog}
         />
       </DrawerFormContainer>
-    </Drawer>
+    </LitDrawer>
   );
 }
 export default ScopeFormContainer;
