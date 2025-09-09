@@ -185,6 +185,22 @@ const LoginPage = () => {
     loginPath: '/api/webauthn-v1/login'
   });
 
+  /* Helper function to check if login came back as JSON */
+  const checkForResponse = (response: Response) => {
+    if (!response.ok) {
+      if (response.headers.get('Content-Type')?.includes('application/json')) {
+        return response.json();
+      }
+      const errResponse: any = {
+        status: response.status,
+        message: response.statusText,
+        errorId: 0
+      };
+      return Promise.resolve(errResponse);
+    }
+    return response.json();
+  };
+
   /* Setup the login form
    Used for username / password and Webauthn login*/
   const handleSignUpWithPasskey = async (event: any) => {
@@ -211,7 +227,7 @@ const LoginPage = () => {
         dispatch(setToken(token));
         return keepAuthenticator.register(token);
       })
-      .then((res) => res.json())
+      .then((res) => checkForResponse(res))
       .then((json) => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
@@ -240,7 +256,7 @@ const LoginPage = () => {
   const logInWithPasskey = (username: string) => {
     keepAuthenticator
       .login({ name: username })
-      .then((res) => res.json())
+      .then((res) => checkForResponse(res))
       .then((json) => {
         if (json.status) {
           dispatch(toggleAlert(json.message));
@@ -293,7 +309,7 @@ const LoginPage = () => {
           password: passwordRef.current?.shadowRoot.querySelector('sl-input')?.value,
         })
       })
-        .then((res) => res.json())
+        .then((res) => checkForResponse(res))
         .then((data) => {
           if (data.status) {
             throw new Error(data.message);
