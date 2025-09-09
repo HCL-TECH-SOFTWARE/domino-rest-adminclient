@@ -227,7 +227,7 @@ const LoginPage = () => {
         dispatch(setToken(token));
         return keepAuthenticator.register(token);
       })
-      .then((res) => checkForResponse(res))
+      .then((res) => res.json())
       .then((json) => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
