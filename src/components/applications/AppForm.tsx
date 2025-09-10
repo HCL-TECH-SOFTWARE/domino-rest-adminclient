@@ -138,15 +138,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   };
 
   return (
-    <FormContentContainer role="presentation" style={{ width: '100%' }}>
-      <CloseIcon
-        cursor="pointer"
-        className="close-icon float-right"
-        onClick={() => {
-          dispatch(clearAppError());
-          dispatch(toggleApplicationDrawer());
-        }}
-      />
+    <FormContentContainer role="presentation" style={{ width: '90%' }}>
       <PanelContent onSubmit={formik.handleSubmit}>
         <Typography
           className="header-title"

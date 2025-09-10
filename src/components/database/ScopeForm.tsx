@@ -9,11 +9,9 @@ import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import CloseIcon from '@mui/icons-material/Close';
 import MenuItem from '@mui/material/MenuItem';
 import {
   Typography,
-  Tooltip,
   Checkbox,
   FormControlLabel
 } from '@mui/material';
@@ -35,7 +33,6 @@ import {
   FormContentContainer,
   InputContainer,
 } from '../../styles/CommonStyles';
-import { clearDBError } from '../../store/databases/action';
 import { LitButton } from '../lit-elements/LitElements';
 
 const Forms = styled.form`
@@ -43,9 +40,9 @@ const Forms = styled.form`
 `;
 
 const FileStructure = styled.div`
-  width: 45%;
+  width: 40%;
   display: flex;
-  padding: 0 0 0 10px;
+  margin: 0;
   flex-direction: column;
 
   .header-title {
@@ -258,17 +255,6 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
         </SearchDatabaseContainer>
       </FileStructure>
       <FormContentContainer>
-        <Tooltip arrow title="Close">
-          <CloseIcon
-            cursor="pointer"
-            className="close-icon float-right"
-            onClick={() => {
-              formik.resetForm();
-              dispatch(clearDBError());
-              dispatch(toggleDrawer());
-            }}
-          />
-        </Tooltip>
 
         <Typography
           className="header-title"

@@ -19,6 +19,7 @@ import AppStatus from './lit-app-status';
 import ApiErrorDialog from './lit-api-error-dialog';
 import DefaultCard from './lit-default-card';
 import Alert from './lit-alert';
+import Drawer from './lit-drawer';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -137,5 +138,11 @@ export const LitDefaultCard = createComponent({
 export const LitAlert = createComponent({
   tagName: 'lit-alert',
   elementClass: Alert,
+  react: React,
+})
+
+export const LitDrawer = createComponent({
+  tagName: 'lit-drawer',
+  elementClass: Drawer,
   react: React,
 })
