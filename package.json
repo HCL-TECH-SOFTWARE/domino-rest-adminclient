@@ -58,7 +58,7 @@
     "jest-environment-jsdom": "^30.1.2",
     "jest-sonar-reporter": "^2.0.0",
     "jsdom": "^26.1.0",
-    "ts-jest": "^29.4.1",
+    "ts-jest": "^29.4.2",
     "vite": "^7.1.5"
   },
   "overrides": {
