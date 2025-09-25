@@ -340,7 +340,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             }}
             helperText={
               <div>
-                <span>Server name must be heirarchical or canonical format. For example:</span>
+                <span>Optional : Server name must be heirarchical or canonical format.<br/>For example:</span>
                 <li>Server/Org</li>
                 <li>CN=Server/O=Org</li>
               </div>
