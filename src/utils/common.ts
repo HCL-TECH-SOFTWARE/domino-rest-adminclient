@@ -79,3 +79,19 @@ export function areArraysEqual (arr1: Array<any>, arr2: Array<any>): boolean {
   }
   return true;
 };
+
+/* Helper function to check if login came back as JSON */
+export const checkForResponse = (response: Response) => {
+  if (!response.ok) {
+    if (response.headers.get('Content-Type')?.includes('application/json')) {
+      return response.json();
+    }
+    const errResponse: any = {
+      status: response.status,
+      message: response.statusText,
+      errorId: 0
+    };
+    return Promise.resolve(errResponse);
+  }
+  return response.json();
+};
