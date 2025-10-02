@@ -38,6 +38,7 @@ import {
   LitInputPassword,
   LitInputText
 } from '../lit-elements/LitElements';
+import { checkForResponse } from '../../utils/common';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -184,22 +185,6 @@ const LoginPage = () => {
     registerPath: '/api/webauthn-v1/register',
     loginPath: '/api/webauthn-v1/login'
   });
-
-  /* Helper function to check if login came back as JSON */
-  const checkForResponse = (response: Response) => {
-    if (!response.ok) {
-      if (response.headers.get('Content-Type')?.includes('application/json')) {
-        return response.json();
-      }
-      const errResponse: any = {
-        status: response.status,
-        message: response.statusText,
-        errorId: 0
-      };
-      return Promise.resolve(errResponse);
-    }
-    return response.json();
-  };
 
   /* Setup the login form
    Used for username / password and Webauthn login*/

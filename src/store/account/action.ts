@@ -30,6 +30,7 @@ import { ThunkAction } from 'redux-thunk';
 import { AnyAction } from 'redux';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
+import { checkForResponse } from '../../utils/common';
 
 export function setLoginError(error: boolean) {
   return {
@@ -132,7 +133,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
         },
         body: JSON.stringify(credentials),
       })
-    const data = await response.json()
+    const data = await checkForResponse(response)
 
     if (response.ok) {
       const jwtData = data;
