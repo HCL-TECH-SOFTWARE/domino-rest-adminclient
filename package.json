@@ -59,7 +59,7 @@
     "jest-sonar-reporter": "^2.0.0",
     "jsdom": "^26.1.0",
     "ts-jest": "^29.4.2",
-    "vite": "^7.1.7"
+    "vite": "^7.1.9"
   },
   "overrides": {
     "yaml": "^2.6.1"
