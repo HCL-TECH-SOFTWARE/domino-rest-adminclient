@@ -38,7 +38,7 @@ import {
   LitInputPassword,
   LitInputText
 } from '../lit-elements/LitElements';
-import { checkForResponse } from '../../utils/common';
+import { AlertManager, checkForResponse } from '../../utils/common';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -497,6 +497,11 @@ const LoginPage = () => {
       }
     }
   }, [error401, idpLogin])
+
+  useEffect(() => {
+    // Reset alert when invalid credentials
+    AlertManager.resetAlert()
+  }, [])
 
   return (
     <GridRoot container>

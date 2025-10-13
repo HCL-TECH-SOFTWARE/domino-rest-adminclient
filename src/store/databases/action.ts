@@ -54,7 +54,6 @@ import {
   ADD_ACTIVEVIEW,
   DELETE_ACTIVEVIEW,
   VIEWS_ERROR,
-  AGENTS_ERROR,
   ADD_ACTIVEAGENT,
   DELETE_ACTIVEAGENT,
   UPDATE_ERROR,
@@ -73,11 +72,10 @@ import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
 import { toggleSettings } from '../dbsettings/action';
 import { convert2FieldType, convertDesignType2Format } from '../../components/access/functions';
-import { fullEncode } from '../../utils/common';
+import { AlertManager, fullEncode } from '../../utils/common';
 import appIcons from '../../styles/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import { refreshToken } from '../../components/login/pkce';
 
 /**
  * action.ts provides the action methods for the Database page
@@ -442,10 +440,15 @@ export const fetchKeepDatabases = () => {
         body: JSON.stringify(payload)
       })
 
+      if(response.status === 401) {
+        localStorage.removeItem('user_token')
+        AlertManager.showAlert("Invalid credentials. Going back to the login page.");
+        window.location.reload();
+        return
+      }
+
       processResponse(response, dispatch, scopeList);
     } catch (e: any) {
-        await refreshToken()
-
         const response = await fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
           method: 'POST',
           headers: {

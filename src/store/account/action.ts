@@ -157,7 +157,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
 export function logout() {
   return async (dispatch: Dispatch) => {
     try {
-      const { response, data } = await apiRequestWithRetry(() =>
+      const response = await
         fetch(`${BASE_KEEP_API_URL}/auth/logout?dataSource=keepconfig`, {
           method: 'POST',
           headers: {
@@ -166,13 +166,12 @@ export function logout() {
           },
           body: JSON.stringify({ logout: 'Yes' }),
         })
-      )
 
-      if (!response.ok) {
+      if (!response.ok && response.status !== 401) {
+        const data = await response.json()
         throw new Error(JSON.stringify(data))
-      }
 
-      return data;
+      }
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)

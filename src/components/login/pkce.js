@@ -1,6 +1,6 @@
 // PKCE Implementation in JavaScript
 
-import { getToken } from "../../store/account/action";
+import { AlertManager } from "../../utils/common";
 
 // Generate Code Verifier
 function dec2hex(dec) {
@@ -164,6 +164,9 @@ export async function refreshToken() {
         }
     } catch (err) {
         console.error(err);
+        localStorage.removeItem('user_token');
+        AlertManager.showAlert("Invalid credentials. Going back to the login page.");
+        window.location.reload();
         return { error: err.message || "An unexpected error occurred during token refresh" };
     }
 }
