@@ -95,3 +95,18 @@ export const checkForResponse = (response: Response) => {
   }
   return response.json();
 };
+
+export class AlertManager {
+  static alertShown = false;
+
+  static showAlert(message: string) {
+      if (!this.alertShown) {
+          this.alertShown = true;
+          alert(message);
+      }
+  }
+
+  static resetAlert() {
+      this.alertShown = false;
+  }
+}
