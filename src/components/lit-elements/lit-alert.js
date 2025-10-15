@@ -47,6 +47,8 @@ class Alert extends LitElement {
         heading: { type: String },
         text: { type: String },
         icon: { type: String },
+        closable: { type: Boolean },
+        duration: { type: Number },
     };
   
     constructor() {
@@ -55,6 +57,8 @@ class Alert extends LitElement {
       this.icon = this.getIcon(this.variant);
       this.heading = "Test heading"
       this.text = "Test text"
+      this.closable = true
+      this.duration = 0; // Duration in milliseconds
     }
 
     updated(changedProperties) {

@@ -1,10 +1,11 @@
 import { refreshToken } from "../components/login/pkce";
+import { checkForResponse } from "./common";
 
 export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
     try {
         // Make the initial API request
         const response = await apiRequest();
-        const data = await response.json();
+        const data = await checkForResponse(response);
 
         // If the response is not OK, handle errors
         if (!response.ok) {
@@ -36,13 +37,19 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
                 };
             }
 
-            // For other errors, return the error details
-            return {
+            const returnError = {
                 success: false,
                 response,
                 data,
                 error: data,
-            };
+            }
+
+            const errorMsg = `Error ${error.status}: ${error.message || 'An error occurred during the API request.'}`
+            notify(errorMsg, 'danger', 'exclamation-triangle', 5000)
+            console.error(errorMsg)
+
+            // For other errors, return the error details
+            return returnError;
         }
 
         // If the response is OK, return the success result
@@ -62,3 +69,28 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
         };
     }
 };
+
+// https://shoelace.style/components/alert#toast-notifications
+// Always escape HTML for text arguments!
+function escapeHtml(html: string) {
+    const div = document.createElement('div');
+    div.textContent = html;
+    return div.innerHTML;
+  }
+
+// https://shoelace.style/components/alert#toast-notifications
+// Custom function to emit toast notifications
+export function notify(message: string, variant = 'primary', icon = 'info-circle', duration = 5000) {
+    const alert = Object.assign(document.createElement('sl-alert'), {
+      variant,
+      closable: true,
+      duration: duration,
+      innerHTML: `
+        <sl-icon name="${icon}" slot="icon"></sl-icon>
+        ${escapeHtml(message)}
+      `
+    });
+
+    document.body.append(alert);
+    return alert.toast();
+  }
