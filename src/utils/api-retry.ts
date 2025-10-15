@@ -61,6 +61,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
         };
     } catch (err: any) {
         // Handle unexpected errors
+        notify(err.message || "An unexpected error occured", 'danger', 'exclamation-triangle', 5000)
         return {
             success: false,
             response: null,
