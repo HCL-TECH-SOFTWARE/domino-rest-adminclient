@@ -45,7 +45,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
             }
 
             const errorMsg = `Error ${error.status}: ${error.message || 'An error occurred during the API request.'}`
-            notify(errorMsg, 'danger', 'exclamation-triangle', 5000)
+            notify(errorMsg, 'danger', 'exclamation-triangle')
             console.error(errorMsg)
 
             // For other errors, return the error details
@@ -61,7 +61,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
         };
     } catch (err: any) {
         // Handle unexpected errors
-        notify(err.message || "An unexpected error occured", 'danger', 'exclamation-triangle', 5000)
+        notify(err.message || "An unexpected error occured", 'danger', 'exclamation-triangle')
         return {
             success: false,
             response: null,
@@ -81,11 +81,10 @@ function escapeHtml(html: string) {
 
 // https://shoelace.style/components/alert#toast-notifications
 // Custom function to emit toast notifications
-export function notify(message: string, variant = 'primary', icon = 'info-circle', duration = 5000) {
+export function notify(message: string, variant = 'primary', icon = 'info-circle') {
     const alert = Object.assign(document.createElement('sl-alert'), {
       variant,
       closable: true,
-      duration: duration,
       innerHTML: `
         <sl-icon name="${icon}" slot="icon"></sl-icon>
         ${escapeHtml(message)}
