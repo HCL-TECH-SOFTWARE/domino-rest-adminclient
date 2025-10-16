@@ -45,7 +45,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
             }
 
             const errorMsg = `Error ${error.status}: ${error.message || 'An error occurred during the API request.'}`
-            notify(errorMsg, 'danger', 'exclamation-triangle', 5000)
+            notify(errorMsg, 'danger', 'exclamation-triangle')
             console.error(errorMsg)
 
             // For other errors, return the error details
