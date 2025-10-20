@@ -124,6 +124,21 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
     }
   }
 
+  const onClickSubmitScope = async () => {
+    formik.values.appIcon = iconAutocompleteRef.current ? iconAutocompleteRef.current.selectedOption : 'beach';
+    if (iconAutocompleteRef.current && iconAutocompleteRef.current.shadowRoot) {
+      const inputElement = iconAutocompleteRef.current.shadowRoot.querySelector('input')
+      if (inputElement) {
+        formik.values.appIcon = inputElement.value;
+      }
+    }
+    if (scopeAutocompleteRef.current) {
+      scopeAutocompleteRef.current.selectedOption = "";
+    }
+    
+    await formik.submitForm()
+  }
+
   return (
     <FormContentContainer role="presentation" style={{ width: '90%' }}>
       <PanelContent onSubmit={formik.handleSubmit}>
@@ -328,7 +343,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
         >
           Close
         </Button>
-        <Button className="button-style" onClick={formik.submitForm}>
+        <Button className="button-style" onClick={onClickSubmitScope}>
           {formContext === 'Edit' ? 'Update' : 'Add'}
         </Button>
       </ActionButtonBar>
