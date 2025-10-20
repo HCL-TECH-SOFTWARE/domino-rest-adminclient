@@ -7,6 +7,7 @@ class Autocomplete extends LitElement {
     error: { type: Boolean },
     errorMessage: { type: String },
     initialOption: { type: String },
+    icons: { type: Object },
   };
 
   static styles = css`
@@ -136,6 +137,14 @@ class Autocomplete extends LitElement {
     this.error = false;
     this.errorMessage = '';
     this.initialOption = '';
+    this.icons = {};
+    this.hasIcons = false;
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('icons')) {
+      this.hasIcons = Object.keys(this.icons).length > 0;
+    }
   }
 
   render() {
@@ -143,6 +152,13 @@ class Autocomplete extends LitElement {
       <div class="parent-container">
         <section class="autocomplete-container">
           <section class="input-container ${this.error ? 'error' : ''}">
+            ${this.hasIcons && this.selectedOption && this.icons[this.selectedOption] ? html`
+              <img
+                src="data:image/svg+xml;base64,${this.icons[this.selectedOption]}"
+                alt=""
+                style="width:24px; height:24px; vertical-align: middle; margin-right: 8px;"
+              >
+            ` : ''}
             <input
               list="autocomplete-options"
               .value="${this.selectedOption.length > 0 ? this.selectedOption : this.initialOption}"
@@ -179,8 +195,16 @@ class Autocomplete extends LitElement {
                   id="option-${index}"
                   class="${index === this.highlightedOptionIndex ? 'highlighted' : ''}"
                   @mousedown="${() => this._handleOptionClick(option)}"
+                  style="display: flex; align-items: center;"
                 >
-                  ${option}
+                  ${this.hasIcons ? 
+                    html`<img
+                      src="data:image/svg+xml;base64,${this.icons[option]}"
+                      alt=""
+                      style="width:24px; height:24px; vertical-align: middle; margin-right: 8px;"
+                    >` 
+                    : 
+                    ''} ${option}
                 </li>
               `)}
             </ul>

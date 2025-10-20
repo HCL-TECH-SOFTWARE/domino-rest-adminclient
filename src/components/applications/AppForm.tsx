@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, SyntheticEvent, useRef } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { FormikProps } from 'formik';
@@ -17,7 +17,6 @@ import ApplicationIcon from '@mui/icons-material/Apps';
 import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { Checkbox, FormControlLabel } from '@mui/material';
 import { IMG_DIR, KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
-import AppIcons from './AppIcons';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from './ApplicationContext';
 import { AppState } from '../../store';
@@ -28,6 +27,7 @@ import {
   PanelContent,
 } from '../../styles/CommonStyles';
 import { LitAutocomplete, LitButton } from '../lit-elements/LitElements';
+import appIcons from '../../styles/app-icons';
 
 interface AppFormProps {
   formik: FormikProps<any>;
@@ -81,6 +81,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   const [scopeValues, setScopeValues] = useState<Array<String>>(formContext === 'Edit' ? scopeValueArr : []);
 
   const scopeAutocompleteRef = useRef<any>(null)
+  const iconAutocompleteRef = useRef<any>(null)
 
   let scopeList: any[] = [];
   scopes.forEach((scope: any) => {
@@ -294,7 +295,14 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             </Typography>
           ) : null}
         </InputContainer>
-        <AppIcons formik={formik} />
+        <text>App Icons</text>
+        <LitAutocomplete
+          ref={iconAutocompleteRef}
+          options={Object.keys(appIcons)}
+          icons={appIcons}
+          style={{ width: '50%' }}
+          selectedOption='beach'
+        />
         <InputContainer>
           <FormControlLabel
             control={
