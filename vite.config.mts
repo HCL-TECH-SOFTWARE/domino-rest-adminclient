@@ -9,8 +9,16 @@ export default defineConfig({
   },
   server: {
     headers: {
-      'content-security-policy':
-        "default-src 'self' data: ; script-src 'self' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@shoelace-style/; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; img-src 'self' data: gap:"
+      'content-security-policy': `
+        default-src 'self' data: gap: 'unsafe-inline' *; 
+        script-src 'self' 'unsafe-inline' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; 
+        worker-src 'self' blob:; 
+        connect-src 'self' data: *; 
+        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@shoelace-style/; 
+        font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; 
+        img-src 'self' data: gap:;
+        report-uri /admin/ui
+      `.replace(/\s+/g, ' ').trim(),
     },
     proxy: {
       '/api': {
