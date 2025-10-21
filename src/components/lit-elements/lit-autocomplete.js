@@ -223,6 +223,7 @@ class Autocomplete extends LitElement {
   _handleInput(e) {
     this.showDropdown = true;
     this.selectedOption = e.target.value;
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     this.filteredOptions = this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase()));
     this.requestUpdate();
     setTimeout(() => {
@@ -234,6 +235,7 @@ class Autocomplete extends LitElement {
 
   _handleOptionClick(option) {
     this.selectedOption = option;
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     this.showDropdown = false;
     this.requestUpdate();
   }
@@ -263,6 +265,7 @@ class Autocomplete extends LitElement {
       case 'Enter':
         if (this.highlightedOptionIndex >= 0) {
           this.selectedOption = this.filteredOptions[this.highlightedOptionIndex];
+          this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         }
         this.showDropdown = false;
         break;
@@ -284,6 +287,7 @@ class Autocomplete extends LitElement {
 
   _handleClearInput() {
     this.selectedOption = ''
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     this.initialOption = ''
     this.filteredOptions = this.options
     this.requestUpdate()

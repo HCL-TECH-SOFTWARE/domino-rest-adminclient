@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { FormikProps } from 'formik';
@@ -64,7 +64,7 @@ const PillBox = styled.div`
   border: 1px solid grey;
   border-radius: 10px;
   padding: 2px 10px 2px 10px;
-  margin: 1px 2px 1px 0px;
+  margin: 0 2px 1px 0px;
   &:hover {
     background: ${KEEP_ADMIN_BASE_COLOR};
     color: white;
@@ -79,6 +79,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   const { scopes } = useSelector((state: AppState) => state.databases);
   const scopeValueArr = formik.values.appScope.length > 0 && formik.values.appScope.split(',');
   const [scopeValues, setScopeValues] = useState<Array<String>>(formContext === 'Edit' ? scopeValueArr : []);
+  const [selectedIcon, setSelectedIcon] = useState('beach');
 
   const scopeAutocompleteRef = useRef<any>(null)
   const iconAutocompleteRef = useRef<any>(null)
@@ -125,19 +126,22 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   }
 
   const onClickSubmitScope = async () => {
-    formik.values.appIcon = iconAutocompleteRef.current ? iconAutocompleteRef.current.selectedOption : 'beach';
-    if (iconAutocompleteRef.current && iconAutocompleteRef.current.shadowRoot) {
-      const inputElement = iconAutocompleteRef.current.shadowRoot.querySelector('input')
-      if (inputElement) {
-        formik.values.appIcon = inputElement.value;
-      }
-    }
+    formik.values.appIcon = selectedIcon;
     if (scopeAutocompleteRef.current) {
       scopeAutocompleteRef.current.selectedOption = "";
     }
     
     await formik.submitForm()
   }
+
+  useEffect(() => {
+    if (iconAutocompleteRef.current) {
+      const inputElement = iconAutocompleteRef.current.shadowRoot.querySelector('input')
+      if (inputElement) {
+        console.log(inputElement.value);
+      }
+    }
+  }, [iconAutocompleteRef.current])
 
   return (
     <FormContentContainer role="presentation" style={{ width: '90%' }}>
@@ -312,7 +316,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           options={Object.keys(appIcons)}
           icons={appIcons}
           style={{ width: '50%' }}
-          selectedOption='beach'
+          selectedOption={selectedIcon}
+          onChange={(e) => setSelectedIcon(e.currentTarget.selectedOption)}
+          onInput={(e) => setSelectedIcon(e.currentTarget.selectedOption)} // Add this if your LitAutocomplete supports it
         />
         <InputContainer>
           <FormControlLabel
