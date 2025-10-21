@@ -4,9 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, SyntheticEvent } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
-import { Autocomplete } from '@mui/material';
 import styled from 'styled-components';
 import { FormikProps } from 'formik';
 import Typography from '@mui/material/Typography';
@@ -15,12 +14,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
 import { Alert, AlertTitle } from '@mui/material';
 import ApplicationIcon from '@mui/icons-material/Apps';
-import AddIcon from '@mui/icons-material/Add';
 import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { Checkbox, FormControlLabel } from '@mui/material';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
-import AppIcons from './AppIcons';
-import { clearAppError } from '../../store/applications/action';
+import { IMG_DIR, KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from './ApplicationContext';
 import { AppState } from '../../store';
@@ -30,6 +26,8 @@ import {
   InputContainer,
   PanelContent,
 } from '../../styles/CommonStyles';
+import { LitAutocomplete, LitButton } from '../lit-elements/LitElements';
+import appIcons from '../../styles/app-icons';
 
 interface AppFormProps {
   formik: FormikProps<any>;
@@ -38,20 +36,9 @@ interface AppFormProps {
 const ScopeField = styled.div`
   display: flex;
   flex-direction: row;
-`;
-
-const TypeAHeadField = styled(InputContainer)`
-  width: 200px;
-`;
-
-const AddButton = styled.div`
-  display: flex;
-  background: ${KEEP_ADMIN_BASE_COLOR};
-  height: 30px;
-  width: 30px;
+  gap: 30px;
   align-items: center;
-  justify-content: center;
-  border-radius: 2px;
+  margin-top: 10px;
 `;
 
 const RemoveButton = styled.div`
@@ -77,7 +64,7 @@ const PillBox = styled.div`
   border: 1px solid grey;
   border-radius: 10px;
   padding: 2px 10px 2px 10px;
-  margin: 1px 2px 1px 0px;
+  margin: 0 2px 1px 0px;
   &:hover {
     background: ${KEEP_ADMIN_BASE_COLOR};
     color: white;
@@ -92,7 +79,10 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   const { scopes } = useSelector((state: AppState) => state.databases);
   const scopeValueArr = formik.values.appScope.length > 0 && formik.values.appScope.split(',');
   const [scopeValues, setScopeValues] = useState<Array<String>>(formContext === 'Edit' ? scopeValueArr : []);
-  const [scopeValuePlaceholder, setScopeValuePlaceholder] = useState<string>('');
+  const [selectedIcon, setSelectedIcon] = useState('beach');
+
+  const scopeAutocompleteRef = useRef<any>(null)
+  const iconAutocompleteRef = useRef<any>(null)
 
   let scopeList: any[] = [];
   scopes.forEach((scope: any) => {
@@ -109,7 +99,6 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
 
   const addScopeToApp = (scope: string) => {
     if (scope.trim() === '' || scopeValues.includes(scope)) {
-      setScopeValuePlaceholder('');
       return;
     }
     const newScopeValues = scopeValues.concat([scope]);
@@ -117,8 +106,6 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
     // store scope as string join by ',', due to openapi.core.json appScope validation need to be string
     const scopeValuesStr = newScopeValues.join(',');
     formik.values.appScope = scopeValuesStr;
-    // clean up input field
-    setScopeValuePlaceholder('');
   };
 
   const removeScopeFromApp = (scope: String) => {
@@ -127,15 +114,34 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
     // store scope as string join by ',', due to openapi.core.json appScope validation need to be string
     const scopeValuesStr = newScopeValues.join(',');
     formik.values.appScope = scopeValuesStr;
-    // clean up input field
-    setScopeValuePlaceholder('');
   };
 
-  const HandleScopeInputChange = (event: SyntheticEvent, value: any) => {
-    if(event !== null && event.type !== 'blur') {
-      setScopeValuePlaceholder(value);
+  const onClickAddScope = () => {
+    if (scopeAutocompleteRef.current && scopeAutocompleteRef.current.shadowRoot) {
+      const inputElement = scopeAutocompleteRef.current.shadowRoot.querySelector('input')
+      if (inputElement) {
+        addScopeToApp(inputElement.value);
+      }
     }
-  };
+  }
+
+  const onClickSubmitScope = async () => {
+    formik.values.appIcon = selectedIcon;
+    if (scopeAutocompleteRef.current) {
+      scopeAutocompleteRef.current.selectedOption = "";
+    }
+    
+    await formik.submitForm()
+  }
+
+  useEffect(() => {
+    if (iconAutocompleteRef.current) {
+      const inputElement = iconAutocompleteRef.current.shadowRoot.querySelector('input')
+      if (inputElement) {
+        console.log(inputElement.value);
+      }
+    }
+  }, [iconAutocompleteRef.current])
 
   return (
     <FormContentContainer role="presentation" style={{ width: '90%' }}>
@@ -238,11 +244,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           ) : null}
         </InputContainer>
         <InputContainer>
-          <Typography
-            className=""
-          >
-            Scope
-          </Typography>
+          <small>Scope</small>
           <PillBoxRow>
               {scopeValues.map((scope, idx) => (
                 <PillBox key={`${scope}-${idx}`}>
@@ -256,22 +258,16 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
               ))}
           </PillBoxRow>
           <ScopeField>
-            <TypeAHeadField>
-              <Autocomplete
-                disablePortal
-                id="typeahead-scope"
-                options={scopeList}
-                fullWidth
-                renderInput={(params: any) => <TextField {...params} placeholder="Scope" label="" variant='standard' />}
-                onInputChange={HandleScopeInputChange}
-                inputValue={scopeValuePlaceholder}
-              />
-            </TypeAHeadField>
-            <AddButton>
-              <Button title="Add Scope" style={{minWidth: '30px'}} onClick={() => addScopeToApp(scopeValuePlaceholder)} >
-                <AddIcon style={{ color: 'white' }}/>
-              </Button>
-            </AddButton>
+            <LitAutocomplete
+              options={scopeList}
+              ref={scopeAutocompleteRef}
+              style={{ width: '50%' }}
+            />
+          <LitButton
+            src={`${IMG_DIR}/shoelace/plus.svg`}
+            onClick={onClickAddScope}
+          >
+          </LitButton>
           </ScopeField>
           {!formik.values.appScope && formik.touched.appScope ? (
             <Typography className="validation-error" color="textPrimary">
@@ -314,7 +310,16 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             </Typography>
           ) : null}
         </InputContainer>
-        <AppIcons formik={formik} />
+        <small>App Icons</small>
+        <LitAutocomplete
+          ref={iconAutocompleteRef}
+          options={Object.keys(appIcons)}
+          icons={appIcons}
+          style={{ width: '50%' }}
+          selectedOption={selectedIcon}
+          onChange={(e) => setSelectedIcon(e.currentTarget.selectedOption)}
+          onInput={(e) => setSelectedIcon(e.currentTarget.selectedOption)} // Add this if your LitAutocomplete supports it
+        />
         <InputContainer>
           <FormControlLabel
             control={
@@ -340,7 +345,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
         >
           Close
         </Button>
-        <Button className="button-style" onClick={formik.submitForm}>
+        <Button className="button-style" onClick={onClickSubmitScope}>
           {formContext === 'Edit' ? 'Update' : 'Add'}
         </Button>
       </ActionButtonBar>

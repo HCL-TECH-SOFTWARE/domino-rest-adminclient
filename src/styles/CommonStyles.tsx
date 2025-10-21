@@ -224,6 +224,7 @@ export const DrawerFormContainer = styled.div`
 export const FormContentContainer = styled.div`
   padding: 0px 20px;
   min-width: 55%;
+  max-width: 100%;
 
   .header-title {
     margin-top: 15px;

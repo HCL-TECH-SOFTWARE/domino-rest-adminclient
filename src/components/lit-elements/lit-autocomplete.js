@@ -7,6 +7,7 @@ class Autocomplete extends LitElement {
     error: { type: Boolean },
     errorMessage: { type: String },
     initialOption: { type: String },
+    icons: { type: Object },
   };
 
   static styles = css`
@@ -27,6 +28,7 @@ class Autocomplete extends LitElement {
       position: absolute;
       top: 100%;
       left: 0;
+      z-index: 1000;
       visibility: hidden;
       background-color: white;
       border: 1px solid #ccc;
@@ -38,6 +40,10 @@ class Autocomplete extends LitElement {
     }
     .dropdown.show {
       visibility: visible;
+    }
+    .dropdown--above {
+      top: auto;
+      bottom: 100%;
     }
 
     .input-container {
@@ -136,6 +142,14 @@ class Autocomplete extends LitElement {
     this.error = false;
     this.errorMessage = '';
     this.initialOption = '';
+    this.icons = {};
+    this.hasIcons = false;
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('icons')) {
+      this.hasIcons = Object.keys(this.icons).length > 0;
+    }
   }
 
   render() {
@@ -143,6 +157,13 @@ class Autocomplete extends LitElement {
       <div class="parent-container">
         <section class="autocomplete-container">
           <section class="input-container ${this.error ? 'error' : ''}">
+            ${this.hasIcons && this.selectedOption && this.icons[this.selectedOption] ? html`
+              <img
+                src="data:image/svg+xml;base64,${this.icons[this.selectedOption]}"
+                alt=""
+                style="width:24px; height:24px; vertical-align: middle; margin-right: 8px;"
+              >
+            ` : ''}
             <input
               list="autocomplete-options"
               .value="${this.selectedOption.length > 0 ? this.selectedOption : this.initialOption}"
@@ -179,8 +200,16 @@ class Autocomplete extends LitElement {
                   id="option-${index}"
                   class="${index === this.highlightedOptionIndex ? 'highlighted' : ''}"
                   @mousedown="${() => this._handleOptionClick(option)}"
+                  style="display: flex; align-items: center;"
                 >
-                  ${option}
+                  ${this.hasIcons ? 
+                    html`<img
+                      src="data:image/svg+xml;base64,${this.icons[option]}"
+                      alt=""
+                      style="width:24px; height:24px; vertical-align: middle; margin-right: 8px;"
+                    >` 
+                    : 
+                    ''} ${option}
                 </li>
               `)}
             </ul>
@@ -194,12 +223,19 @@ class Autocomplete extends LitElement {
   _handleInput(e) {
     this.showDropdown = true;
     this.selectedOption = e.target.value;
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     this.filteredOptions = this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase()));
     this.requestUpdate();
+    setTimeout(() => {
+      if (this.showDropdown) {
+        this._adjustDropdownPosition();
+      }
+    }, 0);
   }
 
   _handleOptionClick(option) {
     this.selectedOption = option;
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     this.showDropdown = false;
     this.requestUpdate();
   }
@@ -229,6 +265,7 @@ class Autocomplete extends LitElement {
       case 'Enter':
         if (this.highlightedOptionIndex >= 0) {
           this.selectedOption = this.filteredOptions[this.highlightedOptionIndex];
+          this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         }
         this.showDropdown = false;
         break;
@@ -250,6 +287,7 @@ class Autocomplete extends LitElement {
 
   _handleClearInput() {
     this.selectedOption = ''
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     this.initialOption = ''
     this.filteredOptions = this.options
     this.requestUpdate()
@@ -258,6 +296,28 @@ class Autocomplete extends LitElement {
   _toggleDropdown() {
     this.filteredOptions = this.selectedOption !== '' ? this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase())) : this.options;
     this.showDropdown = !this.showDropdown;
+    this.requestUpdate();
+    setTimeout(() => {
+      if (this.showDropdown) {
+        this._adjustDropdownPosition();
+      }
+    }, 0);
+  }
+
+  _adjustDropdownPosition() {
+    const inputRect = this.shadowRoot.querySelector('input').getBoundingClientRect();
+    const dropdown = this.shadowRoot.querySelector('.dropdown');
+    const spaceBelow = window.innerHeight - inputRect.bottom;
+    const spaceAbove = inputRect.top;
+
+    // Assume dropdown height is 200px, or measure it dynamically
+    const dropdownHeight = dropdown.offsetHeight || 200;
+
+    if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+      dropdown.classList.add('dropdown--above');
+    } else {
+      dropdown.classList.remove('dropdown--above');
+    }
     this.requestUpdate();
   }
 }
