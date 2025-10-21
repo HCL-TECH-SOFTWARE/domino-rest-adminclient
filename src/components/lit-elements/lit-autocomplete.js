@@ -28,6 +28,7 @@ class Autocomplete extends LitElement {
       position: absolute;
       top: 100%;
       left: 0;
+      z-index: 1000;
       visibility: hidden;
       background-color: white;
       border: 1px solid #ccc;
@@ -39,6 +40,10 @@ class Autocomplete extends LitElement {
     }
     .dropdown.show {
       visibility: visible;
+    }
+    .dropdown--above {
+      top: auto;
+      bottom: 100%;
     }
 
     .input-container {
@@ -220,6 +225,11 @@ class Autocomplete extends LitElement {
     this.selectedOption = e.target.value;
     this.filteredOptions = this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase()));
     this.requestUpdate();
+    setTimeout(() => {
+      if (this.showDropdown) {
+        this._adjustDropdownPosition();
+      }
+    }, 0);
   }
 
   _handleOptionClick(option) {
@@ -282,6 +292,28 @@ class Autocomplete extends LitElement {
   _toggleDropdown() {
     this.filteredOptions = this.selectedOption !== '' ? this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase())) : this.options;
     this.showDropdown = !this.showDropdown;
+    this.requestUpdate();
+    setTimeout(() => {
+      if (this.showDropdown) {
+        this._adjustDropdownPosition();
+      }
+    }, 0);
+  }
+
+  _adjustDropdownPosition() {
+    const inputRect = this.shadowRoot.querySelector('input').getBoundingClientRect();
+    const dropdown = this.shadowRoot.querySelector('.dropdown');
+    const spaceBelow = window.innerHeight - inputRect.bottom;
+    const spaceAbove = inputRect.top;
+
+    // Assume dropdown height is 200px, or measure it dynamically
+    const dropdownHeight = dropdown.offsetHeight || 200;
+
+    if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+      dropdown.classList.add('dropdown--above');
+    } else {
+      dropdown.classList.remove('dropdown--above');
+    }
     this.requestUpdate();
   }
 }

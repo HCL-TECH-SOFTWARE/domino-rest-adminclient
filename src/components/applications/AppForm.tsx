@@ -240,11 +240,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           ) : null}
         </InputContainer>
         <InputContainer>
-          <Typography
-            className=""
-          >
-            Scope
-          </Typography>
+          <small>Scope</small>
           <PillBoxRow>
               {scopeValues.map((scope, idx) => (
                 <PillBox key={`${scope}-${idx}`}>
@@ -310,7 +306,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             </Typography>
           ) : null}
         </InputContainer>
-        <text>App Icons</text>
+        <small>App Icons</small>
         <LitAutocomplete
           ref={iconAutocompleteRef}
           options={Object.keys(appIcons)}
