@@ -134,15 +134,6 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
     await formik.submitForm()
   }
 
-  useEffect(() => {
-    if (iconAutocompleteRef.current) {
-      const inputElement = iconAutocompleteRef.current.shadowRoot.querySelector('input')
-      if (inputElement) {
-        console.log(inputElement.value);
-      }
-    }
-  }, [iconAutocompleteRef.current])
-
   return (
     <FormContentContainer role="presentation" style={{ width: '90%' }}>
       <PanelContent onSubmit={formik.handleSubmit}>
