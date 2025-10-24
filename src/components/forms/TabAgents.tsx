@@ -4,19 +4,20 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Button from '@mui/material/Button';
 import { AppState } from '../../store';
 import styled from 'styled-components';
-import { handleDatabaseAgents, setAgents } from '../../store/databases/action';
+import { handleDatabaseAgents } from '../../store/databases/action';
 import AgentSearch from './AgentSearch';
 import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
-import { Database, AGENTS_ERROR, SET_AGENTS } from '../../store/databases/types';
+import { Database } from '../../store/databases/types';
+import { LitSwitch } from '../lit-elements/LitElements';
 
 /**
  * Database Agents Component
@@ -29,29 +30,29 @@ import { Database, AGENTS_ERROR, SET_AGENTS } from '../../store/databases/types'
  height: 60px;
  margin: auto;
  
- .activate {
-   color: #087251;
-   padding: 0 10px 0 0;
-   cursor: pointer;
-   text-transform: none;
-   background-color: transparent;
- }
+  .activate {
+    color: #087251;
+    padding: 0 10px 0 0;
+    cursor: pointer;
+    text-transform: none;
+    background-color: transparent;
+  }
 
- .deactivate {
-   color: #aa1f51;
-   padding: 0 0 0 10px;
-   cursor: pointer;
-   text-transform: none;
-   background-color: transparent;
- }
+  .deactivate {
+    color: #aa1f51;
+    padding: 0 0 0 10px;
+    cursor: pointer;
+    text-transform: none;
+    background-color: transparent;
+  }
 
- .disabled {
-   color: #5d6160;
- }
+  .disabled {
+    color: #5d6160;
+  }
 
- .vertical {
-   transform: translateY(29%);
- }
+  .vertical {
+    transform: translateY(29%);
+  }
 `
 
 interface TabAgentsProps {
@@ -60,13 +61,15 @@ interface TabAgentsProps {
 
 const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   const { agents } = useSelector((state: AppState) => state.databases);
-  const { activeAgents, updateAgentError } = useSelector((state: AppState) => state.databases);
+  const { activeAgents } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const [filtered, setFiltered] = useState([...agents]);
   const { dbName, nsfPath } = useParams() as { dbName: string, nsfPath: string };
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState('');
   const [resetAllAgents, setResetAllAgents] = useState(false);
+  const [lists, setLists] = useState(agents)
+  const [showActive, setShowActive] = useState(false);
 
   const handleSearchAgent = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.value;
@@ -80,6 +83,18 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
     });
     setFiltered(filteredAgents);
   };
+
+  useEffect(() => {
+    if (showActive) {
+      setLists(activeAgents)
+    } else {
+      setLists(agents)
+    }
+  }, [showActive, agents, activeAgents])
+
+  const handleToggleShowActive = useCallback(() => {
+      setShowActive(!showActive)
+    }, [showActive]);
 
   const toggleActive = async (agent: any) => {
     dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, true, agents) as any);
@@ -103,16 +118,31 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
       <TopNavigator>
         <AgentSearch handleSearchAgent={handleSearchAgent} />
       </TopNavigator>
-      <ButtonsPanel>
-        <Button disabled={agents.length === 0 || loading} onClick={handleActivateAll} className={`activate ${agents.length === 0 || loading ? 'disabled' : ''}`}>Activate All</Button>
-        <RxDividerVertical size={"1.4em"} className="vertical"/>
-        <Button disabled={agents.length === 0 || loading} onClick={() => setResetAllAgents(true)} className={`deactivate ${agents.length === 0 || loading ? 'disabled' : ''}`}>Deactivate All</Button>
-      </ButtonsPanel>
+      <div style={{ display: 'flex', flex: 'row', alignContent: 'start', justifyContent: 'space-between', width: '100%' }}>
+        <ButtonsPanel>
+          <Button
+            disabled={lists.length === 0 || loading}
+            onClick={handleActivateAll}
+            className={`activate ${lists.length === 0 || loading ? 'disabled' : ''}`}
+          >
+            Activate All
+          </Button>
+          <RxDividerVertical size={"1.4em"} className="vertical"/>
+          <Button
+            disabled={lists.length === 0 || loading}
+            onClick={() => setResetAllAgents(true)}
+            className={`deactivate ${lists.length === 0 || loading ? 'disabled' : ''}`}
+          >
+            Deactivate All
+          </Button>
+        </ButtonsPanel>
+        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
+      </div>
       <div className="flex-container">
         <AgentsTable 
           agents={
             searchKey === ''
-              ? agents
+              ? lists
                 .slice()
                 .sort((a, b) => (a.agentName > b.agentName ? 1 : -1))
                   : filtered
