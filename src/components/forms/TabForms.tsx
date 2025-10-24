@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -31,7 +31,7 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import { LitButton } from "../lit-elements/LitElements";
+import { LitButton, LitSwitch } from "../lit-elements/LitElements";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -39,6 +39,7 @@ const ButtonsPanel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  align-content: center;
 
   .button {
     padding: 10px;
@@ -129,6 +130,8 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   const navigate = useNavigate()
   const [formNameError, setFormNameError] = useState(false)
   const [formNameErrorMessage, setFormNameErrorMessage] = useState("")
+
+  const [showActive, setShowActive] = useState(false);
   
   const [normalizeForms, setNormalizeForms] = useState(
     forms && forms.length > 0
@@ -141,16 +144,18 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   )
 
   useEffect(() => {
-    setNormalizeForms(
-      forms && forms.length > 0
-      ? forms.map((form) =>
+    if (!(forms && forms.length > 0)) setNormalizeForms([]);
+    else if (showActive) {
+      const activeForms = forms.filter((form) => form.formModes && form.formModes.length > 0);
+      setNormalizeForms(activeForms);
+    } else {
+      setNormalizeForms(forms.map((form) =>
           "formModes" in form
             ? form
             : { ...form, formModes: form.formAccessModes }
-        )
-      : []
-    )
-  }, [forms])
+        ));
+    }
+  }, [showActive, forms]);
 
   let { dbName, nsfPath } = useParams() as { dbName: string; nsfPath: string };
   const [resetAllForms, setResetAllForms] = useState(false);
@@ -262,6 +267,10 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
     }
   }
 
+  const handleToggleShowActive = useCallback(() => {
+    setShowActive(!showActive)
+  }, [showActive]);
+
   useEffect(() => {
     if (createFormOpen) {
       ref.current?.showModal();
@@ -301,6 +310,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         >
           Add New Form Schema
         </LitButton>
+        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
         <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />

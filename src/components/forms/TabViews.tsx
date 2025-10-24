@@ -4,10 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { AppState } from '../../store';
 import ViewSearch from './ViewSearch';
 import { handleDatabaseViews } from '../../store/databases/action';
@@ -16,6 +16,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
+import { LitSwitch } from '../lit-elements/LitElements';
 
 const TabViewsContainer = styled.div`
   display: flex;
@@ -116,6 +117,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
 
   const [lists, setLists] = useState([...views, ...updatedFolders]);
   const [filtered, setFiltered] = useState(lists);
+  const [showActive, setShowActive] = useState(false);
 
   useEffect(() => {
     setActiveViews(schemaData['views']?.map((view: any) => {
@@ -151,8 +153,18 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
 
   useEffect(() => {
     setLists([...views, ...updatedFolders])
-    // console.log([...views, ...updatedFolders])
   }, [views, updatedFolders])
+
+  useEffect(() => {
+    if (showActive) {
+      const activeList = [...views, ...updatedFolders].filter((view) => {
+        return activeViewNames?.includes(view.viewName);
+      });
+      setLists(activeList);
+    } else {
+      setLists([...views, ...updatedFolders]);
+    }
+  }, [showActive, views, updatedFolders])
 
   const handleSearchView = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.value;
@@ -166,6 +178,10 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
     });
     setFiltered(filteredViews);
   };
+
+  const handleToggleShowActive = useCallback(() => {
+    setShowActive(!showActive)
+  }, [showActive]);
 
   const toggleActive = async (view: any) => {
     dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, true, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
@@ -189,12 +205,26 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
       <TopNavigator>
         <ViewSearch handleSearchView={handleSearchView} />
       </TopNavigator>
-
-      <ButtonsPanel>
-        <Button disabled={views.length === 0 || loading} onClick={handleActivateAll} className={`activate ${views.length === 0 || loading ? 'disabled' : ''}`}>Activate All</Button>
-        <RxDividerVertical size={"1.4em"} className="vertical"/>
-        <Button disabled={views.length === 0 || loading} onClick={() => setResetAllViews(true)} className={`deactivate ${views.length === 0 || loading ? 'disabled' : ''}`}>Deactivate All</Button>
-      </ButtonsPanel>
+      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <ButtonsPanel>
+          <Button
+            disabled={views.length === 0 || loading}
+            onClick={handleActivateAll}
+            className={`activate ${views.length === 0 || loading ? 'disabled' : ''}`}
+          >
+            Activate All
+          </Button>
+          <RxDividerVertical size={"1.4em"} className="vertical"/>
+          <Button
+            disabled={views.length === 0 || loading}
+            onClick={() => setResetAllViews(true)}
+            className={`deactivate ${views.length === 0 || loading ? 'disabled' : ''}`}
+          >
+            Deactivate All
+          </Button>
+        </ButtonsPanel>
+        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
+      </div>
       <ViewPanel>
         <ViewsTable
           views = {
