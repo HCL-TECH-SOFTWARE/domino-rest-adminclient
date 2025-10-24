@@ -7,7 +7,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { AppState } from '../../store';
 import ViewSearch from './ViewSearch';
 import { handleDatabaseViews } from '../../store/databases/action';
@@ -205,7 +205,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
       <TopNavigator>
         <ViewSearch handleSearchView={handleSearchView} />
       </TopNavigator>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
         <ButtonsPanel>
           <Button
             disabled={views.length === 0 || loading}

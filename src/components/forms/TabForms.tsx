@@ -39,6 +39,7 @@ const ButtonsPanel = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  align-content: center;
 
   .button {
     padding: 10px;
@@ -303,13 +304,13 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
             Deactivate All
           </Button>
         </Box>
-        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
         <LitButton
           onClick={() => setCreateFormOpen(true)}
           outline={true}
         >
           Add New Form Schema
         </LitButton>
+        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
         <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />

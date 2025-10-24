@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Button from '@mui/material/Button';
 import { AppState } from '../../store';
 import styled from 'styled-components';
@@ -27,8 +27,12 @@ import { LitSwitch } from '../lit-elements/LitElements';
  */
 
  const ButtonsPanel = styled.div`
- height: 60px;
- margin: auto;
+  height: 60px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-content: center;
  
   .activate {
     color: #087251;
@@ -118,8 +122,8 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
       <TopNavigator>
         <AgentSearch handleSearchAgent={handleSearchAgent} />
       </TopNavigator>
-      <div style={{ display: 'flex', flex: 'row', alignContent: 'start', justifyContent: 'space-between', width: '100%' }}>
-        <ButtonsPanel>
+      <ButtonsPanel>
+        <Box>
           <Button
             disabled={lists.length === 0 || loading}
             onClick={handleActivateAll}
@@ -135,9 +139,9 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
           >
             Deactivate All
           </Button>
-        </ButtonsPanel>
+        </Box>
         <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
-      </div>
+      </ButtonsPanel>
       <div className="flex-container">
         <AgentsTable 
           agents={
