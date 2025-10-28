@@ -91,6 +91,7 @@ export const PanelButton = styled.div`
 export const TopNavigator = styled.div`
   display: flex;
   padding: 25px 0;
+  gap: 10px;
 `;
 
 export const ActionHeader = styled.div`

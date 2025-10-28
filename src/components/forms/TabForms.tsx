@@ -285,6 +285,12 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
     <>
       <TopNavigator>
         <FormSearch handleSearchDatabase={handleSearchDatabase} />
+        <LitButton
+          onClick={() => setCreateFormOpen(true)}
+          outline={true}
+        >
+          Add New Form Schema
+        </LitButton>
       </TopNavigator>
       <ButtonsPanel>
         <Box>
@@ -304,12 +310,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
             Deactivate All
           </Button>
         </Box>
-        <LitButton
-          onClick={() => setCreateFormOpen(true)}
-          outline={true}
-        >
-          Add New Form Schema
-        </LitButton>
         <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
