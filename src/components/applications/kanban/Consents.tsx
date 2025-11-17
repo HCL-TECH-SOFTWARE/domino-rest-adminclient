@@ -26,6 +26,7 @@ import { useDispatch } from 'react-redux';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
 import { LitButtonNeutral, LitButtonYes } from '../../lit-elements/LitElements';
+import ZeroResultsWrapper from '../../commons/ZeroResultsWrapper';
 const ConsentsContainer = styled.div`
   display: flex;
   gap: 16px;
@@ -85,7 +86,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
   const [expand, setExpand] = useState(false);
   const [filtersOn, setFiltersOn] = useState(false);
   const [resetFilters, setResetFilters] = useState(false);
-  const { deleteConsentDialog, deleteUnid, appName, username, scope } = useSelector((state: AppState) => state.consents);
+  const { deleteConsentDialog, deleteUnid, appName, username, scope, consents } = useSelector((state: AppState) => state.consents);
 
   const dispatch = useDispatch();
 
@@ -149,13 +150,16 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
           Reset
         </button>
       </OptionsBar>
-      <ConsentsTable
+      {consents.length > 0 ? <ConsentsTable
         expand={expand}
         filtersOn={filtersOn}
         setFiltersOn={setFiltersOn}
         reset={resetFilters}
         setReset={setResetFilters}
-      />
+      /> : <ZeroResultsWrapper
+            mainLabel="Sorry, no consents found"
+            secondaryLabel={`What you search was unfortunately not found or doesn't exist.`}
+          />}
       <CommonDialog
         open={deleteConsentDialog}
         onClose={handleCloseDialog}
