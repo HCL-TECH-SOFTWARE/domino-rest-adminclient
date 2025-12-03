@@ -1,4 +1,5 @@
 import { LitElement, css, html } from 'lit';
+import './lit-schema-status.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import { IMG_DIR } from '../../config.dev.js';
 
@@ -28,11 +29,22 @@ class NsfCard extends LitElement {
 
   static properties = {
     database: { type: Object },
+    items: { type: Array },
+    schemasWithScopes: { type: Array },
   };
 
   constructor() {
     super()
     this.database = {}
+    this.items = []
+    this.isSchema = window.location.pathname.endsWith('/schema')
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('database')) {
+      this.items = this.isSchema ? this.database.databases || [] : this.database.apis || [];
+      this.schemasWithScopes = this.database.schemasWithScopes || [];
+    }
   }
 
   render() {
@@ -41,10 +53,17 @@ class NsfCard extends LitElement {
         <sl-input placeholder="Search Schema" style="width: 100%;">
             <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/search.svg"></sl-icon>
         </sl-input>
-        <div>
-
+        <div style="width: 100%;">
+            ${this.items.map(item => html`
+                <lit-schema-status
+                    key=${item.schemaName + '-' + item.nsfPath}
+                    .item=${item}
+                    .isSchema=${this.isSchema}
+                    .schemasWithScopes=${this.schemasWithScopes || []}
+                >
+                </lit-schema-status>`
+            )}
         </div>
-        <lit-schema-status .schema=${this.database.schema}></lit-schema-status>
       </section>
     `;
   }
