@@ -14,6 +14,7 @@ class SchemaStatus extends LitElement {
       padding: 10px 15px;
       box-sizing: border-box;
       align-items: center;
+      gap: 8px;
     }
 
     div.api-status {
@@ -29,13 +30,25 @@ class SchemaStatus extends LitElement {
 
     div.description {
       display: flex;
+      min-width: 0;
       align-items: center;
       flex-direction: row;
       gap: 6px;
+      flex: 1;
+      overflow: hidden;
     }
 
     sl-icon {
       cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    div.name {
+        text-overflow: ellipsis;
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        cursor: default;
     }
   `;
 
@@ -72,7 +85,9 @@ class SchemaStatus extends LitElement {
             <sl-tooltip content="${this.status}" placement="top">
                 <div class="api-status ${this.usedByScopes ? '' : 'unused'}"></div>
             </sl-tooltip>
-            <div>${this.name}</div>
+            <sl-tooltip content="${this.name}" style="--max-width: none; --sl-tooltip-arrow-size: 0;" placement="top" hoist>
+                <div class="name">${this.name}</div>
+            </sl-tooltip>
         </div>
         <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
       </div>

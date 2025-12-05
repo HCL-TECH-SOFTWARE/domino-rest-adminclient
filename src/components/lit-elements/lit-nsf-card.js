@@ -12,7 +12,7 @@ class NsfCard extends LitElement {
       padding: 16px;
       border-radius: 8px;
       box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-      width: 392px;
+      width: 25vw;
       height: 392px;
       display: flex;
       flex-direction: column;
@@ -21,10 +21,13 @@ class NsfCard extends LitElement {
 
     div.list-container {
       border: 1px solid #eee;
-      border-radius: 4px;
+      border-radius: 5px;
       background-color: #FAFDFF;
       width: 100%;
       height: 100%;
+      overflow-y: auto;
+      overflow-x: visible;
+      box-sizing: border-box;
     }
 
     div.card-title {
@@ -55,6 +58,7 @@ class NsfCard extends LitElement {
     this.isSchema = window.location.pathname.endsWith('/schema')
     this.schemasWithScopes = []
     this.iconName = 'beach'
+    this.searchItem = ''
   }
 
   updated(changedProperties) {
@@ -65,16 +69,26 @@ class NsfCard extends LitElement {
     }
   }
 
+  _handleSearchInput(e) {
+    this.searchItem = e.target.value;
+    this.items = this.isSchema ? this.database.databases.filter((item) => item.schemaName.toLowerCase().includes(this.searchItem.toLowerCase())) : this.database.apis.filter((item) => item.apiName.toLowerCase().includes(this.searchItem.toLowerCase()));
+  }
+
   render() {
     return html`
       <section>
         <div class="card-title">
             <div style="font-size: 32px;">
-                <sl-icon src=${`data:image/svg+xml;base64, ${appIcons[this.iconName]}`} label="Close"></sl-icon>
+                <sl-icon src=${`data:image/svg+xml;base64, ${appIcons[this.iconName]}`} label=${this.iconName}></sl-icon>
             </div>
             <text class="nsf-filename">${this.database.fileName}</text>
         </div>
-        <sl-input placeholder="Search Schema" style="width: 100%;">
+        <sl-input
+            placeholder="Search Schema"
+            style="width: 100%;"
+            .value=${this.searchItem}
+            @sl-input=${this._handleSearchInput}
+        >
             <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/search.svg"></sl-icon>
         </sl-input>
         <div class="list-container">
