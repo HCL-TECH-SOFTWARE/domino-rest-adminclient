@@ -27,6 +27,13 @@ class SchemaStatus extends LitElement {
         background: #F75764;
     }
 
+    div.description {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      gap: 6px;
+    }
+
     sl-icon {
       cursor: pointer;
     }
@@ -34,15 +41,18 @@ class SchemaStatus extends LitElement {
 
   static properties = {
     item: { type: Object },
-    isSchema: { type: Boolean },
     schemasWithScopes: { type: Array },
+    isSchema: { type: Boolean },
+    name: { type: String },
+    status: { type: String },
+    usedByScopes: { type: Boolean }
   };
 
   constructor() {
     super()
     this.item = {}
-    this.isSchema = true
-    this.name = this.isSchema ? this.item.schemaName : this.item.apiName;
+    this.isSchema = window.location.pathname.endsWith('/schema')
+    this.name = "";
     this.status = this.schemasWithScopes?.includes(this.item.nsfPath + ":" + this.item.schemaName) ? 'Used by Scopes' : 'Not used by Scopes';
     this.usedByScopes = false
   }
@@ -58,7 +68,7 @@ class SchemaStatus extends LitElement {
   render() {
     return html`
       <div class="main">
-        <div>
+        <div class="description">
             <sl-tooltip content="${this.status}" placement="top">
                 <div class="api-status ${this.usedByScopes ? '' : 'unused'}"></div>
             </sl-tooltip>
