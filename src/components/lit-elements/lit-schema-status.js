@@ -112,18 +112,18 @@ class SchemaStatus extends LitElement {
     return html`
       <div class="main">
         <div class="description" @click=${this.onClickOpen}>
-            <sl-tooltip content="${this.status}" placement="top">
+            ${this.isSchema ? html`<sl-tooltip content="${this.status}" placement="top">
                 <div class="api-status ${this.usedByScopes ? '' : 'unused'}"></div>
-            </sl-tooltip>
+            </sl-tooltip>` : ''}
             <sl-tooltip class="trash-icon" content="${this.name}" style="--max-width: none; --sl-tooltip-arrow-size: 0;" placement="top" hoist>
                 <div class="name">${this.name}</div>
             </sl-tooltip>
         </div>
-        <div class="delete" @click=${this.onDelete}>
+        ${this.isSchema ? html`<div class="delete" @click=${this.onDelete}>
             <svg class="trash-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14M10 11v6M14 11v6"/>
             </svg>
-        </div>
+        </div>` : ''}
       </div>
     `;
   }

@@ -82,7 +82,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
         >
           HCL Domino REST API Databases Schema
         </Typography>
-        <ExtraFlex style={{ display: 'flex', gap: '30px' }}>
+        <ExtraFlex style={{ display: 'flex', gap: '10px' }}>
           {
             mappedDatabases.map((database: any, index: number) => {
               return (
@@ -92,7 +92,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
                   schemasWithScopes={schemasWithScopes}
                   iconName={database.iconName}
                   deleteFn={handleClickDelete}
-                  openSchema={openSchema}
+                  open={openSchema}
                 />
               );
             })

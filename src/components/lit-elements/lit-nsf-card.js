@@ -50,7 +50,7 @@ class NsfCard extends LitElement {
     schemasWithScopes: { type: Array },
     iconName: { type: String },
     deleteFn: { type: Function },
-    openSchema: { type: Function },
+    open: { type: Function },
   };
 
   constructor() {
@@ -62,13 +62,12 @@ class NsfCard extends LitElement {
     this.iconName = 'beach'
     this.searchItem = ''
     this.deleteFn = (data) => {}
-    this.openSchema = (schema) => {}
+    this.open = (schema) => {}
   }
 
   updated(changedProperties) {
     if (changedProperties.has('database')) {
-      this.items = this.isSchema ? this.database.databases || [] : this.database.apis || [];
-      this.schemasWithScopes = this.schemasWithScopes || [];
+      this.items = this.database.databases
       this.iconName = this.database.databases ? this.database.databases[0]?.iconName : 'beach';
     }
   }
@@ -110,7 +109,7 @@ class NsfCard extends LitElement {
                     .isSchema=${this.isSchema}
                     .schemasWithScopes=${this.schemasWithScopes || []}
                     .onDelete=${() => this.deleteFn(item)}
-                    .onClickOpen=${() => this.openSchema(item)}
+                    .onClickOpen=${() => this.open(item)}
                 >
                 </lit-schema-status>`
             )}
