@@ -83,7 +83,14 @@ class NsfCard extends LitElement {
       <section>
         <div class="card-title">
             <div style="font-size: 32px;">
-                <sl-icon src=${`data:image/svg+xml;base64, ${appIcons[this.iconName]}`} label=${this.iconName}></sl-icon>
+                ${this.iconName && appIcons[this.iconName] ? html`
+                    <sl-icon 
+                        src=${`data:image/svg+xml;base64,${appIcons[this.iconName]}`} 
+                        label=${this.iconName}
+                    ></sl-icon>
+                ` : html`
+                    <sl-icon src=${`data:image/svg+xml;base64,${appIcons['beach']}`} ></sl-icon>
+                `}
             </div>
             <text class="nsf-filename">${this.database.fileName}</text>
         </div>
