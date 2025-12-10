@@ -2,7 +2,7 @@ import { LitElement, css, html } from 'lit';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
-import { IMG_DIR } from '../../config.dev.js';
+import { IMG_DIR } from '../../config.dev.ts';
 
 class SchemaStatus extends LitElement {
 
