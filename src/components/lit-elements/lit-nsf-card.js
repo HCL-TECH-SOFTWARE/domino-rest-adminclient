@@ -49,6 +49,8 @@ class NsfCard extends LitElement {
     items: { type: Array },
     schemasWithScopes: { type: Array },
     iconName: { type: String },
+    deleteFn: { type: Function },
+    openSchema: { type: Function },
   };
 
   constructor() {
@@ -59,6 +61,8 @@ class NsfCard extends LitElement {
     this.schemasWithScopes = []
     this.iconName = 'beach'
     this.searchItem = ''
+    this.deleteFn = (data) => {}
+    this.openSchema = (schema) => {}
   }
 
   updated(changedProperties) {
@@ -98,6 +102,8 @@ class NsfCard extends LitElement {
                     .item=${item}
                     .isSchema=${this.isSchema}
                     .schemasWithScopes=${this.schemasWithScopes || []}
+                    .onDelete=${() => this.deleteFn(item)}
+                    .onClickOpen=${() => this.openSchema(item)}
                 >
                 </lit-schema-status>`
             )}
