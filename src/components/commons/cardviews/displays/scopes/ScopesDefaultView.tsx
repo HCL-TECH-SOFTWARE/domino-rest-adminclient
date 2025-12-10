@@ -4,13 +4,13 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React from 'react';
 import Typography from '@mui/material/Typography';
 import { ExtraFlex } from '../../../../flex';
-import NsfCard from '../../../../schemas/NsfCard';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { mapSchemas } from '../../../../../utils/mapper';
 import { SchemasMainContainer } from './ScopeStyles';
+import { LitNsfCard } from '../../../../lit-elements/LitElements';
 
 type ScopesDefaultViewProps = {
   databases: Array<any>;
@@ -21,13 +21,6 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
   databases,
   openScope
 }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-  const [selectedNsf, setSelectedNsf] = useState('');
-  const [selectedDB, setSelectedDB] = useState('');
-
   return (
     <SchemasMainContainer>
       <Typography
@@ -36,18 +29,14 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
       >
         HCL Domino REST API Databases Scope
       </Typography>
-      <ExtraFlex>
+      <ExtraFlex style={{ display: 'flex', gap: '10px' }}>
         {databases.length > 0 ? (
           mapSchemas(databases, 'schemas').map((database: any, index: any) => {
             return (
-              <NsfCard
-                openDatabase={openScope}
-                open={open}
-                key={index}
-                aria-describedby={id}
+              <LitNsfCard
                 database={database}
-                setSelectedDB={setSelectedDB}
-                setSelectedNsf={setSelectedNsf}
+                iconName={database.iconName}
+                open={openScope}
               />
             );
           })

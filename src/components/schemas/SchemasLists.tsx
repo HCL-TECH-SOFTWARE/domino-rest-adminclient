@@ -136,7 +136,7 @@ const SchemasLists = () => {
     if (!databasePull && databasesOverview.length === 0) {
       dispatch(fetchKeepDatabases() as any)
     }
-  }, [dispatch, databasesOverview, databasePull])
+  }, [dispatch, databasePull])
 
   const lastRun = useRef(Date.now());
 

@@ -21,6 +21,7 @@ import DefaultCard from './lit-default-card';
 import Alert from './lit-alert';
 import Drawer from './lit-drawer';
 import Switch from './lit-switch';
+import NsfCard from './lit-nsf-card';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -151,5 +152,11 @@ export const LitDrawer = createComponent({
 export const LitSwitch = createComponent({
   tagName: 'lit-switch',
   elementClass: Switch,
+  react: React,
+})
+
+export const LitNsfCard = createComponent({
+  tagName: 'lit-nsf-card',
+  elementClass: NsfCard,
   react: React,
 })
