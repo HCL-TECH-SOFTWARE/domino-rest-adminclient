@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
 import './lit-schema-status.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
-import { IMG_DIR } from '../../config.dev.js';
+import { IMG_DIR } from '../../config.dev.ts';
 import appIcons from '../../styles/app-icons.js';
 
 class NsfCard extends LitElement {
