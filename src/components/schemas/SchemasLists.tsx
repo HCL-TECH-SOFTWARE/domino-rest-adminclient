@@ -94,10 +94,7 @@ const SchemasLists = () => {
     dispatch(setLoading({ status: true }))
     dispatch(setPullDatabase(false));
     dispatch(setPullScope(false));
-    dispatch({
-      type: FETCH_AVAILABLE_DATABASES,
-      payload: []
-    });
+    dispatch(fetchKeepDatabases() as any);
   };
 
   const changeView = (view: string) => {
