@@ -380,7 +380,7 @@ const LoginPage = () => {
     const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')
     sessionStorage.setItem('redirect_uri', redirectUri)
     if (Object.keys(idp.adminui_config).includes('application_id_uri')) {
-      const scope = idp.adminui_config.application_id_uri + ".default"
+      const scope = idp.adminui_config.application_id_uri.replace(/\/$/, '') + "/.default" // Ensure trailing slash exists before ".default"
       const initiatedAuth = await initiateAuthorizationRequest(
         idp.wellKnown,
         idp.adminui_config.client_id,
