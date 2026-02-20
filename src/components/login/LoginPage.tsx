@@ -230,11 +230,6 @@ const LoginPage = () => {
 
   const handleLogInWithPasskey = (event: any) => {
     event.preventDefault();
-
-    document.getElementById('form-username')?.classList.remove('removed');
-    document.getElementById('section-password')?.classList.add('hidden');
-    document.getElementById('form-oidc')?.classList.add('removed');
-    document.getElementById('passkey-signup')?.classList.add('hidden');
     setAuthType('passkey')
   }
 
@@ -243,6 +238,7 @@ const LoginPage = () => {
       .login({ name: username })
       .then((res) => checkForResponse(res))
       .then((json) => {
+        localStorage.setItem('login_type', 'passkey');
         if (json.status) {
           dispatch(toggleAlert(json.message));
         } else {
@@ -276,7 +272,10 @@ const LoginPage = () => {
       dispatch(set401Error(false));
       const data = JSON.stringify(values, null, 2);
       const parseData = JSON.parse(data);
-      await dispatch(login(parseData, () => navigate('/')) as any);
+      await dispatch(login(parseData, () => {
+        navigate('/')
+        localStorage.setItem('login_type', "password");
+      }) as any);
     },
   });
 
@@ -309,10 +308,6 @@ const LoginPage = () => {
 
   const handleLogInWithPassword = (event: any) => {
     event.preventDefault();
-    document.getElementById('form-username')?.classList.remove('removed');
-    document.getElementById('section-password')?.classList.remove('hidden');
-    document.getElementById('form-oidc')?.classList.add('removed');
-    document.getElementById('passkey-signup')?.classList.remove('hidden');
     setAuthType('password')
   }
 
@@ -359,10 +354,6 @@ const LoginPage = () => {
   }
 
   const handleLogInUsingIdp = async (idp: any) => {
-    document.getElementById('form-username')?.classList.add('removed');
-    document.getElementById('section-password')?.classList.add('hidden');
-    document.getElementById('form-oidc')?.classList.remove('removed');
-    document.getElementById('passkey-signup')?.classList.add('hidden');
     setAuthType('oidc')
   }
 
@@ -426,26 +417,11 @@ const LoginPage = () => {
           .catch((e) => reject(e));
       });
 
-    const hasOidc = localStorage.getItem('client_id')
-    if (hasOidc) {
-      document.getElementById('form-username')?.classList.add('removed');
-      document.getElementById('section-password')?.classList.add('hidden');
-      document.getElementById('form-oidc')?.classList.remove('removed');
-      document.getElementById('passkey-signup')?.classList.add('hidden');
-      setAuthType('oidc')
-      return
-    }
-
     canDoPasskey()
       .then((result: any) => {
         if (result === true) {
-          const user = localStorage.getItem('keep_user');
+          const user = localStorage.getItem('keep_user')
           usernameRef.current.shadowRoot.querySelector('sl-input').value = user
-          setAuthType('passkey')
-          document.getElementById('form-username')?.classList.remove('removed');
-          document.getElementById('section-password')?.classList.add('hidden');
-          document.getElementById('form-oidc')?.classList.add('removed');
-          document.getElementById('passkey-signup')?.classList.add('hidden');
         }
       })
       .catch((e) => dispatch(toggleAlert(e)));
@@ -469,16 +445,50 @@ const LoginPage = () => {
   }, [])
 
   useEffect(() => {
-    const hasOidc = localStorage.getItem('client_id')
-    if (hasOidc && idpList.length > 0) {
-      document.getElementById('form-username')?.classList.add('removed');
-      document.getElementById('section-password')?.classList.add('hidden');
-      document.getElementById('form-oidc')?.classList.remove('removed');
-      document.getElementById('passkey-signup')?.classList.add('hidden');
-      setAuthType('oidc')
-      return
+    const loginType = localStorage.getItem('login_type')
+    
+    switch (loginType) {
+      case 'oidc':
+        setAuthType('oidc')
+        break
+      case 'passkey':
+        setAuthType('passkey')
+        break
+      case 'password':
+        setAuthType('password')
+        break
+      default:
+        if (idpList.length > 0) {
+          setAuthType('oidc')
+        } else {
+          setAuthType('password')
+        }
+        break
     }
-  }, [idpList])
+  }, [])
+
+  useEffect(() => {
+    switch (authType) {
+      case 'oidc':
+        document.getElementById('form-username')?.classList.add('removed');
+        document.getElementById('section-password')?.classList.add('hidden');
+        document.getElementById('form-oidc')?.classList.remove('removed');
+        document.getElementById('passkey-signup')?.classList.add('hidden');
+        break;
+      case 'passkey':
+        document.getElementById('form-username')?.classList.remove('removed');
+        document.getElementById('section-password')?.classList.add('hidden');
+        document.getElementById('form-oidc')?.classList.add('removed');
+        document.getElementById('passkey-signup')?.classList.add('hidden');
+        break;
+      case 'password':
+        document.getElementById('form-username')?.classList.remove('removed');
+        document.getElementById('section-password')?.classList.remove('hidden');
+        document.getElementById('form-oidc')?.classList.remove('removed');
+        document.getElementById('passkey-signup')?.classList.remove('hidden');
+        break;
+    }
+  }, [authType])
 
   useEffect(() => {
     if (error401 && !idpLogin) {

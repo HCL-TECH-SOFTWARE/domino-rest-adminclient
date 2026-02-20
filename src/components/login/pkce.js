@@ -112,6 +112,7 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
     })
     .then(res => res.json())
     .then(data => {
+        localStorage.setItem('login_type', 'oidc');
         return data;
     })
     .catch(err => {
