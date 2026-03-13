@@ -36,7 +36,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
     "uuid": "^13.0.0",
-    "yup": "^1.7.0"
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@swc/core": "1.13.5",
