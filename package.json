@@ -9,7 +9,7 @@
     "@emotion/styled": "^11.14.1",
     "@lit/react": "^1.0.8",
     "@monaco-editor/loader": "^1.7.0",
-    "@monaco-editor/react": "^4.8.0-rc.2",
+    "@monaco-editor/react": "^4.8.0-rc.3",
     "@mui/icons-material": "7.3.2",
     "@mui/lab": "^7.0.0-beta.17",
     "@mui/material": "7.3.4",
@@ -63,7 +63,7 @@
   },
   "overrides": {
     "yaml": "^2.6.1",
-	"dompurify" : "^3.2.4"
+	  "dompurify" : "^3.3.2"
   },
   "scripts": {
     "start": "vite",
