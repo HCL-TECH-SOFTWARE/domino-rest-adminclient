@@ -484,7 +484,7 @@ const LoginPage = () => {
       case 'password':
         document.getElementById('form-username')?.classList.remove('removed');
         document.getElementById('section-password')?.classList.remove('hidden');
-        document.getElementById('form-oidc')?.classList.remove('removed');
+        document.getElementById('form-oidc')?.classList.add('removed');
         document.getElementById('passkey-signup')?.classList.remove('hidden');
         break;
     }

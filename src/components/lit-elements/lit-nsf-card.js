@@ -74,7 +74,7 @@ class NsfCard extends LitElement {
 
   _handleSearchInput(e) {
     this.searchItem = e.target.value;
-    this.items = this.isSchema ? this.database.databases.filter((item) => item.schemaName.toLowerCase().includes(this.searchItem.toLowerCase())) : this.database.apis.filter((item) => item.apiName.toLowerCase().includes(this.searchItem.toLowerCase()));
+    this.items = this.isSchema ? this.database.databases.filter((item) => item.schemaName.toLowerCase().includes(this.searchItem.toLowerCase())) : this.database.databases.filter((item) => item.apiName.toLowerCase().includes(this.searchItem.toLowerCase()));
   }
 
   render() {
