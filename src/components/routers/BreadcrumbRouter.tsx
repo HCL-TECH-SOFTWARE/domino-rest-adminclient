@@ -8,8 +8,9 @@ import React from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import styled from 'styled-components';
 import Typography from '@mui/material/Typography';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
+import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import Home from '@mui/icons-material/Home';
 import { useSelector } from 'react-redux';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -54,7 +55,7 @@ const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
 const BreadcrumbRouter: React.FC = () => {
   const location = useLocation();
   const { themeMode } = useSelector((state: AppState) => state.styles);
-  const navigate = useNavigate();
+  const { guardedNavigate } = useNavigationGuard();
   const { pathname } = location;
 
   const activeColor = getTheme(themeMode).breadcrumb.lastActiveColor;
@@ -71,8 +72,8 @@ const BreadcrumbRouter: React.FC = () => {
   }
 
   const handleOnClick = (index: number) => {
-    if (index > 2) navigate(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
-    else navigate('/schema');
+    if (index > 2) guardedNavigate(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
+    else guardedNavigate('/schema');
   };
 
   return (
@@ -99,7 +100,7 @@ const BreadcrumbRouter: React.FC = () => {
                 data-testid="overview"
                 style={{display: 'flex', alignItems:'center'}}
                 onClick={() => {
-                  navigate(`/`);
+                  guardedNavigate(`/`);
                 }}
               >
                 <Home className="home-icon" />

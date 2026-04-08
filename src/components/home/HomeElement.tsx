@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import '../../App.css';
 import styled from 'styled-components';
 import { ThemeProvider } from '@mui/material/styles';
@@ -87,8 +87,13 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
     setOpen(!open);
   };
 
+  const currentTheme = useMemo(
+    () => theme(authenticated, getTheme, themeMode),
+    [authenticated, themeMode]
+  );
+
   return (
-    <ThemeProvider theme={theme(authenticated, getTheme, themeMode)}>
+    <ThemeProvider theme={currentTheme}>
       <CssBaseline />
       {matches && (
         <Header

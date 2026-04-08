@@ -277,6 +277,18 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
   const [batchDelete, setBatchDelete] = useState(false)
   const [deleteFields, setDeleteFields]= useState([] as Array<any>)
 
+  // Sync the selected field when the fields list changes (e.g. mode switch)
+  // or when fieldIndex is reset.
+  useEffect(() => {
+    const fields = state[stateList[0]];
+    if (fields && fields.length > 0) {
+      const idx = fieldIndex < fields.length ? fieldIndex : 0;
+      setEditField(fields[idx]);
+    } else {
+      setEditField(null);
+    }
+  }, [state, fieldIndex]);
+
   const ref = useRef<HTMLDialogElement>(null);
 
   const handleAddField = () => {

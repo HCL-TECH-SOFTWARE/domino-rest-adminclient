@@ -12,7 +12,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import PropTypes from 'prop-types';
+// prop-types import removed — using TypeScript interfaces instead
 import {
   SET_ACTIVEVIEWS,
   SET_ACTIVEAGENTS,
@@ -195,22 +195,9 @@ const FormsContainer = () => {
 
   const editorRef = useRef<any>(null)
 
-  // Override console.error to suppress error messages
-  console.error = () => {};
+  // NOTE: Global console.error override was removed — it suppressed ALL errors app-wide.
 
-  // Override window.onerror to suppress uncaught errors
-  useEffect(() => {
-    const originalOnError = window.onerror;
-    window.onerror = (message, source, lineno, colno, error) => {
-      // Suppress the error
-      return true;
-    };
-
-    // Cleanup function to restore the original window.onerror
-    return () => {
-      window.onerror = originalOnError;
-    };
-  }, []);
+  // NOTE: window.onerror override was removed — it silently swallowed ALL uncaught errors.
 
   const pullSubForms = async () => {
     try {
@@ -484,9 +471,7 @@ const FormsContainer = () => {
     }
   }, [selectedOption, schemaData])
 
-  function TabPanel(props: any) {
-    const { children, value, index, ...other } = props;
-
+  function TabPanel({ children, value, index, ...other }: { children?: React.ReactNode; value: number; index: number; [key: string]: any }) {
     return (
       <div
         role="tabpanel"
@@ -498,12 +483,6 @@ const FormsContainer = () => {
       </div>
     );
   }
-
-  TabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.any.isRequired,
-    value: PropTypes.any.isRequired
-  };
 
   function setActiveViews(dbName: string, views: Array<any>) {
     // Build Active View list

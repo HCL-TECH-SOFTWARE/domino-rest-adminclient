@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '@mui/material/Button';
 import styled from 'styled-components';
 import Typography from '@mui/material/Typography';
@@ -17,6 +17,7 @@ import { Menu, MenuItem, Tooltip } from '@mui/material';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
 import AddModeDialog from './AddModeDialog';
+import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import {
   testFormula,
@@ -126,6 +127,9 @@ interface TabsAccessProps {
   setSchemaData: (schemaData: any) => void;
   fieldIndex: number;
   setFieldIndex: (fieldIndex: number) => void;
+  setHasUnsavedChanges: (dirty: boolean) => void;
+  saveRef: React.MutableRefObject<(() => Promise<void>) | null>;
+  postSaveActionRef: React.MutableRefObject<'add' | 'clone' | null>;
 }
 
 /**
@@ -149,7 +153,10 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   schemaData,
   setSchemaData,
   fieldIndex,
-  setFieldIndex
+  setFieldIndex,
+  setHasUnsavedChanges,
+  saveRef,
+  postSaveActionRef
 }) => {
   const dispatch = useDispatch();
   const { themeMode } = useSelector((state: AppState) => state.styles);
@@ -183,6 +190,176 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   const [saveEnabled, setSaveEnabled] = useState(false)
   const [saveTooltip, setSaveTooltip] = useState("")
 
+  // Track dirty state locally so action handlers can read it synchronously
+  const isDirtyRef = useRef(false);
+  const origSetHasUnsavedChanges = setHasUnsavedChanges;
+  // Wrap setHasUnsavedChanges to keep isDirtyRef in sync
+  const wrappedSetHasUnsavedChanges = useCallback((dirty: boolean) => {
+    isDirtyRef.current = dirty;
+    origSetHasUnsavedChanges(dirty);
+  }, [origSetHasUnsavedChanges]);
+  // Replace the prop reference so all existing call sites use the wrapper
+  setHasUnsavedChanges = wrappedSetHasUnsavedChanges;
+
+  // Pending action pattern: when user tries to switch mode / clone / add
+  // while dirty, we stash the action and show a dialog.
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+  const [pendingModeName, setPendingModeName] = useState<string | null>(null);
+
+  // Ref mirror of pendingAction — immune to closure staleness across async
+  // boundaries (e.g. after await saveRef.current()).  Handlers read from
+  // the ref instead of the closure.
+  const pendingActionRef = useRef<(() => void) | null>(null);
+  const pendingModeNameRef = useRef<string | null>(null);
+  // Track whether the pending action is 'add', 'clone', or a mode switch (null)
+  const pendingActionTypeRef = useRef<'add' | 'clone' | null>(null);
+
+  // Always-current ref for modes so the async save handler can read fresh data
+  const modesRef = useRef(modes);
+  modesRef.current = modes;
+
+  // Snapshot of the mode's values at load time — used for value-based dirty comparison
+  const initialSnapshotRef = useRef<{
+    scripts: any;
+    required: any;
+    validationRules: any;
+    fields: any[];
+  } | null>(null);
+
+  // ---- Dirty-tracking guard (declared early so handlers can reference it) ----
+  // `isUserEditRef` stays false while the component is mounting or switching
+  // modes (lots of cascading setState calls).  It flips to true after a
+  // delay so only genuine user edits mark the form dirty.
+  const isUserEditRef = useRef(false);
+  const dirtyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Centralised helper — cancels any previous re-enable timer so only the
+  // LAST pause wins.  This prevents earlier timers from prematurely
+  // re-enabling dirty-tracking while a later cascade is still settling.
+  const pauseDirtyTracking = useCallback((ms = 500) => {
+    isUserEditRef.current = false;
+    if (dirtyTimerRef.current) clearTimeout(dirtyTimerRef.current);
+    dirtyTimerRef.current = setTimeout(() => {
+      isUserEditRef.current = true;
+      dirtyTimerRef.current = null;
+    }, ms);
+  }, []);
+
+  const guardAction = useCallback((action: () => void, targetModeName?: string, actionType?: 'add' | 'clone') => {
+    if (isDirtyRef.current) {
+      pendingActionRef.current = action;
+      pendingModeNameRef.current = targetModeName ?? null;
+      pendingActionTypeRef.current = actionType ?? null;
+      setPendingAction(() => action);
+      setPendingModeName(targetModeName ?? null);
+    } else {
+      action();
+    }
+  }, []);
+
+  const handlePendingActionSave = useCallback(async () => {
+    // Read from refs — immune to closure staleness across the await.
+    const targetMode = pendingModeNameRef.current;
+    const actionType = pendingActionTypeRef.current;
+
+    // Clear refs + state (closes the dirty dialog immediately)
+    pendingActionRef.current = null;
+    pendingModeNameRef.current = null;
+    pendingActionTypeRef.current = null;
+    setPendingAction(null);
+    setPendingModeName(null);
+
+    // For add/clone, store the action TYPE in the parent ref that
+    // survives the unmount/remount cycle caused by the loading spinner
+    // during save.  The on-mount useEffect will read it.
+    if (!targetMode && actionType) {
+      postSaveActionRef.current = actionType;
+    }
+
+    // Save current changes (try-catch so dialog still opens on error)
+    try {
+      if (saveRef.current) {
+        await saveRef.current();
+      }
+    } catch (e) {
+      console.error('Save failed:', e);
+    }
+    setHasUnsavedChanges(false);
+    pauseDirtyTracking();
+
+    if (targetMode) {
+      // Defer the mode switch so React can process all pending renders
+      // from the server response (schemaData → allModes → modes cascade).
+      setTimeout(() => {
+        const freshModes = modesRef.current;
+        const newIdx = freshModes.findIndex((m: any) => m.modeName === targetMode);
+        if (newIdx >= 0) {
+          setCurrentModeValue(targetMode);
+          setCurrentModeIndex(newIdx);
+          setPageIndex(newIdx);
+          setFieldIndex(0);
+        }
+      }, 300);
+    }
+    // Add/clone actions are handled by the on-mount useEffect reading
+    // postSaveActionRef after TabsAccess remounts.
+  }, [saveRef, setHasUnsavedChanges, setCurrentModeIndex, setPageIndex, setFieldIndex, pauseDirtyTracking, postSaveActionRef]);
+
+  const handlePendingActionDiscard = useCallback(() => {
+    // Read from refs — immune to closure staleness
+    const stashedAction = pendingActionRef.current;
+    const isModeSwitchAction = !!pendingModeNameRef.current;
+
+    // Reset form data back to the last-saved server values
+    const mode = modes[currentModeIndex];
+    setScripts({
+      computeWithForm: mode.computeWithForm,
+      readAccessFormula: mode.readAccessFormula,
+      writeAccessFormula: mode.writeAccessFormula,
+      deleteAccessFormula: mode.deleteAccessFormula,
+      onLoad: mode.onLoad,
+      onSave: mode.onSave,
+      sign: mode.sign,
+      continueOnError: mode.continueOnError,
+    });
+    setRequired(mode.required);
+    setValidationRules(mode.validationRules);
+    // Also reset the field/DnD state in AccessMode so the full form
+    // reverts to server values (not just scripts/required/validationRules).
+    setPageIndex(currentModeIndex);
+
+    // Pause dirty-tracking so the resets + action don't re-mark dirty
+    pauseDirtyTracking();
+    setHasUnsavedChanges(false);
+
+    // Clear refs + state (closes the dirty dialog)
+    pendingActionRef.current = null;
+    pendingModeNameRef.current = null;
+    pendingActionTypeRef.current = null;
+    setPendingAction(null);
+    setPendingModeName(null);
+
+    if (stashedAction) {
+      if (isModeSwitchAction) {
+        // Mode switch — run directly (no dialog conflict)
+        stashedAction();
+      } else {
+        // Non-mode-switch (add / clone) — delay so the
+        // UnsavedChangesDialog exit transition finishes before the
+        // native <dialog> (AddModeDialog) opens.
+        setTimeout(() => stashedAction(), 300);
+      }
+    }
+  }, [setHasUnsavedChanges, modes, currentModeIndex, pauseDirtyTracking, setPageIndex]);
+
+  const handlePendingActionCancel = useCallback(() => {
+    pendingActionRef.current = null;
+    pendingModeNameRef.current = null;
+    pendingActionTypeRef.current = null;
+    setPendingAction(null);
+    setPendingModeName(null);
+  }, []);
+
   const handleFieldListOnClick = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
@@ -192,27 +369,30 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     setAnchorEl(null);
   };
   const handleFieldListOnSelect = (value: string) => {
-    setCurrentModeValue(value);
-    const newCardIndex = modes.findIndex(
-      (eachMode: any) => eachMode.modeName === value
-    );
-    setCurrentModeIndex(newCardIndex);
-    setPageIndex(newCardIndex);
-    setScripts({
-      computeWithForm: modes[newCardIndex].computeWithForm,
-      readAccessFormula: modes[newCardIndex].readAccessFormula,
-      writeAccessFormula: modes[newCardIndex].writeAccessFormula,
-      deleteAccessFormula: modes[newCardIndex].deleteAccessFormula,
-      onLoad: modes[newCardIndex].onLoad,
-      onSave: modes[newCardIndex].onSave,
-      sign: modes[newCardIndex].sign,
-      continueOnError: modes[newCardIndex].continueOnError,
-    });
+    // If the user selected the mode they're already on, it's a no-op.
+    if (value === currentModeValue) {
+      handleFieldListOnClose();
+      return;
+    }
+    const doSwitch = () => {
+      setCurrentModeValue(value);
+      const newCardIndex = modes.findIndex(
+        (eachMode: any) => eachMode.modeName === value
+      );
+      setCurrentModeIndex(newCardIndex);
+      setPageIndex(newCardIndex);
+      setFieldIndex(0);
+      // Don't set scripts here — the [modes, currentModeIndex] effects
+      // will sync scripts, required, and validationRules from the current
+      // modes prop, which avoids stale-closure issues when doSwitch runs
+      // after an async save.
+    };
     handleFieldListOnClose();
+    guardAction(doSwitch, value);
   };
 
   useEffect(() => {
-    setScripts({
+    const modeScripts = {
       computeWithForm: modes[currentModeIndex].computeWithForm,
       readAccessFormula: modes[currentModeIndex].readAccessFormula,
       writeAccessFormula: modes[currentModeIndex].writeAccessFormula,
@@ -221,7 +401,24 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       onSave: modes[currentModeIndex].onSave,
       sign: modes[currentModeIndex].sign,
       continueOnError: modes[currentModeIndex].continueOnError,
-    })
+    };
+    setScripts(modeScripts);
+
+    // Snapshot the mode's initial values for value-based dirty comparison.
+    // Fields come from `state` which syncs separately, so we extract them here too.
+    const keys = Object.keys(state);
+    const currentFields = keys.length > 0
+      ? state[keys[0]].map((field: any) => {
+          const { content, id, ...rest } = field;
+          return rest;
+        })
+      : [];
+    initialSnapshotRef.current = {
+      scripts: modeScripts,
+      required: modes[currentModeIndex].required,
+      validationRules: modes[currentModeIndex].validationRules,
+      fields: currentFields,
+    };
   }, [modes, currentModeIndex])
 
   const urls = useLocation();
@@ -302,8 +499,10 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         ]
       }
       dispatch(updateSchema(newSchema, setSchemaData) as any)
+      setHasUnsavedChanges(false);
       navigate(`/schema/${encodeURIComponent(nsfPath)}/${db}`);
     } else {
+
       const currentForms = currentSchema.forms
         .filter((form: any) => form.formModes.length > 0)
         .map((form: any) => {
@@ -324,10 +523,39 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       await dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode, setSchemaData) as any);
       // After Saved the tab all data will be fetch from latest state again to ensure accuracy
       setCurrentModeValue(formModes[oriCardIndex].modeName);
+      setHasUnsavedChanges(false);
+      // Pause dirty-tracking so the server re-fetch cascade doesn't re-dirty
+      pauseDirtyTracking();
     }
 
     setRequired(newRequired)
   };
+
+  // Register the save function so the unsaved changes dialog can call it
+  useEffect(() => {
+    saveRef.current = save;
+  });
+
+  // On mount: check if a post-save action (add/clone) was stashed in the
+  // parent ref before TabsAccess was unmounted by the loading spinner.
+  // If so, open the appropriate dialog now that we've remounted.
+  useEffect(() => {
+    const action = postSaveActionRef.current;
+    if (action) {
+      postSaveActionRef.current = null;
+      // Small delay to let the initial render settle
+      const timer = setTimeout(() => {
+        if (action === 'clone') {
+          setCloneMode(true);
+        }
+        setNewModeOpen(true);
+        setFormError('');
+        setModeText('');
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run only on mount
 
   useEffect(() => {
     setCurrentModeValue(modes[currentModeIndex].modeName)
@@ -337,6 +565,41 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     setRequired(modes[currentModeIndex].required)
     setValidationRules(modes[currentModeIndex].validationRules)
   }, [modes, currentModeIndex])
+
+  // On mount and whenever the mode changes, pause dirty-tracking while the
+  // effects that sync scripts / required / validationRules / state settle.
+  useEffect(() => {
+    pauseDirtyTracking();
+    return () => {
+      if (dirtyTimerRef.current) clearTimeout(dirtyTimerRef.current);
+    };
+  }, [currentModeIndex, pauseDirtyTracking]);
+
+  // Helper: check if the current fields differ from the snapshot
+  const isFieldsDirty = useCallback(() => {
+    const snap = initialSnapshotRef.current;
+    if (!snap) return false;
+    const keys = Object.keys(state);
+    const currentFields = keys.length > 0
+      ? state[keys[0]].map((field: any) => {
+          const { content, id, ...rest } = field;
+          return rest;
+        })
+      : [];
+    return JSON.stringify(currentFields) !== JSON.stringify(snap.fields);
+  }, [state]);
+
+  // Track user-driven changes to scripts, required, and validation rules.
+  // Compare against the initial snapshot so reverting to original values clears dirty.
+  useEffect(() => {
+    if (!isUserEditRef.current) return;
+    const snap = initialSnapshotRef.current;
+    if (!snap) return;
+    const scriptsChanged = JSON.stringify(scripts) !== JSON.stringify(snap.scripts);
+    const requiredChanged = JSON.stringify(required) !== JSON.stringify(snap.required);
+    const rulesChanged = JSON.stringify(validationRules) !== JSON.stringify(snap.validationRules);
+    setHasUnsavedChanges(scriptsChanged || requiredChanged || rulesChanged || isFieldsDirty());
+  }, [scripts, required, validationRules])
 
   /**
    * gatherFormData harvests form data from the Formulas page
@@ -371,6 +634,19 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     } else {
       setSaveEnabled(false)
       // setSaveTooltip("At least 1 field is required to save this new form.")
+    }
+
+    // Mark as dirty when fields change (skip initial load & mode switches).
+    // Compare against initial snapshot so reverting to original values clears dirty.
+    if (isUserEditRef.current) {
+      const snap = initialSnapshotRef.current;
+      if (snap) {
+        const fieldsChanged = JSON.stringify(readAccessFields) !== JSON.stringify(snap.fields);
+        const scriptsChanged = JSON.stringify(scripts) !== JSON.stringify(snap.scripts);
+        const requiredChanged = JSON.stringify(required) !== JSON.stringify(snap.required);
+        const rulesChanged = JSON.stringify(validationRules) !== JSON.stringify(snap.validationRules);
+        setHasUnsavedChanges(fieldsChanged || scriptsChanged || requiredChanged || rulesChanged);
+      }
     }
   }, [state])
 
@@ -608,14 +884,18 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   };
 
   const handleNewModeOpen = () => {
-    setNewModeOpen(true);
-    setFormError('');
-    setModeText('');
+    guardAction(() => {
+      setNewModeOpen(true);
+      setFormError('');
+      setModeText('');
+    }, undefined, 'add');
   };
 
   const handleClickCloneMode = () => {
-    setCloneMode(true);
-    setNewModeOpen(true);
+    guardAction(() => {
+      setCloneMode(true);
+      setNewModeOpen(true);
+    }, undefined, 'clone');
   }
 
   const deleteModeTitle: string = 'Delete Mode';
@@ -765,6 +1045,12 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         </LoadTabContainer>
       </TabNavigator>
       <FormDrawer formName='TestForm' formik={formik} />
+      <UnsavedChangesDialog
+        open={pendingAction !== null}
+        onSave={handlePendingActionSave}
+        onDiscard={handlePendingActionDiscard}
+        onCancel={handlePendingActionCancel}
+      />
     </TabAccessContainer>
   );
 };

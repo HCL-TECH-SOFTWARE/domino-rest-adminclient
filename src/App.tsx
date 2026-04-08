@@ -36,47 +36,55 @@ const App: React.FC = () => {
   const { authenticated } = useSelector((state: AppState) => state.account);
 
   useEffect(() => {
-    // Get JWT TOken from Browser Local Storage
-    const jwtToken = localStorage.getItem('user_token') as string;
+    // Get JWT Token from Browser Local Storage
+    const jwtToken = localStorage.getItem('user_token');
 
     // Check if Token is present in the browser
     setValid(true);
 
     if (jwtToken) {
-      // Set IDP login flag to true if token contains "access_token"
-      const idpLogin = !!JSON.parse(jwtToken).access_token
-      if (idpLogin) dispatch(setIdpLogin(true))
+      try {
+        const parsedToken = JSON.parse(jwtToken);
+        // Set IDP login flag to true if token contains "access_token"
+        const idpLogin = !!parsedToken.access_token;
+        if (idpLogin) dispatch(setIdpLogin(true));
 
-      const { issueDate, expSeconds } = JSON.parse(jwtToken) as TokenProps;
+        const { issueDate, expSeconds } = parsedToken as TokenProps;
 
-      dispatch(setToken(jwtToken));
+        dispatch(setToken(jwtToken));
 
-      const storageToken = new Date(issueDate).getTime() + 1000 * expSeconds;
-      const storageTokenTime = new Date(storageToken).getTime();
-      const today = new Date().getTime();
+        const storageToken = new Date(issueDate).getTime() + 1000 * expSeconds;
+        const storageTokenTime = new Date(storageToken).getTime();
+        const today = new Date().getTime();
 
-      dispatch(authenticate());
-      if ((today < storageTokenTime) && !idpLogin) {
-        dispatch(renewToken() as any);
-      } else {
-        if (!idpLogin) {
-          dispatch(removeAuth());
+        dispatch(authenticate());
+        if ((today < storageTokenTime) && !idpLogin) {
+          dispatch(renewToken() as any);
+        } else {
+          if (!idpLogin) {
+            dispatch(removeAuth());
+          }
         }
+      } catch (e) {
+        // Token is corrupted — clear it and force re-login
+        localStorage.removeItem('user_token');
+        dispatch(removeAuth());
       }
     }
   }, [dispatch]);
 
-  const HomePage = <>
-    <HomeElement MainElement={Views} mainElementProps={{ open }} />
-  </>
+  const currentTheme = React.useMemo(
+    () => theme(authenticated, getTheme, themeMode),
+    [authenticated, themeMode]
+  );
 
   return (
-    <ThemeProvider theme={theme(authenticated, getTheme, themeMode)}>
+    <ThemeProvider theme={currentTheme}>
       <CssBaseline />
       {valid ? (
         <Router basename="/admin/ui">
           <Routes>
-              <Route path='*' element={authenticated ? HomePage : <LoginPage />} />
+              <Route path='*' element={authenticated ? <HomeElement MainElement={Views} mainElementProps={{ open }} /> : <LoginPage />} />
               <Route path='/callback' element={<CallbackPage/>}/>
           </Routes>
         </Router>
