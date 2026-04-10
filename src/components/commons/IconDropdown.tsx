@@ -52,7 +52,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                     height: `${size}px`
                     }}
                 />
-                <span style={{ textTransform: 'capitalize', paddingLeft: '11px', color: '#000' }}>{displayIconName.toLowerCase()}</span>
+                <span style={{ textTransform: 'capitalize', paddingLeft: '11px', color: 'light-dark(#000, #e0e0e0)' }}>{displayIconName.toLowerCase()}</span>
                 <ChevronDown style={{ fontSize: 18 }} />
             </Button>
             <Menu

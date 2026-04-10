@@ -11,7 +11,8 @@ class SourceContents extends LitElement {
   static styles = css`
     select {
         border: none;
-        background-color: #D7EBFD;
+        background-color: light-dark(#D7EBFD, #3a3a5a);
+        color: light-dark(inherit, #e0e0e0);
         padding: 5px;
         font-size: 15px;
 
@@ -23,16 +24,17 @@ class SourceContents extends LitElement {
     textarea {
         width: 100%;
         height: 60vh;
-        width: 100%;
-        background-color: white;
+        background-color: light-dark(white, #1e1e2e);
+        color: light-dark(inherit, #e0e0e0);
         resize: none;
     }
 
     header {
-        background-color: #D7EBFD;
-        border-top: 1px solid #D2D2D2;
-        border-left: 1px solid #D2D2D2;
-        border-right: 1px solid #D2D2D2;
+        background-color: light-dark(#D7EBFD, #3a3a5a);
+        border-top: 1px solid light-dark(#D2D2D2, #3a3a4a);
+        border-left: 1px solid light-dark(#D2D2D2, #3a3a4a);
+        border-right: 1px solid light-dark(#D2D2D2, #3a3a4a);
+        color: light-dark(inherit, #e0e0e0);
         padding: 5px 15px 5px 10px;
         display: flex;
         flex-direction: row;
@@ -41,7 +43,7 @@ class SourceContents extends LitElement {
     }
 
     section {
-        color: #4a90e2;
+        color: light-dark(#4a90e2, #8CC7F9);
     }
     section.buttons-container {
         display: flex;
@@ -60,6 +62,7 @@ class SourceContents extends LitElement {
         border: none;
         padding: 0;
         margin: 0;
+        color: light-dark(#000, #e0e0e0);
 
         &:hover {
             cursor: pointer;
@@ -164,8 +167,8 @@ class SourceContents extends LitElement {
             </select>
             <section class="buttons-container">
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
-                    <button title="Copy" style="color: #000;" @click="${this.handleCopyClick}"><sl-icon src="${IMG_DIR}/shoelace/copy.svg"></sl-icon></button>
-                    <button title="Download" style="color: #000;" @click="${this.handleDownloadClick}"><sl-icon src="${IMG_DIR}/shoelace/download.svg"></sl-icon></button>
+                    <button title="Copy" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleCopyClick}"><sl-icon src="${IMG_DIR}/shoelace/copy.svg"></sl-icon></button>
+                    <button title="Download" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleDownloadClick}"><sl-icon src="${IMG_DIR}/shoelace/download.svg"></sl-icon></button>
                 </section>
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
                     <section>

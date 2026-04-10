@@ -13,7 +13,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { Box, Button, ButtonBase, Tooltip, Typography } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useNavigate } from 'react-router-dom';
@@ -23,13 +23,15 @@ import { ButtonNeutral, ButtonYes, WarningIcon } from "../../styles/CommonStyles
 import { IoMdClose } from "react-icons/io";
 import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
+import { getTheme } from "../../store/styles/action";
+import { AppState } from "../../store";
+const StyledTableCell = styled(TableCell)<{ themeMode?: string }>(({ themeMode }) => ({
   paddingLeft: "30px",
   paddingRight: "30px",
   [`&.${tableCellClasses.head}`]: {
     fontWeight: "bold",
     paddingTop: "30px",
-    borderBottom: "1px solid #b8b8b8",
+    borderBottom: `1px solid ${themeMode ? getTheme(themeMode).borderColor : '#b8b8b8'}`,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
@@ -39,9 +41,9 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
+const StyledTableRow = styled(TableRow)<{ themeMode?: string }>(({ themeMode }) => ({
   "&:nth-of-type(odd)": {
-    backgroundColor: "#F8FBFF",
+    backgroundColor: themeMode && getTheme(themeMode).bodyColor !== '#f5f5f5' ? getTheme(themeMode).primary : "#F8FBFF",
     borderBottom: "none",
   },
   // hide last border
@@ -50,11 +52,11 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const StyledTableContainer = styled(TableContainer)`
+const StyledTableContainer = styled(TableContainer)<{ themeMode?: string }>`
   border-radius: 10px;
   box-sizing: border-box;
-  border: 1px solid #B9B9B9;
-  background: #FFF;
+  border: 1px solid ${(props) => props.themeMode ? getTheme(props.themeMode).borderColor : '#B9B9B9'};
+  background: ${(props) => props.themeMode ? getTheme(props.themeMode).secondary : '#FFF'};
 
   .diamond-marker {
     margin-right: 5px;
@@ -124,7 +126,7 @@ const ActivateDialogContainer = styled.dialog`
 
   .title {
     font-size: 22px;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     font-weight: 700;
   }
 
@@ -150,7 +152,7 @@ const ActivateDialogContainer = styled.dialog`
   }
 
   .button-cancel {
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     font-weight: 700;
     font-size: 14px;
     border-radius: 10px;
@@ -177,6 +179,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
   formList,
 }) => {
   const dispatch = useDispatch();
+  const { themeMode } = useSelector((state: AppState) => state.styles);
   const ref = React.useRef<HTMLDialogElement>(null)
   const [activateFormName, setActivateFormName] = React.useState("")
   
@@ -259,12 +262,12 @@ const FormsTable: React.FC<FormsTableProps> = ({
 
   return (
     <>
-      <StyledTableContainer>
+      <StyledTableContainer themeMode={themeMode}>
         <Table sx={{ padding: "30px" }} aria-label="views and agents table">
           <TableHead>
             <TableRow>
-              <StyledTableCell width="50px" />
-              <StyledTableCell width="350px">
+              <StyledTableCell themeMode={themeMode} width="50px" />
+              <StyledTableCell themeMode={themeMode} width="350px">
                 <Box display='flex' flexDirection='row'>
                   <Box visibility='hidden' className='diamond-marker'>
                     <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
@@ -293,7 +296,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
           </TableHead>
           <TableBody>
             {forms.map((form,i) => (
-              <StyledTableRow key={form.formName+i}>
+              <StyledTableRow key={form.formName+i} themeMode={themeMode}>
                 <StyledTableCell component="th" scope="row" width="50px">
                   <EditIcon onClick={() => openForm(form.formName, form.formModes.length)}>
                     <Button title={form.formName}><FiEdit2 size='1.5em' /></Button>

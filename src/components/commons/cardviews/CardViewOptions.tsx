@@ -52,10 +52,10 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
           onClick={handleClick}
-          style={{textTransform: 'none', paddingLeft: '15px', width: '100%', fontSize: '16px', justifyContent: 'space-between', color: '#000'}}
+          style={{textTransform: 'none', paddingLeft: '15px', width: '100%', fontSize: '16px', justifyContent: 'space-between', color: themeMode === 'dark' ? '#e0e0e0' : '#000'}}
        >
         {view === "nsf" ? view.toUpperCase() : view.charAt(0).toUpperCase() + view.slice(1)} View
-        <ArrowDropDownIcon style={{ color: '#2B2B2B' }}/>
+        <ArrowDropDownIcon style={{ color: themeMode === 'dark' ? '#e0e0e0' : '#2B2B2B' }}/>
       </Button>
       <Menu
           id="simple-menu"

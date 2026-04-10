@@ -18,7 +18,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { LitTextformArray } from '../lit-elements/LitElements';
 
 const AccessContainer = styled.div`
-  border: 1px solid #A5AFBE;
+  border: 1px solid light-dark(#A5AFBE, #3a3a4a);
   border-radius: 10px;
   padding: 16px;
   width: 45%;
@@ -57,7 +57,7 @@ const AccessContainer = styled.div`
 
 const EditFormulaDialog = styled.dialog`
   border-radius: 10px;
-  background: #FFF;
+  background: light-dark(#FFF, #252535);
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   border: none;
   width: 50%;
@@ -71,7 +71,7 @@ const EditFormulaDialog = styled.dialog`
 
   .title {
     font-size: 20px;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     font-weight: 400;
   }
 

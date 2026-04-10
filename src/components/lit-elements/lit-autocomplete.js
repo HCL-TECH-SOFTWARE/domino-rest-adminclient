@@ -30,7 +30,7 @@ class Autocomplete extends LitElement {
       left: 0;
       z-index: 1000;
       visibility: hidden;
-      background-color: white;
+      background-color: light-dark(white, #252535);
       border: 1px solid #ccc;
       border-radius: 5px;
       width: 100%;

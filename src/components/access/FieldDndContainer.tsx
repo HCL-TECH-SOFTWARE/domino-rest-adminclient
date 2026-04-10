@@ -23,8 +23,8 @@ const SelectedFieldsContainer = styled.div`
   flex-direction: column;
   gap: 10px;
   border-radius: 5px;
-  border: 1px solid #A5AFBE;
-  background: #FFF;
+  border: 1px solid light-dark(#A5AFBE, #3a3a4a);
+  background: light-dark(#FFF, #1e1e2e);
   height: 100%;
   width: 25%;
 
@@ -40,7 +40,7 @@ const SelectedFieldsContainer = styled.div`
     font-style: italic;
     font-weight: 400;
     padding: 20px;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
   }
 
   .batch-delete-container {
@@ -84,8 +84,8 @@ const SelectedFieldsContainer = styled.div`
 
 const ConfigFieldContainer = styled.div`
   border-radius: 5px;
-  border: 1px solid #BFBFBF;
-  background: #FFF;
+  border: 1px solid light-dark(#BFBFBF, #3a3a4a);
+  background: light-dark(#FFF, #1e1e2e);
   padding: 0;
   height: 45%;
   width: 100%;
@@ -93,7 +93,7 @@ const ConfigFieldContainer = styled.div`
   .setting {
     font-size: 16px;
     font-weight: 700;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     width: 100%;
     padding: 10px 20px 0 20px;
     height: 15%;
@@ -112,6 +112,7 @@ const IconButton = styled.button`
   background: none;
   user-select: none;
   cursor: pointer;
+  color: light-dark(#000, #e0e0e0);
 
   .add {
     margin-top: 15px;
@@ -141,7 +142,7 @@ const CustomItem = styled.div`
 
   &:hover {
     cursor: pointer;
-    background-color: #D7E0F3;
+    background-color: light-dark(#D7E0F3, #353548);
   }
 
   .field-info {
@@ -159,7 +160,7 @@ const CustomItem = styled.div`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     font-size: 14px;
   }
 
@@ -172,7 +173,7 @@ const CustomItem = styled.div`
 
 const RemoveFieldDialog = styled.dialog`
   border-radius: 10px;
-  background: #FFF;
+  background: light-dark(#FFF, #252535);
   border: none;
   width: 50%;
   padding: 30px 40px;
@@ -190,7 +191,7 @@ const RemoveFieldDialog = styled.dialog`
 
   .title {
     font-size: 22px;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     font-weight: 700;
   }
 
@@ -229,7 +230,7 @@ const RemoveFieldDialog = styled.dialog`
   }
 
   .button-cancel {
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     font-weight: 700;
     font-size: 14px;
     border-radius: 10px;
@@ -429,7 +430,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                   onClick={toggleBatchDelete} 
                   disabled={state[stateList[0]].length === 0}
                 >
-                  <Typography className={`batch-delete`} style={{ color: '#000' }}>Cancel</Typography>
+                  <Typography className={`batch-delete`} style={{ color: 'light-dark(#000, #e0e0e0)' }}>Cancel</Typography>
                 </Button>
               </Box>
               <Checkbox

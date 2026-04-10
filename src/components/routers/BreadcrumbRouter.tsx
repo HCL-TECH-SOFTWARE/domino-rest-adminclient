@@ -22,7 +22,7 @@ import { ActionHeader, PageTitle, TopBanner } from '../../styles/CommonStyles';
 
 const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
   .home-icon {
-    color: #212121 !important;
+    color: ${(props) => getTheme(props.theme).textColorPrimary} !important;
     font-size: 18px !important;
     margin-right: 5px;
     display: 'flex';
@@ -82,7 +82,7 @@ const BreadcrumbRouter: React.FC = () => {
         <PageTitle>
           <TopBanner>
             { pathname === '/' &&
-                (<span style={{ float: 'left', fontSize: '24px', color: 'black' }}
+                (<span style={{ float: 'left', fontSize: '24px', color: getTheme(themeMode).textColorPrimary }}
                 onClick={()=>handleOnClick(2)}
                 >
                   {breadcrumbTitle}
@@ -90,8 +90,8 @@ const BreadcrumbRouter: React.FC = () => {
             }
             { pathname !== '/' &&
             <Breadcrumbs
-              style={{color: 'black', marginTop: '10px'}}
-              separator="/"
+              style={{color: getTheme(themeMode).textColorPrimary, marginTop: '10px'}}
+              separator={<span style={{ color: getTheme(themeMode).textColorPrimary }}>/</span>}
               aria-label="breadcrumb"
               className="routing"
             >

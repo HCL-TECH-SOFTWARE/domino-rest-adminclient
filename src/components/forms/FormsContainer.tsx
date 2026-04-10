@@ -86,7 +86,8 @@ const CoreContainer = styled.div<{ show: boolean }>`
   .textarea {
     height: 60vh;
     width: 100%;
-    background-color: white;
+    background-color: light-dark(white, #1e1e2e);
+    color: light-dark(inherit, #e0e0e0);
     resize: none;
   }
 
@@ -160,6 +161,7 @@ const FormsContainer = () => {
   const dispatch = useDispatch();
   const setData = useState<Array<string>>([])[1];
   const { visible } = useSelector((state: AppState) => state.dbSetting);
+  const { themeMode } = useSelector((state: AppState) => state.styles);
   const [schemaData, setSchemaData] = useState({
     '@unid': "",
     apiName: "",
@@ -608,7 +610,7 @@ const FormsContainer = () => {
                 style={{ fontWeight: 'bold', display: 'flex' }}
                 TabIndicatorProps={{
                   title: 'indicator',
-                  style: { backgroundColor: 'black' }
+                  style: { backgroundColor: themeMode === 'dark' ? '#8CC7F9' : 'black' }
                 }}
               >
                 <Tab label="Database Forms" className='tab-button'/>
@@ -659,6 +661,7 @@ const FormsContainer = () => {
                   defaultLanguage="json"
                   defaultValue={sourceTabContent}
                   onMount={handleEditorDidMount}
+                  theme={themeMode === 'dark' ? 'vs-dark' : 'vs'}
                 />}
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer sx={{ overflowY: 'auto' }}>

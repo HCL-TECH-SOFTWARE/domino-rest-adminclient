@@ -27,6 +27,10 @@ const theme = (
         // dark: will be calculated from palette.secondary.main,
         contrastText: '#ffffff',
       },
+      background: {
+        default: currentTheme.bodyColor || '#f5f5f5',
+        paper: currentTheme.secondary || 'white',
+      },
       // Used by `getContrastText()` to maximize the contrast between
       // the background and the text.
       contrastThreshold: 3,
@@ -106,6 +110,9 @@ const theme = (
         styleOverrides: {
           root: {
             background: currentTheme.breadcrumb.background,
+          },
+          separator: {
+            color: currentTheme.textColorPrimary,
           },
         },
       },

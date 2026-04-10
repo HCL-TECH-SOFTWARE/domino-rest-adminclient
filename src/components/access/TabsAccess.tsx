@@ -44,11 +44,11 @@ const TabAccessContainer = styled.div<{ width: number; top: number }>`
   min-height: fit-content;
   position: absolute;
   top: ${(props) => props.top}%;
-  border: 1px solid #D1D1D1;
+  border: 1px solid light-dark(#D1D1D1, #3a3a4a);
   border-radius: 10px;
   height: 100%;
   padding: 30px;
-  background-color: #F9FBFF;
+  background-color: light-dark(#F9FBFF, #1e1e2e);
 `;
 
 const TabNavigator = styled.div`
@@ -73,7 +73,7 @@ const LoadTabContainer = styled.div`
 const TabsContainer = styled.div`
   display: flex;
   align-items: center;
-  background-color: #f9fbff;
+  background-color: light-dark(#f9fbff, #1e1e2e);
   padding-bottom: 21px;
 
   .change-mode-btn .MuiButton-label {
@@ -952,21 +952,21 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           <PagerAction>
             <button
               onClick={handleClickCloneMode}
-              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center' }}
+              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center', color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary }}
               disabled={newForm.enabled}
             >
               <BiCopy className='action-icon' />
-              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
+              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary}}>
                 Clone Mode
               </Typography>
             </button>
             <button
               onClick={handleNewModeOpen}
-              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center' }}
+              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center', color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary }}
               disabled={newForm.enabled}
             >
               <AddIcon className='action-icon' />
-              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : '#000'}}>
+              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary}}>
                 Add Mode
               </Typography>
             </button>

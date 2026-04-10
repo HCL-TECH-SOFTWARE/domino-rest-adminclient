@@ -42,7 +42,7 @@ const AlphabeticalViewContainer = styled.div`
   .each-letter {
     padding: 0 10px;
     font-size: 20px;
-    color: #000000;
+    color: light-dark(#000000, #e0e0e0);
     cursor: pointer;
   }
 
@@ -83,7 +83,9 @@ const BlockContainer = styled.div`
     text-transform: uppercase;
     width: 60px;
     height: 60px;
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIiBmaWxsPSJub25lIj4KICAgIDxjaXJjbGUgY3g9IjMwIiBjeT0iMzAiIHI9IjMwIiBmaWxsPSIjRTZFQkY1Ii8+Cjwvc3ZnPg==');
+    border-radius: 50%;
+    background-color: light-dark(#E6EBF5, #3a3a5a);
+    color: light-dark(#000, #e0e0e0);
   }
 
   .schemas {

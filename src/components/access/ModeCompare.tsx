@@ -27,7 +27,7 @@ const DialogContainer = styled(Dialog)`
   margin: 0;
   overflow-y: scroll;
 
-  background-color: #fafafa;
+  background-color: light-dark(#fafafa, #1e1e2e);
 
   .content-container {
     padding: 0;
@@ -65,7 +65,7 @@ const DialogContainer = styled(Dialog)`
     font-weight: 700;
     line-height: normal;
     padding: 11px 24px;
-    background-color: white;
+    background-color: light-dark(white, #252535);
     border: none;
   }
 
@@ -187,7 +187,7 @@ const ModeCardsContainer = styled.div`
   }
 
   .field-name {
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     font-size: 16px;
     font-style: normal;
     font-weight: 700;

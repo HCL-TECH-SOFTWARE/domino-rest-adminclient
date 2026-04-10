@@ -1,0 +1,395 @@
+﻿/* ==========================================================================
+ * Theme support using CSS light-dark() function.
+ * The browser picks the correct value based on the inherited color-scheme
+ * property (set on :root in index.css, toggled in HomeElement.tsx).
+ * ========================================================================== */
+
+/* ===== Shoelace primary color overrides for dark mode ===== */
+body[data-theme="dark"] {
+  --sl-color-primary-600: #8B6CE0;
+  --sl-color-primary-500: #9B7EE8;
+  --sl-color-primary-700: #7B5CD0;
+}
+
+/* ===== Base64 SVG icons (have stroke="black" baked in) ===== */
+body[data-theme="dark"] .dialog-svg-icon,
+body[data-theme="dark"] .option-container img {
+  filter: invert(1);
+}
+
+/* ===== Tables ===== */
+.MuiTableContainer-root {
+  background: light-dark(#fff, #252535) !important;
+  border-color: light-dark(#e0e0e0, #3a3a4a) !important;
+}
+
+.MuiTableHead-root {
+  border-bottom-color: light-dark(#e0e0e0, #3a3a4a) !important;
+}
+
+.MuiTableHead-root .MuiTableCell-head {
+  border-bottom-color: light-dark(#e0e0e0, #3a3a4a) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiTableCell-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+  border-bottom-color: light-dark(#e0e0e0, #3a3a4a) !important;
+}
+
+.MuiTableRow-root:nth-of-type(odd) {
+  background-color: light-dark(inherit, #1e1e2e) !important;
+}
+
+.MuiTableRow-root:nth-of-type(even) {
+  background-color: light-dark(inherit, #252535) !important;
+}
+
+.MuiTablePagination-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiTablePagination-selectIcon {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiTablePagination-root .MuiIconButton-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiTablePagination-root .MuiIconButton-root.Mui-disabled {
+  color: light-dark(rgba(0,0,0,0.26), rgba(255,255,255,0.3)) !important;
+}
+
+.MuiTablePagination-root .MuiSelect-select {
+  border-color: light-dark(black, #e0e0e0) !important;
+}
+
+/* ===== Cards ===== */
+.MuiCard-root {
+  background: light-dark(#fff, #252535) !important;
+  border-color: light-dark(#e0e0e0, #3a3a4a) !important;
+}
+
+.MuiCardContent-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Paper ===== */
+.MuiPaper-root {
+  background-color: light-dark(#fff, #252535) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Dialogs ===== */
+.MuiDialog-paper {
+  background-color: light-dark(#fff, #252535) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiDialogTitle-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiDialogContent-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiDialog-root .MuiPaper-root {
+  background-color: light-dark(#fff, #252535) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiDialogContentText-root {
+  color: light-dark(inherit, #9e9e9e) !important;
+}
+
+/* ===== Shoelace Drawer ===== */
+sl-drawer::part(base),
+sl-drawer::part(panel),
+sl-drawer::part(body) {
+  background: light-dark(#fff, #1e1e2e);
+  color: light-dark(inherit, #e0e0e0);
+}
+
+sl-drawer::part(header),
+sl-drawer::part(title) {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+/* ===== Inputs and Form Controls ===== */
+.MuiInputBase-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiInputBase-input {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: light-dark(rgba(0,0,0,0.23), #3a3a4a) !important;
+}
+
+.MuiInputLabel-root,
+.MuiFormLabel-root {
+  color: light-dark(rgba(0,0,0,0.6), #b0b0b0) !important;
+}
+
+.MuiSelect-icon {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiInput-underline:before {
+  border-bottom-color: light-dark(rgba(0,0,0,0.42), #3a3a4a) !important;
+}
+
+.MuiCheckbox-root {
+  color: light-dark(inherit, #8B6CE0) !important;
+}
+
+.MuiCheckbox-root.Mui-checked {
+  color: light-dark(inherit, #8B6CE0) !important;
+}
+
+/* ===== Tabs ===== */
+.MuiTabs-root .MuiTab-root {
+  color: light-dark(inherit, #9e9e9e) !important;
+}
+
+.MuiTabs-root .MuiTab-root.Mui-selected {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Typography ===== */
+.MuiTypography-colorTextPrimary {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Buttons ===== */
+.MuiButton-root {
+  color: light-dark(inherit, #8B6CE0);
+}
+
+.MuiIconButton-root {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+/* ===== Switch ===== */
+.MuiSwitch-track {
+  background-color: light-dark(inherit, #3a3a4a) !important;
+}
+
+/* ===== Tooltip ===== */
+.MuiTooltip-tooltip {
+  background-color: light-dark(#616161, #3a3a5a) !important;
+  color: light-dark(#fff, #e0e0e0) !important;
+}
+
+/* ===== Chips ===== */
+.MuiChip-root {
+  background-color: light-dark(inherit, #3a3a5a) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Autocomplete ===== */
+.MuiAutocomplete-paper {
+  background-color: light-dark(#fff, #252535) !important;
+}
+
+.MuiAutocomplete-option {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Popover and Menu ===== */
+.MuiPopover-paper {
+  background-color: light-dark(#fff, #252535) !important;
+}
+
+.MuiMenu-paper {
+  background-color: light-dark(#fff, #252535) !important;
+}
+
+.MuiMenuItem-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Shoelace inputs ===== */
+sl-input::part(base) {
+  background-color: light-dark(#fff, #1e1e2e);
+  color: light-dark(inherit, #e0e0e0);
+  border-color: light-dark(#ccc, #3a3a4a);
+}
+
+sl-input::part(input) {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+sl-select::part(combobox) {
+  background-color: light-dark(#fff, #1e1e2e);
+  color: light-dark(inherit, #e0e0e0);
+  border-color: light-dark(#ccc, #3a3a4a);
+}
+
+sl-tree {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+sl-tree-item::part(base) {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+/* ===== Scrollbar ===== */
+body[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #1e1e2e;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3a3a5a;
+}
+
+/* ===== Status Toggle ===== */
+.toggle-container {
+  background-color: light-dark(inherit, #3a3a4a) !important;
+}
+
+.unchecked {
+  color: light-dark(inherit, #9e9e9e) !important;
+}
+
+/* ===== Consents ===== */
+button.option,
+button[style*="border: none"] {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.text {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Shoelace Cards ===== */
+sl-card::part(base) {
+  background: light-dark(#fff, #252535);
+  color: light-dark(inherit, #e0e0e0);
+  border-color: light-dark(#e0e0e0, #3a3a4a);
+}
+
+sl-card::part(body) {
+  background: light-dark(#fff, #252535);
+  color: light-dark(inherit, #e0e0e0);
+}
+
+lit-default-card {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+/* ===== NSF Card ===== */
+lit-nsf-card {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+/* ===== Source tab ===== */
+lit-source-header {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+lit-source {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+lit-schema-status {
+  color: light-dark(inherit, #e0e0e0);
+}
+
+/* ===== Access Mode Page ===== */
+.field-name,
+.field-meta-data,
+.add-fields-text {
+  color: light-dark(#000, #e0e0e0) !important;
+}
+
+.setting {
+  color: light-dark(#000, #e0e0e0) !important;
+}
+
+.name {
+  color: light-dark(#000, #e0e0e0) !important;
+}
+
+.no-formula,
+.computed {
+  color: light-dark(#475155, #9e9e9e) !important;
+}
+
+.search-container {
+  background-color: light-dark(#f9f9f9, #1e1e2e) !important;
+  border-color: light-dark(#a5afbe, #3a3a4a) !important;
+}
+
+.search-container input {
+  color: light-dark(inherit, #e0e0e0) !important;
+  background: transparent !important;
+}
+
+/* ===== Native HTML Dialogs ===== */
+dialog {
+  background-color: light-dark(#fff, #252535) !important;
+  color: light-dark(#000, #e0e0e0) !important;
+  border-color: light-dark(transparent, #3a3a4a) !important;
+}
+
+body[data-theme="dark"] dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+dialog .title,
+dialog .text-content {
+  color: light-dark(#000, #e0e0e0) !important;
+}
+
+dialog .button-cancel {
+  color: light-dark(#000, #e0e0e0) !important;
+  border-color: light-dark(#323A3D, #9e9e9e) !important;
+}
+
+dialog input,
+dialog textarea {
+  background-color: light-dark(#fff, #1e1e2e) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+  border-color: light-dark(rgba(0,0,0,0.23), #3a3a4a) !important;
+}
+
+dialog .MuiInputBase-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+dialog .MuiInput-underline:before {
+  border-bottom-color: light-dark(rgba(0,0,0,0.42), #3a3a4a) !important;
+}
+
+dialog .MuiFormLabel-root {
+  color: light-dark(rgba(0,0,0,0.6), #b0b0b0) !important;
+}
+
+/* ===== Accordion ===== */
+.MuiAccordion-root {
+  background-color: light-dark(#fff, #252535) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+  border-color: light-dark(#e0e0e0, #3a3a4a) !important;
+}
+
+.MuiAccordionSummary-root {
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+.MuiAccordionDetails-root {
+  background-color: light-dark(#fff, #252535) !important;
+  color: light-dark(inherit, #e0e0e0) !important;
+}
+
+/* ===== Generic white background overrides ===== */
+body[data-theme="dark"] [style*="background-color: white"],
+body[data-theme="dark"] [style*="background-color: #FFF"],
+body[data-theme="dark"] [style*="background-color:#FFF"],
+body[data-theme="dark"] [style*="background: white"] {
+  background-color: #252535 !important;
+}

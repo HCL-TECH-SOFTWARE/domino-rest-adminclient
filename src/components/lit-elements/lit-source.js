@@ -130,8 +130,13 @@ class SourceTree extends LitElement {
   };
 
   static styles = css`
+    :host {
+      color: light-dark(inherit, #e0e0e0);
+    }
+
     main {
-      border: 1px solid #D2D2D2;
+      border: 1px solid light-dark(#D2D2D2, #3a3a4a);
+      background-color: light-dark(#fff, #1e1e2e);
     }
 
     sl-tree {
@@ -140,24 +145,43 @@ class SourceTree extends LitElement {
       --sl-font-size-large: 16px;
       padding: 0;
       margin: 0;
+      color: light-dark(inherit, #e0e0e0);
     }
     .custom-icons sl-tree-item::part(expand-button) {
       /* Disable the expand/collapse animation */
       rotate: none;
     }
 
+    sl-tree-item {
+      color: light-dark(inherit, #e0e0e0);
+      --sl-color-neutral-700: light-dark(#424242, #e0e0e0);
+      --sl-color-neutral-1000: light-dark(#000, #e0e0e0);
+    }
+
+    sl-tree-item::part(label) {
+      color: light-dark(inherit, #e0e0e0);
+    }
+
+    .key-value-container span {
+      color: light-dark(inherit, #9CDCFE) !important;
+    }
+
     input.tree {
       background: transparent;
       border: none;
       border-radius: 1px;
+      color: light-dark(inherit, #CE9178) !important;
+      font-weight: light-dark(normal, bold);
     }
     input.dialog {
-      border: 1px solid #B8B8B8;
+      border: 1px solid light-dark(#B8B8B8, #555);
       border-radius: 5px;
       padding: 5px 10px;
+      background-color: light-dark(#fff, #252535);
+      color: light-dark(inherit, #e0e0e0);
     }
     input:focus {
-      border: 1px solid #B8B8B8;
+      border: 1px solid light-dark(#B8B8B8, #555);
     }
 
     section.dialog-input {
@@ -190,6 +214,7 @@ class SourceTree extends LitElement {
 
     .object-array-container {
       position: relative;
+      color: light-dark(inherit, #9CDCFE) !important;
     }
     .object-array-container .icon-button {
       position: absolute;
@@ -204,8 +229,9 @@ class SourceTree extends LitElement {
     dialog {
       padding: 10px;
       border-radius: 5px;
-      border: 1px solid #D2D2D2;
-      border: none;
+      border: 1px solid light-dark(#D2D2D2, #3a3a4a);
+      background-color: light-dark(#fff, #252535);
+      color: light-dark(inherit, #e0e0e0);
       flex-direction: row;
       cursor: default;
     }
@@ -279,7 +305,7 @@ class SourceTree extends LitElement {
     }
     button.cancel {
       background: none;
-      color: black;
+      color: light-dark(black, #e0e0e0);
     }
   `;
 
@@ -335,11 +361,12 @@ class SourceTree extends LitElement {
               ${isObjectOrArray ? html`
                 ${`${label} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
               ` : html`
-                <span>${label}:</span>
+                <span style="color: light-dark(inherit, #9CDCFE)">${label}:</span>
                 <input
                   id="input-${fullPath}"
                   data-id="input-${fullPath}"
                   class="tree"
+                  style="color: light-dark(inherit, #CE9178); font-weight: light-dark(normal, bold)"
                   @input=${(e) => {
                     this.currentInputValues = {
                       ...this.currentInputValues,
