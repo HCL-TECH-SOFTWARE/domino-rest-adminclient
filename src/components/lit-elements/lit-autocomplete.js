@@ -14,7 +14,7 @@ class Autocomplete extends LitElement {
     .parent-container {
       position: relative;
       display: inline-block;
-      width: 95%;
+      width: 100%;
       overflow: visible;
     }
 
@@ -47,7 +47,7 @@ class Autocomplete extends LitElement {
     }
 
     .input-container {
-      width: 100%;
+      width: 97%;
       border: 1px solid #BBBDBF;
       border-radius: 5px;
       padding: 15px 10px;

@@ -380,17 +380,16 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             error={!!formik.errors.nsfPath && formik.touched.nsfPath}
             errorMessage={formik.errors.nsfPath}
             initialOption={formik.values.nsfPath}
+            style={{ width: '100%' }}
           />
         </Box>
-      </DialogContentContainer>
-      <HorizontalDivider />
-      <DialogContentContainer>
-        <Box style={{ display: 'flex', flexDirection: 'row' }}>
-          <Box style={{ flexDirection: 'row', width: '40%' }}>
+        <HorizontalDivider />
+        <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '20px' }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <Typography className='detail-title'>
               Icon
             </Typography>
-            <Box>
+            <Box style={{ display: 'flex', alignItems: 'center', height: '41px' }}>
               <IconDropdown
                 handleSelectIcon={handleSelectIcon}
                 displayIconName={iconName}
@@ -402,7 +401,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
               />
             </Box>
           </Box>
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '60%' }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
             <Typography className='detail-title'>
               Schema Name
             </Typography>
@@ -434,7 +433,8 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             placeholder='Description' 
             multiline={true}
             minRows={5}
-            style={{ width: '100%', overflowY: 'scroll' }} 
+            maxRows={5}
+            style={{ width: '100%' }} 
           />
         </Box>
         <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -476,7 +476,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   return (
     <>
-      <AddImportDialogContainer open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', maxHeight: '95vh' }}}>
+      <AddImportDialogContainer open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', maxHeight: '95vh', width: '50vw', maxWidth: '50vw' }}}>
         <DialogContainer sx={{ borderRadius: '10px', overflowY: 'auto' }}>
           {Title}
           {!importDialogOpen && InitialDialog}
