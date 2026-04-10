@@ -81,6 +81,12 @@ body[data-theme="dark"] .option-container img {
   color: light-dark(inherit, #e0e0e0) !important;
 }
 
+/* ===== Snackbar ===== */
+.MuiSnackbarContent-root {
+  background-color: #323232 !important;
+  color: #fff !important;
+}
+
 /* ===== Dialogs ===== */
 .MuiDialog-paper {
   background-color: light-dark(#fff, #252535) !important;
