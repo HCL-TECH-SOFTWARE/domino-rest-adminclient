@@ -17,6 +17,7 @@ class TextForm extends LitElement {
       width: auto;
       white-space: nowrap;
       flex: 1;
+      color: light-dark(#000, #e0e0e0);
     }
 
     .value {
@@ -25,11 +26,13 @@ class TextForm extends LitElement {
 
     input[type="text"] {
       padding: 15px 10px;
-      border: 1px solid #ccc;
+      border: 1px solid light-dark(#ccc, #3a3a4a);
       border-radius: 5px;
       width: 100%;
       box-sizing: border-box;
       font-size: 14;
+      background-color: light-dark(#fff, #1e1e2e);
+      color: light-dark(#000, #e0e0e0);
     }
 
     lit-autocomplete {

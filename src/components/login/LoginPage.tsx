@@ -52,8 +52,7 @@ const SignupSchema = Yup.object().shape({
 const Copyright = () => (
   <Typography variant="body2" color="textSecondary" align="center">
     <Typography
-      style={{ fontSize: 14 }}
-      color="primary"
+      style={{ fontSize: 14, color: 'light-dark(#666, #999)' }}
       variant="subtitle1"
       component="a"
     >
@@ -116,6 +115,7 @@ const PasskeySignUpContainer = styled.div`
     padding-left: 5px;
     transform: translateY(18%);
     cursor: pointer;
+    color: light-dark(inherit, #999);
   }
 
   .passkey-icon:hover {

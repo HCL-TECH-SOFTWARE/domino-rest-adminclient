@@ -16,12 +16,12 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     fontWeight: "bold",
     paddingTop: "30px",
-    borderBottom: "1px solid #848484",
+    borderBottom: "1px solid light-dark(#848484, #3a3a4a)",
   },
   [`&.${tableCellClasses.body}`]: {
     paddingTop: "20px",
     paddingBottom: "20px",
-    borderBottom: '1px solid #bdbdbd',
+    borderBottom: '1px solid light-dark(#bdbdbd, #3a3a4a)',
   }
 }));
 
@@ -31,8 +31,8 @@ const ColumnDetailsContainer = styled.div`
   width: 75%;
   height: 100%;
   
-  background: #FFF;
-  border: 1px solid #B4B4B4;
+  background: light-dark(#FFF, #252535);
+  border: 1px solid light-dark(#B4B4B4, #3a3a4a);
   border-radius: 10px;
   left: 23%;
   margin: 2% 2% 2% 0;

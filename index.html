@@ -6,6 +6,15 @@
     <title>HCL Domino Rest API</title>
   </head>
   <body>
+    <script>
+      // Apply theme before React renders to prevent flash
+      (function() {
+        var theme = localStorage.getItem('theme');
+        var isDark = theme === 'dark';
+        document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
 

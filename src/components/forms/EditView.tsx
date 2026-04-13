@@ -34,7 +34,7 @@ const EditViewDialogContainer = styled.div`
   width: 100%;
   height: 90vh;
 
-  background: #F8F8F8;
+  background: light-dark(#F8F8F8, #1e1e2e);
   border-radius: 10px;
 
   .close-btn {
@@ -104,9 +104,9 @@ const ColumnBarContainer = styled.div`
   overflow-y: auto;
   overflow-x: auto;
   
-  background: #FFFFFF;
+  background: light-dark(#FFFFFF, #252535);
   
-  border: 1px solid #A5AFBE;
+  border: 1px solid light-dark(#A5AFBE, #3a3a4a);
   border-radius: 10px;
 
   .add-all-container {
@@ -116,7 +116,7 @@ const ColumnBarContainer = styled.div`
     padding-right: 6%;
     line-height: 6;
     vertical-align: middle;
-    color: #5E1EBE;
+    color: light-dark(#5E1EBE, #8B6CE0);
 
     cursor: pointer;
   }
@@ -142,7 +142,7 @@ const AllColumnsList = styled.div`
   }
 
   .added-column {
-    background: #beebb4;
+    background: light-dark(#D7E0F3, #353548);
   }
 
   .check-icon {
@@ -179,7 +179,7 @@ const AllColumnsList = styled.div`
     font-size: 14px;
     line-height: 17px;
 
-    color: #636363;
+    color: light-dark(#636363, #999);
   }
 `
 

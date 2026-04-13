@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Header from '../../components/header/Header';
 import CollapseMenuIcon from '@mui/icons-material/ChevronLeftRounded';
@@ -19,7 +20,7 @@ import { AppState } from '../../store';
 import Notification from '../alerts/Notification';
 import SideNav from '../sidenav/SideNav';
 import MobileSidebar from '../sidenav/MobileSidebar';
-import { getTheme } from '../../store/styles/action';
+import { getTheme, switchTheme } from '../../store/styles/action';
 import Footer from '../../Footer';
 import theme from '../../theme';
 
@@ -80,6 +81,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
   const [open, setOpen] = useState(false);
   const matches = useMediaQuery('(max-width:768px)');
   const { themeMode } = useSelector((state: AppState) => state.styles);
+  const dispatch = useDispatch();
 
   const ipadMatches = useMediaQuery('(max-width:768px)');
   const { authenticated } = useSelector((state: AppState) => state.account);
@@ -92,6 +94,14 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
     () => theme(authenticated, getTheme, themeMode),
     [authenticated, themeMode]
   );
+
+  // Sync Redux themeMode with localStorage (e.g. after login page toggle)
+  useEffect(() => {
+    const storedTheme = localStorage.getItem('theme') || 'default';
+    if (storedTheme !== themeMode) {
+      dispatch(switchTheme(storedTheme));
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const isDark = themeMode === 'dark';

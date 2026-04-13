@@ -153,12 +153,13 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                   {
                   view.viewUpdated && view.viewActive ?
                   <span>
+                    <b>{view.viewName}</b>
+                    {' '}
                     <Tooltip title={`A change was made in this view.`} arrow>
                         <span>
-                        <AiOutlineQuestionCircle color='#0F52BA' />
+                        <AiOutlineQuestionCircle style={{ color: 'light-dark(#0F52BA, #008000)' }} />
                         </span>
                     </Tooltip>
-                    <b>{view.viewName}</b>
                   </span> 
                     :
                     <span>{view.viewName}</span>  

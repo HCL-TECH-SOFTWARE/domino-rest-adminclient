@@ -277,10 +277,16 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
           </Alert>
         )}
         <InputContainer style={{ marginTop: 5 }}>
-          <Typography color="textPrimary">{`Database: ${nsfPath}`}</Typography>
+          <Typography color="textPrimary" style={{ display: 'flex' }}>
+            <span style={{ minWidth: '85px' }}>Database:</span>
+            <span>{nsfPath}</span>
+          </Typography>
         </InputContainer>
         <InputContainer>
-          <Typography color="textPrimary" style={{ textOverflow: 'ellipsis', overflowX: 'hidden'}} >{`Schema: ${schemaName}`}</Typography>
+          <Typography color="textPrimary" style={{ display: 'flex', textOverflow: 'ellipsis', overflowX: 'hidden' }}>
+            <span style={{ minWidth: '85px' }}>Schema:</span>
+            <span>{schemaName}</span>
+          </Typography>
         </InputContainer>
         {!schemaName && formik.touched.apiName ? (
             <Typography className="validation-error" color="textPrimary">
@@ -341,8 +347,10 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             helperText={
               <div>
                 <span>Optional : Server name must be heirarchical or canonical format.<br/>For example:</span>
-                <li>Server/Org</li>
-                <li>CN=Server/O=Org</li>
+                <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
+                  <li>Server/Org</li>
+                  <li>CN=Server/O=Org</li>
+                </ul>
               </div>
             }
           />
