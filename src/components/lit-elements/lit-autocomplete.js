@@ -30,8 +30,8 @@ class Autocomplete extends LitElement {
       left: 0;
       z-index: 1000;
       visibility: hidden;
-      background-color: light-dark(white, #252535);
-      border: 1px solid #ccc;
+      background-color: light-dark(white, #1e1e2e);
+      border: 1px solid light-dark(#ccc, #3a3a4a);
       border-radius: 5px;
       width: 100%;
       z-index: 9999;
@@ -48,7 +48,7 @@ class Autocomplete extends LitElement {
 
     .input-container {
       width: 97%;
-      border: 1px solid #BBBDBF;
+      border: 1px solid light-dark(#BBBDBF, #3a3a4a);
       border-radius: 5px;
       padding: 15px 10px;
       font-size: 14px;
@@ -57,6 +57,8 @@ class Autocomplete extends LitElement {
       justify-content: space-between;
       margin: 0;
       position: relative;
+      background-color: light-dark(#fff, #1e1e2e);
+      color: light-dark(inherit, #e0e0e0);
     }
     .input-container.error {
       border: 1px solid red;
@@ -68,6 +70,8 @@ class Autocomplete extends LitElement {
       padding: 0;
       margin: 0;
       outline: none;
+      background-color: transparent;
+      color: inherit;
     }
 
     .button-container {
@@ -111,9 +115,10 @@ class Autocomplete extends LitElement {
       list-style-type: none;
       padding: 10px 15px;
       margin: 0;
+      color: light-dark(inherit, #e0e0e0);
     }
     li:hover, li.highlighted {
-      background-color: #e5e5e5;
+      background-color: light-dark(#e5e5e5, #353548);
     }
 
     @media only screen and (min-width: 992px) {

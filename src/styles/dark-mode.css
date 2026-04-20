@@ -54,11 +54,15 @@ body[data-theme="dark"] .option-container img {
 }
 
 .MuiTablePagination-root .MuiIconButton-root {
-  color: light-dark(inherit, #e0e0e0) !important;
+  color: light-dark(rgba(0,0,0,0.54), #e0e0e0) !important;
 }
 
 .MuiTablePagination-root .MuiIconButton-root.Mui-disabled {
   color: light-dark(rgba(0,0,0,0.26), rgba(255,255,255,0.3)) !important;
+}
+
+.MuiTablePagination-root .MuiIconButton-root .MuiSvgIcon-root {
+  color: inherit !important;
 }
 
 .MuiTablePagination-root .MuiSelect-select {
@@ -132,6 +136,15 @@ sl-drawer::part(title) {
   color: light-dark(inherit, #e0e0e0) !important;
 }
 
+.MuiInputBase-input.Mui-disabled {
+  color: light-dark(rgba(0,0,0,0.38), #999) !important;
+  -webkit-text-fill-color: light-dark(rgba(0,0,0,0.38), #999) !important;
+}
+
+.MuiInputLabel-root.Mui-disabled {
+  color: light-dark(rgba(0,0,0,0.38), #999) !important;
+}
+
 .MuiOutlinedInput-notchedOutline {
   border-color: light-dark(rgba(0,0,0,0.23), #3a3a4a) !important;
 }
@@ -143,6 +156,14 @@ sl-drawer::part(title) {
 
 .MuiSelect-icon {
   color: light-dark(inherit, #e0e0e0) !important;
+}
+
+body[data-theme="dark"] .MuiSelect-icon {
+  color: #e0e0e0 !important;
+}
+
+body[data-theme="dark"] .MuiSelect-icon path {
+  fill: #e0e0e0 !important;
 }
 
 .MuiInput-underline:before {
@@ -198,21 +219,25 @@ sl-drawer::part(title) {
 }
 
 /* ===== Autocomplete ===== */
-.MuiAutocomplete-paper {
-  background-color: light-dark(#fff, #252535) !important;
+.MuiAutocomplete-popper .MuiPaper-root {
+  background-color: light-dark(#fff, #1e1e2e) !important;
 }
 
 .MuiAutocomplete-option {
   color: light-dark(inherit, #e0e0e0) !important;
 }
 
-/* ===== Popover and Menu ===== */
-.MuiPopover-paper {
-  background-color: light-dark(#fff, #252535) !important;
+.MuiAutocomplete-listbox {
+  background-color: light-dark(#fff, #1e1e2e) !important;
 }
 
-.MuiMenu-paper {
-  background-color: light-dark(#fff, #252535) !important;
+/* ===== Popover and Menu ===== */
+.MuiPopover-root .MuiPaper-root {
+  background-color: light-dark(#fff, #1e1e2e) !important;
+}
+
+.MuiMenu-root .MuiPaper-root {
+  background-color: light-dark(#fff, #1e1e2e) !important;
 }
 
 .MuiMenuItem-root {

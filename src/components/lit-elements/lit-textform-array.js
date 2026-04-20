@@ -40,10 +40,11 @@ class TextFormArray extends LitElement {
       flex-direction: row;
       justify-content: center;
       background: none;
-      border: 1px solid #000;
+      border: 1px solid light-dark(#000, #e0e0e0);
       padding: 5px;
       border-radius: 5px;
       gap: 5px;
+      color: light-dark(#000, #e0e0e0);
 
       &:hover {
           cursor: pointer;
@@ -51,7 +52,7 @@ class TextFormArray extends LitElement {
 
       &.add {
         &:hover {
-          background-color: #F0F0F0;
+          background-color: light-dark(#F0F0F0, #3a3a4a);
         }
       }
 
@@ -75,14 +76,36 @@ class TextFormArray extends LitElement {
       display: block;
     }
 
+    sl-details {
+      color: light-dark(inherit, #e0e0e0);
+    }
+
+    sl-details::part(base) {
+      background: light-dark(#fff, #252535);
+      color: light-dark(inherit, #e0e0e0);
+      border-color: light-dark(#e0e0e0, #3a3a4a);
+    }
+
+    sl-details::part(header) {
+      color: light-dark(inherit, #e0e0e0);
+    }
+
+    sl-details::part(content) {
+      background: light-dark(#fff, #252535);
+      color: light-dark(inherit, #e0e0e0);
+    }
+
     h3 {
       font-weight: 400;
+      color: light-dark(#000, #e0e0e0);
     }
 
     dialog {
         border: none;
         border-radius: 10px;
         padding: 0;
+        background-color: light-dark(#fff, #252535);
+        color: light-dark(#000, #e0e0e0);
     }
 
     dialog#add {
