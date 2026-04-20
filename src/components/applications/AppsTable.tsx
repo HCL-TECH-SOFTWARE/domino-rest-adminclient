@@ -26,7 +26,7 @@ import { useDispatch } from 'react-redux';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 
 const StyledTableHead = styled(TableHead)`
-  border-bottom: 1px solid #B8B8B8;
+  border-bottom: 1px solid light-dark(#B8B8B8, #3a3a4a);
 
   .text {
     font-weight: bold;
@@ -35,8 +35,10 @@ const StyledTableHead = styled(TableHead)`
 
   .search-bar {
     border-radius: 5px;
-    border: 1px solid grey;
+    border: 1px solid light-dark(grey, #555);
     padding: 3px 10px;
+    background-color: light-dark(#fff, #1e1e2e);
+    color: light-dark(inherit, #e0e0e0);
   }
 `
 
@@ -50,8 +52,8 @@ const StyledTableBody = styled(TableBody)`
 const StyledTableContainer = styled(TableContainer)`
   border-radius: 10px;
   box-sizing: border-box;
-  border: 1px solid #B9B9B9;
-  background: #FFF;
+  border: 1px solid light-dark(#B9B9B9, #3a3a4a);
+  background: light-dark(#FFF, #252535);
   padding: 0;
 
   .launch {
@@ -274,7 +276,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                     },
                     style: {
                       borderRadius: '10px',
-                      border: '1px solid black',
+                      border: '1px solid currentColor',
                       width: '70px',
                     }
                   }}

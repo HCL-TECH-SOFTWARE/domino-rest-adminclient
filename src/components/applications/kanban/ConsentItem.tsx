@@ -57,7 +57,7 @@ const UrlContainer = styled(Box)`
   .scope {
     border-radius: 20px;
     padding: 5px 10px;
-    background-color: #E6EBF5;
+    background-color: light-dark(#E6EBF5, #3a3a5a);
   }
 `
 

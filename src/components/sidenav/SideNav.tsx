@@ -16,8 +16,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import { getTheme } from '../../store/styles/action';
+import { switchTheme } from '../../store/styles/action';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { AppState } from '../../store';
 import { appRoutes as routes, apps, databases, groups, people, settings } from './Routes';
@@ -131,6 +134,33 @@ const KeepAdmin = styled.div`
   }
 `;
 
+const ThemeSelectorWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 8px 16px 0;
+`;
+
+const ThemeToggleButton = styled.button`
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  svg {
+    font-size: 20px;
+  }
+`;
+
 const QuickConfigButton = styled.div``;
 
 interface SidenavProps {
@@ -178,6 +208,20 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
               </Typography>
             </KeepAdmin>
           )}
+
+          <ThemeSelectorWrapper>
+            <Tooltip title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} arrow placement="right">
+              <ThemeToggleButton
+                onClick={() => {
+                  const newTheme = themeMode === 'dark' ? 'default' : 'dark';
+                  localStorage.setItem('theme', newTheme);
+                  dispatch(switchTheme(newTheme));
+                }}
+              >
+                {themeMode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
+              </ThemeToggleButton>
+            </Tooltip>
+          </ThemeSelectorWrapper>
 
           <ContentWrapper>
           <ListItemButton className={open ? 'expandSeparator' : 'collapseSeparator'}></ListItemButton>

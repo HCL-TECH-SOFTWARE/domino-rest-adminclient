@@ -25,27 +25,27 @@ interface SingleFieldContainerProps {
 
 const ConfigFieldContainer = styled.div`
   border-radius: 5px;
-  border: 1px solid #BFBFBF;
-  background: #FFF;
+  border: 1px solid light-dark(#BFBFBF, #3a3a4a);
+  background: light-dark(#FFF, #1e1e2e);
   padding: 0;
   width: 100%;
 
   .title {
     font-size: 12px;
     font-weight: 400;
-    color: #6C6C6C;
+    color: light-dark(#6C6C6C, #b0b0b0);
   }
 
   .name {
     font-size: 16px;
     font-weight: 500;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
   }
 
   .setting {
     font-size: 14px;
     font-weight: 700;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
     width: 100%;
     padding: 0 20px;
   }

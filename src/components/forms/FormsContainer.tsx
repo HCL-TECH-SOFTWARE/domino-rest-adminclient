@@ -12,7 +12,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import PropTypes from 'prop-types';
+// prop-types import removed — using TypeScript interfaces instead
 import {
   SET_ACTIVEVIEWS,
   SET_ACTIVEAGENTS,
@@ -86,7 +86,8 @@ const CoreContainer = styled.div<{ show: boolean }>`
   .textarea {
     height: 60vh;
     width: 100%;
-    background-color: white;
+    background-color: light-dark(white, #1e1e2e);
+    color: light-dark(inherit, #e0e0e0);
     resize: none;
   }
 
@@ -160,6 +161,7 @@ const FormsContainer = () => {
   const dispatch = useDispatch();
   const setData = useState<Array<string>>([])[1];
   const { visible } = useSelector((state: AppState) => state.dbSetting);
+  const { themeMode } = useSelector((state: AppState) => state.styles);
   const [schemaData, setSchemaData] = useState({
     '@unid': "",
     apiName: "",
@@ -195,22 +197,9 @@ const FormsContainer = () => {
 
   const editorRef = useRef<any>(null)
 
-  // Override console.error to suppress error messages
-  console.error = () => {};
+  // NOTE: Global console.error override was removed — it suppressed ALL errors app-wide.
 
-  // Override window.onerror to suppress uncaught errors
-  useEffect(() => {
-    const originalOnError = window.onerror;
-    window.onerror = (message, source, lineno, colno, error) => {
-      // Suppress the error
-      return true;
-    };
-
-    // Cleanup function to restore the original window.onerror
-    return () => {
-      window.onerror = originalOnError;
-    };
-  }, []);
+  // NOTE: window.onerror override was removed — it silently swallowed ALL uncaught errors.
 
   const pullSubForms = async () => {
     try {
@@ -484,9 +473,7 @@ const FormsContainer = () => {
     }
   }, [selectedOption, schemaData])
 
-  function TabPanel(props: any) {
-    const { children, value, index, ...other } = props;
-
+  function TabPanel({ children, value, index, ...other }: { children?: React.ReactNode; value: number; index: number; [key: string]: any }) {
     return (
       <div
         role="tabpanel"
@@ -498,12 +485,6 @@ const FormsContainer = () => {
       </div>
     );
   }
-
-  TabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.any.isRequired,
-    value: PropTypes.any.isRequired
-  };
 
   function setActiveViews(dbName: string, views: Array<any>) {
     // Build Active View list
@@ -629,7 +610,7 @@ const FormsContainer = () => {
                 style={{ fontWeight: 'bold', display: 'flex' }}
                 TabIndicatorProps={{
                   title: 'indicator',
-                  style: { backgroundColor: 'black' }
+                  style: { backgroundColor: themeMode === 'dark' ? '#8CC7F9' : 'black' }
                 }}
               >
                 <Tab label="Database Forms" className='tab-button'/>
@@ -680,6 +661,7 @@ const FormsContainer = () => {
                   defaultLanguage="json"
                   defaultValue={sourceTabContent}
                   onMount={handleEditorDidMount}
+                  theme={themeMode === 'dark' ? 'vs-dark' : 'vs'}
                 />}
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer sx={{ overflowY: 'auto' }}>

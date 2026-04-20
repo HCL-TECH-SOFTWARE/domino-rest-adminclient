@@ -20,7 +20,7 @@ const ToggleContainer = styled.div`
     position: relative;
     width: 137px;
     height: 34px;
-    background-color: #e6ebf5;
+    background-color: light-dark(#e6ebf5, #3a3a5a);
     cursor: pointer;
     user-select: none;
     border-radius: 5px;
@@ -57,7 +57,7 @@ const ToggleContainer = styled.div`
   .unchecked {
     left: 70px;
     position: absolute;
-    color: #6c7882;
+    color: light-dark(#6c7882, #999);
     display: flex;
     justify-content: center;
     align-items: center;

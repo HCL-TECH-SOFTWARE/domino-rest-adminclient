@@ -19,6 +19,7 @@ export const SchemaCardContainer = styled(Card)<{
   border-radius: 10px !important;
   position: relative;
   display: flex;
+  background: ${(props) => getTheme(props.theme).secondary} !important;
 
   .MuiCardContent-root {
     padding: 10px 16px;

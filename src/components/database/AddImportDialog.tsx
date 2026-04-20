@@ -33,11 +33,11 @@ const AddImportDialogContainer = styled(Dialog)`
     display: flex;
     gap: 23px;
     align-items: center;
-    background-color: #FFF;
+    background-color: light-dark(#FFF, #1e1e2e);
 
     &:hover {
       cursor: pointer;
-      background-color: #D5E0F3;
+      background-color: light-dark(#D5E0F3, #353548);
     }
   }
 `
@@ -49,7 +49,7 @@ const DialogContentContainer = styled(Box)`
   display: flex;
   flex-direction: column;
   gap: 30px;
-  background-color: #FFF;
+  background-color: light-dark(#FFF, #1e1e2e);
 
   .detail-title {
     font-size: 16px;
@@ -310,8 +310,8 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const BackArrow = (
     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" fill="none">
-        <path d="M11.875 7.5H3.125" stroke="black" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M7.5 11.875L3.125 7.5L7.5 3.125" stroke="black" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M11.875 7.5H3.125" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7.5 11.875L3.125 7.5L7.5 3.125" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   )
 
@@ -342,6 +342,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
           <img
             src={`data:image/svg+xml;base64, PHN2ZyB3aWR0aD0iNDMiIGhlaWdodD0iNDMiIHZpZXdCb3g9IjAgMCA0MyA0MyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InBsdXMtY2lyY2xlIj4KPHBhdGggaWQ9IlZlY3RvciIgZD0iTTIxLjUwMDcgMzkuNDE2N0MzMS4zOTU4IDM5LjQxNjcgMzkuNDE3MyAzMS4zOTUxIDM5LjQxNzMgMjEuNUMzOS40MTczIDExLjYwNDkgMzEuMzk1OCAzLjU4MzM3IDIxLjUwMDcgMy41ODMzN0MxMS42MDU1IDMuNTgzMzcgMy41ODM5OCAxMS42MDQ5IDMuNTgzOTggMjEuNUMzLjU4Mzk4IDMxLjM5NTEgMTEuNjA1NSAzOS40MTY3IDIxLjUwMDcgMzkuNDE2N1oiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGlkPSJWZWN0b3JfMiIgZD0iTTIxLjUgMTQuMzMzNFYyOC42NjY3IiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBpZD0iVmVjdG9yXzMiIGQ9Ik0xNC4zMzQgMjEuNUgyOC42NjczIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L2c+Cjwvc3ZnPgo=`}
             alt="add-icon"
+            className="dialog-svg-icon"
             style={{
             color: '#000',
             width: '39px',
@@ -379,17 +380,16 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             error={!!formik.errors.nsfPath && formik.touched.nsfPath}
             errorMessage={formik.errors.nsfPath}
             initialOption={formik.values.nsfPath}
+            style={{ width: '100%' }}
           />
         </Box>
-      </DialogContentContainer>
-      <HorizontalDivider />
-      <DialogContentContainer>
-        <Box style={{ display: 'flex', flexDirection: 'row' }} sx={{ bgcolor: '#FFF' }}>
-          <Box style={{ flexDirection: 'row', width: '40%' }} sx={{ bgcolor: '#FFF' }}>
+        <HorizontalDivider />
+        <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '20px' }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <Typography className='detail-title'>
               Icon
             </Typography>
-            <Box sx={{ bgcolor: '#FFF' }}>
+            <Box style={{ display: 'flex', alignItems: 'center', height: '41px' }}>
               <IconDropdown
                 handleSelectIcon={handleSelectIcon}
                 displayIconName={iconName}
@@ -401,11 +401,11 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
               />
             </Box>
           </Box>
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px', width: '60%' }} sx={{ bgcolor: '#FFF' }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
             <Typography className='detail-title'>
               Schema Name
             </Typography>
-            <Box style={{ height: '41px' }} sx={{ bgcolor: '#FFF' }}>
+            <Box style={{ height: '41px' }}>
               <TextField 
                 onChange={handleSchemaNameChange} 
                 error={!!formik.errors.schemaName && formik.touched.schemaName}
@@ -419,7 +419,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             </Box>
           </Box>
         </Box>
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }} sx={{ bgcolor: '#FFF' }}>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <Typography className='detail-title'>
             Schema Description
           </Typography>
@@ -433,10 +433,11 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             placeholder='Description' 
             multiline={true}
             minRows={5}
-            style={{ width: '100%', overflowY: 'scroll' }} 
+            maxRows={5}
+            style={{ width: '100%' }} 
           />
         </Box>
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }} sx={{ bgcolor: '#FFF' }}>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <Typography className='detail-title'>
             Formula Engine
           </Typography>
@@ -452,7 +453,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         </Box>
       </DialogContentContainer>
       <HorizontalDivider />
-      <DialogActionsContainer sx={{ bgcolor: '#FFF' }}>
+      <DialogActionsContainer>
         <ButtonNeutral onClick={handleClickBack}>Back</ButtonNeutral>
         <ButtonYes onClick={handleClickSaveSchema}>Save Schema</ButtonYes>
       </DialogActionsContainer>
@@ -475,7 +476,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   return (
     <>
-      <AddImportDialogContainer open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', maxHeight: '95vh' }}}>
+      <AddImportDialogContainer open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', maxHeight: '95vh', width: '50vw', maxWidth: '50vw' }}}>
         <DialogContainer sx={{ borderRadius: '10px', overflowY: 'auto' }}>
           {Title}
           {!importDialogOpen && InitialDialog}

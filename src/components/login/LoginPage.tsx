@@ -23,7 +23,7 @@ import { AppState } from '../../store';
 import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
 import styled from 'styled-components';
 import { FiInfo } from 'react-icons/fi';
-import { Link } from '@mui/material';
+import { Link, Tooltip } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
@@ -39,6 +39,8 @@ import {
   LitInputText
 } from '../lit-elements/LitElements';
 import { AlertManager, checkForResponse } from '../../utils/common';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -143,7 +145,29 @@ const LoginForm = styled.form`
 
 const GridRoot = styled(Grid)(({ theme }) => ({
   height: "100vh",
+  position: "relative",
 }));
+
+const LoginThemeToggle = styled.button`
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  background: light-dark(rgba(255,255,255,0.7), rgba(30,30,46,0.7));
+  border: 1px solid light-dark(#ccc, #555);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: light-dark(#333, #e0e0e0);
+  
+  &:hover {
+    background: light-dark(rgba(255,255,255,0.9), rgba(50,50,70,0.9));
+  }
+`;
 
 const DivPaper = styled("div")(({ theme }) => ({
   margin: "64px 32px",
@@ -168,6 +192,21 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
+
+  // Dark mode support for login page (reads localStorage directly since Redux store isn't available pre-login)
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    const theme = isDark ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    const newTheme = isDark ? 'default' : 'dark';
+    localStorage.setItem('theme', newTheme);
+    setIsDark(!isDark);
+  };
 
   const isHttps = protocol === "https"
   const [idpList, setIdpList] = useState([]);
@@ -516,12 +555,19 @@ const LoginPage = () => {
   return (
     <GridRoot container>
       <CssBaseline />
+      <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} arrow placement="right">
+        <LoginThemeToggle onClick={toggleTheme}>
+          {isDark ? <DarkModeIcon /> : <LightModeIcon />}
+        </LoginThemeToggle>
+      </Tooltip>
       <Grid
         style={{
           padding: "90px",
           flexBasis: "100%",
           maxWidth: matches ? "100%" : "60%",
           height: '100%',
+          backgroundColor: isDark ? '#1e1e2e' : '#fff',
+          color: isDark ? '#e0e0e0' : 'inherit',
         }}
         component={Paper}
         elevation={6}

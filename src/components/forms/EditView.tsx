@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -28,6 +28,7 @@ import { Box, DialogActions, DialogContent, DialogContentText, DialogTitle } fro
 import { Buttons } from '../../styles/CommonStyles';
 import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
 
 const EditViewDialogContainer = styled.div`
   width: 100%;
@@ -210,6 +211,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   const [editColumn, setEditColumn] = useState({});
   const [hoveredColumn, setHoveredColumn] = useState({});
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [showDirtyDialog, setShowDirtyDialog] = useState(false);
+  const initialColumnsRef = useRef<any[]>([]);
 
   const dispatch = useDispatch()
 
@@ -293,11 +296,50 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     setChosenColumns(chosenColumnsBuffer);
   }
 
-  const handleClickClose = () => {
+  const isDirty = useCallback(() => {
+    const initial = initialColumnsRef.current;
+    if (chosenColumns.length !== initial.length) return true;
+    return chosenColumns.some((col, i) => {
+      const orig = initial[i];
+      return col.name !== orig.name || col.externalName !== orig.externalName;
+    });
+  }, [chosenColumns]);
+
+  // Browser "Leave Site?" prompt for URL navigation / refresh / close tab
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (open && isDirty()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [open, isDirty]);
+
+  const closeWithoutSaving = () => {
+    setShowDirtyDialog(false);
     setChosenColumns([]);
     handleClose();
     setEditColumn({});
-  }
+  };
+
+  const handleClickClose = () => {
+    if (isDirty()) {
+      setShowDirtyDialog(true);
+    } else {
+      closeWithoutSaving();
+    }
+  };
+
+  const handleDirtySave = () => {
+    setShowDirtyDialog(false);
+    handleClickSave();
+  };
+
+  const handleDirtyCancel = () => {
+    setShowDirtyDialog(false);
+  };
 
   const handleConfirmReset = () => {
     if (views) {
@@ -551,7 +593,9 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       views.forEach((view: any) => {
         if (!!view.columns) {
           if (view.name === viewName) {
+            const cols = view.columns.map((c: any) => ({ name: c.name, externalName: c.externalName }));
             setChosenColumns(view.columns);
+            initialColumnsRef.current = cols;
           }
           return {
             name: view.name,
@@ -562,6 +606,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         } else {
           if (view.name === viewName) {
             setChosenColumns([]);
+            initialColumnsRef.current = [];
           }
           return {
             name: view.name,
@@ -692,6 +737,12 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
           <Button onClick={handleConfirmReset}>Yes</Button>
         </DialogActions>
       </Dialog>
+      <UnsavedChangesDialog
+        open={showDirtyDialog}
+        onSave={handleDirtySave}
+        onDiscard={closeWithoutSaving}
+        onCancel={handleDirtyCancel}
+      />
     </>
   );
 }

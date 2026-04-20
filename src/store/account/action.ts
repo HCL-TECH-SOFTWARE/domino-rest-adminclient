@@ -75,15 +75,16 @@ export function setToken(token: string) {
 }
 
 export const getToken = () => {
-  const userToken = JSON.parse(localStorage.getItem('user_token') as string)
-  if (!!userToken) {
-    if (Object.keys(userToken).includes('access_token')) {
-      return userToken.access_token
-    } else {
-      return JSON.parse(localStorage.getItem('user_token') as string).bearer;
+  try {
+    const raw = localStorage.getItem('user_token');
+    if (!raw) return null;
+    const userToken = JSON.parse(raw);
+    if (userToken?.access_token) {
+      return userToken.access_token;
     }
-  } else {
-    return null
+    return userToken?.bearer ?? null;
+  } catch {
+    return null;
   }
 };
 
@@ -93,8 +94,13 @@ export function renewToken() {
       account: { token }
     } = getState();
 
-    // Old JWT Token
-    const oldToken = JSON.parse(token);
+    let oldToken;
+    try {
+      oldToken = JSON.parse(token);
+    } catch {
+      dispatch(removeAuth());
+      return;
+    }
 
     const response = await
       fetch(`${BASE_KEEP_API_URL}/auth/extend`, {
@@ -173,8 +179,7 @@ export function logout() {
 
       }
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      // Logout failed, but we still clear local state below
     } finally {
       dispatch(removeAuth());
       dispatch(setIdpLogin(false))

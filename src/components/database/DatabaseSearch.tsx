@@ -86,10 +86,10 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
             onClick={handleClick}
-            style={{textTransform: 'none', width: '255px', minWidth: '191px', height: '100%', whiteSpace: 'nowrap', color: "#6C7882", fontSize: '16px', justifyContent: 'space-between', paddingLeft: '25px', paddingRight: '5px'}}
+            style={{textTransform: 'none', width: '255px', minWidth: '191px', height: '100%', whiteSpace: 'nowrap', color: themeMode === 'dark' ? '#e0e0e0' : '#6C7882', fontSize: '16px', justifyContent: 'space-between', paddingLeft: '25px', paddingRight: '5px'}}
         >
             {searchType}
-          <ArrowDropDownIcon style={{ width: '50px', height: '40px', color: '#555555'}} />
+          <ArrowDropDownIcon style={{ width: '50px', height: '40px', color: themeMode === 'dark' ? '#e0e0e0' : '#555555'}} />
         </Button>
         <Menu
             id="simple-menu"

@@ -193,7 +193,7 @@ const Kanban: React.FC = () => {
             >
               OAuth Consents
             </LitButton>
-            <div style={{ height: '46px', width: '1px', backgroundColor: '#000' }} />
+            <div style={{ height: '46px', width: '1px', backgroundColor: 'light-dark(#000, #3a3a4a)' }} />
             <button
               onClick={() => dispatch(toggleAppFilterDrawer())}
               className='option'

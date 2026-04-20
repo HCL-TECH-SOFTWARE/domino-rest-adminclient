@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import '../../App.css';
 import styled from 'styled-components';
 import { ThemeProvider } from '@mui/material/styles';
@@ -42,14 +42,15 @@ const AppContainer = styled.main`
   }
   `;
   
-const RightPanel = styled.div<{ open: boolean; theme: string }>`
+const RightPanel = styled.div<{ open: boolean; theme: any }>`
   position: relative;
   height: 100%;
   width: calc( 100% - ${(props) => (props.open ? '241px' : '50px')});
   padding: 0 40px;
+  background: ${(props) => props.theme.bodyColor || '#f5f5f5'};
 
   @media only screen and (max-width: 768px) {
-    background: white;
+    background: ${(props) => props.theme.bodyColor || 'white'};
     width: 100%;
     filter: blur(${(props) => (props.open ? '10px' : 0)});
     ${(props) => props.open && `pointer-events: none;`}
@@ -87,8 +88,19 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
     setOpen(!open);
   };
 
+  const currentTheme = useMemo(
+    () => theme(authenticated, getTheme, themeMode),
+    [authenticated, themeMode]
+  );
+
+  useEffect(() => {
+    const isDark = themeMode === 'dark';
+    document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  }, [themeMode]);
+
   return (
-    <ThemeProvider theme={theme(authenticated, getTheme, themeMode)}>
+    <ThemeProvider theme={currentTheme}>
       <CssBaseline />
       {matches && (
         <Header

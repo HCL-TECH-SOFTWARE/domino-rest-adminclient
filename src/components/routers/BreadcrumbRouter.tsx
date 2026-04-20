@@ -8,8 +8,9 @@ import React from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import styled from 'styled-components';
 import Typography from '@mui/material/Typography';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
+import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import Home from '@mui/icons-material/Home';
 import { useSelector } from 'react-redux';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -21,7 +22,7 @@ import { ActionHeader, PageTitle, TopBanner } from '../../styles/CommonStyles';
 
 const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
   .home-icon {
-    color: #212121 !important;
+    color: ${(props) => getTheme(props.theme).textColorPrimary} !important;
     font-size: 18px !important;
     margin-right: 5px;
     display: 'flex';
@@ -54,7 +55,7 @@ const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
 const BreadcrumbRouter: React.FC = () => {
   const location = useLocation();
   const { themeMode } = useSelector((state: AppState) => state.styles);
-  const navigate = useNavigate();
+  const { guardedNavigate } = useNavigationGuard();
   const { pathname } = location;
 
   const activeColor = getTheme(themeMode).breadcrumb.lastActiveColor;
@@ -71,8 +72,8 @@ const BreadcrumbRouter: React.FC = () => {
   }
 
   const handleOnClick = (index: number) => {
-    if (index > 2) navigate(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
-    else navigate('/schema');
+    if (index > 2) guardedNavigate(`/schema/${pathnameArr[2]}/${pathnameArr[index-1]}`);
+    else guardedNavigate('/schema');
   };
 
   return (
@@ -81,7 +82,7 @@ const BreadcrumbRouter: React.FC = () => {
         <PageTitle>
           <TopBanner>
             { pathname === '/' &&
-                (<span style={{ float: 'left', fontSize: '24px', color: 'black' }}
+                (<span style={{ float: 'left', fontSize: '24px', color: getTheme(themeMode).textColorPrimary }}
                 onClick={()=>handleOnClick(2)}
                 >
                   {breadcrumbTitle}
@@ -89,8 +90,8 @@ const BreadcrumbRouter: React.FC = () => {
             }
             { pathname !== '/' &&
             <Breadcrumbs
-              style={{color: 'black', marginTop: '10px'}}
-              separator="/"
+              style={{color: getTheme(themeMode).textColorPrimary, marginTop: '10px'}}
+              separator={<span style={{ color: getTheme(themeMode).textColorPrimary }}>/</span>}
               aria-label="breadcrumb"
               className="routing"
             >
@@ -99,7 +100,7 @@ const BreadcrumbRouter: React.FC = () => {
                 data-testid="overview"
                 style={{display: 'flex', alignItems:'center'}}
                 onClick={() => {
-                  navigate(`/`);
+                  guardedNavigate(`/`);
                 }}
               >
                 <Home className="home-icon" />

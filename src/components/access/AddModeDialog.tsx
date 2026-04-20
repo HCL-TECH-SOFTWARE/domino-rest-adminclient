@@ -16,11 +16,13 @@ import styled from 'styled-components';
 import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const DialogContainer = styled.dialog`
-  border: 1px solid white;
+  border: 1px solid light-dark(transparent, #3a3a4a);
   border-radius: 10px;
   width: 30%;
   padding: 30px;
   height: fit-content;
+  background: light-dark(#FFF, #252535);
+  color: light-dark(#000, #e0e0e0);
 
   .content-container {
     padding: 0 0 55px 0;

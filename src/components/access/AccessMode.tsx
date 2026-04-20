@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useLocation } from 'react-router-dom';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -30,11 +30,19 @@ import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import GenericLoading from '../loading/GenericLoading';
 import ModeCompare from './ModeCompare';
 import { LitButton } from '../lit-elements/LitElements';
+import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 
 const AccessMode: React.FC = () => {
   const [state, setstate] = useState({ [uuid()]: [] }) as any;
   const dispatch = useDispatch();
   const [modes, setModes] = useState<Array<Mode>>([]);
+
+  // Refs so setPageIndex always reads the latest values, even when
+  // called from stale closures (e.g. async save-then-switch-mode).
+  const modesRef = useRef(modes);
+  modesRef.current = modes;
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const [modeIndex, setModeIndex] = useState(
     modes.findIndex((mode: any) => mode.modeName === 'default')
   );
@@ -74,6 +82,26 @@ const AccessMode: React.FC = () => {
   const fetchFieldsArray = currentDesign?.forms;
   const [tabValue, setTabValue] = useState(0);
   const [openModeCompare, setOpenModeCompare] = useState(false);
+
+  // Use the shared navigation guard for unsaved-changes protection
+  const { setDirty, setSaveFunction } = useNavigationGuard();
+  const saveRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Ref that survives TabsAccess unmount/remount during save's loading
+  // spinner.  TabsAccess writes 'add' | 'clone' before save; on
+  // remount it reads this to open the AddModeDialog.
+  const postSaveActionRef = useRef<'add' | 'clone' | null>(null);
+
+  // Keep the navigation guard's save function in sync with TabsAccess's save
+  useEffect(() => {
+    setSaveFunction(saveRef.current);
+    return () => setSaveFunction(null);
+  });
+
+  // Wrapper that TabsAccess calls to mark dirty/clean state
+  const setHasUnsavedChanges = (dirty: boolean) => {
+    setDirty(dirty);
+  };
 
   useEffect(() => {
     dispatch(fetchSchema(nsfPath, dbName, setSchemaData) as any)
@@ -310,7 +338,12 @@ const AccessMode: React.FC = () => {
   const matches = useMediaQuery('(max-width:768px)');
 
   const setPageIndex = (index: number) => {
-    const modifiedAccessFields = modes[index].fields.map((field: any) => {
+    // Read from refs so this works correctly even when called from
+    // a stale closure (e.g. after an async save completes).
+    const currentModes = modesRef.current;
+    const currentState = stateRef.current;
+
+    const modifiedAccessFields = currentModes[index].fields.map((field: any) => {
       if (!field.id) {
         return {
           id: uuid(),
@@ -327,18 +360,20 @@ const AccessMode: React.FC = () => {
 
     const newDroppables = {} as any;
 
-    for (const droppableKey in state) {
+    for (const droppableKey in currentState) {
       newDroppables[droppableKey] = newStates[counter];
       counter++;
     }
 
     setstate({
-      ...state,
+      ...currentState,
       ...newDroppables,
     });
 
-    const modesCopy = [...modes];
-    setModes(modesCopy);
+    // Use functional update so we never overwrite server-updated modes
+    // with stale closure data — just create a new reference to trigger
+    // re-renders.
+    setModes(prev => [...prev]);
   };
 
   const handleClickOpenModeCompare = () => {
@@ -414,6 +449,9 @@ const AccessMode: React.FC = () => {
                   setSchemaData={setSchemaData}
                   fieldIndex={fieldIndex}
                   setFieldIndex={setFieldIndex}
+                  setHasUnsavedChanges={setHasUnsavedChanges}
+                  saveRef={saveRef}
+                  postSaveActionRef={postSaveActionRef}
                 />
               ) : (
                 <GenericLoading />

@@ -12,13 +12,14 @@ export function fullEncode(name: string): string {
 export function insertCharacter (inputString: string, interval: number, insertChar: string) {
   let outputString = ""
   for (let i = 0; i < inputString.length; i += interval) {
-    let slice = inputString.substr(i, interval)
-    if(slice.length===interval && i===(slice.length-1))
-       outputString = outputString.concat(slice, insertChar)
-    else
-       outputString = outputString.concat(slice)
- }
- return outputString
+    const slice = inputString.substring(i, i + interval)
+    outputString += slice
+    // Insert the character between slices, but not after the last one
+    if (i + interval < inputString.length) {
+      outputString += insertChar
+    }
+  }
+  return outputString
 }
 
 // Capitalize the first letter of a string.
@@ -29,12 +30,12 @@ export function capitalizeFirst (inputString: string) {
 // Get the string equivalent of expiration from milliseconds in this format ---> dd:hh:mm.
 // Copied from Stack Overflow: https://stackoverflow.com/questions/8528382/javascript-show-milliseconds-as-dayshoursmins-without-seconds
 export function stringExpiration(t: number){
-  var cd = 24 * 60 * 60 * 1000,
-    ch = 60 * 60 * 1000,
-    d = Math.floor(t / cd),
-    h = Math.floor( (t - d * cd) / ch),
-    m = Math.round( (t - d * cd - h * ch) / 60000),
-    pad = function(n: number){ return n < 10 ? '0' + n : n; };
+  const cd = 24 * 60 * 60 * 1000;
+  const ch = 60 * 60 * 1000;
+  let d = Math.floor(t / cd);
+  let h = Math.floor( (t - d * cd) / ch);
+  let m = Math.round( (t - d * cd - h * ch) / 60000);
+  const pad = function(n: number){ return n < 10 ? '0' + n : n; };
   if( m === 60 ){
     h++;
     m = 0;

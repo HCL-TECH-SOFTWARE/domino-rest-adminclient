@@ -7,8 +7,23 @@ import appIcons from '../../styles/app-icons.ts';
 class NsfCard extends LitElement {
 
   static styles = css`
+    :host {
+      color: inherit;
+    }
+    text,
+    text.nsf-filename {
+      color: light-dark(inherit, #e0e0e0);
+    }
+    sl-input::part(base) {
+      background-color: light-dark(#fff, #1e1e2e);
+      color: light-dark(inherit, #e0e0e0);
+      border-color: light-dark(#ccc, #3a3a4a);
+    }
+    sl-input::part(input) {
+      color: light-dark(inherit, #e0e0e0);
+    }
     section {
-      border: 1px solid #ccc;
+      border: 1px solid light-dark(#ccc, #3a3a4a);
       padding: 16px;
       border-radius: 8px;
       box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
@@ -17,12 +32,15 @@ class NsfCard extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 12px;
+      background: light-dark(#fff, #252535);
+      color: light-dark(inherit, #e0e0e0);
     }
 
     div.list-container {
-      border: 1px solid #eee;
+      border: 1px solid light-dark(#eee, #3a3a4a);
       border-radius: 5px;
-      background-color: #FAFDFF;
+      background-color: light-dark(#FAFDFF, #1e1e2e);
+      color: light-dark(inherit, #e0e0e0);
       width: 100%;
       height: 100%;
       overflow-y: auto;

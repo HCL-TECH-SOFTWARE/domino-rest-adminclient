@@ -160,13 +160,13 @@ export const SearchInput = styled.input`
   font-size: 16px;
 `;
 
-export const TopBanner = styled.div`
+export const TopBanner = styled.div<{ theme?: string }>`
   width: 100%;
   height: 100px;
   padding: 20px 20px 0px 0px;
   vertical-align: middle;
   font-size: 16px;
-  color: black;
+  color: ${(props) => props.theme ? getTheme(props.theme).textColorPrimary : 'black'};
 `;
 
 export const ErrorContainer = styled.div`
@@ -277,7 +277,7 @@ export const FormContentContainer = styled.div`
   }
   .icon-select {
     text-transform: capitalize;
-    color: #000;
+    color: light-dark(#000, #e0e0e0);
   }
   .form-heading {
     font-size: 26px;
@@ -790,7 +790,8 @@ export const DialogContainer = styled(Box)`
   vertical-align: middle;
   width: 100%;
   height: 100%;
-  background-color: #FFF;
+  background-color: light-dark(#FFF, #252535);
+  color: light-dark(inherit, #e0e0e0);
 
   .title {
     display: flex;

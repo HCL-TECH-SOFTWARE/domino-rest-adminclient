@@ -3,6 +3,29 @@ import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 class DefaultCard extends LitElement {
     static styles = css`
+        :host {
+            color: inherit;
+        }
+        sl-card {
+            --sl-panel-background-color: light-dark(#fff, #252535);
+            --sl-panel-border-color: light-dark(#e0e0e0, #3a3a4a);
+            --sl-color-neutral-0: light-dark(#fff, #252535);
+            --sl-color-neutral-50: light-dark(#fff, #252535);
+            color: light-dark(inherit, #e0e0e0);
+        }
+        sl-card::part(base) {
+            background: light-dark(#fff, #252535);
+            border-color: light-dark(#e0e0e0, #3a3a4a);
+            color: light-dark(inherit, #e0e0e0);
+        }
+        sl-card::part(body) {
+            background: light-dark(#fff, #252535);
+            color: light-dark(inherit, #e0e0e0);
+        }
+        text,
+        strong {
+            color: light-dark(inherit, #e0e0e0);
+        }
         sl-card {
             --border-radius: 10px;
             padding: 10px;
@@ -134,7 +157,7 @@ class DefaultCard extends LitElement {
         this.delete = false
         this.onDelete = () => {}
     }
-  
+
     render() {
       return html`
         <sl-card>

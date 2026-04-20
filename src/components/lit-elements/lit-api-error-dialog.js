@@ -13,7 +13,8 @@ class ApiErrorDialog extends LitElement {
     static styles = css`
       dialog {
             padding: 0 0 10px 0;
-            background-color: #FFF;
+            background-color: light-dark(#FFF, #252535);
+            color: light-dark(inherit, #e0e0e0);
             border-radius: 10px;
             position: fixed;
             top: 50%;

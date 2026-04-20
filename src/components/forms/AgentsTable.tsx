@@ -22,7 +22,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     fontWeight: "bold",
     paddingTop: "30px",
-    borderBottom: "1px solid #b8b8b8",
+    borderBottom: "1px solid light-dark(#b8b8b8, #3a3a4a)",
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
@@ -34,7 +34,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
-    backgroundColor: "#F8FBFF",
+    backgroundColor: "light-dark(#F8FBFF, #1e1e2e)",
     borderBottom: "none"
   },
   // hide last border
@@ -46,8 +46,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: "10px",
   boxSizing: 'border-box',
-  border: '1px solid #B9B9B9',
-  background: '#FFFFFF',
+  border: '1px solid light-dark(#B9B9B9, #3a3a4a)',
+  background: 'light-dark(#FFFFFF, #252535)',
 }));
 
 const StatusHeader = styled.div`

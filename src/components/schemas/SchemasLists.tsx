@@ -200,7 +200,8 @@ const SchemasLists = () => {
             </TopContainer>
             <FilterContainer>
               <Typography
-                style={{ fontSize: 16, display: 'flex', alignItems:'center', color: 'black'}}
+                style={{ fontSize: 16, display: 'flex', alignItems:'center'}}
+                color="textPrimary"
               >
                 Only show schemas configured with scopes
               </Typography>
