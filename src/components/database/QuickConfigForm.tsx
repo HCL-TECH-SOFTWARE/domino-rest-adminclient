@@ -217,18 +217,20 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           onChange={handleSearchValue}
           style={{ marginTop: '8px' }}
           id={`Search ${listType}`}
-          InputProps={{
-            endAdornment: !hideClearIcon && (
-              <Tooltip title="clear" arrow>
-                <IconButton
-                  size="small"
-                  aria-label="clear search bar"
-                  onClick={handleClearIcon}
-                >
-                  <ClearIcon color="primary" className="clear-icon" />
-                </IconButton>
-              </Tooltip>
-            )
+          slotProps={{
+            input: {
+              endAdornment: !hideClearIcon && (
+                <Tooltip title="clear" arrow>
+                  <IconButton
+                    size="small"
+                    aria-label="clear search bar"
+                    onClick={handleClearIcon}
+                  >
+                    <ClearIcon color="primary" className="clear-icon" />
+                  </IconButton>
+                </Tooltip>
+              )
+            }
           }}
         />
         <SearchDatabaseContainer>

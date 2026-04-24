@@ -91,7 +91,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
               <TextField
                 autoComplete="off"
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 label="Group Name"
                 name="groupName"
                 size="small"
@@ -112,7 +112,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 autoComplete="off"
                 size="small"
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 label="Category"
                 name="groupCategory"
                 multiline
@@ -132,7 +132,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 autoComplete="off"
                 size="small"
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 label="Description"
                 name="groupDescription"
                 multiline
@@ -148,8 +148,8 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </Typography>
               ) : null}
             </InputContainer>
-            <Box display="flex">
-              <Box borderRadius={16} {...defaultViewProps}>
+            <Box sx={{ display: 'flex' }}>
+              <Box sx={{ borderRadius: 16 }} {...defaultViewProps}>
                 <div style={{ height: 350, width: '100%', marginTop: 20 }}>
                   <DataGrid
                     rowHeight={28}
@@ -251,8 +251,8 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </Typography>
               ) : null}
             </InputContainer>
-            <Box display="flex" justifyContent="center">
-              <Box borderRadius={16} {...defaultProps}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ borderRadius: 16 }} {...defaultProps}>
                 <PeopleSelector />
                 <Button
                   className="button-style, button-small"
@@ -263,7 +263,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </Button>
               </Box>
               {formContext === 'Edit' ? (
-                <Box borderRadius={16} {...defaultProps}>
+                <Box sx={{ borderRadius: 16 }} {...defaultProps}>
                   <div style={{ height: 350, width: '100%', marginTop: 20 }}>
                     <DataGrid
                       rowHeight={28}
@@ -283,7 +283,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </Box>
               ) : (
                 // Need to be implemented
-                <Box borderRadius={16} {...defaultProps}>
+                <Box sx={{ borderRadius: 16 }} {...defaultProps}>
                   <GroupMembers />
                   <Button
                     className="button-style, button-small"

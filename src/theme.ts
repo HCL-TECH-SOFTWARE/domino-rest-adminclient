@@ -73,16 +73,18 @@ const theme = (
       },
       MuiButton: {
         styleOverrides: {
-          textPrimary: {
-            color: currentTheme.button.primary,
-            textTransform: 'capitalize',
-            fontSize: 16,
-          },
-          textSecondary: {
-            color: currentTheme.button.secondary,
-            textTransform: 'capitalize',
-            fontSize: 16,
-          },
+          root: {
+            variants: [
+              { 
+                props: { variant: 'text', color: 'primary' }, 
+                style: { color: currentTheme.button.primary, textTransform: 'capitalize', fontSize: 16 } 
+              },
+              { 
+                props: { variant: 'text', color: 'secondary' }, 
+                style: { color: currentTheme.button.secondary, textTransform: 'capitalize', fontSize: 16 } 
+              },
+            ]
+          }
         },
       },
       MuiPaper: {

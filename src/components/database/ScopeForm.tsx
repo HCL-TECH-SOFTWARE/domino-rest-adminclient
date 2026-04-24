@@ -341,8 +341,8 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             onChange={handleServerChange}
             value={formik.values.server}
             variant='standard'
-            FormHelperTextProps={{
-              sx: { color: 'primary.main', fontSize: 12 }
+            slotProps={{
+              formHelperText: { sx: { color: 'primary.main', fontSize: 12 } }
             }}
             helperText={
               <div>

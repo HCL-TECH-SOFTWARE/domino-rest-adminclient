@@ -143,7 +143,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
 
   return (
     <ActionContainer>
-        <Box display='flex' flexDirection='column' justifyContent='center'>
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none">
               <circle cx="4" cy="5" r="4" fill={active ? '#0FA068' : '#8291A0'}/>
           </svg>

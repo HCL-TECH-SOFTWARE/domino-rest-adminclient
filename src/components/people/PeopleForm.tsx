@@ -85,7 +85,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             <InputContainer style={{ marginTop: 10 }}>
               <TextField
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 onChange={formik.handleChange}
                 value={formik.values.firstName}
                 name="firstName"
@@ -102,7 +102,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             <InputContainer>
               <TextField
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 name="lastName"
                 label="Last Name"
                 color="primary"
@@ -119,7 +119,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             <InputContainer>
               <TextField
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 name="shortName"
                 label="Short Name"
                 color="primary"
@@ -141,23 +141,25 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 type={values.showPassword ? 'text' : 'password'}
                 variant='standard'
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                      >
-                        {values.showPassword ? (
-                          <Visibility />
-                        ) : (
-                          <VisibilityOff />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                        >
+                          {values.showPassword ? (
+                            <Visibility />
+                          ) : (
+                            <VisibilityOff />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }
                 }}
                 onChange={formik.handleChange}
                 value={formik.values.password}
@@ -171,7 +173,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             <InputContainer>
               <TextField
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 name="companyName"
                 label="Company Name"
                 color="primary"
@@ -188,7 +190,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             <InputContainer>
               <TextField
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 name="phoneNumber"
                 label="Phone Number"
                 color="primary"
@@ -205,7 +207,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             <InputContainer>
               <TextField
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 name="internetAddress"
                 label="Internet Address"
                 color="primary"
@@ -223,7 +225,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             <InputContainer>
               <TextField
                 fullWidth
-                inputProps={{ readOnly: true }}
+                slotProps={{ input: { readOnly: true } }}
                 name="mailAddress"
                 label="Mail Address"
                 color="primary"
@@ -320,22 +322,24 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 color="primary"
                 type={values.showPassword ? 'text' : 'password'}
                 variant='standard'
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        onMouseDown={handleMouseDownPassword}
-                      >
-                        {values.showPassword ? (
-                          <Visibility />
-                        ) : (
-                          <VisibilityOff />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                        >
+                          {values.showPassword ? (
+                            <Visibility />
+                          ) : (
+                            <VisibilityOff />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }
                 }}
                 onChange={formik.handleChange}
                 value={formik.values.password}

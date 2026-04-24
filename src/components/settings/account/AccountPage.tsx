@@ -69,7 +69,7 @@ const AccountPage: React.FC<MailSettingsPageProps> = () => {
               onChange={handleChange}
               name="checkedA"
               color="primary"
-              inputProps={{ 'aria-label': 'secondary checkbox' }}
+              slotProps={{ input: { 'aria-label': 'secondary checkbox' } }}
             />
           </SettingsConfiguration>
         </SettingsContainer>

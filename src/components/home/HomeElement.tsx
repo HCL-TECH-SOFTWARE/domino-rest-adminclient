@@ -47,6 +47,13 @@ const RightPanel = styled.div<{ open: boolean; theme: any }>`
   position: relative;
   height: 100%;
   width: calc( 100% - ${(props) => (props.open ? '241px' : '50px')});
+  /* Match the sidenav width transition (225ms when opening, 195ms
+     when closing - see SideNavContainer in src/styles/CommonStyles.tsx)
+     so RightPanel's left edge slides in lock-step with the sidenav's
+     right edge. The toggle button is anchored at left: -1px of this
+     panel, so a synced transition makes the toggle appear glued to
+     the sidenav throughout the animation. */
+  transition: width ${(props) => (props.open ? '225ms' : '195ms')} ease-in;
   padding: 0 40px;
   background: ${(props) => props.theme.bodyColor || '#f5f5f5'};
 
@@ -58,11 +65,11 @@ const RightPanel = styled.div<{ open: boolean; theme: any }>`
   }
 
   .toggle-button {
-    border-radius:0 10px 10px 0;
+    border-radius: 0 10px 10px 0;
     width: 23px;
-    height: 42px; 
+    height: 42px;
     position: absolute;
-    top: 35px;
+    top: 10%;
     left: -1px;
     background-color: #5F1FBF;
     color: #fff;

@@ -261,7 +261,7 @@ const AppItem: React.FC<AppItemProps> = ({
                       </Tooltip>
                     </AppIdSecretContainer>
                     { app.usePkce ? (
-                      <Typography className='text' fontWeight="bold">PKCE</Typography>
+                      <Typography className='text' sx={{ fontWeight: 'bold' }}>PKCE</Typography>
                     ) : (
                       <AppIdSecretContainer>
                         <Typography className='text'>App Secret:</Typography>

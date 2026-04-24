@@ -28,7 +28,9 @@ const Notification = () => {
       onClose={handleClose}
       autoHideDuration={3000}
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      TransitionComponent={TransitionDown}
+      slots={{
+        transition: TransitionDown
+      }}
       message={message}
     />
   );

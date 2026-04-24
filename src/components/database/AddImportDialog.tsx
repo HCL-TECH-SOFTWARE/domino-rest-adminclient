@@ -476,7 +476,13 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   return (
     <>
-      <AddImportDialogContainer open={open} onClose={handleCloseDialog} PaperProps={{ style: { borderRadius: '10px', maxHeight: '95vh', width: '50vw', maxWidth: '50vw' }}}>
+      <AddImportDialogContainer
+        open={open}
+        onClose={handleCloseDialog}
+        slotProps={{
+          paper: { style: { borderRadius: '10px', maxHeight: '95vh', width: '50vw', maxWidth: '50vw' } }
+        }}
+      >
         <DialogContainer sx={{ borderRadius: '10px', overflowY: 'auto' }}>
           {Title}
           {!importDialogOpen && InitialDialog}

@@ -357,7 +357,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
 
   return (
     <FieldContainer theme={themeMode} className="field-container">
-      <Box padding="0 23.5px">
+      <Box sx={{ padding: '0 23.5px' }}>
         <FieldsDropDownHeader style={{ justifyContent: 'center' }}>
           <Typography className="mode-header">Show fields from:</Typography>
           <Tooltip title="Refresh List of Fields" arrow>

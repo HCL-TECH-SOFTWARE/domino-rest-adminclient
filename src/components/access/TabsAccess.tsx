@@ -931,8 +931,10 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             anchorEl={anchorEl}
             open={open}
             onClose={handleFieldListOnClose}
-            MenuListProps={{
-              'aria-labelledby': 'basic-button',
+            slotProps={{
+              list: {
+                'aria-labelledby': 'basic-button',
+              }
             }}
           >
             {sortedModes.map((eachMode: any, idx: any) => (

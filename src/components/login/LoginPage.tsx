@@ -646,7 +646,7 @@ const LoginPage = () => {
                   >
                     <Typography
                       className="sign-up-text"
-                      display="inline"
+                      sx={{ display: 'inline' }}
                       onClick={handleSignUpWithPasskey}
                     >
                       Sign up with Passkey
@@ -658,7 +658,7 @@ const LoginPage = () => {
                 )}
               </PasskeySignUpContainer>
             </LoginForm>
-            <Box mt={7}>
+            <Box sx={{ mt: 7 }}>
               <Copyright />
             </Box>
             <LitApiErrorDialog ref={ref} errorMessage='Error initiating authorization request. Check the console or network for more details.' />

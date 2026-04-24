@@ -69,9 +69,9 @@ const ColumnBar: React.FC<ColumnBarProps> = ({
             <AllColumnsList>
               {columns.map((column: any, index: any) => (
                   <div className="listitem" onClick={chooseColumn(column)}>
-                    <Typography display="block" className="columnName">{column.name}</Typography>
-                    <Typography display="block" className="columnDetails">{`Column Position ${column.position}`}</Typography>
-                    {column.title.length > 0 && <Typography display="block" className="columnDetails">{`Title: ${column.title}`}</Typography>}
+                    <Typography sx={{ display: 'block' }} className="columnName">{column.name}</Typography>
+                    <Typography sx={{ display: 'block' }} className="columnDetails">{`Column Position ${column.position}`}</Typography>
+                    {column.title.length > 0 && <Typography sx={{ display: 'block' }} className="columnDetails">{`Title: ${column.title}`}</Typography>}
                   </div>
               ))}
             </AllColumnsList>

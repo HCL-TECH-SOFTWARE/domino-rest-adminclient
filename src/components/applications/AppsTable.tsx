@@ -211,7 +211,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
               <TableRow>
                 <TableCell className='launch' />
                 <TableCell className='app-name text'>
-                  <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
+                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                     <Typography className='text can-sort'>
                       App Name
                       <button
@@ -225,7 +225,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   </Box>
                 </TableCell>
                 <TableCell className='app-id-secret text'>
-                  <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
+                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                     <Typography className='text' style={{ fontSize: '13px' }}>
                       App ID
                     </Typography>
@@ -235,7 +235,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   </Box>
                 </TableCell>
                 <TableCell className='description text'>
-                  <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
+                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                     <Typography className='text'>
                       Description
                     </Typography>
@@ -270,14 +270,16 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   page={page}
                   onPageChange={handleChangePage}
                   onRowsPerPageChange={handleChangeRowsPerPage}
-                  SelectProps={{
-                    inputProps: {
-                      'aria-label': 'rows per page',
-                    },
-                    style: {
-                      borderRadius: '10px',
-                      border: '1px solid currentColor',
-                      width: '70px',
+                  slotProps={{
+                    select: {
+                      inputProps: {
+                        'aria-label': 'rows per page',
+                      },
+                      style: {
+                        borderRadius: '10px',
+                        border: '1px solid currentColor',
+                        width: '70px',
+                      }
                     }
                   }}
                   ActionsComponent={({ count, page }) => (

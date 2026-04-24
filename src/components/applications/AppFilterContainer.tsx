@@ -123,7 +123,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
       <DrawerFormContainer style={{ width: '35vw' }}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
-            <Box width='100%' display='flex' justifyContent='flex-end'>
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
             </Box>
             <Section>
               <Typography className='header'>Status</Typography>

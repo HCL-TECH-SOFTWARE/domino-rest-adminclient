@@ -211,7 +211,7 @@ const SchemasLists = () => {
                   onChange={onChange}
                   name="isActive"
                   size="small"
-                  inputProps={{ 'aria-label': 'Only show schemas configured with scopes' }}
+                  slotProps={{ input: { 'aria-label': 'Only show schemas configured with scopes' } }}
                 /> 
               </Tooltip>
             </FilterContainer>
