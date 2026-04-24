@@ -25,14 +25,13 @@ import { fetchKeepDatabases } from '../../store/databases/action';
 import { AppState } from '../../store';
 import { appRoutes as routes, apps, databases, groups, people, settings } from './Routes';
 import ProfileMenu from './ProfileMenu';
-import ProfileMenuDialog from './ProfileMenuDialog';
 import { IMG_DIR } from '../../config.dev';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { SideNavContainer } from '../../styles/CommonStyles';
 
 const SideContainer = styled.aside<{ theme: string }>`
-  width: 242;
+  width: 242px;
   flex-shrink: 0;
   white-space: nowrap;
 
@@ -42,6 +41,10 @@ const SideContainer = styled.aside<{ theme: string }>`
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  /* Clip horizontal overflow at all times so route labels and the
+     profile section never peek through the rail while the width is
+     animating between open (242px) and closed (57px). */
+  overflow-x: hidden;
   @media only screen and (max-width: 768px) {
     display: none;
   }
@@ -60,6 +63,14 @@ const SidebarContainer = styled(List)<{ theme: string }>`
   flex: 1;
   display: flex;
   flex-direction: column;
+  /* MUI v9 reduced the default ListItemIcon min-width from 56px to
+     36px (theme.spacing(4.5)). Combined with the 16px ListItemButton
+     padding, route labels would start at ~52px and peek through the
+     57px collapsed rail. Force the v5 spacing back so labels stay
+     well outside the visible area when collapsed. */
+  .MuiListItemIcon-root {
+    min-width: 56px;
+  }
   .keep-icon {
     width: 37px;
     margin-top: 30px;
@@ -424,7 +435,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
             })}
             </ContentWrapper>
         </SidebarContainer>
-        <Profile>{open ? <ProfileMenu /> : <ProfileMenuDialog />}</Profile>
+        <Profile>
+          <ProfileMenu open={open} />
+        </Profile>
       </SideContainer>
     </SideNavContainer>
   );
