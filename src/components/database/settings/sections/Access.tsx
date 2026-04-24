@@ -58,7 +58,7 @@ const AccessSection: React.FC<AccessSectionProps> = () => {
               onChange={handleChange}
               name="openAccess"
               color="primary"
-              inputProps={{ 'aria-label': 'openAccess switch' }}
+              slotProps={{ input: { 'aria-label': 'openAccess switch' } }}
             />
           </SettingsConfiguration>
         </SettingsContainer>
@@ -73,7 +73,7 @@ const AccessSection: React.FC<AccessSectionProps> = () => {
               onChange={handleChange}
               name="dqlAccess"
               color="primary"
-              inputProps={{ 'aria-label': 'dqlAccess switch' }}
+              slotProps={{ input: { 'aria-label': 'dqlAccess switch' } }}
             />
           </SettingsConfiguration>
         </SettingsContainer>
@@ -85,7 +85,7 @@ const AccessSection: React.FC<AccessSectionProps> = () => {
               onChange={handleChange}
               name="allowCode"
               color="primary"
-              inputProps={{ 'aria-label': 'Code switch' }}
+              slotProps={{ input: { 'aria-label': 'allowCode switch' } }}
             />
           </SettingsConfiguration>
         </SettingsContainer>
@@ -100,7 +100,7 @@ const AccessSection: React.FC<AccessSectionProps> = () => {
               onChange={handleChange}
               name="allowDecryption"
               color="primary"
-              inputProps={{ 'aria-label': 'Database Decryption switch' }}
+              slotProps={{ input: { 'aria-label': 'allowDecryption switch' } }}
             />
           </SettingsConfiguration>
         </SettingsContainer>

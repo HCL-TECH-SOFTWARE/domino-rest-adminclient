@@ -141,7 +141,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
       <DrawerFormContainer style={{ width: '35vw' }}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
-            <Box width='100%' display='flex' justifyContent='flex-end'>
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
               <Tooltip arrow title="Close">
                 <CloseIcon
                   cursor="pointer"
@@ -272,7 +272,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               <Box style={{ display: 'flex', flexFlow: 'row wrap', width: '100%' }}>
                 {
                   collectScopes(consents).map(scope => (
-                    <Box width='50%' key={scope}>
+                    <Box sx={{ width: '50%' }} key={scope}>
                       <FormControlLabel
                         key={scope}
                         control={<Checkbox style={{ color: '#0E5FDC' }} defaultChecked={scopes.includes(scope)} onChange={e => {

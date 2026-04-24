@@ -67,7 +67,7 @@ const DBSetting: React.FC<DBSettingProps> = () => {
               onChange={onChange}
               name="isActive"
               color="primary"
-              inputProps={{ 'aria-label': 'active switch' }}
+              slotProps={{ input: { 'aria-label': 'active switch' } }}
             />
           </SettingsConfiguration>
         </SettingsContainer>
@@ -81,7 +81,9 @@ const DBSetting: React.FC<DBSettingProps> = () => {
               onChange={onChange}
               name="apiName"
               value={apiName.toLowerCase().replace(/[^a-z0-9]/g, '')}
-              InputLabelProps={{ shrink: false }}
+              slotProps={{
+                inputLabel: { shrink: false }
+              }}
             />
           </SettingsConfiguration>
         </SettingsContainer>
@@ -93,7 +95,7 @@ const DBSetting: React.FC<DBSettingProps> = () => {
               color="primary"
               name="filePath"
               defaultValue={filePath}
-              inputProps={{ 'aria-label': 'naked' }}
+              slotProps={{ input: { 'aria-label': 'naked' } }}
             />
           </SettingsConfiguration>
         </SettingsContainer>

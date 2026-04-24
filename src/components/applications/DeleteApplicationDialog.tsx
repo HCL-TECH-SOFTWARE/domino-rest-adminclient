@@ -43,7 +43,9 @@ const DeleteApplicationDialog: React.FC<DeleteApplicationDialogProps> = ({
       open={deleteDialogOpen}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
-      PaperProps={{ style: { borderRadius: '10px' } }}
+      slotProps={{
+        paper: { style: { borderRadius: '10px' } }
+      }}
       sx={{ overflowY: 'auto' }}
     >
       <FormDialogHeader

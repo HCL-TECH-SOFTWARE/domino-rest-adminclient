@@ -268,8 +268,8 @@ const FormsTable: React.FC<FormsTableProps> = ({
             <TableRow>
               <StyledTableCell themeMode={themeMode} width="50px" />
               <StyledTableCell themeMode={themeMode} width="350px">
-                <Box display='flex' flexDirection='row'>
-                  <Box visibility='hidden' className='diamond-marker'>
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  <Box sx={{ visibility: 'hidden' }} className='diamond-marker'>
                     <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                       <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                     </svg>
@@ -304,7 +304,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </StyledTableCell>
                 <StyledTableCell width="550px">
                   <ViewNameDisplay>
-                    <Box visibility={formList.includes(form.formName) ? 'hidden' : 'visible'} className='diamond-marker'>
+                    <Box sx={{ visibility: formList.includes(form.formName) ? 'hidden' : 'visible' }} className='diamond-marker'>
                       <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                       </svg>
@@ -346,7 +346,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
       <ActivateDialogContainer ref={ref}>
         <Box className='header-close'>
           <Box className='header'>
-            <Box width='30px' height='30px' padding='0' display='flex' alignItems='center'><WarningIcon /></Box>
+            <Box sx={{ width: '30px', height: '30px', padding: 0, display: 'flex', alignItems: 'center' }}><WarningIcon /></Box>
             <Typography className='title'>Activate Form?</Typography>
           </Box>
           <ButtonBase onClick={handleCloseActivateDialog}><IoMdClose size='1.5em' /></ButtonBase>

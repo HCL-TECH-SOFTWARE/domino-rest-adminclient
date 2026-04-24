@@ -36,18 +36,18 @@ const DropdownIcons: React.FC<DropdownIconsProps> = () => {
         getOptionLabel={(option) => option}
         // closeIcon={false}
         onChange={onTagsChange}
-        renderOption={(option) => {
+        renderOption={(props, option, { selected }) => {
           return (
-            <>
+            <li {...props}>
               <img
                 style={{ height: 30, marginRight: 10 }}
-                src={`data:image/svg+xml;base64, ${appIcons[option.key]}`}
+                src={`data:image/svg+xml;base64, ${appIcons[selected ? option : option]}`}
                 alt="database-icon"
               />
               <Typography color="textPrimary" noWrap>
-                {option.key}
+                {option}
               </Typography>
-            </>
+            </li>
           );
         }}
         renderInput={(params) => (

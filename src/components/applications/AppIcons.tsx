@@ -32,28 +32,30 @@ const AppIcons: React.FC<DropdownIconsProps> = ({ formik }) => {
         renderInput={(params) => (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <TextField color="primary" {...params} label="App Icon" variant='standard' fullWidth 
-              InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <>
-                    {
-                      formik.values.appIcon == null ? 'beach' :
-                      <img
-                        style={{ height: 30, marginRight: 10 }}
-                        src={`data:image/svg+xml;base64, ${appIcons[formik.values.appIcon]}`}
-                        alt="database-icon"
-                      />
-                    }
-                  </>
-                </InputAdornment>
-              ),
+              slotProps={{
+                input: {
+                  ...params.slotProps.input,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <>
+                        {
+                          formik.values.appIcon == null ? 'beach' :
+                          <img
+                            style={{ height: 30, marginRight: 10 }}
+                            src={`data:image/svg+xml;base64, ${appIcons[formik.values.appIcon]}`}
+                            alt="database-icon"
+                          />
+                        }
+                      </>
+                    </InputAdornment>
+                  ),
+                }
               }}
             >
             </TextField>
           </div>
         )}
-        renderOption={(option) => {
+        renderOption={(props, option, { selected }) => {
           const { key, ...optionProps } = option;
           return (
             <Box

@@ -216,7 +216,7 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
               {isSchema ? database.schemaName : database.apiName}
             </Typography>
           </Tooltip>
-          {isSchema && <Typography display='block' variant='subtitle1' className='api-nsf'>
+          {isSchema && <Typography sx={{ display: 'block' }} variant='subtitle1' className='api-nsf'>
             {database.nsfPath}
           </Typography>}
         </div>

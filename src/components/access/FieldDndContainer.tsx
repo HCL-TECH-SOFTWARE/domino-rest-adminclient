@@ -379,7 +379,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
   }
 
   return (
-    <Box height='100%' display='flex' style={{ gap: '16px' }}>
+    <Box sx={{ height: '100%', display: 'flex', gap: '16px' }}>
       <SelectedFieldsContainer>
         <Box className='add-custom-field'>
             <TextField
@@ -391,7 +391,9 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
               hiddenLabel
               type="text"
               fullWidth
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: { shrink: true }
+              }}
             />
             <IconButton title="Add Custom Field" className='add'
               onClick={handleAddField}
@@ -414,8 +416,8 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
             >
               <Typography className={`batch-delete ${state[stateList[0]].length === 0 ? 'disabled' : ''}`}>Delete Field(s)</Typography>
             </Button>}
-            {batchDelete && <Box display='flex' justifyContent='space-between' width='100%' padding='0'>
-              <Box display='flex' flexWrap='wrap'>
+            {batchDelete && <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: 0 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
                 <Tooltip title={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""} arrow>
                   <Button 
                     className='batch-delete-button'
@@ -499,7 +501,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
           </Box>}
           {state[stateList[0]].length === 0 && <Typography className='add-fields-text'>Please add field/s...</Typography>}
       </SelectedFieldsContainer>
-      <Box display='flex' flexDirection='column' width='100%' height='100%' style={{ gap: '20px' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', gap: '20px' }}>
         {editField && 
           <FieldContainer 
             item={editField} 
@@ -520,7 +522,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
       <RemoveFieldDialog ref={ref}>
         <Box className='header-close'>
           <Box className='header'>
-            <Box width='30px' height='30px' padding='0' display='flex' alignItems='center'><WarningIcon /></Box>
+            <Box sx={{ width: '30px', height: '30px', padding: 0, display: 'flex', alignItems: 'center' }}><WarningIcon /></Box>
             <Typography className='title'>Remove Field</Typography>
           </Box>
           <ButtonBase onClick={handleCloseDialog}><CloseIcon /></ButtonBase>

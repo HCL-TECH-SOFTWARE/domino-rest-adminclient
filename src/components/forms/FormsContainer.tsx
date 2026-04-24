@@ -608,9 +608,11 @@ const FormsContainer = () => {
                 onChange={handleTabChange} 
                 variant='scrollable'
                 style={{ fontWeight: 'bold', display: 'flex' }}
-                TabIndicatorProps={{
-                  title: 'indicator',
-                  style: { backgroundColor: themeMode === 'dark' ? '#8CC7F9' : 'black' }
+                slotProps={{
+                  indicator: {
+                    title: 'indicator',
+                    style: { backgroundColor: themeMode === 'dark' ? '#8CC7F9' : 'black' }
+                  }
                 }}
               >
                 <Tab label="Database Forms" className='tab-button'/>

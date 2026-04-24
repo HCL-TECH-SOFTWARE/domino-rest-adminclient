@@ -651,7 +651,9 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       <Dialog 
         fullScreen 
         style={{ height: '90vh', width: '95vw', left: '2.5vw', top: '4vh' }} 
-        PaperProps={{ style: { borderRadius: '5px' } }}
+        slotProps={{
+          paper: { style: { borderRadius: '5px' } }
+        }}
         open={open} 
         onClose={handleClickClose}
         sx={{ overflowY: 'auto' }}
@@ -703,8 +705,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
                       onClick={() => handleClickColumn(column)} onMouseOver={() => {setHoveredColumn(column)}} onMouseLeave={() => {setHoveredColumn({})}}>
                         <div className='column-info'>
                           <div className="column-name">{column.name}</div>
-                          <Typography display="block" className="columnDetails">{`Column Position ${column.position}`}</Typography>
-                          {column.title.length > 0 && <Typography display="block" className="columnDetails">{`Title: ${column.title}`}</Typography>}
+                          <Typography sx={{ display: 'block' }} className="columnDetails">{`Column Position ${column.position}`}</Typography>
+                          {column.title.length > 0 && <Typography sx={{ display: 'block' }} className="columnDetails">{`Title: ${column.title}`}</Typography>}
                         </div>
                         <div className='icons-column'>
                           <div className='icon'>

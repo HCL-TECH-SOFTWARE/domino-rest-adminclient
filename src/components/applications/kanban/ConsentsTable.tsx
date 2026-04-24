@@ -317,7 +317,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                 <TableRow>
                   <TableCell className='expand' />
                   <TableCell className='user'>
-                    <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                       <Typography className='text can-sort'>
                         User
                         <button
@@ -331,7 +331,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     </Box>
                   </TableCell>
                   <TableCell className='app-name text'>
-                    <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                       <Typography className='text can-sort'>
                         App Name
                         <button
@@ -345,7 +345,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     </Box>
                   </TableCell>
                   <TableCell className='expirations text'>
-                    <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                       <Typography className='text'>
                         Expirations
                       </Typography>
@@ -353,7 +353,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     </Box>
                   </TableCell>
                   <TableCell className='action text'>
-                    <Box width='100%' display='flex' flexDirection='column' style={{ gap: '3px' }}>
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
                       <Typography className='text'>
                         Action
                       </Typography>
@@ -386,14 +386,16 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     page={page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    SelectProps={{
-                      inputProps: {
-                        'aria-label': 'rows per page',
-                      },
-                      style: {
-                        borderRadius: '10px',
-                        border: '1px solid currentColor',
-                        width: '70px',
+                    slotProps={{
+                      select: {
+                        inputProps: {
+                          'aria-label': 'rows per page',
+                        },
+                        style: {
+                          borderRadius: '10px',
+                          border: '1px solid currentColor',
+                          width: '70px',
+                        }
                       }
                     }}
                     ActionsComponent={({ count, page }) => (
