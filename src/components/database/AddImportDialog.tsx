@@ -49,7 +49,8 @@ const DialogContentContainer = styled(Box)`
   display: flex;
   flex-direction: column;
   gap: 30px;
-  background-color: #FFF;
+  background-color: light-dark(#FFF, #1e1e2e);
+  cursor: default;
 
   .detail-title {
     font-size: 16px;

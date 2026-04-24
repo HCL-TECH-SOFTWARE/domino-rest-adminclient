@@ -7,13 +7,14 @@ class ButtonNeutral extends LitElement {
         height: 31px;
         text-transform: none;
         line-height: 19px;
-        border: 1px solid #000;
+        border: 1px solid var(--theme-btn-neutral-border);
         border-radius: 5px;
         background: none;
+        color: var(--theme-btn-neutral-text);
 
         &:hover {
             cursor: pointer;
-            background-color: #D3D3D3;
+            background-color: var(--theme-btn-neutral-hover);
         }
 
         &:disabled {

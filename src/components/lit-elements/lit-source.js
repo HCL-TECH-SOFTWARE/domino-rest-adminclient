@@ -130,8 +130,13 @@ class SourceTree extends LitElement {
   };
 
   static styles = css`
+    :host {
+      color: var(--theme-text);
+    }
+
     main {
-      border: 1px solid #D2D2D2;
+      border: 1px solid var(--theme-border-heavy);
+      background-color: var(--theme-bg-primary);
     }
 
     sl-tree {
@@ -140,24 +145,43 @@ class SourceTree extends LitElement {
       --sl-font-size-large: 16px;
       padding: 0;
       margin: 0;
+      color: var(--theme-text);
     }
     .custom-icons sl-tree-item::part(expand-button) {
       /* Disable the expand/collapse animation */
       rotate: none;
     }
 
+    sl-tree-item {
+      color: var(--theme-text);
+      --sl-color-neutral-700: var(--theme-text);
+      --sl-color-neutral-1000: var(--theme-text-secondary);
+    }
+
+    sl-tree-item::part(label) {
+      color: var(--theme-text);
+    }
+
+    .key-value-container span {
+      color: var(--theme-tree-key) !important;
+    }
+
     input.tree {
       background: transparent;
       border: none;
       border-radius: 1px;
+      color: var(--theme-tree-value) !important;
+      font-weight: var(--theme-tree-value-weight);
     }
     input.dialog {
-      border: 1px solid #B8B8B8;
+      border: 1px solid var(--theme-input-focus-border);
       border-radius: 5px;
       padding: 5px 10px;
+      background-color: var(--theme-bg-elevated);
+      color: var(--theme-text);
     }
     input:focus {
-      border: 1px solid #B8B8B8;
+      border: 1px solid var(--theme-input-focus-border);
     }
 
     section.dialog-input {
@@ -190,6 +214,7 @@ class SourceTree extends LitElement {
 
     .object-array-container {
       position: relative;
+      color: var(--theme-tree-key) !important;
     }
     .object-array-container .icon-button {
       position: absolute;
@@ -204,8 +229,9 @@ class SourceTree extends LitElement {
     dialog {
       padding: 10px;
       border-radius: 5px;
-      border: 1px solid #D2D2D2;
-      border: none;
+      border: 1px solid var(--theme-border-heavy);
+      background-color: var(--theme-bg-elevated);
+      color: var(--theme-text);
       flex-direction: row;
       cursor: default;
     }
@@ -279,7 +305,7 @@ class SourceTree extends LitElement {
     }
     button.cancel {
       background: none;
-      color: black;
+      color: var(--theme-text-secondary);
     }
   `;
 
@@ -335,11 +361,12 @@ class SourceTree extends LitElement {
               ${isObjectOrArray ? html`
                 ${`${label} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
               ` : html`
-                <span>${label}:</span>
+                <span style="color: var(--theme-tree-key)">${label}:</span>
                 <input
                   id="input-${fullPath}"
                   data-id="input-${fullPath}"
                   class="tree"
+                  style="color: var(--theme-tree-value); font-weight: var(--theme-tree-value-weight)"
                   @input=${(e) => {
                     this.currentInputValues = {
                       ...this.currentInputValues,

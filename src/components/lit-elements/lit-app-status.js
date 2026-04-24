@@ -28,7 +28,7 @@ class AppStatus extends LitElement {
 
   updated(changedProperties) {
     if (changedProperties.has('status')) {
-      this.style.setProperty('--status-color', this.status ? '#000' : '#6C7882');
+      this.style.setProperty('--status-color', this.status ? 'var(--theme-text-secondary)' : '#6C7882');
       this.style.setProperty('--status-bg-color', this.status ? '#A1E596' : '#E6EBF5');
     }
   }

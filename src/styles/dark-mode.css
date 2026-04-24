@@ -1,0 +1,463 @@
+/* ==========================================================================
+ * Theme support using CSS custom properties.
+ * Light values are the defaults on :root.  Dark overrides live under
+ * body[data-theme="dark"].  Because CSS custom properties inherit through
+ * Shadow DOM, Lit / Shoelace components can simply use var(--theme-*)
+ * without duplicating colour values.
+ * ========================================================================== */
+
+/* ===== Theme tokens (light — defaults) ===== */
+:root {
+  --theme-bg-primary: #fff;
+  --theme-bg-elevated: #fff;
+  --theme-bg-surface: #FAFDFF;
+  --theme-bg-header: #D7EBFD;
+  --theme-bg-hover: #e5e5e5;
+  --theme-bg-input: #fff;
+  --theme-text: inherit;
+  --theme-text-secondary: #000;
+  --theme-text-muted: rgba(0,0,0,0.6);
+  --theme-border: #ccc;
+  --theme-border-medium: #BBBDBF;
+  --theme-border-light: #e0e0e0;
+  --theme-border-heavy: #D2D2D2;
+  --theme-accent: #4a90e2;
+  --theme-input-focus-border: #B8B8B8;
+  --theme-tree-key: inherit;
+  --theme-tree-value: inherit;
+  --theme-tree-value-weight: normal;
+  --theme-btn-neutral-border: #000;
+  --theme-btn-neutral-hover: #D3D3D3;
+  --theme-btn-neutral-text: #000;
+}
+
+/* ===== Theme tokens (dark) ===== */
+body[data-theme="dark"] {
+  --theme-bg-primary: #1e1e2e;
+  --theme-bg-elevated: #252535;
+  --theme-bg-surface: #1e1e2e;
+  --theme-bg-header: #3a3a5a;
+  --theme-bg-hover: #353548;
+  --theme-bg-input: #1e1e2e;
+  --theme-text: #e0e0e0;
+  --theme-text-secondary: #e0e0e0;
+  --theme-text-muted: #b0b0b0;
+  --theme-border: #3a3a4a;
+  --theme-border-medium: #3a3a4a;
+  --theme-border-light: #3a3a4a;
+  --theme-border-heavy: #3a3a4a;
+  --theme-accent: #8CC7F9;
+  --theme-input-focus-border: #555;
+  --theme-tree-key: #9CDCFE;
+  --theme-tree-value: #CE9178;
+  --theme-tree-value-weight: bold;
+  --theme-btn-neutral-border: #e0e0e0;
+  --theme-btn-neutral-hover: #3a3a4a;
+  --theme-btn-neutral-text: #e0e0e0;
+
+  /* Shoelace primary color overrides */
+  --sl-color-primary-600: #8B6CE0;
+  --sl-color-primary-500: #9B7EE8;
+  --sl-color-primary-700: #7B5CD0;
+}
+
+/* ===== Base64 SVG icons (have stroke="black" baked in) ===== */
+body[data-theme="dark"] .dialog-svg-icon,
+body[data-theme="dark"] .option-container img {
+  filter: invert(1);
+}
+
+/* ===== Tables ===== */
+.MuiTableContainer-root {
+  background: var(--theme-bg-elevated) !important;
+  border-color: var(--theme-border-light) !important;
+}
+
+.MuiTableHead-root {
+  border-bottom-color: var(--theme-border-light) !important;
+}
+
+.MuiTableHead-root .MuiTableCell-head {
+  border-bottom-color: var(--theme-border-light) !important;
+  color: var(--theme-text) !important;
+}
+
+.MuiTableCell-root {
+  color: var(--theme-text) !important;
+  border-bottom-color: var(--theme-border-light) !important;
+}
+
+.MuiTableRow-root:nth-of-type(odd) {
+  background-color: var(--theme-bg-primary) !important;
+}
+
+.MuiTableRow-root:nth-of-type(even) {
+  background-color: var(--theme-bg-elevated) !important;
+}
+
+.MuiTablePagination-root {
+  color: var(--theme-text) !important;
+}
+
+.MuiTablePagination-selectIcon {
+  color: var(--theme-text) !important;
+}
+
+.MuiTablePagination-root .MuiIconButton-root {
+  color: var(--theme-text) !important;
+}
+
+.MuiTablePagination-root .MuiIconButton-root.Mui-disabled {
+  opacity: 0.4;
+}
+
+.MuiTablePagination-root .MuiIconButton-root .MuiSvgIcon-root {
+  color: inherit !important;
+}
+
+.MuiTablePagination-root .MuiSelect-select {
+  border-color: var(--theme-text) !important;
+}
+
+/* ===== Cards ===== */
+.MuiCard-root {
+  background: var(--theme-bg-elevated) !important;
+  border-color: var(--theme-border-light) !important;
+}
+
+.MuiCardContent-root {
+  color: var(--theme-text) !important;
+}
+
+/* ===== Paper ===== */
+.MuiPaper-root {
+  background-color: var(--theme-bg-elevated) !important;
+  color: var(--theme-text) !important;
+}
+
+/* ===== Snackbar ===== */
+.MuiSnackbarContent-root {
+  background-color: #323232 !important;
+  color: #fff !important;
+}
+
+/* ===== Dialogs ===== */
+.MuiDialog-paper {
+  background-color: var(--theme-bg-elevated) !important;
+  color: var(--theme-text) !important;
+}
+
+.MuiDialogTitle-root {
+  color: var(--theme-text) !important;
+}
+
+.MuiDialogContent-root {
+  color: var(--theme-text) !important;
+}
+
+.MuiDialog-root .MuiPaper-root {
+  background-color: var(--theme-bg-elevated) !important;
+  color: var(--theme-text) !important;
+}
+
+.MuiDialogContentText-root {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ===== Shoelace Drawer (light-DOM instances) ===== */
+sl-drawer::part(base),
+sl-drawer::part(panel),
+sl-drawer::part(body) {
+  background: var(--theme-bg-primary);
+  color: var(--theme-text);
+}
+
+sl-drawer::part(header),
+sl-drawer::part(title) {
+  color: var(--theme-text);
+}
+
+/* ===== Inputs and Form Controls ===== */
+.MuiInputBase-root {
+  color: var(--theme-text) !important;
+}
+
+.MuiInputBase-input {
+  color: var(--theme-text) !important;
+}
+
+.MuiInputBase-input.Mui-disabled {
+  color: var(--theme-text-muted) !important;
+  -webkit-text-fill-color: var(--theme-text-muted) !important;
+}
+
+.MuiInputLabel-root.Mui-disabled {
+  color: var(--theme-text-muted) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: var(--theme-border) !important;
+}
+
+.MuiInputLabel-root,
+.MuiFormLabel-root {
+  color: var(--theme-text-muted) !important;
+}
+
+.MuiSelect-icon {
+  color: var(--theme-text) !important;
+}
+
+body[data-theme="dark"] .MuiSelect-icon {
+  color: var(--theme-text) !important;
+}
+
+body[data-theme="dark"] .MuiSelect-icon path {
+  fill: var(--theme-text) !important;
+}
+
+.MuiInput-underline:before {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.MuiCheckbox-root {
+  color: var(--sl-color-primary-600, #8B6CE0) !important;
+}
+
+.MuiCheckbox-root.Mui-checked {
+  color: var(--sl-color-primary-600, #8B6CE0) !important;
+}
+
+/* ===== Tabs ===== */
+.MuiTabs-root .MuiTab-root {
+  color: var(--theme-text-muted) !important;
+}
+
+.MuiTabs-root .MuiTab-root.Mui-selected {
+  color: var(--theme-text) !important;
+}
+
+/* ===== Typography ===== */
+.MuiTypography-colorTextPrimary {
+  color: var(--theme-text) !important;
+}
+
+/* ===== Buttons ===== */
+.MuiButton-root {
+  color: var(--sl-color-primary-600, #8B6CE0);
+}
+
+.MuiIconButton-root {
+  color: var(--theme-text);
+}
+
+/* ===== Switch ===== */
+.MuiSwitch-track {
+  background-color: var(--theme-border) !important;
+}
+
+/* ===== Tooltip ===== */
+.MuiTooltip-tooltip {
+  background-color: var(--theme-bg-header) !important;
+  color: var(--theme-text) !important;
+}
+
+/* ===== Chips ===== */
+.MuiChip-root {
+  background-color: var(--theme-bg-header) !important;
+  color: var(--theme-text) !important;
+}
+
+/* ===== Autocomplete ===== */
+.MuiAutocomplete-popper .MuiPaper-root {
+  background-color: var(--theme-bg-primary) !important;
+}
+
+.MuiAutocomplete-option {
+  color: var(--theme-text) !important;
+}
+
+.MuiAutocomplete-listbox {
+  background-color: var(--theme-bg-primary) !important;
+}
+
+/* ===== Popover and Menu ===== */
+.MuiPopover-root .MuiPaper-root {
+  background-color: var(--theme-bg-primary) !important;
+}
+
+.MuiMenu-root .MuiPaper-root {
+  background-color: var(--theme-bg-primary) !important;
+}
+
+.MuiMenuItem-root {
+  color: var(--theme-text) !important;
+}
+
+/* ===== Shoelace inputs (light-DOM instances) ===== */
+sl-input::part(base) {
+  background-color: var(--theme-bg-input);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+sl-input::part(input) {
+  color: var(--theme-text);
+}
+
+sl-select::part(combobox) {
+  background-color: var(--theme-bg-input);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+sl-tree {
+  color: var(--theme-text);
+}
+
+sl-tree-item::part(base) {
+  color: var(--theme-text);
+}
+
+/* ===== Scrollbar ===== */
+body[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--theme-bg-primary);
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--theme-bg-header);
+}
+
+/* ===== Status Toggle ===== */
+.toggle-container {
+  background-color: var(--theme-border) !important;
+}
+
+.unchecked {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ===== Consents ===== */
+button.option,
+button[style*="border: none"] {
+  color: var(--theme-text) !important;
+}
+
+.text {
+  color: var(--theme-text) !important;
+}
+
+/* ===== Shoelace Cards (light-DOM instances) ===== */
+sl-card::part(base) {
+  background: var(--theme-bg-elevated);
+  color: var(--theme-text);
+  border-color: var(--theme-border-light);
+}
+
+sl-card::part(body) {
+  background: var(--theme-bg-elevated);
+  color: var(--theme-text);
+}
+
+/* ===== Lit element hosts (theme token inheritance) ===== */
+lit-default-card,
+lit-nsf-card,
+lit-source-header,
+lit-source,
+lit-schema-status {
+  color: var(--theme-text);
+}
+
+/* ===== Access Mode Page ===== */
+.field-name,
+.field-meta-data,
+.add-fields-text {
+  color: var(--theme-text-secondary) !important;
+}
+
+.setting {
+  color: var(--theme-text-secondary) !important;
+}
+
+.name {
+  color: var(--theme-text-secondary) !important;
+}
+
+.no-formula,
+.computed {
+  color: var(--theme-text-muted) !important;
+}
+
+.search-container {
+  background-color: var(--theme-bg-surface) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.search-container input {
+  color: var(--theme-text) !important;
+  background: transparent !important;
+}
+
+/* ===== Native HTML Dialogs ===== */
+dialog {
+  background-color: var(--theme-bg-elevated) !important;
+  color: var(--theme-text-secondary) !important;
+  border-color: var(--theme-border) !important;
+}
+
+body[data-theme="dark"] dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+dialog .title,
+dialog .text-content {
+  color: var(--theme-text-secondary) !important;
+}
+
+dialog .button-cancel {
+  color: var(--theme-text-secondary) !important;
+  border-color: var(--theme-border) !important;
+}
+
+dialog input,
+dialog textarea {
+  background-color: var(--theme-bg-input) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+dialog .MuiInputBase-root {
+  color: var(--theme-text) !important;
+}
+
+dialog .MuiInput-underline:before {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+dialog .MuiFormLabel-root {
+  color: var(--theme-text-muted) !important;
+}
+
+/* ===== Accordion ===== */
+.MuiAccordion-root {
+  background-color: var(--theme-bg-elevated) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border-light) !important;
+}
+
+.MuiAccordionSummary-root {
+  color: var(--theme-text) !important;
+}
+
+.MuiAccordionDetails-root {
+  background-color: var(--theme-bg-elevated) !important;
+  color: var(--theme-text) !important;
+}
+
+/* ===== Generic white background overrides ===== */
+body[data-theme="dark"] [style*="background-color: white"],
+body[data-theme="dark"] [style*="background-color: #FFF"],
+body[data-theme="dark"] [style*="background-color:#FFF"],
+body[data-theme="dark"] [style*="background: white"] {
+  background-color: var(--theme-bg-elevated) !important;
+}

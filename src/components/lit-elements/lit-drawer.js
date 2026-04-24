@@ -8,7 +8,20 @@ import { IMG_DIR } from '../../config.dev';
 
 class Drawer extends LitElement {
     static styles = css`
-        
+        sl-drawer::part(panel) {
+            background: var(--theme-bg-primary);
+            color: var(--theme-text);
+        }
+        sl-drawer::part(header) {
+            color: var(--theme-text);
+        }
+        sl-drawer::part(title) {
+            color: var(--theme-text);
+        }
+        sl-drawer::part(body) {
+            background: var(--theme-bg-primary);
+            color: var(--theme-text);
+        }
     `
 
     static properties = {

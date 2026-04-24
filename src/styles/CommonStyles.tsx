@@ -790,7 +790,9 @@ export const DialogContainer = styled(Box)`
   vertical-align: middle;
   width: 100%;
   height: 100%;
-  background-color: #FFF;
+  background-color: light-dark(#FFF, #252535);
+  color: light-dark(inherit, #e0e0e0);
+  cursor: default;
 
   .title {
     display: flex;
