@@ -8,8 +8,7 @@ import React, { useState, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import AddIcon from '@mui/icons-material/Add';
-import { Button, ButtonBase, Dialog, Typography } from '@mui/material';
+import { Dialog, Typography } from '@mui/material';
 import styled from 'styled-components';
 import {
   deleteApplication,
@@ -30,9 +29,6 @@ import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
-import { FiFilter } from "react-icons/fi";
-import SlButton from '@shoelace-style/shoelace/dist/react/button';
-import SlIcon from '@shoelace-style/shoelace/dist/react/icon';
 import { IMG_DIR } from '../../../config.dev';
 import { LitButton } from '../../lit-elements/LitElements';
 
