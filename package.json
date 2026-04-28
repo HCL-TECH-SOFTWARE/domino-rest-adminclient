@@ -27,7 +27,7 @@
     "react-dom": "^19.2.5",
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.12.0",
+    "react-router-dom": "^7.14.2",
     "redux": "^5.0.1",
     "redux-thunk": "^3.1.0",
     "styled-components": "^6.3.11",
