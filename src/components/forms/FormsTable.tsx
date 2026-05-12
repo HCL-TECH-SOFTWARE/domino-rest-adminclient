@@ -72,8 +72,16 @@ const StatusHeader = styled.div`
     text-color: #000000;
   }
 
+  /* Render the trigger ("Status <icon />") on a single line. */
+  & > div > div {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .status-icon {
-    transform: translateY(10%);
+    display: inline-block;
+    vertical-align: middle;
   }
 `;
 
@@ -281,6 +289,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
               <StyledTableCell width="350px">Modes Available</StyledTableCell>
               <StyledTableCell>
                 <StatusHeader>
+                  {/* <div style={{ display: 'flex', flexDirection: 'row' }}> */}
                   <div>
                     <Tooltip
                       title={`Activate the Forms that should be accessible\nvia rest API`}

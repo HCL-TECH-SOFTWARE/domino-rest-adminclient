@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
-import '@shoelace-style/shoelace/dist/components/input/input.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
+import '@awesome.me/webawesome/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
 import { IMG_DIR } from '../../config.dev.ts';
 
 class SchemaStatus extends LitElement {
@@ -60,7 +60,7 @@ class SchemaStatus extends LitElement {
         stroke: #8B2630;
     }
 
-    sl-icon {
+    wa-icon {
       cursor: pointer;
       flex-shrink: 0;
       transition: filter 0.2s ease;
@@ -112,12 +112,12 @@ class SchemaStatus extends LitElement {
     return html`
       <div class="main">
         <div class="description" @click=${this.onClickOpen}>
-            ${this.isSchema ? html`<sl-tooltip content="${this.status}" placement="top">
+            ${this.isSchema ? html`<wa-tooltip content="${this.status}" placement="top">
                 <div class="api-status ${this.usedByScopes ? '' : 'unused'}"></div>
-            </sl-tooltip>` : ''}
-            <sl-tooltip class="trash-icon" content="${this.name}" style="--max-width: none; --sl-tooltip-arrow-size: 0;" placement="top" hoist>
+            </wa-tooltip>` : ''}
+            <wa-tooltip class="trash-icon" content="${this.name}" style="--max-width: none; --wa-tooltip-arrow-size: 0;" placement="top" hoist>
                 <div class="name">${this.name}</div>
-            </sl-tooltip>
+            </wa-tooltip>
         </div>
         ${this.isSchema ? html`<div class="delete" @click=${this.onDelete}>
             <svg class="trash-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

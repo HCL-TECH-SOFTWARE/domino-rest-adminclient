@@ -9,6 +9,7 @@ import styled from 'styled-components';
 export const ExtraFlex = styled.div`
   display: flex;
   flex-wrap: wrap;
+  gap: 20px;
 
   .child:not(:first-child) {
     flex: 1;

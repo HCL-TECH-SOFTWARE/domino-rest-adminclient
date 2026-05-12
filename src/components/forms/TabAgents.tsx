@@ -51,7 +51,7 @@ import { LitSwitch } from '../lit-elements/LitElements';
   }
 
   .disabled {
-    color: #5d6160;
+    color: light-dark(#5d6160, #6c6c80);
   }
 
   .vertical {

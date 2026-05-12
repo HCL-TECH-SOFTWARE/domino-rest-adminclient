@@ -1,15 +1,14 @@
 import { LitElement, html, css } from 'lit';
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/menu/menu.js';
-import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
+import '@awesome.me/webawesome/dist/components/button/button.js';
+import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
+import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 
 class Dropdown extends LitElement {
     static styles = css`
-      sl-dropdown::part(base) {
+      wa-dropdown::part(base) {
         width: 100%;
         display: flex;
         flex-direction: row;
@@ -17,11 +16,7 @@ class Dropdown extends LitElement {
         align-items: center;
       }
 
-      sl-button::part(base) {
-        width: 100%;
-      }
-
-      sl-menu {
+      wa-button::part(base) {
         width: 100%;
       }
     `;
@@ -38,14 +33,12 @@ class Dropdown extends LitElement {
   
     render() {
       return html`
-          <sl-dropdown style="${this.getAttribute('style') || ''}">
-              <sl-button slot="trigger" caret>${this.selected}</sl-button>
-              <sl-menu>
+          <wa-dropdown style="${this.getAttribute('style') || ''}">
+              <wa-button appearance="filled" slot="trigger" with-caret>${this.selected}</wa-button>
                 ${this.choices.map(choice => html`
-                    <sl-menu-item @click=${() => this.changeSelected(choice)}>${choice}</sl-menu-item>
+                    <wa-dropdown-item @click=${() => this.changeSelected(choice)}>${choice}</wa-dropdown-item>
                 `)}
-              </sl-menu>
-          </sl-dropdown>
+          </wa-dropdown>
       `;
     }
 

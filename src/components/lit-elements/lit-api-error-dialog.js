@@ -4,9 +4,9 @@ import './lit-dialog-header.js';
 import './lit-dialog-actions.js';
 import './lit-button-yes.js';
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
 
 class ApiErrorDialog extends LitElement {
@@ -44,7 +44,7 @@ class ApiErrorDialog extends LitElement {
                     <h3>Error calling API</h3>
                 </header>
                 <button class="close" @click=${this.handleCancel}>
-                    <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></sl-icon>
+                    <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></wa-icon>
                 </button>
             </lit-dialog-header>
             <lit-dialog-content>${this.errorMessage}</lit-dialog-content>

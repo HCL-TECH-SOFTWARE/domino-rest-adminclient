@@ -44,6 +44,7 @@ const ToggleContainer = styled.div`
     padding: 8px 12px;
     border-radius: 5px;
     position: absolute;
+    top: 5px;
     transition: all 0.2s ease;
     left: 68px;
     overflow-x: visible;
@@ -56,7 +57,11 @@ const ToggleContainer = styled.div`
   }
 
   .unchecked {
+    box-sizing: border-box;
+    width: 68px;
+    height: 24px;
     left: 70px;
+    top: 5px;
     position: absolute;
     color: light-dark(#6c7882, #999);
     display: flex;
@@ -64,7 +69,7 @@ const ToggleContainer = styled.div`
     align-items: center;
     font-size: 14px;
     line-height: 16px;
-    padding: 4px 12px;
+    padding: 8px 12px;
     text-transform: none;
   }
 

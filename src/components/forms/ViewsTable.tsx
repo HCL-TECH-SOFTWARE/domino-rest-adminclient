@@ -67,8 +67,15 @@ const StatusHeader = styled.div`
     text-color: #000000;
   }
 
+  & > div > div {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .status-icon {
-    transform: translateY(10%);
+    display: inline-block;
+    vertical-align: middle;
   }
 `
 

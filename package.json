@@ -5,6 +5,7 @@
   "proxy": "http://localhost:8880",
   "homepage": ".",
   "dependencies": {
+    "@awesome.me/webawesome": "^3.6.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@lit/react": "^1.0.8",
@@ -57,7 +58,7 @@
   },
   "overrides": {
     "yaml": "^2.6.1",
-	"dompurify" : "^3.3.2",
+    "dompurify": "^3.3.2",
     "test-exclude": "^7.0.2",
     "jsdom": "^29.0.1",
     "glob": "^13.0.6"

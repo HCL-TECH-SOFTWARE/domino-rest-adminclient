@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
 
 class DialogHeader extends LitElement {

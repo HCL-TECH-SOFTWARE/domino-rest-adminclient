@@ -1,21 +1,19 @@
 import { LitElement, html, css, render } from 'lit';
 
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/tree/tree.js';
-import '@shoelace-style/shoelace/dist/components/tree-item/tree-item.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import '@shoelace-style/shoelace/dist/components/menu/menu.js';
-import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/divider/divider.js';
-import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/select/select.js';
-import '@shoelace-style/shoelace/dist/components/option/option.js';
-import '@shoelace-style/shoelace/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/tree/tree.js';
+import '@awesome.me/webawesome/dist/components/tree-item/tree-item.js';
+import '@awesome.me/webawesome/dist/components/dialog/dialog.js';
+import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
+import '@awesome.me/webawesome/dist/components/button/button.js';
+import '@awesome.me/webawesome/dist/components/divider/divider.js';
+import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/select/select.js';
+import '@awesome.me/webawesome/dist/components/option/option.js';
+import '@awesome.me/webawesome/dist/components/input/input.js';
 // Import setBasePath for Shoelace assets
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
 import { IMG_DIR } from '../../config.dev';
@@ -131,6 +129,7 @@ class SourceTree extends LitElement {
 
   static styles = css`
     :host {
+      color-scheme: inherit;
       color: light-dark(inherit, #e0e0e0);
     }
 
@@ -139,39 +138,60 @@ class SourceTree extends LitElement {
       background-color: light-dark(#fff, #1e1e2e);
     }
 
-    sl-tree {
-      --sl-font-size-small: 12px;
-      --sl-font-size-medium: 14px;
-      --sl-font-size-large: 16px;
+    wa-tree {
+      --wa-font-size-small: 12px;
+      --wa-font-size-medium: 14px;
+      --wa-font-size-large: 16px;
       padding: 0;
       margin: 0;
       color: light-dark(inherit, #e0e0e0);
     }
-    .custom-icons sl-tree-item::part(expand-button) {
+    .custom-icons wa-tree-item::part(expand-button) {
       /* Disable the expand/collapse animation */
       rotate: none;
     }
 
-    sl-tree-item {
+    wa-tree-item {
       color: light-dark(inherit, #e0e0e0);
-      --sl-color-neutral-700: light-dark(#424242, #e0e0e0);
-      --sl-color-neutral-1000: light-dark(#000, #e0e0e0);
+      --wa-color-neutral-700: light-dark(#424242, #e0e0e0);
+      --wa-color-neutral-1000: light-dark(#000, #e0e0e0);
     }
 
-    sl-tree-item::part(label) {
+    wa-tree-item::part(label) {
       color: light-dark(inherit, #e0e0e0);
     }
 
     .key-value-container span {
-      color: light-dark(inherit, #9CDCFE) !important;
+      color: light-dark(#0451A5, #9CDCFE) !important;
+    }
+
+    /* Explicit dark-mode overrides — light-dark() inside lit shadow
+       DOM doesn't always resolve to the dark value because
+       color-scheme inheritance through the boundary is unreliable.
+       Force the dark-mode token colors when the document is in dark mode. */
+    :host-context(body[data-theme="dark"]) {
+      color: #e0e0e0;
+    }
+    :host-context(body[data-theme="dark"]) wa-tree-item,
+    :host-context(body[data-theme="dark"]) wa-tree-item::part(label) {
+      color: #e0e0e0 !important;
+    }
+    :host-context(body[data-theme="dark"]) .object-array-container,
+    :host-context(body[data-theme="dark"]) .object-array-container * {
+      color: #9CDCFE !important;
+    }
+    :host-context(body[data-theme="dark"]) .key-value-container span {
+      color: #9CDCFE !important;
+    }
+    :host-context(body[data-theme="dark"]) input.tree {
+      color: #CE9178 !important;
     }
 
     input.tree {
       background: transparent;
       border: none;
       border-radius: 1px;
-      color: light-dark(inherit, #CE9178) !important;
-      font-weight: light-dark(normal, bold);
+      color: light-dark(#C7621D, #CE9178) !important;
     }
     input.dialog {
       border: 1px solid light-dark(#B8B8B8, #555);
@@ -207,14 +227,14 @@ class SourceTree extends LitElement {
     .key-value-container:hover .icon-button {
       display: block;
     }
-    sl-dropdown {
+    wa-dropdown {
       top: -40%;
       right: -4%;
     }
 
     .object-array-container {
       position: relative;
-      color: light-dark(inherit, #9CDCFE) !important;
+      color: light-dark(#0451A5, #9CDCFE) !important;
     }
     .object-array-container .icon-button {
       position: absolute;
@@ -250,45 +270,45 @@ class SourceTree extends LitElement {
     }
 
     /* user invalid styles */
-    .input-validation-pattern sl-input[data-user-invalid]::part(base) {
-      border-color: var(--sl-color-danger-600);
+    .input-validation-pattern wa-input[data-user-invalid]::part(base) {
+      border-color: var(--wa-color-danger-600);
     }
 
     .input-validation-pattern [data-user-invalid]::part(form-control-label),
     .input-validation-pattern [data-user-invalid]::part(form-control-help-text) {
-      color: var(--sl-color-danger-700);
+      color: var(--wa-color-danger-700);
     }
 
-    .input-validation-pattern sl-input:focus-within[data-user-invalid]::part(base) {
-      border-color: var(--sl-color-danger-600);
-      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-300);
+    .input-validation-pattern wa-input:focus-within[data-user-invalid]::part(base) {
+      border-color: var(--wa-color-danger-600);
+      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
     }
 
     /* User valid styles */
-    .input-validation-pattern sl-input[data-user-valid]::part(base) {
-      border-color: var(--sl-color-success-600);
+    .input-validation-pattern wa-input[data-user-valid]::part(base) {
+      border-color: var(--wa-color-success-600);
     }
 
     .input-validation-pattern [data-user-valid]::part(form-control-label),
     .input-validation-pattern [data-user-valid]::part(form-control-help-text) {
-      color: var(--sl-color-success-700);
+      color: var(--wa-color-success-700);
     }
 
-    .input-validation-pattern sl-input:focus-within[data-user-valid]::part(base) {
-      border-color: var(--sl-color-success-600);
-      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-success-300);
+    .input-validation-pattern wa-input:focus-within[data-user-valid]::part(base) {
+      border-color: var(--wa-color-success-600);
+      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-success-300);
     }
 
-    sl-select {
-      --sl-font-size-small: 12px;
-      --sl-font-size-medium: 14px;
-      --sl-font-size-large: 16px;
+    wa-select {
+      --wa-font-size-small: 12px;
+      --wa-font-size-medium: 14px;
+      --wa-font-size-large: 16px;
     }
 
-    sl-option {
-      --sl-font-size-small: 12px;
-      --sl-font-size-medium: 14px;
-      --sl-font-size-large: 16px;
+    wa-option {
+      --wa-font-size-small: 12px;
+      --wa-font-size-medium: 14px;
+      --wa-font-size-large: 16px;
     }
 
     button {
@@ -327,7 +347,7 @@ class SourceTree extends LitElement {
   updatePattern(event) {
     const selectElement = event.target;
     const selectedType = selectElement.value;
-    const inputElement = event.target.closest('sl-tree-item').querySelector('#new-value');
+    const inputElement = event.target.closest('wa-tree-item').querySelector('#new-value');
 
     const patterns = {
       String: '.*',
@@ -354,19 +374,19 @@ class SourceTree extends LitElement {
         const type = isObjectOrArray ? Array.isArray(value) ? 'array' : 'object' : 'other'
 
         return html`
-          <sl-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @sl-lazy-load="${isObjectOrArray ? (e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
-            <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
-            <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
+          <wa-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @wa-lazy-load="${isObjectOrArray ? (e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
+            <wa-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></wa-icon>
+            <wa-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></wa-icon>
             <section class="${isObjectOrArray ? 'object-array-container' : `key-value-container ${isModified ? 'modified' : ''}`}">
               ${isObjectOrArray ? html`
                 ${`${label} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
               ` : html`
-                <span style="color: light-dark(inherit, #9CDCFE)">${label}:</span>
+                <span style="color: light-dark(#0451A5, #9CDCFE)">${label}:</span>
                 <input
                   id="input-${fullPath}"
                   data-id="input-${fullPath}"
                   class="tree"
-                  style="color: light-dark(inherit, #CE9178); font-weight: light-dark(normal, bold)"
+                  style="color: light-dark(#C7621D, #CE9178)"
                   @input=${(e) => {
                     this.currentInputValues = {
                       ...this.currentInputValues,
@@ -378,53 +398,53 @@ class SourceTree extends LitElement {
                   @contextmenu="${this.handleRightClick}"
                 >
               `}
-              <sl-dropdown>
-                <sl-icon-button class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></sl-icon-button>
-                <sl-menu>
-                  <sl-menu-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
-                    Add
-                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></sl-icon>
-                  </sl-menu-item>
-                  <sl-menu-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e) => {this.handleClickEdit(e, key, value, fullPath)}}">
-                    Edit
-                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></sl-icon>
-                  </sl-menu-item>
-                  <sl-menu-item ?disabled=${!isObjectOrArray} @click="${isObjectOrArray ? (e) => {this.handleClickDuplicate(e, fullPath, key, value)} : null}">
-                    Duplicate
-                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
-                  </sl-menu-item>
-                  <sl-menu-item @click="${() => this.handleClickRemove(key, this.editedContent, fullPath)}">
-                    Remove
-                    <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></sl-icon>
-                  </sl-menu-item>
-                </sl-menu>
-              </sl-dropdown>
+              <wa-dropdown>
+                <wa-button>
+                  <wa-icon appearance="filled" class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></wa-icon>  
+                </wa-button>
+                <wa-dropdown-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
+                  Add
+                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></wa-icon>
+                </wa-dropdown-item>
+                <wa-dropdown-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e) => {this.handleClickEdit(e, key, value, fullPath)}}">
+                  Edit
+                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></wa-icon>
+                </wa-dropdown-item>
+                <wa-dropdown-item ?disabled=${!isObjectOrArray} @click="${isObjectOrArray ? (e) => {this.handleClickDuplicate(e, fullPath, key, value)} : null}">
+                  Duplicate
+                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></wa-icon>
+                </wa-dropdown-item>
+                <wa-dropdown-item @click="${() => this.handleClickRemove(key, this.editedContent, fullPath)}">
+                  Remove
+                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></wa-icon>
+                </wa-dropdown-item>
+              </wa-dropdown>
             </section>
             <dialog id="${fullPath}" aria-label="${type}">
               <form class="input-validation-pattern">
                 <section class="dialog-content">
                   <section class="dialog-input">
                     ${type === 'array' ? 
-                      html`<sl-input label="Key" disabled title="Key is not required when adding to an array"></sl-input>
-                      <sl-input disabled id="new-key" value="${value.length}" style="display: none;"></sl-input>` 
+                      html`<wa-input label="Key" disabled title="Key is not required when adding to an array"></wa-input>
+                      <wa-input disabled id="new-key" value="${value.length}" style="display: none;"></wa-input>` 
                       : 
-                      html`<sl-input label="Key" required id="new-key" @sl-invalid="${this.handleInvalid}"></sl-input>`}
+                      html`<wa-input label="Key" required id="new-key" @wa-invalid="${this.handleInvalid}"></wa-input>`}
                     <div id="key-error" class="dialog-error" aria-live="polite" hidden></div>
                   </section>
                   <section class="dialog-p">
                     <p>:</p>
                   </section>
                   <section class="dialog-input">
-                    <sl-select label="Type" hoist id="new-type" placement="bottom" value="String" @sl-change="${this.updatePattern}">
-                      <sl-option value="String">String</sl-option>
-                      <sl-option value="Boolean">Boolean</sl-option>
-                      <sl-option value="Number">Number</sl-option>
-                      <sl-option value="Array">Array</sl-option>
-                      <sl-option value="Object">Object</sl-option>
-                    </sl-select>
+                    <wa-select label="Type" hoist id="new-type" placement="bottom" value="String" @wa-change="${this.updatePattern}">
+                      <wa-option value="String">String</wa-option>
+                      <wa-option value="Boolean">Boolean</wa-option>
+                      <wa-option value="Number">Number</wa-option>
+                      <wa-option value="Array">Array</wa-option>
+                      <wa-option value="Object">Object</wa-option>
+                    </wa-select>
                   </section>
                   <section class="dialog-input">
-                    <sl-input label="Value" required id="new-value" pattern=".*" @sl-invalid="${this.handleInvalid}"></sl-input>
+                    <wa-input label="Value" required id="new-value" pattern=".*" @wa-invalid="${this.handleInvalid}"></wa-input>
                     <div id="value-error" class="dialog-error" aria-live="polite" hidden></div>
                   </section>
                 </section>
@@ -435,24 +455,24 @@ class SourceTree extends LitElement {
                 </section>
               </form>
             </dialog>
-          </sl-tree-item>
+          </wa-tree-item>
         `;
       })
     }
 
     return html`
       <main>
-        <sl-tree class="custom-icons">
-          <sl-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></sl-icon>
-          <sl-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></sl-icon>
+        <wa-tree class="custom-icons">
+          <wa-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></wa-icon>
+          <wa-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></wa-icon>
           ${generateTreeItems(this.editedContent)}
-        </sl-tree>
+        </wa-tree>
       </main>
     `;
   }
 
   handleClickAdd(e) {
-    const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
+    const dialog = e.target.closest('wa-tree-item').querySelector('dialog')
     const insertButton = dialog.querySelector('#dialog-insert')
     const editButton = dialog.querySelector('#dialog-edit')
     insertButton.setAttribute('style', 'display:block')
@@ -463,7 +483,7 @@ class SourceTree extends LitElement {
   }
 
   handleClickEdit(e, key, value, fullPath) {
-    const dialog = e.target.closest('sl-tree-item').querySelector('dialog')
+    const dialog = e.target.closest('wa-tree-item').querySelector('dialog')
     const insertButton = dialog.querySelector('#dialog-insert')
     const editButton = dialog.querySelector('#dialog-edit')
     insertButton.setAttribute('style', 'display:none')
@@ -542,24 +562,24 @@ class SourceTree extends LitElement {
 
   handleRightClick(e) {
     e.preventDefault(); // Prevent the default context menu from showing up
-    const dropdown = e.target.closest('sl-tree-item').querySelector('sl-dropdown');
+    const dropdown = e.target.closest('wa-tree-item').querySelector('wa-dropdown');
     if (dropdown) {
       dropdown.open = true
     }
   }
 
   handleClickCancel(e) {
-    e.target.closest('sl-tree-item').querySelector('#new-key').value = ''
-    e.target.closest('sl-tree-item').querySelector('#new-value').value = ''
-    e.target.closest('sl-tree-item').querySelector('dialog').close()
+    e.target.closest('wa-tree-item').querySelector('#new-key').value = ''
+    e.target.closest('wa-tree-item').querySelector('#new-value').value = ''
+    e.target.closest('wa-tree-item').querySelector('dialog').close()
   }
 
   insertItem(e, fullPath) {
     const paths = fullPath.split('.')
     const keyType = e.target.closest('dialog').getAttribute('aria-label')
-    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
-    let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
-    const newType = e.target.closest('sl-tree-item').querySelector('#new-type').value
+    const newKey = e.target.closest('wa-tree-item').querySelector('#new-key').value
+    let newValue = e.target.closest('wa-tree-item').querySelector('#new-value').value
+    const newType = e.target.closest('wa-tree-item').querySelector('#new-type').value
     let obj = this.editedContent
 
     if (newType === 'Boolean') {
@@ -579,18 +599,18 @@ class SourceTree extends LitElement {
     const lastIndex = keyType === "object" || keyType === "array" ? paths.length - 1 : paths.length - 2;
     if (paths.length === 1) {
       keyType === "object" || keyType === "array" ? obj[paths[0]][newKey] = newValue : obj[newKey] = newValue
-      e.target.closest('sl-tree-item').querySelector('dialog').close()
+      e.target.closest('wa-tree-item').querySelector('dialog').close()
       if (!isNaN(newKey) && newKey.trim() !== '') {
-        e.target.closest('sl-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
+        e.target.closest('wa-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
       }
     } else {
       for (let i = 0; i <= lastIndex; i++) {
         if (i === lastIndex) {
           // If we're at the last key in the path, add the new key-value pair
           obj[paths[i]][newKey] = newValue
-          e.target.closest('sl-tree-item').querySelector('dialog').close()
+          e.target.closest('wa-tree-item').querySelector('dialog').close()
           if (!isNaN(newKey) && newKey.trim() !== '') {
-            e.target.closest('sl-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
+            e.target.closest('wa-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
           }
         } else {
           // Otherwise, move to the next level of the object
@@ -602,7 +622,7 @@ class SourceTree extends LitElement {
 
   handleClickInsert(e, fullPath, edit = false) {
     e.preventDefault()
-    const newKey = e.target.closest('sl-tree-item').querySelector('#new-key').value
+    const newKey = e.target.closest('wa-tree-item').querySelector('#new-key').value
 
     this.insertItem(e, fullPath)
 
@@ -627,14 +647,14 @@ class SourceTree extends LitElement {
     }
 
     if (e.target.id === 'new-key') {
-      const keyError = e.target.closest('sl-tree-item').querySelector('#key-error');
+      const keyError = e.target.closest('wa-tree-item').querySelector('#key-error');
       keyError.textContent = `Error: This input field is required.`;
       keyError.hidden = false;
       return
     } else if (e.target.id === 'new-value') {
-      const typeInputElement = e.target.closest('sl-tree-item').querySelector('#new-type')
-      const valueInputElement = e.target.closest('sl-tree-item').querySelector('#new-value')
-      const valueError = e.target.closest('sl-tree-item').querySelector('#value-error');
+      const typeInputElement = e.target.closest('wa-tree-item').querySelector('#new-type')
+      const valueInputElement = e.target.closest('wa-tree-item').querySelector('#new-value')
+      const valueError = e.target.closest('wa-tree-item').querySelector('#value-error');
       if (valueInputElement.validity.patternMismatch) {
         valueError.textContent = `Error: Make sure to follow the appropriate format - ${errorMessage[typeInputElement.value]}`;
         valueError.hidden = false;
@@ -649,17 +669,17 @@ class SourceTree extends LitElement {
 
   async handleInsertButtonClick(e, fullPath) {
     // Hide the error messages
-    const keyError = e.target.closest('sl-tree-item').querySelector('#key-error')
-    const valueError = e.target.closest('sl-tree-item').querySelector('#value-error')
+    const keyError = e.target.closest('wa-tree-item').querySelector('#key-error')
+    const valueError = e.target.closest('wa-tree-item').querySelector('#value-error')
     keyError.hidden = true
     valueError.hidden = true
     
-    const form = e.target.closest('sl-tree-item').querySelector('.input-validation-pattern');
+    const form = e.target.closest('wa-tree-item').querySelector('.input-validation-pattern');
     
     // Wait for controls to be defined before attaching form listeners
     await Promise.all([
-      customElements.whenDefined('sl-button'),
-      customElements.whenDefined('sl-input')
+      customElements.whenDefined('wa-button'),
+      customElements.whenDefined('wa-input')
     ]);
 
     if (form.checkValidity()) {
@@ -670,11 +690,11 @@ class SourceTree extends LitElement {
 
   handleClickDialogEdit(e, key, fullPath) {
     e.preventDefault()
-    const treeItem = e.target.closest('sl-tree-item')
+    const treeItem = e.target.closest('wa-tree-item')
     const newKey = treeItem.querySelector('#new-key').value
     const section = treeItem.querySelector('section.key-value-container')
     const inputField = section.querySelector(`input`)
-    let newValue = e.target.closest('sl-tree-item').querySelector('#new-value').value
+    let newValue = e.target.closest('wa-tree-item').querySelector('#new-value').value
     const dialog = treeItem.querySelector(`dialog`)
     if (dialog.id === fullPath)  {
       newValue = dialog.querySelector('#new-value').value
@@ -709,13 +729,13 @@ class SourceTree extends LitElement {
   }
 
   handleLazyLoad(e, value, fullPath, generate) {
-    const treeItem = e.target.closest('sl-tree-item[lazy]')
+    const treeItem = e.target.closest('wa-tree-item[lazy]')
     
     // Prevent re-rendering the same tree item
     if (treeItem.hasAttribute('data-processed')) return
 
     // Generate the tree items for the object
-    const section = document.createElement('sl-tree-item')
+    const section = document.createElement('wa-tree-item')
     const child = generate(value, fullPath)
     const container = document.createElement('section')
     render(child, container)

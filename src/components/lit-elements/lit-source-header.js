@@ -1,10 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import './lit-source.js';
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
 
 class SourceContents extends LitElement {
@@ -167,18 +166,18 @@ class SourceContents extends LitElement {
             </select>
             <section class="buttons-container">
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
-                    <button title="Copy" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleCopyClick}"><sl-icon src="${IMG_DIR}/shoelace/copy.svg"></sl-icon></button>
-                    <button title="Download" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleDownloadClick}"><sl-icon src="${IMG_DIR}/shoelace/download.svg"></sl-icon></button>
+                    <button title="Copy" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleCopyClick}"><wa-icon src="${IMG_DIR}/shoelace/copy.svg"></wa-icon></button>
+                    <button title="Download" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleDownloadClick}"><wa-icon src="${IMG_DIR}/shoelace/download.svg"></wa-icon></button>
                 </section>
                 <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
                     <section>
                         <button title="Cancel" style="color: #ED0000" @click="${this.handleCancelClick}">
-                            <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg"></sl-icon>
+                            <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg"></wa-icon>
                         </button>
                     </section>
                     <section>
                         <button title="Save" style="color: #007E0D" @click="${this.handleSaveClick}">
-                            <sl-icon src="${IMG_DIR}/shoelace/floppy.svg"></sl-icon>
+                            <wa-icon src="${IMG_DIR}/shoelace/floppy.svg"></wa-icon>
                         </button>
                     </section>
                 </section>

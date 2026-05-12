@@ -24,7 +24,6 @@ type SchemasDefaultViewProps = {
 const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
   databases
 }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const [selectedNsf, setSelectedNsf] = useState('');
   const [selectedDB, setSelectedDB] = useState('');
@@ -40,8 +39,6 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
   const mappedDatabases = useMemo(() => {
     return mapSchemas(databases, 'schemas');
   }, [databases]);
-
-  const open = Boolean(anchorEl);
 
   const openSchema = (database: any) => {
     navigate(

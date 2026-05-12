@@ -1,0 +1,45 @@
+/*
+ * Web Awesome brand color overrides.
+ *
+ * Web Awesome's brand scale uses lightness-based steps (95 = lightest,
+ * 50 = base, 05 = darkest), which is the inverse of Shoelace's old
+ * 50..950 scale. The values below map the previous Shoelace ramp onto
+ * the Web Awesome scale so semantic tokens such as
+ * --wa-color-brand-fill-loud (= --wa-color-brand-50) and
+ * --wa-color-brand-border-loud (= --wa-color-brand-60) pick up our
+ * brand purple instead of Web Awesome's default blue.
+ */
+:root {
+
+     /* Lightness ramp built around the new base --wa-color-brand-50 (#7c5fd9),
+         keeping hue/saturation constant for harmony. */
+     --wa-color-brand-95: #f1edfa; /* lightest tint */
+     --wa-color-brand-90: #e0d7f5;
+     --wa-color-brand-80: #c3b3ec;
+     --wa-color-brand-70: #a48ee3;
+     --wa-color-brand-60: #8a6fdc;
+     --wa-color-brand-50: #7c5fd9; /* base */
+     --wa-color-brand-40: #684db3;
+     --wa-color-brand-30: #523d8c;
+     --wa-color-brand-20: #3c2d66;
+     --wa-color-brand-10: #261d40;
+     --wa-color-brand-05: #140e20; /* darkest shade */
+
+     /* Base brand aliases used by some components/utilities. */
+     --wa-color-brand: #7c5fd9;
+     --wa-color-brand-on: #ffffff;
+
+    /*
+     * Scale Web Awesome's typographic ramp down to ~75% of the default.
+     * All --wa-font-size-* tokens are derived from this scale, so every
+     * Web Awesome component (buttons, inputs, alerts, dropdowns, etc.)
+     * shrinks proportionally to match the prior Shoelace sizing.
+     */
+    --wa-font-size-scale: 0.85;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --wa-color-brand-50: #7c5fd9;
+    }
+}

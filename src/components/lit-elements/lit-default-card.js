@@ -1,37 +1,54 @@
 import { LitElement, html, css } from 'lit';
-import '@shoelace-style/shoelace/dist/components/card/card.js';
+import '@awesome.me/webawesome/dist/components/card/card.js';
 
 class DefaultCard extends LitElement {
     static styles = css`
+        /* Inherit color-scheme from the host's ancestor (documentElement
+           toggles it via inline style in HomeElement / LoginPage) so
+           light-dark() resolves correctly inside this shadow root. */
         :host {
-            color: inherit;
+            color-scheme: inherit;
+            color: light-dark(#000, #ffffff);
         }
-        sl-card {
-            --sl-panel-background-color: light-dark(#fff, #252535);
-            --sl-panel-border-color: light-dark(#e0e0e0, #3a3a4a);
-            --sl-color-neutral-0: light-dark(#fff, #252535);
-            --sl-color-neutral-50: light-dark(#fff, #252535);
-            color: light-dark(inherit, #e0e0e0);
+        wa-card {
+            --wa-panel-background-color: light-dark(#fff, #252535);
+            --wa-panel-border-color: light-dark(#e0e0e0, #3a3a4a);
+            --wa-color-neutral-0: light-dark(#fff, #252535);
+            --wa-color-neutral-50: light-dark(#fff, #252535);
+            color: light-dark(#000, #ffffff);
         }
-        sl-card::part(base) {
+        wa-card::part(base) {
             background: light-dark(#fff, #252535);
             border-color: light-dark(#e0e0e0, #3a3a4a);
-            color: light-dark(inherit, #e0e0e0);
+            color: light-dark(#000, #ffffff);
         }
-        sl-card::part(body) {
+        wa-card::part(body) {
             background: light-dark(#fff, #252535);
-            color: light-dark(inherit, #e0e0e0);
+            color: light-dark(#000, #ffffff);
+        }
+        /* Fallback for browsers/cases where color-scheme inheritance
+           through the shadow boundary doesn't propagate cleanly:
+           explicitly force the dark-mode background when the document
+           body is in dark mode (matches the search bar background
+           used in <SchemasLists>, getTheme('dark').secondary = #252535). */
+        :host-context(body[data-theme="dark"]) wa-card::part(base) {
+            background: #252535 !important;
+            border-color: #3a3a4a !important;
+            color: #ffffff !important;
+        }
+        :host-context(body[data-theme="dark"]) wa-card::part(body) {
+            background: #252535 !important;
+            color: #ffffff !important;
         }
         text,
         strong {
-            color: light-dark(inherit, #e0e0e0);
+            color: light-dark(#000, #ffffff);
         }
-        sl-card {
+        wa-card {
             --border-radius: 10px;
-            padding: 10px;
             margin: 0;
             border: none;
-            border-radius: 5px;
+            border-radius: 15px;
             width: 315px;
     
             &:hover {
@@ -160,7 +177,7 @@ class DefaultCard extends LitElement {
 
     render() {
       return html`
-        <sl-card>
+        <wa-card>
             <section class="delete">
                 <div class="status" style="background-color: ${this.status ? '#4CAF50' : '#F44336'}"></div>
             </section>
@@ -196,7 +213,7 @@ class DefaultCard extends LitElement {
                     ''
                 }
             </section>
-        </sl-card>
+        </wa-card>
       `;
     }
   }
