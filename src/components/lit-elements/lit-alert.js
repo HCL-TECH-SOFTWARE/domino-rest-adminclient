@@ -95,13 +95,19 @@ class Alert extends LitElement {
       display: block;
       padding-right: 2rem;
     }
+    
+    @media (prefers-color-scheme: dark) {
+      .close-btn {
+        color: #222;
+      }
+    }
   `;
  
   constructor() {
     super();
     this.message  = '';
     this.variant  = 'neutral';
-    this.heading = 'Error:';
+    this.heading = 'Error logging in!';
     this._visible = false;
     this._timer   = null;
   }
@@ -160,7 +166,7 @@ class Alert extends LitElement {
     return html`
       <div class="toast-wrapper">
         <wa-callout variant=${this.variant}>
-            <em>${this.heading}</em>
+            <strong>${this.heading}</strong>
           <span class="message">${this.message}</span>
         </wa-callout>
         <button
