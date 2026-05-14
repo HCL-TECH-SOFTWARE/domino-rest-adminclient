@@ -11,11 +11,11 @@ export default defineConfig({
     headers: {
       'content-security-policy': `
         default-src 'self' data: gap: 'unsafe-inline' *; 
-        script-src 'self' 'unsafe-inline' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; 
+        script-src 'self' 'unsafe-inline' data: gap: https://cdn.jsdelivr.net/npm/@awesome.me//; 
         worker-src 'self' blob:; 
         connect-src 'self' data: *; 
-        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@shoelace-style/; 
-        font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@shoelace-style/; 
+        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/npm/@awesome.me//; 
+        font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@awesome.me//; 
         img-src 'self' data: gap:;
         report-uri /admin/ui
       `.replace(/\s+/g, ' ').trim(),
