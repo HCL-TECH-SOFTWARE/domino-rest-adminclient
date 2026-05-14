@@ -98,8 +98,12 @@ class Alert extends LitElement {
     
     @media (prefers-color-scheme: dark) {
       .close-btn {
-        color: #222;
+        color: #888;
       }
+    }
+
+    :host-context(body[data-theme="dark"]) .close-btn {
+      color: #888 !important;
     }
   `;
  

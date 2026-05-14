@@ -2,7 +2,6 @@ import { LitElement, css, html } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
-import { IMG_DIR } from '../../config.dev.ts';
 
 class SchemaStatus extends LitElement {
 

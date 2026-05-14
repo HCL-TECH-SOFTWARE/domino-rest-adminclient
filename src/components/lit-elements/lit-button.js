@@ -1,9 +1,6 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, css } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
-
-
-import { css } from 'lit';
 
 class Button extends LitElement {
   static styles = [
