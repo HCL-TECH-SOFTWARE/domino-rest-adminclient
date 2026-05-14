@@ -210,7 +210,17 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
             onClick={() => {
               window.location.href = window.location.origin;
             }}>
-            <img className="keep-icon" src={`${IMG_DIR}/KeepNewIcon.png`} alt="HCL Domino REST API Icon" />
+            <img
+              className="keep-icon"
+              src={`${IMG_DIR}/KeepNewIcon.png`}
+              alt="HCL Domino REST API Icon"
+              style={{
+                width: 37,
+                height: 37,
+                objectFit: 'contain',
+                display: 'block',
+              }}
+            />
           </Logo>
           {open && (
             <KeepAdmin>

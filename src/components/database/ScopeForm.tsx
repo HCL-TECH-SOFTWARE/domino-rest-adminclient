@@ -379,6 +379,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             keepMounted
             open={Boolean(aclMenuAnchorEl)}
             onClose={handleAclMenuClose}
+            disablePortal={true}
           >
             {accessLevels.map((acl, index) => (
               <MenuItem
@@ -408,7 +409,11 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
                   src={`data:image/svg+xml;base64, ${appIcons[icon]}`}
                   alt="db-icon"
                   style={{
-                    color: getTheme(themeMode).hoverColor,
+                    width: 35,
+                    height: 35,
+                    objectFit: 'contain',
+                    display: 'block',
+                    marginRight: 10,
                   }}
                 />
               ) : (
@@ -424,6 +429,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             keepMounted
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            disablePortal={true}
           >
             {Object.keys(appIcons).map((iconName, index) => (
               <MenuItem
@@ -437,9 +443,10 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
                     src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                     alt="db-icon"
                     style={{
-                      color: getTheme(themeMode).hoverColor,
-                      height: 35,
                       width: 35,
+                      height: 35,
+                      objectFit: 'contain',
+                      display: 'block',
                       marginRight: 10,
                     }}
                   />
