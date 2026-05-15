@@ -11,6 +11,18 @@ const mockFetch = (data: any) => jest.fn().mockImplementation(() =>
   }),
 );
 
+beforeAll(() => {
+  HTMLElement.prototype.attachInternals = jest.fn(() => ({
+    setFormValue: jest.fn(),
+    setValidity: jest.fn(),
+    checkValidity: jest.fn(),
+    reportValidity: jest.fn(),
+    validationMessage: '',
+    validity: {},
+    willValidate: true
+  }) as any);
+});
+
 test("renders home page", async () => {
   window.fetch = mockFetch({ ok: true, json: () => ({}) });
   const store = configureStore({ reducer: rootReducer });

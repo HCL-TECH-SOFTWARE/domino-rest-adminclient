@@ -14,8 +14,8 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
-// Import setBasePath for Shoelace assets
-import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path';
+// Import setBasePath for Web Awesome assets
+import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import { IMG_DIR } from '../../config.dev';
 
 function parseStringToArray(input) {
@@ -331,7 +331,7 @@ class SourceTree extends LitElement {
 
   constructor() {
     super();
-    setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/')
+    setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.6.0/cdn/')
     this.content = {}
     this.editedContent = JSON.parse(JSON.stringify(this.content))
     this.currentInputValues = {}
