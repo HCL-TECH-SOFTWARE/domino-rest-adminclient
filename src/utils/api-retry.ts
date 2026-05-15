@@ -45,7 +45,8 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
             }
 
             const errorMsg = `Error ${error.status}: ${error.message || 'An error occurred during the API request.'}`
-            notify(errorMsg, 'danger', 'exclamation-triangle')
+            console.log(errorMsg)
+            notify(errorMsg, 'danger')
             console.error(errorMsg)
 
             // For other errors, return the error details
@@ -61,7 +62,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
         };
     } catch (err: any) {
         // Handle unexpected errors
-        notify(err.message || "An unexpected error occured", 'danger', 'exclamation-triangle')
+        notify(err.message || "An unexpected error occured", 'danger')
         return {
             success: false,
             response: null,
@@ -79,18 +80,93 @@ function escapeHtml(html: string) {
     return div.innerHTML;
   }
 
-// https://shoelace.style/components/alert#toast-notifications
-// Custom function to emit toast notifications
-export function notify(message: string, variant = 'primary', icon = 'info-circle') {
-    const alert = Object.assign(document.createElement('sl-alert'), {
-      variant,
-      closable: true,
-      innerHTML: `
-        <sl-icon name="${icon}" slot="icon"></sl-icon>
-        ${escapeHtml(message)}
-      `
-    });
+// // https://shoelace.style/components/alert#toast-notifications
+// // Custom function to emit toast notifications
+// export function notify(message: string, variant = 'brand') {
+//     // Find the lit-alert element
+//     const alertEl = document.querySelector('lit-alert');
+//     if (!alertEl) return;
 
-    document.body.append(alert);
-    return alert.toast();
-  }
+//     // Set properties
+//     (alertEl as any).text = message;
+//     (alertEl as any).variant = variant;
+
+//     // Show the callout with fade-in, ensuring smooth transition
+//     const callout = alertEl.shadowRoot?.querySelector('wa-callout');
+//     if (callout) {
+//         // Clear any previous fade-out timer
+//         if ((callout as any)._fadeTimeout) {
+//             clearTimeout((callout as any)._fadeTimeout);
+//         }
+//         callout.classList.remove('hide');
+//         // Force reflow to trigger transition
+//         void callout.offsetWidth;
+//         callout.style.display = 'block';
+//         // Auto-hide after 5s with fade-out
+//         (callout as any)._fadeTimeout = setTimeout(() => {
+//             callout.classList.add('hide');
+//             setTimeout(() => {
+//                 callout.style.display = 'none';
+//             }, 300);
+//         }, 5000);
+//     }
+// }
+
+export type NotifyVariant = 'brand' | 'success' | 'warning' | 'danger' | 'neutral';
+ 
+interface LitAlertElement extends HTMLElement {
+  show(message: string, variant: NotifyVariant, duration: number): void;
+}
+ 
+// ─── Singleton host ────────────────────────────────────────────────────────────
+ 
+let _alertEl: LitAlertElement | null = null;
+ 
+function _getOrCreateAlert(): LitAlertElement {
+  if (_alertEl) return _alertEl;
+ 
+  // Fixed viewport anchor — lives outside the React root
+  const host = document.createElement('div');
+  Object.assign(host.style, {
+    position:       'fixed',
+    top:            '1.25rem',
+    right:          '1.25rem',
+    zIndex:         '9999',
+    pointerEvents:  'none',   // let clicks fall through when no toast is visible
+  });
+ 
+  _alertEl = document.createElement('lit-alert') as LitAlertElement;
+ 
+  // Restore pointer-events: none once the alert has fully hidden
+  _alertEl.addEventListener('alert-closed', () => {
+    host.style.pointerEvents = 'none';
+  });
+ 
+  host.appendChild(_alertEl);
+  document.body.appendChild(host);
+ 
+  return _alertEl;
+}
+ 
+/**
+ * notify(message, variant?, duration?)
+ *
+ * @param message  - Text to display.
+ * @param variant  - 'brand' | 'success' | 'warning' | 'danger' | 'neutral'  (default: 'neutral')
+ * @param duration - Auto-dismiss after this many ms (default: 5000)
+ *
+ * @example
+ *   import { notify } from './notify.js';
+ *   notify('Saved!', 'success');
+ *   notify('Something went wrong.', 'danger', 8000);
+ */
+export function notify(
+  message: string,
+  variant: NotifyVariant = 'neutral',
+  duration: number = 5000,
+): void {
+  const el = _getOrCreateAlert();
+  // Also re-enable pointer events on the host immediately
+  el.parentElement!.style.pointerEvents = 'auto';
+  el.show(message, variant, duration);
+}

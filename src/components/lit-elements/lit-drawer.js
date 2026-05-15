@@ -1,24 +1,30 @@
 import { LitElement, html, css } from 'lit';
-import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
+import '@awesome.me/webawesome/dist/components/drawer/drawer.js';
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
 
 class Drawer extends LitElement {
     static styles = css`
-        sl-drawer::part(panel) {
+        wa-drawer::part(panel) {
             background: light-dark(#fff, #1e1e2e);
             color: light-dark(inherit, #e0e0e0);
         }
-        sl-drawer::part(header) {
+        wa-drawer::part(header) {
+            background: light-dark(#fff, #1e1e2e);
             color: light-dark(inherit, #e0e0e0);
         }
-        sl-drawer::part(title) {
+        wa-drawer::part(title) {
+            background: light-dark(#fff, #1e1e2e);
             color: light-dark(inherit, #e0e0e0);
         }
-        sl-drawer::part(body) {
+        wa-drawer::part(header-actions) {
+            background: light-dark(#fff, #1e1e2e);
+            color: light-dark(inherit, #e0e0e0);
+        }
+        wa-drawer::part(body) {
             background: light-dark(#fff, #1e1e2e);
             color: light-dark(inherit, #e0e0e0);
         }
@@ -41,9 +47,9 @@ class Drawer extends LitElement {
   
     render() {
       return html`
-        <sl-drawer label="${this.label}" ?open="${this.open}" style="--size: 40vw;" @sl-after-hide="${this.closeFn}">
+        <wa-drawer label="${this.label}" ?open="${this.open}" style="--size: 40vw;" @wa-after-hide="${this.closeFn}">
             <slot></slot>
-        </sl-drawer>
+        </wa-drawer>
       `;
     }
 }

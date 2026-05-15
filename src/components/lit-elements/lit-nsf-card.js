@@ -1,26 +1,31 @@
 import { LitElement, css, html } from 'lit';
 import './lit-schema-status.js';
-import '@shoelace-style/shoelace/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/input/input.js';
 import { IMG_DIR } from '../../config.dev.ts';
 import appIcons from '../../styles/app-icons.ts';
 
 class NsfCard extends LitElement {
 
   static styles = css`
+    /* Opt the shadow DOM into both color schemes so light-dark()
+       resolves correctly in here regardless of host inheritance.
+       Note: inherit is NOT a valid argument inside light-dark(),
+       so we use explicit black/white instead. */
     :host {
-      color: inherit;
+      color-scheme: inherit;
+      color: light-dark(#000, #ffffff);
     }
     text,
     text.nsf-filename {
-      color: light-dark(inherit, #e0e0e0);
+      color: light-dark(#000, #ffffff);
     }
-    sl-input::part(base) {
+    wa-input::part(base) {
       background-color: light-dark(#fff, #1e1e2e);
-      color: light-dark(inherit, #e0e0e0);
+      color: light-dark(#000, #ffffff);
       border-color: light-dark(#ccc, #3a3a4a);
     }
-    sl-input::part(input) {
-      color: light-dark(inherit, #e0e0e0);
+    wa-input::part(input) {
+      color: light-dark(#000, #ffffff);
     }
     section {
       border: 1px solid light-dark(#ccc, #3a3a4a);
@@ -33,14 +38,14 @@ class NsfCard extends LitElement {
       flex-direction: column;
       gap: 12px;
       background: light-dark(#fff, #252535);
-      color: light-dark(inherit, #e0e0e0);
+      color: light-dark(#000, #ffffff);
     }
 
     div.list-container {
       border: 1px solid light-dark(#eee, #3a3a4a);
       border-radius: 5px;
       background-color: light-dark(#FAFDFF, #1e1e2e);
-      color: light-dark(inherit, #e0e0e0);
+      color: light-dark(#000, #ffffff);
       width: 100%;
       height: 100%;
       overflow-y: auto;
@@ -101,24 +106,24 @@ class NsfCard extends LitElement {
         <div class="card-title">
             <div style="font-size: 32px;">
                 ${this.iconName && appIcons[this.iconName] ? html`
-                    <sl-icon 
+                    <wa-icon 
                         src=${`data:image/svg+xml;base64,${appIcons[this.iconName]}`} 
                         label=${this.iconName}
-                    ></sl-icon>
+                    ></wa-icon>
                 ` : html`
-                    <sl-icon src=${`data:image/svg+xml;base64,${appIcons['beach']}`} ></sl-icon>
+                    <wa-icon src=${`data:image/svg+xml;base64,${appIcons['beach']}`} ></wa-icon>
                 `}
             </div>
             <text class="nsf-filename">${this.database.fileName}</text>
         </div>
-        <sl-input
+        <wa-input
             placeholder="Search Schema"
             style="width: 100%;"
             .value=${this.searchItem}
-            @sl-input=${this._handleSearchInput}
+            @wa-input=${this._handleSearchInput}
         >
-            <sl-icon slot="prefix" src="${IMG_DIR}/shoelace/search.svg"></sl-icon>
-        </sl-input>
+            <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/search.svg"></wa-icon>
+        </wa-input>
         <div class="list-container">
             ${this.items.map(item => html`
                 <lit-schema-status

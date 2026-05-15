@@ -1,8 +1,19 @@
-import { LitElement, html } from 'lit';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import { LitElement, html, css } from 'lit';
+import '@awesome.me/webawesome/dist/components/button/button.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 
 class Button extends LitElement {
+  static styles = [
+    css`
+      :host([data-theme="dark"]) wa-button[appearance="outlined"]::part(base) {
+        --wa-color-brand-50: #f4e9ff;
+        --wa-color-brand-border-loud: #f4e9ff;
+        --wa-color-brand-fill-loud: #f4e9ff;
+        border-color: #f4e9ff !important;
+        color: #f4e9ff !important;
+      }
+    `
+  ];
 
   static properties = {
     src: { type: String },
@@ -15,25 +26,25 @@ class Button extends LitElement {
   constructor() {
     super()
     this.src = ''
-    this.variant = 'primary'
+    this.variant = 'brand'
     this.disabled = false
-    this.outline = false
+    this.appearance = 'accent'
     this.pill = false
   }
 
   render() {
     return html`
-      <sl-button
+      <wa-button
         variant='${this.variant}'
         ${this.src ? `src=${this.src}` : ''}
         ?disabled="${this.disabled}"
         style="${this.getAttribute('style') || ''}"
-        ?outline="${this.outline}"
+        appearance="${this.appearance}"
         ?pill="${this.pill}"
     >
-        ${this.src ? html`<sl-icon src='${this.src}'></sl-icon>` : ''}
+        ${this.src ? html`<wa-icon src='${this.src}'></wa-icon>` : ''}
         <slot></slot>
-      </sl-button>
+      </wa-button>
     `;
   }
 }

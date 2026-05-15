@@ -11,8 +11,6 @@ import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { Database } from '../../../../../store/databases/types';
-import { setDbIndex } from '../../../../../store/databases/action';
-import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { SchemasMainContainer } from './SchemaStyles';
 import { LitDefaultCard } from '../../../../lit-elements/LitElements';
 import appIcons from '../../../../../styles/app-icons';
@@ -24,7 +22,7 @@ type SchemasCardsViewProps = {
 };
 
 const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
-  const { contextViewIndex, permissions, scopes } = useSelector(
+  const { permissions, scopes } = useSelector(
     (state: AppState) => state.databases
   );
 
@@ -50,7 +48,6 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
   }, [scopes]);
 
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
 
   const openSchema = (database: any) => {
     navigate(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);

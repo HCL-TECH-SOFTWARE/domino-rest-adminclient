@@ -243,6 +243,39 @@ const FormsContainer = () => {
   
     // Configure the loader to use the correct path for the copied version
     loader.config({ paths: { vs: `${MONACO_EDITOR_DIR}` } });
+
+    // Define our custom JSON themes as soon as the Monaco instance is
+    // available — BEFORE any <Editor /> is mounted. Defining themes
+    // after the editor has already created its model causes the main
+    // editor view to render tokens with the previously-active theme
+    // (the minimap repaints every frame so it picks up the new colors,
+    // which is why the minimap looked themed but the text did not).
+    loader.init().then((monaco) => {
+      monaco.editor.defineTheme('json-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+          { token: 'string.key.json', foreground: '0451A5', fontStyle: 'bold' },
+          { token: 'string.value.json', foreground: 'C7621D' },
+          { token: 'number', foreground: '098658' },
+          { token: 'keyword.json', foreground: '0000FF' },
+        ],
+        colors: {},
+      });
+      monaco.editor.defineTheme('json-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'string.key.json', foreground: '9CDCFE', fontStyle: 'bold' },
+          { token: 'string.value.json', foreground: 'CE9178' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'keyword.json', foreground: '569CD6' },
+        ],
+        colors: {
+          'editor.background': '#1e1e2e',
+        },
+      });
+    }).catch(() => { /* loader failed; editor will fall back to default theme */ });
   
     // Cleanup function to restore the original createElement method
     return () => {
@@ -397,6 +430,14 @@ const FormsContainer = () => {
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
+
+    // Ensure the model's language is JSON so the tokenizer kicks in.
+    const model = editor.getModel();
+    if (model) {
+      monaco.editor.setModelLanguage(model, 'json');
+    }
+
+    monaco.editor.setTheme(themeMode === 'dark' ? 'json-dark' : 'json-light');
   }
 
   const showValue = () => {
@@ -660,10 +701,11 @@ const FormsContainer = () => {
                 />
                 {selectedOption === 'text' && <Editor
                   height='70vh'
+                  language="json"
                   defaultLanguage="json"
                   defaultValue={sourceTabContent}
                   onMount={handleEditorDidMount}
-                  theme={themeMode === 'dark' ? 'vs-dark' : 'vs'}
+                  theme={themeMode === 'dark' ? 'json-dark' : 'json-light'}
                 />}
                 <Dialog open={saveChangesDialog}>
                   <DialogContainer sx={{ overflowY: 'auto' }}>

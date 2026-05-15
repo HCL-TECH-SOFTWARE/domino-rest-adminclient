@@ -1,18 +1,33 @@
 import { LitElement, html, css } from 'lit';
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/input/input.js';
+import '@awesome.me/webawesome/dist/components/input/input.js';
 
 class InputPassword extends LitElement {
   static styles = css`
+    :host {
+      color-scheme: inherit;
+    }
     text {
       font-size: 12px;
     }
 
-    sl-input[data-user-invalid]::part(base) {
-      border-color: var(--sl-color-danger-600);
-      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-300);
+    wa-input[data-user-invalid]::part(base) {
+      border-color: var(--wa-color-danger-600);
+      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
+    }
+
+    /* Dark mode: white label and brand-tinted input text so a
+       pre-filled value isn't pure white on the dark background. */
+    :host-context(body[data-theme="dark"]) wa-input::part(form-control-label),
+    :host-context(body[data-theme="dark"]) wa-input::part(label) {
+      color: #ffffff !important;
+    }
+    :host-context(body[data-theme="dark"]) wa-input::part(input) {
+      color: var(--wa-color-brand-50) !important;
+      -webkit-text-fill-color: var(--wa-color-brand-50) !important;
+      caret-color: var(--wa-color-brand-50);
     }
   `;
 
@@ -26,24 +41,24 @@ class InputPassword extends LitElement {
   constructor() {
     super()
     this.label = ''
-    this.helpText = ''
+    this.hint = ''
     this.placeholder = ''
     this.required = false
   }
 
   render() {
     return html`
-        <text>${this.label}</text>
-        <sl-input
+        <wa-input
             style="${this.getAttribute('style') || ''}"
             type="password"
-            help-text="${this.helpText}"
+            label="${this.label}"
+            hint="${this.hint}"
             placeholder="${this.placeholder}"
             password-toggle
             ?required="${this.required}"
         >
             <slot></slot>
-        </sl-input>
+        </wa-input>
     `;
   }
 }

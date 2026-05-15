@@ -138,12 +138,22 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
     formik.values.schemaName = schemaNameValue;
     setSchemaName(schemaNameValue);
   };
-  toggleDrawer()
 
+  /**
+   * Fires after the shoelace drawer finishes its slide-out animation
+   * (wa-after-hide). It only runs cleanup; the redux `visible` flag is
+   * the source of truth that drives the drawer's `open` prop and is
+   * flipped by whatever initiated the close (the form's Close button
+   * or the drawer's built-in X). If the drawer was closed via its
+   * built-in X (which doesn't touch redux), we sync redux here so
+   * `visible` stays in lock-step with the drawer's actual state.
+   */
   const handleCLoseDrawer = () => {
     formik.resetForm();
     dispatch(clearDBError());
-    dispatch(toggleDrawer());
+    if (visible) {
+      dispatch(toggleDrawer());
+    }
   }
 
   return (

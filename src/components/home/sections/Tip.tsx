@@ -18,10 +18,14 @@ import { AppState } from '../../../store';
 
 const CardContainer = styled(Card)<{ theme: string; bg: string }>`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
   background: ${props => getTheme(props.theme).secondary} !important;
   margin-left: 8px;
   margin-right: 8px;
   border-radius: 8px !important;
+  overflow: hidden;
 
   @media only screen and (max-width: 768px) {
     margin-right: 0;
@@ -29,6 +33,24 @@ const CardContainer = styled(Card)<{ theme: string; bg: string }>`
 
   .link {
     text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Ensure CardActionArea grows with content and doesn't clip the title. */
+  .MuiCardActionArea-root {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: 100%;
+  }
+
+  /* CardContent must be visible in full so the title isn't cut off. */
+  .MuiCardContent-root {
+    flex: 1;
+    overflow: visible;
   }
 `;
 
@@ -55,9 +77,20 @@ const Tip: React.FC<TipProps> = ({
       <Link className="link" to={uri}>
         <CardActionArea>
           <CardMedia
-            style={{ height: 220 }}
+            component="img"
             image={backgroungImage}
             title={description}
+            sx={{
+              /* Image scales to fit the card width with no
+                 horizontal letterboxing; height is derived from
+                 the natural aspect ratio so the entire picture
+                 is shown end-to-end. */
+              width: '100%',
+              height: 'auto',
+              display: 'block',
+              objectFit: 'cover',
+              backgroundColor: 'transparent',
+            }}
           />
           <CardContent>
             <Typography

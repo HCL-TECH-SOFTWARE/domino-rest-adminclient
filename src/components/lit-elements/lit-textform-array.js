@@ -6,11 +6,10 @@ import './lit-dialog-content.js';
 import './lit-dialog-header.js';
 import './lit-dialog-actions.js';
 // Import Shoelace theme (light/dark)
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
-import '@shoelace-style/shoelace/dist/components/details/details.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/details/details.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
 
 class TextFormArray extends LitElement {
@@ -20,7 +19,7 @@ class TextFormArray extends LitElement {
       margin-bottom: 10px;
     }
 
-    sl-details {
+    wa-details {
       margin-bottom: 10px;
     }
 
@@ -76,21 +75,21 @@ class TextFormArray extends LitElement {
       display: block;
     }
 
-    sl-details {
+    wa-details {
       color: light-dark(inherit, #e0e0e0);
     }
 
-    sl-details::part(base) {
+    wa-details::part(base) {
       background: light-dark(#fff, #252535);
       color: light-dark(inherit, #e0e0e0);
       border-color: light-dark(#e0e0e0, #3a3a4a);
     }
 
-    sl-details::part(header) {
+    wa-details::part(header) {
       color: light-dark(inherit, #e0e0e0);
     }
 
-    sl-details::part(content) {
+    wa-details::part(content) {
       background: light-dark(#fff, #252535);
       color: light-dark(inherit, #e0e0e0);
     }
@@ -190,21 +189,21 @@ class TextFormArray extends LitElement {
       <div class="container">
         <section class="buttons-container top">
           <button class="add" @click=${this.handleClickAdd}>
-              <sl-icon src="${IMG_DIR}/shoelace/plus-circle.svg" label="Add"></sl-icon>
+              <wa-icon src="${IMG_DIR}/shoelace/plus-circle.svg" label="Add"></wa-icon>
               Add Rule
           </button>
         </section>
         ${this.data.map(
           (item, index) => html`
-            <sl-details summary=${item[this.title] || `Item ${index + 1}`}>
+            <wa-details summary=${item[this.title] || `Item ${index + 1}`}>
               <lit-textform .data=${item} @data-changed=${(event) => this.handleDataChanged(index, event)}></lit-textform>
               <section class="buttons-container">
                 <button class="delete" @click=${(e) => this.handleClickDelete(e, index)}>
-                    <sl-icon src="${IMG_DIR}/shoelace/trash.svg" label="Delete"></sl-icon>
+                    <wa-icon src="${IMG_DIR}/shoelace/trash.svg" label="Delete"></wa-icon>
                     Delete Rule
                 </button>
               </section>
-            </sl-details>
+            </wa-details>
           `
         )}
         <dialog id="delete">
@@ -213,7 +212,7 @@ class TextFormArray extends LitElement {
               <h3>Delete Rule</h3>
             </header>
             <button class="close" @click=${this.handleCancel}>
-              <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></sl-icon>
+              <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></wa-icon>
             </button>
           </lit-dialog-header>
           <lit-dialog-content>
@@ -230,7 +229,7 @@ class TextFormArray extends LitElement {
               <h3>Add Rule</h3>
             </header>
             <button class="close" @click=${this.handleCancelAdd}>
-                <sl-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></sl-icon>
+                <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></wa-icon>
             </button>
           </lit-dialog-header>
           <lit-dialog-content>

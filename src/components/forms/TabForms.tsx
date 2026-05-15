@@ -71,7 +71,7 @@ const ButtonsPanel = styled.div`
   }
 
   .disabled {
-    color: #5d6160;
+    color: light-dark(#5d6160, #6c6c80);
   }
 
   .vertical {
@@ -287,7 +287,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         <FormSearch handleSearchDatabase={handleSearchDatabase} />
         <LitButton
           onClick={() => setCreateFormOpen(true)}
-          outline={true}
         >
           Add New Form Schema
         </LitButton>

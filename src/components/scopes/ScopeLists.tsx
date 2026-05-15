@@ -155,7 +155,13 @@ const ScopeLists = () => {
                 view={view}
                 openScope={openScope} />
             )}
-            {visible && <ScopeFormContainer database={selectedScope} isEdit={isEdit} permissions={permissions}/>}
+            {/* Always mount the drawer container so the underlying
+                <wa-drawer> can play its slide-in / slide-out
+                animations. Conditional mounting was causing the
+                drawer to vanish instantly on close instead of
+                animating out. The drawer manages its own open state
+                via the redux `visible` flag. */}
+            <ScopeFormContainer database={selectedScope} isEdit={isEdit} permissions={permissions}/>
             <NetworkErrorDialog />
           </>
         {!(databasePull || scopePull) && <APILoadingProgress label="Scopes" />}

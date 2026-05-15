@@ -28,7 +28,7 @@ import { AppState } from '..';
 import { clearForms } from '../databases/action';
 import { ThunkAction } from 'redux-thunk';
 import { AnyAction } from 'redux';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, notify } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
 import { checkForResponse } from '../../utils/common';
 
@@ -142,6 +142,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
     const data = await checkForResponse(response)
 
     if (response.ok) {
+      console.log("Login successful, setting token and updating state.")
       const jwtData = data;
       localStorage.setItem('user_token', JSON.stringify(jwtData));
       emitTokenEvent(jwtData)
@@ -151,14 +152,16 @@ export function login(credentials: Credentials, successCallback: () => void) {
       dispatch(setToken(jwtData));
       successCallback()
     } else {
+      console.log("Login failed, dispatching error state.")
       dispatch(setLoginError(true));
       dispatch(setErrorMessage(`${data.status} error: ${data.message}`));
+      notify(`${data.message}`, 'danger');
       return data;
     }
   };
 }
 
-// Log Out USer Session
+// Log Out User Session
 // Redirect to Login Page
 export function logout() {
   return async (dispatch: Dispatch) => {

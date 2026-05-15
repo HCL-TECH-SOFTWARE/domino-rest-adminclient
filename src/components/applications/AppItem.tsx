@@ -83,6 +83,8 @@ const AppIdSecretContainer = styled(Box)`
     display: flex;
     flex-direction: row;
     gap: 5px;
+    align-content: center;
+    align-items: center;
 
     .id-secret {
       cursor: pointer;
@@ -261,7 +263,9 @@ const AppItem: React.FC<AppItemProps> = ({
                       </Tooltip>
                     </AppIdSecretContainer>
                     { app.usePkce ? (
-                      <Typography className='text' sx={{ fontWeight: 'bold' }}>PKCE</Typography>
+                      <AppIdSecretContainer>
+                        <Typography className='text' sx={{ fontWeight: 'bold' }}>PKCE</Typography>
+                      </AppIdSecretContainer>
                     ) : (
                       <AppIdSecretContainer>
                         <Typography className='text'>App Secret:</Typography>

@@ -5,6 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useEffect, useMemo } from 'react';
+
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { useSelector, useDispatch } from 'react-redux';
@@ -157,10 +158,10 @@ const EditIcon = styled.div`
 `;
 
 const StatusIcon = styled.div`
-  display: inline-block;
-  position: relative;
-  left: 15px;
-  bottom: 70px;
+  position: absolute;
+  top: -5px;
+  right: -15px;
+  z-index: 2;
 `;
 
 const DialogContainer = styled.div`
@@ -405,6 +406,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     setDisplayIcon(appIcons[_iconName]);
   };
 
+
   const IconDropDown = (
     <InputContainer>
       <Button aria-controls="icons-menu" aria-haspopup="true" onClick={handleSelectIcon} className="icon-select">
@@ -413,9 +415,10 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
           src={`data:image/svg+xml;base64, ${appIcons[displayIconName]}`}
           alt="db-icon"
           style={{
-            color: getTheme(themeMode).hoverColor,
-            width: '98px',
-            height: '89px'
+            width: 90,
+            height: 90,
+            objectFit: 'contain',
+            display: 'block',
           }}
         />
         <ChevronDown style={{ fontSize: 18 }} />
@@ -429,10 +432,11 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
                 src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                 alt="db-icon"
                 style={{
-                  color: getTheme(themeMode).hoverColor,
-                  height: 35,
                   width: 35,
-                  marginRight: 10
+                  height: 35,
+                  objectFit: 'contain',
+                  display: 'block',
+                  marginRight: 10,
                 }}
               />
               {iconName}
@@ -449,8 +453,10 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
       src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
       alt="db-icon"
       style={{
-        color: getTheme(themeMode).hoverColor,
-        width: '89px'
+        width: 90,
+        height: 90,
+        objectFit: 'contain',
+        display: 'block',
       }}
     />
   );
@@ -472,12 +478,14 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
   return (
     <Box>
       <Title>
-        {SchemaIcon}
-        <StatusIcon>
-          <Tooltip title={apiStatus.slice(1, apiStatus.length - 1)}>
-            <SchemaIconStatus style={{ width: '14px', height: '14px', backgroundImage: isInUse ? InUseSymbol : NotInUseSymbol }} />
-          </Tooltip>
-        </StatusIcon>
+        <span style={{ position: 'relative', display: 'inline-block', width: 90, height: 90 }}>
+          {SchemaIcon}
+          <StatusIcon>
+            <Tooltip title={apiStatus.slice(1, apiStatus.length - 1)}>
+              <SchemaIconStatus style={{ width: '14px', height: '14px', backgroundImage: isInUse ? InUseSymbol : NotInUseSymbol }} />
+            </Tooltip>
+          </StatusIcon>
+        </span>
         <Typography className="api-name" component="p" variant="h5">
           <Box className="api-schema">{dbName}</Box>
           <EditIcon

@@ -66,8 +66,8 @@ const RightPanel = styled.div<{ open: boolean; theme: any }>`
 
   .toggle-button {
     border-radius: 0 10px 10px 0;
-    width: 23px;
-    height: 42px;
+    width: 21px;
+    height: 37px;
     position: absolute;
     top: 10%;
     left: -1px;
@@ -76,6 +76,11 @@ const RightPanel = styled.div<{ open: boolean; theme: any }>`
     z-index: 100 !important;
     border: 1px solid #CFCFCF !important;
     border-left: 0px !important;
+    padding: 0;
+
+    .MuiSvgIcon-root {
+      font-size: 19px;
+    }
   }
 `;
 
@@ -145,7 +150,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
                     className='toggle-button'
                     onClick={toggleMenu}
                 >
-                    <CollapseMenuIcon />
+                    <CollapseMenuIcon style={{ fontSize: 21 }} />
                 </IconButton>
                 ) : (
                 <IconButton 
@@ -153,7 +158,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
                     className='toggle-button'
                     onClick={toggleMenu}
                 >
-                    <ExpandMenuIcon />
+                    <ExpandMenuIcon style={{ fontSize: 21 }} />
                 </IconButton>
                 )
             )}

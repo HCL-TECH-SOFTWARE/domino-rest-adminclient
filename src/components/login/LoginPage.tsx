@@ -156,9 +156,10 @@ const LoginThemeToggle = styled.button`
   background: light-dark(rgba(255,255,255,0.7), rgba(30,30,46,0.7));
   border: 1px solid light-dark(#ccc, #555);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 37px;
+  height: 37px;
   display: flex;
+  padding: 0;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -229,12 +230,12 @@ const LoginPage = () => {
    Used for username / password and Webauthn login*/
   const handleSignUpWithPasskey = async (event: any) => {
     event.preventDefault();
-    const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
-    const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+    const username = usernameRef.current?.shadowRoot.querySelector('wa-input')?.value
+    const password = passwordRef.current?.shadowRoot.querySelector('wa-input')?.value
 
     // Validate inputs
-    const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
-    const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+    const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
+    const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
 
     if (!username || !password) {
       if (!username) {
@@ -256,7 +257,7 @@ const LoginPage = () => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
         // formik.values.username = json.username;
-        usernameRef.current.shadowRoot.querySelector('sl-input').value = json.username;
+        usernameRef.current.shadowRoot.querySelector('wa-input').value = json.username;
         dispatch({
           type: LOGIN
         });
@@ -328,8 +329,8 @@ const LoginPage = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          username: usernameRef.current?.shadowRoot.querySelector('sl-input')?.value,
-          password: passwordRef.current?.shadowRoot.querySelector('sl-input')?.value,
+          username: usernameRef.current?.shadowRoot.querySelector('wa-input')?.value,
+          password: passwordRef.current?.shadowRoot.querySelector('wa-input')?.value,
         })
       })
         .then((res) => checkForResponse(res))
@@ -357,21 +358,23 @@ const LoginPage = () => {
   }
 
   const handleClickLogIn = () => {
-    const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
-    const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+    const username = usernameRef.current?.shadowRoot.querySelector('wa-input')?.value
+    const password = passwordRef.current?.shadowRoot.querySelector('wa-input')?.value
 
     // Validate inputs
-    const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
-    const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+    const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
+    const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
 
     if (authType === 'password') {
       // Password Login
       if (username.length > 0 && password.length > 0) {
         logInWithPassword(username, password);
       } else {
-        if (usernameRef.current?.shadowRoot.querySelector('sl-input')) {
+        if (usernameRef.current?.shadowRoot.querySelector('wa-input')) {
+          console.log("invalid username")
           usernameInput.setAttribute('data-user-invalid', username.length === 0)
-        } else if (passwordRef.current?.shadowRoot.querySelector('sl-input')) {
+        } else if (passwordRef.current?.shadowRoot.querySelector('wa-input')) {
+          console.log("invalid password")
           passwordInput.setAttribute('data-user-invalid', password.length === 0)
         }
       }
@@ -380,7 +383,7 @@ const LoginPage = () => {
       if (username.length > 0) {
         logInWithPasskey(username)
       } else {
-        if (usernameRef.current?.shadowRoot.querySelector('sl-input')) {
+        if (usernameRef.current?.shadowRoot.querySelector('wa-input')) {
           usernameInput.setAttribute('data-user-invalid', username.length === 0)
         }
       }
@@ -460,7 +463,7 @@ const LoginPage = () => {
       .then((result: any) => {
         if (result === true) {
           const user = localStorage.getItem('keep_user')
-          usernameRef.current.shadowRoot.querySelector('sl-input').value = user
+          usernameRef.current.shadowRoot.querySelector('wa-input').value = user
         }
       })
       .catch((e) => dispatch(toggleAlert(e)));
@@ -531,12 +534,12 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (error401 && !idpLogin) {
-      const username = usernameRef.current?.shadowRoot.querySelector('sl-input')?.value
-      const password = passwordRef.current?.shadowRoot.querySelector('sl-input')?.value
+      const username = usernameRef.current?.shadowRoot.querySelector('wa-input')?.value
+      const password = passwordRef.current?.shadowRoot.querySelector('wa-input')?.value
 
       // Validate inputs
-      const usernameInput = usernameRef.current?.shadowRoot.querySelector('sl-input');
-      const passwordInput = passwordRef.current?.shadowRoot.querySelector('sl-input');
+      const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
+      const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
 
       if (usernameInput) {
         usernameInput.setAttribute('data-user-invalid', username.length === 0)
@@ -557,7 +560,7 @@ const LoginPage = () => {
       <CssBaseline />
       <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} arrow placement="right">
         <LoginThemeToggle onClick={toggleTheme}>
-          {isDark ? <DarkModeIcon /> : <LightModeIcon />}
+          {isDark ? <DarkModeIcon style={{ fontSize: 24 }} /> : <LightModeIcon style={{ fontSize: 24 }} />}
         </LoginThemeToggle>
       </Tooltip>
       <Grid
@@ -581,14 +584,75 @@ const LoginPage = () => {
             </Typography>
           </KeepLogoContainer>
           <div style={{ flex: 1 }}>
-            {error && <LitAlert variant='danger' heading='Error logging in!' text={errorMessage} />}
-            <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}>
-              <LitButton style={{ width: '100%' }} onClick={handleLogInWithPassword} outline>LOG IN WITH PASSWORD</LitButton>
+            {isDark && (
+              <style>{`
+                body[data-theme='dark'] wa-button[appearance="outlined"]::part(label),
+                body[data-theme='dark'] lit-button[appearance="outlined"]::part(label) {
+                  color: #7e57c2 !important;
+                }
+                body[data-theme='dark'] wa-button[appearance="accent"]::part(label),
+                body[data-theme='dark'] lit-button[appearance="accent"]::part(label) {
+                  color: #7e57c2 !important;
+                }
+              `}</style>
+            )}
+            {error && (
+              <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 9999 }}>
+                <LitAlert variant='danger' heading='Error logging in!' message={errorMessage} />
+              </div>
+            )}
+            <section
+              className="login-options"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}
+            >
+              <LitButton
+                style={isDark ? ({
+                  width: '100%',
+                  '--wa-color-brand-80': '#7e57c2',
+                  '--wa-color-brand-50': '#7e57c2',
+                  '--wa-color-brand-border-loud': '#7e57c2',
+                  '--wa-color-brand-fill-loud': '#7e57c2',
+                  color: '#7e57c2',
+                  borderColor: '#7e57c2',
+                } as React.CSSProperties) : { width: '100%' }}
+                onClick={handleLogInWithPassword}
+                appearance='outlined'
+              >
+                LOG IN WITH PASSWORD
+              </LitButton>
               {isHttps &&
-                <LitButton style={{ width: '100%' }} onClick={handleLogInWithPasskey} outline>LOG IN WITH PASSKEY</LitButton>
+                <LitButton
+                  style={isDark ? ({
+                    width: '100%',
+                    '--wa-color-brand-80': '#7e57c2',
+                    '--wa-color-brand-50': '#7e57c2',
+                    '--wa-color-brand-border-loud': '#7e57c2',
+                    '--wa-color-brand-fill-loud': '#7e57c2',
+                    color: '#7e57c2',
+                    borderColor: '#7e57c2',
+                  } as React.CSSProperties) : { width: '100%' }}
+                  onClick={handleLogInWithPasskey}
+                  appearance='outlined'
+                >
+                  LOG IN WITH PASSKEY
+                </LitButton>
               }
               {displayKeepIdp &&
-                <LitButton style={{ width: '100%' }} onClick={() => {handleLogInUsingIdp("")}} outline>LOG IN WITH OIDC</LitButton>
+                <LitButton
+                  style={isDark ? ({
+                    width: '100%',
+                    '--wa-color-brand-80': '#7e57c2',
+                    '--wa-color-brand-50': '#7e57c2',
+                    '--wa-color-brand-border-loud': '#7e57c2',
+                    '--wa-color-brand-fill-loud': '#7e57c2',
+                    color: '#7e57c2',
+                    borderColor: '#7e57c2',
+                  } as React.CSSProperties) : { width: '100%' }}
+                  onClick={() => {handleLogInUsingIdp("")}}
+                  appearance='outlined'
+                >
+                  LOG IN WITH OIDC
+                </LitButton>
               }
             </section>
             <LoginForm>
@@ -600,29 +664,40 @@ const LoginPage = () => {
                   ref={usernameRef}
                   required
                 />
-                {idpList.length > 0 &&
-                  <LitDropdown
-                    id='form-oidc'
-                    choices={idpList.map((idp: IdP) => {return idp.name})}
-                    className='removed'
-                    ref={oidcRef}
-                    onChange={(e: any) => handleChooseOidc(idpList.find((idp: IdP) => idp.name === e.detail.value))}
-                    style={{ width: '100%' }}
-                    selected={selectedOidc}
-                  />
+                {authType === 'oidc' && idpList.length > 0 &&
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '8px' }}>
+                    <LitDropdown
+                      id='form-oidc'
+                      choices={idpList.map((idp: IdP) => {return idp.name})}
+                      ref={oidcRef}
+                      onChange={(e: any) => handleChooseOidc(idpList.find((idp: IdP) => idp.name === e.detail.value))}
+                      style={{ display: 'inline-block', margin: '0 auto' }}
+                      selected={selectedOidc}
+                    />
+                  </div>
                 }
               </section>
               <section style={{ width: '100%' }}>
                 <LitInputPassword
                   id='section-password'
                   label='Password'
-                  style={{ width: '100%' }}
+                  // style={{ width: '100%' }}
                   ref={passwordRef}
                   required
                 />
               </section>
               <LitButton
-                style={{ width: '100%', marginTop: '30px' }}
+                style={isDark ? ({
+                  width: '100%', marginTop: '30px',
+                  '--wa-color-brand-80': '#7e57c2',
+                  '--wa-color-brand-50': '#7e57c2',
+                  '--wa-color-brand-border-loud': '#7e57c2',
+                  '--wa-color-brand-fill-loud': '#7e57c2',
+                  '--wa-color-brand': '#7e57c2',
+                  '--wa-color-brand-on': '#7e57c2',
+                  color: '#7e57c2',
+                  borderColor: '#7e57c2',
+                } as React.CSSProperties) : { width: '100%', marginTop: '30px' }}
                 onClick={handleClickLogIn}
                 pill
               >

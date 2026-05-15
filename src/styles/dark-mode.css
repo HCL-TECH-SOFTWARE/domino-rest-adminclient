@@ -6,9 +6,45 @@
 
 /* ===== Shoelace primary color overrides for dark mode ===== */
 body[data-theme="dark"] {
-  --sl-color-primary-600: #8B6CE0;
-  --sl-color-primary-500: #9B7EE8;
-  --sl-color-primary-700: #7B5CD0;
+  --wa-color-brand-600: #8B6CE0;
+  --wa-color-brand-500: #9B7EE8;
+  --wa-color-brand-700: #7B5CD0;
+
+  /* Default text color in dark mode: white.
+     Most components inherit from body / use `light-dark(inherit, ...)`,
+     so flipping the body color cascades white text everywhere unless a
+     more specific rule below sets its own dark-mode color. */
+  color: #ffffff;
+}
+
+/* Make sure common typographic primitives that might have explicit
+   light-mode colors (e.g. black) flip to white in dark mode.
+   NOTE: We deliberately exclude `span` and `div` from this list. Those
+   tags rarely have explicit colors and will naturally inherit white
+   from body. Including them here gave the rule specificity (0,1,2),
+   which beat Monaco's per-token classes (`.mtk1`, `.mtk2`, ... at
+   specificity 0,1,0) and forced every JSON token to render white in
+   dark mode. The minimap (a <canvas>) was unaffected, which is why it
+   looked correctly themed while the editor text did not. */
+body[data-theme="dark"] h1,
+body[data-theme="dark"] h2,
+body[data-theme="dark"] h3,
+body[data-theme="dark"] h4,
+body[data-theme="dark"] h5,
+body[data-theme="dark"] h6,
+body[data-theme="dark"] p,
+body[data-theme="dark"] label,
+body[data-theme="dark"] li,
+body[data-theme="dark"] a {
+  color: inherit;
+}
+
+/* Catch elements that explicitly set black/dark text via inline style. */
+body[data-theme="dark"] [style*="color: black"],
+body[data-theme="dark"] [style*="color:#000"],
+body[data-theme="dark"] [style*="color: #000"],
+body[data-theme="dark"] [style*="color:black"] {
+  color: #ffffff !important;
 }
 
 /* ===== Base64 SVG icons (have stroke="black" baked in) ===== */
@@ -115,15 +151,21 @@ body[data-theme="dark"] .option-container img {
 }
 
 /* ===== Shoelace Drawer ===== */
-sl-drawer::part(base),
-sl-drawer::part(panel),
-sl-drawer::part(body) {
+wa-drawer::part(base),
+wa-drawer::part(panel),
+wa-drawer::part(body) {
   background: light-dark(#fff, #1e1e2e);
   color: light-dark(inherit, #e0e0e0);
 }
 
-sl-drawer::part(header),
-sl-drawer::part(title) {
+wa-drawer::part(header),
+wa-drawer::part(title) {
+  background: light-dark(#fff, #1e1e2e);
+  color: light-dark(inherit, #e0e0e0);
+}
+
+wa-drawer::part(header-actions) {
+  background: light-dark(#fff, #1e1e2e);
   color: light-dark(inherit, #e0e0e0);
 }
 
@@ -245,27 +287,27 @@ body[data-theme="dark"] .MuiSelect-icon path {
 }
 
 /* ===== Shoelace inputs ===== */
-sl-input::part(base) {
+wa-input::part(base) {
   background-color: light-dark(#fff, #1e1e2e);
   color: light-dark(inherit, #e0e0e0);
   border-color: light-dark(#ccc, #3a3a4a);
 }
 
-sl-input::part(input) {
+wa-input::part(input) {
   color: light-dark(inherit, #e0e0e0);
 }
 
-sl-select::part(combobox) {
+wa-select::part(combobox) {
   background-color: light-dark(#fff, #1e1e2e);
   color: light-dark(inherit, #e0e0e0);
   border-color: light-dark(#ccc, #3a3a4a);
 }
 
-sl-tree {
+wa-tree {
   color: light-dark(inherit, #e0e0e0);
 }
 
-sl-tree-item::part(base) {
+wa-tree-item::part(base) {
   color: light-dark(inherit, #e0e0e0);
 }
 
@@ -298,13 +340,13 @@ button[style*="border: none"] {
 }
 
 /* ===== Shoelace Cards ===== */
-sl-card::part(base) {
+wa-card::part(base) {
   background: light-dark(#fff, #252535);
   color: light-dark(inherit, #e0e0e0);
   border-color: light-dark(#e0e0e0, #3a3a4a);
 }
 
-sl-card::part(body) {
+wa-card::part(body) {
   background: light-dark(#fff, #252535);
   color: light-dark(inherit, #e0e0e0);
 }

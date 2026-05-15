@@ -535,7 +535,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 <SearchInput onChange={handleSearchField} type="text" placeholder={`Search Field`} />
               </SearchContainer>
               <div className="add-container">
-                <LitButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`} outline={true}>
+                <LitButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`}>
                   Add New Column
                 </LitButton>
               </div>
