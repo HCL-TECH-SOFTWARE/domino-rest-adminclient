@@ -287,7 +287,6 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         <FormSearch handleSearchDatabase={handleSearchDatabase} />
         <LitButton
           onClick={() => setCreateFormOpen(true)}
-          outline={true}
         >
           Add New Form Schema
         </LitButton>
