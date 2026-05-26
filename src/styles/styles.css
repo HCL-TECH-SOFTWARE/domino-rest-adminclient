@@ -1,0 +1,196 @@
+/* ========== All styles moved from inline styles in components ========== */
+
+:root {
+  /* This line is mandatory to activate light-dark() */
+  color-scheme: light dark; 
+}
+
+/* Generic */
+.small-text {
+    font-size: 14px;
+}
+
+.line-height-normal {
+    line-height: normal;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* AccessMode.tsx */
+.tabs-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    align-items: center;
+    padding-top: 50 * var(--modes-length);
+}
+
+.top-container {
+    margin-top: 15px;
+}
+
+.access-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y:auto;
+    align-items: center;
+    padding-top: 50px;
+    position: relative;
+    margin: 10px;
+    height: calc(100vh - 200px);
+}
+
+/* FieldContainer.tsx */
+.item-name-container {
+    width: 30%;
+    font-size: 14px;
+    padding: 24px 24px 0 24px;
+}
+
+.field-name-input {
+    width: 50%;
+    font-size: 14px;
+}
+
+.field-type-text-field {
+    width: 50%;
+    z-index: 0;
+}
+
+.field-access-input {
+    width: 50%;
+}
+
+.multi-value-container {
+    display: flex;
+    align-items: center;
+}
+
+.required-pill-container {
+    display: flex;
+    align-items: center;
+}
+
+/* FieldDndContainer.tsx */
+.add-icon {
+    margin: 0 5px;
+}
+
+.yes-button-field-dnd {
+    color: #fff;
+}
+
+/* Fields.tsx */
+.fields-dropdown-header {
+    justify-content: center;
+}
+
+.fields-displayed-container {
+    overflow-y: scroll;
+}
+
+/* ModeCompare.tsx */
+.mode-compare-container {
+    padding: 30px;
+    height: 100%;
+}
+
+.mode-compare-dialog-container {
+    width: 100%;
+}
+
+.mode-compare-search-icon {
+    margin-right: 10px;
+}
+
+.mode-compare-card-container {
+    display: flex;
+    padding-top: 9px;
+    padding-bottom: 20px;
+}
+
+.empty-mode-card-container {
+    display: flex;
+    width: 42.5%;
+    justify-content: end;
+    padding-right: 20px;
+    padding-top: 10px;
+}
+
+.mode-compare-normal-font {
+    font-style: normal;
+}
+
+.mode-compare-delete-container {
+    display: flex;
+    width: calc(50% + 103px);
+    justify-content: end;
+}
+
+.mode-compare-delete-adjacent {
+    width: 103px;
+    height: 7px;
+    border-radius: 50px;
+    background: #fff;
+}
+
+.mode-compare-divider {
+    height: 1px;
+    background: #000;
+}
+
+.mode-compare-formulas-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-content: center;
+}
+
+.mode-compare-formulas-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px 0;
+}
+
+.diff-formulas-container {
+    width: 15px;
+}
+
+.formula-name-container {
+    width: calc(0.4*(100% - 15px));
+    overflow-wrap: break-word;
+}
+
+.mode-compare-formula-name {
+    color: #323a3d;
+}
+
+.formula-name-value-container {
+    width: calc(0.6*(100% - 15px));
+    overflow-wrap: break-word;
+}
+
+.compare-diff-values-indicator {
+    width: 8px;
+    height: 8px;
+    color: #c3335f;
+    display: block;
+    margin: auto 0;
+}
+
+.compare-filled-card-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px 0;
+}
+
+.mode-compare-indicators-container {
+    width: 15px;
+}

@@ -525,13 +525,13 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
 
   return (
     <DialogContainer open={open} onClose={handleClose} fullScreen>
-      <Box style={{ padding: '30px' }} sx={{ height: '100%' }}>
+      <Box className='mode-compare-container'>
         <FormDialogHeader title={`Mode Compare - ${formName} Form`} onClose={handleClose} />
         <DialogContent className="content-container">
-          <div style={{ width: '95vw' }}>
+          <div className='mode-compare-dialog-container'>
             <div className="search-add-row">
               <SearchContainer className="search-bar">
-                <SearchIcon color="primary" className="search-icon" style={{ marginRight: '10px' }} />
+                <SearchIcon color="primary" className="mode-compare-search-icon" />
                 <SearchInput onChange={handleSearchField} type="text" placeholder={`Search Field`} />
               </SearchContainer>
               <div className="add-container">
@@ -551,19 +551,12 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 if (modeName === '') {
                   return (
                     <Box draggable className="card-top" key={`${modeName}-${idx}`}>
-                      <Box style={{ display: 'flex', paddingTop: '9px', paddingBottom: '20px' }}>
-                        <div style={{ display: 'flex', width: 'calc(50% + 103px)', justifyContent: 'end' }}>
-                          <div style={{ width: '103px', height: '7px', borderRadius: '50px', background: '#FFF' }} />
+                      <Box className='mode-compare-card-container'>
+                        <div className='mode-compare-delete-container'>
+                          <div className='mode-compare-delete-adjacent' />
                         </div>
                         {showRemove && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              width: '42.5%',
-                              justifyContent: 'end',
-                              paddingRight: '20px',
-                              paddingTop: '10px'
-                            }}>
+                          <div className='empty-mode-card-container'>
                             <Tooltip title="Delete empty mode card" arrow>
                               <DeleteIcon
                                 className="delete-icon"
@@ -574,15 +567,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           </div>
                         )}
                         {!showRemove && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              width: '42.5%',
-                              justifyContent: 'end',
-                              paddingRight: '20px',
-                              paddingTop: '10px'
-                            }}
-                          />
+                          <div className='empty-mode-card-container' />
                         )}
                       </Box>
                       <Box className="summary-container">
@@ -608,8 +593,8 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                             }
                           })}
                         </Select>
-                        <Box className="mode-details" style={{ fontStyle: 'normal' }}>{`Select a mode to compare.`}</Box>
-                        <div style={{ height: '1px', background: '#000' }} />
+                        <Box className="mode-details mode-compare-normal-font">{`Select a mode to compare.`}</Box>
+                        <div className='mode-compare-divider' />
                         <Box className="fields-summary">
                           <Box className="summary-content">
                             <span className="total-fields">Total Fields:</span>
@@ -622,19 +607,12 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 } else {
                   return (
                     <Box className="card-top">
-                      <Box style={{ display: 'flex', paddingTop: '9px', paddingBottom: '20px' }}>
-                        <div style={{ display: 'flex', width: 'calc(50% + 103px)', justifyContent: 'end' }}>
-                          <div style={{ width: '103px', height: '7px', borderRadius: '50px', background: '#FFF' }} />
+                      <Box className='mode-compare-card-container'>
+                        <div className='mode-compare-delete-container'>
+                          <div className='mode-compare-delete-adjacent' />
                         </div>
                         {showRemove && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              width: '42.5%',
-                              justifyContent: 'end',
-                              paddingRight: '20px',
-                              paddingTop: '10px'
-                            }}>
+                          <div className='empty-mode-card-container'>
                             <Tooltip title="Remove mode from comparison" arrow>
                               <DeleteIcon
                                 className="delete-icon"
@@ -645,15 +623,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           </div>
                         )}
                         {!showRemove && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              width: '42.5%',
-                              justifyContent: 'end',
-                              paddingRight: '20px',
-                              paddingTop: '10px'
-                            }}
-                          />
+                          <div className='empty-mode-card-container' />
                         )}
                       </Box>
                       <Box className="summary-container">
@@ -678,7 +648,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                         <Box className="mode-details">{`${
                           allModes[getFormModeIndex(allModes, modeName)].fields.length
                         } form field/s`}</Box>
-                        <div style={{ height: '1px', background: '#000' }} />
+                        <div className='mode-compare-divider' />
                         <Box className="fields-summary">
                           <Box className="summary-content">
                             <span className="total-fields">Total Fields:</span>
@@ -701,41 +671,36 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                       <Box className="field-name">Formulas</Box>
                       {formulas.map((formula: string) => {
                         return (
-                          <Box style={{ display: 'flex', flexDirection: 'column', width: '100%', alignContent: 'center' }}>
-                            <Box style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px 0' }}>
-                              <Box style={{ width: '15px' }}>
+                          <Box className='mode-compare-formulas-container'>
+                            <Box className='mode-compare-formulas-content'>
+                              <Box className='diff-formulas-container'>
                                 {diffFormulas.includes(
                                   formula
                                 ) && (
-                                  <img
-                                    src={`data:image/svg+xml;base64, PHN2ZyB3aWR0aD0iOSIgaGVpZ2h0PSI4IiB2aWV3Qm94PSIwIDAgOSA4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8Y2lyY2xlIGlkPSJFbGxpcHNlIDMyIiBjeD0iNC4wNzcxMiIgY3k9IjQiIHI9IjQiIGZpbGw9IiNDMzMzNUYiLz4KPC9zdmc+Cg==`}
-                                    alt="key-marker"
-                                    style={{
-                                      color: '#C3335F',
-                                      width: '8px',
-                                      height: '8px'
-                                    }}
-                                  />
+                                  <svg
+                                    width="9"
+                                    height="8"
+                                    viewBox="0 0 9 8"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className='compare-diff-values-indicator'
+                                  >
+                                    <circle cx="4.07712" cy="4" r="4" fill="currentColor" />
+                                  </svg>
                                 )}
                               </Box>
-                              <Box style={{ width: 'calc(0.4*(100% - 15px))', overflowWrap: 'break-word' }}>
-                                <span
-                                  style={{ color: '#323A3D', fontSize: '14px', lineHeight: 'normal' }}>{`${getProperKey(
-                                  formula
-                                )}:`}</span>
+                              <Box className='formula-name-container'>
+                                <span className='mode-compare-formula-name small-text line-height-normal'>
+                                  {`${getProperKey(formula)}:`}
+                                </span>
                               </Box>
-                              <Box
-                                style={{
-                                  width: 'calc(0.6*(100% - 15px))',
-                                  overflowWrap: 'break-word',
-                                }}>
+                              <Box className='formula-name-value-container'>
                                 <span
                                   className={`key-text ${
                                     diffFormulas.includes(formula)
                                       ? 'key-diff'
                                       : ''
-                                  }`}
-                                  style={{ lineHeight: 'normal' }}
+                                  } line-height-normal`}
                                 >
                                   {`${JSON.stringify(allModes[getFormModeIndex(allModes, modeName)][formula as keyof Mode])}`}
                                 </span>
@@ -761,7 +726,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           {allModes[getFormModeIndex(allModes, modeName)].fields[
                             getFieldIndex(allModes[getFormModeIndex(allModes, modeName)].fields, fieldName)
                           ] ? (
-                            <Box style={{ display: 'flex', flexDirection: 'column' }}>
+                            <Box className='flex-column'>
                               <Box className="field-name">{fieldName}</Box>
                               <Box className="key-text">
                                 {Object.keys(
@@ -772,34 +737,29 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                                   return (
                                     <>
                                       {!(key === 'name' || key === 'externalName') && (
-                                        <Box style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '8px 0' }}>
-                                          <Box style={{ width: '15px' }}>
+                                        <Box className='compare-filled-card-container'>
+                                          <Box className='mode-compare-indicators-container'>
                                             {Array.from(new Set(diffFields[fieldName as keyof typeof diffFields])).includes(
                                               key
                                             ) && (
-                                              <img
-                                                src={`data:image/svg+xml;base64, PHN2ZyB3aWR0aD0iOSIgaGVpZ2h0PSI4IiB2aWV3Qm94PSIwIDAgOSA4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8Y2lyY2xlIGlkPSJFbGxpcHNlIDMyIiBjeD0iNC4wNzcxMiIgY3k9IjQiIHI9IjQiIGZpbGw9IiNDMzMzNUYiLz4KPC9zdmc+Cg==`}
-                                                alt="key-marker"
-                                                style={{
-                                                  color: '#C3335F',
-                                                  width: '8px',
-                                                  height: '8px'
-                                                }}
-                                              />
+                                              <svg
+                                                width="9"
+                                                height="8"
+                                                viewBox="0 0 9 8"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className='compare-diff-values-indicator'
+                                              >
+                                                <circle cx="4.07712" cy="4" r="4" fill="currentColor" />
+                                              </svg>
                                             )}
                                           </Box>
-                                          <Box style={{ width: 'calc(0.4*(100% - 15px))', overflowWrap: 'break-word' }}>
-                                            <span
-                                              style={{ color: '#323A3D', fontSize: '14px', lineHeight: 'normal' }}>{`${getProperKey(
-                                              key
-                                            )}:`}</span>
+                                          <Box className='formula-name-container'>
+                                            <span className='mode-compare-formula-name small-text line-height-normal'>
+                                              {`${getProperKey(key)}:`}
+                                            </span>
                                           </Box>
-                                          <Box
-                                            style={{
-                                              width: 'calc(0.6*(100% - 15px))',
-                                              height: 'fit-content',
-                                              overflowWrap: 'break-word'
-                                            }}>
+                                          <Box className='formula-name-value-container'>
                                             <span
                                               className={`${
                                                 Array.from(new Set(diffFields[fieldName as keyof typeof diffFields])).includes(key)

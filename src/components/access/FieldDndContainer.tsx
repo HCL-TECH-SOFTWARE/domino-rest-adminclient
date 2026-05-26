@@ -398,7 +398,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
             <IconButton title="Add Custom Field" className='add'
               onClick={handleAddField}
             >
-              <AddIcon style={{ margin: '0 5px' }} />
+              <AddIcon className='add-icon' />
           </IconButton>
           </Box>
           {customFieldError && 
@@ -410,7 +410,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
           <Box className='batch-delete-container'>
             {!batchDelete && <Button 
               className='batch-delete-button'
-              style={{}}
               onClick={toggleBatchDelete} 
               disabled={state[stateList[0]].length === 0}
             >
@@ -428,7 +427,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                 </Tooltip>
                 <Button 
                   className='batch-delete-button'
-                  style={{}}
                   onClick={toggleBatchDelete} 
                   disabled={state[stateList[0]].length === 0}
                 >
@@ -537,7 +535,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
           <Typography className='text-content'>on this mode?</Typography>
         </Box>
         <Box className='buttons'>
-          <ButtonYes className='button-ok' onClick={handleBatchDelete} style={{ color: '#FFF' }}>OK</ButtonYes>
+          <ButtonYes className='button-ok yes-button-field-dnd' onClick={handleBatchDelete}>OK</ButtonYes>
           <ButtonNeutral className='button-cancel' onClick={handleCloseDialog}>Cancel</ButtonNeutral>
         </Box>
       </RemoveFieldDialog>
