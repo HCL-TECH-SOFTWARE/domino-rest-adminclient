@@ -358,7 +358,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
   return (
     <FieldContainer theme={themeMode} className="field-container">
       <Box sx={{ padding: '0 23.5px' }}>
-        <FieldsDropDownHeader style={{ justifyContent: 'center' }}>
+        <FieldsDropDownHeader className="fields-dropdown-header">
           <Typography className="mode-header">Show fields from:</Typography>
           <Tooltip title="Refresh List of Fields" arrow>
             <IconButton className="icon-button" onClick={handleRefreshFields}>
@@ -416,7 +416,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
           </div>
         </div>
       ) : (
-        <div style={{ overflowY: 'scroll' }}>
+        <div className="fields-displayed-container">
           {fieldsDisplayed.map((item: any, index: any) => (
             <ListRoot key={`${item.formName}-${index}`}>
             {

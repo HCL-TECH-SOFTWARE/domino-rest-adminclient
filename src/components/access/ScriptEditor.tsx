@@ -62,11 +62,14 @@ const EditFormulaDialog = styled.dialog`
   border: none;
   width: 50%;
   padding: 30px 0;
+  background: red;
 
   .header {
     display: flex;
     justify-content: space-between;
-    padding: 0 30px 10px 30px;
+    padding: 0 30px;
+    width: 100%;
+    align-items: center;
   }
 
   .title {
@@ -78,6 +81,7 @@ const EditFormulaDialog = styled.dialog`
   .content {
     padding: 0 30px;
     height: fit-content;
+    width: 100%;
   }
 
   .input {
@@ -362,7 +366,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               <Typography className='title'>{formulaTitle}</Typography>
               <ButtonBase onClick={handleClose}><CloseIcon /></ButtonBase>
             </Box>
-            <hr style={{ height: '1px', background: '#CBCBCB' }} />
+            <hr className='divider' />
             <Box className='content'>
               {formulaTitle === "Formula for Write Access" && <Box className='compute-line'>
                 <Typography className='compute-text'>Compute with Form</Typography>
@@ -389,7 +393,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                 onChange={handleTypeFormula} 
               />
             </Box>
-            <hr style={{ height: '1px', background: '#CBCBCB' }} />
+            <hr className='divider' />
             <Box className='buttons'>
               <ButtonYes sx={{ backgroundColor: '#0F5FDC' }} onClick={handleClickSave}><Typography className='button-text'>Save</Typography></ButtonYes>
               <ButtonNeutral sx={{ border: '1px solid #000' }} onClick={handleClickCancel}>Cancel</ButtonNeutral>

@@ -225,7 +225,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
 
   return (
     <ConfigFieldContainer>
-      <Box style={{ width: '30%', padding: '15px 20px 5px 20px' }}>
+      <Box className='item-name-container'>
         <Typography className='title'>Item Name</Typography>
         <Typography className='name'>{item.name}</Typography>
       </Box>
@@ -237,7 +237,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             <TextField 
               label="Field Name" 
               value={!!editedItem.externalName ? editedItem.externalName || '' : editedItem.content || ''} 
-              style={{ "width": "50%", fontSize: '14px' }}
+              className='field-name-input'
               onChange={handleFieldNameChange} 
               id="field-name"
               size='small'
@@ -250,7 +250,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             <TextField
               value={formatValue}
               onChange={handleFieldTypeChange}
-              style={{ width: "50%", zIndex: 0 }}
+              className='field-type-text-field'
               label="Field Type"
               select
               id='field-type'
@@ -280,7 +280,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             <TextField
               value={editedItem.fieldAccess}
               onChange={handleAccessModeChange}
-              style={{"width":"50%"}}
+              className='field-access-input'
               label="Access"
               select
               id='field-access'
@@ -299,7 +299,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             style={{ display: 'flex', flexDirection: 'row' }} 
             arrow
           >
-            <Box className='input' style={{ display: 'flex', alignItems: 'center' }}>
+            <Box className='input multi-value-container'>
               <Typography style={{ width: 'fit-content', fontSize: '14px' }}>
                 Multi-Value?
               </Typography>
@@ -330,7 +330,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
           </Tooltip>
           <EncryptSignOptions>
             <section className='main-row'>
-              <text style={{ fontSize: '14px' }}>
+              <text className='small-text'>
                 Encrypt
               </text>
               <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
@@ -342,7 +342,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               Please understand this option before enabling
             </text>
           </EncryptSignOptions>
-          <Box className='input' style={{ display: 'flex', alignItems: 'center' }}>
+          <Box className='input required-pill-container'>
             <Typography style={{ width: 'fit-content', fontSize: '14px' }}>
               Required?
             </Typography>

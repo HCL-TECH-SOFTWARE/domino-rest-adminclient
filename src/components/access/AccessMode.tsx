@@ -392,7 +392,7 @@ const AccessMode: React.FC = () => {
     <AccessContext.Provider value={[state, setstate]}>
       {fetchFieldsArray.length > 0 ? (
         <div>
-          <TopContainer style={{ marginTop: '15px' }}>
+          <TopContainer className='top-container'>
             <Typography className='top-nav' color='textPrimary'>
               Schema Management - {formName}
             </Typography>
@@ -420,19 +420,7 @@ const AccessMode: React.FC = () => {
               />
             )}
 
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflowY: 'auto',
-                alignItems: 'center',
-                paddingTop: 50 * modes.length,
-                position: 'relative',
-                margin: '10px px',
-                height: 'calc (100vh - 71px)',
-              }}
-            >
+            <div className="access-container">
               {!loading && modes.length > 0 ? (
                 <TabsAccess
                   currentModeIndex={currentModeIndex}

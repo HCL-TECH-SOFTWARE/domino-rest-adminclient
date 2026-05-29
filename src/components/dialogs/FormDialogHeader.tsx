@@ -11,11 +11,10 @@ import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
 import CloseMenuIcon from '@mui/icons-material/Close';
 import { AppState } from '../../store';
-import { getTheme } from '../../store/styles/action';
 
 const DialogTitleContainer = styled(DialogTitle)<{ theme: string }>`
   padding: 0;
-  padding-bottom: 30px;
+  width: 100%;
 `;
 
 const DialogHeader = styled.div`

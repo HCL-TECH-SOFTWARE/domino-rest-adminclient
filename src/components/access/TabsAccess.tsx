@@ -910,19 +910,17 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             Mode:{' '}
           </Typography>
           <Button
-            className='change-mode-btn'
+            className='change-mode-btn text-transform-none'
             aria-controls={open ? 'basic-menu' : undefined}
             aria-haspopup='true'
             aria-expanded={open ? 'true' : undefined}
             onClick={handleFieldListOnClick}
-            style={{ textTransform: 'none' }}
           >
             {currentModeValue}
           </Button>
           <Button
-            className='change-mode-svg-btn'
+            className='change-mode-svg-btn text-transform-none'
             onClick={handleFieldListOnClick}
-            style={{ textTransform: 'none' }}
           >
             <ArrowDropDownIcon />
           </Button>
@@ -985,7 +983,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               <>
                 <button
                   onClick={onDeleteClick}
-                  style={{ cursor: "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center' }}
+                  className='cursor-pointer mode-buttons'
                 >
                   <DeleteIcon color='primary' className='action-icon' />
                   <Typography color='textPrimary' variant='body2' component='p'>
