@@ -3,6 +3,20 @@
 :root {
   /* This line is mandatory to activate light-dark() */
   color-scheme: light dark; 
+
+  /* Theme tokens */
+  --text-color-primary: #e0e0e0;
+  --text-color-secondary: #e0e0e0;
+  --text-secondary: #e0e0e0;
+  --border-color: #3a3a4a;
+  --button-primary-color: #8b6ce0;
+  --button-secondary-color: #9e9e9e;
+  --body-color: #181825;
+  --hover-color: #8b6ce0;
+  --dialog-header-color: #8b6ce0;
+  --dialog-title-color: #e0e0e0;
+  --badge-color-background: #8b6ce0;
+  --badge-color: #fff;
 }
 
 /* Generic */
@@ -17,6 +31,28 @@
 .flex-column {
     display: flex;
     flex-direction: column;
+}
+
+.text-transform-none {
+    text-transform: none;
+}
+
+.divider {
+    height: 1px;
+    background: #cbcbcb;
+    width: 100%;
+}
+
+.cursor-default {
+    cursor: default;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.color-text-primary {
+    color: var(--text-color-primary);
 }
 
 /* AccessMode.tsx */
@@ -193,4 +229,23 @@
 
 .mode-compare-indicators-container {
     width: 15px;
+}
+
+/* AddModeDialog.tsx */
+.add-mode-cancel-button {
+    right: calc(30px + 93px + 5px);
+}
+
+.add-mode-save-button {
+    right: 30px;
+}
+
+/* TabsAccess.tsx */
+.mode-buttons {
+    background: none;
+    border: none;
+    margin: 5;
+    padding: 0;
+    display: flex;
+    align-items: center;
 }

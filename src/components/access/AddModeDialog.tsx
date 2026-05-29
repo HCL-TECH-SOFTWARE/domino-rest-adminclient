@@ -25,8 +25,9 @@ const DialogContainer = styled.dialog`
   color: light-dark(#000, #e0e0e0);
 
   .content-container {
-    padding: 0 0 55px 0;
+    padding: 0 0 30px 0;
     margin: 0;
+    width: 100%;
   }
 
   .content-text {
@@ -39,6 +40,7 @@ const DialogContainer = styled.dialog`
     padding: 0 30px 30px 30px
     display: flex;
     flex-direction: row-reverse;
+    width: 100%;
   }
 `
 
@@ -99,8 +101,8 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Buttons className='dialog-buttons'>
-          <LitButtonNeutral onClick={handleClose} style={{ right: 'calc(30px + 93px + 5px)' }} text='Cancel' />
-          <LitButtonYes onClick={handleSave} style={{ right: '30px' }} text='Save' />
+          <LitButtonNeutral onClick={handleClose} className='add-mode-cancel-button' text='Cancel' />
+          <LitButtonYes onClick={handleSave} className='add-mode-save-button' text='Save' />
         </Buttons>
       </DialogActions>
     </DialogContainer>
