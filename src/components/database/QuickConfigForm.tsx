@@ -35,6 +35,9 @@ import { LitButton } from '../lit-elements/LitElements';
 
 const Forms = styled.form`
   display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 `;
 
 const FileStructure = styled.div`
@@ -42,13 +45,14 @@ const FileStructure = styled.div`
   display: flex;
   padding: 0 0 0 10px;
   flex-direction: column;
+  min-height: 0;
 
   .header-title {
     margin-top: 50px;
     color: white;
     font-size: 18px;
     padding: 10px;
-    height: 70x;
+    height: 70px;
     border-radius: 5px;
   }
 
@@ -58,7 +62,10 @@ const FileStructure = styled.div`
   }
 `;
 const SearchDatabaseContainer = styled(Paper)`
-  height: calc(100vh - 153px);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(100vh - 200px);
+  margin-bottom: 24px;
   padding: 5px 0;
   overflow-y: auto;
 `;

@@ -16,7 +16,7 @@ import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
 import appIcons from '../../styles/app-icons';
-import { LitDrawer } from '../lit-elements/LitElements';
+import { LitAlert, LitDrawer } from '../lit-elements/LitElements';
 
 const QuickConfigFormSchema = Yup.object().shape({
   schemaName: Yup.string()
@@ -50,6 +50,7 @@ const QuickConfigFormSchema = Yup.object().shape({
 
 export default function QuickConfigFormContainer() {
   const { quickConfigDrawer } = useSelector((state: AppState) => state.drawer);
+  const { dbError, dbErrorMessage } = useSelector((state: AppState) => state.databases);
   const dispatch = useDispatch();
   const descriptionElementRef = React.useRef<HTMLElement>(null);
   React.useEffect(() => {
@@ -134,16 +135,25 @@ export default function QuickConfigFormContainer() {
   };
   
   return (
-    <LitDrawer label="Quick Config" open={quickConfigDrawer}>
-      <DrawerFormContainer>
-        <QuickConfigForm
-          isDisabled={isDisabled}
-          setIsDisabled={setIsDisabled}
-          selectedIcon={{ icon, setIcon }}
-          formik={formik}
-          path={{ nsfPath, setNsfPath: handleNsfPath }}
+    <>
+      <LitDrawer label="Quick Config" open={quickConfigDrawer}>
+        <DrawerFormContainer>
+          <QuickConfigForm
+            isDisabled={isDisabled}
+            setIsDisabled={setIsDisabled}
+            selectedIcon={{ icon, setIcon }}
+            formik={formik}
+            path={{ nsfPath, setNsfPath: handleNsfPath }}
+          />
+        </DrawerFormContainer>
+      </LitDrawer>
+      {dbError && (
+        <LitAlert
+          variant='danger'
+          heading='Quick config error!'
+          message={dbErrorMessage}
         />
-      </DrawerFormContainer>
-    </LitDrawer>
+      )}
+    </>
   );
 }
