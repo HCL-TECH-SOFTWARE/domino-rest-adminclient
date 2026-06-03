@@ -4,7 +4,6 @@ import '@awesome.me/webawesome/dist/components/drawer/drawer.js';
 import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import { IMG_DIR } from '../../config.dev';
 
 class Drawer extends LitElement {
     static styles = css`
@@ -27,6 +26,10 @@ class Drawer extends LitElement {
         wa-drawer::part(body) {
             background: light-dark(#fff, #1e1e2e);
             color: light-dark(inherit, #e0e0e0);
+            /* Prevent the drawer body itself from scrolling — inner regions handle their own scroll. */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
     `
 

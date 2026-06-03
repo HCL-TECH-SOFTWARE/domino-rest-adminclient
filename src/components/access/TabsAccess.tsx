@@ -952,8 +952,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           <PagerAction>
             <button
               onClick={handleClickCloneMode}
-              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center', color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary }}
               disabled={newForm.enabled}
+              className={`mode-buttons color-text-primary ${newForm.enabled ? 'cursor-default' : 'cursor-pointer'}`}
             >
               <BiCopy className='action-icon' />
               <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary}}>
@@ -962,8 +962,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             </button>
             <button
               onClick={handleNewModeOpen}
-              style={{ cursor: newForm.enabled ? "default" : "pointer", background: 'none', border: 'none', margin: 5, padding: 0, display: 'flex', alignItems: 'center', color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary }}
               disabled={newForm.enabled}
+              className={`mode-buttons color-text-primary ${newForm.enabled ? 'cursor-default' : 'cursor-pointer'}`}
             >
               <AddIcon className='action-icon' />
               <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary}}>

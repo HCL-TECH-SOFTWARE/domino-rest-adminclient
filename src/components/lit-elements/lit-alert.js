@@ -16,8 +16,30 @@ class Alert extends LitElement {
   };
  
   static styles = css`
+    /* Reset default popover UA styles and anchor top-right.
+       Popover puts us in the top layer, which renders above <dialog> elements like wa-drawer. */
     :host {
       display: block;
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      left: auto;
+      bottom: auto;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      overflow: visible;
+      width: auto;
+      height: auto;
+      max-width: none;
+      max-height: none;
+      color: inherit;
+      z-index: 2147483647;
+    }
+
+    :host(:not(:popover-open)) {
+      display: none;
     }
  
     .toast-wrapper {
@@ -111,23 +133,46 @@ class Alert extends LitElement {
     super();
     this.message  = '';
     this.variant  = 'neutral';
-    this.heading = 'Error logging in!';
+    this.heading = 'Network error!';
     this._visible = false;
     this._timer   = null;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Enable Popover API so we render in the top layer (above wa-drawer's <dialog>).
+    if (!this.hasAttribute('popover')) {
+      this.setAttribute('popover', 'manual');
+    }
   }
  
   /**
    * Show the alert for `duration` ms (default 1 000 — change to 5 000 for production).
    * Called externally by the notify() helper.
    */
-  show(message, variant = 'neutral', duration = 1000) {
+  show(message, variant = 'neutral', duration = 5000, heading) {
     clearTimeout(this._timer);
- 
+
     this.message  = message;
     this.variant  = variant;
+    if (heading !== undefined) {
+      this.heading = heading;
+    }
     this._visible = true;
- 
-    // Wait one microtask so Lit has rendered .visible before we start the timer
+
+    // Move to body so we're not trapped inside another component's shadow tree.
+    if (!this._movedToBody && this.isConnected && this.parentNode !== document.body) {
+      document.body.appendChild(this);
+      this._movedToBody = true;
+    }
+
+    // Open via Popover API → places this element in the top layer, above any <dialog>.
+    try {
+      if (typeof this.showPopover === 'function' && !this.matches(':popover-open')) {
+        this.showPopover();
+      }
+    } catch (_) { /* already open */ }
+
     this.updateComplete.then(() => {
       this._timer = setTimeout(() => this._hide(), duration);
     });
@@ -135,18 +180,25 @@ class Alert extends LitElement {
  
   _hide() {
     const wrapper = this.shadowRoot?.querySelector('.toast-wrapper');
-    if (!wrapper) return;
- 
+    const finish = () => {
+      this._visible = false;
+      try {
+        if (typeof this.hidePopover === 'function' && this.matches(':popover-open')) {
+          this.hidePopover();
+        }
+      } catch (_) { /* not open */ }
+      this.dispatchEvent(new CustomEvent('alert-closed', { bubbles: true, composed: true }));
+    };
+
+    if (!wrapper) { finish(); return; }
+
     wrapper.classList.remove('visible');
     wrapper.classList.add('hiding');
- 
     wrapper.addEventListener(
       'animationend',
       () => {
         wrapper.classList.remove('hiding');
-        this._visible = false;
-        // Notify the host so it can restore pointer-events: none
-        this.dispatchEvent(new CustomEvent('alert-closed', { bubbles: true, composed: true }));
+        finish();
       },
       { once: true },
     );
@@ -157,12 +209,18 @@ class Alert extends LitElement {
     this._hide();
   }
  
-  // After every render that makes the wrapper visible, ensure the class is present
+  // Auto-show whenever the `message` attribute/property transitions to a non-empty value.
+  // This lets React consumers just render <lit-alert message={msg} /> without manually calling show().
   updated(changed) {
     if (changed.has('_visible') && this._visible) {
-      // Ensure .visible is set on the wrapper after Lit stamps the DOM
       const wrapper = this.shadowRoot?.querySelector('.toast-wrapper');
       wrapper?.classList.add('visible');
+    }
+    if (changed.has('message')) {
+      const prev = changed.get('message');
+      if (this.message && this.message !== prev) {
+        this.show(this.message, this.variant, undefined, this.heading);
+      }
     }
   }
  
