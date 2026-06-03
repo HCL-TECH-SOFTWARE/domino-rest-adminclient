@@ -219,7 +219,11 @@ export const DrawerFormContainer = styled.div`
   @media only screen and (max-width: 768px) {
     width: 100vw;
   }
-  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
 `;
 
 export const FormContentContainer = styled.div`

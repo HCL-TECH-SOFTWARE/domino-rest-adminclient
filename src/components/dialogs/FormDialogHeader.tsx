@@ -5,36 +5,8 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
-import DialogTitle from '@mui/material/DialogTitle';
-import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
-import CloseMenuIcon from '@mui/icons-material/Close';
 import { AppState } from '../../store';
-
-const DialogTitleContainer = styled(DialogTitle)<{ theme: string }>`
-  padding: 0;
-  width: 100%;
-`;
-
-const DialogHeader = styled.div`
-  display: flex;
-
-  .close {
-    cursor: pointer;
-    font-size: 18px;
-    color: black;
-  }
-  
-  .title {
-    flex: 1;
-    text-overflow: ellipsis;
-    width: 100%;
-    overflow: hidden;
-    font-size: 24px;
-    font-weight: bold;
-  }
-`;
 
 interface FormDialogHeaderProps {
   title: string;
@@ -45,16 +17,19 @@ const FormDialogHeader: React.FC<FormDialogHeaderProps> = ({
   title,
   onClose,
 }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   return (
-    <DialogTitleContainer theme={themeMode} id="form-dialog-title">
-      <DialogHeader>
-        <Typography color="textPrimary" className="title">
+    <div id="form-dialog-title" className="dialog-title">
+      <div className="dialog-header">
+        <text className="dialog-header-title">
           {title}
-        </Typography>
-        <CloseMenuIcon color="secondary" className="close" onClick={onClose} />
-      </DialogHeader>
-    </DialogTitleContainer>
+        </text>
+        <button className="dialog-header-close" onClick={onClose}>
+          <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
   );
 };
 
