@@ -61,6 +61,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                 keepMounted
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
+                disablePortal
             >
                 {Object.keys(appIcons).map((iconName, index) => (
                     <MenuItem

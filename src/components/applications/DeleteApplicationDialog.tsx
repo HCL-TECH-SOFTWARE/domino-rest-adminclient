@@ -4,17 +4,11 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
+import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
 import { toggleDeleteDialog } from '../../store/dialog/action';
-import { Buttons } from '../../styles/CommonStyles';
 import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 interface DeleteApplicationDialogProps {
@@ -37,36 +31,38 @@ const DeleteApplicationDialog: React.FC<DeleteApplicationDialogProps> = ({
   handleDelete,
 }) => {
   const { deleteDialogOpen } = useSelector((state: AppState) => state.apps);
+  const ref = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (deleteDialogOpen) {
+      ref.current?.showModal();
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close();
+      }
+    }
+  }, [deleteDialogOpen])
+
   const dispatch = useDispatch();
   return (
-    <Dialog
-      open={deleteDialogOpen}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      slotProps={{
-        paper: { style: { borderRadius: '10px' } }
-      }}
-      sx={{ overflowY: 'auto' }}
-    >
+    <dialog ref={ref} className='dialog'>
       <FormDialogHeader
         title={dialogTitle}
         onClose={() => dispatch(toggleDeleteDialog())}
       />
-      <DialogContent style={{ padding: '0' }} >
-        <DialogContentText color="textPrimary" style={{ padding: '20px' }} >
+      <div className='dialog-content'>
+        <text className='dialog-content-text'>
           {deleteMessage}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Buttons>
-          <LitButtonNeutral
-            onClick={() => dispatch(toggleDeleteDialog())}
-            text='No'
-          />
-          <LitButtonYes onClick={handleDelete} text='Yes' autoFocus />
-        </Buttons>
-      </DialogActions>
-    </Dialog>
+        </text>
+      </div>
+      <div className='dialog-actions'>
+        <LitButtonNeutral
+          onClick={() => dispatch(toggleDeleteDialog())}
+          text='No'
+        />
+        <LitButtonYes onClick={handleDelete} text='Yes' autoFocus />
+      </div>
+    </dialog>
   );
 };
 
