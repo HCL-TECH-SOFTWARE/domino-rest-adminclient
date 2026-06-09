@@ -4,16 +4,12 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
+import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
-import { toggleDeleteDialog, toggleErrorDialog } from '../../store/dialog/action';
+import { toggleErrorDialog } from '../../store/dialog/action';
+import { LitButtonYes } from '../lit-elements/LitElements';
 
 interface NetworkErrorDialogProps {
   dialogTitle: string;
@@ -30,27 +26,34 @@ interface NetworkErrorDialogProps {
 const NetworkErrorDialog: React.FC = () => {
   const { errorDialogOpen, errorDialogMessage } = useSelector((state: AppState) => state.dialog);
   const dispatch = useDispatch();
+
+  const ref = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (errorDialogOpen) {
+      ref.current?.showModal();
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close();
+      }
+    }
+  }, [errorDialogOpen])
+
   return (
-    <Dialog
-      open={errorDialogOpen}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
+    <dialog ref={ref}>
       <FormDialogHeader
         title="Error"
         onClose={() => dispatch(toggleErrorDialog(errorDialogMessage))}
       />
-      <DialogContent>
-        <DialogContentText color="textPrimary">
+      <div className='dialog-content'>
+        <text className='dialog-content-text'>
           {errorDialogMessage}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => dispatch(toggleErrorDialog(errorDialogMessage))} color="primary" autoFocus>
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </text>
+      </div>
+      <div className='dialog-actions'>
+        <LitButtonYes onClick={() => dispatch(toggleErrorDialog(errorDialogMessage))} text='OK' autoFocus />
+      </div>
+    </dialog>
   );
 };
 

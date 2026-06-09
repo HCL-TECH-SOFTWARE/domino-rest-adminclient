@@ -4,15 +4,9 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-} from '@mui/material';
+import React, { useEffect, useRef } from 'react';
+import FormDialogHeader from './FormDialogHeader';
+import { LitButtonNeutral, LitButtonNo, LitButtonYes } from '../lit-elements/LitElements';
 
 interface UnsavedChangesDialogProps {
   open: boolean;
@@ -34,27 +28,36 @@ const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
   onDiscard,
   onCancel,
 }) => {
+
+  const ref = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    if (open) {
+      ref.current?.showModal()
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close()
+      }
+    }
+  }, [open])
+  
   return (
-    <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>Unsaved Changes</DialogTitle>
-      <DialogContent>
-        <Typography>
+    <dialog ref={ref} className='dialog'>
+      <FormDialogHeader title="Unsaved Changes" onClose={onCancel} />
+      <div className='dialog-content'>
+        <text className='dialog-content-text'>
           Changes have been made. Would you like to save these changes?
+        </text>
+        <text className='dialog-content-text'>
           Answering No will lose these changes.
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onCancel} color="primary">
-          Cancel
-        </Button>
-        <Button onClick={onDiscard} color="error">
-          No
-        </Button>
-        <Button onClick={onSave} variant="contained" color="primary">
-          Yes
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </text>
+      </div>
+      <div className='dialog-actions'>
+        <LitButtonNeutral onClick={onCancel} text='Cancel' />
+        <LitButtonNo onClick={onDiscard} text='No' />
+        <LitButtonYes onClick={onSave} text='Yes' autoFocus />
+      </div>
+    </dialog>
   );
 };
 

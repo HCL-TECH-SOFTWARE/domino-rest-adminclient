@@ -19,6 +19,8 @@
   --badge-color: #fff;
   --icon-color: light-dark(#000, #fff);
   --hint-text-color: light-dark(#808080, #a9a9a9);
+  --active-indicator-color: light-dark(#0fa068, #52c999);
+  --inactive-indicator-color: light-dark(#8291a0, #1b2229);
 }
 
 /* Generic */
@@ -183,6 +185,10 @@
     padding-top: 10px;
 }
 
+.pt-30 {
+    padding-top: 30px;
+}
+
 .pb-10 {
     padding-bottom: 10px;
 }
@@ -201,6 +207,10 @@
 
 .z-100 {
     z-index: 100;
+}
+
+.justify-center {
+    justify-content: center;
 }
 
 /* AccessMode.tsx */
@@ -574,4 +584,47 @@ body[data-theme="dark"] .add-import-svg-icon {
 .import-schema-field-input {
     width: 100%;
     max-height: 41px;
+}
+
+/* DeleteDialog.tsx */
+.delete-dialog-progress-icon {
+    min-width: 400;
+    height: 150;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-schema-dialog-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+/* ActivateMenu.tsx */
+.activate-menu-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+}
+
+.active-text {
+    color: var(--active-indicator-color)
+}
+
+.inactive-text {
+    color: var(--inactive-indicator-color)
+}
+
+.active-menu-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+/* FormsTable.tsx */
+.table-cell-activate-menu {
+    white-space: nowrap;
+    width: 200px;
 }
