@@ -35,7 +35,7 @@ const ColumnDetailsContainer = styled.div`
   border: 1px solid light-dark(#B4B4B4, #3a3a4a);
   border-radius: 10px;
   left: 23%;
-  margin: 2% 2% 2% 0;
+  margin-right: 2%;
   padding: 0;
 
   overflow-y: auto;

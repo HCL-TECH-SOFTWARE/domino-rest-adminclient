@@ -4,15 +4,17 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Button } from '@mui/material';
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { AGENTS_ERROR, VIEWS_ERROR } from '../../store/databases/types';
+import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const ToggleContainer = styled.div`
   .toggle-container {
@@ -92,6 +94,8 @@ const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, tog
   const { updateViewError, updateAgentError } = useSelector((state: AppState) => state.databases);
   const dispatch = useDispatch();
 
+  const ref = useRef<HTMLDialogElement>(null);
+
   const handleToggle = () => {
     if (loading) {
       dispatch(toggleAlert(`Please wait while ${type}s are still saving!`));
@@ -123,6 +127,16 @@ const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, tog
     setResetView(false);
   }
 
+  useEffect(() => {
+    if (resetView) {
+      ref.current?.showModal()
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close()
+      }
+    }
+  }, [resetView])
+
   return (
     <ToggleContainer>
       <div className='toggle-container' onClick={handleToggle}>
@@ -130,26 +144,21 @@ const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, tog
         <Button disabled={loading} className={`unchecked ${toggle ? 'left' : ''}`}>{ toggle ? "Inactive" : "Active" }</Button>
       </div>
       <div>
-      <Dialog
-        open={resetView}
-        onClose={() => {setResetView(false)}}
-        aria-labelledby="reset-view-dialog"
-        aria-describedby='reset-view-description'
-        sx={{ overflowY: 'auto' }}
-      >
-        <DialogTitle id="reset-view-dialog-title">
-          {"Reset View Columns?"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="reset-view-dialog-contents" color='textPrimary'>
-            Making this view inactive will reset all columns and remove any configuration done to this view. Do you wish to proceed?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={continueResetView}>Yes</Button>
-          <Button onClick={() => {setResetView(false)}}>No</Button>
-        </DialogActions>
-      </Dialog>
+        <dialog ref={ref} className='dialog'>
+          <FormDialogHeader
+            title={`Reset ${type === 'view' ? 'View' : 'Agent'} Columns?`}
+            onClose={() => {setResetView(false)}}
+          />
+          <div className='dialog-content'>
+            <text id="reset-view-dialog-contents" className='dialog-content-text'>
+              Making this view inactive will reset all columns and remove any configuration done to this view. Do you wish to proceed?
+            </text>
+          </div>
+          <div className='dialog-actions'>
+            <LitButtonNeutral onClick={() => {setResetView(false)}} text='No' />
+            <LitButtonYes onClick={continueResetView} text='Yes' />
+          </div>
+        </dialog>
       </div>
     </ToggleContainer>
   );

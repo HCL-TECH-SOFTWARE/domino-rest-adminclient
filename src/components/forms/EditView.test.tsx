@@ -76,6 +76,20 @@ jest.mock('../loading/APILoadingProgress', () => {
   };
 });
 
+jest.mock('../dialogs/UnsavedChangesDialog', () => {
+  return function MockUnsavedChangesDialog({ open, onSave, onDiscard, onCancel }: any) {
+    if (!open) return null;
+    return (
+      <div role="dialog">
+        <span>Unsaved Changes</span>
+        <button onClick={onCancel}>Cancel</button>
+        <button onClick={onDiscard}>No</button>
+        <button onClick={onSave}>Yes</button>
+      </div>
+    );
+  };
+});
+
 // ---- Helpers ----
 
 function createMockStore() {
@@ -153,6 +167,11 @@ function renderEditView(overrides: Partial<React.ComponentProps<typeof EditViewD
 // ---- Tests ----
 
 describe('EditViewDialog — dirty form tracking', () => {
+  beforeAll(() => {
+    HTMLDialogElement.prototype.showModal = jest.fn();
+    HTMLDialogElement.prototype.close = jest.fn();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     // Suppress fetch errors from the useEffect
@@ -172,8 +191,8 @@ describe('EditViewDialog — dirty form tracking', () => {
         expect(screen.getByText(/Edit TestView Columns/)).toBeInTheDocument();
       });
 
-      // Click X button (close-btn class)
-      const closeBtn = document.querySelector('.close-btn');
+      // Click X button
+      const closeBtn = document.querySelector('.edit-view-close-button');
       expect(closeBtn).toBeTruthy();
       fireEvent.click(closeBtn!);
 
@@ -194,18 +213,18 @@ describe('EditViewDialog — dirty form tracking', () => {
       // Simulate adding a column by clicking one in the left panel
       // The fetchedColumns show up after the mock API resolves
       await waitFor(() => {
-        const columnItems = document.querySelectorAll('.column-name');
+        const columnItems = document.querySelectorAll('.all-columns-column-name');
         expect(columnItems.length).toBeGreaterThan(0);
       });
 
       // Click a column from the left panel to add it (if not already added)
-      const allItems = document.querySelectorAll('.list-item:not(.added-column)');
+      const allItems = document.querySelectorAll('.all-columns-list-item:not(.all-columns-added-column)');
       if (allItems.length > 0) {
         fireEvent.click(allItems[0]);
       }
 
       // Click X
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       // Should show dirty dialog
@@ -232,7 +251,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       fireEvent.click(screen.getByTestId('remove-Col1'));
 
       // Click X
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       // Should show dirty dialog
@@ -254,7 +273,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       fireEvent.click(screen.getByTestId('edit-Col1'));
 
       // Click X
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       // Should show dirty dialog
@@ -276,7 +295,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       fireEvent.click(screen.getByTestId('remove-Col1'));
 
       // Click X
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       await waitFor(() => {
@@ -311,7 +330,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       fireEvent.click(screen.getByTestId('remove-Col1'));
 
       // Click X
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       await waitFor(() => {
@@ -345,7 +364,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       fireEvent.click(screen.getByTestId('remove-Col1'));
 
       // Click X
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       await waitFor(() => {
@@ -378,11 +397,11 @@ describe('EditViewDialog — dirty form tracking', () => {
 
       // Re-add Col1 from the left panel (click the non-added column)
       await waitFor(() => {
-        const notAdded = document.querySelectorAll('.list-item:not(.added-column)');
+        const notAdded = document.querySelectorAll('.all-columns-list-item:not(.all-columns-added-column)');
         expect(notAdded.length).toBeGreaterThan(0);
       });
 
-      const notAdded = document.querySelectorAll('.list-item:not(.added-column)');
+      const notAdded = document.querySelectorAll('.all-columns-list-item:not(.all-columns-added-column)');
       // Find the one for Col1
       let col1Item: Element | null = null;
       notAdded.forEach((item) => {
@@ -398,7 +417,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       // Now dirty depends on whether the re-added column matches original order/externalName
       // The re-added column will be appended at the end (Col2, Col1) — different order = dirty
       // This correctly means the form IS dirty because column order changed
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       // With different order, it should show dirty dialog
@@ -418,7 +437,7 @@ describe('EditViewDialog — dirty form tracking', () => {
         expect(screen.getByText(/Edit TestView Columns/)).toBeInTheDocument();
       });
 
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       expect(screen.queryByText('Unsaved Changes')).not.toBeInTheDocument();
@@ -431,17 +450,17 @@ describe('EditViewDialog — dirty form tracking', () => {
       });
 
       await waitFor(() => {
-        const columnItems = document.querySelectorAll('.column-name');
+        const columnItems = document.querySelectorAll('.all-columns-column-name');
         expect(columnItems.length).toBeGreaterThan(0);
       });
 
       // Click a column to add it
-      const items = document.querySelectorAll('.list-item:not(.added-column)');
+      const items = document.querySelectorAll('.all-columns-list-item:not(.all-columns-added-column)');
       if (items.length > 0) {
         fireEvent.click(items[0]);
       }
 
-      const closeBtn = document.querySelector('.close-btn');
+      const closeBtn = document.querySelector('.edit-view-close-button');
       fireEvent.click(closeBtn!);
 
       await waitFor(() => {

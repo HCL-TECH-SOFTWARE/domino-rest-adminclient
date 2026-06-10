@@ -9,7 +9,6 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { Database, FORMS_ERROR } from '../../store/databases/types';
@@ -90,14 +89,14 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbNam
   }
 
   useEffect(() => {
-      if (resetForm) {
-        ref.current?.showModal()
-      } else {
-        if (ref.current?.close) {
-          ref.current?.close()
-        }
+    if (resetForm) {
+      ref.current?.showModal()
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close()
       }
-    }, [resetForm])
+    }
+  }, [resetForm])
 
   return (
     <div className='activate-menu-container'>
