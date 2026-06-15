@@ -45,12 +45,12 @@ const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
     <dialog ref={ref} className='dialog'>
       <FormDialogHeader title="Unsaved Changes" onClose={onCancel} />
       <div className='dialog-content'>
-        <text className='dialog-content-text'>
+        <p className='dialog-content-text'>
           Changes have been made. Would you like to save these changes?
-        </text>
-        <text className='dialog-content-text'>
+        </p>
+        <p className='dialog-content-text'>
           Answering No will lose these changes.
-        </text>
+        </p>
       </div>
       <div className='dialog-actions'>
         <LitButtonNeutral onClick={onCancel} text='Cancel' />

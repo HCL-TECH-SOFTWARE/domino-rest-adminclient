@@ -20,9 +20,9 @@ const FormDialogHeader: React.FC<FormDialogHeaderProps> = ({
   return (
     <div id="form-dialog-title" className="dialog-title">
       <div className="dialog-header">
-        <text className="dialog-header-title">
+        <span className="dialog-header-title">
           {title}
-        </text>
+        </span>
         <button className="dialog-header-close" onClick={onClose}>
           <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
             <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
