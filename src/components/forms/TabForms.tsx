@@ -31,7 +31,7 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import { LitButton, LitSwitch } from "../lit-elements/LitElements";
+import { LitButton, LitButtonNeutral, LitButtonYes, LitSwitch } from "../lit-elements/LitElements";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -131,7 +131,9 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   const [formNameError, setFormNameError] = useState(false)
   const [formNameErrorMessage, setFormNameErrorMessage] = useState("")
 
-  const [showActive, setShowActive] = useState(false);
+  const [showActive, setShowActive] = useState(false)
+
+  const deactivateRef = useRef<HTMLDialogElement>(null)
   
   const [normalizeForms, setNormalizeForms] = useState(
     forms && forms.length > 0
@@ -281,6 +283,16 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
     }
   }, [createFormOpen])
 
+  useEffect(() => {
+    if (resetAllForms) {
+      deactivateRef.current?.showModal()
+    } else {
+      if (deactivateRef.current?.close) {
+        deactivateRef.current?.close()
+      }
+    }
+  }, [resetAllForms])
+
   return (
     <>
       <TopNavigator>
@@ -359,39 +371,21 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         setSchemaData={setSchemaData}
         formList={formList}
       />
-      <CommonDialog
-        open={resetAllForms}
-        onClose={() => {
-          setResetAllForms(false);
-        }}
-        aria-labelledby="reset-form-dialog"
-        aria-describedby="reset-form-description"
-      >
-        <DialogTitle id="reset-form-dialog-title">
-          <Box className="title">
-            {"WARNING: Deactivate ALL forms?"}
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="reset-form-contents" color="textPrimary">
-            This action deletes all form modes and removes all configurations done to <span style={{ color: 'red' }}>ALL</span> of the designer forms. Do you wish to proceed?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
-          <Button className="btn right save" onClick={handleDeactivateAll}>
-            Yes
-          </Button>
-          <Button 
-            className="btn cancel" 
-            onClick={() => {
-              setResetAllForms(false);
-            }}
-            style={{ right: 'calc(93px + 5px + 30px)' }}
-          >
-            No
-          </Button>
-        </DialogActions>
-      </CommonDialog>
+      <dialog ref={deactivateRef} className='dialog'>
+        <FormDialogHeader
+          title='WARNING: Deactivate ALL forms?'
+          onClose={() => {setResetAllForms(false)}}
+        />
+        <div className='dialog-content'>
+          <text id="reset-form-contents" className='dialog-content-text'>
+            This action deletes all form modes and removes all configurations done to <span className='color-text-danger'>ALL</span> of the designer forms. Do you wish to proceed?
+          </text>
+        </div>
+        <div className='dialog-actions'>
+          <LitButtonNeutral onClick={() => {setResetAllForms(false)}} text='No' />
+          <LitButtonYes onClick={handleDeactivateAll} text='Yes' />
+        </div>
+      </dialog>
     </>
   );
 };

@@ -4,10 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Button } from '@mui/material';
 import { AppState } from '../../store';
 import ViewSearch from './ViewSearch';
 import { handleDatabaseViews } from '../../store/databases/action';
@@ -16,7 +16,8 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { LitSwitch } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitSwitch } from '../lit-elements/LitElements';
+import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 const TabViewsContainer = styled.div`
   display: flex;
@@ -119,6 +120,8 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
   const [filtered, setFiltered] = useState(lists);
   const [showActive, setShowActive] = useState(false);
 
+  const ref = useRef<HTMLDialogElement>(null);
+
   useEffect(() => {
     setActiveViews(schemaData['views']?.map((view: any) => {
       const folderNames = folders.map((folder) => {return folder.viewName});
@@ -200,6 +203,16 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
     setResetAllViews(false);
   }
 
+  useEffect(() => {
+    if (resetAllViews) {
+      ref.current?.showModal()
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close()
+      }
+    }
+  }, [resetAllViews])
+
   return (
     <TabViewsContainer>
       <TopNavigator>
@@ -242,25 +255,21 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
           setOpenViewName={setOpenViewName}
          />
       </ViewPanel>
-      <Dialog
-        open={resetAllViews}
-        onClose={() => {setResetAllViews(false)}}
-        aria-labelledby="reset-view-dialog"
-        aria-describedby='reset-view-description'
-      >
-        <DialogTitle id="reset-view-dialog-title">
-          {"Reset ALL View Columns?"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="reset-view-dialog-contents" color='textPrimary'>
+      <dialog ref={ref} className='dialog'>
+        <FormDialogHeader
+          title="Reset ALL View Columns?"
+          onClose={() => {setResetAllViews(false)}}
+        />
+        <div className='dialog-content'>
+          <text id="reset-view-dialog-contents" className='dialog-content-text'>
             Making this view inactive will reset all columns and remove any configuration done to ALL the views. Do you wish to proceed?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeactivateAll}>Yes</Button>
-          <Button onClick={() => {setResetAllViews(false)}}>No</Button>
-        </DialogActions>
-      </Dialog>
+          </text>
+        </div>
+        <div className='dialog-actions'>
+          <LitButtonNeutral onClick={() => {setResetAllViews(false)}} text='No' />
+          <LitButtonYes onClick={handleDeactivateAll} text='Yes' />
+        </div>
+      </dialog>
     </TabViewsContainer>
   );
 };

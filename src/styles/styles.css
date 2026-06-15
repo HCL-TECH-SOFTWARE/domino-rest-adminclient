@@ -7,6 +7,7 @@
   /* Theme tokens */
   --text-color-primary: light-dark(#000, #e0e0e0);
   --text-color-secondary: #e0e0e0;
+  --text-color-danger: light-dark(#dc1434, #ff6b6b);
   --text-secondary: #e0e0e0;
   --border-color: #3a3a4a;
   --button-primary-color: #8b6ce0;
@@ -69,6 +70,10 @@
 
 .color-text-primary {
     color: var(--text-color-primary);
+}
+
+.color-text-danger {
+    color: var(--text-color-danger);
 }
 
 .dialog {
@@ -226,6 +231,10 @@
     padding-bottom: 10px;
 }
 
+.pb-20 {
+    padding-bottom: 20px;
+}
+
 .pb-30 {
     padding-bottom: 30px;
 }
@@ -254,12 +263,24 @@
     justify-content: space-between;
 }
 
+.items-center {
+    align-items: center;
+}
+
 .text-center {
     text-align: center;
 }
 
 .text-bold {
     font-weight: bold;
+}
+
+.transparent {
+    background: transparent;
+}
+
+.search-input {
+    background: light-dark(#fff, #252535);
 }
 
 /* AccessMode.tsx */
@@ -341,7 +362,6 @@
 .mode-compare-container {
     padding: 30px;
     height: 100%;
-    background: yellow;
 }
 
 .mode-compare-search-icon {
@@ -408,7 +428,7 @@
 }
 
 .mode-compare-formula-name {
-    color: #323a3d;
+    color: light-dark(#323a3d, #7d939a);
 }
 
 .formula-name-value-container {
@@ -435,23 +455,13 @@
     width: 15px;
 }
 
-.mode-compare-dialog-container {
-    flex-direction: column;
-    border: 1px solid white;
-
-    width: 100vw;
-    /* max-width: 100vw; */
-    height: 100vh;
-    margin: 0;
-    overflow-y: scroll;
-
-    background-color: light-dark(#fafafa, #1e1e2e);
-    position: fixed;
-    z-index: 999;
-}
-
-.mode-compare-dialog-container[open] {
-    display: flex;
+.mode-compare-search-bar {
+    border: 1px solid #9a9a9a;
+    padding: 0 17px;
+    border-radius: 10px;
+    width: 50%;
+    margin-left: 25%;
+    background: light-dark(#fff, #252535);
 }
 
 /* AddModeDialog.tsx */

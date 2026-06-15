@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DialogContent from '@mui/material/DialogContent';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { BlueSwitch, DeleteIcon, SearchContainer, SearchInput } from '../../styles/CommonStyles';
@@ -15,7 +15,7 @@ import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/datab
 import { Database, Field } from '../../store/databases/types';
 import { Box, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
 import { Mode } from 'fs';
-import { LitButton } from '../lit-elements/LitElements';
+import { LitButton, LitDialog } from '../lit-elements/LitElements';
 import { IMG_DIR } from '../../config.dev';
 
 const DialogContainer = styled(Dialog)`
@@ -251,6 +251,8 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
   const [searchInput, setSearchInput] = useState('');
   const [filteredFields, setFilteredFields] = useState(allFieldNames);
   const [showRemove, setShowRemove] = useState(false);
+
+  const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -523,17 +525,33 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
       .trim(); // Remove any leading/trailing spaces
   }
 
+  useEffect(() => {
+    if (open) {
+      ref.current?.showModal()
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close()
+      }
+    }
+  }, [open])
+
   return (
-    <DialogContainer open={open} onClose={handleClose} fullScreen>
-      <Box className='mode-compare-container'>
+    // <dialog className='mode-compare-dialog-container' open={open} onClose={handleClose}>
+    <dialog ref={ref} className='dialog full-width'>
+      {/* <Box className='mode-compare-container'> */}
         <FormDialogHeader title={`Mode Compare - ${formName} Form`} onClose={handleClose} />
-        <DialogContent className="content-container">
-          <div className='mode-compare-dialog-container'>
-            <div className="search-add-row">
-              <SearchContainer className="search-bar">
+        <div className="dialog-content">
+          <div className='flex flex-col full-width justify-between items-center'>
+            <div className="flex flex-row pb-10">
+              <div className="flex items-center p-0 full-width mode-compare-search-bar">
                 <SearchIcon color="primary" className="mode-compare-search-icon" />
-                <SearchInput onChange={handleSearchField} type="text" placeholder={`Search Field`} />
-              </SearchContainer>
+                <SearchInput
+                  onChange={handleSearchField}
+                  type="text"
+                  placeholder={`Search Field`}
+                  className="transparent color-text-primary search-input"
+                />
+              </div>
               <div className="add-container">
                 <LitButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`}>
                   Add New Column
@@ -545,6 +563,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               <BlueSwitch size="small" checked={showDiffOnly} onChange={handleShowDiff} />
             </div>
           </div>
+          {/* <div>test</div> */}
           <ModeCardsContainer>
             <Box className="row">
               {selectedModeNames.map((modeName: string, idx: number) => {
@@ -662,16 +681,16 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               })}
             </Box>
             <Box className={`field-row ${showDiffOnly && !(diffFormulas.length > 0) ? 'hidden' : ''}`}>
-              {selectedModeNames.map((modeName: string) => {
+              {selectedModeNames.map((modeName: string, idx: number) => {
                 if (modeName === '') {
-                  return <Box className={`field-detail`} />
+                  return <Box className={`field-detail`} key={`${modeName}-${idx}`} />
                 } else {
                   return (
-                    <Box className={`field-detail ${diffFormulas.length > 0 ? 'diff' : ''}`}>
+                    <Box className={`field-detail ${diffFormulas.length > 0 ? 'diff' : ''}`} key={`${modeName}-${idx}`}>
                       <Box className="field-name">Formulas</Box>
-                      {formulas.map((formula: string) => {
+                      {formulas.map((formula: string, formulaIdx: number) => {
                         return (
-                          <Box className='mode-compare-formulas-container'>
+                          <Box className='mode-compare-formulas-container' key={`${formula}-${formulaIdx}`}>
                             <Box className='mode-compare-formulas-content'>
                               <Box className='diff-formulas-container'>
                                 {diffFormulas.includes(
@@ -714,12 +733,12 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 }
               })}
             </Box>
-            {filteredFields.map((fieldName: any) => {
+            {filteredFields.map((fieldName: any, fieldIdx: number) => {
               return (
-                <Box className={`field-row ${showDiffOnly && !Object.keys(diffFields).includes(fieldName) ? 'hidden' : ''}`}>
-                  {selectedModeNames.map((modeName: string) => {
+                <Box key={`${fieldName}-${fieldIdx}`} className={`field-row ${showDiffOnly && !Object.keys(diffFields).includes(fieldName) ? 'hidden' : ''}`}>
+                  {selectedModeNames.map((modeName: string, modeIdx: number) => {
                     if (modeName === '') {
-                      return <Box className={`field-detail`} />;
+                      return <Box className={`field-detail`} key={`${modeName}-${modeIdx}`} />;
                     } else {
                       return (
                         <Box className={`field-detail ${Object.keys(diffFields).includes(fieldName) ? 'diff' : ''}`}>
@@ -794,9 +813,10 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               );
             })}
           </ModeCardsContainer>
-        </DialogContent>
-      </Box>
-    </DialogContainer>
+        </div>
+      {/* </Box> */}
+    {/* </dialog> */}
+    </dialog>
   );
 };
 
