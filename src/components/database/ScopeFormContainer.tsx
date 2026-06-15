@@ -157,20 +157,31 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
   }
 
   useEffect(() => {
-    if (visible) {
-        formik.setValues({
-          apiName: database?.apiName || '',
-          description: database?.description || '',
-          server: database?.server || '',
-          nsfPath : database?.nsfPath || '',
-          schemaName : database?.schemaName || '',
-          isActive: database?.isActive || true,
-          icon: database ? appIcons[database.iconName] : appIcons[icon],
-          iconName: database?.iconName || icon,
-          maximumAccessLevel: database?.maximumAccessLevel ? database.maximumAccessLevel : 'Editor',
-        })
+    if (visible && isEdit) {
+      formik.setValues({
+        apiName: database?.apiName || '',
+        description: database?.description || '',
+        server: database?.server || '',
+        nsfPath : database?.nsfPath || '',
+        schemaName : database?.schemaName || '',
+        isActive: database?.isActive || true,
+        icon: database ? appIcons[database.iconName] : appIcons[icon],
+        iconName: database?.iconName || icon,
+        maximumAccessLevel: database?.maximumAccessLevel ? database.maximumAccessLevel : 'Editor',
+      })
+    } else if (visible && !isEdit) {
+      formik.setValues({
+        apiName: '',
+        description: '',
+        server: '',
+        nsfPath : '',
+        schemaName : '',
+        isActive: true,
+        icon: appIcons['beach'],
+        iconName: 'beach',
+        maximumAccessLevel: 'Editor',
+      })
     }
-    
   }, [database, visible])
 
   return (
