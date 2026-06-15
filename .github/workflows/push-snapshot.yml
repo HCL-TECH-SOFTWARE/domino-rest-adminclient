@@ -51,7 +51,6 @@ jobs:
         with:
           wssURL: https://saas.whitesourcesoftware.com/agent
           apiKey: ${{ secrets.WSS_API_KEY }}
-          WSS
           configFile: 'admin-wss.config'
       - name: Publish only Snapshot to GitHub Packages
         if: endsWith(env.MVN_VERSION, '-SNAPSHOT')
