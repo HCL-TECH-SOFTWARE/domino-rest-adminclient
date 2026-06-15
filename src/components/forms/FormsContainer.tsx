@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 // prop-types import removed — using TypeScript interfaces instead
@@ -39,15 +39,16 @@ import ErrorWrapper from '../wrapper/ErrorWrapper';
 import TabForms from './TabForms';
 import TabViews from './TabViews';
 import TabAgents from './TabAgents';
-import { ButtonNeutral, ButtonNo, ButtonYes, DialogContainer, TopNavigator } from '../../styles/CommonStyles';
+import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
 import EditViewDialog from './EditView';
-import { LitSource } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitSource } from '../lit-elements/LitElements';
 import { Editor } from '@monaco-editor/react';
 import loader from '@monaco-editor/loader';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -196,6 +197,8 @@ const FormsContainer = () => {
   const [openViewName, setOpenViewName] = useState('');
 
   const editorRef = useRef<any>(null)
+  const saveRef = useRef<HTMLDialogElement>(null);
+  const discardRef = useRef<HTMLDialogElement>(null);
 
   // NOTE: Global console.error override was removed — it suppressed ALL errors app-wide.
 
@@ -626,6 +629,25 @@ const FormsContainer = () => {
     dispatch(fetchFolders(dbName, nsfPath) as any)
   }, [dbName, dispatch, nsfPath])
 
+  useEffect(() => {
+    if (saveChangesDialog) {
+      saveRef.current?.showModal()
+    } else {
+      if (saveRef.current?.close) {
+        saveRef.current?.close()
+      }
+    }
+  }, [saveChangesDialog])
+
+  useEffect(() => {
+    if (discardChangesDialog) {
+      discardRef.current?.showModal()
+    } else {
+      if (discardRef.current?.close) {
+        discardRef.current?.close()
+      }
+    }
+  }, [discardChangesDialog])
 
   return (
     <ErrorWrapper errorStatus={errorStatus}>
@@ -707,38 +729,36 @@ const FormsContainer = () => {
                   onMount={handleEditorDidMount}
                   theme={themeMode === 'dark' ? 'json-dark' : 'json-light'}
                 />}
-                <Dialog open={saveChangesDialog}>
-                  <DialogContainer sx={{ overflowY: 'auto' }}>
-                    <DialogTitle className='title'>
-                      <Typography className='title'>
-                        Save changes?
-                      </Typography>
-                    </DialogTitle>
-                    <DialogContent>
-                      Are you sure you want to save the changes made to the schema? Click Yes to continue.
-                    </DialogContent>
-                    <DialogActions className='actions'>
-                      <ButtonNeutral onClick={handleClickNo}>No</ButtonNeutral>
-                      <ButtonYes onClick={handleSaveChanges}>Yes</ButtonYes>
-                    </DialogActions>
-                  </DialogContainer>
-                </Dialog>
-                <Dialog open={discardChangesDialog}>
-                  <DialogContainer sx={{ overflowY: 'auto' }}>
-                    <DialogTitle className='title'>
-                      <Typography className='title'>
-                        Discard changes?
-                      </Typography>
-                    </DialogTitle>
-                    <DialogContent>
+                <dialog ref={saveRef} className='dialog'>
+                  <FormDialogHeader
+                    title='Save changes?'
+                    onClose={handleClickNo}
+                  />
+                  <div className='dialog-content'>
+                    <text className='dialog-content-text'>
+                      Are you sure you want to save the changes made to the schema? Click Yes to continue. Click No to go back and review your changes.
+                    </text>
+                  </div>
+                  <div className='dialog-actions'>
+                    <LitButtonNeutral onClick={handleClickNo} text='No' />
+                    <LitButtonYes onClick={handleSaveChanges} text='Yes' />
+                  </div>
+                </dialog>
+                <dialog ref={discardRef} className='dialog'>
+                  <FormDialogHeader
+                    title='Discard changes?'
+                    onClose={handleDiscardChanges}
+                  />
+                  <div className='dialog-content'>
+                    <text className='dialog-content-text'>
                       WARNING: Clicking Cancel will discard the changes you've made to the schema. Continue?
-                    </DialogContent>
-                    <DialogActions className='actions'>
-                      <ButtonNo onClick={handleDiscardChanges}>Discard Changes</ButtonNo>
-                      <ButtonYes onClick={handleKeepEditing}>Keep Editing</ButtonYes>
-                    </DialogActions>
-                  </DialogContainer>
-                </Dialog>
+                    </text>
+                  </div>
+                  <div className='dialog-actions'>
+                    <LitButtonNeutral onClick={handleDiscardChanges} text='Discard Changes' />
+                    <LitButtonYes onClick={handleKeepEditing} text='Keep Editing' />
+                  </div>
+                </dialog>
               </TabPanel>
             </Stack>
           </>

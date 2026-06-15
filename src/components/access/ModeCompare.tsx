@@ -4,10 +4,9 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
-import DialogContent from '@mui/material/DialogContent';
+import React, { useEffect, useRef, useState } from 'react';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { BlueSwitch, DeleteIcon, SearchContainer, SearchInput } from '../../styles/CommonStyles';
+import { BlueSwitch, DeleteIcon, SearchInput } from '../../styles/CommonStyles';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -17,73 +16,6 @@ import { Box, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
 import { Mode } from 'fs';
 import { LitButton } from '../lit-elements/LitElements';
 import { IMG_DIR } from '../../config.dev';
-
-const DialogContainer = styled(Dialog)`
-  border: 1px solid white;
-
-  width: 100vw;
-  max-width: 100vw;
-  height: 100vh;
-  margin: 0;
-  overflow-y: scroll;
-
-  background-color: light-dark(#fafafa, #1e1e2e);
-
-  .content-container {
-    padding: 0;
-    margin: 0;
-  }
-
-  .search-add-row {
-    display: flex;
-    flex-direction: row;
-    padding-bottom: 12px;
-  }
-
-  .search-bar {
-    border: 1px solid #9a9a9a;
-    padding: 12px 17px;
-    border-radius: 10px;
-    width: 50%;
-    margin-left: 25%;
-  }
-
-  .search-icon {
-    color: #999999;
-  }
-
-  .add-container {
-    width: 25%;
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .add-column {
-    color: #0f5fdc;
-    text-transform: none;
-    font-size: 16;
-    font-weight: 700;
-    line-height: normal;
-    padding: 11px 24px;
-    background-color: light-dark(white, #252535);
-    border: none;
-  }
-
-  .toggle-container {
-    display: flex;
-    margin-left: 25%;
-  }
-
-  .delete-icon {
-    width: 20px;
-    height: 20px;
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNkg1SDIxIiBmaWxsPSIjRDY0NjZGIi8+CjxwYXRoIGQ9Ik0zIDZINUgyMSIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTkgNlYyMEMxOSAyMC41MzA0IDE4Ljc4OTMgMjEuMDM5MSAxOC40MTQyIDIxLjQxNDJDMTguMDM5MSAyMS43ODkzIDE3LjUzMDQgMjIgMTcgMjJIN0M2LjQ2OTU3IDIyIDUuOTYwODYgMjEuNzg5MyA1LjU4NTc5IDIxLjQxNDJDNS4yMTA3MSAyMS4wMzkxIDUgMjAuNTMwNCA1IDIwVjZNOCA2VjRDOCAzLjQ2OTU3IDguMjEwNzEgMi45NjA4NiA4LjU4NTc5IDIuNTg1NzlDOC45NjA4NiAyLjIxMDcxIDkuNDY5NTcgMiAxMCAySDE0QzE0LjUzMDQgMiAxNS4wMzkxIDIuMjEwNzEgMTUuNDE0MiAyLjU4NTc5QzE1Ljc4OTMgMi45NjA4NiAxNiAzLjQ2OTU3IDE2IDRWNiIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K');
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
-`;
 
 const ModeCardsContainer = styled.div`
   padding: 0;
@@ -251,6 +183,8 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
   const [searchInput, setSearchInput] = useState('');
   const [filteredFields, setFilteredFields] = useState(allFieldNames);
   const [showRemove, setShowRemove] = useState(false);
+
+  const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -523,17 +457,33 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
       .trim(); // Remove any leading/trailing spaces
   }
 
+  useEffect(() => {
+    if (open) {
+      ref.current?.showModal()
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close()
+      }
+    }
+  }, [open])
+
   return (
-    <DialogContainer open={open} onClose={handleClose} fullScreen>
-      <Box className='mode-compare-container'>
+    // <dialog className='mode-compare-dialog-container' open={open} onClose={handleClose}>
+    <dialog ref={ref} className='dialog full-width'>
+      {/* <Box className='mode-compare-container'> */}
         <FormDialogHeader title={`Mode Compare - ${formName} Form`} onClose={handleClose} />
-        <DialogContent className="content-container">
-          <div className='mode-compare-dialog-container'>
-            <div className="search-add-row">
-              <SearchContainer className="search-bar">
+        <div className="dialog-content">
+          <div className='flex flex-col full-width justify-between items-center'>
+            <div className="flex flex-row pb-10">
+              <div className="flex items-center p-0 full-width mode-compare-search-bar">
                 <SearchIcon color="primary" className="mode-compare-search-icon" />
-                <SearchInput onChange={handleSearchField} type="text" placeholder={`Search Field`} />
-              </SearchContainer>
+                <SearchInput
+                  onChange={handleSearchField}
+                  type="text"
+                  placeholder={`Search Field`}
+                  className="transparent color-text-primary search-input"
+                />
+              </div>
               <div className="add-container">
                 <LitButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`}>
                   Add New Column
@@ -545,6 +495,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               <BlueSwitch size="small" checked={showDiffOnly} onChange={handleShowDiff} />
             </div>
           </div>
+          {/* <div>test</div> */}
           <ModeCardsContainer>
             <Box className="row">
               {selectedModeNames.map((modeName: string, idx: number) => {
@@ -662,16 +613,16 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               })}
             </Box>
             <Box className={`field-row ${showDiffOnly && !(diffFormulas.length > 0) ? 'hidden' : ''}`}>
-              {selectedModeNames.map((modeName: string) => {
+              {selectedModeNames.map((modeName: string, idx: number) => {
                 if (modeName === '') {
-                  return <Box className={`field-detail`} />
+                  return <Box className={`field-detail`} key={`${modeName}-${idx}`} />
                 } else {
                   return (
-                    <Box className={`field-detail ${diffFormulas.length > 0 ? 'diff' : ''}`}>
+                    <Box className={`field-detail ${diffFormulas.length > 0 ? 'diff' : ''}`} key={`${modeName}-${idx}`}>
                       <Box className="field-name">Formulas</Box>
-                      {formulas.map((formula: string) => {
+                      {formulas.map((formula: string, formulaIdx: number) => {
                         return (
-                          <Box className='mode-compare-formulas-container'>
+                          <Box className='mode-compare-formulas-container' key={`${formula}-${formulaIdx}`}>
                             <Box className='mode-compare-formulas-content'>
                               <Box className='diff-formulas-container'>
                                 {diffFormulas.includes(
@@ -714,12 +665,12 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 }
               })}
             </Box>
-            {filteredFields.map((fieldName: any) => {
+            {filteredFields.map((fieldName: any, fieldIdx: number) => {
               return (
-                <Box className={`field-row ${showDiffOnly && !Object.keys(diffFields).includes(fieldName) ? 'hidden' : ''}`}>
-                  {selectedModeNames.map((modeName: string) => {
+                <Box key={`${fieldName}-${fieldIdx}`} className={`field-row ${showDiffOnly && !Object.keys(diffFields).includes(fieldName) ? 'hidden' : ''}`}>
+                  {selectedModeNames.map((modeName: string, modeIdx: number) => {
                     if (modeName === '') {
-                      return <Box className={`field-detail`} />;
+                      return <Box className={`field-detail`} key={`${modeName}-${modeIdx}`} />;
                     } else {
                       return (
                         <Box className={`field-detail ${Object.keys(diffFields).includes(fieldName) ? 'diff' : ''}`}>
@@ -794,9 +745,10 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
               );
             })}
           </ModeCardsContainer>
-        </DialogContent>
-      </Box>
-    </DialogContainer>
+        </div>
+      {/* </Box> */}
+    {/* </dialog> */}
+    </dialog>
   );
 };
 

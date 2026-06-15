@@ -7,42 +7,8 @@
 import React, { useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { Buttons } from '../../styles/CommonStyles';
-import styled from 'styled-components';
 import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
-
-const DialogContainer = styled.dialog`
-  border: 1px solid light-dark(transparent, #3a3a4a);
-  border-radius: 10px;
-  width: 30%;
-  padding: 30px;
-  height: fit-content;
-  background: light-dark(#FFF, #252535);
-  color: light-dark(#000, #e0e0e0);
-
-  .content-container {
-    padding: 0 0 30px 0;
-    margin: 0;
-    width: 100%;
-  }
-
-  .content-text {
-    font-size: 16px;
-    padding: 0;
-    margin: 0;
-  }
-
-  .dialog-buttons {
-    padding: 0 30px 30px 30px
-    display: flex;
-    flex-direction: row-reverse;
-    width: 100%;
-  }
-`
 
 interface AddmodeDialogProps {
   open: boolean;
@@ -76,36 +42,37 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
   }, [open])
 
   return (
-    <DialogContainer
+    <dialog
       ref={ref}
       onClose={handleClose}
+      className='add-mode-dialog-container'
     >
-      <FormDialogHeader title={clone ? `Clone ${modeName}` : `Add New Mode`} onClose={handleClose} />
-      <DialogContent className='content-container'>
-        <DialogContentText color="textPrimary" className='content-text'>
-          Example: dql, draft, archive
-        </DialogContentText>
-        <TextField
-          onChange={handleTextChange}
-          autoFocus
-          margin="none"
-          id="modeName"
-          placeholder="Mode Name"
-          type="text"
-          fullWidth
-        />
-        {formError && (
-          <Typography color="error">{formError}</Typography>
-          )
-        }
-      </DialogContent>
-      <DialogActions>
-        <Buttons className='dialog-buttons'>
-          <LitButtonNeutral onClick={handleClose} className='add-mode-cancel-button' text='Cancel' />
-          <LitButtonYes onClick={handleSave} className='add-mode-save-button' text='Save' />
-        </Buttons>
-      </DialogActions>
-    </DialogContainer>
+      <div className='dialog-content'>
+        <FormDialogHeader title={clone ? `Clone ${modeName}` : `Add New Mode`} onClose={handleClose} />
+          <div className='add-mode-content-container'>
+            <text className='add-mode-content-text'>
+              Example: dql, draft, archive
+            </text>
+            <TextField
+              onChange={handleTextChange}
+              autoFocus
+              margin="none"
+              id="modeName"
+              placeholder="Mode Name"
+              type="text"
+              fullWidth
+            />
+            {formError && (
+              <Typography color="error">{formError}</Typography>
+              )
+            }
+          </div>
+      </div>
+      <div className='dialog-actions'>
+        <LitButtonNeutral onClick={handleClose} className='dialog-actions-button' text='Cancel' />
+        <LitButtonYes onClick={handleSave} className='dialog-actions-button' text='Save' />
+      </div>
+    </dialog>
   );
 };
 

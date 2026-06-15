@@ -7,11 +7,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import Typography from '@mui/material/Typography';
-import { Box, ButtonBase, Dialog, Grid, TextField } from '@mui/material';
-import { ButtonNeutral, ButtonYes, DialogContainer, HorizontalDivider } from '../../styles/CommonStyles';
+import { Box, TextField } from '@mui/material';
 import styled from 'styled-components';
-import CloseMenuIcon from '@mui/icons-material/Close';
 import { useDispatch } from 'react-redux';
 import { addSchema } from '../../store/databases/action';
 import { Autocomplete } from '@mui/material';
@@ -19,61 +16,8 @@ import appIcons from '../../styles/app-icons';
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { LitAutocomplete } from '../lit-elements/LitElements';
-
-const AddImportDialogContainer = styled(Dialog)`
-  width: 50vw;
-  height: 100%;
-  margin-left: 25vw;
-
-  .option-container {
-    border: 1px solid #AFAFAF;
-    border-radius: 5px;
-    padding: 15px 30px;
-    display: flex;
-    gap: 23px;
-    align-items: center;
-    background-color: light-dark(#FFF, #1e1e2e);
-
-    &:hover {
-      cursor: pointer;
-      background-color: light-dark(#D5E0F3, #353548);
-    }
-  }
-`
-
-const DialogContentContainer = styled(Box)`
-  width: 100%;
-  height: 100%;
-  padding: 30px 35px 35px 35px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  background-color: light-dark(#FFF, #1e1e2e);
-
-  .detail-title {
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  .back-button {
-    width: fit-content;
-    gap: 5px;
-
-    &:hover {
-      cursor: pointer:
-    }
-  }
-`
-
-const DialogActionsContainer = styled(Box)`
-  width: 100%;
-  height: 100%;
-  padding: 30px 35px 25px 35px;
-  display: flex;
-  justify-content: end;
-  gap: 20px;
-`
+import { LitAutocomplete, LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 interface AddImportDialogProps {
   open: boolean;
@@ -104,6 +48,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   const dispatch = useDispatch();
 
   const autocompleteRef = useRef<any>(null)
+  const ref = useRef<HTMLDialogElement>(null)
 
   const SchemaFormSchema = Yup.object().shape({
     schemaName: Yup.string()
@@ -185,6 +130,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
     setImportDialogOpen(false);
     handleClose();
     setSchemaName('')
+    formik.resetForm()
   }
 
   // create a hidden input element and click it to open file dialog
@@ -258,6 +204,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const handleClickBack = () => {
     setImportDialogOpen(false);
+    formik.resetForm()
   }
 
   useEffect(() => {
@@ -308,6 +255,20 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
     setSchemaName('')
   }
 
+  useEffect(() => {
+    if (open) {
+      formik.resetForm()
+      setSchemaName('')
+      setIconName('beach')
+      setImportDialogOpen(false)
+      ref.current?.showModal();
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close();
+      }
+    }
+  }, [open])
+
   const BackArrow = (
     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" fill="none">
         <path d="M11.875 7.5H3.125" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
@@ -317,79 +278,68 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const InitialDialog = (
     <>
-      <HorizontalDivider />
-      <DialogContentContainer>
-        <Box className='option-container' onClick={handleClickImport}>
+      <hr className='divider' />
+      <div className='add-import-dialog-container'>
+        <div className='add-import-option-container' onClick={handleClickImport}>
           <img
             src={`data:image/svg+xml;base64, PHN2ZyB3aWR0aD0iMzkiIGhlaWdodD0iMzkiIHZpZXdCb3g9IjAgMCAzOSAzOSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InVwbG9hZCI+CjxwYXRoIGlkPSJWZWN0b3IiIGQ9Ik0zNC4xMjUgMjQuMzc1VjMwLjg3NUMzNC4xMjUgMzEuNzM3IDMzLjc4MjYgMzIuNTYzNiAzMy4xNzMxIDMzLjE3MzFDMzIuNTYzNiAzMy43ODI2IDMxLjczNyAzNC4xMjUgMzAuODc1IDM0LjEyNUg4LjEyNUM3LjI2MzA1IDM0LjEyNSA2LjQzNjQgMzMuNzgyNiA1LjgyNjkgMzMuMTczMUM1LjIxNzQxIDMyLjU2MzYgNC44NzUgMzEuNzM3IDQuODc1IDMwLjg3NVYyNC4zNzUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGlkPSJWZWN0b3JfMiIgZD0iTTI3LjYyNSAxM0wxOS41IDQuODc1TDExLjM3NSAxMyIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggaWQ9IlZlY3Rvcl8zIiBkPSJNMTkuNSA0Ljg3NVYyNC4zNzUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9zdmc+Cg==`}
             alt="upload-icon"
-            style={{
-            color: '#000',
-            width: '39px',
-            height: '39px'
-            }}
+            className="add-import-svg-icon"
           />
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <Box style={{ fontWeight: '700', fontSize: '16px', padding: 0, margin: 0 }}>
+          <div className='add-import-text-container'>
+            <text className='add-import-option-title'>
               Import Schema
-            </Box>
-            <Box style={{ fontWeight: '400', fontSize: '14px', padding: 0, margin: 0 }}>
+            </text>
+            <text className='add-import-option-description'>
               Import new schema from file
-            </Box>
-          </Box>
-        </Box>
-        <Box className='option-container' onClick={handleClickCreate}>
+            </text>
+          </div>
+        </div>
+        <div className='add-import-option-container' onClick={handleClickCreate}>
           <img
             src={`data:image/svg+xml;base64, PHN2ZyB3aWR0aD0iNDMiIGhlaWdodD0iNDMiIHZpZXdCb3g9IjAgMCA0MyA0MyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9InBsdXMtY2lyY2xlIj4KPHBhdGggaWQ9IlZlY3RvciIgZD0iTTIxLjUwMDcgMzkuNDE2N0MzMS4zOTU4IDM5LjQxNjcgMzkuNDE3MyAzMS4zOTUxIDM5LjQxNzMgMjEuNUMzOS40MTczIDExLjYwNDkgMzEuMzk1OCAzLjU4MzM3IDIxLjUwMDcgMy41ODMzN0MxMS42MDU1IDMuNTgzMzcgMy41ODM5OCAxMS42MDQ5IDMuNTgzOTggMjEuNUMzLjU4Mzk4IDMxLjM5NTEgMTEuNjA1NSAzOS40MTY3IDIxLjUwMDcgMzkuNDE2N1oiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGlkPSJWZWN0b3JfMiIgZD0iTTIxLjUgMTQuMzMzNFYyOC42NjY3IiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBpZD0iVmVjdG9yXzMiIGQ9Ik0xNC4zMzQgMjEuNUgyOC42NjczIiBzdHJva2U9ImJsYWNrIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L2c+Cjwvc3ZnPgo=`}
             alt="add-icon"
-            className="dialog-svg-icon"
-            style={{
-            color: '#000',
-            width: '39px',
-            height: '39px'
-            }}
+            className="add-import-svg-icon"
           />
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <Box style={{ fontWeight: '700', fontSize: '16px', padding: 0, margin: 0 }}>
+          <div className='add-import-text-container'>
+            <text className='add-import-option-title'>
               Create Schema
-            </Box>
-            <Box style={{ fontWeight: '400', fontSize: '14px', padding: 0, margin: 0 }}>
+            </text>
+            <text className='add-import-option-description'>
               Create your own schema
-            </Box>
-          </Box>
-        </Box>
-      </DialogContentContainer>
+            </text>
+          </div>
+        </div>
+      </div>
     </>
   )
 
   const ImportDialog = (
     <>
-      <HorizontalDivider />
-      <DialogContentContainer>
-        <ButtonBase onClick={handleClickBack} className='back-button'>
+      <hr className='divider' />
+      <div className='import-dialog-content'>
+        <button onClick={handleClickBack} className='add-import-back-button'>
           {BackArrow}
           Back
-        </ButtonBase>
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <Typography className='detail-title'>
+        </button>
+        <div className='import-dialog-content-section'>
+          <div className='medium-text'>
             {`${importFlag ? "Import Into Database" : "Database"}`}
-          </Typography>
+          </div>
           <LitAutocomplete
             options={availableDatabases.map((database) => database.title)}
             ref={autocompleteRef}
             error={!!formik.errors.nsfPath && formik.touched.nsfPath}
             errorMessage={formik.errors.nsfPath}
             initialOption={formik.values.nsfPath}
-            style={{ width: '100%' }}
+            className='full-width'
           />
-        </Box>
-        <HorizontalDivider />
-        <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '20px' }}>
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <Typography className='detail-title'>
-              Icon
-            </Typography>
-            <Box style={{ display: 'flex', alignItems: 'center', height: '41px' }}>
+        </div>
+        <hr className='divider' />
+        <div className='flex flex-row pr-30 pl-30 pt-10 pb-10 gap-20'>
+          <div className='import-icon-schema-container'>
+            <text className='medium-text'>Icon</text>
+            <div className='import-icon-dropdown-container'>
               <IconDropdown
                 handleSelectIcon={handleSelectIcon}
                 displayIconName={iconName}
@@ -399,34 +349,30 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
                 handleMenuItemClick={handleMenuItemClick}
                 size={45}
               />
-            </Box>
-          </Box>
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1 }}>
-            <Typography className='detail-title'>
-              Schema Name
-            </Typography>
-            <Box style={{ height: '41px' }}>
+            </div>
+          </div>
+          <div className='import-schema-name-container'>
+            <text className='medium-text'>Schema Name</text>
+            {/* <Box style={{ height: '41px' }}> */}
               <TextField 
                 onChange={handleSchemaNameChange} 
                 error={!!formik.errors.schemaName && formik.touched.schemaName}
-                helperText={formik.errors.schemaName}
+                helperText={(!!formik.errors.schemaName && formik.touched.schemaName) ? formik.errors.schemaName : ' '}
                 name='schemaName'
                 variant='outlined' 
                 value={schemaName} 
                 placeholder='Schema Name' 
-                style={{ maxHeight: '41px', width: '100%' }} 
+                className='import-schema-field-input'
               />
-            </Box>
-          </Box>
-        </Box>
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <Typography className='detail-title'>
-            Schema Description
-          </Typography>
+            {/* </Box> */}
+          </div>
+        </div>
+        <div className='flex flex-col pr-30 pl-30 pt-10 pb-10 gap-5'>
+          <text className='medium-text'>Schema Description</text>
           <TextField 
             onChange={(e) => {formik.handleChange(e)}} 
             error={!!formik.errors.description && formik.touched.description}
-            helperText={formik.errors.description}
+            helperText={(!!formik.errors.description && formik.touched.description) ? formik.errors.description : ' '}
             name='description'
             variant='outlined' 
             value={formik.values.description} 
@@ -434,61 +380,46 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
             multiline={true}
             minRows={5}
             maxRows={5}
-            style={{ width: '100%' }} 
+            className='full-width'
           />
-        </Box>
-        <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <Typography className='detail-title'>
-            Formula Engine
-          </Typography>
+        </div>
+        <div className='flex flex-col pr-30 pl-30 pb-10 gap-5'>
+          <text className='medium-text'>Formula Engine</text>
           <Autocomplete
             id="choose-engine"
             options={engineOptions}
             value="Domino"
             getOptionLabel={engine => engine}
             fullWidth
+            disablePortal
             renderInput={(params) => <TextField {...params} name='formulaEngine' value={formik.values.formulaEngine} variant='outlined' fullWidth />}
-            style={{ margin: 0, padding: 0, zIndex: 100 }}
           />
-        </Box>
-      </DialogContentContainer>
-      <HorizontalDivider />
-      <DialogActionsContainer>
-        <ButtonNeutral onClick={handleClickBack}>Back</ButtonNeutral>
-        <ButtonYes onClick={handleClickSaveSchema}>Save Schema</ButtonYes>
-      </DialogActionsContainer>
-    </>
-  )
-
-  const Title = (
-    <>
-      <div className='title' style={{ display: 'flex', flexDirection: 'row' }}>
-        <div style={{ width: '90%', padding: '20px 25px 15px 25px', fontWeight: 'normal', fontSize: '20px' }}>
-          {!importDialogOpen && `Add New Schema`}
-          {importDialogOpen && `${importFlag ? "Import Schema" : "Create Schema"}`}
         </div>
-        <div style={{ width: '10%', paddingTop: '20px', cursor: 'pointer' }}>
-          <CloseMenuIcon onClick={handleCloseDialog} />
-        </div>
+      </div>
+      <hr className='divider' />
+      <div className='dialog-actions pr-30 pl-30 pb-30'>
+        <LitButtonNeutral onClick={handleClickBack} text='Back' />
+        <LitButtonYes onClick={handleClickSaveSchema} text='Save Schema' />
       </div>
     </>
   )
 
+  const Title = (
+    <div className='add-import-dialog-header'>
+      <FormDialogHeader
+        onClose={handleCloseDialog}
+        title={!importDialogOpen ? `Add New Schema` : `${importFlag ? "Import Schema" : "Create Schema"}` }
+      />
+    </div>
+  )
+
   return (
     <>
-      <AddImportDialogContainer
-        open={open}
-        onClose={handleCloseDialog}
-        slotProps={{
-          paper: { style: { borderRadius: '10px', maxHeight: '95vh', width: '50vw', maxWidth: '50vw' } }
-        }}
-      >
-        <DialogContainer sx={{ borderRadius: '10px', overflowY: 'auto' }}>
-          {Title}
-          {!importDialogOpen && InitialDialog}
-          {importDialogOpen && ImportDialog}
-        </DialogContainer>
-      </AddImportDialogContainer>
+      <dialog ref={ref} className='dialog add-import-dialog'>
+        {Title}
+        {!importDialogOpen && InitialDialog}
+        {importDialogOpen && ImportDialog}
+      </dialog>
     </>
   );
 };

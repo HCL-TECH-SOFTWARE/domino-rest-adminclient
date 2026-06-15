@@ -6,9 +6,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import Typography from '@mui/material/Typography';
 import ColumnDetails from './ColumnDetails';
 import { useDispatch } from 'react-redux';
 import { fetchViews, updateSchema } from '../../store/databases/action';
@@ -24,164 +21,11 @@ import APILoadingProgress from '../loading/APILoadingProgress';
 import { FiSave, FiPlusSquare, FiRefreshCcw, FiPlus } from 'react-icons/fi';
 import { BsCheck2Circle } from 'react-icons/bs';
 import { IoMdClose } from 'react-icons/io';
-import { Box, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { Buttons } from '../../styles/CommonStyles';
 import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
-
-const EditViewDialogContainer = styled.div`
-  width: 100%;
-  height: 90vh;
-
-  background: light-dark(#F8F8F8, #1e1e2e);
-  border-radius: 10px;
-
-  .close-btn {
-    cursor: pointer;
-    justify-content: right;
-    align-items: right;
-
-    position: absolute;
-    top: 1%;
-    right: 2%;
-  }
-
-  .details-container {
-    margin-top: 10px;
-    height: 87%;
-    display: flex;
-    flex-direction: row;
-    overflow-y: visible;
-
-    @media (max-height: 500px) {
-      height: 70%;
-    }
-
-    @media (min-height: 501px) and (max-height: 600px) {
-      height: 75%;
-    }
-
-    @media (min-height: 601px) and (max-height: 900px) {
-      height: 82%;
-    }
-
-    @media (min-height: 901px) and (max-height: 1200px) {
-      height: 87%;
-    }
-
-    @media (min-height: 1201px) {
-      height: 87%;
-    }
-  }
-`
-
-const DialogTitleContainer = styled.div`
-  .header {
-    margin-top: 44px;
-    margin-left: 37px;
-  }
-
-  .title-text {
-    width: 80%;
-    
-    font-weight: 700;
-    line-height: 19px;
-    letter-spacing: 0em;
-    text-align: left;
-    
-    margin-top: 44px;
-    margin-left: 37px;
-  }
-`
-
-const ColumnBarContainer = styled.div`
-  box-sizing: border-box;
-
-  width: 20%;
-  height: 100%;
-  margin: 2%;
-  overflow-y: auto;
-  overflow-x: auto;
-  
-  background: light-dark(#FFFFFF, #252535);
-  
-  border: 1px solid light-dark(#A5AFBE, #3a3a4a);
-  border-radius: 10px;
-
-  .add-all-container {
-    height: 10%;
-    text-align: right;
-    align-items: center;
-    padding-right: 6%;
-    line-height: 6;
-    vertical-align: middle;
-    color: light-dark(#5E1EBE, #8B6CE0);
-
-    cursor: pointer;
-  }
-
-  .add-all-icon {
-    margin-right: 2%;
-    display: inline-block;
-    transform: translateY(4%);
-  }
-
-  .column-list {
-    height: 90%;
-  }
-`
-
-const AllColumnsList = styled.div`
-  height: 90%;
-
-  .list-item {
-    padding: 20px;
-    cursor: pointer;
-    display: flex;
-  }
-
-  .added-column {
-    background: light-dark(#D7E0F3, #353548);
-  }
-
-  .check-icon {
-    top: 70%;
-  }
-
-  .icon {
-    flex: 0 0 auto;
-    font-size: 1.4em;
-    transform: translateY(60%);
-    margin: 0;
-  }
-
-  .icons-column {
-    display: inline-block;
-  }
-
-  .column-info {
-    width: 90%;
-  }
-
-  .column-name {
-    font-style: normal;
-    font-weight: bold;
-    line-height: 19px;
-    flex: 0 0 auto;
-  }
-
-  .columnDetails {
-    margin-top: 5px;
-    white-space: pre-wrap;
-
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 17px;
-
-    color: light-dark(#636363, #999);
-  }
-`
+import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 interface EditViewDialogProps {
   open: boolean;
@@ -213,6 +57,9 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
   const initialColumnsRef = useRef<any[]>([]);
+
+  const editRef = useRef<HTMLDialogElement>(null);
+  const resetRef = useRef<HTMLDialogElement>(null);
 
   const dispatch = useDispatch()
 
@@ -646,99 +493,119 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       }
     });
   }
+
+  useEffect(() => {
+    if (open) {
+      editRef.current?.showModal()
+    } else {
+      if (editRef.current?.close) {
+        editRef.current?.close()
+      }
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (resetDialogOpen) {
+      resetRef.current?.showModal()
+    } else {
+      if (resetRef.current?.close) {
+        resetRef.current?.close()
+      }
+    }
+  }, [resetDialogOpen])
+
   return (
     <>
-      <Dialog 
-        fullScreen 
-        style={{ height: '90vh', width: '95vw', left: '2.5vw', top: '4vh' }} 
-        slotProps={{
-          paper: { style: { borderRadius: '5px' } }
-        }}
-        open={open} 
-        onClose={handleClickClose}
-        sx={{ overflowY: 'auto' }}
-      >
-        <EditViewDialogContainer>
-          <div className='close-btn' onClick={handleClickClose}>
-            <IoMdClose size="1.5em" />
+      <dialog ref={editRef} className='dialog edit-view-dialog'>
+        <button className='edit-view-close-button' onClick={handleClickClose}>
+          <IoMdClose size="1em" />
+        </button>
+        <div className='edit-view-title-container'>
+          <text className='text-bold color-text-primary'>{`Edit ${viewName} Columns`}</text>
+          <div className='edit-view-buttons-container'>
+            <button 
+              className='edit-view-button edit-view-reset'
+              onClick={handleClickReset}
+            >
+              <FiRefreshCcw />
+              <text className='color-text-primary small-text'>
+                Reset
+              </text>
+            </button>
+            <button 
+              className='edit-view-button edit-view-save'
+              onClick={handleClickSave} 
+              disabled={new Set(chosenColumns.map((column) => column.externalName)).size === chosenColumns.length ? false : true}
+            >
+              <FiSave />
+              <text className='small-text edit-view-save-text'>
+                Save
+              </text>
+            </button>
           </div>
-          <DialogTitleContainer>
-            <Typography className="title-text">
-              {`Edit ${viewName} Columns`}
-            <Buttons>
-              <Button 
-                className='cancel btn' 
-                onClick={handleClickReset}
-                style={{top: '34px', right: 'calc(93px + 2.5%)', marginTop: '4px'}}
-              >
-                <FiRefreshCcw />
-                <span className='text'>
-                  Reset
-                </span>
-              </Button>
-              <Button 
-                className="save btn" 
-                onClick={handleClickSave} 
-                disabled={new Set(chosenColumns.map((column) => column.externalName)).size === chosenColumns.length ? false : true}
-                style={{top: '34px', right: '2%', marginTop: '4px'}}
-              >
-                <FiSave />
-                <span className="text">
-                  Save
-                </span>
-              </Button>
-            </Buttons>
-            </Typography>
-          </DialogTitleContainer>
-          <div className='details-container'>
-            <ColumnBarContainer>
-              <Box className='add-all-container' onClick={handleClickAddAll}>
-                <div className='add-all-icon'><FiPlus size={'1.2em'} /></div>
-                Add All
-              </Box>
-              <AllColumnsList className='column-list'>
-                {loading.status ? <div className="list-item"><APILoadingProgress label="Columns" /></div> :
-                  fetchedColumns.map((column: any, index: any) => (
-                    <div key={index}>
-                      <hr style={{ margin: '0 0 0 0' }} />
-                      <div key={column.name} className={`list-item ${[...chosenColumns.map((column) => {return column.name})].includes(column.name) ? 'added-column' : ''}`} 
-                      onClick={() => handleClickColumn(column)} onMouseOver={() => {setHoveredColumn(column)}} onMouseLeave={() => {setHoveredColumn({})}}>
-                        <div className='column-info'>
-                          <div className="column-name">{column.name}</div>
-                          <Typography sx={{ display: 'block' }} className="columnDetails">{`Column Position ${column.position}`}</Typography>
-                          {column.title.length > 0 && <Typography sx={{ display: 'block' }} className="columnDetails">{`Title: ${column.title}`}</Typography>}
-                        </div>
-                        <div className='icons-column'>
-                          <div className='icon'>
-                            {[...chosenColumns.map((column) => {return column.name})].includes(column.name) ? 
-                              <BsCheck2Circle color='#087251' /> : 
-                              ( (column === hoveredColumn) && <FiPlusSquare/> )}
-                          </div>
+        </div>
+        <div className='dialog-content flex-row mt-20'>
+          <div className='column-bar-container'>
+            <div className='flex flex-row add-all-container' onClick={handleClickAddAll}>
+              <div className='add-all-icon'><FiPlus size={'1.2em'} /></div>
+              <text className='add-all-text'>Add All</text>
+            </div>
+            <div className='all-columns-list'>
+              {loading.status ? <div className="all-columns-list-item"><APILoadingProgress label="Columns" /></div> :
+                fetchedColumns.map((column: any, index: any) => (
+                  <div key={index}>
+                    <hr style={{ margin: '0 0 0 0' }} />
+                    <div
+                      key={column.name}
+                      className={`
+                        all-columns-list-item
+                        ${[...chosenColumns.map((column) => {return column.name})].includes(column.name) ? 'all-columns-added-column' : ''}
+                      `} 
+                      onClick={() => handleClickColumn(column)} onMouseOver={() => {setHoveredColumn(column)}} onMouseLeave={() => {setHoveredColumn({})}}
+                    >
+                      <div className='flex flex-col all-columns-column-info'>
+                        <text className="all-columns-column-name text-bold color-text-primary">{column.name}</text>
+                        <text className="small-text all-columns-column-details">{`Column Position ${column.position}`}</text>
+                        {column.title.length > 0 && <text className="small-text all-columns-column-details">{`Title: ${column.title}`}</text>}
+                      </div>
+                      <div className='inline-block'>
+                        <div className='all-columns-icon'>
+                          {[...chosenColumns.map((column) => {return column.name})].includes(column.name) ? 
+                            <BsCheck2Circle className='all-columns-check-icon' /> : 
+                            ( (column === hoveredColumn) && <FiPlusSquare/> )}
                         </div>
                       </div>
                     </div>
-                  ))
-                }
-              </AllColumnsList>
-            </ColumnBarContainer>
-            <ColumnDetails viewName={viewName} column={editColumn} chosenColumns={chosenColumns} handleEditColumn={handleEditColumn} setEditColumn={setEditColumnName} setRemoveColumn={setRemoveColumn} />
+                  </div>
+                ))
+              }
+            </div>
           </div>
-        </EditViewDialogContainer>
-      </Dialog>
-      <Dialog open={resetDialogOpen}>
-        <DialogTitle id="reset-edit-view-title">
-          {`Reset View?`}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="reset-edit-view-description" color='textPrimary'>
+          <ColumnDetails
+            viewName={viewName}
+            column={editColumn}
+            chosenColumns={chosenColumns}
+            handleEditColumn={handleEditColumn}
+            setEditColumn={setEditColumnName}
+            setRemoveColumn={setRemoveColumn}
+          />
+        </div>
+      </dialog>
+      <dialog ref={resetRef} className='dialog'>
+        <FormDialogHeader
+          title='Reset View?'
+          onClose={() => {setResetDialogOpen(false)}}
+        />
+        <div className='dialog-content'>
+          <text id="reset-edit-view-description" className='dialog-content-text'>
             Resetting this view will remove all columns you've previously added including the External Names. This will reset the view to its initial state including any changes you've made on this page. Are you sure you want to continue with the reset?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {setResetDialogOpen(false)}}>No</Button>
-          <Button onClick={handleConfirmReset}>Yes</Button>
-        </DialogActions>
-      </Dialog>
+          </text>
+        </div>
+        <div className='dialog-actions'>
+          <LitButtonNeutral onClick={() => {setResetDialogOpen(false)}} text='No' />
+          <LitButtonYes onClick={handleConfirmReset} text='Yes' />
+        </div>
+      </dialog>
       <UnsavedChangesDialog
         open={showDirtyDialog}
         onSave={handleDirtySave}

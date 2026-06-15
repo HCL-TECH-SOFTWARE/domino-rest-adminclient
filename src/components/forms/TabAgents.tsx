@@ -4,10 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import { AppState } from '../../store';
 import styled from 'styled-components';
@@ -17,7 +17,8 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { LitSwitch } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitSwitch } from '../lit-elements/LitElements';
+import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 /**
  * Database Agents Component
@@ -68,12 +69,14 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   const { activeAgents } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const [filtered, setFiltered] = useState([...agents]);
-  const { dbName, nsfPath } = useParams() as { dbName: string, nsfPath: string };
+  const { dbName } = useParams() as { dbName: string, nsfPath: string };
   const dispatch = useDispatch();
   const [searchKey, setSearchKey] = useState('');
   const [resetAllAgents, setResetAllAgents] = useState(false);
   const [lists, setLists] = useState(agents)
   const [showActive, setShowActive] = useState(false);
+
+  const ref = useRef<HTMLDialogElement>(null);
 
   const handleSearchAgent = (e: React.ChangeEvent<HTMLInputElement>) => {
     const key = e.target.value;
@@ -117,6 +120,16 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
     setResetAllAgents(false);
   }
 
+  useEffect(() => {
+    if (resetAllAgents) {
+      ref.current?.showModal()
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close()
+      }
+    }
+  }, [resetAllAgents])
+
   return (
     <>
       <TopNavigator>
@@ -155,26 +168,21 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
           toggleInactive={toggleInactive}
         />
       </div>
-      <Dialog
-        open={resetAllAgents}
-        onClose={() => {setResetAllAgents(false)}}
-        aria-labelledby="reset-view-dialog"
-        aria-describedby='reset-view-description'
-        sx={{ overflowY: 'auto' }}
-      >
-        <DialogTitle id="reset-view-dialog-title">
-          {"Reset ALL Agents?"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="reset-view-dialog-contents" color='textPrimary'>
+      <dialog ref={ref} className='dialog'>
+        <FormDialogHeader
+          title='Reset ALL Agents?'
+          onClose={() => {setResetAllAgents(false)}}
+        />
+        <div className='dialog-content'>
+          <text id="reset-view-dialog-contents" className='dialog-content-text'>
             Deactivate all database agents?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeactivateAll}>Yes</Button>
-          <Button onClick={() => {setResetAllAgents(false)}}>No</Button>
-        </DialogActions>
-      </Dialog>
+          </text>
+        </div>
+        <div className='dialog-actions'>
+          <LitButtonNeutral onClick={() => {setResetAllAgents(false)}} text='No' />
+          <LitButtonYes onClick={handleDeactivateAll} text='Yes' />
+        </div>
+      </dialog>
     </>
   );
 };
