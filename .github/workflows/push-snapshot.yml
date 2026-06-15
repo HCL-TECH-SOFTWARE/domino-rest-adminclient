@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
+      WS_USERKEY: ${{ secrets.WSS_USER_KEY }}
     permissions:
       contents: read
       packages: write
@@ -45,9 +46,12 @@ jobs:
         run: echo "WS_PRODUCTNAME=${{ env.PRODUCT_NAME }}" >> $GITHUB_ENV
       - name: Run Mend Scan
         uses: TheAxZim/Whitesource-Scan-Action@v1.0.0
+        # This plugin does not support Mend user key which is now required, but 
+        # works with an env var, notice in the env block at the top
         with:
           wssURL: https://saas.whitesourcesoftware.com/agent
           apiKey: ${{ secrets.WSS_API_KEY }}
+          WSS
           configFile: 'admin-wss.config'
       - name: Publish only Snapshot to GitHub Packages
         if: endsWith(env.MVN_VERSION, '-SNAPSHOT')
