@@ -5,9 +5,8 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import DialogContent from '@mui/material/DialogContent';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { BlueSwitch, DeleteIcon, SearchContainer, SearchInput } from '../../styles/CommonStyles';
+import { BlueSwitch, DeleteIcon, SearchInput } from '../../styles/CommonStyles';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -15,75 +14,8 @@ import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/datab
 import { Database, Field } from '../../store/databases/types';
 import { Box, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
 import { Mode } from 'fs';
-import { LitButton, LitDialog } from '../lit-elements/LitElements';
+import { LitButton } from '../lit-elements/LitElements';
 import { IMG_DIR } from '../../config.dev';
-
-const DialogContainer = styled(Dialog)`
-  border: 1px solid white;
-
-  width: 100vw;
-  max-width: 100vw;
-  height: 100vh;
-  margin: 0;
-  overflow-y: scroll;
-
-  background-color: light-dark(#fafafa, #1e1e2e);
-
-  .content-container {
-    padding: 0;
-    margin: 0;
-  }
-
-  .search-add-row {
-    display: flex;
-    flex-direction: row;
-    padding-bottom: 12px;
-  }
-
-  .search-bar {
-    border: 1px solid #9a9a9a;
-    padding: 12px 17px;
-    border-radius: 10px;
-    width: 50%;
-    margin-left: 25%;
-  }
-
-  .search-icon {
-    color: #999999;
-  }
-
-  .add-container {
-    width: 25%;
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .add-column {
-    color: #0f5fdc;
-    text-transform: none;
-    font-size: 16;
-    font-weight: 700;
-    line-height: normal;
-    padding: 11px 24px;
-    background-color: light-dark(white, #252535);
-    border: none;
-  }
-
-  .toggle-container {
-    display: flex;
-    margin-left: 25%;
-  }
-
-  .delete-icon {
-    width: 20px;
-    height: 20px;
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNkg1SDIxIiBmaWxsPSIjRDY0NjZGIi8+CjxwYXRoIGQ9Ik0zIDZINUgyMSIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTkgNlYyMEMxOSAyMC41MzA0IDE4Ljc4OTMgMjEuMDM5MSAxOC40MTQyIDIxLjQxNDJDMTguMDM5MSAyMS43ODkzIDE3LjUzMDQgMjIgMTcgMjJIN0M2LjQ2OTU3IDIyIDUuOTYwODYgMjEuNzg5MyA1LjU4NTc5IDIxLjQxNDJDNS4yMTA3MSAyMS4wMzkxIDUgMjAuNTMwNCA1IDIwVjZNOCA2VjRDOCAzLjQ2OTU3IDguMjEwNzEgMi45NjA4NiA4LjU4NTc5IDIuNTg1NzlDOC45NjA4NiAyLjIxMDcxIDkuNDY5NTcgMiAxMCAySDE0QzE0LjUzMDQgMiAxNS4wMzkxIDIuMjEwNzEgMTUuNDE0MiAyLjU4NTc5QzE1Ljc4OTMgMi45NjA4NiAxNiAzLjQ2OTU3IDE2IDRWNiIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K');
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
-`;
 
 const ModeCardsContainer = styled.div`
   padding: 0;
