@@ -4,22 +4,21 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useContext, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, DialogActions, DialogContent, DialogContentText, DialogTitle, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import { Box, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
 import { getTheme } from '../../store/styles/action';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
-import { DeleteIcon, CommonDialog } from '../../styles/CommonStyles';
+import { DeleteIcon } from '../../styles/CommonStyles';
 import { MdRefresh } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import '../webcomponents/copyable-text';
-import { AppFormContext } from './ApplicationContext';
 import { LitAppStatus, LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 const StyledTableRow = styled(TableRow)`
@@ -123,10 +122,10 @@ const AppItem: React.FC<AppItemProps> = ({
   const [appSecret, setAppSecret] = useState('')
   const appSecretTextRef = useRef(null) as any
   const clickToGenerateText = "Click to Generate Secret"
-  const [formContext, setFormContext] = useContext(AppFormContext) as any
   const [isGenerate, setIsGenerate] =  useState(false);
   const [hasAppSecret, setHasAppSecret] = useState(false);
 
+  const ref = useRef<HTMLDialogElement>(null);
   
   const launch = () => {
     window.open(app.appStartPage)
@@ -140,6 +139,16 @@ const AppItem: React.FC<AppItemProps> = ({
     }
     setHasAppSecret(true)
   }
+
+  useEffect(() => {
+      if (isGenerate) {
+        ref.current?.showModal();
+      } else {
+        if (ref.current?.close) {
+          ref.current?.close();
+        }
+      }
+    }, [isGenerate])
 
   const regenerateSecret = () => {
     dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret) as any)
@@ -163,7 +172,6 @@ const AppItem: React.FC<AppItemProps> = ({
   }
 
   const viewEdit = () => {
-    setFormContext('Edit')
     let formData: AppFormProp = {
       appId: app.appId,
       appName: app.appName,
@@ -355,20 +363,20 @@ const AppItem: React.FC<AppItemProps> = ({
                   </OptionsContainer>
                 </TableCell>
             </StyledTableRow>
-            <CommonDialog open={isGenerate} onClose={() => setIsGenerate(false)}>
-                <DialogTitle>
-                    <Box className="title">Regenerate App Secret?</Box>
-                    <DialogContent>
-                      <DialogContentText color={'textPrimary'}>
-                        WARNING: You are attempting to regenerate the App Secret, doing so may break existing applications.  Are you sure you want to proceed?
-                      </DialogContentText>
-                    </DialogContent>
-                    <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
-                        <LitButtonNeutral text='No' onClick = {() => setIsGenerate(false)} />
-                        <LitButtonYes text='Yes' onClick={regenerateSecret} />
-                    </DialogActions>
-                </DialogTitle>
-            </CommonDialog>
+            <dialog ref={ref} onClose={() => setIsGenerate(false)} className='regen-app-secret-dialog'>
+                <div className="dialog-title">
+                  <text className='dialog-title-text'>Regenerate App Secret?</text>
+                </div>
+                <div className='dialog-content'>
+                  <text className='dialog-content-text'>
+                    WARNING: You are attempting to regenerate the App Secret, doing so may break existing applications.  Are you sure you want to proceed?
+                  </text>
+                </div>
+                <div className='dialog-actions'>
+                    <LitButtonNeutral text='No' onClick = {() => setIsGenerate(false)} />
+                    <LitButtonYes text='Yes' onClick={regenerateSecret} />
+                </div>
+            </dialog>
       </>
     )
   );

@@ -106,6 +106,20 @@ jest.mock('../../store/alerts/action', () => ({
   toggleAlert: jest.fn(() => ({ type: 'NOOP' })),
 }));
 
+jest.mock('../dialogs/UnsavedChangesDialog', () => {
+  return function MockUnsavedChangesDialog({ open, onSave, onDiscard, onCancel }: any) {
+    if (!open) return null;
+    return (
+      <div role="dialog">
+        <span>Unsaved Changes</span>
+        <button onClick={onCancel}>Cancel</button>
+        <button onClick={onDiscard}>No</button>
+        <button onClick={onSave}>Yes</button>
+      </div>
+    );
+  };
+});
+
 jest.mock('../../store/databases/scripts', () => ({
   findScopeBySchema: jest.fn(() => -1),
 }));

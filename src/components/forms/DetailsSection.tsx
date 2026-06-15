@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
@@ -18,18 +18,18 @@ import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { AppState } from '../../store';
-import { getTheme } from '../../store/styles/action';
 import appIcons from '../../styles/app-icons';
 import { checkIcon } from '../../styles/scripts';
 import { Database } from '../../store/databases/types';
 import Button from '@mui/material/Button';
 import { updateSchema } from '../../store/databases/action';
-import { BlueSwitch, Buttons, InputContainer, InUseSymbol, NotInUseSymbol, SchemaIconStatus } from '../../styles/CommonStyles';
+import { BlueSwitch, InputContainer, InUseSymbol, NotInUseSymbol, SchemaIconStatus } from '../../styles/CommonStyles';
 import { FiEdit } from 'react-icons/fi';
-import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { IoMdClose } from 'react-icons/io';
+import { Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 interface DetailsSectionProps {
   dbName: string;
@@ -235,6 +235,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
   const formula = dqlFormula && dqlFormula.formula ? dqlFormula.formula : '@True';
   const [dqlFormulaValue, setDqlFormulaValue] = useState(formula);
   const [prohibitRefreshValue, setprohibitRefreshValue] = useState(prohibitRefresh === undefined ? true : prohibitRefresh);
+  const detailsRef = useRef<HTMLDialogElement>(null);
+  const discardRef = useRef<HTMLDialogElement>(null);
   const selectedDB = useMemo(
     () => ({
       apiName,
@@ -475,8 +477,33 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     setDisplayIconName(checkIcon(iconName) ? iconName : 'beach');
   };
 
+  const handleClickCloseDetails = () => {
+    setDiscardDialog(true);
+    setEditOpen(false);
+  }
+
+  useEffect(() => {
+    if (editOpen) {
+      detailsRef.current?.showModal()
+    } else {
+      if (detailsRef.current?.close) {
+        detailsRef.current?.close()
+      }
+    }
+  }, [editOpen])
+
+  useEffect(() => {
+    if (discardDialog) {
+      discardRef.current?.showModal()
+    } else {
+      if (discardRef.current?.close) {
+        discardRef.current?.close()
+      }
+    }
+  }, [discardDialog])
+
   return (
-    <Box>
+    <div>
       <Title>
         <span style={{ position: 'relative', display: 'inline-block', width: 90, height: 90 }}>
           {SchemaIcon}
@@ -487,7 +514,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
           </StatusIcon>
         </span>
         <Typography className="api-name" component="p" variant="h5">
-          <Box className="api-schema">{dbName}</Box>
+          <div className="api-schema">{dbName}</div>
           <EditIcon
             onClick={() => {
               setEditOpen(true);
@@ -542,246 +569,186 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
           ) : (
             <ListConfig>
               <Config>
-                <Box style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
-                  <Box className="title-container">
-                    <Typography
-                      color="textPrimary"
-                      className={dqlAccess ? `title` : `title unchecked`}
-                      component="p"
-                      variant="body2"
-                      noWrap={true}>
+                <div className='flex flex-row full-width flex-wrap'>
+                  <div className="details-section-config-name">
+                    <text className={`color-text-primary small-text ${dqlAccess ? '' : 'details-section-config-unchecked'}`}>
                       DQL Access
-                    </Typography>
-                  </Box>
-                  <Box style={{ width: '5%' }}>
+                    </text>
+                  </div>
+                  <div className='details-section-checkbox-container'>
                     {dqlAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </Config>
               <Config>
-                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                  <Box className="title-container">
+                <div className='flex flex-row full-width flex-wrap'>
+                  <div className="details-section-config-name">
                     <Tooltip title="Include this in $DATA scope">
-                      <Typography
-                        color="textPrimary"
-                        className={openAccess ? `title` : `title unchecked`}
-                        component="p"
-                        variant="body2"
-                        noWrap={true}>
+                      <text className={`color-text-primary small-text ${dqlAccess ? '' : 'details-section-config-unchecked'}`}>
                         In $DATA Scope
-                      </Typography>
+                      </text>
                     </Tooltip>
-                  </Box>
-                  <Box style={{ width: '5%' }}>
+                  </div>
+                  <div className='details-section-checkbox-container'>
                     {openAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </Config>
               <Config>
-                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                  <Box className="title-container">
-                    <Typography
-                      color="textPrimary"
-                      className={allowCode ? `title` : `title unchecked`}
-                      component="p"
-                      variant="body2"
-                      noWrap={true}>
+                <div className='flex flex-row full-width flex-wrap'>
+                  <div className="details-section-config-name">
+                    <text className={`color-text-primary small-text ${dqlAccess ? '' : 'details-section-config-unchecked'}`}>
                       Enable Code
-                    </Typography>
-                  </Box>
-                  <Box style={{ width: '5%' }}>
+                    </text>
+                  </div>
+                  <div className='details-section-checkbox-container'>
                     {allowCode ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </Config>
               <Config>
-                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                  <Box className="title-container">
-                    <Typography
-                      color="textPrimary"
-                      className={requireRevisionToUpdate ? `title` : `title unchecked`}
-                      component="p"
-                      variant="body2"
-                      noWrap={true}>
+                <div className='flex flex-row full-width flex-wrap'>
+                  <div className="details-section-config-name">
+                    <text className={`color-text-primary small-text ${requireRevisionToUpdate ? '' : 'details-section-config-unchecked'}`}>
                       Require Revision
-                    </Typography>
-                  </Box>
-                  <Box style={{ width: '5%' }}>
+                    </text>
+                  </div>
+                  <div className='details-section-checkbox-container'>
                     {requireRevisionToUpdate ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </Config>
               <Config>
-                <Box style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-                  <Box className="title-container">
-                    <Typography
-                      color="textPrimary"
-                      className={prohibitRefresh === undefined || prohibitRefresh === null ? `title` : prohibitRefresh ? `title` : `title unchecked`}
-                      component="p"
-                      variant="body2"
-                      noWrap={true}>
+                <div className='flex flex-row full-width flex-wrap'>
+                  <div className="details-section-config-name">
+                    <text className={`color-text-primary small-text ${prohibitRefresh === undefined || prohibitRefresh === null ? '' : prohibitRefresh ? '' : 'details-section-config-unchecked'}`}>
                       Prevent Design Refresh
-                    </Typography>
-                  </Box>
-                  <Box style={{ width: '5%' }}>
+                    </text>
+                  </div>
+                  <div className='details-section-checkbox-container'>
                     {(prohibitRefresh === undefined || prohibitRefresh === null) ? <Check className="checkbox" /> : prohibitRefresh ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </Config>
               <Config>
-                <FormulaBox>
-                  <Typography className="subtitle" component="p" variant="body2">
+                <div className='flex flex-col details-section-formula-box'>
+                  <text className='large-text color-text-primary'>
                     DQL Formula
-                  </Typography>
-                  <Typography className="formula" component="div" variant="body2">
+                  </text>
+                  <text className='small-text color-text-primary'>
                     {formula}
-                  </Typography>
-                </FormulaBox>
+                  </text>
+                </div>
               </Config>
             </ListConfig>
           )}
         </Heading>
       </Information>
-      <Dialog
-        open={editOpen}
-        fullScreen
-        style={{ height: '70vh', width: '40vw', position: 'absolute', left: '30vw', top: '15vh', overflowY: 'auto' }}
-        slotProps={{
-          paper: { style: { borderRadius: '10px' } }
-        }}
-        onClose={() => setDiscardDialog(true)}>
-        <DialogTitle style={{ padding: '0 0' }}>
-          <div style={{ padding: '16px 24px 0 24px' }}>
-            Edit Schema
-            <IoMdClose
-              onClick={() => setDiscardDialog(true)}
-              style={{ position: 'absolute', left: '37vw', transform: 'translateY(10%)', cursor: 'pointer' }}
+      <dialog ref={detailsRef} className='dialog pl-0 pr-0'>
+        <div className='pr-30 pl-30 full-width'>
+          <FormDialogHeader
+            title='Edit Schema'
+            onClose={handleClickCloseDetails}
+          />
+        </div>
+        <hr className='divider' />
+        <div className='dialog-content pr-30 pl-30'>
+          <div>
+            <text className="text-bold color-text-primary">Icon</text>
+            <div className='text-center'>{IconDropDown}</div>
+          </div>
+          <div>
+            <text className="text-bold color-text-primary">Description</text>
+            <textarea
+              value={desc}
+              className='details-section-textarea'
+              onChange={(e) => handleDescriptionChange(e.target.value)}
             />
           </div>
-          <hr />
-        </DialogTitle>
-        <DialogContent>
-          <DialogContainer>
-            <DialogContentText color="textPrimary">
-              <div className="title">Icon</div>
-              <div style={{ textAlign: 'center', marginBottom: '30px' }}>{IconDropDown}</div>
-              <div className="title">Description</div>
-              <textarea
-                value={desc}
-                style={{
-                  fontSize: '16px',
-                  borderColor: '#b8b8b8',
-                  borderRadius: '5px',
-                  padding: '16px 14px',
-                  width: '100%',
-                  height: '20vh',
-                  resize: 'none',
-                  marginTop: '5px',
-                  marginBottom: '30px'
-                }}
-                onChange={(e) => handleDescriptionChange(e.target.value)}
-              />
-              <Box className="title">Configuration</Box>
-              <ConfigContainer style={{ display: 'flex', width: '100%', marginBottom: '40px', flexWrap: 'wrap' }}>
-                <Box className="row">
-                  <Box>DQL Access</Box>
-                  <Box>
-                    <BlueSwitch
-                      size="small"
-                      checked={dbContext.dqlAccess}
-                      onClick={() => {
-                        handleChange('dqlAccess', !dbContext.dqlAccess);
-                      }}
-                    />
-                  </Box>
-                </Box>
-                <Box className="row">
-                  <Box>In $DATA Scope</Box>
-                  <Box>
-                    <BlueSwitch
-                      size="small"
-                      checked={dbContext.openAccess}
-                      onClick={() => handleChange('openAccess', !dbContext.openAccess)}
-                    />
-                  </Box>
-                </Box>
-                <Box className="row">
-                  <Box>Enable Code</Box>
-                  <Box>
-                    <BlueSwitch
-                      size="small"
-                      checked={dbContext.allowCode}
-                      onClick={() => handleChange('allowCode', !dbContext.allowCode)}
-                    />
-                  </Box>
-                </Box>
-                <Box className="row">
-                  <Box>Require Revision</Box>
-                  <Box>
-                    <BlueSwitch
-                      size="small"
-                      checked={dbContext.requireRevisionToUpdate}
-                      onClick={() => handleChange('requireRevisionToUpdate', !dbContext.requireRevisionToUpdate)}
-                    />
-                  </Box>
-                </Box>
-                <Box className="row">
-                  <Box>Prevent Design Refresh</Box>
-                  <Box>
-                    <BlueSwitch
-                      size="small"
-                      checked={prohibitRefreshValue}
-                      onClick={handleprohibitRefreshChange}
-                    />
-                  </Box>
-                </Box>
-              </ConfigContainer>
-              <TextField
-                id="dql-formula"
-                label="DQL Formula"
-                variant="outlined"
-                value={dqlFormulaValue}
-                onChange={(e) => handleDQLFormulaChange(e.target.value)}
-              />
-            </DialogContentText>
-          </DialogContainer>
-        </DialogContent>
-        <DialogActions>
-          <Buttons>
-            <Button
-              className="cancel text"
-              onClick={() => {
-                setDiscardDialog(true);
-              }}>
-              Cancel
-            </Button>
-            <Button className="save text" onClick={handleClickSave}>
-              Save
-            </Button>
-          </Buttons>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={discardDialog}>
-        <DialogTitle>Discard Changes</DialogTitle>
-        <DialogContent>
-          <DialogContentText color="textPrimary">Are you sure you want to discard the changes you made?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Buttons>
-            <Button
-              className="cancel text"
-              onClick={() => {
-                setDiscardDialog(false);
-              }}>
-              No
-            </Button>
-            <Button className="save text" onClick={clearEdits}>
-              Yes
-            </Button>
-          </Buttons>
-        </DialogActions>
-      </Dialog>
-    </Box>
+          <div>
+            <text className="text-bold color-text-primary">Configuration</text>
+            <div className='details-section-config-container flex-row'>
+              <div className="flex justify-between details-section-config-row">
+                <text className="color-text-primary">DQL Access</text>
+                <div>
+                  <BlueSwitch
+                    size="small"
+                    checked={dbContext.dqlAccess}
+                    onClick={() => {
+                      handleChange('dqlAccess', !dbContext.dqlAccess);
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between details-section-config-row">
+                <text className="color-text-primary">In $DATA Scope</text>
+                <div>
+                  <BlueSwitch
+                    size="small"
+                    checked={dbContext.openAccess}
+                    onClick={() => handleChange('openAccess', !dbContext.openAccess)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between details-section-config-row">
+                <text className="color-text-primary">Enable Code</text>
+                <div>
+                  <BlueSwitch
+                    size="small"
+                    checked={dbContext.allowCode}
+                    onClick={() => handleChange('allowCode', !dbContext.allowCode)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between details-section-config-row">
+                <text className="color-text-primary">Require Revision</text>
+                <div>
+                  <BlueSwitch
+                    size="small"
+                    checked={dbContext.requireRevisionToUpdate}
+                    onClick={() => handleChange('requireRevisionToUpdate', !dbContext.requireRevisionToUpdate)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between details-section-config-row">
+                <text className="color-text-primary">Prevent Design Refresh</text>
+                <div>
+                  <BlueSwitch
+                    size="small"
+                    checked={prohibitRefreshValue}
+                    onClick={handleprohibitRefreshChange}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <TextField
+            id="dql-formula"
+            label="DQL Formula"
+            variant="outlined"
+            value={dqlFormulaValue}
+            onChange={(e) => handleDQLFormulaChange(e.target.value)}
+          />
+        </div>
+        <div className='dialog-actions pr-30 pl-30'>
+          <LitButtonNeutral onClick={handleClickCloseDetails} text='Cancel' />
+          <LitButtonYes onClick={handleClickSave} text='Save' />
+        </div>
+      </dialog>
+      <dialog ref={discardRef} className='dialog'>
+        <FormDialogHeader
+          title='Discard Changes?'
+          onClose={() => setDiscardDialog(false)}
+        />
+        <div className='dialog-content'>
+          <text className='dialog-content-text'>Are you sure you want to discard the changes you made?</text>
+        </div>
+        <div className='dialog-actions'>
+          <LitButtonNeutral text='No' onClick={() => {setDiscardDialog(false)}} />
+          <LitButtonYes text='Yes' onClick={clearEdits} />
+        </div>
+      </dialog>
+    </div>
   );
 };
 

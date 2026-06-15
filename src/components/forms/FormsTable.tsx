@@ -286,8 +286,8 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </Box>
               </StyledTableCell>
               <StyledTableCell width="350px">Form Aliases</StyledTableCell>
-              <StyledTableCell width="350px">Modes Available</StyledTableCell>
-              <StyledTableCell>
+              <StyledTableCell width="150px">Modes Available</StyledTableCell>
+              <StyledTableCell width="200px">
                 <StatusHeader>
                   {/* <div style={{ display: 'flex', flexDirection: 'row' }}> */}
                   <div>
@@ -334,7 +334,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
                     <span>{form.formModes.length}</span>
                   </ViewNameDisplay>
                 </StyledTableCell>
-                <StyledTableCell>
+                <StyledTableCell className='table-cell-activate-menu'>
                   <ActivateMenu
                     form={form}
                     nsfPath={nsfPath}
