@@ -30,7 +30,7 @@
     "react-router-dom": "^7.14.2",
     "redux": "^5.0.1",
     "redux-thunk": "^3.1.0",
-    "styled-components": "^6.3.11",
+    "styled-components": "^6.4.2",
     "uuid": "^14.0.0",
     "yup": "^1.7.1"
   },
