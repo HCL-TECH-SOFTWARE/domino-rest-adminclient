@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -155,6 +155,23 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
       dispatch(toggleDrawer());
     }
   }
+
+  useEffect(() => {
+    if (visible) {
+        formik.setValues({
+          apiName: database?.apiName || '',
+          description: database?.description || '',
+          server: database?.server || '',
+          nsfPath : database?.nsfPath || '',
+          schemaName : database?.schemaName || '',
+          isActive: database?.isActive || true,
+          icon: database ? appIcons[database.iconName] : appIcons[icon],
+          iconName: database?.iconName || icon,
+          maximumAccessLevel: database?.maximumAccessLevel ? database.maximumAccessLevel : 'Editor',
+        })
+    }
+    
+  }, [database, visible])
 
   return (
     <LitDrawer
