@@ -5,239 +5,17 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import Typography from '@mui/material/Typography';
-import { Box, Tooltip, TextField, Button, Checkbox, ButtonBase } from '@mui/material';
+import { Tooltip, TextField, Button, Checkbox } from '@mui/material';
 import { TabsProps } from '@mui/material/Tabs';
-import styled from 'styled-components';
 import AddIcon from '@mui/icons-material/Add';
-import { ButtonNeutral, ButtonYes, HorizontalDivider, WarningIcon } from '../../styles/CommonStyles';
+import { WarningIcon } from '../../styles/CommonStyles';
 import { capitalizeFirst, insertCharacter } from '../../utils/common';
 import FieldContainer from './FieldContainer';
 import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
-import CloseIcon from '@mui/icons-material/Close';
 import { toggleAlert } from '../../store/alerts/action';
-
-const SelectedFieldsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-radius: 5px;
-  border: 1px solid light-dark(#A5AFBE, #3a3a4a);
-  background: light-dark(#FFF, #1e1e2e);
-  height: 100%;
-  width: 25%;
-
-  .add-custom-field {
-    display: flex;
-    align-items: center;
-    padding-left: 20px;
-    padding-top: 5px;
-  }
-
-  .add-fields-text {
-    font-size: 14px;
-    font-style: italic;
-    font-weight: 400;
-    padding: 20px;
-    color: light-dark(#000, #e0e0e0);
-  }
-
-  .batch-delete-container {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0 11px;
-    max-width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .batch-delete-button {
-    background-color: transparent;
-    width: fit-content;
-    padding: 10px;
-    display: flex;
-    justify-content: end;
-    align-items: end;
-  }
-
-  .batch-delete {
-    text-transform: none;
-    font-size: 12px;
-    font-weight: 400;
-    color: #AA1F51;
-    margin: 0;
-    padding: 0;
-    text-overflow: ellipsis;
-  }
-
-  .disabled {
-    color: #6C6C6C;
-  }
-
-  .field-list {
-    overflow-y: scroll;
-    padding: 0 0 10px 0;
-    margin: 0;
-    overflow-x: clip;
-  }
-`
-
-const ConfigFieldContainer = styled.div`
-  border-radius: 5px;
-  border: 1px solid light-dark(#BFBFBF, #3a3a4a);
-  background: light-dark(#FFF, #1e1e2e);
-  padding: 0;
-  height: 45%;
-  width: 100%;
-
-  .setting {
-    font-size: 16px;
-    font-weight: 700;
-    color: light-dark(#000, #e0e0e0);
-    width: 100%;
-    padding: 10px 20px 0 20px;
-    height: 15%;
-  }
-
-  .select-message-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 85%;
-  }
-`
-
-const IconButton = styled.button`
-  border: 0;
-  background: none;
-  user-select: none;
-  cursor: pointer;
-  color: light-dark(#000, #e0e0e0);
-
-  .add {
-    margin-top: 15px;
-  }
-
-  .icon-button {
-    margin-top: 10px;
-    margin: 0;
-    padding: 0;
-    height: fit-content;
-    display: flex;
-    align-items: center;
-  }
-
-  .icon {
-    margin: 0;
-    width: 18px;
-  }
-`
-
-const CustomItem = styled.div`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  justify-content: space-between !important;
-  padding: 10px 20px 10px 20px;
-
-  &:hover {
-    cursor: pointer;
-    background-color: light-dark(#D7E0F3, #353548);
-  }
-
-  .field-info {
-    width: 60%;
-    text-overflow: ellipsis;
-  }
-
-  .field-checkbox {
-    min-width: 10%;
-    padding: 0;
-  }
-
-  .field-name {
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: light-dark(#000, #e0e0e0);
-    font-size: 14px;
-  }
-
-  .field-meta-data {
-    font-size: 12px;
-    white-space: nowrap;
-    text-align: left;
-  }
-`;
-
-const RemoveFieldDialog = styled.dialog`
-  border-radius: 10px;
-  background: light-dark(#FFF, #252535);
-  border: none;
-  width: 50%;
-  padding: 30px 40px;
-
-  .header-close {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .header {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .title {
-    font-size: 22px;
-    color: light-dark(#000, #e0e0e0);
-    font-weight: 700;
-  }
-
-  .content {
-    padding: 35px 0;
-  }
-
-  .text-content {
-    font-size: 14px;
-    font-weight: 400;
-  }
-
-  .field {
-    font-weight: 700;
-  }
-
-  .buttons {
-    padding: 0;
-    display: flex;
-    flex-direction: row-reverse;
-    gap: 20px;
-  }
-
-  .button-ok {
-    background-color: #0F5FDC;
-    color: #FFFFFF;
-    font-weight: 700;
-    font-size: 14px;
-    border-radius: 10px;
-    padding: 11px 24px;
-
-    &:hover {
-      background-color: #0B4AAE;
-      color: #FFFFFF;
-    }
-  }
-
-  .button-cancel {
-    color: light-dark(#000, #e0e0e0);
-    font-weight: 700;
-    font-size: 14px;
-    border-radius: 10px;
-    border: 1px solid #323A3D;
-    padding: 11px 24px;
-  }
-`
+import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -379,9 +157,9 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
   }
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', gap: '16px' }}>
-      <SelectedFieldsContainer>
-        <Box className='add-custom-field'>
+    <div className='full-height flex gap-16'>
+      <div className='flex flex-col gap-10 selected-fields-container full-height quarter-width'>
+        <div className='flex items-center pl-20 pt-5 m-0'>
             <TextField
               onChange={onAddFieldTextChange}
               autoFocus
@@ -395,111 +173,137 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                 inputLabel: { shrink: true }
               }}
             />
-            <IconButton title="Add Custom Field" className='add'
+            <button title="Add Custom Field" className='field-list-icon-button'
               onClick={handleAddField}
             >
               <AddIcon className='add-icon' />
-          </IconButton>
-          </Box>
-          {customFieldError && 
-            <Typography className="validation-error" color="textPrimary">
-              {customFieldError}
-            </Typography>
-          }
-          <HorizontalDivider />
-          <Box className='batch-delete-container'>
-            {!batchDelete && <Button 
-              className='batch-delete-button'
-              onClick={toggleBatchDelete} 
-              disabled={state[stateList[0]].length === 0}
+            </button>
+        </div>
+        {customFieldError && 
+          <p className="color-text-danger small-text">
+            {customFieldError}
+          </p>
+        }
+        <hr className='divider' />
+        <div className='flex justify-end field-batch-delete-container'>
+          {!batchDelete && <Button 
+            className='field-batch-delete-button'
+            onClick={toggleBatchDelete} 
+            disabled={state[stateList[0]].length === 0}
+          >
+            <p
+              className={`
+                field-batch-delete-text
+                m-0 p-0
+                ${state[stateList[0]].length === 0 ? 'color-text-disabled' : ''}
+              `}
             >
-              <Typography className={`batch-delete ${state[stateList[0]].length === 0 ? 'disabled' : ''}`}>Delete Field(s)</Typography>
-            </Button>}
-            {batchDelete && <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: 0 }}>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-                <Tooltip title={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""} arrow>
-                  <Button 
-                    className='batch-delete-button'
-                    onClick={openDialog}
-                  >
-                    <Typography className={`batch-delete ${deleteFields.length === 0 ? 'disabled' : ''}`}>Remove</Typography>
-                  </Button>
-                </Tooltip>
+              Delete Field(s)
+            </p>
+          </Button>}
+          {batchDelete && <div className='flex justify-between full-width p-0'>
+            <div className='flex flex-wrap'>
+              <Tooltip title={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""} arrow>
                 <Button 
-                  className='batch-delete-button'
-                  onClick={toggleBatchDelete} 
-                  disabled={state[stateList[0]].length === 0}
+                  className='field-batch-delete-button'
+                  onClick={openDialog}
                 >
-                  <Typography className={`batch-delete`} style={{ color: 'light-dark(#000, #e0e0e0)' }}>Cancel</Typography>
+                  <p
+                    className={`
+                      field-batch-delete-text
+                      m-0 p-0
+                      tiny-text
+                      ${deleteFields.length === 0 ? 'color-text-disabled' : ''}
+                    `}
+                  >
+                    Remove
+                  </p>
                 </Button>
-              </Box>
-              <Checkbox
-                className='field-checkbox' 
-                onChange={handleSelectAll}
-                size='small'
-                style={{
-                  color: '#0E5FDC',
-                }}
-              />
-            </Box>}
-          </Box>
-          {state[stateList[0]].length > 0 && <Box className='field-list'>
-            {
-              stateList.map((list, idx) => {
-                return state[list].length && (state[list].map((item: any, index: any) => {
-                  const fieldGroup = item.fieldGroup || '';
-                  let rwFlag;
-                  if (!!item.isMultiValue) {
-                    item = {
-                      ...item,
-                      isMultiValue: item.isMultiValue,
-                    }
-                  } else {
-                    item = {
-                      ...item,
-                      isMultiValue: item.type === "array",
-                    }
-                  }
-                  if (item.fieldAccess == null || item.fieldAccess.trim() === "") {
-                    if (item.readOnly && !item.writeOnly) {
-                      rwFlag = "R / O";
-                    } else if (!item.readOnly && item.writeOnly) {
-                      rwFlag = "W / O";
-                    } else {
-                      rwFlag = "R / W";
-                    }
-                  } else {
-                    rwFlag = insertCharacter(item.fieldAccess, 1, " / ");
-                  }
-                  const format = !item.isMultiValue ? item.format : (!!item.items ? item.items.format : item.format);
+              </Tooltip>
+              <Button 
+                className='field-batch-delete-button'
+                onClick={toggleBatchDelete} 
+                disabled={state[stateList[0]].length === 0}
+              >
+                <p
+                  className={`batch-delete-cancel-button m-0 p-0 tiny-text`}
+                >
+                  Cancel
+                </p>
+              </Button>
+            </div>
+            <Checkbox
+              className='field-checkbox' 
+              onChange={handleSelectAll}
+              size='small'
+              style={{
+                color: '#0E5FDC',
+              }}
+            />
+          </div>}
+        </div>
+        {state[stateList[0]].length > 0 && <div className='field-list-container p-0 pb-10 m-0'>
+          {
+            stateList.map((list, idx) => {
+              return state[list].length && (state[list].map((item: any, index: any) => {
+                const fieldGroup = item.fieldGroup || '';
+                let rwFlag;
+                if (!!item.isMultiValue) {
                   item = {
                     ...item,
-                    delete: false,
+                    isMultiValue: item.isMultiValue,
                   }
-                  const isRequired = required.includes(item.content)
-                  return (
-                    <CustomItem onClick={() => handleClickField(item, index)} key={`${item.name}-${idx}`}>
-                      <div className="field-info" onChange={(e) => {handleSelectField(e, item)}}>
-                        <div className="field-name">{item.name}</div>
-                        <div className="field-meta-data">{`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}</div>
+                } else {
+                  item = {
+                    ...item,
+                    isMultiValue: item.type === "array",
+                  }
+                }
+                if (item.fieldAccess == null || item.fieldAccess.trim() === "") {
+                  if (item.readOnly && !item.writeOnly) {
+                    rwFlag = "R / O";
+                  } else if (!item.readOnly && item.writeOnly) {
+                    rwFlag = "W / O";
+                  } else {
+                    rwFlag = "R / W";
+                  }
+                } else {
+                  rwFlag = insertCharacter(item.fieldAccess, 1, " / ");
+                }
+                const format = !item.isMultiValue ? item.format : (!!item.items ? item.items.format : item.format);
+                item = {
+                  ...item,
+                  delete: false,
+                }
+                const isRequired = required.includes(item.content)
+                return (
+                  <div
+                    className='flex items-center full-width field-list-custom-item small-text'
+                    onClick={() => handleClickField(item, index)} key={`${item.name}-${idx}`}
+                  >
+                    <div className="field-list-field-info" onChange={(e) => {handleSelectField(e, item)}}>
+                      <div className="field-list-field-name">{item.name}</div>
+                      <div className="field-list-field-metadata">
+                        {`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}
                       </div>
-                      {batchDelete && <Checkbox 
-                        className='field-checkbox' 
-                        onChange={(e) => {handleSelectField(e, item)}}
-                        size='small'
-                        style={{
-                          color: '#0E5FDC',
-                        }}
-                        checked={deleteFields.filter((field) => field.name === item.name).length === 1}
-                      />}
-                    </CustomItem>
-                  )
-                }))
-            })}
-          </Box>}
-          {state[stateList[0]].length === 0 && <Typography className='add-fields-text'>Please add field/s...</Typography>}
-      </SelectedFieldsContainer>
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', gap: '20px' }}>
+                    </div>
+                    {batchDelete && <Checkbox 
+                      className='field-checkbox' 
+                      onChange={(e) => {handleSelectField(e, item)}}
+                      size='small'
+                      style={{
+                        color: '#0E5FDC',
+                      }}
+                      checked={deleteFields.filter((field) => field.name === item.name).length === 1}
+                    />}
+                  </div>
+                )
+              }))
+          })}
+        </div>}
+        {state[stateList[0]].length === 0 && <p className='small-text text-italic please-add-fields-text p-20 m-0'>Please add field/s...</p>}
+      </div>
+      <div className='flex flex-col full-width full-height gap-20'>
         {editField && 
           <FieldContainer 
             item={editField} 
@@ -509,37 +313,43 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
             required={required}
             setRequired={setRequired}
         />}
-        {!editField && <ConfigFieldContainer>
-          <Typography className='setting'>Field Setting</Typography>
-          <Box className='select-message-container'>
-            <Typography>No field found. Please select a field.</Typography>
-          </Box>
-        </ConfigFieldContainer>}
+        {!editField && <div className='p-0 field-config-field-container full-width'>
+          <p className='field-config-field-setting'>Field Setting</p>
+          <div className='field-select-message-container'>
+            <p>No field found. Please select a field.</p>
+          </div>
+        </div>}
         <ScriptEditor setScripts={setScripts} data={data} test={test} validationRules={validationRules} setValidationRules={setValidationRules} />
-      </Box>
-      <RemoveFieldDialog ref={ref}>
-        <Box className='header-close'>
-          <Box className='header'>
-            <Box sx={{ width: '30px', height: '30px', padding: 0, display: 'flex', alignItems: 'center' }}><WarningIcon /></Box>
-            <Typography className='title'>Remove Field</Typography>
-          </Box>
-          <ButtonBase onClick={handleCloseDialog}><CloseIcon /></ButtonBase>
-        </Box>
-        <Box className='content'>
-          <Typography className='text-content'>Are you sure you want to remove the following fields:</Typography>
+      </div>
+      <dialog className='dialog' ref={ref}>
+        <div className='flex justify-between full-width'>
+          <div className='flex gap-16 items-center full-width'>
+            <div className='remove-field-warning-icon p-0 flex items-center'>
+              <WarningIcon />
+            </div>
+            <div className='full-width'>
+              <FormDialogHeader
+                title="Remove Field"
+                onClose={handleCloseDialog}
+              />
+            </div>
+          </div>
+        </div>
+        <div className='dialog-content gap-10'>
+          <p className='dialog-content-text'>Are you sure you want to remove the following fields:</p>
           <ul>
             {deleteFields.map((field: any) => {
-              return <li key={field.name}><Typography className='text-content field'>{`${field.name} `}</Typography></li>
+              return <li key={field.name}><p className='dialog-content-text small-text text-bold'>{`${field.name} `}</p></li>
             })}
           </ul>
-          <Typography className='text-content'>on this mode?</Typography>
-        </Box>
-        <Box className='buttons'>
-          <ButtonYes className='button-ok yes-button-field-dnd' onClick={handleBatchDelete}>OK</ButtonYes>
-          <ButtonNeutral className='button-cancel' onClick={handleCloseDialog}>Cancel</ButtonNeutral>
-        </Box>
-      </RemoveFieldDialog>
-    </Box>
+          <p className='dialog-content-text'>on this mode?</p>
+        </div>
+        <div className='dialog-actions'>
+          <LitButtonNeutral onClick={handleCloseDialog} text='Cancel' />
+          <LitButtonYes onClick={handleBatchDelete} text='OK' autoFocus />
+        </div>
+      </dialog>
+    </div>
   );
 };
 

@@ -7,10 +7,8 @@
 import React, { useEffect, useState } from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import { convert2FieldType } from './functions';
 import { Box, Tooltip } from '@mui/material';
-import styled from 'styled-components';
 import { BlueSwitch, EncryptSignOptions, HorizontalDivider } from '../../styles/CommonStyles';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 
@@ -22,46 +20,6 @@ interface SingleFieldContainerProps {
   required: string[];
   setRequired: (required: string[]) => void;
 }
-
-const ConfigFieldContainer = styled.div`
-  border-radius: 5px;
-  border: 1px solid light-dark(#BFBFBF, #3a3a4a);
-  background: light-dark(#FFF, #1e1e2e);
-  padding: 0;
-  width: 100%;
-
-  .title {
-    font-size: 12px;
-    font-weight: 400;
-    color: light-dark(#6C6C6C, #b0b0b0);
-  }
-
-  .name {
-    font-size: 16px;
-    font-weight: 500;
-    color: light-dark(#000, #e0e0e0);
-  }
-
-  .setting {
-    font-size: 14px;
-    font-weight: 700;
-    color: light-dark(#000, #e0e0e0);
-    width: 100%;
-    padding: 0 20px;
-  }
-
-  .details {
-    padding: 10px 20px 0 20px;
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: 8px;
-  }
-
-  .input {
-    width: 50%;
-    padding: 5px 0;
-  }
-`
 
 const READ_ONLY = "RO";
 const WRITE_ONLY = "WO";
@@ -224,16 +182,16 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   }
 
   return (
-    <ConfigFieldContainer>
-      <Box className='item-name-container'>
-        <Typography className='title'>Item Name</Typography>
-        <Typography className='name'>{item.name}</Typography>
-      </Box>
+    <div className='config-field-container'>
+      <div className='item-name-container'>
+        <p className='field-item-title m-0'>Item Name</p>
+        <p className='field-item-name'>{item.name}</p>
+      </div>
       <HorizontalDivider />
-      <Box>
-        <Typography className='setting'>Field Setting</Typography>
-        <Box className='details'>
-          <Box className='input'>
+      <div>
+        <p className='field-setting-text m-0'>Field Setting</p>
+        <div className='field-setting-details-container'>
+          <div className='half-width pt-5 pb-5'>
             <TextField 
               label="Field Name" 
               value={!!editedItem.externalName ? editedItem.externalName || '' : editedItem.content || ''} 
@@ -245,8 +203,8 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 input: { style: { fontSize: '14px' } }
               }}
             />
-          </Box>
-          <Box className='input'>
+          </div>
+          <div className='half-width pt-5 pb-5'>
             <TextField
               value={formatValue}
               onChange={handleFieldTypeChange}
@@ -275,8 +233,8 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               <MenuItem value={"richtext"}>richtext</MenuItem>
               <MenuItem value={"string"}>string</MenuItem>
             </TextField>
-          </Box>
-          <Box className='input'>
+          </div>
+          <div className='half-width pt-5 pb-5'>
             <TextField
               value={editedItem.fieldAccess}
               onChange={handleAccessModeChange}
@@ -293,16 +251,16 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               <MenuItem value={"RO"}>Read Only</MenuItem>
               <MenuItem value={"WO"}>Write Only</MenuItem>
             </TextField>
-          </Box>
+          </div>
           <Tooltip 
             title={editedItem.fieldGroup?.length > 0 ? "Field group should be empty to toggle off multi-value" : ""} 
             style={{ display: 'flex', flexDirection: 'row' }} 
             arrow
           >
-            <Box className='input multi-value-container'>
-              <Typography style={{ width: 'fit-content', fontSize: '14px' }}>
+            <div className='half-width pt-5 pb-5 multi-value-container'>
+              <p className='small-text m-0'>
                 Multi-Value?
-              </Typography>
+              </p>
               <BlueSwitch 
                 size='small' 
                 checked={isMultiValue} 
@@ -310,10 +268,10 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 disabled = {formatValue === "readers" || formatValue === "authors" || editedItem.fieldGroup?.length > 0} 
                 id='multi-value'
               />
-            </Box>
+            </div>
           </Tooltip>
           <Tooltip title={isMultiValue ? "" : "Enable multi-value to input a field group"} arrow>
-            <Box className='input'>
+            <div className='half-width pt-5 pb-5'>
               <TextField 
                 label="Field Group" 
                 value={editedItem.fieldGroup || ''} 
@@ -326,13 +284,13 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                   input: { style: { fontSize: '14px' } }
                 }}
               />
-            </Box>
+            </div>
           </Tooltip>
           <EncryptSignOptions>
             <section className='main-row'>
-              <text className='small-text'>
+              <p className='small-text m-0'>
                 Encrypt
-              </text>
+              </p>
               <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
                 <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '14px' }} />
               </Tooltip>
@@ -343,9 +301,9 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
             </text>
           </EncryptSignOptions>
           <Box className='input required-pill-container'>
-            <Typography style={{ width: 'fit-content', fontSize: '14px' }}>
+            <p className='small-text m-0'>
               Required?
-            </Typography>
+            </p>
             <BlueSwitch 
               size='small' 
               checked={required.includes(editedItem.content)} 
@@ -353,9 +311,9 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               id='required'
             />
           </Box>
-        </Box>
-      </Box>
-    </ConfigFieldContainer>
+        </div>
+      </div>
+    </div>
   );
 };
 

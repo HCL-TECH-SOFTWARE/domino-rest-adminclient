@@ -32,18 +32,14 @@ const FooterContainer = styled.div`
 const Footer = () => {
   var dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
   return (
-    <FooterContainer>
-      <Typography className="copyright" variant="caption" color="textPrimary">
+    <div className='footer-container'>
+      <p className="footer-copyright-text">
         {`© ${new Date().getFullYear()}. HCL America Inc. All Rights Reserved.`}
-      </Typography>
-      <Typography
-        className="build-version"
-        variant="caption"
-        color="textPrimary"
-      >
+      </p>
+      <p className="footer-build-version">
         {`Build ${BUILD_VERSION} ${dailyBuildNum}`}
-      </Typography>
-    </FooterContainer>
+      </p>
+    </div>
   );
 };
 

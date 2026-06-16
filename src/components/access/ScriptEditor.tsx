@@ -254,26 +254,26 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
 
   return (
     <>
-      <TextEditorContainer>
-        <Box className='settings-header'>
-          <Typography className='settings-text'>Mode Settings</Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          <Button onClick={test}>
-            <TestIcon className='action-icon' color='primary' />
-            <Typography variant='body2' color='textPrimary'>
-              Test Formulas
-            </Typography>
-          </Button>
-          <Button className='expand-button' onClick={handleClickExpand}>
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </Button>
-          </Box>
-        </Box>
+      <div className='script-editor-container'>
+        <div className='script-editor-settings-header'>
+          <p className='script-editor-settings-text m-0'>Mode Settings</p>
+          <div className='flex flex-row items-center'>
+            <Button onClick={test}>
+              <TestIcon className='action-icon' color='primary' />
+              <p className='color-text-primary m-0 small-text'>
+                Test Formulas
+              </p>
+            </Button>
+            <Button className='expand-button' onClick={handleClickExpand}>
+              {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </Button>
+          </div>
+        </div>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box className='formulas-container'>
+          <div className='script-editor-formulas-container'>
             <AccessContainer>
               <FormulaHeader>
-                <Typography className='title'>Formula for Read Access</Typography>
+                <p className='small-text weight-500 m-0'>Formula for Read Access</p>
                 <ButtonBase 
                   disabled={!(!!data.readAccessFormula)} 
                   onClick={() => openDialog("Formula for Read Access", data.readAccessFormula.formula)}
@@ -281,12 +281,12 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   <FiEdit2 />
                 </ButtonBase>
               </FormulaHeader>
-              {data.readAccessFormula && <Typography className='formula-container'>{data.readAccessFormula.formula}</Typography>}
-              {!data.readAccessFormula && <Typography className='no-formula'>Enter Formula...</Typography>}
+              {data.readAccessFormula && <p className='tiny-text weight-400 m-0'>{data.readAccessFormula.formula}</p>}
+              {!data.readAccessFormula && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
             </AccessContainer>
             <AccessContainer>
               <FormulaHeader>
-                <Typography className='title'>Formula for Write Access</Typography>
+                <p className='small-text weight-500 m-0'>Formula for Write Access</p>
                 <ButtonBase 
                   disabled={!(!!data.writeAccessFormula)} 
                   onClick={() => openDialog("Formula for Write Access", data.writeAccessFormula.formula)}
@@ -294,20 +294,20 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   <FiEdit2 />
                 </ButtonBase>
               </FormulaHeader>
-              <Box className='write-formula'>
-                {data.writeAccessFormula?.formula !== "" && <Typography className='formula-container'>{data.writeAccessFormula.formula}</Typography>}
-                {data.writeAccessFormula?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
+              <div className='flex justify-between'>
+                {data.writeAccessFormula?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.writeAccessFormula.formula}</p>}
+                {data.writeAccessFormula?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
                 {data.computeWithForm ?
-                  <Typography className='computed'>Computed with Form - enabled</Typography> :
-                  <Typography className='computed'>Computed with Form - disabled</Typography>
+                  <p className='tiny-text weight-400 text-italic color-text-disabled m-0'>Computed with Form - enabled</p> :
+                  <p className='tiny-text weight-400 text-italic color-text-disabled m-0'>Computed with Form - disabled</p>
                 }
-              </Box>
+              </div>
             </AccessContainer>
-          </Box>
-          <Box className='formulas-container'>
+          </div>
+          <div className='script-editor-formulas-container'>
             <AccessContainer>
               <FormulaHeader>
-                <Typography className='title'>Formula for Delete Access</Typography>
+                <p className='small-text weight-500 m-0'>Formula for Delete Access</p>
                 <ButtonBase 
                   disabled={!(!!data.deleteAccessFormula)} 
                   onClick={() => openDialog("Formula for Delete Access", data.deleteAccessFormula.formula)}
@@ -315,12 +315,12 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   <FiEdit2 />
                 </ButtonBase>
               </FormulaHeader>
-              {data.deleteAccessFormula?.formula !== "" && <Typography className='formula-container'>{data.deleteAccessFormula.formula}</Typography>}
-              {data.deleteAccessFormula?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
+              {data.deleteAccessFormula?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.deleteAccessFormula.formula}</p>}
+              {data.deleteAccessFormula?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
             </AccessContainer>
             <AccessContainer>
               <FormulaHeader>
-                <Typography className='title'>On Load Formula</Typography>
+                <p className='small-text weight-500 m-0'>On Load Formula</p>
                 <ButtonBase 
                   disabled={!(!!data.onLoad)} 
                   onClick={() => openDialog("On Load Formula", data.onLoad.formula)}
@@ -328,14 +328,14 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   <FiEdit2 />
                 </ButtonBase>
               </FormulaHeader>
-              {data.onLoad?.formula !== "" && <Typography className='formula-container'>{data.onLoad.formula}</Typography>}
-              {data.onLoad?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
+              {data.onLoad?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.onLoad.formula}</p>}
+              {data.onLoad?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
             </AccessContainer>
-          </Box>
-          <Box className='formulas-container'>
+          </div>
+          <div className='script-editor-formulas-container'>
             <AccessContainer>
               <FormulaHeader>
-                <Typography className='title'>On Save Formula</Typography>
+                <p className='small-text weight-500 m-0'>On Save Formula</p>
                 <ButtonBase 
                   disabled={!(!!data.onSave)} 
                   onClick={() => openDialog("On Save Formula", data.onSave.formula)}
@@ -343,8 +343,8 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   <FiEdit2 />
                 </ButtonBase>
               </FormulaHeader>
-              {data.onSave?.formula !== "" && <Typography className='formula-container'>{data.onSave.formula}</Typography>}
-              {data.onSave?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
+              {data.onSave?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.onSave.formula}</p>}
+              {data.onSave?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
             </AccessContainer>
             <EncryptSignOptions>
               <section className='main-row'>
@@ -360,7 +360,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                 Please understand this option before enabling
               </text>
             </EncryptSignOptions>
-          </Box>
+          </div>
           <EditFormulaDialog ref={ref} onClose={handleClose}>
             <Box className='header'>
               <Typography className='title'>{formulaTitle}</Typography>
@@ -400,7 +400,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
             </Box>
           </EditFormulaDialog>
         </Collapse>
-      </TextEditorContainer>
+      </div>
       <TextEditorContainer>
         <Box className='settings-header'>
           <Typography className='settings-text'>Validation Rules</Typography>

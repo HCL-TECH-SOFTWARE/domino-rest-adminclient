@@ -2,17 +2,18 @@
 
 :root {
   /* This line is mandatory to activate light-dark() */
-  color-scheme: light dark; 
+  color-scheme: light dark;
 
   /* Theme tokens */
   --text-color-primary: light-dark(#000, #e0e0e0);
   --text-color-secondary: #e0e0e0;
   --text-color-danger: light-dark(#dc1434, #ff6b6b);
+  --text-color-disabled: light-dark(#6c6c6c, #8d8d8d);
   --text-secondary: #e0e0e0;
   --border-color: #3a3a4a;
   --button-primary-color: #8b6ce0;
   --button-secondary-color: #9e9e9e;
-  --body-color: #181825;
+  --body-color: light-dark(#fff, #181825);
   --hover-color: #8b6ce0;
   --button-hover-color: #7356cd;
   --dialog-header-color: light-dark(#391b70, #8b6ce0);
@@ -26,6 +27,10 @@
 }
 
 /* Generic */
+.tiny-text {
+    font-size: 12px;
+}
+
 .small-text {
     font-size: 14px;
 }
@@ -69,11 +74,23 @@
 }
 
 .color-text-primary {
-    color: var(--text-color-primary);
+    color: #000;
+}
+
+body[data-theme="dark"] .color-text-primary {
+    color: #e0e0e0;
 }
 
 .color-text-danger {
     color: var(--text-color-danger);
+}
+
+.color-text-disabled {
+    color: var(--text-color-disabled);
+}
+
+body[data-theme="dark"] .color-text-disabled {
+    color: #8d8d8d;
 }
 
 .dialog {
@@ -167,6 +184,14 @@
     color: var(--text-color-primary);
 }
 
+.quarter-width {
+    width: 25%;
+}
+
+.half-width {
+    width: 50%;
+}
+
 .full-width {
     width: 100%;
 }
@@ -177,6 +202,10 @@
 
 .w-80 {
     width: 80%;
+}
+
+.full-height {
+    height: 100%;
 }
 
 .flex {
@@ -203,6 +232,10 @@
     padding: 0;
 }
 
+.p-20 {
+    padding: 20px;
+}
+
 .pr-0 {
     padding-right: 0;
 }
@@ -215,8 +248,20 @@
     padding-left: 0;
 }
 
+.pl-10 {
+    padding-left: 10px;
+}
+
+.pl-20 {
+    padding-left: 20px;
+}
+
 .pl-30 {
     padding-left: 30px;
+}
+
+.pt-5 {
+    padding-top: 5px;
 }
 
 .pt-10 {
@@ -225,6 +270,10 @@
 
 .pt-30 {
     padding-top: 30px;
+}
+
+.pb-5 {
+    padding-bottom: 5px;
 }
 
 .pb-10 {
@@ -239,16 +288,28 @@
     padding-bottom: 30px;
 }
 
+.m-0 {
+    margin: 0;
+}
+
 .mt-20 {
     margin-top: 20px;
 }
 
-.gap-20 {
-    gap: 20px;
-}
-
 .gap-5 {
     gap: 5px;
+}
+
+.gap-10 {
+    gap: 10px;
+}
+
+.gap-16 {
+    gap: 16px;
+}
+
+.gap-20 {
+    gap: 20px;
 }
 
 .z-100 {
@@ -263,6 +324,10 @@
     justify-content: space-between;
 }
 
+.justify-end {
+    justify-content: flex-end;
+}
+
 .items-center {
     align-items: center;
 }
@@ -275,12 +340,48 @@
     font-weight: bold;
 }
 
+.text-italic {
+    font-style: italic;
+}
+
+.weight-300 {
+    font-weight: 300;
+}
+
+.weight-400 {
+    font-weight: 400;
+}
+
+.weight-500 {
+    font-weight: 500;
+}
+
 .transparent {
     background: transparent;
 }
 
 .search-input {
     background: light-dark(#fff, #252535);
+}
+
+.header-text {
+    display: flex;
+    flex: 1;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.header-container {
+    margin-top: 20px;
+    display: flex;
+    padding: 15px 0;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.background {
+    background: var(--body-color);
 }
 
 /* AccessMode.tsx */
@@ -310,10 +411,45 @@
 }
 
 /* FieldContainer.tsx */
+.config-field-container {
+    border-radius: 5px;
+    border: 1px solid light-dark(#bfbfbf, #3a3a4a);
+    background: light-dark(#FFF, #1e1e2e);
+    padding: 0 0 15px 0;
+    width: 100%;
+}
+
 .item-name-container {
     width: 30%;
     font-size: 14px;
     padding: 24px 24px 0 24px;
+}
+
+.field-item-title {
+    font-size: 12px;
+    font-weight: 400;
+    color: light-dark(#6c6c6c, #b0b0b0);
+}
+
+.field-item-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: light-dark(#000, #e0e0e0);
+}
+
+.field-setting-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: light-dark(#000, #e0e0e0);
+    width: 100%;
+    padding: 0 20px;
+}
+
+.field-setting-details-container {
+    padding: 10px 20px 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 8px;
 }
 
 .field-name-input {
@@ -340,6 +476,22 @@
     align-items: center;
 }
 
+.field-batch-delete-button {
+    background-color: transparent;
+    width: fit-content;
+    padding: 10px;
+    display: flex;
+    justify-content: end;
+    align-items: end;
+}
+
+.batch-delete-cancel-button {
+    text-transform: none;
+    font-weight: 400;
+    color: light-dark(#000, #e0e0e0);
+    text-overflow: ellipsis;
+}
+
 /* FieldDndContainer.tsx */
 .add-icon {
     margin: 0 5px;
@@ -347,6 +499,106 @@
 
 .yes-button-field-dnd {
     color: #fff;
+}
+
+.selected-fields-container {
+    border-radius: 5px;
+    border: 1px solid light-dark(#A5AFBE, #3a3a4a);
+    background: light-dark(#FFF, #1e1e2e);
+}
+
+.field-batch-delete-container {
+    padding: 0 11px;
+    max-width: 100%;
+    flex-wrap: wrap;
+}
+
+.field-batch-delete-text {
+    text-transform: none;
+    font-size: 12px;
+    font-weight: 400;
+    color: #aa1f51;
+    text-overflow: ellipsis;
+}
+
+.please-add-fields-text {
+    font-weight: 400;
+    padding: 20px;
+    color: light-dark(#000, #e0e0e0);
+}
+
+body[data-theme="dark"] .field-batch-delete-text {
+    color: #e06385;
+}
+
+.field-list-container {
+    overflow-y: auto;
+    overflow-x: clip;
+}
+
+.field-list-custom-item {
+    justify-content: space-between !important;
+    padding: 10px 20px;
+    cursor: pointer;
+
+    &:hover {
+        background: light-dark(#d7e0f3, #353548);
+    }
+}
+
+.field-list-field-info {
+    width: 60%;
+    text-overflow: ellipsis;
+}
+
+.field-list-field-name {
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: light-dark(#000, #e0e0e0);
+}
+
+.field-list-field-metadata {
+    font-size: 12px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.field-config-field-container {
+    border-radius: 5px;
+    border: 1px solid light-dark(#bfbfbf, #3a3a4a);
+    background: light-dark(#fff, #1e1e2e);
+    height: 45%;
+}
+
+.field-config-field-setting {
+    font-size: 16px;
+    font-weight: 700;
+    color: light-dark(#000, #e0e0e0);
+    width: 100%;
+    padding: 10px 20px 0 20px;
+    height: 15%;
+}
+
+.field-select-message-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 85%;
+}
+
+.remove-field-warning-icon {
+    width: 30px;
+    height: 30px;
+}
+
+.field-list-icon-button {
+    border: 0;
+    background: none;
+    user-select: none;
+    cursor: pointer;
+    color: light-dark(#000, #e0e0e0);
 }
 
 /* Fields.tsx */
@@ -895,4 +1147,62 @@ body[data-theme="dark"] .add-import-svg-icon {
 
 .all-columns-check-icon {
     color: light-dark(#087251, #66bfa4);
+}
+
+/* Footer.tsx */
+.footer-container {
+    display: flex;
+    position: fixed;
+    padding: 0 15px;
+    bottom: 0;
+    width: 100%;
+    /* align-items: center; */
+    justify-content: flex-end;
+    background: #212121;
+    /* height: */
+}
+
+.footer-copyright-text {
+    margin-right: 20px;
+    color: #f5f5f5;
+    font-size: 14px;
+}
+
+.footer-build-version {
+    color: #fafafa;
+    /* font-weight: 500; */
+    font-size: 14px;
+}
+
+/* ScriptEditor.tsx */
+.script-editor-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    border-radius: 5px;
+    border: 1px solid light-dark(#BFBFBF, #3a3a4a);
+    padding: 5px 20px;
+    gap: 16px;
+    background-color: light-dark(#FFF, #1e1e2e);
+}
+
+.script-editor-settings-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+}
+
+.script-editor-settings-text {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 0;
+}
+
+.script-editor-formulas-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 16px;
 }
