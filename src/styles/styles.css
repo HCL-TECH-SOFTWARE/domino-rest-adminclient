@@ -18,7 +18,8 @@
   --button-hover-color: #7356cd;
   --dialog-header-color: light-dark(#391b70, #8b6ce0);
   --dialog-title-color: #e0e0e0;
-  --badge-color-background: #8b6ce0;
+  --badge-color-background: light-dark(#391b70, #8b6ce0);
+  --base-color: light-dark(#5f1ebe, #b38df9);
   --badge-color: #fff;
   --icon-color: light-dark(#000, #fff);
   --hint-text-color: light-dark(#808080, #a9a9a9);
@@ -31,6 +32,10 @@
     font-size: 12px;
 }
 
+.text-13 {
+    font-size: 13px;
+}
+
 .small-text {
     font-size: 14px;
 }
@@ -40,17 +45,16 @@
     color: var(--text-color-primary);
 }
 
+.big-text {
+    font-size: 18px;
+}
+
 .large-text {
     font-size: 20px;
 }
 
 .line-height-normal {
     line-height: normal;
-}
-
-.flex-column {
-    display: flex;
-    flex-direction: column;
 }
 
 .text-transform-none {
@@ -75,6 +79,18 @@
 
 .color-text-primary {
     color: #000;
+}
+
+.color-text-hint {
+    color: var(--hint-text-color);
+}
+
+.background-badge {
+    background: var(--badge-color-background);
+}
+
+.background-keep-base {
+    background: var(--base-color);
 }
 
 body[data-theme="dark"] .color-text-primary {
@@ -196,6 +212,10 @@ body[data-theme="dark"] .color-text-disabled {
     width: 100%;
 }
 
+.w-45 {
+    width: 45%;
+}
+
 .w-90 {
     width: 90%;
 }
@@ -228,8 +248,16 @@ body[data-theme="dark"] .color-text-disabled {
     flex-wrap: wrap;
 }
 
+.flex-1 {
+    flex: 1;
+}
+
 .p-0 {
     padding: 0;
+}
+
+.p-16 {
+    padding: 16px;
 }
 
 .p-20 {
@@ -238,6 +266,14 @@ body[data-theme="dark"] .color-text-disabled {
 
 .pr-0 {
     padding-right: 0;
+}
+
+.pr-10 {
+    padding-right: 10px;
+}
+
+.pr-20 {
+    padding-right: 20px;
 }
 
 .pr-30 {
@@ -292,8 +328,20 @@ body[data-theme="dark"] .color-text-disabled {
     margin: 0;
 }
 
+.m-0 {
+    margin: 0;
+}
+
 .mt-20 {
     margin-top: 20px;
+}
+
+.gap-2 {
+    gap: 2px;
+}
+
+.gap-3 {
+    gap: 3px;
 }
 
 .gap-5 {
@@ -330,6 +378,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .items-center {
     align-items: center;
+}
+
+.content-center {
+    align-content: center;
 }
 
 .text-center {
@@ -382,6 +434,14 @@ body[data-theme="dark"] .color-text-disabled {
 
 .background {
     background: var(--body-color);
+}
+
+.no-background {
+    background: none;
+}
+
+.no-border {
+    border: none;
 }
 
 /* AccessMode.tsx */
@@ -765,6 +825,37 @@ body[data-theme="dark"] .field-batch-delete-text {
     align-items: center;
 }
 
+.access-change-mode-button {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    justify-content: left !important;
+    text-transform: none !important;
+}
+
+.access-actions-container {
+    flex: 1 0 0%;
+    display: flex;
+    padding: 0 20px;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.tabs-access-save-button {
+    background: none;
+    border: none;
+}
+
+.tabs-access-action-icon {
+    font-size: 16px;
+    margin-right: 5px;
+    padding: 0;
+}
+
+.access-load-tab-container {
+    height: 92%;
+}
+
 /* AppItem.tsx */
 .regen-app-secret-dialog {
     flex-direction: column;
@@ -910,6 +1001,44 @@ body[data-theme="dark"] .add-import-svg-icon {
     text-overflow: ellipsis;
     overflow: hidden;
     word-break: break-word;
+}
+
+/* SingleFieldContainer.tsx */
+.item-container {
+    display: flex;
+    user-select: none;
+    padding: 10px 40px 10px 10px;
+    align-items: center;
+    width: 100%;
+    align-content: flex-start;
+    line-height: 1.5;
+    border-radius: 3px;
+    border: 1px solid transparent;
+}
+
+.item-container svg {
+    margin-right: 10px;
+}
+
+.item-container:hover {
+    cursor: pointer;
+    border: 1px solid #5F1EBE;
+    border-radius: 2px;
+}
+
+.item-container .add-field {
+    visibility: hidden;
+    height: 100%;
+}
+
+.item-container:hover .add-field {
+    visibility: visible;
+    cursor: pointer;
+}
+
+.item-container--dragging {
+    border-style: dashed;
+    border-color: #4099ff;
 }
 
 /* ActivateMenu.tsx */
@@ -1178,7 +1307,7 @@ body[data-theme="dark"] .add-import-svg-icon {
 .script-editor-container {
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
+    overflow-y: auto;
     border-radius: 5px;
     border: 1px solid light-dark(#BFBFBF, #3a3a4a);
     padding: 5px 20px;
@@ -1205,4 +1334,40 @@ body[data-theme="dark"] .add-import-svg-icon {
     width: 100%;
     justify-content: space-between;
     margin-bottom: 16px;
+}
+
+.script-editor-help-icon {
+    color: #2d91e3;
+}
+
+.script-editor-access-container {
+    border: 1px solid light-dark(#a5afbe, #3a3a4a);
+    border-radius: 10px;
+    width: 45%;
+}
+
+.script-editor-edit-dialog {
+    border-radius: 10px;
+    background: light-dark(#FFF, #252535);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    border: none;
+    width: 50%;
+    padding: 30px 0;
+}
+
+.script-editor-formula-line {
+    padding: 5px 0;
+}
+
+.script-editor-compute-text {
+    font-size: 15px;
+}
+
+/* AppForm.tsx */
+.app-form-header {
+    color: #fff;
+    font-size: 24px;
+    padding: 20px;
+    height: 70x;
+    border-radius: 5px;
 }

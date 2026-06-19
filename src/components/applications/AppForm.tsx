@@ -4,11 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useContext, useRef, useEffect } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { FormikProps } from 'formik';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
@@ -136,26 +135,21 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
 
   return (
     <FormContentContainer role="presentation" style={{ width: '90%' }}>
-      <PanelContent onSubmit={formik.handleSubmit}>
-        <Typography
-          className="header-title"
-          style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
+      <PanelContent onSubmit={formik.handleSubmit} className='flex flex-col w-90'>
+        <span
+          className="app-form-header background-keep-base full-width"
         >
           <ApplicationIcon />
           {formContext === 'Edit'
             ? ' Edit Application '
             : ' Add New Application '}
-        </Typography>
+        </span>
         {appError && appErrorMessage && (
           <Alert style={{ margin: '5px 0' }} severity="error">
             <AlertTitle>Error: Unable to save application</AlertTitle>
-            <Typography
-              style={{ fontSize: 18 }}
-              component="p"
-              variant="caption"
-            >
+            <span className='big-text color-text-danger'>
               {appErrorMessage}
-            </Typography>
+            </span>
           </Alert>
         )}
         <InputContainer style={{ marginTop: 5 }}>
@@ -171,9 +165,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             variant='standard'
           />
           {formik.errors.appName && formik.touched.appName ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.appName}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <InputContainer>
@@ -189,9 +183,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             variant='standard'
           />
           {formik.errors.appDescription && formik.touched.appDescription ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.appDescription}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <InputContainer>
@@ -211,9 +205,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           />
           {formik.errors.appCallbackUrlsStr &&
           formik.touched.appCallbackUrlsStr ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.appCallbackUrlsStr}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <InputContainer>
@@ -229,9 +223,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             variant='standard'
           />
           {formik.errors.appStartPage && formik.touched.appStartPage ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.appStartPage}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <InputContainer>
@@ -239,9 +233,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           <PillBoxRow>
               {scopeValues.map((scope, idx) => (
                 <PillBox key={`${scope}-${idx}`}>
-                  <Typography>
+                  <span className='color-text-primary'>
                     {scope}
-                  </Typography>
+                  </span>
                   <RemoveButton onClick={() => removeScopeFromApp(scope)} >
                     <CloseIcon fontSize='inherit' />
                   </RemoveButton>
@@ -261,9 +255,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           </LitButton>
           </ScopeField>
           {!formik.values.appScope && formik.touched.appScope ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.appScope}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <InputContainer>
@@ -296,9 +290,9 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             value={formik.values.appContactsStr}
           />
           {formik.errors.appContactsStr && formik.touched.appContactsStr ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.appContactsStr}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <small>App Icons</small>

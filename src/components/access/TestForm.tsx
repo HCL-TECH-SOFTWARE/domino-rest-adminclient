@@ -10,13 +10,11 @@ import Checkbox from '@mui/material/Checkbox';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { FormikProps } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppState } from '../../store';
 import { clearFormulaResults } from '../../store/databases/action';
@@ -101,20 +99,13 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
             }}
           />
           <PanelContent onSubmit={formik.handleSubmit}>
-            <Typography
-              className="header-title"
-              style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
-            >
+            <span className="header-title background-badge">
               Test Formulas
-            </Typography>
+            </span>
             <PageLegend>
-              <Typography
-                component="p"
-                variant="caption"
-                style={{ fontSize: 18 }}
-              >
+              <span className='large-text'>
                 Select the formulas you would like to test
-              </Typography>
+              </span>
             </PageLegend>
             <FormGroup>
               <FormControlLabel
@@ -227,69 +218,62 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
         }
       />
       <PanelContent>
-            <Typography
-              className="header-title"
-              style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
-            >
+            <span className="header-title background-badge" >
               Test Formula Results
-            </Typography>
+            </span>
             <PageLegend>
-              <Typography
-                component="p"
-                variant="caption"
-                style={{ fontSize: 18 }}
-              >
+              <span className="large-text" >
                 The test results for the selected Formulas
-              </Typography>
+              </span>
             </PageLegend>
             {displayReadResults && 
               <AutoContainer>
-                <Typography className="bold-text" color="textPrimary">
+                <span className="text-bold color-text-primary">
                   {'Read Formula Results:'}
-                </Typography>
-                <Typography color="textPrimary">
+                </span>
+                <span className="color-text-primary">
                   {readFormulaResults}
-                </Typography>
+                </span>
               </AutoContainer>}
 
             {displayWriteResults && 
               <AutoContainer>
-                <Typography className="bold-text" color="textPrimary">
+                <span className="text-bold color-text-primary">
                   Write Formula Results:
-                </Typography>
-                <Typography color="textPrimary">
+                </span>
+                <span className="color-text-primary">
                   {writeFormulaResults}
-                </Typography>
+                </span>
                                 </AutoContainer>}
 
             {displayDeleteResults && 
               <AutoContainer>
-                <Typography className="bold-text" color="textPrimary">
+                <span className="text-bold color-text-primary">
                   {'DeleteFormula Results'}
-                </Typography>
-                <Typography color="textPrimary">
+                </span>
+                <span className="color-text-primary">
                   {deleteFormulaResults}
-                </Typography>
+                </span>
                                  </AutoContainer>}
 
             {displayLoadResults && 
               <AutoContainer>
-                <Typography className="bold-text" color="textPrimary">
+                <span className="text-bold color-text-primary">
                   {'Load Formula Results'}
-                </Typography>
-                <Typography color="textPrimary">
+                </span>
+                <span className="color-text-primary">
                   {loadFormulaResults}
-                </Typography>
+                </span>
                                </AutoContainer>}
 
             {displaySaveResults && 
               <AutoContainer>
-                <Typography className="bold-text" color="textPrimary">
+                <span className="text-bold color-text-primary">
                   {'Save Formula Results'}
-         </Typography>
-                <Typography color="textPrimary">
+         </span>
+                <span className="color-text-primary">
                   {saveFormulaResults}
-                </Typography>
+                </span>
                                </AutoContainer>}
           </PanelContent>
           <ActionButtonBar>

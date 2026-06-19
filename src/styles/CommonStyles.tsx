@@ -230,6 +230,7 @@ export const FormContentContainer = styled.div`
   padding: 0px 20px;
   min-width: 55%;
   max-width: 100%;
+  overflow-y: auto;
 
   .header-title {
     margin-top: 15px;

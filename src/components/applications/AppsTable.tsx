@@ -12,7 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, IconButton, TableFooter, TablePagination, Typography } from '@mui/material';
+import { Box, IconButton, TableFooter, TablePagination } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { FaSort } from "react-icons/fa";
@@ -24,7 +24,6 @@ import AppFilterContainer from './AppFilterContainer';
 import { fetchMyApps } from '../../store/applications/action';
 import { useDispatch } from 'react-redux';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
-import { LitInputText } from '../lit-elements/LitElements';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid light-dark(#B8B8B8, #3a3a4a);
@@ -213,7 +212,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                 <TableCell className='launch' />
                 <TableCell className='app-name text'>
                   <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    <Typography className='text can-sort'>
+                    <span className='small-text text-bold flex items-center gap-3'>
                       App Name
                       <button
                         onClick={handleSortAppNames}
@@ -221,7 +220,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                       >
                         <FaSort />
                       </button>
-                    </Typography>
+                    </span>
                     <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
                     {/* <LitInputText
                       hint='Search App Name'
@@ -229,22 +228,22 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   </Box>
                 </TableCell>
                 <TableCell className='app-id-secret text'>
-                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    <Typography className='text' style={{ fontSize: '13px' }}>
+                  <div className='full-width flex flex-col gap-3'>
+                    <span className='text-bold text-13'>
                       App ID
-                    </Typography>
-                    <Typography className='text' style={{ fontSize: '13px' }}>
+                    </span>
+                    <span className='text-bold text-13'>
                       App Secret
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell className='description text'>
-                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    <Typography className='text'>
+                  <div className='full-width flex flex-col gap-3'>
+                    <span className='small-text text-bold'>
                       Description
-                    </Typography>
+                    </span>
                     <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
-                  </Box>
+                  </div>
                 </TableCell>
                 <TableCell className='icons' />
               </TableRow>

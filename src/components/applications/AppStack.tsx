@@ -38,9 +38,9 @@ const AppStack: React.FC<AppStackProps> = ({
 }) => {
   return (
     <StackContainer>
-      <Typography className="heading" color="textPrimary">
+      <span className="large-text color-text-primary">
         {`${heading}`}
-      </Typography>
+      </span>
       <Flex>
         {list.length > 0 ? (
           <>
@@ -55,7 +55,7 @@ const AppStack: React.FC<AppStackProps> = ({
           </>
         ) : (
           <ZeroFound>
-            <Typography className="blank-column">0 Applications</Typography>
+            <span className="large-text">0 Applications</span>
           </ZeroFound>
         )}
       </Flex>

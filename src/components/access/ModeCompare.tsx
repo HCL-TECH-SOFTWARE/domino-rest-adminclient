@@ -677,7 +677,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           {allModes[getFormModeIndex(allModes, modeName)].fields[
                             getFieldIndex(allModes[getFormModeIndex(allModes, modeName)].fields, fieldName)
                           ] ? (
-                            <Box className='flex-column'>
+                            <Box className='flex flex-col'>
                               <Box className="field-name">{fieldName}</Box>
                               <Box className="key-text">
                                 {Object.keys(
