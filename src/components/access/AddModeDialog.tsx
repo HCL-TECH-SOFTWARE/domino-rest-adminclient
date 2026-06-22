@@ -6,7 +6,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
 
@@ -47,12 +46,13 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
       onClose={handleClose}
       className='add-mode-dialog-container'
     >
-      <div className='dialog-content'>
+      <div className='dialog-content gap-20'>
         <FormDialogHeader title={clone ? `Clone ${modeName}` : `Add New Mode`} onClose={handleClose} />
-          <div className='add-mode-content-container'>
-            <text className='add-mode-content-text'>
+        <div className='add-mode-content-container'>
+          <div className='flex flex-col gap-5'>
+            <p className='add-mode-content-text'>
               Example: dql, draft, archive
-            </text>
+            </p>
             <TextField
               onChange={handleTextChange}
               autoFocus
@@ -63,10 +63,11 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
               fullWidth
             />
             {formError && (
-              <Typography color="error">{formError}</Typography>
+              <p className='small-text color-text-danger'>{formError}</p>
               )
             }
           </div>
+        </div>
       </div>
       <div className='dialog-actions'>
         <LitButtonNeutral onClick={handleClose} className='dialog-actions-button' text='Cancel' />

@@ -12,7 +12,7 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { Box, Button, ButtonBase, Tooltip, Typography } from "@mui/material";
+import { Box, Button, ButtonBase, Tooltip } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
@@ -356,12 +356,12 @@ const FormsTable: React.FC<FormsTableProps> = ({
         <Box className='header-close'>
           <Box className='header'>
             <Box sx={{ width: '30px', height: '30px', padding: 0, display: 'flex', alignItems: 'center' }}><WarningIcon /></Box>
-            <Typography className='title'>Activate Form?</Typography>
+            <span className='title'>Activate Form?</span>
           </Box>
           <ButtonBase onClick={handleCloseActivateDialog}><IoMdClose size='1.5em' /></ButtonBase>
         </Box>
         <Box className='content'>
-          <Typography className='text-content'>This form is inactive. Activate this form to edit it?</Typography>
+          <span className='text-content'>This form is inactive. Activate this form to edit it?</span>
         </Box>
         <Box className='buttons'>
           <ButtonYes className='button-ok' onClick={handleConfirmActivate} style={{ color: '#FFF' }}>OK</ButtonYes>

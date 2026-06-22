@@ -6,7 +6,6 @@
 
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import { SettingContext } from '../SettingContext';
 
 const FormSettingsContainer = styled.div`
@@ -32,9 +31,9 @@ const FormSettings: React.FC<Props> = () => {
 
   return (
     <FormSettingsContainer>
-      <Typography className="list-configured-forms" color="textPrimary">
+      <span className="list-configured-forms color-text-primary">
         List of Configured Forms
-      </Typography>
+      </span>
       <ConfiguredForms>
         {configuredForms &&
           (configuredForms.length > 0 ? (
@@ -44,9 +43,9 @@ const FormSettings: React.FC<Props> = () => {
               ))}
             </ul>
           ) : (
-            <Typography color="textPrimary">
+            <span className="color-text-primary">
               No Available Configured Forms
-            </Typography>
+            </span>
           ))}
       </ConfiguredForms>
     </FormSettingsContainer>

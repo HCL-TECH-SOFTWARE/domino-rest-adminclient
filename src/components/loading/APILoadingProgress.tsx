@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { CircularProgress, Typography } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import styled from 'styled-components';
 
 const LoadingContainer = styled.div`
@@ -30,9 +30,9 @@ const APILoadingProgress: React.FC<APILoadingProgressProps> = ({ label }) => {
     <LoadingContainer>
       <CircularProgress color="primary" />
       <LabelContainer>
-        <Typography color="textPrimary">
+        <span className="color-text-primary">
           {`${label} are loading. This may take a few seconds...`}
-        </Typography>
+        </span>
       </LabelContainer>
     </LoadingContainer>
   );

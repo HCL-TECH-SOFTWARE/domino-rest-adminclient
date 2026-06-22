@@ -7,7 +7,6 @@
 import React from 'react';
 import { FormikProps } from 'formik';
 import styled from 'styled-components';
-import { Typography } from '@mui/material';
 import { StackContainer, Flex } from '../../styles/CommonStyles';
 import AppCard from './kanban/AppCard';
 
@@ -38,9 +37,9 @@ const AppStack: React.FC<AppStackProps> = ({
 }) => {
   return (
     <StackContainer>
-      <Typography className="heading" color="textPrimary">
+      <span className="large-text color-text-primary">
         {`${heading}`}
-      </Typography>
+      </span>
       <Flex>
         {list.length > 0 ? (
           <>
@@ -55,7 +54,7 @@ const AppStack: React.FC<AppStackProps> = ({
           </>
         ) : (
           <ZeroFound>
-            <Typography className="blank-column">0 Applications</Typography>
+            <span className="large-text">0 Applications</span>
           </ZeroFound>
         )}
       </Flex>

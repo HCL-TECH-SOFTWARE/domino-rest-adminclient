@@ -9,7 +9,6 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import Typography from '@mui/material/Typography';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -86,24 +85,20 @@ const Tip: React.FC<TipProps> = ({
                  the natural aspect ratio so the entire picture
                  is shown end-to-end. */
               width: '100%',
-              height: 'auto',
+              height: '100%',
               display: 'block',
               objectFit: 'cover',
               backgroundColor: 'transparent',
+              padding: 0,
             }}
           />
-          <CardContent>
-            <Typography
-              color="textPrimary"
-              gutterBottom
-              variant="h5"
-              component="h2"
-            >
+          <CardContent className='flex flex-col'>
+            <span className="huge-text wrap color-text-primary">
               {heading}
-            </Typography>
-            <Typography color="textPrimary" variant="body2" component="p">
+            </span>
+            <span className="small-text color-text-primary">
               {description}
-            </Typography>
+            </span>
           </CardContent>
         </CardActionArea>
       </Link>

@@ -11,8 +11,9 @@ import PeopleIcon from '@mui/icons-material/Person';
 import { useSelector, useDispatch } from 'react-redux';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Typography, InputAdornment, IconButton } from '@mui/material';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import { Alert, AlertTitle } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import { AppState } from '../../store';
@@ -69,9 +70,8 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
         />
         {formContext === 'View' ? (
           <PanelContent>
-            <Typography
-              className="header-title"
-              style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
+            <span
+              className="header-title background-keep-base"
             >
               <PeopleIcon />
 
@@ -80,7 +80,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 : formContext === 'Edit'
                 ? ' Update New Person'
                 : ' View Person Details'}
-            </Typography>
+            </span>
 
             <InputContainer style={{ marginTop: 10 }}>
               <TextField
@@ -94,9 +94,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.firstName && formik.touched.firstName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.firstName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -111,9 +111,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.lastName && formik.touched.lastName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.lastName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -128,9 +128,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.shortName && formik.touched.shortName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.shortName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -165,9 +165,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 value={formik.values.password}
               />
               {formik.errors.password && formik.touched.password ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.password}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -182,9 +182,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.companyName && formik.touched.companyName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.companyName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -199,9 +199,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.phoneNumber && formik.touched.phoneNumber ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.phoneNumber}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -217,9 +217,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
               />
               {formik.errors.internetAddress &&
               formik.touched.internetAddress ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.internetAddress}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -234,9 +234,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.mailAddress && formik.touched.mailAddress ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.mailAddress}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
           </PanelContent>
@@ -245,18 +245,13 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
             {peopleError && peopleErrorMessage && (
               <Alert style={{ margin: '5px 0' }} severity="error">
                 <AlertTitle>Error: Unable to save People</AlertTitle>
-                <Typography
-                  style={{ fontSize: 18 }}
-                  component="p"
-                  variant="caption"
-                >
+                <span className="big-text">
                   {peopleErrorMessage}
-                </Typography>
+                </span>
               </Alert>
             )}
-            <Typography
-              className="header-title"
-              style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
+            <span
+              className="header-title background-keep-base"
             >
               <PeopleIcon />
 
@@ -265,7 +260,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 : formContext === 'Edit'
                 ? ' Update New Person'
                 : ' View Person Details'}
-            </Typography>
+            </span>
             <InputContainer style={{ marginTop: 10 }}>
               <TextField
                 fullWidth
@@ -277,9 +272,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.firstName && formik.touched.firstName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.firstName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -293,9 +288,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.lastName && formik.touched.lastName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.lastName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -309,9 +304,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.shortName && formik.touched.shortName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.shortName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -345,9 +340,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 value={formik.values.password}
               />
               {formik.errors.password && formik.touched.password ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.password}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -361,9 +356,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.companyName && formik.touched.companyName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.companyName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -377,9 +372,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.phoneNumber && formik.touched.phoneNumber ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.phoneNumber}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -394,9 +389,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
               />
               {formik.errors.internetAddress &&
               formik.touched.internetAddress ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.internetAddress}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -410,9 +405,9 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.mailAddress && formik.touched.mailAddress ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.mailAddress}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
           </PanelContent>

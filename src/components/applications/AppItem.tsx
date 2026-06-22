@@ -7,7 +7,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import { Box, TableCell, TableRow, Tooltip } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
@@ -243,40 +243,39 @@ const AppItem: React.FC<AppItemProps> = ({
                             color: getTheme(themeMode).hoverColor
                         }}
                     />
-                    <Box style={{ flexDirection: 'column', gap: '2px', display: 'flex' }}>
-                        <Typography className='text'>{app.appName}</Typography>
+                    <div className='flex flex-col gap-2'>
+                        <span className='small-text'>{app.appName}</span>
                         <div style={{ width: '100%' }}>
                           <LitAppStatus status={app.appStatus === 'isActive'} />
                         </div>
-                    </Box>
+                    </div>
                   </AppNameContainer>
                 </TableCell>
                 <TableCell className='expiration exp-content'>
                   <Box>
                     <AppIdSecretContainer>
-                      <Typography className='text'>App ID:</Typography>
+                      <span className='small-text'>App ID:</span>
                       <Tooltip 
                         title="Copy App Id" 
                         arrow 
                         tabIndex={1} 
                         onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}}
                       >
-                        <Typography
-                          className='text id-secret'
-                          style={{ color: '#656565' }}
+                        <span
+                          className='small-text cursor-pointer color-text-hint'
                           onClick={copyToClipboard}
                         >
                           {app.appId}
-                        </Typography>
+                        </span>
                       </Tooltip>
                     </AppIdSecretContainer>
                     { app.usePkce ? (
                       <AppIdSecretContainer>
-                        <Typography className='text' sx={{ fontWeight: 'bold' }}>PKCE</Typography>
+                        <span className='small-text text-bold'>PKCE</span>
                       </AppIdSecretContainer>
                     ) : (
                       <AppIdSecretContainer>
-                        <Typography className='text'>App Secret:</Typography>
+                        <span className='small-text'>App Secret:</span>
                         {
                           hasAppSecret ? <>
                             <Tooltip 
@@ -285,14 +284,13 @@ const AppItem: React.FC<AppItemProps> = ({
                                   onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
                                   arrow
                                 >
-                                  <Typography
-                                    className='text id-secret'
-                                    style={{ color: '#2873F0' }}
+                                  <span
+                                    className='small-text cursor-pointer script-editor-help-icon'
                                     ref={appSecretTextRef}
                                     onClick={copyToClipboard}
                                   >
                                     {appSecret}
-                                  </Typography>
+                                  </span>
                                 </Tooltip>
                           </> :
                           app.appHasSecret ? <>
@@ -302,7 +300,7 @@ const AppItem: React.FC<AppItemProps> = ({
                             >
                               <MdRefresh color='#2873F0' />
                             </button>
-                            <Typography className='text' style={{ color: '#505050' }}>********************</Typography>
+                            <span className='small-text color-text-hint'>********************</span>
                           </> : <>
                             {app.appSecret?.length > 0 ? <>
                               <Tooltip 
@@ -311,21 +309,20 @@ const AppItem: React.FC<AppItemProps> = ({
                                   onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
                                   arrow
                                 >
-                                  <Typography
-                                    className='text id-secret'
-                                    style={{ color: '#2873F0' }}
+                                  <span
+                                    className='small-text cursor-pointer script-editor-help-icon'
                                     ref={appSecretTextRef}
                                     onClick={copyToClipboard}
                                   >
                                     {appSecret}
-                                  </Typography>
+                                  </span>
                                 </Tooltip>
                             </> : <>
                             <button
                               onClick={() => handleClickGenerate(true)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                              className='no-background no-border cursor-pointer m-0 p-0'
                             >
-                              <Typography className='text' style={{ color: '#2873F0' }}>{clickToGenerateText}</Typography>
+                              <span className='small-text script-editor-help-icon'>{clickToGenerateText}</span>
                             </button>
                             </>}
                           </>
@@ -335,27 +332,27 @@ const AppItem: React.FC<AppItemProps> = ({
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Typography className='text'>{app.appDescription}</Typography>
+                  <span className='small-text'>{app.appDescription}</span>
                 </TableCell>
                 <TableCell>
                   <OptionsContainer>
                     <Tooltip title="Edit Application" arrow>
                       <button
                         onClick={viewEdit}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                        className='no-background no-border cursor-pointer m-0 p-0'
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
                         </svg>
                       </button>
                     </Tooltip>
-                    <Box>
-                      <div style={{ height: '31px', width: '1px', backgroundColor: 'black'}}></div>  
-                    </Box>
+                    <div>
+                      <div style={{ height: '31px', width: '1px', backgroundColor: 'light-dark(black, white)'}}></div>  
+                    </div>
                     <Tooltip title="Delete Application" arrow>
                       <button
                         onClick={() => deleteApplication(app.appId)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                        className='no-background no-border cursor-pointer m-0 p-0'
                       >
                         <DeleteIcon className='delete-icon' />
                       </button>

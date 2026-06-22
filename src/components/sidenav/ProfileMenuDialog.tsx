@@ -10,7 +10,6 @@ import Popper from '@mui/material/Popper';
 import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import styled from 'styled-components';
@@ -93,12 +92,12 @@ const ProfileMenu = () => {
               <ProfileMenuCard>
                 <AvatarContainer theme={themeMode}>
                   <ProfileInfo>
-                    <Typography color="textPrimary" style={{ fontWeight: 700, fontSize: 16 }}>
+                    <span className="color-text-primary weight-700 medium-text">
                       {user}
-                    </Typography>
-                    <Typography color="textPrimary" style={{ fontSize: 13 }}>
+                    </span>
+                    <span className="color-text-primary text-13">
                       Administrator
-                    </Typography>
+                    </span>
                   </ProfileInfo>
                 </AvatarContainer>
                 <OptionList toggleMenu={setOpen} theme={themeMode} />

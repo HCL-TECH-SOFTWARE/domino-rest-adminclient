@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import { SubSectionTitleContainer } from '../../styles/CommonStyles';
 
 type SettingTitleProps = {
@@ -15,9 +14,9 @@ type SettingTitleProps = {
 const SettingTitle: React.FC<SettingTitleProps> = ({ children }) => {
   return (
     <SubSectionTitleContainer>
-      <Typography className="title" color="textPrimary">
+      <span className="title color-text-primary">
         {children}
-      </Typography>
+      </span>
     </SubSectionTitleContainer>
   );
 };

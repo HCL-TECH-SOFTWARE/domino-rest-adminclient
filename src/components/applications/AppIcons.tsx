@@ -7,7 +7,6 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
 import { Autocomplete, Box } from '@mui/material';
-import Typography from '@mui/material/Typography';
 import { FormikProps, useFormikContext } from 'formik';
 import appIcons from '../../styles/app-icons';
 import { AutoContainer } from '../../styles/CommonStyles';

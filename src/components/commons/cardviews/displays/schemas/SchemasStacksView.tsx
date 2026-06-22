@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
@@ -81,9 +80,9 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
   return (
     <SchemasMainContainer>
       <StackHeader>
-        <Typography className='active-counts' component='p' variant='subtitle1'>
+        <span className='m-0 mt-5 mb-5'>
           {inUseSchemas.length} in use Schema(s) (configured with Scope)
-        </Typography>
+        </span>
       </StackHeader>
       <>
         <ExtraFlex>
@@ -117,14 +116,10 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
       {!onlyShowSchemasWithScopes && (
         <>
           <StackHeader>
-            <Typography
-              className='forms-count'
-              component='p'
-              variant='subtitle1'
-            >
+            <span className='m-0 mt-5 mb-5'>
               {notInUseSchemas.length} not in use Schema(s) (not configured with
               Scope)
-            </Typography>
+            </span>
           </StackHeader>
           <>
             <ExtraFlex>

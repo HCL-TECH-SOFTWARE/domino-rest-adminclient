@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useState, useRef, useContext } from 'react';
-import Typography from '@mui/material/Typography';
 import EditIcon from '@mui/icons-material/Edit';
 import ApplicationIcon from '@mui/icons-material/Apps';
 import GenerateIcon from '@mui/icons-material/RotateLeft';
@@ -240,22 +239,22 @@ const AppCard: React.FC<AppCardProps> = ({
             )}
           </Icon>
           <Tooltip title={item.appName} arrow>
-            <Typography className="appName" color="textPrimary">
+            <span className="appName" color="textPrimary">
               {item.appName}
-            </Typography>
+            </span>
           </Tooltip>
         </Header>
         <Tooltip title={item.appDescription ? item.appDescription : ''} arrow>
-          <Typography className="appDescription" color="textPrimary">
+          <span className="appDescription" color="textPrimary">
             {item.appDescription
               ? item.appDescription
               : 'No Description Available'}
-          </Typography>
+          </span>
         </Tooltip>
         <Footer className="footer-actions">
-          <Typography className="heading" color="textPrimary">
+          <span className="heading" color="textPrimary">
             App Id:
-          </Typography>
+          </span>
           <Tooltip 
             title="Copy App Id" 
             arrow 
@@ -263,40 +262,40 @@ const AppCard: React.FC<AppCardProps> = ({
             onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
             onFocus={handleCardFocus}
           >
-            <Typography
+            <span
               className="app-secret"
               color="textPrimary"
               onClick={copyToClipboard}
             >
               {item.appId}
-            </Typography>
+            </span>
           </Tooltip>
         </Footer>
         <Footer className="footer-actions">
           {generating ? (
-            <Typography className="generating">
+            <span className="generating">
               Generating New Secret ...
-            </Typography>
+            </span>
           ) : (
             appSecret && (
               <>
-                <Typography className="heading" color="textPrimary">
+                <span className="heading" color="textPrimary">
                   App Secret:
-                </Typography>
+                </span>
                 <Tooltip 
                   title="Copy Application Secret" 
                   tabIndex={1} 
                   onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
                   arrow
                 >
-                  <Typography
+                  <span
                     ref={appSecretTextRef}
                     onClick={copyToClipboard}
                     className="app-secret"
                     color="textPrimary"
                   >
                     {appSecret}
-                  </Typography>
+                  </span>
                 </Tooltip>
               </>
             )

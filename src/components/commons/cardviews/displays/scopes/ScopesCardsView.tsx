@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Typography from '@mui/material/Typography';
 import { useDispatch } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
@@ -54,12 +53,9 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
 
   return (
     <SchemasMainContainer>
-      <Typography
-        style={{ fontSize: 16, marginBottom: 30, marginTop: 5 }}
-        color="textPrimary"
-      >
+      <span className='medium-font mb-30 mt-5 color-text-primary'>
         HCL Domino REST API Databases Scope
-      </Typography>
+      </span>
       <ExtraFlex>
         {databases.length > 0 ? (
           databases.map((database: any, index: any) => {

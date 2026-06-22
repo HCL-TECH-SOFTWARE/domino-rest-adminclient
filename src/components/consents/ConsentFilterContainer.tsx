@@ -9,26 +9,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
-import { BlueSwitch, DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
-import { Box, Checkbox, FormControlLabel, RadioGroup, Tooltip, Typography } from '@mui/material';
+import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
+import { Box, Checkbox, FormControlLabel, RadioGroup, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
-
-const FilterContainer = styled(Box)`
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  gap: 10px;
-
-  .title {
-    font-size: 18px;
-    font-weight: 700;
-  }
-`
 
 const Section = styled(Box)`
   padding-top: 10px;
@@ -140,7 +128,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
     <Drawer anchor="right" open={consentsDrawer} onClose={handleClickOpen}>
       <DrawerFormContainer style={{ width: '35vw' }}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <FilterContainer>
+          <div className='flex flex-col p-20'>
             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
               <Tooltip arrow title="Close">
                 <CloseIcon
@@ -150,9 +138,9 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                 />
               </Tooltip>
             </Box>
-            <Typography className='title'>Filter</Typography>
+            <span className='text-bold big-text'>Filter</span>
             <Section>
-              <Typography className='header'>Status</Typography>
+              <span className='big-text m-0 p-0'>Status</span>
               <RadioGroup value={filterStatus} onChange={(e) => setFilterStatus(e.currentTarget.value)} className='radio-group'>
                 <FormControlLabel
                   value='All'
@@ -178,17 +166,17 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                 />
               </RadioGroup>
             </Section>
-            <HorizontalDivider />
+            <hr className='divider m-10' />
             <Section>
-              <Typography className='header'>App name</Typography>
+              <span className='big-text m-0 p-0'>App name</span>
               <Box className='toggle-area'>
                 Show only consents with application
                 <BlueSwitch size='small' checked={filterShow} onChange={() => setFilterShow(!filterShow)} />
               </Box>
             </Section>
-            <HorizontalDivider />
+            <hr className='divider m-10' />
             <Section>
-              <Typography className='header'>Expiration</Typography>
+              <span className='big-text m-0 p-0'>Expiration</span>
               <RadioGroup value={filterExp.expiration} onChange={(e) => setFilterExp({ expiration: e.currentTarget.value, date: filterExp.date })} className='radio-group'>
                 <FormControlLabel
                   value='All'
@@ -226,9 +214,9 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               </RadioGroup>
               {filterExp.expiration !== "All" && filterExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterExp.date)} onChange={e => setFilterExp({ expiration: filterExp.expiration, date: e ? e.toDate() : filterExp.date})} />}
             </Section>
-            <HorizontalDivider />
+            <hr className='divider m-10' />
             <Section>
-              <Typography className='header'>Token Expiration</Typography>
+              <span className='big-text m-0 p-0'>Token Expiration</span>
               <RadioGroup value={filterTokenExp.expiration} onChange={(e) => setFilterTokenExp({ expiration: e.currentTarget.value, date: filterTokenExp.date })} className='radio-group'>
                 <FormControlLabel
                   value='All'
@@ -266,11 +254,11 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               </RadioGroup>
               {filterTokenExp.expiration !== "All" && filterTokenExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterTokenExp.date)} onChange={e => setFilterTokenExp({ expiration: filterTokenExp.expiration, date: e ? e.toDate() : filterTokenExp.date }) } />}
             </Section>
-            <HorizontalDivider />
+            <hr className='divider' />
             <Section>
-              <Typography className='header'>Scopes</Typography>
+              <span className='big-text m-0 p-0'>Scopes</span>
               <Box style={{ display: 'flex', flexFlow: 'row wrap', width: '100%' }}>
-                {
+                {collectScopes(consents).length > 0 &&
                   collectScopes(consents).map(scope => (
                     <Box sx={{ width: '50%' }} key={scope}>
                       <FormControlLabel
@@ -290,7 +278,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               <LitButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())} text='Cancel' />
               <LitButtonYes onClick={handleClickShowResults} text='Show Results' />
             </ButtonsContainer>
-          </FilterContainer>
+          </div>
         </LocalizationProvider>
       </DrawerFormContainer>
     </Drawer>

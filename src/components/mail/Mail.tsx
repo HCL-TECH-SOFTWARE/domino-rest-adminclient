@@ -6,7 +6,6 @@
 
 import React from 'react';
 import DashboardIcon from '@mui/icons-material/Email';
-import Typography from '@mui/material/Typography';
 import { FormContainer } from '../../styles/CommonStyles';
 
 const Mail = () => {
@@ -21,9 +20,9 @@ const Mail = () => {
         }}
       >
         <DashboardIcon color="secondary" style={{ fontSize: 60 }} />
-        <Typography variant="h6" component="p" color="textPrimary">
+        <span className="large-text color-text-primary">
           Mail
-        </Typography>
+        </span>
       </div>
     </FormContainer>
   );

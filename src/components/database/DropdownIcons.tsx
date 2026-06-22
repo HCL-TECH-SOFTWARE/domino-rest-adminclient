@@ -8,7 +8,6 @@
 import React, { useContext } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import Typography from '@mui/material/Typography';
 import DBIcon from '@mui/icons-material/Storage';
 import appIcons from '../../styles/app-icons';
 import { checkIcon } from '../../styles/scripts';
@@ -44,9 +43,9 @@ const DropdownIcons: React.FC<DropdownIconsProps> = () => {
                 src={`data:image/svg+xml;base64, ${appIcons[selected ? option : option]}`}
                 alt="database-icon"
               />
-              <Typography color="textPrimary" noWrap>
+              <span className="color-text-primary">
                 {option}
-              </Typography>
+              </span>
             </li>
           );
         }}

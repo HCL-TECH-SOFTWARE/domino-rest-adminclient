@@ -6,135 +6,15 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { TextEditorContainer } from './styles';
-import { Box, Button, ButtonBase, Collapse, TextField, Tooltip, Typography } from '@mui/material';
+import { Button, ButtonBase, Collapse, TextField, Tooltip } from '@mui/material';
 import { FiEdit2 } from 'react-icons/fi';
-import CloseIcon from '@mui/icons-material/Close';
-import { BlueSwitch, ButtonNeutral, ButtonYes, EncryptSignOptions } from '../../styles/CommonStyles';
+import { BlueSwitch } from '../../styles/CommonStyles';
 import TestIcon from '@mui/icons-material/PlayArrow';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { LitTextformArray } from '../lit-elements/LitElements';
-
-const AccessContainer = styled.div`
-  border: 1px solid light-dark(#A5AFBE, #3a3a4a);
-  border-radius: 10px;
-  padding: 16px;
-  width: 45%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  .title {
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  .formula-container {
-    font-size: 12px;
-    font-weight: 400;
-  }
-
-  .no-formula {
-    font-weight: 300;
-    color: #7B808D;
-    font-size: 12px;
-  }
-
-  .computed {
-    font-size: 12px;
-    font-weight: 400;
-    font-style: italic;
-    color: #475155;
-  }
-
-  .write-formula {
-    display: flex;
-    justify-content: space-between;
-  }
-`;
-
-const EditFormulaDialog = styled.dialog`
-  border-radius: 10px;
-  background: light-dark(#FFF, #252535);
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-  border: none;
-  width: 50%;
-  padding: 30px 0;
-  background: red;
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 30px;
-    width: 100%;
-    align-items: center;
-  }
-
-  .title {
-    font-size: 20px;
-    color: light-dark(#000, #e0e0e0);
-    font-weight: 400;
-  }
-
-  .content {
-    padding: 0 30px;
-    height: fit-content;
-    width: 100%;
-  }
-
-  .input {
-    padding: 10px 0;
-    width: 100%;
-  }
-
-  .button-text {
-    color: #FFF;
-  }
-
-  .buttons {
-    padding: 10px 30px 0 30px;
-    display: flex;
-    flex-direction: row-reverse;
-    gap: 20px;
-  }
-
-  .compute-text {
-    font-size: 15px;
-    width: 50%;
-  }
-
-  .compute-line {
-    padding: 5px 0;
-    display: flex;
-    width: 50%;
-  }
-
-  .continue-line {
-    padding-left: 10px;
-  }
-
-  .continue-text {
-    font-size: 14px;
-    width: 50%;
-  }
-
-  .disabled {
-    color: #A5AFBE;
-  }
-`
-
-const FormulaHeader = styled.div`
-  padding: 0;
-  justify-content: space-between;
-  display: flex;
-  align-items: center;
-
-  .edit {
-    width: 10px;
-  }
-`;
+import { LitButtonNeutral, LitButtonYes, LitTextformArray } from '../lit-elements/LitElements';
+import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 interface ScriptEditorProps {
   data: any;
@@ -254,134 +134,138 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
 
   return (
     <>
-      <TextEditorContainer>
-        <Box className='settings-header'>
-          <Typography className='settings-text'>Mode Settings</Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          <Button onClick={test}>
-            <TestIcon className='action-icon' color='primary' />
-            <Typography variant='body2' color='textPrimary'>
-              Test Formulas
-            </Typography>
-          </Button>
-          <Button className='expand-button' onClick={handleClickExpand}>
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </Button>
-          </Box>
-        </Box>
+      <div className='script-editor-container'>
+        <div className='script-editor-settings-header'>
+          <p className='script-editor-settings-text m-0'>Mode Settings</p>
+          <div className='flex flex-row items-center'>
+            <Button onClick={test}>
+              <TestIcon className='action-icon' color='primary' />
+              <p className='color-text-primary m-0 small-text'>
+                Test Formulas
+              </p>
+            </Button>
+            <Button className='expand-button' onClick={handleClickExpand}>
+              {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </Button>
+          </div>
+        </div>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box className='formulas-container'>
-            <AccessContainer>
-              <FormulaHeader>
-                <Typography className='title'>Formula for Read Access</Typography>
+          <div className='script-editor-formulas-container'>
+            <div className='script-editor-access-container p-16 flex flex-col gap-10'>
+              <div className='p-0 justify-between flex items-center'>
+                <p className='small-text weight-500 m-0'>Formula for Read Access</p>
                 <ButtonBase 
                   disabled={!(!!data.readAccessFormula)} 
                   onClick={() => openDialog("Formula for Read Access", data.readAccessFormula.formula)}
                 >
                   <FiEdit2 />
                 </ButtonBase>
-              </FormulaHeader>
-              {data.readAccessFormula && <Typography className='formula-container'>{data.readAccessFormula.formula}</Typography>}
-              {!data.readAccessFormula && <Typography className='no-formula'>Enter Formula...</Typography>}
-            </AccessContainer>
-            <AccessContainer>
-              <FormulaHeader>
-                <Typography className='title'>Formula for Write Access</Typography>
+              </div>
+              {data.readAccessFormula && <p className='tiny-text weight-400 m-0'>{data.readAccessFormula.formula}</p>}
+              {!data.readAccessFormula && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
+            </div>
+            <div className='script-editor-access-container p-16 flex flex-col gap-10'>
+              <div className='p-0 justify-between flex items-center'>
+                <p className='small-text weight-500 m-0'>Formula for Write Access</p>
                 <ButtonBase 
                   disabled={!(!!data.writeAccessFormula)} 
                   onClick={() => openDialog("Formula for Write Access", data.writeAccessFormula.formula)}
                 >
                   <FiEdit2 />
                 </ButtonBase>
-              </FormulaHeader>
-              <Box className='write-formula'>
-                {data.writeAccessFormula?.formula !== "" && <Typography className='formula-container'>{data.writeAccessFormula.formula}</Typography>}
-                {data.writeAccessFormula?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
+              </div>
+              <div className='flex justify-between'>
+                {data.writeAccessFormula?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.writeAccessFormula.formula}</p>}
+                {data.writeAccessFormula?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
                 {data.computeWithForm ?
-                  <Typography className='computed'>Computed with Form - enabled</Typography> :
-                  <Typography className='computed'>Computed with Form - disabled</Typography>
+                  <p className='tiny-text weight-400 text-italic color-text-disabled m-0'>Computed with Form - enabled</p> :
+                  <p className='tiny-text weight-400 text-italic color-text-disabled m-0'>Computed with Form - disabled</p>
                 }
-              </Box>
-            </AccessContainer>
-          </Box>
-          <Box className='formulas-container'>
-            <AccessContainer>
-              <FormulaHeader>
-                <Typography className='title'>Formula for Delete Access</Typography>
+              </div>
+            </div>
+          </div>
+          <div className='script-editor-formulas-container'>
+            <div className='script-editor-access-container p-16 flex flex-col gap-10'>
+              <div className='p-0 justify-between flex items-center'>
+                <p className='small-text weight-500 m-0'>Formula for Delete Access</p>
                 <ButtonBase 
                   disabled={!(!!data.deleteAccessFormula)} 
                   onClick={() => openDialog("Formula for Delete Access", data.deleteAccessFormula.formula)}
                 >
                   <FiEdit2 />
                 </ButtonBase>
-              </FormulaHeader>
-              {data.deleteAccessFormula?.formula !== "" && <Typography className='formula-container'>{data.deleteAccessFormula.formula}</Typography>}
-              {data.deleteAccessFormula?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
-            </AccessContainer>
-            <AccessContainer>
-              <FormulaHeader>
-                <Typography className='title'>On Load Formula</Typography>
+              </div>
+              {data.deleteAccessFormula?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.deleteAccessFormula.formula}</p>}
+              {data.deleteAccessFormula?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
+            </div>
+            <div className='script-editor-access-container p-16 flex flex-col gap-10'>
+              <div className='p-0 justify-between flex items-center'>
+                <p className='small-text weight-500 m-0'>On Load Formula</p>
                 <ButtonBase 
                   disabled={!(!!data.onLoad)} 
                   onClick={() => openDialog("On Load Formula", data.onLoad.formula)}
                 >
                   <FiEdit2 />
                 </ButtonBase>
-              </FormulaHeader>
-              {data.onLoad?.formula !== "" && <Typography className='formula-container'>{data.onLoad.formula}</Typography>}
-              {data.onLoad?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
-            </AccessContainer>
-          </Box>
-          <Box className='formulas-container'>
-            <AccessContainer>
-              <FormulaHeader>
-                <Typography className='title'>On Save Formula</Typography>
+              </div>
+              {data.onLoad?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.onLoad.formula}</p>}
+              {data.onLoad?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
+            </div>
+          </div>
+          <div className='script-editor-formulas-container'>
+            <div className='script-editor-access-container p-16 flex flex-col gap-10'>
+              <div className='p-0 justify-between flex items-center'>
+                <p className='small-text weight-500 m-0'>On Save Formula</p>
                 <ButtonBase 
                   disabled={!(!!data.onSave)} 
                   onClick={() => openDialog("On Save Formula", data.onSave.formula)}
                 >
                   <FiEdit2 />
                 </ButtonBase>
-              </FormulaHeader>
-              {data.onSave?.formula !== "" && <Typography className='formula-container'>{data.onSave.formula}</Typography>}
-              {data.onSave?.formula === "" && <Typography className='no-formula'>Enter Formula...</Typography>}
-            </AccessContainer>
-            <EncryptSignOptions>
-              <section className='main-row'>
-                <text>
+              </div>
+              {data.onSave?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.onSave.formula}</p>}
+              {data.onSave?.formula === "" && <p className='weight-300 color-text-disabled tiny-text'>Enter Formula...</p>}
+            </div>
+            <div className='w-45 small-text'>
+              <section className='flex full-width'>
+                <span className='color-text-primary m-0 p-0'>
                   Sign Document
-                </text>
+                </span>
                 <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
-                  <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '16px' }} />
+                  <HelpCenterIcon className='script-editor-help-icon' />
                 </Tooltip>
                 <BlueSwitch size='small' checked={data.sign} onChange={handleToggleSign} />
               </section>
-              <text className='warning-text'>
+              <span className='color-text-disabled tiny-text m-0 p-0'>
                 Please understand this option before enabling
-              </text>
-            </EncryptSignOptions>
-          </Box>
-          <EditFormulaDialog ref={ref} onClose={handleClose}>
-            <Box className='header'>
-              <Typography className='title'>{formulaTitle}</Typography>
-              <ButtonBase onClick={handleClose}><CloseIcon /></ButtonBase>
-            </Box>
+              </span>
+            </div>
+          </div>
+          <dialog className='dialog half-width pr-0 pl-0' ref={ref} onClose={handleClose}>
+            <div className='pr-30 pl-30 full-width'>
+              <FormDialogHeader
+                title={formulaTitle}
+                onClose={handleClose}
+              />
+            </div>
             <hr className='divider' />
-            <Box className='content'>
-              {formulaTitle === "Formula for Write Access" && <Box className='compute-line'>
-                <Typography className='compute-text'>Compute with Form</Typography>
-                <BlueSwitch size='small' checked={formComputed} onChange={handleToggleCompute} id='compute-with-form' />
-              </Box>}
-              {formulaTitle === "Formula for Write Access" && <Box className='compute-line continue-line'>
-                <Typography className={`continue-text ${!formComputed ? 'disabled' : ''}`}>Continue on Error</Typography>
-                <BlueSwitch
-                  size='small'
-                  checked={continueOnError}
-                  onChange={handleToggleContinue}
-                  id='continue-on-error'
-                  disabled={!formComputed}
-                />
-              </Box>}
+            <div className='dialog-content pl-30 pr-30 gap-20'>
+              <div>
+                {formulaTitle === "Formula for Write Access" && <div className='script-editor-formula-line flex half-width m-0 p-0'>
+                  <span className='script-editor-compute-text half-width'>Compute with Form</span>
+                  <BlueSwitch size='small' checked={formComputed} onChange={handleToggleCompute} id='compute-with-form' />
+                </div>}
+                {formulaTitle === "Formula for Write Access" && <div className='script-editor-formula-line flex half-width m-0 p-0'>
+                  <span className={`small-text half-width ${!formComputed ? 'color-text-disabled' : ''}`}>Continue on Error</span>
+                  <BlueSwitch
+                    size='small'
+                    checked={continueOnError}
+                    onChange={handleToggleContinue}
+                    id='continue-on-error'
+                    disabled={!formComputed}
+                  />
+                </div>}
+              </div>
               <TextField 
                 variant='outlined' 
                 hiddenLabel 
@@ -392,28 +276,28 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                 multiline 
                 onChange={handleTypeFormula} 
               />
-            </Box>
+            </div>
             <hr className='divider' />
-            <Box className='buttons'>
-              <ButtonYes sx={{ backgroundColor: '#0F5FDC' }} onClick={handleClickSave}><Typography className='button-text'>Save</Typography></ButtonYes>
-              <ButtonNeutral sx={{ border: '1px solid #000' }} onClick={handleClickCancel}>Cancel</ButtonNeutral>
-            </Box>
-          </EditFormulaDialog>
+            <div className='dialog-actions pl-30 pr-30 gap-20'>
+              <LitButtonNeutral onClick={handleClickCancel} text='Cancel' />
+              <LitButtonYes onClick={handleClickSave} text='Save' />
+            </div>
+          </dialog>
         </Collapse>
-      </TextEditorContainer>
-      <TextEditorContainer>
-        <Box className='settings-header'>
-          <Typography className='settings-text'>Validation Rules</Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          <Button className='expand-button' onClick={handleClickExpandValidation}>
-            {validationExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </Button>
-          </Box>
-        </Box>
+      </div>
+      <div className='script-editor-container'>
+        <div className='script-editor-settings-header'>
+          <p className='script-editor-settings-text m-0'>Validation Rules</p>
+          <div className='flex flex-row items-center'>
+            <Button className='p-0 m-0' onClick={handleClickExpandValidation}>
+              {validationExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </Button>
+          </div>
+        </div>
         <Collapse in={validationExpanded} timeout="auto" unmountOnExit>
           <LitTextformArray data={validationRules} setData={setValidationRules} title='message' />
         </Collapse>
-      </TextEditorContainer>
+      </div>
     </>
   );
 };

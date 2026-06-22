@@ -4,14 +4,12 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
 import { DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
-import { Box, FormControlLabel, RadioGroup, Tooltip, Typography } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import styled from 'styled-components';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -123,10 +121,10 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
       <DrawerFormContainer style={{ width: '35vw' }}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
-            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-            </Box>
+            <div className='full-width flex justify-end'>
+            </div>
             <Section>
-              <Typography className='header'>Status</Typography>
+              <span className='big-text'>Status</span>
               <RadioGroup value={filterStatus} onChange={(e) => setFilterStatus(e.currentTarget.value)} className='radio-group'>
                 <FormControlLabel
                   value='All'
@@ -165,7 +163,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             </Section>
             <HorizontalDivider />
             <Section>
-              <Typography className='header'>Authentication method</Typography>
+              <span className='big-text'>Authentication method</span>
               <RadioGroup value={filterAppSecret} onChange={(e) => setFilterAppSecret(e.currentTarget.value)} className='radio-group'>
                 <FormControlLabel
                   value='All'

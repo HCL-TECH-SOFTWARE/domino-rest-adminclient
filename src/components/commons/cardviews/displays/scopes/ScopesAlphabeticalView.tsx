@@ -6,7 +6,6 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import DBIcon from '@mui/icons-material/Storage';
 import { useLocation } from 'react-router-dom';
@@ -105,17 +104,17 @@ const ScopesAlphabeticalView: React.FC<ScopesAlphabeticalSchemaViewProps> = ({
 
   return (
     <>
-      <Typography style={{ fontSize: 18 }} color="textPrimary">
+      <span className='big-text color-text-primary'>
         HCL Domino REST API Databases Scope A - Z
-      </Typography>
+      </span>
       <AlphabeticalViewContainer>
         {
           databases.length > 0 ? (
             Object.keys(alphabets).map((letter) => (
               <BlockContainer key={letter}>
-                <Typography className="letter" color="textPrimary">
+                <span className="flex flex-row large-text color-text-primary">
                   {letter}
-                </Typography>
+                </span>
                 {alphabets[letter].map((data: any, index: number) => (
                   // Hide keppconfig database to
                   <Db onClick={() => openScope(data)} key={index} tabIndex={1} onKeyDown={(e) => {handleKeyPress(e, data)}}>
@@ -131,13 +130,12 @@ const ScopesAlphabeticalView: React.FC<ScopesAlphabeticalSchemaViewProps> = ({
                       <DBIcon style={{}} />
                     )}
                     <Tooltip title={data.apiName}>
-                      <Typography
+                      <span
                         key={data.apiName}
-                        className="api-name"
-                        color="textPrimary"
+                        className="schemas-alphabetical-schema-name color-text-primary"
                       >
                         {data.apiName}
-                      </Typography>
+                      </span>
                     </Tooltip>
                   </Db>
                 ))}

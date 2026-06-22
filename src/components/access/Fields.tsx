@@ -6,7 +6,6 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import { MenuItem, CircularProgress, Select, Tooltip } from '@mui/material';
@@ -359,7 +358,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
     <FieldContainer theme={themeMode} className="field-container">
       <Box sx={{ padding: '0 23.5px' }}>
         <FieldsDropDownHeader className="fields-dropdown-header">
-          <Typography className="mode-header">Show fields from:</Typography>
+          <p className="small-text p-0 full-width m-0">Show fields from:</p>
           <Tooltip title="Refresh List of Fields" arrow>
             <IconButton className="icon-button" onClick={handleRefreshFields}>
               <RefreshIcon className="icon" />
@@ -412,7 +411,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
         <div className="field-config">
           <CircularProgress color="primary" />
           <div className="loading-container">
-            <Typography color="textPrimary">Loading fields...</Typography>
+            <p className='m-0 color-text-primary'>Loading fields...</p>
           </div>
         </div>
       ) : (

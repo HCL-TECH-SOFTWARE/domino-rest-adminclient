@@ -7,7 +7,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { useSelector, useDispatch } from 'react-redux';
 import DBIcon from '@mui/icons-material/Storage';
@@ -147,15 +146,9 @@ const NsfCard: React.FC<NsfCardProps> = ({
             )}
           </ModeLogo>
           <Tooltip title={database.fileName} arrow placement='bottom'>
-            <Typography
-              className="file-name"
-              variant="subtitle1"
-              component="p"
-              color="textPrimary"
-              gutterBottom
-            >
+            <span className="file-name color-text-primary">
               {database.fileName}
-            </Typography>
+            </span>
           </Tooltip>
         </SchemaCardHeader>
         <FormSearchContainer theme={themeMode} style={{ marginTop: 25, marginBottom: 16 }}>
@@ -195,17 +188,14 @@ const NsfCard: React.FC<NsfCardProps> = ({
                     <Box className={`api-status ${schemasWithScopes?.includes(database.nsfPath + ":" + database.schemaName) ? '' : 'unused'}`} />
                   </Tooltip>}
                   <Tooltip title={description}>
-                    <Typography
-                      className={`description ${isSchema ? '' : 'scope'}`}
-                      variant="body1"
-                      component="p"
-                      color="textPrimary"
+                    <span
+                      className={`description ${isSchema ? '' : 'scope'} color-text-primary`}
                       onClick={openDatabaseByApi}
                       tabIndex={1}
                       onKeyDown={handleEnterScope}
                     >
                       {description}
-                    </Typography>
+                    </span>
                   </Tooltip>
                   {isSchema && <Tooltip onClick={() => {handleClickDelete(database)}} title="Delete schema" arrow tabIndex={1} onKeyUp={handleEnterDelete}>
                     <DeleteIcon className="delete-icon"></DeleteIcon>

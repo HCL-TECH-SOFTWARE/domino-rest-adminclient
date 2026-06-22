@@ -9,7 +9,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import { useFormik } from 'formik';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import * as Yup from 'yup';
@@ -50,15 +49,14 @@ const SignupSchema = Yup.object().shape({
 });
 
 const Copyright = () => (
-  <Typography variant="body2" color="textSecondary" align="center">
-    <Typography
-      style={{ fontSize: 14, color: 'light-dark(#666, #999)' }}
-      variant="subtitle1"
-      component="a"
+  <span className="small-text text-center">
+    <span
+      className="small-text"
+      style={{ color: 'light-dark(#666, #999)' }}
     >
       {`© ${new Date().getFullYear()}. HCL America Inc. - Build ${BUILD_VERSION} ${dailyBuildNum}`}
-    </Typography>
-  </Typography>
+    </span>
+  </span>
 );
 
 const KeepLogoContainer = styled.div`
@@ -579,9 +577,9 @@ const LoginPage = () => {
         <DivPaper>
           <KeepLogoContainer>
             <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="Domino REST API logo" />
-            <Typography component="h1" variant="h5">
+            <h1>
               HCL Domino REST API
-            </Typography>
+            </h1>
           </KeepLogoContainer>
           <div style={{ flex: 1 }}>
             {isDark && (
@@ -680,6 +678,7 @@ const LoginPage = () => {
               <section style={{ width: '100%' }}>
                 <LitInputPassword
                   id='section-password'
+                  className='input'
                   label='Password'
                   // style={{ width: '100%' }}
                   ref={passwordRef}
@@ -719,13 +718,12 @@ const LoginPage = () => {
                       justifyContent: 'center',
                     }}
                   >
-                    <Typography
+                    <span
                       className="sign-up-text"
-                      sx={{ display: 'inline' }}
                       onClick={handleSignUpWithPasskey}
                     >
                       Sign up with Passkey
-                    </Typography>
+                    </span>
                     <Link href="https://passkey.org" target="_blank">
                       <FiInfo className="passkey-icon" size="1.5em" />
                     </Link>

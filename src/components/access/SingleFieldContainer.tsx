@@ -7,32 +7,11 @@
 import React, { useContext } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import styled from 'styled-components';
-import { Button, Tooltip, Typography } from '@mui/material';
-import { ItemContainer } from './styles';
+import { Tooltip } from '@mui/material';
+
 import { AccessContext } from './AccessContext';
 import { capitalizeFirst } from '../../utils/common';
 import { InfoOutlined } from '@mui/icons-material';
-
-const FieldInfo = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-
-  &:hover {
-    cursor: pointer;
-  }
-
-  .field-name {
-    font-size: 14px;
-  }
-
-  .field-type {
-    font-size: 12px;
-    font-weight: 400;
-    color: #636363;
-  }
-`;
-
 
 const ButtonAdd = styled.button`
   border: 0;
@@ -75,9 +54,11 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
   }
 
   return (
-    <ItemContainer onClick={(e: React.MouseEvent<HTMLElement>) => {
-      handleClick(e, item);
-    }}
+    <div
+      className={`item-container${item.isDragging ? ' item-container--dragging' : ''}`}
+      onClick={(e: React.MouseEvent<HTMLElement>) => {
+        handleClick(e, item);
+      }}
     >
       <ButtonAdd
         className="add-field"
@@ -85,24 +66,18 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
       >
         <AddIcon />
       </ButtonAdd>
-      <FieldInfo>
-        <Typography
-          className="field-name"
-          color="textPrimary"
-        >
+      <div className='flex flex-1 flex-col'>
+        <span className="small-text color-text-primary">
           {item.content}
-        </Typography>
-        <Typography
-          className="field-type"
-          color="textPrimary"
-        >
+        </span>
+        <span className="tiny-text weight-400 color-text-disabled">
           {capitalizeFirst(item.format)}
-        </Typography>
-      </FieldInfo>
+        </span>
+      </div>
       {item.kind.length > 0 && <Tooltip arrow className='add-field' title={`This field is ${item.kind in kindReadableText ? kindReadableText[item.kind as keyof typeof kindReadableText] : item.kind}`}>
         <InfoOutlined />
       </Tooltip>}
-    </ItemContainer>
+    </div>
   );
 };
 

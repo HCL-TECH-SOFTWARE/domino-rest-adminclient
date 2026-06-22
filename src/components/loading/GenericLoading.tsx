@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { CircularProgress, Typography } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import styled from 'styled-components';
 
 const LoadingContainer = styled.div`
@@ -31,7 +31,7 @@ const GenericLoading: React.FC<APILoadingProgressProps> = ({ message }) => {
       <CircularProgress color='primary' />
       {message && (
         <LabelContainer>
-          <Typography color='textPrimary'>{message}</Typography>
+          <span className="color-text-primary">{message}</span>
         </LabelContainer>
       )}
     </LoadingContainer>

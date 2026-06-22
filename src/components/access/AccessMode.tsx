@@ -8,7 +8,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useLocation } from 'react-router-dom';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import Fields from './Fields';
 import { reorder, copy, move } from './functions';
@@ -25,7 +24,6 @@ import {
 } from '../../store/databases/action';
 import { AccessContext } from './AccessContext';
 import { AppState } from '../../store';
-import { TopContainer } from '../../styles/CommonStyles';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import GenericLoading from '../loading/GenericLoading';
 import ModeCompare from './ModeCompare';
@@ -392,17 +390,17 @@ const AccessMode: React.FC = () => {
     <AccessContext.Provider value={[state, setstate]}>
       {fetchFieldsArray.length > 0 ? (
         <div>
-          <TopContainer className='top-container'>
-            <Typography className='top-nav' color='textPrimary'>
+          <div className='header-container'>
+            <p className='header-text'>
               Schema Management - {formName}
-            </Typography>
+            </p>
             <LitButton 
               onClick={handleClickOpenModeCompare}
               disabled={modes.length === 1 || newForm === null}
             >
               Open Mode Compare
-          </LitButton>
-          </TopContainer>
+            </LitButton>
+          </div>
           <AccessModeContainer>
             {!matches && (
               <Fields

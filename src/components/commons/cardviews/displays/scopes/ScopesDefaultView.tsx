@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import { ExtraFlex } from '../../../../flex';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { mapSchemas } from '../../../../../utils/mapper';
@@ -23,12 +22,9 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
 }) => {
   return (
     <SchemasMainContainer>
-      <Typography
-        style={{ fontSize: 18, marginBottom: 10 }}
-        color="textPrimary"
-      >
+      <span className='medium-font mb-30 mt-5 color-text-primary'>
         HCL Domino REST API Databases Scope
-      </Typography>
+      </span>
       <ExtraFlex style={{ display: 'flex', gap: '10px' }}>
         {databases.length > 0 ? (
           mapSchemas(databases, 'schemas').map((database: any, index: any) => {

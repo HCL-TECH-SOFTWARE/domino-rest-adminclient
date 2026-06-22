@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, Collapse, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import { Box, Collapse, TableCell, TableRow, Tooltip } from '@mui/material';
 import { AppState } from '../../../store';
 import { toggleDeleteConsent } from '../../../store/consents/action';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -130,8 +130,10 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                               <circle cx="4.5" cy="4.5" r="4.5" fill={expirationPast < 0 ? '#C3335F' : expirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
                             </svg>
                         </Tooltip>
-                        <Typography className='text'>Expiration:</Typography>
-                        <Typography className='text'>{`${new Date(consent.code_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.code_expires_at).toUTCString() : "-"}`}</Typography>
+                        <span className='small-text text-bold'>Expiration:</span>
+                        <span className='small-text text-bold'>
+                          {`${new Date(consent.code_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.code_expires_at).toUTCString() : "-"}`}
+                        </span>
                     </Box>
                     <Box className='exp-row'>
                         <Tooltip title={tokenExpirationPast > 0 && tokenExpirationPast <= 86400000 ? "Expiring in less than a day" : ""}>
@@ -139,8 +141,10 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                               <circle cx="4.5" cy="4.5" r="4.5" fill={tokenExpirationPast < 0 ? '#C3335F' : tokenExpirationPast <= 86400000 ? '#FFCD41' : '#0FA068'}/>
                             </svg>
                         </Tooltip>
-                        <Typography className='text'>Token Expiration:</Typography>
-                        <Typography className='text'>{`${new Date(consent.refresh_token_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.refresh_token_expires_at).toUTCString() : "-"}`}</Typography>
+                        <span className='small-text text-bold'>Token Expiration:</span>
+                        <span className='small-text text-bold'>
+                          {`${new Date(consent.refresh_token_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.refresh_token_expires_at).toUTCString() : "-"}`}
+                        </span>
                     </Box>
                 </TableCell>
                 <TableCell className='off-border'>

@@ -4,7 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Typography } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components';
 
@@ -35,12 +34,12 @@ const ZeroResultsWrapper: React.FC<ZeroResultsWrapperProps> = ({
 }) => {
   return (
     <NoResultFound>
-      <Typography className="no-result" color="textPrimary" data-testid="no-search-result">
+      <span className="large-text color-text-primary" data-testid="no-search-result">
         {mainLabel}
-      </Typography>
-      <Typography className="not-found" color="textPrimary">
+      </span>
+      <span className="m-0 mt-15 mb-15 color-text-primary">
         {secondaryLabel}
-      </Typography>
+      </span>
     </NoResultFound>
   );
 };

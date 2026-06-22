@@ -69,7 +69,8 @@ class SchemaStatus extends LitElement {
         text-overflow: ellipsis;
         flex: 1;
         overflow: hidden;
-        white-space: nowrap;;
+        white-space: nowrap;
+        font-size: 15px;
     }
 
     div.delete {
@@ -114,9 +115,7 @@ class SchemaStatus extends LitElement {
             ${this.isSchema ? html`<wa-tooltip content="${this.status}" placement="top">
                 <div class="api-status ${this.usedByScopes ? '' : 'unused'}"></div>
             </wa-tooltip>` : ''}
-            <wa-tooltip class="trash-icon" content="${this.name}" style="--max-width: none; --wa-tooltip-arrow-size: 0;" placement="top" hoist>
-                <div class="name">${this.name}</div>
-            </wa-tooltip>
+            <div class="name" title="${this.name}">${this.name}</div>
         </div>
         ${this.isSchema ? html`<div class="delete" @click=${this.onDelete}>
             <svg class="trash-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

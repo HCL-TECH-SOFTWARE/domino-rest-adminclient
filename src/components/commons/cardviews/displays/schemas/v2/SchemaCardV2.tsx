@@ -7,7 +7,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import DBIcon from '@mui/icons-material/Storage';
 import Tooltip from '@mui/material/Tooltip';
@@ -147,36 +146,21 @@ const SchemaCardV2: React.FC<SchemaCardV2Props> = ({
             </ModeLogo>
             <CardLabelContainer>
               <Tooltip title={database.schemaName} arrow>
-                <Typography
-                  className="api-name"
-                  variant="subtitle1"
-                  component="p"
-                  color="textPrimary"
-                >
+                <span className="schema-card-schema-name color-text-primary">
                   {database.schemaName}
-                </Typography>
+                </span>
               </Tooltip>
               <Tooltip title={database.nsfPath} arrow placement='bottom'>
-                <Typography
-                  className="api-description"
-                  variant="subtitle1"
-                  component="p"
-                  color="textPrimary"
-                >
+                <span className="schema-card-nsf-name color-text-primary">
                   {database.nsfPath}
-                </Typography>
+                </span>
               </Tooltip>
             </CardLabelContainer>
           </SchemaCardHeader>
           <Tooltip title={database.description} arrow placement='bottom'>
-            <Typography
-              className="description schemaDescription"
-              variant="body2"
-              component="p"
-              color="textPrimary"
-            >
+            <span className="schema-card-nsf-name color-text-primary">
               {database.description}
-            </Typography>
+            </span>
           </Tooltip>
         </CardContent>
       </SchemaCardWrapper>

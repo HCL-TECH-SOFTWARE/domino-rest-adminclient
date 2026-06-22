@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
 import { Route, NavLink } from 'react-router-dom';
 import { AppState } from '../../store';
@@ -80,9 +79,9 @@ const SettingsPage = () => {
               key={link.label}
               to={`/settings/${link.uri}`}
             >
-              <Typography className="link" color="textPrimary">
+              <span className="link color-text-primary">
                 {link.label}
-              </Typography>
+              </span>
             </NavLink>
           ))}
         </Links>

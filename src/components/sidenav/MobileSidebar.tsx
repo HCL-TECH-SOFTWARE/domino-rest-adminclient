@@ -7,7 +7,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { NavLink, useLocation } from 'react-router-dom';
-import Typography from '@mui/material/Typography';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -130,9 +129,9 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
           <SidebarContainer>
             <Logo>
               <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="HCL Domino REST API Icon" />
-              <Typography className="title" color="textPrimary">
+              <span className="title color-text-primary">
                 HCL Domino REST API
-              </Typography>
+              </span>
             </Logo>
             <ContentWrapper>
             {routes.map((route) => {
@@ -154,44 +153,15 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         />
                       </ListItemIcon>
                       <ListItemText>
-                        <Typography className="text-link" color="textPrimary">
+                        <span className="text-link color-text-primary">
                           {route.label}
-                        </Typography>
+                        </span>
                       </ListItemText>
                     </ListItemButton>
                   </Tooltip>
                 </NavLink>
               );
             })}
-            {navitems.databases &&
-              databases.map((route) => {
-                const Icon = route.icon;
-                return (
-                  <NavLink
-                    onClick={toggleMenu}
-                    key={route.label}
-                    className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-                    to={route.uri}>
-                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
-                      <ListItemButton className="link-container" key={route.label}>
-                        <ListItemIcon>
-                          <Icon
-                            style={{
-                              color: getTheme(themeMode).textColorPrimary,
-                              fontSize: 19
-                            }}
-                          />
-                        </ListItemIcon>
-                        <ListItemText>
-                          <Typography className="text-link" color="textPrimary">
-                            {route.label}
-                          </Typography>
-                        </ListItemText>
-                      </ListItemButton>
-                    </Tooltip>
-                  </NavLink>
-                );
-              })}
 
             <QuickConfigButton className="quick-config">
               <Tooltip enterDelay={700} placement="right" title="Quick Config" arrow>
@@ -205,9 +175,9 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     />
                   </ListItemIcon>
                   <ListItemText>
-                    <Typography className="text-link" color="textPrimary">
+                    <span className="text-link color-text-primary">
                       Quick Config
-                    </Typography>
+                    </span>
                   </ListItemText>
                 </ListItemButton>
               </Tooltip>
@@ -233,9 +203,9 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           />
                         </ListItemIcon>
                         <ListItemText>
-                          <Typography className="text-link" color="textPrimary">
+                          <span className="text-link color-text-primary">
                             {route.label}
-                          </Typography>
+                          </span>
                         </ListItemText>
                       </ListItemButton>
                     </Tooltip>
@@ -263,9 +233,9 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           />
                         </ListItemIcon>
                         <ListItemText>
-                          <Typography className="text-link" color="textPrimary">
+                          <span className="text-link color-text-primary">
                             {route.label}
-                          </Typography>
+                          </span>
                         </ListItemText>
                       </ListItemButton>
                     </Tooltip>
@@ -293,9 +263,9 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           />
                         </ListItemIcon>
                         <ListItemText>
-                          <Typography className="text-link" color="textPrimary">
+                          <span className="text-link color-text-primary">
                             {route.label}
-                          </Typography>
+                          </span>
                         </ListItemText>
                       </ListItemButton>
                     </Tooltip>
@@ -304,9 +274,9 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
               })}
             </ContentWrapper>
             <Copyright>
-              <Typography variant="caption" component="p" color="textPrimary">
+              <span className="tiny-text color-text-primary">
                 {`© ${new Date().getFullYear()}. HCL Software - Build ${BUILD_VERSION}`}
-              </Typography>
+              </span>
             </Copyright>
           </SidebarContainer>
         </LinksContainer>

@@ -5,10 +5,6 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import Popper from '@mui/material/Popper';
-import Paper from '@mui/material/Paper';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-import Typography from '@mui/material/Typography';
 import { useSelector, useDispatch } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
 import { AppState } from '../../../../../store';
@@ -26,9 +22,6 @@ type ScopesStacksViewProps = {
 };
 
 const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScope }) => {
-  const { contextViewIndex } = useSelector(
-    (state: AppState) => state.databases
-  );
   const { deleteDialog } = useSelector((state: AppState) => state.dialog);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const setOption = useState({})[1];
@@ -59,9 +52,9 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
   return (
     <SchemasMainContainer>
       <StackHeader>
-        <Typography className="active-counts" component="p" variant="caption">
+        <span className='small-text m-0 mt-5 mb-5'>
           {databases.filter((db) => db.isActive).length} Active Scope
-        </Typography>
+        </span>
       </StackHeader>
       <>
         <ExtraFlex>
@@ -95,9 +88,9 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
         </ExtraFlex>
       </>
       <StackHeader>
-        <Typography className="forms-count" component="p" variant="caption">
+        <span className='small-text m-0 mt-5 mb-5'>
           {databases.filter((db) => !db.isActive).length} Inactive Scope
-        </Typography>
+        </span>
       </StackHeader>
       <>
         <ExtraFlex>

@@ -9,7 +9,6 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Typography } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 // prop-types import removed — using TypeScript interfaces instead
@@ -652,12 +651,9 @@ const FormsContainer = () => {
   return (
     <ErrorWrapper errorStatus={errorStatus}>
       <TopContainer style={{ marginTop: '15px' }}>
-        <Typography
-            className="top-nav"
-            color="textPrimary"
-          >
+        <span className="top-nav color-text-primary">
             Schema Management
-        </Typography>
+        </span>
       </TopContainer>
       <CoreContainer show={show} id="databases-list">
         {isFetch ? (
@@ -775,13 +771,13 @@ const FormsContainer = () => {
           >
             <CircularProgress color="primary" />
             <div style={{ margin: '10px 0', display: 'flex' }}>
-              <Typography color="textPrimary">Getting&nbsp;</Typography>
-              <Typography style={{ color: KEEP_ADMIN_BASE_COLOR }}>
+              <span className="color-text-primary">Getting&nbsp;</span>
+              <span className="color-base">
                 {`Schema ${dbName}`}
-              </Typography>
-              <Typography color="textPrimary">
+              </span>
+              <span className="color-text-primary">
                 . This may take a few seconds...
-              </Typography>
+              </span>
             </div>
           </div>
         )}

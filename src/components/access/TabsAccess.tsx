@@ -7,7 +7,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '@mui/material/Button';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -64,12 +63,6 @@ const TabNavigator = styled.div`
   }
 `;
 
-const LoadTabContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 92%;
-`;
-
 const TabsContainer = styled.div`
   display: flex;
   align-items: center;
@@ -88,27 +81,6 @@ const TabsContainer = styled.div`
     height: 24px;
     min-width: 24px !important;
     padding: 0;
-  }
-`;
-
-const PagerAction = styled.div`
-  flex: 1 0 0%;
-  display: flex;
-  padding: 0 20px;
-  justify-content: flex-end;
-
-  .action-icon {
-    font-size: 16px;
-    margin-right: 5px;
-    padding: 0;
-  }
-  .MuiButton-text {
-    white-space: nowrap;
-  }
-  .button-disabled {
-    &:hover {
-      background-color: none;
-    }
   }
 `;
 
@@ -906,11 +878,11 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     <TabAccessContainer top={top} width={width}>
       <TabNavigator>
         <TabsContainer>
-          <Typography variant='body2' color='textPrimary' style={{ fontSize: '16px', fontWeight: 400 }}>
+          <span className='medium-font weight-400 color-text-primary'>
             Mode:{' '}
-          </Typography>
+          </span>
           <Button
-            className='change-mode-btn text-transform-none'
+            className='access-change-mode-button color-text-primary'
             aria-controls={open ? 'basic-menu' : undefined}
             aria-haspopup='true'
             aria-expanded={open ? 'true' : undefined}
@@ -949,26 +921,26 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               </MenuItem>
             ))}
           </Menu>
-          <PagerAction>
+          <div className='access-actions-container'>
             <button
               onClick={handleClickCloneMode}
               disabled={newForm.enabled}
-              className={`mode-buttons color-text-primary ${newForm.enabled ? 'cursor-default' : 'cursor-pointer'}`}
+              className={`mode-buttons color-text-primary ${newForm.enabled ? 'cursor-default' : 'cursor-pointer'} flex gap-5`}
             >
-              <BiCopy className='action-icon' />
-              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary}}>
+              <BiCopy className='tabs-access-action-icon' />
+              <span className={`small-text weight-400 ${newForm.enabled ? 'color-text-disabled' : 'color-text-primary'}`}>
                 Clone Mode
-              </Typography>
+              </span>
             </button>
             <button
               onClick={handleNewModeOpen}
               disabled={newForm.enabled}
               className={`mode-buttons color-text-primary ${newForm.enabled ? 'cursor-default' : 'cursor-pointer'}`}
             >
-              <AddIcon className='action-icon' />
-              <Typography variant='body2' style={{ color: newForm.enabled ? '#A7A8A9' : getTheme(themeMode).textColorPrimary}}>
+              <AddIcon className='tabs-access-action-icon' />
+              <span className={`small-text weight-400 ${newForm.enabled ? 'color-text-disabled' : 'color-text-primary'}`}>
                 Add Mode
-              </Typography>
+              </span>
             </button>
             <AddModeDialog
               handleSave={handleSaveNewMode}
@@ -985,10 +957,10 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                   onClick={onDeleteClick}
                   className='cursor-pointer mode-buttons'
                 >
-                  <DeleteIcon color='primary' className='action-icon' />
-                  <Typography color='textPrimary' variant='body2' component='p'>
+                  <DeleteIcon color='primary' className='tabs-access-action-icon' />
+                  <span className={`small-text weight-400 ${newForm.enabled ? 'color-text-disabled' : 'color-text-primary'}`}>
                     Delete Mode
-                  </Typography>
+                  </span>
                 </button>
                 <DeleteApplicationDialog
                   dialogTitle={deleteModeTitle}
@@ -1000,33 +972,28 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             <Tooltip title={saveTooltip} arrow>
               <button
                 onClick={save}
-                style={{
-                  cursor: !newForm.enabled ? "pointer" : saveEnabled ? "pointer" : "default",
-                  background: 'none',
-                  border: 'none',
-                  margin: 5,
-                  padding: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-                className='button-disabled'
+                className={`
+                  ${!newForm.enabled ? 'cursor-pointer' : saveEnabled ? 'cursor-pointer' : 'cursor-default'}
+                  tabs-access-save-button
+                  p-0 flex items-center gap-5
+                `}
               >
                 <FiSave
-                  className='action-icon'
+                  className='tabs-access-action-icon'
                   color={!newForm.enabled ?
                     getTheme(themeMode).textColorPrimary
                     :
                     saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9"}
                   size='0.9em'
                 />
-                <Typography variant='body2' style={{ color: !newForm.enabled ? getTheme(themeMode).textColorPrimary : saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9" }}>
+                <span className={`small-text weight-400 ${!newForm.enabled ? 'color-text-primary' : saveEnabled ? 'color-text-primary' : 'color-text-disabled'}`}>
                   Save
-                </Typography>
+                </span>
               </button>
             </Tooltip>
-          </PagerAction>
+          </div>
         </TabsContainer>
-        <LoadTabContainer>
+        <div className='flex flex-col access-load-tab-container'>
           <FieldDNDContainer
             remove={remove}
             update={update}
@@ -1042,7 +1009,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             fieldIndex={fieldIndex}
             setFieldIndex={setFieldIndex}
           />
-        </LoadTabContainer>
+        </div>
       </TabNavigator>
       <FormDrawer formName='TestForm' formik={formik} />
       <UnsavedChangesDialog

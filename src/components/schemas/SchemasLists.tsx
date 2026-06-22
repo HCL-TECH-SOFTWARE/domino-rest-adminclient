@@ -6,7 +6,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Typography from '@mui/material/Typography';
 import { AppState } from '../../store';
 import {
   fetchKeepDatabases,
@@ -181,12 +180,9 @@ const SchemasLists = () => {
       <WrapperContainer>
           <>
             <TopContainer style={{ marginTop: '15px' }}>
-              <Typography
-                className="top-nav"
-                color="textPrimary"
-              >
+              <span className="top-nav color-text-primary">
                 Schema Management
-              </Typography>
+              </span>
               <LitButton onClick={handleRefresh} src={`${IMG_DIR}/shoelace/rotate.svg`}>
                 Refresh
               </LitButton>
@@ -199,12 +195,9 @@ const SchemasLists = () => {
               <CardViewOptions changeView={changeView} />
             </TopContainer>
             <FilterContainer>
-              <Typography
-                style={{ fontSize: 16, display: 'flex', alignItems:'center'}}
-                color="textPrimary"
-              >
+              <span className="medium-text flex items-center">
                 Only show schemas configured with scopes
-              </Typography>
+              </span>
               <Tooltip title={onlyShowSchemasWithScopes ? 'On' : 'Off'}  placement="top-start">
                 <BlueSwitch 
                   checked={onlyShowSchemasWithScopes}

@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import styled from 'styled-components';
 
 const ColumnBarContainer = styled.div`
@@ -69,9 +68,9 @@ const ColumnBar: React.FC<ColumnBarProps> = ({
             <AllColumnsList>
               {columns.map((column: any, index: any) => (
                   <div className="listitem" onClick={chooseColumn(column)}>
-                    <Typography sx={{ display: 'block' }} className="columnName">{column.name}</Typography>
-                    <Typography sx={{ display: 'block' }} className="columnDetails">{`Column Position ${column.position}`}</Typography>
-                    {column.title.length > 0 && <Typography sx={{ display: 'block' }} className="columnDetails">{`Title: ${column.title}`}</Typography>}
+                    <span className="block columnName">{column.name}</span>
+                    <span className="block columnDetails">{`Column Position ${column.position}`}</span>
+                    {column.title.length > 0 && <span className="block columnDetails">{`Title: ${column.title}`}</span>}
                   </div>
               ))}
             </AllColumnsList>

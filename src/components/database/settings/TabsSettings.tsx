@@ -9,7 +9,6 @@ import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
@@ -38,15 +37,14 @@ function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <Typography
-      component="div"
+    <div
       role="tabpanel"
       hidden={value !== index}
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
       {...other}>
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </Typography>
+    </div>
   );
 }
 
@@ -138,12 +136,12 @@ const TabsSettings: React.FC<TabsSettingsProps> = () => {
       <CloseIcon cursor="pointer" className="float-right" onClick={() => dispatch(toggleSettings())} />
       <SettingHeader className="header-title">
         <EditIcon className="pencil-icon" color="primary" style={{ color: 'white' }} />
-        <Typography className="apiName" color="textPrimary" style={{ color: 'white' }}>
+        <span className="apiName color-text-white">
           {databases[contextViewIndex].apiName}
-        </Typography>
-        <Typography className="settings" color="textPrimary" style={{ color: 'white' }}>
+        </span>
+        <span className="settings color-text-white">
           Settings
-        </Typography>
+        </span>
       </SettingHeader>
       <TabSettingsContainer>
         <Tabs
