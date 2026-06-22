@@ -12,7 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, IconButton, TableFooter, TablePagination, Typography } from '@mui/material';
+import { Box, IconButton, TableFooter, TablePagination } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
@@ -318,7 +318,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                   <TableCell className='expand' />
                   <TableCell className='user'>
                     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <Typography className='text can-sort'>
+                      <span className='small-text text-bold flex items-center gap-3'>
                         User
                         <button
                           onClick={handleSortUsers}
@@ -326,13 +326,13 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                         >
                           <FaSort />
                         </button>
-                      </Typography>
+                      </span>
                       <input type='text' placeholder='Search User' value={user} onChange={(e) => setUser(e.target.value)} className='search-bar' />
                     </Box>
                   </TableCell>
                   <TableCell className='app-name text'>
                     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <Typography className='text can-sort'>
+                      <span className='small-text text-bold flex items-center gap-3'>
                         App Name
                         <button
                           onClick={handleSortAppNames}
@@ -340,23 +340,23 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                         >
                           <FaSort />
                         </button>
-                      </Typography>
+                      </span>
                       <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
                     </Box>
                   </TableCell>
                   <TableCell className='expirations text'>
                     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <Typography className='text'>
+                      <span className='small-text text-bold flex items-center gap-3'>
                         Expirations
-                      </Typography>
+                      </span>
                       <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
                     </Box>
                   </TableCell>
                   <TableCell className='action text'>
                     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                      <Typography className='text'>
+                      <span className='small-text text-bold flex items-center gap-3'>
                         Action
-                      </Typography>
+                      </span>
                       <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
                     </Box>
                   </TableCell>

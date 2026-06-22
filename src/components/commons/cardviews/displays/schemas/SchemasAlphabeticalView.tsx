@@ -6,7 +6,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import DBIcon from '@mui/icons-material/Storage';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -274,9 +273,9 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
 
   return (
     <>
-      <Typography style={{ fontSize: 18 }} color="textPrimary">
+      <span className='big-text color-text-primary'>
         HCL Domino REST API Databases Schema A - Z
-      </Typography>
+      </span>
       <AlphabeticalViewContainer>
         <Box className='letters'>
           {
@@ -299,9 +298,9 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
             Object.keys(alphabets).map((letter) => (
               <Box key={letter}>
                 <BlockContainer key={letter} ref={letter === chosenLetter ? rowRef : null}>
-                  <Typography className="letter" color="textPrimary">
+                  <span className="flex flex-row justify-center color-text-primary">
                     {letter}
-                  </Typography>
+                  </span>
                   <Box className='schemas'>
                     {alphabets[letter].map((data: any, index: number) => (
                       <Db key={data.schemaName + data.nsfPath}>
@@ -321,17 +320,16 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
                         )}
                         <Box onClick={() => openDatabase(data)} className='text-container' tabIndex={1} onKeyDown={(e) => {handleKeyPress(e, data)}}>
                           <Tooltip onClick={() => openDatabase(data)} title={`${data.schemaName}(${data.nsfPath})`}>
-                            <Typography
+                            <span
                               key={data.apiName}
-                              className="api-name"
-                              color="textPrimary"
+                              className="schemas-alphabetical-schema-name text-bold color-text-primary"
                             >
                               {data.schemaName}
-                            </Typography>
+                            </span>
                           </Tooltip>
-                          {isSchema && <Typography className='api-name api-nsf' onClick={() => openDatabase(data)}>
+                          {isSchema && <span className='schemas-alphabetical-schema-name weight-400 text-italic color-text-hint' onClick={() => openDatabase(data)}>
                             {data.nsfPath}
-                          </Typography>}
+                          </span>}
                         </Box>
                         {isSchema && <div className='delete'>
                           <Tooltip onClick={() => {handleClickDelete(data)}} title="Delete schema" arrow>

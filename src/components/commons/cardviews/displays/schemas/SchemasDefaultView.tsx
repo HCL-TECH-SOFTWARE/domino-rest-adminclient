@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 import { ExtraFlex } from '../../../../flex';
 import { mapSchemas } from '../../../../../utils/mapper';
@@ -73,12 +72,9 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
   return (
     <>
       <SchemasMainContainer>
-        <Typography
-          style={{ fontSize: 18, marginBottom: 10 }}
-          color="textPrimary"
-        >
+        <span className='big-text mb-10 color-text-primary'>
           HCL Domino REST API Databases Schema
-        </Typography>
+        </span>
         <ExtraFlex style={{ display: 'flex', gap: '10px' }}>
           {
             mappedDatabases.map((database: any, index: number) => {

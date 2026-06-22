@@ -328,12 +328,36 @@ body[data-theme="dark"] .color-text-disabled {
     margin: 0;
 }
 
-.m-0 {
-    margin: 0;
+.m-10 {
+    margin: 10px;
+}
+
+.mt-5 {
+    margin-top: 5px;
+}
+
+.mt-15 {
+    margin-top: 15px;
 }
 
 .mt-20 {
     margin-top: 20px;
+}
+
+.mb-5 {
+    margin-bottom: 5px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.mb-15 {
+    margin-bottom: 15px;
+}
+
+.mb-30 {
+    margin-bottom: 30px;
 }
 
 .gap-2 {
@@ -406,6 +430,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .weight-500 {
     font-weight: 500;
+}
+
+.weight-600 {
+    font-weight: 600;
 }
 
 .transparent {
@@ -1368,6 +1396,64 @@ body[data-theme="dark"] .add-import-svg-icon {
     color: #fff;
     font-size: 24px;
     padding: 20px;
-    height: 70x;
+    height: 70px;
     border-radius: 5px;
+}
+
+/* SchemasAlphabeticalView.tsx */
+.schemas-alphabetical-schema-name {
+    font-size: 16px;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 25vw;
+    line-height: 1.2em;
+}
+
+/* SchemaCardV2.tsx */
+.schema-card-schema-name {
+    font-weight: 600;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+.schema-card-nsf-name {
+    font-size: 14px;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+}
+
+/* ScopeCardV2.tsx */
+.scope-card-acl-edited {
+    color: green;
+}
+
+.scope-card-acl-unedited {
+    color: orange;
+}
+
+/* QuickConfigForm */
+.drawer-available-databases-text {
+    color: #fff;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 5px;
+    background: var(--base-color);
+}
+
+.scope-form-header {
+    color: #fff;
+    font-size: 24px;
+    padding: 20px;
+    border-radius: 5px;
+    background: var(--base-color);
+    width: 100%;
+}
+
+.scope-form-text-schema {
+    color: var(--text-color-primary);
+    display: flex;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
 }

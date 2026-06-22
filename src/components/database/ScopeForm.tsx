@@ -11,7 +11,6 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import MenuItem from '@mui/material/MenuItem';
 import {
-  Typography,
   Checkbox,
   FormControlLabel
 } from '@mui/material';
@@ -26,8 +25,6 @@ import SchemaContentsTree from './SchemaContentsTree';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
 import { checkIcon } from '../../styles/scripts';
-import { getTheme } from '../../store/styles/action';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleDrawer } from '../../store/drawer/action';
 import {
   FormContentContainer,
@@ -224,13 +221,9 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
   return (
     <Forms onSubmit={formik.handleSubmit}>
       <FileStructure>
-        <Typography
-          className="header-title"
-          color="textPrimary"
-          style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
-        >
+        <span className="drawer-available-databases-text">
           {`Available ${listType}`}
-        </Typography>
+        </span>
         <TextField
           label={`Search ${listType}`}
           fullWidth
@@ -254,44 +247,36 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
           />
         </SearchDatabaseContainer>
       </FileStructure>
-      <FormContentContainer>
+      <FormContentContainer className='full-width flex flex-col'>
 
-        <Typography
-          className="header-title"
-          color="textPrimary"
-          style={{ marginTop: 35, backgroundColor: KEEP_ADMIN_BASE_COLOR }}
-        >
+        <span className="scope-form-header">
           <StorageIcon />
           <span style={{ marginLeft: 10 }}>{isEdit ? `Edit Scope` : `Add New Scope`}</span>
-        </Typography>
+        </span>
         {dbError && dbErrorMessage && (
           <Alert style={{ margin: '10px 0' }} severity="error">
             <AlertTitle>{`Error: Unable to ${isEdit?'edit':'add'} scope`}</AlertTitle>
-            <Typography
-              style={{ fontSize: 18 }}
-              component="p"
-              variant="caption"
-            >
+            <span className='color-text-danger big-text'>
               {dbErrorMessage}
-            </Typography>
+            </span>
           </Alert>
         )}
         <InputContainer style={{ marginTop: 5 }}>
-          <Typography color="textPrimary" style={{ display: 'flex' }}>
+          <span className='color-text-primary flex'>
             <span style={{ minWidth: '85px' }}>Database:</span>
             <span>{nsfPath}</span>
-          </Typography>
+          </span>
         </InputContainer>
         <InputContainer>
-          <Typography color="textPrimary" style={{ display: 'flex', textOverflow: 'ellipsis', overflowX: 'hidden' }}>
+          <span className='scope-form-text-schema'>
             <span style={{ minWidth: '85px' }}>Schema:</span>
             <span>{schemaName}</span>
-          </Typography>
+          </span>
         </InputContainer>
         {!schemaName && formik.touched.apiName ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.schemaName}`}
-            </Typography>
+            </span>
           ) : null}
         <InputContainer style={{ marginTop: 5 }}>
           <TextField
@@ -306,13 +291,13 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             fullWidth
           />
           {formik.errors.apiName && formik.touched.apiName ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.apiName}`}
-            </Typography>
+            </span>
           ) : (scopeNameError ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {scopeNameError}
-            </Typography>
+            </span>
           ) : null)}
         </InputContainer>
         <InputContainer>
@@ -327,9 +312,9 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             variant='standard'
           />
           {formik.errors.description && formik.touched.description ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.description}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <InputContainer>
@@ -355,15 +340,15 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             }
           />
           {formik.errors.server && formik.touched.server ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className="small-text color-text-danger">
               {`${formik.errors.server}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
-        <InputContainer>
-          <Typography className="icon-heading" color="textPrimary">
+        <InputContainer className='flex flex-col'>
+          <span className="small-text">
             Maximum Access Level
-          </Typography>
+          </span>
           <Button
             aria-controls="acl-menu"
             aria-haspopup="true"
@@ -392,10 +377,10 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             ))}
           </Menu>
         </InputContainer>
-        <InputContainer>
-          <Typography className="icon-heading" color="textPrimary">
+        <InputContainer className='flex flex-col'>
+          <span className="small-text color-text-primary">
             {`${itemType} Icon`}
-          </Typography>
+          </span>
           <Button
             aria-controls="icons-menu"
             aria-haspopup="true"

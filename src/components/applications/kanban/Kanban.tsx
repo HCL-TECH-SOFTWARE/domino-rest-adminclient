@@ -8,7 +8,7 @@ import React, { useState, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Dialog, Typography } from '@mui/material';
+import { Dialog } from '@mui/material';
 import styled from 'styled-components';
 import {
   deleteApplication,
@@ -171,12 +171,9 @@ const Kanban: React.FC = () => {
     <>
       <AppContainer>
         <TopContainer  style={{ marginTop: '15px' }}>
-          <Typography
-            className="top-nav"
-            color="textPrimary"
-          >
+          <p className='header-text'>
             Application Management
-          </Typography>
+          </p>
           <OptionsContainer>
             <LitButton
               src={`${IMG_DIR}/shoelace/plus.svg`}

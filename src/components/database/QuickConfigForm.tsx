@@ -13,7 +13,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { FormControlLabel, Checkbox, IconButton } from '@mui/material';
 import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import MenuItem from '@mui/material/MenuItem';
-import { Typography, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
@@ -23,8 +23,6 @@ import { FormikProps } from 'formik';
 import FileContentsTree from './FileContentsTree';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
-import { getTheme } from '../../store/styles/action';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import {
   FormContentContainer,
@@ -210,13 +208,9 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   return (
     <Forms onSubmit={formik.handleSubmit}>
       <FileStructure>
-        <Typography
-          className="header-title"
-          color="textPrimary"
-          style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
-        >
+        <span className="drawer-available-databases-text">
           {`Available ${listType}`}
-        </Typography>
+        </span>
         <TextField
           label={`Search ${listType}`}
           fullWidth
@@ -255,34 +249,26 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           />
         </SearchDatabaseContainer>
       </FileStructure>
-      <FormContentContainer>
-
-        <Typography
-          className="header-title"
-          color="textPrimary"
-          style={{ marginTop: 35, backgroundColor: KEEP_ADMIN_BASE_COLOR }}
-        >
+      <FormContentContainer className='full-width flex flex-col'>
+        <span className="scope-form-header">
           <StorageIcon />
           <span style={{ marginLeft: 10 }}>{`Quick Config`}</span>
-        </Typography>
+        </span>
         {dbError && dbErrorMessage && (
           <Alert style={{ margin: '10px 0' }} severity="error">
             <AlertTitle>{`Quick config error:`}</AlertTitle>
-            <Typography
-              component="p"
-              variant="caption"
-            >
+            <span className='color-text-danger small-text'>
               {dbErrorMessage}
-            </Typography>
+            </span>
           </Alert>
         )}
         <InputContainer style={{ marginTop: 5 }}>
-          <Typography color="textPrimary">{`Database: ${nsfPath}`}</Typography>
+          <span className='color-text-primary font-15'>{`Database: ${nsfPath}`}</span>
         </InputContainer>
         {!nsfPath && formik.touched.schemaName ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className='color-text-danger small-text'>
               {`${formik.errors.nsfPath}`}
-            </Typography>
+            </span>
           ) : null}
         <InputContainer style={{ marginTop: 5 }}>
           <TextField
@@ -296,13 +282,13 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             fullWidth
           />
           {formik.errors.schemaName && formik.touched.schemaName ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className='color-text-danger small-text'>
               {`${formik.errors.schemaName}`}
-            </Typography>
+            </span>
           ) : (schemaNameError ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className='color-text-danger small-text'>
               {schemaNameError}
-            </Typography>
+            </span>
           ) : null)}
         </InputContainer>
         <InputContainer>
@@ -316,13 +302,13 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             variant='standard'
           />
           {formik.errors.scopeName && formik.touched.scopeName ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className='color-text-danger small-text'>
               {`${formik.errors.scopeName}`}
-            </Typography>
+            </span>
           ) : (scopeNameError ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className='color-text-danger small-text'>
               {scopeNameError}
-            </Typography>
+            </span>
           ) : null)}
         </InputContainer>
         <InputContainer>
@@ -336,15 +322,15 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             variant='standard'
           />
           {formik.errors.description && formik.touched.description ? (
-            <Typography className="validation-error" color="textPrimary">
+            <span className='color-text-danger small-text'>
               {`${formik.errors.description}`}
-            </Typography>
+            </span>
           ) : null}
         </InputContainer>
         <InputContainer>
-          <Typography className="icon-heading" color="textPrimary">
+          <span className="small-text color-text-primary full-width">
             {`${itemType} Icon`}
-          </Typography>
+          </span>
           <Button
             aria-controls="icons-menu"
             aria-haspopup="true"
@@ -414,10 +400,10 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             value={formik.values.isActive}
           />
         </InputContainer>
-        <InputContainer style={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography className="icon-heading" color="textPrimary">
+        <InputContainer className='flex flex-col full-width'>
+          <span className="small-text color-text-primary full-width">
             Additional Modes
-          </Typography>
+          </span>
           <FormControlLabel
             control={
               <Checkbox

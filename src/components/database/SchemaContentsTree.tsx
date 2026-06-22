@@ -7,7 +7,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import Typography from '@mui/material/Typography';
 import DBIcon from '@mui/icons-material/Storage';
 import ArrowRightIcon from '@mui/icons-material/ChevronRight';
 import DocumentIcon from '@mui/icons-material/InsertDriveFile';
@@ -39,13 +38,9 @@ function StyledTreeItem(props: StyledTreeItemProps) {
       label={
         <div style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
           <LabelIcon color="primary" sx={{ marginRight: '8px' }} />
-          <Typography
-            variant="body2"
-            color="textPrimary"
-            sx={{ fontWeight: 'inherit', flexGrow: 1 }}
-          >
+          <span className='color-text-primary small-text'>
             {labelText}
-          </Typography>
+          </span>
         </div>
       }
       {...other}
