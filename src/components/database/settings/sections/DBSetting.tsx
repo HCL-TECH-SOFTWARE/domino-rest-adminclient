@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 import Switch from '@mui/material/Switch';
@@ -29,12 +28,12 @@ const SettingItem: React.FC<{ title: string; description: string }> = ({
   description
 }) => (
   <SettingsDescription>
-    <Typography className="title" color="textPrimary">
+    <span className="title color-text-primary">
       {title}
-    </Typography>
-    <Typography className="description" color="textPrimary">
+    </span>
+    <span className="description color-text-primary">
       {description}
-    </Typography>
+    </span>
   </SettingsDescription>
 );
 

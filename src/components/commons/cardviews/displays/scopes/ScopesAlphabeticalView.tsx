@@ -6,7 +6,6 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import DBIcon from '@mui/icons-material/Storage';
 import { useLocation } from 'react-router-dom';

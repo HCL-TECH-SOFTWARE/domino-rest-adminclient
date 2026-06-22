@@ -6,7 +6,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -513,7 +512,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
             </Tooltip>
           </StatusIcon>
         </span>
-        <Typography className="api-name" component="p" variant="h5">
+        <span className="api-name">
           <div className="api-schema">{dbName}</div>
           <EditIcon
             onClick={() => {
@@ -521,21 +520,21 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
             }}>
             <FiEdit className="icon" />
           </EditIcon>
-        </Typography>
-        <Typography className="api-nsf" component="p" variant="body2">
+        </span>
+        <span className="api-nsf">
           {nsfPath}
-        </Typography>
+        </span>
       </Title>
       <hr color="#d1d1d1" />
       <Information>
         <Heading>
-          <Typography className="heading" component="p" variant="h6">
+          <span className="heading">
             Description
-          </Typography>
-          <Typography className="description" component="div" variant="body2">
+          </span>
+          <div className="description">
             {description.length > 180 && (viewMore ? description : `${description.slice(0, 180)}...`)}
             {description.length <= 180 && description}
-          </Typography>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             {description.length > 180 &&
               (!viewMore ? (
@@ -553,17 +552,17 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
           <ViewButtons></ViewButtons>
         </Heading>
         <Heading>
-          <Typography className="heading" component="p" variant="h6">
+          <span className="heading">
             File Path
-          </Typography>
-          <Typography className="description" component="p" variant="body2">
+          </span>
+          <span className="description">
             {nsfPath}
-          </Typography>
+          </span>
         </Heading>
         <Heading>
-          <Typography className="heading" component="p" variant="h6">
+          <span className="heading">
             Configuration
-          </Typography>
+          </span>
           {isConfigLoading ? (
             <CircularProgress size={20} />
           ) : (

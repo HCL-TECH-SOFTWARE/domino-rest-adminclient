@@ -6,7 +6,6 @@
 
 import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import Typography from '@mui/material/Typography';
 import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import Popper from '@mui/material/Popper';
@@ -179,16 +178,12 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
         >
           <Fade in={open} timeout={open ? OPEN_TRANSITION_MS : CLOSE_TRANSITION_MS}>
             <ProfileInfo>
-              <Typography
-                color="textPrimary"
-                noWrap
-                style={{ fontWeight: 700, fontSize: 16 }}
-              >
+              <span className="color-text-primary weight-700 medium-text nowrap">
                 {user}
-              </Typography>
-              <Typography color="textPrimary" style={{ fontSize: 13 }}>
+              </span>
+              <span className="color-text-primary text-13">
                 Administrator
-              </Typography>
+              </span>
             </ProfileInfo>
           </Fade>
         </Collapse>
@@ -227,16 +222,12 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
               <ProfileMenuCard>
                 <PopperAvatarContainer theme={themeMode}>
                   <ProfileInfo style={{ marginLeft: 0 }}>
-                    <Typography
-                      color="textPrimary"
-                      noWrap
-                      style={{ fontWeight: 700, fontSize: 16 }}
-                    >
+                    <span className="color-text-primary weight-700 medium-text nowrap">
                       {user}
-                    </Typography>
-                    <Typography color="textPrimary" style={{ fontSize: 13 }}>
+                    </span>
+                    <span className="color-text-primary text-13">
                       Administrator
-                    </Typography>
+                    </span>
                   </ProfileInfo>
                 </PopperAvatarContainer>
                 <OptionList toggleMenu={setPopperOpen} theme={themeMode} />

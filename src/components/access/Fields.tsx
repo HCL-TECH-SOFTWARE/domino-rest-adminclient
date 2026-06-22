@@ -6,7 +6,6 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import { MenuItem, CircularProgress, Select, Tooltip } from '@mui/material';

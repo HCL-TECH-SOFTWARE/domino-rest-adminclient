@@ -24,7 +24,7 @@
   --icon-color: light-dark(#000, #fff);
   --hint-text-color: light-dark(#808080, #a9a9a9);
   --active-indicator-color: light-dark(#0fa068, #52c999);
-  --inactive-indicator-color: light-dark(#8291a0, #1b2229);
+  --inactive-indicator-color: light-dark(#8291a0, #707e8a);
 }
 
 /* Generic */
@@ -51,6 +51,14 @@
 
 .large-text {
     font-size: 20px;
+}
+
+.very-large-text {
+    font-size: 22px;
+}
+
+.huge-text {
+    font-size: 24px;
 }
 
 .line-height-normal {
@@ -83,6 +91,26 @@
 
 .color-text-hint {
     color: var(--hint-text-color);
+}
+
+.color-text-white {
+    color: #fff;
+}
+
+.color-base {
+    color: var(--base-color);
+}
+
+.block {
+    display: block;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.wrap {
+    text-wrap: wrap;
 }
 
 .background-badge {

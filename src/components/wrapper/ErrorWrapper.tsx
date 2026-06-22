@@ -6,7 +6,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import Error400 from './400.svg';
 import Error403 from './403.png';
 import Error404 from './404.svg';
@@ -36,9 +35,9 @@ const ErrorWrapper: React.FC<IErrorWrapper> = ({
       {status === 500 && (
         <ErrorContainer>
           <Title>
-            <Typography className="message">
+            <span className="message">
               Server encountered an unexpected condition that prevented it from fulfilling the request
-            </Typography>
+            </span>
           </Title>
           <img className="image-error" src={Error500} alt={statusText} />
         </ErrorContainer>
@@ -47,7 +46,7 @@ const ErrorWrapper: React.FC<IErrorWrapper> = ({
         <ErrorContainer>
           <MasterGreeting>Oops!</MasterGreeting>
           <Title>
-            <Typography className="message">{statusText}</Typography>
+            <span className="message">{statusText}</span>
           </Title>
           <img className="image-error" src={Error404} alt={statusText} />
         </ErrorContainer>
@@ -55,7 +54,7 @@ const ErrorWrapper: React.FC<IErrorWrapper> = ({
       {status === 403 && (
         <ErrorContainer>
           <Title>
-            <Typography className="message">{statusText}</Typography>
+            <span className="message">{statusText}</span>
           </Title>
           <img className="image-error" src={Error403} alt={statusText} />
         </ErrorContainer>
@@ -64,7 +63,7 @@ const ErrorWrapper: React.FC<IErrorWrapper> = ({
         <ErrorContainer>
           <MasterGreeting>Oops!</MasterGreeting>
           <Title>
-            <Typography className="message">{statusText}</Typography>
+            <span className="message">{statusText}</span>
           </Title>
           <img className="image-error" src={Error400} alt={statusText} />
         </ErrorContainer>

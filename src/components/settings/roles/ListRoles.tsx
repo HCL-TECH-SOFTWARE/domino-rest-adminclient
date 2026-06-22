@@ -10,7 +10,6 @@ import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { getTheme } from '../../../store/styles/action';
@@ -34,14 +33,9 @@ const ListRoles = () => {
               primary={role}
               secondary={
                 <>
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    style={{ fontWeight: 300 }}
-                    color="textPrimary"
-                  >
+                  <span className="small-text weight-300 color-text-primary">
                     Developer
-                  </Typography>
+                  </span>
                 </>
               }
             />

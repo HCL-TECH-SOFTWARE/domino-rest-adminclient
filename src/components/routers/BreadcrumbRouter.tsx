@@ -7,7 +7,6 @@
 import React from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import { useLocation } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
@@ -95,17 +94,16 @@ const BreadcrumbRouter: React.FC = () => {
               aria-label="breadcrumb"
               className="routing"
             >
-              <Typography
-                color="textPrimary"
+              <span
+                className="color-text-primary flex items-center"
                 data-testid="overview"
-                style={{display: 'flex', alignItems:'center'}}
                 onClick={() => {
                   guardedNavigate(`/`);
                 }}
               >
                 <Home className="home-icon" />
                 Overview
-              </Typography>
+              </span>
               {location.pathname.split('/').length > 1 && (
                 <Tooltip
                   enterDelay={700}
@@ -113,31 +111,23 @@ const BreadcrumbRouter: React.FC = () => {
                   title={`Back to ${location.pathname.split('/')[1].charAt(0).toUpperCase() + location.pathname.split('/')[1].slice(1)} Management Page`}
                   arrow
                 >
-                  <Typography
-                    color="textPrimary"
-                    style={
-                      location.pathname.split('/').length === 2
-                        ? { fontWeight: 600, color: activeColor }
-                        : {}
-                    }
+                  <span
+                    className={`color-text-primary${location.pathname.split('/').length === 2 ? ' weight-600' : ''}`}
+                    style={location.pathname.split('/').length === 2 ? { color: activeColor } : {}}
                     onClick={()=>handleOnClick(2)}
                   >
                     {breadcrumbTitle}
-                  </Typography>
+                  </span>
                 </Tooltip>
               )}
 
               {location.pathname.split('/').length === 3 && (
-                <Typography
-                  color="textPrimary"
-                  style={
-                    location.pathname.split('/').length === 3
-                      ? { fontWeight: 600, color: activeColor, whiteSpace: 'nowrap'}
-                      : {}
-                  }
+                <span
+                  className={`color-text-primary${location.pathname.split('/').length === 3 ? ' weight-600 nowrap' : ''}`}
+                  style={location.pathname.split('/').length === 3 ? { color: activeColor } : {}}
                 >
                   {location.pathname.split('/')[2].charAt(0).toUpperCase() + location.pathname.split('/')[2].slice(1)}
-                </Typography>
+                </span>
               )}
 
               {location.pathname.split('/').length >= 4 && (
@@ -147,43 +137,31 @@ const BreadcrumbRouter: React.FC = () => {
                   title={`Go to ${location.pathname.split('/')[3]} Forms`}
                   arrow
                 >
-                  <Typography
-                    color="textPrimary"
+                  <span
+                    className={`color-text-primary${location.pathname.split('/').length === 4 ? ' weight-600 nowrap' : ''}`}
+                    style={location.pathname.split('/').length === 4 ? { color: activeColor } : {}}
                     onClick={()=>handleOnClick(4)}
-                    style={
-                      location.pathname.split('/').length === 4
-                        ? { fontWeight: 600, color: activeColor, whiteSpace: 'nowrap'}
-                        : {}
-                    }
                   >
                     {location.pathname.split('/')[3]}
-                  </Typography>
+                  </span>
                 </Tooltip>
               )}
 
               {location.pathname.split('/').length === 5 && (
-                <Typography
-                  color="textPrimary"
-                  style={{
-                    fontWeight:
-                      location.pathname.split('/').length === 5 ? 600 : 'normal'
-                  }}
+                <span
+                  className={`color-text-primary${location.pathname.split('/').length === 5 ? ' weight-600' : ''}`}
                 >
                   {location.pathname.split('/')[5]}
-                </Typography>
+                </span>
               )}
 
               {location.pathname.split('/').length === 6 && (
-                <Typography
-                  color="textPrimary"
-                  style={
-                    location.pathname.split('/').length === 6
-                      ? { fontWeight: 600, color: activeColor, whiteSpace: 'nowrap'}
-                      : {}
-                  }
+                <span
+                  className={`color-text-primary${location.pathname.split('/').length === 6 ? ' weight-600 nowrap' : ''}`}
+                  style={location.pathname.split('/').length === 6 ? { color: activeColor } : {}}
                 >
                   {`${decodeURIComponent(location.pathname.split('/')[4])} Access Mode`}
-                </Typography>
+                </span>
               )}
             </Breadcrumbs>
             }

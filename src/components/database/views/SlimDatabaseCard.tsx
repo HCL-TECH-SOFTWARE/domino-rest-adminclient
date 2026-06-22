@@ -6,7 +6,6 @@
 
 import React, { KeyboardEventHandler } from 'react';
 import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import styled, { css } from 'styled-components';
 import { useSelector } from 'react-redux';
@@ -206,19 +205,13 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
         </ModeLogo>
         <div className='text-content'>
           <Tooltip title={isSchema ? database.schemaName + '(' + database.nsfPath + ')' : database.apiName}>
-            <Typography
-              className="api-name bold"
-              variant="subtitle1"
-              component="p"
-              color="textPrimary"
-              gutterBottom
-            >
+            <span className="api-name bold color-text-primary">
               {isSchema ? database.schemaName : database.apiName}
-            </Typography>
+            </span>
           </Tooltip>
-          {isSchema && <Typography sx={{ display: 'block' }} variant='subtitle1' className='api-nsf'>
+          {isSchema && <span className="block api-nsf">
             {database.nsfPath}
-          </Typography>}
+          </span>}
         </div>
       </CardHeader>
       {isSchema && <div className='delete' onClick={handleClickDelete} onKeyUp={handleKeyPressDelete}>

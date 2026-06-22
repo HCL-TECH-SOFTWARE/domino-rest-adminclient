@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import AddIcon from '@mui/icons-material/Add';
 import CachedIcon from '@mui/icons-material/Cached';
-import { Button, Typography} from '@mui/material';
+import { Button } from '@mui/material';
 import { AppState } from '../../store';
 import { toggleDrawer } from '../../store/drawer/action';
 import { clearDBError,
@@ -129,12 +129,9 @@ const ScopeLists = () => {
       <WrapperContainer>
           <>
             <TopContainer style={{ marginTop: '15px' }}>
-              <Typography
-                className="top-nav"
-                color="textPrimary"
-              >
+              <span className="top-nav color-text-primary">
                 Scope Management
-              </Typography>
+              </span>
               <LitButton src={`${IMG_DIR}/shoelace/rotate.svg`} onClick={handleRefresh}>
                 Refresh
               </LitButton>

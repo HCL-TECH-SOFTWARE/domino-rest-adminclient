@@ -4,22 +4,13 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
-import {
-  Box,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Typography,
-} from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { RxDividerVertical } from 'react-icons/rx';
 import ConsentsTable from './ConsentsTable';
-import { CommonDialog } from '../../../styles/CommonStyles';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { useDispatch } from 'react-redux';
@@ -27,6 +18,7 @@ import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/acti
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
 import { LitButtonNeutral, LitButtonYes } from '../../lit-elements/LitElements';
 import ZeroResultsWrapper from '../../commons/ZeroResultsWrapper';
+import FormDialogHeader from '../../dialogs/FormDialogHeader';
 const ConsentsContainer = styled.div`
   display: flex;
   gap: 16px;
@@ -87,6 +79,8 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
   const [resetFilters, setResetFilters] = useState(false);
   const { deleteConsentDialog, deleteUnid, appName, username, scope, consents } = useSelector((state: AppState) => state.consents);
 
+  const ref = useRef<HTMLDialogElement>(null);
+
   const dispatch = useDispatch();
 
   const handleCloseDialog = () => {
@@ -102,10 +96,20 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
     setResetFilters(true);
   };
 
+  useEffect(() => {
+    if (deleteConsentDialog) {
+      ref.current?.showModal();
+    } else {
+      if (ref.current?.close) {
+        ref.current?.close();
+      }
+    }
+  }, [deleteConsentDialog])
+
   return (
     <ConsentsContainer>
       <Header>
-        <Typography className="title">OAuth Consents</Typography>
+        <span className="medium-text text-bold m-0 p-0">OAuth Consents</span>
         <button
           onClick={handleClose}
           style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
@@ -159,26 +163,23 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
             mainLabel="Sorry, no consents found"
             secondaryLabel={`What you search was unfortunately not found or doesn't exist.`}
           />}
-      <CommonDialog
-        open={deleteConsentDialog}
-        onClose={handleCloseDialog}
-        aria-labelledby="delete-consent-dialog"
-        aria-describedby="delete-consent-description">
-        <DialogTitle id="reset-form-dialog-title">
-          <Box className="title">{`Revoke consent?`}</Box>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="reset-form-contents" color="textPrimary">
+      <dialog ref={ref} className='dialog'>
+        <FormDialogHeader
+          title={`Revoke consent?`}
+          onClose={handleCloseDialog}
+        />
+        <div className='dialog-content'>
+          <div id="reset-form-contents" className='dialog-content-text'>
             {appName
               ? `Are you sure you want to revoke consent for application ${appName} with user ${username} and scopes ${scope}?`
               : `Are you sure you want to revoke consent for user ${username} with scopes ${scope}?`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions style={{ display: 'flex', marginBottom: '20px', padding: '0 30px 20px 0' }}>
-          <LitButtonYes text='Yes' onClick={confirmDeleteConsent} style={{ right: 'calc(93px + 5px + 30px)', width: '93px' }} />
-          <LitButtonNeutral text='No' onClick={handleCloseDialog} style={{ width: '93px' }} />
-        </DialogActions>
-      </CommonDialog>
+          </div>
+        </div>
+        <div className='dialog-actions'>
+          <LitButtonYes text='Yes' onClick={confirmDeleteConsent} />
+          <LitButtonNeutral text='No' onClick={handleCloseDialog} />
+        </div>
+      </dialog>
     </ConsentsContainer>
   );
 };

@@ -6,7 +6,6 @@
 
 import React, { useContext } from 'react';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import GroupsIcon from '@mui/icons-material/Group';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
@@ -75,9 +74,8 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
 
         {formContext === 'View' ? (
           <PanelContent>
-            <Typography
-              className="header-title"
-              style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
+            <span
+              className="header-title background-keep-base"
             >
               <GroupsIcon />
               {formContext === 'Add'
@@ -85,7 +83,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 : formContext === 'Edit'
                 ? ' Update a Group '
                 : ' View Group Details'}
-            </Typography>
+            </span>
 
             <InputContainer style={{ marginTop: 5 }}>
               <TextField
@@ -102,9 +100,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.groupName && formik.touched.groupName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.groupName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -122,9 +120,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.groupCategory && formik.touched.groupCategory ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.groupCategory}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -143,9 +141,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
               />
               {formik.errors.groupDescription &&
               formik.touched.groupDescription ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.groupDescription}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <Box sx={{ display: 'flex' }}>
@@ -167,24 +165,16 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
             {groupsError && groupsErrorMessage && (
               <Alert style={{ margin: '5px 0' }} severity="error">
                 <AlertTitle>Error: Unable to save Group</AlertTitle>
-                <Typography
-                  style={{ fontSize: 18 }}
-                  component="p"
-                  variant="caption"
-                >
+                <span className="big-text">
                   {groupsErrorMessage}
-                </Typography>
+                </span>
               </Alert>
             )}
-            <Typography
-              className="header-title"
-              style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
-            >
+            <span className="header-title background-keep-base">
               Beta: This form is not yet finished...
-            </Typography>
-            <Typography
-              className="header-title"
-              style={{ backgroundColor: KEEP_ADMIN_BASE_COLOR }}
+            </span>
+            <span
+              className="header-title background-keep-base"
             >
               <GroupsIcon />
               {formContext === 'Add'
@@ -192,7 +182,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 : formContext === 'Edit'
                 ? ' Update a Group '
                 : 'View Group Details'}
-            </Typography>
+            </span>
             <InputContainer style={{ marginTop: 5 }}>
               <TextField
                 autoComplete="off"
@@ -207,9 +197,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.groupName && formik.touched.groupName ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.groupName}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -226,9 +216,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 variant='standard'
               />
               {formik.errors.groupCategory && formik.touched.groupCategory ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.groupCategory}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <InputContainer>
@@ -246,9 +236,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
               />
               {formik.errors.groupDescription &&
               formik.touched.groupDescription ? (
-                <Typography className="validation-error" color="textPrimary">
+                <span className="validation-error color-text-primary">
                   {`${formik.errors.groupDescription}`}
-                </Typography>
+                </span>
               ) : null}
             </InputContainer>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>

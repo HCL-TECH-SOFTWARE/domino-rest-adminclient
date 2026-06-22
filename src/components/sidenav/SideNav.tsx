@@ -9,7 +9,6 @@ import styled from 'styled-components';
 import { NavLink, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -224,9 +223,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
           </Logo>
           {open && (
             <KeepAdmin>
-              <Typography className="title" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+              <span className="title" style={{ color: getTheme(themeMode).sidenav.textColor }}>
                 HCL Domino REST API
-              </Typography>
+              </span>
             </KeepAdmin>
           )}
 
@@ -266,9 +265,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                       />
                     </ListItemIcon>
                     <ListItemText>
-                      <Typography className="text-link" color="textPrimary">
+                      <span className="text-link color-text-primary">
                         {route.label}
-                      </Typography>
+                      </span>
                     </ListItemText>
                   </ListItemButton>
                 </Tooltip>
@@ -295,9 +294,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         />
                       </ListItemIcon>
                       <ListItemText>
-                        <Typography className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="color-text-primary">
                           {route.label}
-                        </Typography>
+                        </span>
                       </ListItemText>
                     </ListItemButton>
                   </Tooltip>
@@ -317,9 +316,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   />
                 </ListItemIcon>
                 <ListItemText>
-                  <Typography className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
-                    Quick Config
-                  </Typography>
+                <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                  Quick Config
+                </span>
                 </ListItemText>
               </ListItemButton>
             </Tooltip>
@@ -344,9 +343,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         />
                       </ListItemIcon>
                       <ListItemText>
-                        <Typography className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
                           {route.label}
-                        </Typography>
+                        </span>
                       </ListItemText>
                     </ListItemButton>
                   </Tooltip>
@@ -373,9 +372,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         />
                       </ListItemIcon>
                       <ListItemText>
-                        <Typography className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
                           {route.label}
-                        </Typography>
+                        </span>
                       </ListItemText>
                     </ListItemButton>
                   </Tooltip>
@@ -402,9 +401,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         />
                       </ListItemIcon>
                       <ListItemText>
-                        <Typography className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
                           {route.label}
-                        </Typography>
+                        </span>
                       </ListItemText>
                     </ListItemButton>
                   </Tooltip>
@@ -434,9 +433,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         />
                       </ListItemIcon>
                       <ListItemText>
-                        <Typography className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
                           {route.label}
-                        </Typography>
+                        </span>
                       </ListItemText>
                     </ListItemButton>
                   </Tooltip>
