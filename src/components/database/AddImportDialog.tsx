@@ -69,7 +69,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       })
       .matches(/^[a-z0-9_]+$/g, "Schema name should only contain lowercase letters, numbers, and underscores."),
     description: Yup.string()
-      .min(3, "Schema name should contain at least 3 characters.")
+      .min(3, "Schema description should contain at least 3 characters.")
       .required('Please provide a short description about this schema!'),
     nsfPath: Yup.string()
       .required('Please select a database!')
