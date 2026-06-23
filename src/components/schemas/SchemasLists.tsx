@@ -29,7 +29,7 @@ import { Tooltip } from '@mui/material';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
 import { IMG_DIR } from '../../config.dev';
-import { LitButton } from '../lit-elements/LitElements';
+import { LitButton, LitTooltip } from '../lit-elements/LitElements';
 import { areArraysEqual } from '../../utils/common';
 
 const SchemasLists = () => {
@@ -198,15 +198,15 @@ const SchemasLists = () => {
               <span className="medium-text flex items-center">
                 Only show schemas configured with scopes
               </span>
-              <Tooltip title={onlyShowSchemasWithScopes ? 'On' : 'Off'}  placement="top-start">
-                <BlueSwitch 
+              <LitTooltip content={onlyShowSchemasWithScopes ? 'On' : 'Off'} placement="top">
+                <BlueSwitch
                   checked={onlyShowSchemasWithScopes}
                   onChange={onChange}
                   name="isActive"
                   size="small"
                   slotProps={{ input: { 'aria-label': 'Only show schemas configured with scopes' } }}
-                /> 
-              </Tooltip>
+                />
+              </LitTooltip>
             </FilterContainer>
             {results.length !== 0 && !loading.status && <SchemasMultiView databases={results} view={view} />}
             {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <ZeroResultsWrapper mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
