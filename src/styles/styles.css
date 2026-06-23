@@ -240,6 +240,10 @@ body[data-theme="dark"] .color-text-disabled {
     width: 100%;
 }
 
+.w-40 {
+    width: 40%;
+}
+
 .w-45 {
     width: 45%;
 }

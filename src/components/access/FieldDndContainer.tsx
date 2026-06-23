@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Tooltip, TextField, Button, Checkbox } from '@mui/material';
+import { TextField, Button, Checkbox } from '@mui/material';
 import { TabsProps } from '@mui/material/Tabs';
 import AddIcon from '@mui/icons-material/Add';
 import { WarningIcon } from '../../styles/CommonStyles';
@@ -15,7 +15,7 @@ import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
 import { toggleAlert } from '../../store/alerts/action';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -203,7 +203,10 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
           </Button>}
           {batchDelete && <div className='flex justify-between full-width p-0'>
             <div className='flex flex-wrap'>
-              <Tooltip title={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""} arrow>
+              <LitTooltip
+                content={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""}
+                placement='bottom'
+              >
                 <Button 
                   className='field-batch-delete-button'
                   onClick={openDialog}
@@ -219,7 +222,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                     Remove
                   </p>
                 </Button>
-              </Tooltip>
+              </LitTooltip>
               <Button 
                 className='field-batch-delete-button'
                 onClick={toggleBatchDelete} 

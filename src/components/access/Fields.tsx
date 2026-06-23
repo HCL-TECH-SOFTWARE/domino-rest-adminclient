@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
-import { MenuItem, CircularProgress, Select, Tooltip } from '@mui/material';
+import { MenuItem, CircularProgress, Select } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 import { MdLibraryAdd } from 'react-icons/md';
@@ -21,6 +21,7 @@ import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, HorizontalDivider, SearchContainer, SearchInput } from '../../styles/CommonStyles';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const FieldContainer = styled.div<{ theme: string }>`
   border: 1px solid ${(props) => getTheme(props.theme).borderColor};
@@ -359,16 +360,21 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
       <Box sx={{ padding: '0 23.5px' }}>
         <FieldsDropDownHeader className="fields-dropdown-header">
           <p className="small-text p-0 full-width m-0">Show fields from:</p>
-          <Tooltip title="Refresh List of Fields" arrow>
+          <LitTooltip
+            content="Refresh List of Fields"
+          >
             <IconButton className="icon-button" onClick={handleRefreshFields}>
               <RefreshIcon className="icon" />
             </IconButton>
-          </Tooltip>
-          <Tooltip title="Add All Fields" arrow>
+          </LitTooltip>
+          <LitTooltip
+            content="Add All Fields"
+            className='w-40'
+          >
             <IconButton className="icon-button" onClick={handleAddAll}>
               <MdLibraryAdd className="icon" />
             </IconButton>
-          </Tooltip>
+          </LitTooltip>
         </FieldsDropDownHeader>
         <FieldsDropDown>
           <Select

@@ -26,6 +26,19 @@ class Tooltip extends LitElement {
         this._hideBound = this._hidePopup.bind(this)
     }
 
+    _findContainer() {
+        // Walk up the composed path to find the nearest <dialog> ancestor.
+        // showModal() promotes <dialog> to the top layer; any popup appended
+        // to document.body would render *below* it. Appending inside the
+        // dialog keeps the popup in the same top-layer context.
+        let node = this.parentNode
+        while (node) {
+            if (node instanceof HTMLDialogElement) return node
+            node = node.parentNode || (node instanceof ShadowRoot ? node.host : null)
+        }
+        return document.body
+    }
+
     connectedCallback() {
         super.connectedCallback()
 
@@ -61,9 +74,12 @@ class Tooltip extends LitElement {
             display: 'none',
         })
 
-        document.body.appendChild(this._popup)
-        document.body.appendChild(this._arrow)
-
+        // Append to nearest <dialog> ancestor (if any) so the popup sits in
+        // the same top-layer context as a showModal() dialog. Falls back to
+        // document.body for normal page use.
+        const container = this._findContainer()
+        container.appendChild(this._popup)
+        container.appendChild(this._arrow)
         this.addEventListener('mouseenter', this._showBound)
         this.addEventListener('mouseleave', this._hideBound)
         this.addEventListener('focus', this._showBound, true)
