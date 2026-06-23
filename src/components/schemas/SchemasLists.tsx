@@ -13,7 +13,6 @@ import {
   setPullDatabase,
   setPullScope,
 } from '../../store/databases/action';
-import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer, FilterContainer, BlueSwitch } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
 import DatabaseSearch from '../database/DatabaseSearch';
@@ -25,7 +24,6 @@ import SchemasMultiView from '../commons/cardviews/displays/schemas/SchemasMulti
 import { toggleAlert } from '../../store/alerts/action';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
-import { Tooltip } from '@mui/material';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
 import { IMG_DIR } from '../../config.dev';

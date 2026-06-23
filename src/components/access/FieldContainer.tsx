@@ -8,9 +8,10 @@ import React, { useEffect, useState } from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import { convert2FieldType } from './functions';
-import { Box, Tooltip } from '@mui/material';
+import { Box } from '@mui/material';
 import { BlueSwitch, EncryptSignOptions, HorizontalDivider } from '../../styles/CommonStyles';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 interface SingleFieldContainerProps {
   item?: any;
@@ -252,12 +253,12 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               <MenuItem value={"WO"}>Write Only</MenuItem>
             </TextField>
           </div>
-          <Tooltip 
-            title={editedItem.fieldGroup?.length > 0 ? "Field group should be empty to toggle off multi-value" : ""} 
-            style={{ display: 'flex', flexDirection: 'row' }} 
-            arrow
+          <LitTooltip
+            content={editedItem.fieldGroup?.length > 0 ? "Field group should be empty to toggle off multi-value" : ""}
+            className='flex flex-row half-width'
+            placement='bottom'
           >
-            <div className='half-width pt-5 pb-5 multi-value-container'>
+            <div className='half-width pt-5 pb-5 multi-value-container w-fit'>
               <p className='small-text m-0'>
                 Multi-Value?
               </p>
@@ -269,9 +270,12 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 id='multi-value'
               />
             </div>
-          </Tooltip>
-          <Tooltip title={isMultiValue ? "" : "Enable multi-value to input a field group"} arrow>
-            <div className='half-width pt-5 pb-5'>
+          </LitTooltip>
+          <LitTooltip
+            content={isMultiValue ? "" : "Enable multi-value to input a field group"}
+            className='flex flex-row half-width'
+          >
+            <div className='full-width pt-5 pb-5'>
               <TextField 
                 label="Field Group" 
                 value={editedItem.fieldGroup || ''} 
@@ -285,15 +289,17 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 }}
               />
             </div>
-          </Tooltip>
+          </LitTooltip>
           <EncryptSignOptions>
             <section className='main-row'>
               <p className='small-text m-0'>
                 Encrypt
               </p>
-              <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
+              <LitTooltip
+                content='Please understand this option before enabling, see the documentation on enabling encryption.'
+              >
                 <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '14px' }} />
-              </Tooltip>
+              </LitTooltip>
               <BlueSwitch size='small' checked={encrypt} onChange={toggleEncrypt} />
             </section>
             <text className='warning-text'>

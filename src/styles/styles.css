@@ -252,6 +252,10 @@ body[data-theme="dark"] .color-text-disabled {
     width: 80%;
 }
 
+.w-fit {
+    width: fit-content;
+}
+
 .full-height {
     height: 100%;
 }
