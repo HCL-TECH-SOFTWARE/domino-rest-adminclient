@@ -35,7 +35,8 @@ import {
   LitButton,
   LitDropdown,
   LitInputPassword,
-  LitInputText
+  LitInputText,
+  LitTooltip
 } from '../lit-elements/LitElements';
 import { AlertManager, checkForResponse } from '../../utils/common';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -556,11 +557,11 @@ const LoginPage = () => {
   return (
     <GridRoot container>
       <CssBaseline />
-      <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} arrow placement="right">
+      <LitTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
         <LoginThemeToggle onClick={toggleTheme}>
           {isDark ? <DarkModeIcon style={{ fontSize: 24 }} /> : <LightModeIcon style={{ fontSize: 24 }} />}
         </LoginThemeToggle>
-      </Tooltip>
+      </LitTooltip>
       <Grid
         style={{
           padding: "90px",

@@ -4,9 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { KeyboardEventHandler } from 'react';
+import React from 'react';
 import Card from '@mui/material/Card';
-import Tooltip from '@mui/material/Tooltip';
 import styled, { css } from 'styled-components';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
@@ -19,6 +18,7 @@ import { DeleteIcon } from '../../../styles/CommonStyles';
 import { useDispatch } from 'react-redux';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { toggleAlert } from '../../../store/alerts/action';
+import { LitTooltip } from '../../lit-elements/LitElements';
 
 const CardContainer = styled(Card)<{
   theme: string;
@@ -204,20 +204,20 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
           )}
         </ModeLogo>
         <div className='text-content'>
-          <Tooltip title={isSchema ? database.schemaName + '(' + database.nsfPath + ')' : database.apiName}>
+          <LitTooltip content={isSchema ? database.schemaName + '(' + database.nsfPath + ')' : database.apiName} without-arrow placement='bottom'>
             <span className="api-name bold color-text-primary">
               {isSchema ? database.schemaName : database.apiName}
             </span>
-          </Tooltip>
+          </LitTooltip>
           {isSchema && <span className="block api-nsf">
             {database.nsfPath}
           </span>}
         </div>
       </CardHeader>
       {isSchema && <div className='delete' onClick={handleClickDelete} onKeyUp={handleKeyPressDelete}>
-        <Tooltip title="Delete schema" arrow>
+        <LitTooltip content="Delete schema">
           <DeleteIcon className="delete-icon" tabIndex={1} />
-        </Tooltip>
+        </LitTooltip>
       </div>}
     </CardContainer>
   );

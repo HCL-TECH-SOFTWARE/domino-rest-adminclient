@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState }  from 'react';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear'
 import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';
@@ -21,6 +21,7 @@ import {
   SearchContainer,
   SearchInput
 } from '../../styles/CommonStyles';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 interface DatabaseSearchProps {
   handleSearchDatabase: (e: any) => void;
@@ -118,7 +119,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
           ref={searchInputRef}
         />
         {!hideClearIcon && 
-          <Tooltip title="clear" arrow>
+          <LitTooltip content="Clear" placement='bottom'>
             <IconButton
               size="small"
               aria-label="clear search bar"
@@ -126,7 +127,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
             >
               <ClearIcon color="primary" className="clear-icon" />
             </IconButton>
-          </Tooltip>
+          </LitTooltip>
         }
       </SearchContainer>
     </FormSearchContainer>

@@ -38,6 +38,7 @@ import {
   TopBanner,
 } from '../../styles/CommonStyles';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 /**
  * PeopleCRUD.tsx provides support for CRUD Operations
@@ -132,12 +133,12 @@ const PeopleCRUD: React.FC = () => {
 
         return (
           <span>
-            <Tooltip style={{ marginLeft: 15 }} title="Edit User" arrow>
+            <LitTooltip className='ml-15' content="Edit User">
               <EditIcon onClick={onUpdateClick} />
-            </Tooltip>
-            <Tooltip style={{ marginLeft: 15 }} title="Delete User" arrow>
+            </LitTooltip>
+            <LitTooltip className='ml-15' content="Delete User">
               <DelIcon onClick={onDeleteClick} />
-            </Tooltip>
+            </LitTooltip>
           </span>
         );
       },
@@ -384,7 +385,7 @@ const PeopleCRUD: React.FC = () => {
           <AddIcon style={{ margin: '0 5px' }} />
           Add Person
         </Button>
-        <Tooltip placement="top" title="Click on Row for more details!">
+        <LitTooltip content="Click on Row for more details!">
           <div
             style={{
               height: 500,
@@ -401,7 +402,7 @@ const PeopleCRUD: React.FC = () => {
               onRowClick={(viewParam) => handleClickView(viewParam.row)}
             />
           </div>
-        </Tooltip>
+        </LitTooltip>
         <DeleteApplicationDialog
           dialogTitle={deleteUserTitle}
           deleteMessage={deleteUserMessage}

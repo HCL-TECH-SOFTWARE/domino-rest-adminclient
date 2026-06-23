@@ -10,13 +10,13 @@ import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
 import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
-import { Box, Checkbox, FormControlLabel, RadioGroup, Tooltip } from '@mui/material';
+import { Box, Checkbox, FormControlLabel, RadioGroup } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
 
 const Section = styled(Box)`
   padding-top: 10px;
@@ -108,9 +108,13 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
   };
 
   function collectScopes(consents: { scope: string }[]): string[] {
-    const scopesMulti = consents
+    let scopesMulti: Array<any> = []
+
+    if (consents.length > 0) {
+      scopesMulti = consents
         .map(consent => consent.scope.split(','))
         .reduce((acc, val) => acc.concat(val), []);
+    }
 
     return Array.from(new Set(scopesMulti));
   }
@@ -130,13 +134,13 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <div className='flex flex-col p-20'>
             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-              <Tooltip arrow title="Close">
+              <LitTooltip content="Close" placement='bottom'>
                 <CloseIcon
                   cursor="pointer"
                   className="close-icon float-right"
                   onClick={() => dispatch(toggleConsentsDrawer())}
                 />
-              </Tooltip>
+              </LitTooltip>
             </Box>
             <span className='text-bold big-text'>Filter</span>
             <Section>

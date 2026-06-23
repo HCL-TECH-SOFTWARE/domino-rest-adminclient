@@ -240,6 +240,10 @@ body[data-theme="dark"] .color-text-disabled {
     width: 100%;
 }
 
+.w-30px {
+    width: 30px;
+}
+
 .w-40 {
     width: 40%;
 }
@@ -394,6 +398,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .mb-30 {
     margin-bottom: 30px;
+}
+
+.ml-15 {
+    margin-left: 15px;
 }
 
 .gap-2 {

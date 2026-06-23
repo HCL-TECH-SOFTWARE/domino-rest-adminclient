@@ -12,7 +12,7 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { Box, Button, ButtonBase, Tooltip } from "@mui/material";
+import { Box, Button, ButtonBase } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
@@ -25,6 +25,7 @@ import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
 import { getTheme } from "../../store/styles/action";
 import { AppState } from "../../store";
+import { LitTooltip } from "../lit-elements/LitElements";
 const StyledTableCell = styled(TableCell)<{ themeMode?: string }>(({ themeMode }) => ({
   paddingLeft: "30px",
   paddingRight: "30px",
@@ -289,15 +290,12 @@ const FormsTable: React.FC<FormsTableProps> = ({
               <StyledTableCell width="150px">Modes Available</StyledTableCell>
               <StyledTableCell width="200px">
                 <StatusHeader>
-                  {/* <div style={{ display: 'flex', flexDirection: 'row' }}> */}
                   <div>
-                    <Tooltip
-                      title={`Activate the Forms that should be accessible\nvia rest API`}
-                    >
-                      <div>
+                    <LitTooltip content={`Activate the Forms that should be accessible\nvia rest API`} placement='bottom' without-arrow>
+                      <div id='form-status-header-icon'>
                         Status <AiOutlineQuestionCircle className="status-icon" />
                       </div>
-                    </Tooltip>
+                    </LitTooltip>
                   </div>
                 </StatusHeader>
               </StyledTableCell>

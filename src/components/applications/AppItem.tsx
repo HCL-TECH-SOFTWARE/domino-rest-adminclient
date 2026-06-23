@@ -7,7 +7,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Box, TableCell, TableRow, Tooltip } from '@mui/material';
+import { Box, TableCell, TableRow } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
@@ -15,13 +15,17 @@ import { getTheme } from '../../store/styles/action';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
 import { DeleteIcon } from '../../styles/CommonStyles';
-import { MdRefresh } from "react-icons/md";
+import { MdRefresh, MdEdit } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import '../webcomponents/copyable-text';
-import { LitAppStatus, LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { LitAppStatus, LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
 
 const StyledTableRow = styled(TableRow)`
+  .expand lit-tooltip {
+    display: block;
+  }
+
   .app-name {
     gap: 10px;
   }
@@ -214,10 +218,10 @@ const AppItem: React.FC<AppItemProps> = ({
         <>
             <StyledTableRow>
                 <TableCell className='expand'>
-                    {app.appStatus === 'isActive' && <Tooltip title={`Launch ${app.appName}`} arrow>
+                    {app.appStatus === 'isActive' && <LitTooltip content={`Launch ${app.appName}`} className='w-30px'>
                         <button
                           onClick={launch}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                          className='no-background no-border cursor-pointer m-0 p-0 full-width'
                         >
                             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect width="40" height="40" fill="transparent"/>
@@ -225,14 +229,14 @@ const AppItem: React.FC<AppItemProps> = ({
                                 <path d="M16.666 13.3333L26.666 19.9999L16.666 26.6666V13.3333Z" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </button>
-                    </Tooltip>}
-                    {app.appStatus === 'disabled' && <Tooltip title="This application is inactive." arrow>
+                    </LitTooltip>}
+                    {app.appStatus === 'disabled' && <LitTooltip content="This application is inactive.">
                         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect width="40" height="40" fill="transparent"/>
                             <path d="M20.0007 36.6666C29.2054 36.6666 36.6673 29.2047 36.6673 19.9999C36.6673 10.7952 29.2054 3.33325 20.0007 3.33325C10.7959 3.33325 3.33398 10.7952 3.33398 19.9999C3.33398 29.2047 10.7959 36.6666 20.0007 36.6666Z" fill="#A5AFBE" stroke="#A5AFBE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M16.666 13.3333L26.666 19.9999L16.666 26.6666V13.3333Z" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                    </Tooltip>}
+                    </LitTooltip>}
                 </TableCell>
                 <TableCell className='app-name'>
                   <AppNameContainer>
@@ -255,10 +259,8 @@ const AppItem: React.FC<AppItemProps> = ({
                   <Box>
                     <AppIdSecretContainer>
                       <span className='small-text'>App ID:</span>
-                      <Tooltip 
-                        title="Copy App Id" 
-                        arrow 
-                        tabIndex={1} 
+                      <LitTooltip
+                        content="Copy App Id"
                         onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}}
                       >
                         <span
@@ -267,7 +269,7 @@ const AppItem: React.FC<AppItemProps> = ({
                         >
                           {app.appId}
                         </span>
-                      </Tooltip>
+                      </LitTooltip>
                     </AppIdSecretContainer>
                     { app.usePkce ? (
                       <AppIdSecretContainer>
@@ -278,20 +280,18 @@ const AppItem: React.FC<AppItemProps> = ({
                         <span className='small-text'>App Secret:</span>
                         {
                           hasAppSecret ? <>
-                            <Tooltip 
-                                  title="Copy Application Secret" 
-                                  tabIndex={1} 
-                                  onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                                  arrow
-                                >
-                                  <span
-                                    className='small-text cursor-pointer script-editor-help-icon'
-                                    ref={appSecretTextRef}
-                                    onClick={copyToClipboard}
-                                  >
-                                    {appSecret}
-                                  </span>
-                                </Tooltip>
+                            <LitTooltip
+                              content="Copy Application Secret"
+                              onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                            >
+                              <span
+                                className='small-text cursor-pointer script-editor-help-icon'
+                                ref={appSecretTextRef}
+                                onClick={copyToClipboard}
+                              >
+                                {appSecret}
+                              </span>
+                              </LitTooltip>
                           </> :
                           app.appHasSecret ? <>
                             <button
@@ -303,20 +303,18 @@ const AppItem: React.FC<AppItemProps> = ({
                             <span className='small-text color-text-hint'>********************</span>
                           </> : <>
                             {app.appSecret?.length > 0 ? <>
-                              <Tooltip 
-                                  title="Copy Application Secret" 
-                                  tabIndex={1} 
-                                  onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                                  arrow
+                              <LitTooltip
+                                content="Copy Application Secret"
+                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                              >
+                                <span
+                                  className='small-text cursor-pointer script-editor-help-icon'
+                                  ref={appSecretTextRef}
+                                  onClick={copyToClipboard}
                                 >
-                                  <span
-                                    className='small-text cursor-pointer script-editor-help-icon'
-                                    ref={appSecretTextRef}
-                                    onClick={copyToClipboard}
-                                  >
-                                    {appSecret}
-                                  </span>
-                                </Tooltip>
+                                  {appSecret}
+                                </span>
+                              </LitTooltip>
                             </> : <>
                             <button
                               onClick={() => handleClickGenerate(true)}
@@ -336,27 +334,25 @@ const AppItem: React.FC<AppItemProps> = ({
                 </TableCell>
                 <TableCell>
                   <OptionsContainer>
-                    <Tooltip title="Edit Application" arrow>
+                    <LitTooltip content="Edit Application" className='w-30px flex flex-end'>
                       <button
                         onClick={viewEdit}
-                        className='no-background no-border cursor-pointer m-0 p-0'
+                        className='no-background no-border cursor-pointer m-0 p-0 color-text-primary'
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                          <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
-                        </svg>
+                        <MdEdit size={20} />
                       </button>
-                    </Tooltip>
+                    </LitTooltip>
                     <div>
                       <div style={{ height: '31px', width: '1px', backgroundColor: 'light-dark(black, white)'}}></div>  
                     </div>
-                    <Tooltip title="Delete Application" arrow>
+                    <LitTooltip content="Delete Application">
                       <button
                         onClick={() => deleteApplication(app.appId)}
                         className='no-background no-border cursor-pointer m-0 p-0'
                       >
                         <DeleteIcon className='delete-icon' />
                       </button>
-                    </Tooltip>
+                    </LitTooltip>
                   </OptionsContainer>
                 </TableCell>
             </StyledTableRow>
