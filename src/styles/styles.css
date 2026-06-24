@@ -1360,10 +1360,10 @@ body[data-theme="dark"] .add-import-svg-icon {
     /* align-items: center; */
     justify-content: flex-end;
     background: #212121;
-    /* height: */
 }
 
 .footer-copyright-text {
+    margin: 0;
     margin-right: 20px;
     color: #f5f5f5;
     font-size: 14px;
@@ -1373,6 +1373,7 @@ body[data-theme="dark"] .add-import-svg-icon {
     color: #fafafa;
     /* font-weight: 500; */
     font-size: 14px;
+    margin: 0;
 }
 
 /* ScriptEditor.tsx */
