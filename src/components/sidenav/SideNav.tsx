@@ -13,7 +13,6 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -28,6 +27,7 @@ import { IMG_DIR } from '../../config.dev';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { SideNavContainer } from '../../styles/CommonStyles';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const SideContainer = styled.aside<{ theme: string }>`
   width: 242px;
@@ -78,6 +78,7 @@ const SidebarContainer = styled(List)<{ theme: string }>`
     margin-bottom: 10px;
   }
   a {
+    display: block;
     text-decoration: none !important;
     .MuiTypography-colorTextPrimary {
       color: ${(props) => getTheme(props.theme).sidenav.textColor} !important;
@@ -230,7 +231,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
           )}
 
           <ThemeSelectorWrapper>
-            <Tooltip title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} arrow placement="right">
+            <LitTooltip content={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
               <ThemeToggleButton
                 onClick={() => {
                   const newTheme = themeMode === 'dark' ? 'default' : 'dark';
@@ -240,7 +241,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
               >
                 {themeMode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
               </ThemeToggleButton>
-            </Tooltip>
+            </LitTooltip>
           </ThemeSelectorWrapper>
 
           <ContentWrapper>
@@ -252,9 +253,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
             return (
               <NavLink
                 key={route.label}
-                className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+                className={`full-width /${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                 to={route.uri}>
-                <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                <LitTooltip placement="right" content={route.label} className='full-width'>
                   <ListItemButton className="link-container" key={route.label}>
                     <ListItemIcon>
                       <Icon
@@ -270,7 +271,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                       </span>
                     </ListItemText>
                   </ListItemButton>
-                </Tooltip>
+                </LitTooltip>
               </NavLink>
             );
           })}
@@ -283,7 +284,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                  <LitTooltip placement="right" content={route.label} className='full-width' id={`here ${route.label}`}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
                         <Icon
@@ -299,13 +300,13 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </Tooltip>
+                  </LitTooltip>
                 </NavLink>
               );
             })}
 
-          <QuickConfigButton className="quick-config">
-            <Tooltip enterDelay={700} placement="right" title="Quick Config" arrow>
+          <QuickConfigButton className="quick-config full-width">
+            <LitTooltip placement="right" content="Quick Config" className='full-width'>
               <ListItemButton className="link-container" key="Quick Config" onClick={handleQuickConfig}>
                 <ListItemIcon>
                   <FlashOnIcon
@@ -321,7 +322,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                 </span>
                 </ListItemText>
               </ListItemButton>
-            </Tooltip>
+            </LitTooltip>
           </QuickConfigButton>
 
           {navitems.apps &&
@@ -332,7 +333,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   key={route.label}
                   className={`/${location.pathname}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                  <LitTooltip placement="right" content={route.label} className='full-width'>
                     <ListItemButton className={location.pathname === route.uri ? 'link-container' : ''} key={route.label}>
                       <ListItemIcon>
                         <Icon
@@ -348,7 +349,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </Tooltip>
+                  </LitTooltip>
                 </NavLink>
               );
             })}
@@ -361,7 +362,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                  <LitTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
                         <Icon
@@ -377,7 +378,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </Tooltip>
+                  </LitTooltip>
                 </NavLink>
               );
             })}
@@ -390,7 +391,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                  <LitTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
                         <Icon
@@ -406,7 +407,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </Tooltip>
+                  </LitTooltip>
                 </NavLink>
               );
             })}
@@ -422,7 +423,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                  <LitTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
                         <Icon
@@ -438,7 +439,7 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </Tooltip>
+                  </LitTooltip>
                 </NavLink>
               );
             })}

@@ -8,16 +8,13 @@ import React from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import styled from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import Tooltip from '@mui/material/Tooltip';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import Home from '@mui/icons-material/Home';
 import { useSelector } from 'react-redux';
-import StorageIcon from '@mui/icons-material/Storage';
-import ApplicationIcon from '@mui/icons-material/Apps';
-import ScopeIcon from '@mui/icons-material/Album';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { ActionHeader, PageTitle, TopBanner } from '../../styles/CommonStyles';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
   .home-icon {
@@ -105,11 +102,9 @@ const BreadcrumbRouter: React.FC = () => {
                 Overview
               </span>
               {location.pathname.split('/').length > 1 && (
-                <Tooltip
-                  enterDelay={700}
+                <LitTooltip
                   placement="bottom"
-                  title={`Back to ${location.pathname.split('/')[1].charAt(0).toUpperCase() + location.pathname.split('/')[1].slice(1)} Management Page`}
-                  arrow
+                  content={`Back to ${location.pathname.split('/')[1].charAt(0).toUpperCase() + location.pathname.split('/')[1].slice(1)} Management Page`}
                 >
                   <span
                     className={`color-text-primary${location.pathname.split('/').length === 2 ? ' weight-600' : ''}`}
@@ -118,7 +113,7 @@ const BreadcrumbRouter: React.FC = () => {
                   >
                     {breadcrumbTitle}
                   </span>
-                </Tooltip>
+                </LitTooltip>
               )}
 
               {location.pathname.split('/').length === 3 && (
@@ -131,11 +126,9 @@ const BreadcrumbRouter: React.FC = () => {
               )}
 
               {location.pathname.split('/').length >= 4 && (
-                <Tooltip
-                  enterDelay={700}
+                <LitTooltip
                   placement="bottom"
-                  title={`Go to ${location.pathname.split('/')[3]} Forms`}
-                  arrow
+                  content={`Go to ${location.pathname.split('/')[3]} Forms`}
                 >
                   <span
                     className={`color-text-primary${location.pathname.split('/').length === 4 ? ' weight-600 nowrap' : ''}`}
@@ -144,7 +137,7 @@ const BreadcrumbRouter: React.FC = () => {
                   >
                     {location.pathname.split('/')[3]}
                   </span>
-                </Tooltip>
+                </LitTooltip>
               )}
 
               {location.pathname.split('/').length === 5 && (
