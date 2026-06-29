@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Tooltip, TextField, Button, Checkbox } from '@mui/material';
+import { Tooltip, TextField, Button } from '@mui/material';
 import { TabsProps } from '@mui/material/Tabs';
 import AddIcon from '@mui/icons-material/Add';
 import { WarningIcon } from '../../styles/CommonStyles';
@@ -55,6 +55,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
   const [editField, setEditField] = useState(state[stateList[0]][fieldIndex] || null)
   const [batchDelete, setBatchDelete] = useState(false)
   const [deleteFields, setDeleteFields]= useState([] as Array<any>)
+  const [allFieldsChecked, setAllFieldsChecked] = useState(false)
 
   // Sync the selected field when the fields list changes (e.g. mode switch)
   // or when fieldIndex is reset.
@@ -125,14 +126,19 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
 
   // Select field to delete.
   const handleSelectField = (event: any, item: any) => {
-    let deleteBuffer = []
+    let deleteBuffer: any[] = []
     if (event.target.checked) {
       deleteBuffer = deleteFields
-      deleteBuffer.push(item)
-      setDeleteFields(deleteBuffer)
+      if (!allFieldsChecked) {
+        deleteBuffer.push(item)
+        setDeleteFields(deleteBuffer.filter((f: any, i: number) =>
+          deleteBuffer.findIndex((x: any) => x.content === f.content && x.name === f.name) === i
+        ))
+      }
     } else {
-      deleteBuffer = deleteFields.filter((field: any) => field.id !== item.id && field.content !== item.content)
+      deleteBuffer = deleteFields.filter((field: any) => field.content !== item.content || field.name !== item.name)
       setDeleteFields(deleteBuffer)
+      setAllFieldsChecked(false)
     }
   }
 
@@ -146,8 +152,10 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
         })
       })
       setDeleteFields(deleteBuffer)
+      setAllFieldsChecked(true)
     } else {
       setDeleteFields([])
+      setAllFieldsChecked(false)
     }
   }
 
@@ -278,15 +286,16 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                     className='flex items-center full-width field-list-custom-item small-text'
                     onClick={() => handleClickField(item, index)} key={`${item.name}-${idx}`}
                   >
-                    <div className="field-list-field-info" onChange={(e) => {handleSelectField(e, item)}}>
+                    <div className="field-list-field-info">
                       <div className="field-list-field-name">{item.name}</div>
                       <div className="field-list-field-metadata">
                         {`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}
                       </div>
                     </div>
                     {batchDelete && <LitCheckbox 
-                      onChange={(e) => {handleSelectField(e, item)}}
+                      key={`${item.name}-${idx}-checkbox`}
                       checked={deleteFields.filter((field) => field.name === item.name).length === 1}
+                      onChange={(e) => {handleSelectField(e, item)}}
                     />}
                   </div>
                 )
