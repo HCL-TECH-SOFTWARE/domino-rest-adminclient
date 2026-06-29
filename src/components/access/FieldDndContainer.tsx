@@ -15,7 +15,7 @@ import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
 import { toggleAlert } from '../../store/alerts/action';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitCheckbox, LitTooltip } from '../lit-elements/LitElements';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -201,7 +201,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
               Delete Field(s)
             </p>
           </Button>}
-          {batchDelete && <div className='flex justify-between full-width p-0'>
+          {batchDelete && <div className='flex justify-between full-width p-0 items-center'>
             <div className='flex flex-wrap'>
               <LitTooltip
                 content={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""}
@@ -235,13 +235,10 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                 </p>
               </Button>
             </div>
-            <Checkbox
+            <LitCheckbox
               className='field-checkbox' 
               onChange={handleSelectAll}
-              size='small'
-              style={{
-                color: '#0E5FDC',
-              }}
+              size='s'
             />
           </div>}
         </div>
@@ -290,13 +287,8 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                         {`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}
                       </div>
                     </div>
-                    {batchDelete && <Checkbox 
-                      className='field-checkbox' 
+                    {batchDelete && <LitCheckbox 
                       onChange={(e) => {handleSelectField(e, item)}}
-                      size='small'
-                      style={{
-                        color: '#0E5FDC',
-                      }}
                       checked={deleteFields.filter((field) => field.name === item.name).length === 1}
                     />}
                   </div>
