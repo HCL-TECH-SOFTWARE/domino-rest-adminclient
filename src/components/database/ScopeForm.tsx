@@ -10,11 +10,6 @@ import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import MenuItem from '@mui/material/MenuItem';
-import {
-  Checkbox,
-  FormControlLabel
-} from '@mui/material';
-import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
@@ -30,7 +25,7 @@ import {
   FormContentContainer,
   InputContainer,
 } from '../../styles/CommonStyles';
-import { LitButton } from '../lit-elements/LitElements';
+import { LitButton, LitCheckbox } from '../lit-elements/LitElements';
 
 const Forms = styled.form`
   display: flex;
@@ -206,17 +201,15 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
     setUpdateButtonDisabled(false);
     formik.handleChange(e);
   }
-  const handleActiveButtonToggle = (event: React.ChangeEvent<{}>) => {
+  const handleActiveButtonToggle = (event: any) => {
     setUpdateButtonDisabled(false);
-    formik.handleChange(event);
+    formik.setFieldValue('isActive', event.target.checked);
   }
   const listType = 'Schema';
   const itemType = 'Scope';
   const filterAvailableDatabases = availableDatabases.filter((db) => db.apinames.length > 0);
 
-  // Disable button class conditions
-  const onUpdateDisable = updateButtonDisabled ? "button-disabled" : "";
-  const onAddDisable = isDisabled ?  "button-disabled" : "";
+
 
   return (
     <Forms onSubmit={formik.handleSubmit}>
@@ -441,21 +434,14 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             ))}
           </Menu>
         </InputContainer>
-        <InputContainer>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formik.values.isActive}
-                color="primary"
-                icon={<CheckboxIcon fontSize="medium" color="primary" />}
-              />
-            }
-            label="Active"
-            name="isActive"
-            onChange={handleActiveButtonToggle}
-            value={formik.values.isActive}
+        <div className="flex flex-row items-center gap-2">
+          <LitCheckbox
+            checked={formik.values.isActive}
+            onChange={(e) => handleActiveButtonToggle(e)}
+            size='m'
           />
-        </InputContainer>
+          <span>Active</span>
+        </div>
         <section>
           <LitButton
               style={{ width: '25%' }}
@@ -468,8 +454,9 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             </LitButton>
             <LitButton 
               style={{ width: '25%' }}
-              disabled={updateButtonDisabled || isDisabled} 
-              onClick={() => handleAdd(formik.values.apiName)}>
+              disabled={isEdit ? updateButtonDisabled : isDisabled}
+              onClick={() => handleAdd(formik.values.apiName)}
+            >
                 {isEdit ? 'Update' : 'Add'}
             </LitButton>
             { isEdit &&
