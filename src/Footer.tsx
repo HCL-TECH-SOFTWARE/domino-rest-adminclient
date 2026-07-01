@@ -4,30 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import styled from 'styled-components';
-import Typography from '@mui/material/Typography';
 import { BUILD_VERSION } from './config.dev';
-
-const FooterContainer = styled.div`
-  display: flex;
-  position: fixed;
-  padding: 0 15px;
-  bottom: 0;
-  width: 100%;
-  align-items: center;
-  justify-content: flex-end;
-  background: #212121;
-
-  .copyright {
-    margin-right: 20px;
-    color: #f5f5f5;
-  }
-
-  .build-version {
-    color: #fafafa;
-    font-weight: 500;
-  }
-`;
 
 const Footer = () => {
   var dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
@@ -36,9 +13,9 @@ const Footer = () => {
       <p className="footer-copyright-text">
         {`© ${new Date().getFullYear()}. HCL America Inc. All Rights Reserved.`}
       </p>
-      <p className="footer-build-version">
+      <span className="footer-copyright-text m-0">
         {`Build ${BUILD_VERSION} ${dailyBuildNum}`}
-      </p>
+      </span>
     </div>
   );
 };

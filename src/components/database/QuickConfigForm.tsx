@@ -29,7 +29,7 @@ import {
   InputContainer,
 } from '../../styles/CommonStyles';
 import { clearDBError } from '../../store/databases/action';
-import { LitButton } from '../lit-elements/LitElements';
+import { LitButton, LitTooltip } from '../lit-elements/LitElements';
 
 const Forms = styled.form`
   display: flex;
@@ -221,7 +221,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           slotProps={{
             input: {
               endAdornment: !hideClearIcon && (
-                <Tooltip title="clear" arrow>
+                <LitTooltip content="Clear" placement='bottom'>
                   <IconButton
                     size="small"
                     aria-label="clear search bar"
@@ -229,7 +229,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
                   >
                     <ClearIcon color="primary" className="clear-icon" />
                   </IconButton>
-                </Tooltip>
+                </LitTooltip>
               )
             }
           }}

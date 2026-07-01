@@ -12,9 +12,9 @@ import { useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import { Database, Field } from '../../store/databases/types';
-import { Box, Dialog, MenuItem, Select, Tooltip } from '@mui/material';
+import { Box, MenuItem, Select } from '@mui/material';
 import { Mode } from 'fs';
-import { LitButton } from '../lit-elements/LitElements';
+import { LitButton, LitTooltip } from '../lit-elements/LitElements';
 import { IMG_DIR } from '../../config.dev';
 
 const ModeCardsContainer = styled.div`
@@ -508,13 +508,15 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                         </div>
                         {showRemove && (
                           <div className='empty-mode-card-container'>
-                            <Tooltip title="Delete empty mode card" arrow>
+                            <LitTooltip
+                              content="Delete empty mode card"
+                            >
                               <DeleteIcon
                                 className="delete-icon"
                                 onClick={() => {
                                   handleRemoveMode(idx);
                                 }}></DeleteIcon>
-                            </Tooltip>
+                            </LitTooltip>
                           </div>
                         )}
                         {!showRemove && (
@@ -530,7 +532,8 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           label="Select Mode"
                           variant="outlined"
                           className="mode-menu"
-                          style={{ margin: '10px 10px 0 0 !important', zIndex: '2' }}>
+                          style={{ margin: '10px 10px 0 0 !important', zIndex: '2' }}
+                          MenuProps={{ disablePortal: true }}>
                           {allModeNames.map((modeName: string) => {
                             if (modeName === '') {
                               return <></>;
@@ -564,13 +567,15 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                         </div>
                         {showRemove && (
                           <div className='empty-mode-card-container'>
-                            <Tooltip title="Remove mode from comparison" arrow>
+                            <LitTooltip
+                              content="Remove mode from comparison"
+                            >
                               <DeleteIcon
                                 className="delete-icon"
                                 onClick={() => {
                                   handleRemoveMode(idx);
                                 }}></DeleteIcon>
-                            </Tooltip>
+                            </LitTooltip>
                           </div>
                         )}
                         {!showRemove && (
@@ -586,7 +591,8 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           label="Select Mode"
                           variant="outlined"
                           className="mode-menu"
-                          style={{ margin: '10px 10px 0 0 !important', zIndex: '2' }}>
+                          style={{ margin: '10px 10px 0 0 !important', zIndex: '2' }}
+                          MenuProps={{ disablePortal: true }}>
                           {allModeNames.map((modeName: string) => {
                             return (
                               <MenuItem key={modeName} value={modeName} style={{ display: 'relative', zIndex: '2' }}>

@@ -13,8 +13,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import ActivateSwitch from './ActivateSwitch';
-import { Tooltip } from '@mui/material';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   paddingLeft: "30px",
@@ -100,9 +100,9 @@ const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleI
             <StyledTableCell>
               <StatusHeader>
                 <div>
-                  <Tooltip title={`Activate the Agents that should be accessible\nvia rest API`}>
+                  <LitTooltip content={`Activate the Agents that should be accessible\nvia rest API`} placement='bottom' without-arrow>
                     <div>Status <AiOutlineQuestionCircle className='status-icon' /></div>
-                  </Tooltip>
+                  </LitTooltip>
                 </div>
               </StatusHeader>
             </StyledTableCell>

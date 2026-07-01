@@ -6,7 +6,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import Tooltip from '@mui/material/Tooltip';
 import DBIcon from '@mui/icons-material/Storage';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { checkIcon } from '../../../../../styles/scripts';
@@ -19,6 +18,7 @@ import { DeleteIcon } from '../../../../../styles/CommonStyles';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
+import { LitTooltip } from '../../../../lit-elements/LitElements';
 
 const AlphabeticalViewContainer = styled.div`
   display: flex;
@@ -304,9 +304,9 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
                   <Box className='schemas'>
                     {alphabets[letter].map((data: any, index: number) => (
                       <Db key={data.schemaName + data.nsfPath}>
-                        <Tooltip title={schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? 'Used by Scopes' : 'Not used by Scopes'}>
+                        <LitTooltip content={schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? 'Used by Scopes' : 'Not used by Scopes'}>
                           <Box className={`api-status ${schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? '' : 'unused'}`} />
-                        </Tooltip>
+                        </LitTooltip>
                         {checkIcon(data.iconName) ? (
                           <img
                             style={{ height: 44, paddingRight: 15, paddingLeft: 10 }}
@@ -319,22 +319,22 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
                           <DBIcon />
                         )}
                         <Box onClick={() => openDatabase(data)} className='text-container' tabIndex={1} onKeyDown={(e) => {handleKeyPress(e, data)}}>
-                          <Tooltip onClick={() => openDatabase(data)} title={`${data.schemaName}(${data.nsfPath})`}>
+                          <LitTooltip onClick={() => openDatabase(data)} content={`${data.schemaName}(${data.nsfPath})`}>
                             <span
                               key={data.apiName}
                               className="schemas-alphabetical-schema-name text-bold color-text-primary"
                             >
                               {data.schemaName}
                             </span>
-                          </Tooltip>
+                          </LitTooltip>
                           {isSchema && <span className='schemas-alphabetical-schema-name weight-400 text-italic color-text-hint' onClick={() => openDatabase(data)}>
                             {data.nsfPath}
                           </span>}
                         </Box>
                         {isSchema && <div className='delete'>
-                          <Tooltip onClick={() => {handleClickDelete(data)}} title="Delete schema" arrow>
+                          <LitTooltip onClick={() => {handleClickDelete(data)}} content="Delete schema">
                             <DeleteIcon className="delete-icon" tabIndex={1} onKeyUp={(e) => {handleKeyPressDelete(e, data)}} />
-                          </Tooltip>
+                          </LitTooltip>
                         </div>}
                       </Db>
                     ))}

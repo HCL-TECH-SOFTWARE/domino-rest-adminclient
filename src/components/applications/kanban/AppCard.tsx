@@ -33,6 +33,7 @@ import {
 import { checkIcon } from '../../../styles/scripts';
 import { getTheme } from '../../../store/styles/action';
 import { apiRequestWithRetry } from '../../../utils/api-retry';
+import { LitTooltip } from '../../lit-elements/LitElements';
 
 const AppImage = styled.img`
   margin-top: 8px;
@@ -181,41 +182,35 @@ const AppCard: React.FC<AppCardProps> = ({
         <Action className="actions" style={{ visibility: showActions ? 'visible' : 'hidden' }} onFocus={() => {setShowActions(true)}} >
           {
             item.appHasSecret ? (
-              <Tooltip title="This application has an application secret configured" tabIndex={1} arrow>
+              <LitTooltip content="This application has an application secret configured">
                 <SecurityIcon />
-              </Tooltip>
+              </LitTooltip>
             ) : (
               ''
             )
           }
-          <Tooltip 
-            title="Delete" 
-            tabIndex={1}
+          <LitTooltip 
+            content="Delete" 
             onKeyDown={(e) => {handleKeyPress(e, () => {deleteApplication(item.appId)})}}
             onFocus={() => {setShowActions(false)}}
-            arrow
           >
             <RemoveIcon onClick={() => deleteApplication(item.appId)} />
-          </Tooltip>
-          <Tooltip 
-            title="Edit" 
-            tabIndex={1} 
+          </LitTooltip>
+          <LitTooltip 
+            content="Edit" 
             onKeyDown={(e) => {handleKeyPress(e, () => {viewEdit()})}}
-            arrow
           >
             <EditIcon onClick={viewEdit} />
-          </Tooltip>
-          <Tooltip 
-            title="Generate Application Secret" 
-            tabIndex={1} 
+          </LitTooltip>
+          <LitTooltip 
+            content="Generate Application Secret" 
             onKeyDown={(e) => {handleKeyPress(e, () => {generate(item.appId, item.appStatus)})}} 
-            arrow
           >
             <GenerateIcon
               onClick={() => generate(item.appId, item.appStatus)}
               className="generate"
             />
-          </Tooltip>
+          </LitTooltip>
         </Action>
         <Header>
           <Icon>
@@ -238,27 +233,25 @@ const AppCard: React.FC<AppCardProps> = ({
               />
             )}
           </Icon>
-          <Tooltip title={item.appName} arrow>
+          <LitTooltip content={item.appName}>
             <span className="appName" color="textPrimary">
               {item.appName}
             </span>
-          </Tooltip>
+          </LitTooltip>
         </Header>
-        <Tooltip title={item.appDescription ? item.appDescription : ''} arrow>
+        <LitTooltip content={item.appDescription ? item.appDescription : ''}>
           <span className="appDescription" color="textPrimary">
             {item.appDescription
               ? item.appDescription
               : 'No Description Available'}
           </span>
-        </Tooltip>
+        </LitTooltip>
         <Footer className="footer-actions">
           <span className="heading" color="textPrimary">
             App Id:
           </span>
-          <Tooltip 
-            title="Copy App Id" 
-            arrow 
-            tabIndex={1} 
+          <LitTooltip 
+            content="Copy App Id" 
             onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
             onFocus={handleCardFocus}
           >
@@ -269,7 +262,7 @@ const AppCard: React.FC<AppCardProps> = ({
             >
               {item.appId}
             </span>
-          </Tooltip>
+          </LitTooltip>
         </Footer>
         <Footer className="footer-actions">
           {generating ? (
@@ -282,11 +275,9 @@ const AppCard: React.FC<AppCardProps> = ({
                 <span className="heading" color="textPrimary">
                   App Secret:
                 </span>
-                <Tooltip 
-                  title="Copy Application Secret" 
-                  tabIndex={1} 
+                <LitTooltip 
+                  content="Copy Application Secret" 
                   onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
-                  arrow
                 >
                   <span
                     ref={appSecretTextRef}
@@ -296,7 +287,7 @@ const AppCard: React.FC<AppCardProps> = ({
                   >
                     {appSecret}
                   </span>
-                </Tooltip>
+                </LitTooltip>
               </>
             )
           )}

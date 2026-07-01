@@ -7,11 +7,11 @@
 import React, { useContext } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import styled from 'styled-components';
-import { Tooltip } from '@mui/material';
 
 import { AccessContext } from './AccessContext';
 import { capitalizeFirst } from '../../utils/common';
 import { InfoOutlined } from '@mui/icons-material';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const ButtonAdd = styled.button`
   border: 0;
@@ -74,9 +74,14 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
           {capitalizeFirst(item.format)}
         </span>
       </div>
-      {item.kind.length > 0 && <Tooltip arrow className='add-field' title={`This field is ${item.kind in kindReadableText ? kindReadableText[item.kind as keyof typeof kindReadableText] : item.kind}`}>
-        <InfoOutlined />
-      </Tooltip>}
+      {item.kind.length > 0 && 
+        <LitTooltip
+          content={`This field is ${item.kind in kindReadableText ? kindReadableText[item.kind as keyof typeof kindReadableText] : item.kind}`}
+          className='add-field'
+        >
+          <InfoOutlined />
+        </LitTooltip>
+      }
     </div>
   );
 };

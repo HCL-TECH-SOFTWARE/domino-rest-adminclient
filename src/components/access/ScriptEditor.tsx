@@ -5,15 +5,14 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
-import { Button, ButtonBase, Collapse, TextField, Tooltip } from '@mui/material';
+import { Button, ButtonBase, Collapse, TextField } from '@mui/material';
 import { FiEdit2 } from 'react-icons/fi';
 import { BlueSwitch } from '../../styles/CommonStyles';
 import TestIcon from '@mui/icons-material/PlayArrow';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { LitButtonNeutral, LitButtonYes, LitTextformArray } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitTextformArray, LitTooltip } from '../lit-elements/LitElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 interface ScriptEditorProps {
@@ -231,9 +230,9 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                 <span className='color-text-primary m-0 p-0'>
                   Sign Document
                 </span>
-                <Tooltip arrow title='Please understand this option before enabling, see the documentation on enabling encryption.'>
+                <LitTooltip content="Please understand this option before enabling, see the documentation on enabling encryption.">
                   <HelpCenterIcon className='script-editor-help-icon' />
-                </Tooltip>
+                </LitTooltip>
                 <BlueSwitch size='small' checked={data.sign} onChange={handleToggleSign} />
               </section>
               <span className='color-text-disabled tiny-text m-0 p-0'>

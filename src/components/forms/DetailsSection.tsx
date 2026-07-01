@@ -6,7 +6,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
-import Tooltip from '@mui/material/Tooltip';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import Check from '@mui/icons-material/CheckCircle';
@@ -28,7 +27,7 @@ import { Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
 
 interface DetailsSectionProps {
   dbName: string;
@@ -507,9 +506,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
         <span style={{ position: 'relative', display: 'inline-block', width: 90, height: 90 }}>
           {SchemaIcon}
           <StatusIcon>
-            <Tooltip title={apiStatus.slice(1, apiStatus.length - 1)}>
+            <LitTooltip content={apiStatus.slice(1, apiStatus.length - 1)} placement='bottom' without-arrow>
               <SchemaIconStatus style={{ width: '14px', height: '14px', backgroundImage: isInUse ? InUseSymbol : NotInUseSymbol }} />
-            </Tooltip>
+            </LitTooltip>
           </StatusIcon>
         </span>
         <span className="api-name">
@@ -582,11 +581,11 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
               <Config>
                 <div className='flex flex-row full-width flex-wrap'>
                   <div className="details-section-config-name">
-                    <Tooltip title="Include this in $DATA scope">
+                    <LitTooltip content="Include this in $DATA scope" placement='bottom'>
                       <text className={`color-text-primary small-text ${dqlAccess ? '' : 'details-section-config-unchecked'}`}>
                         In $DATA Scope
                       </text>
-                    </Tooltip>
+                    </LitTooltip>
                   </div>
                   <div className='details-section-checkbox-container'>
                     {openAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}

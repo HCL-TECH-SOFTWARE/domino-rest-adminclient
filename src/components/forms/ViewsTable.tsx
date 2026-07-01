@@ -21,6 +21,7 @@ import { toggleAlert } from '../../store/alerts/action';
 import { FiEdit2 } from 'react-icons/fi';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaRegFolderOpen } from "react-icons/fa";
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const StyledTableCell = styled(TableCell)`
   padding-left: 30px;
@@ -132,9 +133,9 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
             <StyledTableCell>
               <StatusHeader>
                 <div>
-                  <Tooltip title={`Activate the Views that should be accessible\nvia rest API`}>
+                  <LitTooltip content={`Activate the Views that should be accessible\nvia rest API`} placement='bottom' without-arrow>
                     <div>Status <AiOutlineQuestionCircle className='status-icon' /></div>
-                  </Tooltip>
+                  </LitTooltip>
                 </div>
               </StatusHeader>
             </StyledTableCell>
@@ -151,22 +152,22 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
               <StyledTableCell width="550px">
                 <ViewNameDisplay>
                   {folderNames.includes(view.viewName) && 
-                    <Tooltip title={`${view.viewName} is a folder.`} arrow>
+                    <LitTooltip content={`${view.viewName} is a folder.`}>
                       <span>
                         <FaRegFolderOpen size='1.2em' />
                       </span>
-                    </Tooltip>
+                    </LitTooltip>
                   }
                   {
                   view.viewUpdated && view.viewActive ?
                   <span>
                     <b>{view.viewName}</b>
                     {' '}
-                    <Tooltip title={`A change was made in this view.`} arrow>
-                        <span>
+                    <LitTooltip content={`A change was made in this view.`} placement='bottom'>
+                      <span>
                         <AiOutlineQuestionCircle style={{ color: 'light-dark(#0F52BA, #008000)' }} />
-                        </span>
-                    </Tooltip>
+                      </span>
+                    </LitTooltip>
                   </span> 
                     :
                     <span>{view.viewName}</span>  
@@ -176,10 +177,13 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
               </StyledTableCell>
               <StyledTableCell width="500px">
                 <AliasContainer>
-                  {(view.viewAlias.length > 0) && <Tooltip title={<div style={{ whiteSpace: 'pre-line' }}>
-                    {Array.isArray(view.viewAlias) ? view.viewAlias.join('\n') : view.viewAlias}</div>} placement='bottom-start'>
-                      <div>{view.viewAlias[0]}</div>
-                  </Tooltip>}
+                  {(view.viewAlias.length > 0) && <LitTooltip
+                    content={Array.isArray(view.viewAlias) ? view.viewAlias.join('\n') : view.viewAlias}
+                    placement='bottom'
+                    without-arrow
+                  >
+                    <div>{view.viewAlias[0]}</div>
+                  </LitTooltip>}
                 </AliasContainer>
               </StyledTableCell>
               <StyledTableCell><ActivateSwitch view={view} toggleActive={toggleActive} toggleInactive={toggleInactive} type={'view'}/></StyledTableCell>

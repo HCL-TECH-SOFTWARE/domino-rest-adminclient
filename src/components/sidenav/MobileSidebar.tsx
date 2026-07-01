@@ -12,7 +12,6 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Tooltip from '@mui/material/Tooltip';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { appRoutes as routes, apps, databases, groups, people } from './Routes';
@@ -22,6 +21,7 @@ import { AppState } from '../../store';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { SideNavContainer } from '../../styles/CommonStyles';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const SideContainer = styled.aside`
   background: white;
@@ -83,6 +83,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
 
   const SidebarContainer = styled(List)`
     a {
+      display: block;
       text-decoration: none !important;
       color: #82cafa;
     }
@@ -142,7 +143,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                  <LitTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
                         <Icon
@@ -158,13 +159,13 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </Tooltip>
+                  </LitTooltip>
                 </NavLink>
               );
             })}
 
             <QuickConfigButton className="quick-config">
-              <Tooltip enterDelay={700} placement="right" title="Quick Config" arrow>
+              <LitTooltip placement="right" content="Quick Config">
                 <ListItemButton className="link-container" key="Quick Config" onClick={handleQuickConfig}>
                   <ListItemIcon>
                     <FlashOnIcon
@@ -180,7 +181,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     </span>
                   </ListItemText>
                 </ListItemButton>
-              </Tooltip>
+              </LitTooltip>
             </QuickConfigButton>
 
             {navitems.apps &&
@@ -192,7 +193,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     key={route.label}
                     className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                     to={route.uri}>
-                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                    <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
                           <Icon
@@ -208,7 +209,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           </span>
                         </ListItemText>
                       </ListItemButton>
-                    </Tooltip>
+                    </LitTooltip>
                   </NavLink>
                 );
               })}
@@ -222,7 +223,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     key={route.label}
                     className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                     to={route.uri}>
-                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                    <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
                           <Icon
@@ -238,7 +239,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           </span>
                         </ListItemText>
                       </ListItemButton>
-                    </Tooltip>
+                    </LitTooltip>
                   </NavLink>
                 );
               })}
@@ -252,7 +253,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     key={route.label}
                     className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                     to={route.uri}>
-                    <Tooltip enterDelay={700} placement="right" title={route.label} arrow>
+                    <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
                           <Icon
@@ -268,7 +269,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           </span>
                         </ListItemText>
                       </ListItemButton>
-                    </Tooltip>
+                    </LitTooltip>
                   </NavLink>
                 );
               })}

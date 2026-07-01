@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 import Popper from '@mui/material/Popper';
 import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
-import Tooltip from '@mui/material/Tooltip';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import styled from 'styled-components';
@@ -17,6 +16,7 @@ import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { TokenProps } from '../../store/account/types';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const ProfileMenuCard = styled(Paper)`
   padding: 30px 30px 30px 30px;
@@ -77,14 +77,12 @@ const ProfileMenu = () => {
   }
   return (
     <>
-      <Tooltip
-        enterDelay={700}
+      <LitTooltip
         placement="right"
-        title="Profile"
-        arrow
+        content="Profile"
       >
         <UserIcon style={{width: '36px', height:'36px', margin: '0 0 115px 8px', cursor: 'pointer'}} onClick={handleClick} data-testid="profileIcon" />
-      </Tooltip>
+      </LitTooltip>
       <Popper open={open} anchorEl={anchorEl} placement="bottom-end" transition>
         {({ TransitionProps }) => (
           <ClickAwayListener onClickAway={handleClose}>

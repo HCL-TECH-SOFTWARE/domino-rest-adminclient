@@ -7,7 +7,6 @@
 import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import UserIcon from '@mui/icons-material/AccountCircleOutlined';
-import Tooltip from '@mui/material/Tooltip';
 import Popper from '@mui/material/Popper';
 import Paper from '@mui/material/Paper';
 import Fade from '@mui/material/Fade';
@@ -18,6 +17,7 @@ import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { TokenProps } from '../../store/account/types';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 /**
  * Profile section rendered in the sidenav.
@@ -148,13 +148,9 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
   return (
     <ProfileContainer open={open}>
       <AvatarRow open={open}>
-        <Tooltip
-          enterDelay={700}
+        <LitTooltip
           placement="right"
-          title={open ? '' : 'Profile'}
-          arrow
-          disableHoverListener={open}
-          disableFocusListener={open}
+          content={open ? '' : 'Profile'}
         >
           <IconWrapper
             open={open}
@@ -164,7 +160,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
           >
             <UserIcon style={{ width: '36px', height: '36px' }} />
           </IconWrapper>
-        </Tooltip>
+        </LitTooltip>
 
         {/* Username / role - fades and collapses in sync with the
             sidenav width so partial letters never peek through the

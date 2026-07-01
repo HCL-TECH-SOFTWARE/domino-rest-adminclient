@@ -12,7 +12,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Menu, MenuItem, Tooltip } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
 import AddModeDialog from './AddModeDialog';
@@ -37,6 +37,7 @@ import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
 import { getTheme } from '../../store/styles/action';
 import { Database } from '../../store/databases/types';
+import { LitTooltip } from '../lit-elements/LitElements';
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
@@ -969,7 +970,8 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                 />
               </>
             )}
-            <Tooltip title={saveTooltip} arrow>
+            
+            <LitTooltip content={saveTooltip}>
               <button
                 onClick={save}
                 className={`
@@ -990,7 +992,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                   Save
                 </span>
               </button>
-            </Tooltip>
+            </LitTooltip>
           </div>
         </TabsContainer>
         <div className='flex flex-col access-load-tab-container'>
