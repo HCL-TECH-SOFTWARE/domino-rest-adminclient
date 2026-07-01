@@ -60,7 +60,11 @@ class Checkbox extends LitElement {
         control.style.backgroundColor = isChecked ? '' : 'transparent'
     }
 
-    _onInnerChange() {
+    _onInnerChange(e) {
+        // Stop the inner wa-checkbox event from bubbling out of the shadow DOM.
+        // Without this, the composed change event from wa-checkbox crosses the shadow
+        // boundary and triggers any outside React listener a second time.
+        if (e && e.stopPropagation) e.stopPropagation()
         const newChecked = this._waCheckbox?.checked ?? !this.checked
         if (this.checked === newChecked) return
         this.checked = newChecked
@@ -74,7 +78,9 @@ class Checkbox extends LitElement {
                 ?checked=${this.checked}
                 ?disabled=${this.disabled}
                 size=${this.size}
-            ></wa-checkbox>
+            >
+                <slot></slot>
+            </wa-checkbox>
         `
     }
 }
