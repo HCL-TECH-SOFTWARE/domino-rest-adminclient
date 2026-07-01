@@ -10,13 +10,13 @@ import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
 import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
-import { Box, Checkbox, FormControlLabel, RadioGroup, Tooltip } from '@mui/material';
+import { Box, FormControlLabel, RadioGroup, Tooltip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { LitButtonNeutral, LitButtonYes, LitCheckbox } from '../lit-elements/LitElements';
 
 const Section = styled(Box)`
   padding-top: 10px;
@@ -92,7 +92,13 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
   const [filterShow, setFilterShow] = useState(showWithApps)
   const [filterExp, setFilterExp] = useState(exp)
   const [filterTokenExp, setFilterTokenExp] = useState(tokenExp)
-  const [filterScopes, setFilterScopes] = useState([""])
+  const [filterScopes, setFilterScopes] = useState<string[]>(scopes)
+
+  React.useEffect(() => {
+    if (consentsDrawer) {
+      setFilterScopes(scopes);
+    }
+  }, [consentsDrawer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
     if (consentsDrawer) {
@@ -122,6 +128,14 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
     setTokenExp(filterTokenExp)
     setScopes(filterScopes)
     dispatch(toggleConsentsDrawer())
+  }
+
+  const handleClickScopeCheckbox = (e: any, scope: string) => {
+    if (e.target.checked) {
+      setFilterScopes(prev => Array.from(new Set([...prev, scope])))
+    } else {
+      setFilterScopes(prev => prev.filter(s => s !== scope))
+    }
   }
   
   return (
@@ -260,16 +274,15 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               <Box style={{ display: 'flex', flexFlow: 'row wrap', width: '100%' }}>
                 {collectScopes(consents).length > 0 &&
                   collectScopes(consents).map(scope => (
-                    <Box sx={{ width: '50%' }} key={scope}>
-                      <FormControlLabel
+                    <div className='half-width' key={scope}>
+                      <LitCheckbox
                         key={scope}
-                        control={<Checkbox style={{ color: '#0E5FDC' }} defaultChecked={scopes.includes(scope)} onChange={e => {
-                          if (e.target.checked) setFilterScopes([...filterScopes, scope])
-                          else setFilterScopes(filterScopes.filter(s => s !== scope))
-                        }} />}
-                        label={scope}
+                        checked={filterScopes.includes(scope)}
+                        size='m'
+                        onChange={(e) => handleClickScopeCheckbox(e, scope)}
                       />
-                    </Box>
+                      <span>{scope}</span>
+                    </div>
                   ))
                 }
               </Box>

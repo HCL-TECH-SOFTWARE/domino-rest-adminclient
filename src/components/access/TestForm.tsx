@@ -6,10 +6,8 @@
 
 import React from 'react';
 import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import styled from 'styled-components';
@@ -26,6 +24,7 @@ import {
   ActionButtonBar,
   AutoContainer,
 } from '../../styles/CommonStyles';
+import { LitCheckbox } from '../lit-elements/LitElements';
 
 const TestsPanel = styled.div`
   padding-left: 35px;
@@ -107,63 +106,48 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
                 Select the formulas you would like to test
               </span>
             </PageLegend>
-            <FormGroup>
+            <FormGroup className='flex p-16 gap-5'>
               <FormControlLabel
               control={
-                  <Checkbox
-                    color="primary"
+                  <LitCheckbox
                     checked={formik.values.readFormula}
-                    onChange={formik.handleChange}
-                    icon={<CheckboxIcon fontSize="small" color="primary" />}
-                    name="readFormula"
+                    onChange={(e: any) => formik.setFieldValue('readFormula', e.target.checked)}
                   />
                 }
                 label="Read Access Formula"
               />
               <FormControlLabel
                 control={
-                  <Checkbox
-                    color="primary"
+                  <LitCheckbox
                     checked={formik.values.writeFormula}
-                    onChange={formik.handleChange}
-                    icon={<CheckboxIcon fontSize="small" color="primary" />}
-                    name="writeFormula"
+                    onChange={(e: any) => formik.setFieldValue('writeFormula', e.target.checked)}
                   />
                 }
                 label="Write Access Formula"
               />
               <FormControlLabel
                 control={
-                  <Checkbox
-                    color="primary"
+                  <LitCheckbox
                     checked={formik.values.deleteFormula}
-                    onChange={formik.handleChange}
-                    icon={<CheckboxIcon fontSize="small" color="primary" />}
-                    name="deleteFormula"
+                    onChange={(e: any) => formik.setFieldValue('deleteFormula', e.target.checked)}
                   />
                 }
                 label="Delete Access Formula"
               />
               <FormControlLabel
                 control={
-                  <Checkbox
-                    color="primary"
+                  <LitCheckbox
                     checked={formik.values.loadFormula}
-                    onChange={formik.handleChange}
-                    icon={<CheckboxIcon fontSize="small" color="primary" />}
-                    name="loadFormula"
+                    onChange={(e: any) => formik.setFieldValue('loadFormula', e.target.checked)}
                   />
                 }
                 label="On Load Formula"
               />
               <FormControlLabel
                 control={
-                  <Checkbox
-                    color="primary"
+                  <LitCheckbox
                     checked={formik.values.saveFormula}
-                    onChange={formik.handleChange}
-                    icon={<CheckboxIcon fontSize="small" color="primary" />}
-                    name="saveFormula"
+                    onChange={(e: any) => formik.setFieldValue('saveFormula', e.target.checked)}
                   />
                 }
                 label="On Save Formula"
