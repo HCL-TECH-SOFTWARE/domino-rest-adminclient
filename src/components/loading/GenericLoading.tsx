@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { CircularProgress } from '@mui/material';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 const LoadingContainer = styled.div`
   height: 100%;

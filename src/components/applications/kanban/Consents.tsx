@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';

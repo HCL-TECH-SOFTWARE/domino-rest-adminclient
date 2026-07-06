@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector, useDispatch } from 'react-redux';
 import ClearIcon from '@mui/icons-material/Clear';
 import { FormControlLabel, Checkbox, IconButton } from '@mui/material';

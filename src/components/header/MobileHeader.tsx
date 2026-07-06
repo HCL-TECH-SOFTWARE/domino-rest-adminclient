@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseMenuIcon from '@mui/icons-material/ChevronLeft';
 import ProfileMenuDialog from '../sidenav/ProfileMenuDialog';

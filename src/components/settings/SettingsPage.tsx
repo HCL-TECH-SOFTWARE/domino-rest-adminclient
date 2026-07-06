@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
 import { Route, NavLink } from 'react-router-dom';
 import { AppState } from '../../store';

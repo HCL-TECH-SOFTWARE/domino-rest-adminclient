@@ -5,8 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import Tooltip from '@mui/material/Tooltip';
+import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useLocation } from 'react-router-dom';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';

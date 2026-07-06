@@ -12,7 +12,7 @@ import { toggleConsentsDrawer } from '../../store/drawer/action';
 import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
 import { Box, Checkbox, FormControlLabel, RadioGroup } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';

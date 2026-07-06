@@ -10,7 +10,7 @@ import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import { AppState } from '../../store';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { handleDatabaseAgents } from '../../store/databases/action';
 import AgentSearch from './AgentSearch';
 import { TopNavigator } from '../../styles/CommonStyles';

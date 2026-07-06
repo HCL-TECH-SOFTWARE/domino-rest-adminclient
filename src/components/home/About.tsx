@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import barbicantitle from './barbicantitle.jpg';

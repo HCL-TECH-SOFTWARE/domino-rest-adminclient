@@ -6,7 +6,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import '../../App.css';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useSelector } from 'react-redux';
@@ -61,7 +61,7 @@ const RightPanel = styled.div<{ open: boolean; theme: any }>`
     background: ${(props) => props.theme.bodyColor || 'white'};
     width: 100%;
     filter: blur(${(props) => (props.open ? '10px' : 0)});
-    ${(props) => props.open && `pointer-events: none;`}
+    pointer-events: ${(props) => (props.open ? 'none' : 'initial')};
   }
 
   .toggle-button {

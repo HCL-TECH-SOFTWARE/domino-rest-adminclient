@@ -10,7 +10,7 @@ import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
 import { DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { fetchMyApps } from '../../store/applications/action';

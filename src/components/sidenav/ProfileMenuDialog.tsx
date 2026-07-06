@@ -11,7 +11,7 @@ import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import UserIcon from '@mui/icons-material/AccountCircleOutlined';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';

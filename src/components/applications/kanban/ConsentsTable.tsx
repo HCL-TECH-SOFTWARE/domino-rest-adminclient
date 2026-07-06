@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import * as React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';

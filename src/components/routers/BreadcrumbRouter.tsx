@@ -6,7 +6,7 @@
 
 import React from 'react';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useLocation } from 'react-router-dom';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import Home from '@mui/icons-material/Home';

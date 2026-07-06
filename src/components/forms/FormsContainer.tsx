@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';

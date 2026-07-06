@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Dialog } from '@mui/material';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import {
   deleteApplication,
   addApplication,

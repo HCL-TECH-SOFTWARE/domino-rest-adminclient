@@ -9,18 +9,16 @@ import Button from '@mui/material/Button';
 import LogoutIcon from '@mui/icons-material/ExitToApp';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/account/action';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useNavigate } from 'react-router-dom';
 
 const OptionListContainer = styled.div`
 `;
 
-const OptionListContainerRoot = styled(OptionListContainer)(
-  ({ theme: Theme }) => ({
-    width: "100%",
-    maxWidth: 360,
-  })
-);
+const OptionListContainerRoot = styled(OptionListContainer)`
+  width: 100%;
+  max-width: 360px;
+`;
 
 interface OptionListProps {
   theme: string;

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { checkIcon } from '../../../../../styles/scripts';

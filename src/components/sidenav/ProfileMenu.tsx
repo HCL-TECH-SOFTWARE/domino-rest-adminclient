@@ -12,7 +12,7 @@ import Paper from '@mui/material/Paper';
 import Fade from '@mui/material/Fade';
 import Collapse from '@mui/material/Collapse';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';

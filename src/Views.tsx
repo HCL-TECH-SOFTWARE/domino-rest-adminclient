@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import AccessMode from './components/access/AccessMode';

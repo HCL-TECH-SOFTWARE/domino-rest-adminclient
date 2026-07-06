@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { NavLink, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';

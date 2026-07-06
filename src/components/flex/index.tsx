@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 export const ExtraFlex = styled.div`
   display: flex;

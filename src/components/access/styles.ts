@@ -4,45 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import styled from 'styled-components';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
-
-export const ItemContainer = styled.div<{ isDragging?: boolean; ref?: any }>`
-  display: flex;
-  user-select: none;
-  padding: 10px 40px 10px 10px;
-  align-items: center;
-  width: 100%;
-  align-content: flex-start;
-  line-height: 1.5;
-  border-radius: 3px;
-  border: 1px solid transparent;
-  user-select: none;
-  ${(props) => (props.isDragging ? 'dashed #4099ff' : 'solid transparent')};
-
-  svg {
-    margin-right: 10px;
-  }
-
-  &:hover {
-    cursor: pointer;
-  }
-
-  .add-field {
-    visibility: hidden;
-    height: 100%;
-  }
-
-  &:hover {
-    border: 1px solid ${KEEP_ADMIN_BASE_COLOR};
-    border-radius: 2px;
-
-    .add-field {
-      visibility: visible;
-      cursor: pointer;
-    }
-  }
-`;
+import { styled } from '@linaria/react';
 
 export const TextEditorContainer = styled.div`
   display: flex;

@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 import { useSelector, useDispatch } from 'react-redux';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Check from '@mui/icons-material/CheckCircle';
 import False from '@mui/icons-material/Block';
 import TextField from '@mui/material/TextField';

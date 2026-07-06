@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useDispatch, useSelector } from 'react-redux';
 import Box from '@mui/material/Box';
 import { MenuItem, CircularProgress, Select } from '@mui/material';
@@ -141,22 +141,21 @@ const IconButton = styled.button`
   }
 `;
 
-const ListRoot = styled(List)(({ theme }) => ({
-  width: "100%",
-  maxWidth: 360,
-  // backgroundColor: theme.palette.background.paper,
-  paddingTop: "0px",
-  paddingBottom: "0px",
-  fontSize: "14px",
-}));
+const ListRoot = styled(List)`
+  width: 100%;
+  max-width: 360px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  font-size: 14px;
+`;
 
-const ListItemField = styled(ListItem)(({ theme: Theme }) => ({
-  paddingBottom: "2px",
-}));
+const ListItemField = styled(ListItem)`
+  padding-bottom: 2px;
+`;
 
-const DivSpacer = styled("div")(({ theme: Theme }) => ({
-  paddingTop: "0px",
-}));
+const DivSpacer = styled.div`
+  padding-top: 0px;
+`;
 
 const anchorEmoji = '⚓';
 
@@ -404,7 +403,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
           </Select>
         </FieldsDropDown>
         <FieldsDropDown>
-          <FormSearchContainer className="main-search-container">
+          <FormSearchContainer theme={themeMode} className="main-search-container">
             <SearchContainer className="search-container">
               <SearchIcon color="primary" className="search-icon" />
               <SearchInput placeholder="Search Field" onChange={handleSearchField} />

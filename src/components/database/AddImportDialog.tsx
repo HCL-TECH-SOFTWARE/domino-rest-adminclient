@@ -8,7 +8,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { Box, TextField } from '@mui/material';
-import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
 import { addSchema } from '../../store/databases/action';
 import { Autocomplete } from '@mui/material';

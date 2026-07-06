@@ -4,8 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Paper } from '@mui/material';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { getTheme } from '../../../store/styles/action';
 
 export const MultiCardViewContainer = styled('div')<{ theme: string }>`

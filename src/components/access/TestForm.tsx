@@ -12,7 +12,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { FormikProps } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleApplicationDrawer } from '../../store/drawer/action';

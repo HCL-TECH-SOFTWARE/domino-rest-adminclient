@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 const LogsContainer = styled.div`
   background: black;

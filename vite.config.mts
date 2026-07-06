@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+import wyw from '@wyw-in-js/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    wyw({
+      include: ['**/*.{ts,tsx}'],
+    }),
+    react(),
+  ],
   build: {
     assetsDir: 'admin/assets'
   },

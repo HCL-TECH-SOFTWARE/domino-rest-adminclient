@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Card from '@mui/material/Card';
 import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 import { getTheme } from '../store/styles/action';
@@ -452,7 +452,7 @@ export const Container = styled(Card)<ContainerProps>`
   user-select: none;
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor};
+    border: 1px solid ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'};
   }
 `;
 
@@ -607,11 +607,11 @@ export const MenuOptionsContainer = styled.div<{ theme: string }>`
     padding: 6px 5px !important;
     cursor: pointer;
     &:hover {
-      background: ${(props) => getTheme(props.theme).hoverColor};
-      color: ${(props) => getTheme(props.theme).primary};
+      background: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'};
+      color: ${(props) => getTheme(props.theme).primary || '#000000'};
 
       .right-icon {
-        color: ${(props) => getTheme(props.theme).hoverColor} !important;
+        color: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'} !important;
       }
     }
   }
@@ -717,17 +717,17 @@ export const SchemaIconStatus = styled.div`
 export const InUseSymbol = `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiM4MkRDNzMiLz4KPC9zdmc+Cg==')`
 export const NotInUseSymbol = `url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiNENjQ2NkYiLz4KPC9zdmc+Cg==")`
 
-export const BlueSwitch = styled(Switch)(({ theme }) => ({
-  '& .MuiSwitch-switchBase.Mui-checked': {
-    color: '#3874cb',
-    '&:hover': {
-      backgroundColor: '#9cbae5',
-    },
-  },
-  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-    backgroundColor: '#3874cb',
-  },
-}));
+export const BlueSwitch = styled(Switch)`
+  & .MuiSwitch-switchBase.Mui-checked {
+    color: #3874cb;
+    &:hover {
+      background-color: #9cbae5;
+    }
+  }
+  & .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+    background-color: #3874cb;
+  }
+`;
 
 export const DeleteIcon = styled.div`
   width: 20px;

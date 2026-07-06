@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
 import ColumnDetails from './ColumnDetails';
 import { useDispatch } from 'react-redux';
 import { fetchViews, updateSchema } from '../../store/databases/action';

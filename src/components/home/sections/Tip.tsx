@@ -9,7 +9,7 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { getTheme } from '../../../store/styles/action';

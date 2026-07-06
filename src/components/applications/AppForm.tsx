@@ -6,7 +6,7 @@
 
 import React, { useState, useContext, useRef } from 'react';
 import TextField from '@mui/material/TextField';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { FormikProps } from 'formik';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';

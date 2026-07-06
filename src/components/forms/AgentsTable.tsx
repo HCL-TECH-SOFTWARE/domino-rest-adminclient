@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import * as React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -16,39 +16,41 @@ import ActivateSwitch from './ActivateSwitch';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { LitTooltip } from '../lit-elements/LitElements';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  paddingLeft: "30px",
-  paddingRight: "30px",
-  [`&.${tableCellClasses.head}`]: {
-    fontWeight: "bold",
-    paddingTop: "30px",
-    borderBottom: "1px solid light-dark(#b8b8b8, #3a3a4a)",
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-    paddingTop: "20px",
-    paddingBottom: "20px",
-    borderBottom: 'none',
+const StyledTableCell = styled(TableCell)`
+  padding-left: 30px;
+  padding-right: 30px;
+
+  &.${tableCellClasses.head} {
+    font-weight: bold;
+    padding-top: 30px;
+    border-bottom: 1px solid light-dark(#b8b8b8, #3a3a4a);
   }
-}));
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
-    backgroundColor: "light-dark(#F8FBFF, #1e1e2e)",
-    borderBottom: "none"
-  },
-  // hide last border
-  "&:last-child th, &:last-child td": {
-    borderBottom: 0,
-  },
-}));
+  &.${tableCellClasses.body} {
+    font-size: 14px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: none;
+  }
+`
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  borderRadius: "10px",
-  boxSizing: 'border-box',
-  border: '1px solid light-dark(#B9B9B9, #3a3a4a)',
-  background: 'light-dark(#FFFFFF, #252535)',
-}));
+const StyledTableRow = styled(TableRow)`
+  &:nth-of-type(odd) {
+    background-color: light-dark(#F8FBFF, #1e1e2e);
+    border-bottom: none;
+  }
+
+  &:last-child th, &:last-child td {
+    border-bottom: 0;
+  }
+`
+
+const StyledTableContainer = styled(TableContainer)`
+  border-radius: 10px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(#B9B9B9, #3a3a4a);
+  background: light-dark(#FFFFFF, #252535);
+`;
 
 const StatusHeader = styled.div`
   cursor: default;

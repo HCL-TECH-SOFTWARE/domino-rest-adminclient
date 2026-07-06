@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { FormikProps } from 'formik';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { StackContainer, Flex } from '../../styles/CommonStyles';
 import AppCard from './kanban/AppCard';
 

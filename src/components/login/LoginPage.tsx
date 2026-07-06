@@ -20,9 +20,9 @@ import {
 import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
 import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { FiInfo } from 'react-icons/fi';
-import { Link, Tooltip } from '@mui/material';
+import { Link } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
@@ -142,10 +142,10 @@ const LoginForm = styled.form`
   }
 `
 
-const GridRoot = styled(Grid)(({ theme }) => ({
-  height: "100vh",
-  position: "relative",
-}));
+const GridRoot = styled(Grid)`
+  height: 100vh;
+  position: relative;
+`
 
 const LoginThemeToggle = styled.button`
   position: absolute;
@@ -169,23 +169,12 @@ const LoginThemeToggle = styled.button`
   }
 `;
 
-const DivPaper = styled("div")(({ theme }) => ({
-  margin: "64px 32px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-}));
-
-const StyledForm = styled("form")(({ theme }) => ({
-  // Fix IE 11 issue.
-  width: "100%",
-
-  marginTop: "8px",
-}));
-
-const ButtonSubmit = styled(Button)(({ theme }) => ({
-  margin: "24px 0 16px 0",
-}));
+const DivPaper = styled.div`
+  margin: 64px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 
 const LoginPage = () => {
   const { error, error401, idpLogin, errorMessage } = useSelector((state: AppState) => state.account);
