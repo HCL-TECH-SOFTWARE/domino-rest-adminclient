@@ -10,16 +10,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   TextField,
 } from "@mui/material";
 import { AppState } from "../../store";
 import { validateFormSchemaName } from "../../store/databases/scripts";
-import styled from "styled-components";
-import { ButtonNeutral, ButtonYes, CommonDialog, TopNavigator } from "../../styles/CommonStyles";
+import { styled } from '@linaria/react';
+import { TopNavigator } from "../../styles/CommonStyles";
 import { RxDividerVertical } from "react-icons/rx";
 import FormSearch from "./FormSearch";
 import {
@@ -31,7 +27,12 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import { LitButton, LitButtonNeutral, LitButtonYes, LitSwitch } from "../lit-elements/LitElements";
+import {
+  LitButton,
+  LitButtonNeutral,
+  LitButtonYes,
+  LitSwitch
+} from "../lit-elements/LitElements";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -336,21 +337,18 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           />
         </Box>
         <ButtonsPanel style={{ justifyContent: 'flex-end', gap: '10px', padding: '10px 0 0 0', margin: 0 }}>
-          <ButtonNeutral
+          <LitButtonNeutral
             onClick={() => {
               setCreateFormOpen(false)
               setValue("")
               dispatch(addForm(false) as any)
             }}
-          >
-            Cancel
-          </ButtonNeutral>
-          <ButtonYes
+            text='Cancel'
+          />
+          <LitButtonYes
             onClick={handleClickCreateForm}
-            disabled={formNameError}
-          >
-            Create
-          </ButtonYes>
+            text='Create'
+          />
         </ButtonsPanel>
       </CreateFormDialogContainer>
       <FormsTable

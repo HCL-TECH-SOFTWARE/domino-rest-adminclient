@@ -387,19 +387,17 @@ export const FilterContainer = styled.div`
   margin-bottom: 25px;
   display: flex;
 
+  .switchStyle {
+    color: #556cd6;
 
-  .switchStyle = {
-    color: "#556cd6",
-    "& .MuiSwitch-switchBase.Mui-checked": {
-      color: 'green'
-    },
-    "& .MuiSwitch-switchBase.Mui-checked+.MuiSwitch-track": {
-      backgroundColor: 'lightBlue'
+    & .MuiSwitch-switchBase.Mui-checked {
+      color: green;
+    }
 
+    & .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+      background-color: lightblue;
     }
   }
-}
-
 `;
 export const TopContainer = styled.div`
   margin-top: 20px;
