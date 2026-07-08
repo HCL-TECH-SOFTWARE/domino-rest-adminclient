@@ -10,10 +10,8 @@ import TextField from '@mui/material/TextField';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import ClearIcon from '@mui/icons-material/Clear';
-import { FormControlLabel, Checkbox, IconButton } from '@mui/material';
-import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
+import { IconButton } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-import { Tooltip } from '@mui/material';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
@@ -29,7 +27,11 @@ import {
   InputContainer,
 } from '../../styles/CommonStyles';
 import { clearDBError } from '../../store/databases/action';
-import { LitButton, LitTooltip } from '../lit-elements/LitElements';
+import {
+  LitButton,
+  LitCheckbox,
+  LitTooltip,
+} from '../lit-elements/LitElements';
 
 const Forms = styled.form`
   display: flex;
@@ -385,55 +387,54 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             ))}
           </Menu>
         </InputContainer>
-        <InputContainer>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formik.values.isActive}
-                color="primary"
-                icon={<CheckboxIcon fontSize="medium" color="primary" />}
-              />
-            }
-            label="Active"
-            name="isActive"
-            onChange={formik.handleChange}
-            value={formik.values.isActive}
+        <div className="flex flex-row items-center gap-2">
+          <LitCheckbox
+            checked={formik.values.isActive}
+            onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
+            size='m'
           />
-        </InputContainer>
+        <div className="flex flex-row items-center gap-2">
+          <LitCheckbox
+            checked={formik.values.isActive}
+            onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
+            size='m'
+          />
+          <span>Active</span>
+        </div>
+          <span>Active</span>
+        </div>
         <InputContainer className='flex flex-col full-width'>
           <span className="small-text color-text-primary full-width">
             Additional Modes
           </span>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formik.values.additionalModes.odata}
-                color="primary"
-                icon={<CheckboxIcon fontSize="small" color="primary" />}
-                size='small'
-              />
-            }
-            label="Odata"
-            name="additionalModes.odata"
-            onChange={formik.handleChange}
-            value={formik.values.additionalModes.odata}
-            style={{ fontSize: 12, paddingLeft: '10px' }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formik.values.additionalModes.dql}
-                color="primary"
-                icon={<CheckboxIcon fontSize="small" color="primary" />}
-                size='small'
-              />
-            }
-            label="DQL"
-            name="additionalModes.dql"
-            onChange={formik.handleChange}
-            value={formik.values.additionalModes.dql}
-            style={{ fontSize: 12, paddingLeft: '10px' }}
-          />
+          <div className='pl-10'>
+            <LitCheckbox
+              checked={formik.values.additionalModes.odata}
+              onChange={(e) => formik.setFieldValue('additionalModes.odata', (e.target as any).checked)}
+            />
+            <span>Odata</span>
+          </div>
+          <div className='pl-10'>
+            <LitCheckbox
+              checked={formik.values.additionalModes.dql}
+              onChange={(e) => formik.setFieldValue('additionalModes.dql', (e.target as any).checked)}
+            />
+            <span>DQL</span>
+          </div>
+          <div className='pl-10'>
+            <LitCheckbox
+              checked={formik.values.additionalModes.odata}
+              onChange={(e) => formik.setFieldValue('additionalModes.odata', (e.target as any).checked)}
+            />
+            <span>Odata</span>
+          </div>
+          <div className='pl-10'>
+            <LitCheckbox
+              checked={formik.values.additionalModes.dql}
+              onChange={(e) => formik.setFieldValue('additionalModes.dql', (e.target as any).checked)}
+            />
+            <span>DQL</span>
+          </div>
         </InputContainer>
         <section>
           <LitButton

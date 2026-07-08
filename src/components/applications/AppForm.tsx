@@ -13,8 +13,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
 import { Alert, AlertTitle } from '@mui/material';
 import ApplicationIcon from '@mui/icons-material/Apps';
-import CheckboxIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import { Checkbox, FormControlLabel } from '@mui/material';
 import { IMG_DIR, KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from './ApplicationContext';
@@ -25,7 +23,7 @@ import {
   InputContainer,
   PanelContent,
 } from '../../styles/CommonStyles';
-import { LitAutocomplete, LitButton } from '../lit-elements/LitElements';
+import { LitAutocomplete, LitButton, LitCheckbox } from '../lit-elements/LitElements';
 import appIcons from '../../styles/app-icons';
 
 interface AppFormProps {
@@ -260,21 +258,14 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             </span>
           ) : null}
         </InputContainer>
-        <InputContainer>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formik.values.appStatus}
-                color="primary"
-                icon={<CheckboxIcon fontSize="medium" color="primary" />}
-              />
-            }
-            label="Active"
-            name="appStatus"
-            onChange={formik.handleChange}
-            value={formik.values.appStatus}
+        <div className="flex flex-row items-center gap-2">
+          <LitCheckbox
+            checked={formik.values.appStatus}
+            onChange={(e: any) => formik.setFieldValue('appStatus', e.target.checked)}
+            size='m'
           />
-        </InputContainer>
+          <span>Active</span>
+        </div>
         <InputContainer>
           <TextField
             autoComplete="off"
@@ -305,21 +296,14 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           onChange={(e) => setSelectedIcon(e.currentTarget.selectedOption)}
           onInput={(e) => setSelectedIcon(e.currentTarget.selectedOption)} // Add this if your LitAutocomplete supports it
         />
-        <InputContainer>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={formik.values.usePkce}
-                color="primary"
-                icon={<CheckboxIcon fontSize="medium" color="primary" />}
-              />
-            }
-            label="use PKCE"
-            name="usePkce"
-            onChange={formik.handleChange}
-            value={formik.values.usePkce}
+        <div className="flex flex-row items-center gap-2">
+          <LitCheckbox
+            checked={formik.values.usePkce}
+            onChange={(e: any) => formik.setFieldValue('usePkce', e.target.checked)}
+            size='m'
           />
-        </InputContainer>
+          <span>Use PKCE</span>
+        </div>
       </PanelContent>
       <ActionButtonBar>
         <Button

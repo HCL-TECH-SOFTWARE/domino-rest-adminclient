@@ -23,6 +23,7 @@ import Drawer from './lit-drawer';
 import Switch from './lit-switch';
 import NsfCard from './lit-nsf-card';
 import Tooltip from './lit-tooltip';
+import Checkbox from './lit-checkbox';
 
 interface EditedContentChangedEvent extends Event {
   detail: {
@@ -166,4 +167,13 @@ export const LitTooltip = createComponent({
   tagName: 'lit-tooltip',
   elementClass: Tooltip,
   react: React,
+})
+
+export const LitCheckbox = createComponent({
+  tagName: 'lit-checkbox',
+  elementClass: Checkbox,
+  react: React,
+  events: {
+    onChange: 'change',
+  },
 })
