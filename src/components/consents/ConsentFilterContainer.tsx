@@ -104,7 +104,6 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
       setFilterScopes(scopes);
     }
   }, [consentsDrawer]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [filterScopes, setFilterScopes] = useState<string[]>(scopes)
 
   React.useEffect(() => {
     if (consentsDrawer) {
@@ -144,14 +143,6 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
     setTokenExp(filterTokenExp)
     setScopes(filterScopes)
     dispatch(toggleConsentsDrawer())
-  }
-
-  const handleClickScopeCheckbox = (e: any, scope: string) => {
-    if (e.target.checked) {
-      setFilterScopes(prev => Array.from(new Set([...prev, scope])))
-    } else {
-      setFilterScopes(prev => prev.filter(s => s !== scope))
-    }
   }
 
   const handleClickScopeCheckbox = (e: any, scope: string) => {
@@ -300,15 +291,6 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                   collectScopes(consents).map(scope => (
                     <div className='half-width' key={scope}>
                       <LitCheckbox
-                    <div className='half-width' key={scope}>
-                      <LitCheckbox
-                        key={scope}
-                        checked={filterScopes.includes(scope)}
-                        size='m'
-                        onChange={(e) => handleClickScopeCheckbox(e, scope)}
-                      />
-                      <span>{scope}</span>
-                    </div>
                         checked={filterScopes.includes(scope)}
                         size='m'
                         onChange={(e) => handleClickScopeCheckbox(e, scope)}

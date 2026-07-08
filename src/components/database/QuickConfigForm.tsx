@@ -392,6 +392,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             checked={formik.values.isActive}
             onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
             size='m'
+          />
         <div className="flex flex-row items-center gap-2">
           <LitCheckbox
             checked={formik.values.isActive}

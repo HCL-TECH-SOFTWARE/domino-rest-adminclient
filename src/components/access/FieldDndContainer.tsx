@@ -56,7 +56,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
   const [batchDelete, setBatchDelete] = useState(false)
   const [deleteFields, setDeleteFields]= useState([] as Array<any>)
   const [allFieldsChecked, setAllFieldsChecked] = useState(false)
-  const [allFieldsChecked, setAllFieldsChecked] = useState(false)
 
   // Sync the selected field when the fields list changes (e.g. mode switch)
   // or when fieldIndex is reset.
@@ -127,7 +126,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
 
   // Select field to delete.
   const handleSelectField = (event: any, item: any) => {
-    let deleteBuffer: any[] = []
     let deleteBuffer: any[] = []
     if (event.target.checked) {
       deleteBuffer = deleteFields
@@ -222,7 +220,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
             </p>
           </Button>}
           {batchDelete && <div className='flex justify-between full-width p-0 items-center'>
-          {batchDelete && <div className='flex justify-between full-width p-0 items-center'>
             <div className='flex flex-wrap'>
               <LitTooltip
                 content={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""}
@@ -257,10 +254,8 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
               </Button>
             </div>
             <LitCheckbox
-            <LitCheckbox
               className='field-checkbox' 
               onChange={handleSelectAll}
-              size='s'
               size='s'
             />
           </div>}
@@ -305,7 +300,6 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                     onClick={() => handleClickField(item, index)} key={`${item.name}-${idx}`}
                   >
                     <div className="field-list-field-info">
-                    <div className="field-list-field-info">
                       <div className="field-list-field-name">{item.name}</div>
                       <div className="field-list-field-metadata">
                         {`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}
@@ -313,10 +307,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                     </div>
                     {batchDelete && <LitCheckbox 
                       key={`${item.name}-${idx}-checkbox`}
-                    {batchDelete && <LitCheckbox 
-                      key={`${item.name}-${idx}-checkbox`}
                       checked={deleteFields.filter((field) => field.name === item.name).length === 1}
-                      onChange={(e) => {handleSelectField(e, item)}}
                       onChange={(e) => {handleSelectField(e, item)}}
                     />}
                   </div>
