@@ -392,13 +392,34 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             checked={formik.values.isActive}
             onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
             size='m'
+        <div className="flex flex-row items-center gap-2">
+          <LitCheckbox
+            checked={formik.values.isActive}
+            onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
+            size='m'
           />
+          <span>Active</span>
+        </div>
           <span>Active</span>
         </div>
         <InputContainer className='flex flex-col full-width'>
           <span className="small-text color-text-primary full-width">
             Additional Modes
           </span>
+          <div className='pl-10'>
+            <LitCheckbox
+              checked={formik.values.additionalModes.odata}
+              onChange={(e) => formik.setFieldValue('additionalModes.odata', (e.target as any).checked)}
+            />
+            <span>Odata</span>
+          </div>
+          <div className='pl-10'>
+            <LitCheckbox
+              checked={formik.values.additionalModes.dql}
+              onChange={(e) => formik.setFieldValue('additionalModes.dql', (e.target as any).checked)}
+            />
+            <span>DQL</span>
+          </div>
           <div className='pl-10'>
             <LitCheckbox
               checked={formik.values.additionalModes.odata}
