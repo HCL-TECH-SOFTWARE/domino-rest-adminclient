@@ -43,7 +43,7 @@ const StyledTableBody = styled(TableBody)`
 
 const StyledTableRow = styled(TableRow)`
   &:nth-of-type(odd) {
-    background-color: light-dark(#F8FBFF, #1e1e2e);
+    background-color: light-dark(#f8fbff, #1e1e2e);
     border-bottom: none;
   }
 

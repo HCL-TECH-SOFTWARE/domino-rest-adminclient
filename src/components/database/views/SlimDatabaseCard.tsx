@@ -6,7 +6,7 @@
 
 import React from 'react';
 import Card from '@mui/material/Card';
-import styled, { css } from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import DBIcon from '@mui/icons-material/Storage';
@@ -39,18 +39,11 @@ const CardContainer = styled(Card)<{
     width: 250px !important;
   }
 
-  ${(props) =>
-    props.state.open &&
-    css`
-      pointer-events: none;
-      opacity: ${props.state.apiName === props.state.selected ? 1 : 0.2};
-    `};
-
   user-select: none;
   cursor: pointer;
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor};
+    border: 1px solid var(--hover-color);
   }
 
   .MuiCardContent-root {
