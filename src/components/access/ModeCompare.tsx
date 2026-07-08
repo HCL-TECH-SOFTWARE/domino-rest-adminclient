@@ -531,15 +531,14 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           }}
                           label="Select Mode"
                           variant="outlined"
-                          className="mode-menu"
-                          style={{ margin: '10px 10px 0 0 !important', zIndex: '2' }}
+                          className="mode-menu m-0 mt-10 mb-10 z-2"
                           MenuProps={{ disablePortal: true }}>
                           {allModeNames.map((modeName: string) => {
                             if (modeName === '') {
                               return <></>;
                             } else {
                               return (
-                                <MenuItem key={modeName} value={modeName} style={{ display: 'relative', zIndex: '2' }}>
+                                <MenuItem key={modeName} value={modeName} className="relative z-2">
                                   {' '}
                                   {modeName}{' '}
                                 </MenuItem>
@@ -590,12 +589,11 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                           }}
                           label="Select Mode"
                           variant="outlined"
-                          className="mode-menu"
-                          style={{ margin: '10px 10px 0 0 !important', zIndex: '2' }}
+                          className="mode-menu m-0 mt-10 mb-10 z-2"
                           MenuProps={{ disablePortal: true }}>
                           {allModeNames.map((modeName: string) => {
                             return (
-                              <MenuItem key={modeName} value={modeName} style={{ display: 'relative', zIndex: '2' }}>
+                              <MenuItem key={modeName} value={modeName} className="relative z-2">
                                 {' '}
                                 {modeName}{' '}
                               </MenuItem>

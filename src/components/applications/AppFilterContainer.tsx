@@ -118,7 +118,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   
   return (
     <LitDrawer label="Filter" open={appFilterDrawer}>
-      <DrawerFormContainer style={{ width: '35vw' }}>
+      <DrawerFormContainer className='w-35vw'>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
             <div className='full-width flex justify-end'>

@@ -898,7 +898,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             <ArrowDropDownIcon />
           </Button>
           <Menu
-            style={{ maxWidth: '70%' }}
             anchorEl={anchorEl}
             open={open}
             onClose={handleFieldListOnClose}
@@ -910,11 +909,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           >
             {sortedModes.map((eachMode: any, idx: any) => (
               <MenuItem
-                style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
+                className='nowrap overflow-hidden text-ellipsis'
                 key={idx}
                 onClick={() => handleFieldListOnSelect(eachMode.modeName)}
               >

@@ -87,7 +87,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
   const dispatch = useDispatch();
 
   return (
-    <FormContentContainer role="presentation" style={{width: '100%'}}>
+    <FormContentContainer role="presentation" className='full-width'>
       {!displayTestResults &&
         <TestsPanel>
           <CloseIcon
@@ -169,7 +169,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
                 label="On Save Formula"
               />
             </FormGroup>
-            <InputContainer style={{ marginTop: 5 }}>
+            <InputContainer className='mt-5'>
               <TextField
                 autoComplete="off"
                 fullWidth

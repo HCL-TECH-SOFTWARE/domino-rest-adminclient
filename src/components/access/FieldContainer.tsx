@@ -279,7 +279,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               <TextField 
                 label="Field Group" 
                 value={editedItem.fieldGroup || ''} 
-                style={{ "width":"50%" }}
+                className='half-width'
                 onChange={handleFieldGroupChange} 
                 disabled={!isMultiValue} 
                 id='field-group'

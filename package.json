@@ -6,6 +6,7 @@
   "homepage": ".",
   "dependencies": {
     "@awesome.me/webawesome": "^3.6.0",
+    "@babel/preset-typescript": "^7.29.7",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@linaria/babel-preset": "^5.0.4",
@@ -34,11 +35,11 @@
     "react-router-dom": "^7.17.0",
     "redux": "^5.0.1",
     "redux-thunk": "^3.1.0",
-    "styled-components": "^6.4.2",
     "uuid": "^14.0.0",
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@linaria/vite": "^5.0.4",
     "@swc/core": "1.15.43",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "6.9.1",
@@ -47,7 +48,6 @@
     "@types/node": "25.6.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@types/styled-components": "^5.1.35",
     "@vitejs/plugin-react-swc": "4.3.1",
     "@wyw-in-js/vite": "^2.1.3",
     "cross-env": "10.1.0",

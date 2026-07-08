@@ -244,6 +244,10 @@ body[data-theme="dark"] .color-text-disabled {
     width: 30px;
 }
 
+.w-35vw {
+    width: 35vw;
+}
+
 .w-40 {
     width: 40%;
 }
@@ -274,6 +278,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .inline-block {
     display: inline-block;
+}
+
+.relative {
+    display: relative;
 }
 
 .flex-row {
@@ -376,6 +384,10 @@ body[data-theme="dark"] .color-text-disabled {
     margin-top: 5px;
 }
 
+.mt-10 {
+    margin-top: 10px;
+}
+
 .mt-15 {
     margin-top: 15px;
 }
@@ -426,6 +438,18 @@ body[data-theme="dark"] .color-text-disabled {
 
 .gap-20 {
     gap: 20px;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.text-ellipsis {
+    text-overflow: ellipsis;
+}
+
+.z-2 {
+    z-index: 2;
 }
 
 .z-100 {

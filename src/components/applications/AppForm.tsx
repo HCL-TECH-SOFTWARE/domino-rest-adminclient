@@ -134,7 +134,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   }
 
   return (
-    <FormContentContainer role="presentation" style={{ width: '90%' }}>
+    <FormContentContainer role="presentation" className='w-90'>
       <PanelContent onSubmit={formik.handleSubmit} className='flex flex-col w-90'>
         <span
           className="app-form-header background-keep-base full-width"
@@ -145,14 +145,14 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             : ' Add New Application '}
         </span>
         {appError && appErrorMessage && (
-          <Alert style={{ margin: '5px 0' }} severity="error">
+          <Alert className='m-0 mt-5 mb-5' severity="error">
             <AlertTitle>Error: Unable to save application</AlertTitle>
             <span className='big-text color-text-danger'>
               {appErrorMessage}
             </span>
           </Alert>
         )}
-        <InputContainer style={{ marginTop: 5 }}>
+        <InputContainer className='mt-5'>
           <TextField
             autoComplete="off"
             fullWidth
@@ -246,7 +246,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             <LitAutocomplete
               options={scopeList}
               ref={scopeAutocompleteRef}
-              style={{ width: '50%' }}
+              className='half-width'
             />
           <LitButton
             src={`${IMG_DIR}/shoelace/plus.svg`}
@@ -300,7 +300,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           ref={iconAutocompleteRef}
           options={Object.keys(appIcons)}
           icons={appIcons}
-          style={{ width: '50%' }}
+          className='half-width'
           selectedOption={selectedIcon}
           onChange={(e) => setSelectedIcon(e.currentTarget.selectedOption)}
           onInput={(e) => setSelectedIcon(e.currentTarget.selectedOption)} // Add this if your LitAutocomplete supports it
