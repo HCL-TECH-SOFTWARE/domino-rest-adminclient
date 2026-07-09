@@ -164,7 +164,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
         server: database?.server || '',
         nsfPath : database?.nsfPath || '',
         schemaName : database?.schemaName || '',
-        isActive: database?.isActive || true,
+        isActive: database?.isActive ?? true,
         icon: database ? appIcons[database.iconName] : appIcons[icon],
         iconName: database?.iconName || icon,
         maximumAccessLevel: database?.maximumAccessLevel ? database.maximumAccessLevel : 'Editor',
