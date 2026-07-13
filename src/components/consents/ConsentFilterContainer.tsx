@@ -155,7 +155,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
   
   return (
     <Drawer anchor="right" open={consentsDrawer} onClose={handleClickOpen}>
-      <DrawerFormContainer style={{ width: '35vw' }}>
+      <DrawerFormContainer className='w-35vw'>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <div className='flex flex-col p-20'>
             <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
@@ -286,7 +286,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
             <hr className='divider' />
             <Section>
               <span className='big-text m-0 p-0'>Scopes</span>
-              <Box style={{ display: 'flex', flexFlow: 'row wrap', width: '100%' }}>
+              <div className='flex flex-flow-row-wrap full-width'>
                 {collectScopes(consents).length > 0 &&
                   collectScopes(consents).map(scope => (
                     <div className='half-width' key={scope}>
@@ -299,7 +299,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                     </div>
                   ))
                 }
-              </Box>
+              </div>
             </Section>
             <ButtonsContainer>
               <LitButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())} text='Cancel' />

@@ -28,12 +28,10 @@ const DropdownIcons: React.FC<DropdownIconsProps> = () => {
     <AutoContainer>
       <Autocomplete
         size="small"
-        style={{ width: 200 }}
         id="databases-icon"
         options={Object.keys(appIcons)}
         value={iconName}
         getOptionLabel={(option) => option}
-        // closeIcon={false}
         onChange={onTagsChange}
         renderOption={(props, option, { selected }) => {
           return (

@@ -423,7 +423,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
         />
         <ChevronDown style={{ fontSize: 18 }} />
       </Button>
-      <Menu id="lock-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+      <Menu id="lock-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose} disablePortal>
         {Object.keys(appIcons).map((iconName, index) => (
           <MenuItem key={iconName} selected={index === selectedIndex} onClick={(event) => handleMenuItemClick(event, index)}>
             <>
@@ -476,8 +476,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
   };
 
   const handleClickCloseDetails = () => {
+    // Open discard dialog first so it enters the top layer after the edit dialog,
+    // then close the edit dialog so the discard dialog is the only top-layer entry.
     setDiscardDialog(true);
-    setEditOpen(false);
   }
 
   useEffect(() => {
@@ -493,6 +494,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
   useEffect(() => {
     if (discardDialog) {
       discardRef.current?.showModal()
+      // Close the edit dialog after the discard dialog enters the top layer
+      detailsRef.current?.close()
+      setEditOpen(false)
     } else {
       if (discardRef.current?.close) {
         discardRef.current?.close()

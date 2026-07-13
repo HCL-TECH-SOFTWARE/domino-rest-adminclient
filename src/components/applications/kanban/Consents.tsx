@@ -112,7 +112,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
         <span className="medium-text text-bold m-0 p-0">OAuth Consents</span>
         <button
           onClick={handleClose}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+          className='no-background no-border cursor-pointer m-0 p-0'
         >
           {dialog && <CloseIcon />}
         </button>
@@ -120,17 +120,15 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
       <OptionsBar>
         <button
           onClick={() => setExpand(true)}
-          style={{ border: 'none', cursor: 'pointer' }}
-          className="option"
+          className="option no-border cursor-pointer color-text-primary"
         >
-          <ExpandMoreIcon style={{ padding: 0 }} />
+          <ExpandMoreIcon className='p-0' />
           Expand all
         </button>
         <RxDividerVertical color="#A0A0A0" size="1.5em" />
         <button
           onClick={() => setExpand(false)}
-          style={{ border: 'none', cursor: 'pointer' }}
-          className="option"
+          className="option no-border cursor-pointer color-text-primary"
         >
           <ExpandLessIcon />
           Collapse all
@@ -138,8 +136,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
         <RxDividerVertical color="#A0A0A0" size="1.5em" />
         <button
           onClick={() => dispatch(toggleConsentsDrawer())}
-          style={{ border: 'none', cursor: 'pointer' }}
-          className="option"
+          className="option no-border cursor-pointer color-text-primary"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
@@ -148,7 +145,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
         </button>
         <button
           onClick={handleClickReset}
-          style={{ visibility: resetFilters ? 'visible' : 'visible', border: 'none', cursor: 'pointer', background: 'none' }}
+          className={`visible no-border cursor-pointer no-background color-text-primary`}
         >
           Reset
         </button>

@@ -352,18 +352,16 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
           </div>
           <div className='import-schema-name-container'>
             <text className='medium-text'>Schema Name</text>
-            {/* <Box style={{ height: '41px' }}> */}
-              <TextField 
-                onChange={handleSchemaNameChange} 
-                error={!!formik.errors.schemaName && formik.touched.schemaName}
-                helperText={(!!formik.errors.schemaName && formik.touched.schemaName) ? formik.errors.schemaName : ' '}
-                name='schemaName'
-                variant='outlined' 
-                value={schemaName} 
-                placeholder='Schema Name' 
-                className='import-schema-field-input'
-              />
-            {/* </Box> */}
+            <TextField 
+              onChange={handleSchemaNameChange} 
+              error={!!formik.errors.schemaName && formik.touched.schemaName}
+              helperText={(!!formik.errors.schemaName && formik.touched.schemaName) ? formik.errors.schemaName : ' '}
+              name='schemaName'
+              variant='outlined' 
+              value={schemaName} 
+              placeholder='Schema Name' 
+              className='import-schema-field-input'
+            />
           </div>
         </div>
         <div className='flex flex-col pr-30 pl-30 pt-10 pb-10 gap-5'>

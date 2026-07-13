@@ -322,7 +322,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                         User
                         <button
                           onClick={handleSortUsers}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                          className='no-background no-border cursor-pointer m-0 p-0'
                         >
                           <FaSort />
                         </button>
@@ -331,12 +331,12 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     </Box>
                   </TableCell>
                   <TableCell className='app-name text'>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <Box className='full-width flex flex-col gap-3'>
                       <span className='small-text text-bold flex items-center gap-3'>
                         App Name
                         <button
                           onClick={handleSortAppNames}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                          className='no-background no-border cursor-pointer m-0 p-0'
                         >
                           <FaSort />
                         </button>
@@ -345,19 +345,19 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                     </Box>
                   </TableCell>
                   <TableCell className='expirations text'>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <Box className='full-width flex flex-col gap-3'>
                       <span className='small-text text-bold flex items-center gap-3'>
                         Expirations
                       </span>
-                      <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
+                      <input type='text' className='search-bar hidden' />
                     </Box>
                   </TableCell>
                   <TableCell className='action text'>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <Box className='full-width flex flex-col gap-3'>
                       <span className='small-text text-bold flex items-center gap-3'>
                         Action
                       </span>
-                      <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
+                      <input type='text' className='search-bar hidden' />
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -399,7 +399,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                       }
                     }}
                     ActionsComponent={({ count, page }) => (
-                      <div style={{ flexShrink: 0, marginLeft: 10 }}>
+                      <div className='shrink-0 ml-10'>
                         <IconButton disabled={page === 0} aria-label='First Page' onClick={() => setPage(0)}>
                           <FirstPage />
                         </IconButton>

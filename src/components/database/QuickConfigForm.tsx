@@ -218,7 +218,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           fullWidth
           value={searchValue}
           onChange={handleSearchValue}
-          style={{ marginTop: '8px' }}
+          className='mt-8'
           id={`Search ${listType}`}
           slotProps={{
             input: {
@@ -254,17 +254,17 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
       <FormContentContainer className='full-width flex flex-col'>
         <span className="scope-form-header">
           <StorageIcon />
-          <span style={{ marginLeft: 10 }}>{`Quick Config`}</span>
+          <span className='ml-10'>{`Quick Config`}</span>
         </span>
         {dbError && dbErrorMessage && (
-          <Alert style={{ margin: '10px 0' }} severity="error">
+          <Alert className='m-0 mt-10 mb-10' severity="error">
             <AlertTitle>{`Quick config error:`}</AlertTitle>
             <span className='color-text-danger small-text'>
               {dbErrorMessage}
             </span>
           </Alert>
         )}
-        <InputContainer style={{ marginTop: 5 }}>
+        <InputContainer className='mt-5'>
           <span className='color-text-primary font-15'>{`Database: ${nsfPath}`}</span>
         </InputContainer>
         {!nsfPath && formik.touched.schemaName ? (
@@ -272,7 +272,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
               {`${formik.errors.nsfPath}`}
             </span>
           ) : null}
-        <InputContainer style={{ marginTop: 5 }}>
+        <InputContainer className='mt-5'>
           <TextField
             onChange={handleSchemaNameChange}
             value={formik.values.schemaName}
@@ -438,14 +438,14 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         </InputContainer>
         <section>
           <LitButton
-            style={{ width: '25%' }}
+            className='quarter-width'
             onClick={resetForm}
           >
             Close
           </LitButton>
           <LitButton 
             disabled={isDisabled}
-            style={{ width: '25%' }}
+            className='quarter-width'
             onClick={handleAdd}>
             Add
           </LitButton>

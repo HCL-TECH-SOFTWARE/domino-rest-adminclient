@@ -76,25 +76,23 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
 
   return (
     <FormSearchContainer
-      style={{ pointerEvents: scopePull ? 'auto' : 'none' }}
+      className={`${scopePull ? 'pointer-auto' : 'pointer-none'}`}
       theme={themeMode}
     >
       <SearchContainer>
         <Button
-            className='view-dropdown'
+            className='database-search-container-button color-text-primary medium-text'
             id="view-dropdown-button"
             aria-controls={open ? 'basic-menu' : undefined}
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
             onClick={handleClick}
-            style={{textTransform: 'none', width: '255px', minWidth: '191px', height: '100%', whiteSpace: 'nowrap', color: themeMode === 'dark' ? '#e0e0e0' : '#6C7882', fontSize: '16px', justifyContent: 'space-between', paddingLeft: '25px', paddingRight: '5px'}}
         >
-            {searchType}
-          <ArrowDropDownIcon style={{ width: '50px', height: '40px', color: themeMode === 'dark' ? '#e0e0e0' : '#555555'}} />
+          <span className='medium-text'>{searchType}</span>
+          <ArrowDropDownIcon className='database-search-dropdown-arrow' />
         </Button>
         <Menu
             id="simple-menu"
-            style={{left: '15px', top: '10px'}}
             anchorEl={anchorEl}
             keepMounted
             open={Boolean(anchorEl)}
@@ -112,7 +110,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
         <SearchIcon color="primary" className="search-icon" />
         <SearchInput
           onChange={handleSearchInput}
-          style={{ color: getTheme(themeMode).textColorPrimary }}
+          className='color-text-primary'
           type="text"
           data-testid="searchbar"
           placeholder={'Search'}

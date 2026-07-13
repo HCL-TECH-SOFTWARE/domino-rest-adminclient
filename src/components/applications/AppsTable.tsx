@@ -216,7 +216,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                       App Name
                       <button
                         onClick={handleSortAppNames}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                        className='no-background no-border cursor-pointer m-0 p-0'
                       >
                         <FaSort />
                       </button>
@@ -242,7 +242,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                     <span className='small-text text-bold'>
                       Description
                     </span>
-                    <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
+                    <input type='text' className='search-bar hidden' />
                   </div>
                 </TableCell>
                 <TableCell className='icons' />
@@ -319,7 +319,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                     }
                   }}
                   ActionsComponent={({ count, page }) => (
-                    <div style={{ flexShrink: 0, marginLeft: 10, display: 'inline-flex', alignItems: 'center' }}>
+                    <div className='apps-table-bottom-row'>
                       <IconButton disabled={page === 0} aria-label='First Page' onClick={(e) => handleChangePage(e, 0)}>
                         <FirstPage />
                       </IconButton>

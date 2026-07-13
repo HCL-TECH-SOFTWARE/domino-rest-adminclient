@@ -25,7 +25,7 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
       <span className='medium-font mb-30 mt-5 color-text-primary'>
         HCL Domino REST API Databases Scope
       </span>
-      <ExtraFlex style={{ display: 'flex', gap: '10px' }}>
+      <ExtraFlex className='flex gap-10'>
         {databases.length > 0 ? (
           mapSchemas(databases, 'schemas').map((database: any, index: any) => {
             return (
