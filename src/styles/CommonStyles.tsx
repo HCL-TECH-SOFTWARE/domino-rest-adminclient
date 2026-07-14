@@ -281,10 +281,6 @@ export const FormContentContainer = styled.div`
   .validation-error {
     color: #e53935;
   }
-  .icon-select {
-    text-transform: capitalize;
-    color: light-dark(#000, #e0e0e0);
-  }
   .form-heading {
     font-size: 26px;
     margin-top: 20px;

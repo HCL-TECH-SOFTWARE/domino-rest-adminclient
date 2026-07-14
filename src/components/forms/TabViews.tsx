@@ -218,7 +218,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
       <TopNavigator>
         <ViewSearch handleSearchView={handleSearchView} />
       </TopNavigator>
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+      <div className='flex flex-row justify-between'>
         <ButtonsPanel>
           <Button
             disabled={views.length === 0 || loading}

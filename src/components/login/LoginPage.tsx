@@ -51,10 +51,7 @@ const SignupSchema = Yup.object().shape({
 
 const Copyright = () => (
   <span className="small-text text-center">
-    <span
-      className="small-text"
-      style={{ color: 'light-dark(#666, #999)' }}
-    >
+    <span className="small-text color-copyright">
       {`© ${new Date().getFullYear()}. HCL America Inc. - Build ${BUILD_VERSION} ${dailyBuildNum}`}
     </span>
   </span>
@@ -548,18 +545,11 @@ const LoginPage = () => {
       <CssBaseline />
       <LitTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
         <LoginThemeToggle onClick={toggleTheme}>
-          {isDark ? <DarkModeIcon style={{ fontSize: 24 }} /> : <LightModeIcon style={{ fontSize: 24 }} />}
+          {isDark ? <DarkModeIcon className='huge-text' /> : <LightModeIcon className='huge-text' />}
         </LoginThemeToggle>
       </LitTooltip>
       <Grid
-        style={{
-          padding: "90px",
-          flexBasis: "100%",
-          maxWidth: matches ? "100%" : "60%",
-          height: '100%',
-          backgroundColor: isDark ? '#1e1e2e' : '#fff',
-          color: isDark ? '#e0e0e0' : 'inherit',
-        }}
+        className={`login-page-grid ${matches ? 'full-width' : 'w-60'}`}
         component={Paper}
         elevation={6}
         square
@@ -567,42 +557,21 @@ const LoginPage = () => {
         <DivPaper>
           <KeepLogoContainer>
             <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="Domino REST API logo" />
-            <h1>
+            <h1 className='color-text-primary'>
               HCL Domino REST API
             </h1>
           </KeepLogoContainer>
-          <div style={{ flex: 1 }}>
-            {isDark && (
-              <style>{`
-                body[data-theme='dark'] wa-button[appearance="outlined"]::part(label),
-                body[data-theme='dark'] lit-button[appearance="outlined"]::part(label) {
-                  color: #7e57c2 !important;
-                }
-                body[data-theme='dark'] wa-button[appearance="accent"]::part(label),
-                body[data-theme='dark'] lit-button[appearance="accent"]::part(label) {
-                  color: #7e57c2 !important;
-                }
-              `}</style>
-            )}
+          <div className='flex-1'>
             {error && (
-              <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 9999 }}>
+              <div className='login-page-alert'>
                 <LitAlert variant='danger' heading='Error logging in!' message={errorMessage} />
               </div>
             )}
             <section
-              className="login-options"
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '10px' }}
+              className="flex flex-col items-center gap-10 m-10"
             >
               <LitButton
-                style={isDark ? ({
-                  width: '100%',
-                  '--wa-color-brand-80': '#7e57c2',
-                  '--wa-color-brand-50': '#7e57c2',
-                  '--wa-color-brand-border-loud': '#7e57c2',
-                  '--wa-color-brand-fill-loud': '#7e57c2',
-                  color: '#7e57c2',
-                  borderColor: '#7e57c2',
-                } as React.CSSProperties) : { width: '100%' }}
+                className="login-lit-button"
                 onClick={handleLogInWithPassword}
                 appearance='outlined'
               >

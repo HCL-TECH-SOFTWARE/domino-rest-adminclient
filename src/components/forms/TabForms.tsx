@@ -326,17 +326,17 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
         <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />
-        <Box style={{ width: '100%', height: '10vh' }}>
+        <Box className='full-width h-10vh'>
           <TextField
             value={value ? value : ""}
             onChange={handleFormNameInput}
             variant="outlined"
             error={formNameError}
             helperText={formNameErrorMessage}
-            style={{ width: '100%' }}
+            className='full-width'
           />
         </Box>
-        <ButtonsPanel style={{ justifyContent: 'flex-end', gap: '10px', padding: '10px 0 0 0', margin: 0 }}>
+        <ButtonsPanel className='flex justify-start items-center gap-10 p-0 m-0'>
           <LitButtonNeutral
             onClick={() => {
               setCreateFormOpen(false)

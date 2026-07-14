@@ -36,8 +36,8 @@ function StyledTreeItem(props: StyledTreeItemProps) {
   return (
     <TreeItem
       label={
-        <div style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
-          <LabelIcon color="primary" sx={{ marginRight: '8px' }} />
+        <div className='flex items-center p-0 pt-4 pb-4'>
+          <LabelIcon className='mr-8' />
           <span className='color-text-primary small-text m-0 p-0'>
             {labelText}
           </span>
@@ -111,9 +111,9 @@ const FileContentsTree: React.FC<FileContentsTreeProps> = ({
       className="file-contents"
       defaultExpandedItems={['5']}
       slots={{
-        collapseIcon: () => <ArrowDropDownIcon color="primary" style={{ fontSize: 16 }} />,
-        expandIcon: () => <ArrowRightIcon color="primary" style={{ fontSize: 16 }} />,
-        endIcon: () => <div style={{ width: 24 }} />,
+        collapseIcon: () => <ArrowDropDownIcon className='medium-text' />,
+        expandIcon: () => <ArrowRightIcon className='medium-text' />,
+        endIcon: () => <div className='w-24' />,
       }}
     >
       {

@@ -21,7 +21,7 @@ import { checkIcon } from '../../styles/scripts';
 import { Database } from '../../store/databases/types';
 import Button from '@mui/material/Button';
 import { updateSchema } from '../../store/databases/action';
-import { BlueSwitch, InputContainer, InUseSymbol, NotInUseSymbol, SchemaIconStatus } from '../../styles/CommonStyles';
+import { BlueSwitch, InputContainer, SchemaIconStatus } from '../../styles/CommonStyles';
 import { FiEdit } from 'react-icons/fi';
 import { Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -411,36 +411,23 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     <InputContainer>
       <Button aria-controls="icons-menu" aria-haspopup="true" onClick={handleSelectIcon} className="icon-select">
         <img
-          className="icon-image"
+          className="details-section-icon-dropdown"
           src={`data:image/svg+xml;base64, ${appIcons[displayIconName]}`}
           alt="db-icon"
-          style={{
-            width: 90,
-            height: 90,
-            objectFit: 'contain',
-            display: 'block',
-          }}
         />
-        <ChevronDown style={{ fontSize: 18 }} />
+        <ChevronDown className='big-text color-text-primary' />
       </Button>
       <Menu id="lock-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose} disablePortal>
         {Object.keys(appIcons).map((iconName, index) => (
           <MenuItem key={iconName} selected={index === selectedIndex} onClick={(event) => handleMenuItemClick(event, index)}>
-            <>
+            <div className='flex gap-5 items-center'>
               <img
-                className="icon-image"
+                className="quick-config-icon-image"
                 src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                 alt="db-icon"
-                style={{
-                  width: 35,
-                  height: 35,
-                  objectFit: 'contain',
-                  display: 'block',
-                  marginRight: 10,
-                }}
               />
               {iconName}
-            </>
+            </div>
           </MenuItem>
         ))}
       </Menu>
@@ -449,15 +436,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
 
   const SchemaIcon = (
     <img
-      className="icon-image"
+      className="details-section-icon-dropdown"
       src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
       alt="db-icon"
-      style={{
-        width: 90,
-        height: 90,
-        objectFit: 'contain',
-        display: 'block',
-      }}
     />
   );
 
@@ -507,11 +488,11 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
   return (
     <div>
       <Title>
-        <span style={{ position: 'relative', display: 'inline-block', width: 90, height: 90 }}>
+        <span className='details-section-icon-container'>
           {SchemaIcon}
           <StatusIcon>
             <LitTooltip content={apiStatus.slice(1, apiStatus.length - 1)} placement='bottom' without-arrow>
-              <SchemaIconStatus style={{ width: '14px', height: '14px', backgroundImage: isInUse ? InUseSymbol : NotInUseSymbol }} />
+              <SchemaIconStatus className={isInUse ? 'schema-icon-in-use' : 'schema-icon-not-in-use'} />
             </LitTooltip>
           </StatusIcon>
         </span>
@@ -538,7 +519,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
             {description.length > 180 && (viewMore ? description : `${description.slice(0, 180)}...`)}
             {description.length <= 180 && description}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className='flex justify-center'>
             {description.length > 180 &&
               (!viewMore ? (
                 <Expander onClick={() => setViewMore(true)}>
@@ -663,7 +644,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
             <text className="text-bold color-text-primary">Description</text>
             <textarea
               value={desc}
-              className='details-section-textarea'
+              className='details-section-textarea color-text-primary'
               onChange={(e) => handleDescriptionChange(e.target.value)}
             />
           </div>

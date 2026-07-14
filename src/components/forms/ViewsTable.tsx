@@ -165,7 +165,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                     {' '}
                     <LitTooltip content={`A change was made in this view.`} placement='bottom'>
                       <span>
-                        <AiOutlineQuestionCircle style={{ color: 'light-dark(#0F52BA, #008000)' }} />
+                        <AiOutlineQuestionCircle className='views-table-question-circle' />
                       </span>
                     </LitTooltip>
                   </span> 

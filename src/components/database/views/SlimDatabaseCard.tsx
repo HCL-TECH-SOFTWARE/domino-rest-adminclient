@@ -184,15 +184,11 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
                 appIcons[database.iconName]
               }`}
               alt="db-icon"
-              style={{
-                color: getTheme(themeMode).hoverColor,
-              }}
+              className='color-hover'
             />
           ) : (
             <DBIcon
-              style={{
-                color: getTheme(themeMode).hoverColor,
-              }}
+              className='color-hover'
             />
           )}
         </ModeLogo>

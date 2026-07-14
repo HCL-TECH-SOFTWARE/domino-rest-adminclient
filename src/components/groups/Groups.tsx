@@ -424,25 +424,18 @@ const Groups: React.FC = () => {
         <ActionHeader>
           <TopBanner>
             <GroupsIcon className="groupsIcon" />
-            <span style={{ marginLeft: 10 }}>Groups Management</span>
+            <span className='ml-10'>Groups Management</span>
           </TopBanner>
           <Button
             color="primary"
             className="button-create"
             onClick={createAction}
           >
-            <AddIcon style={{ margin: '0 5px' }} />
+            <AddIcon className='m-0 mt-5 mb-5' />
             Add Group
           </Button>
           <LitTooltip placement="top" content="Click on Row for more details!">
-            <div
-              style={{
-                height: 500,
-                width: '100%',
-                marginTop: 60,
-                cursor: 'pointer'
-              }}
-            >
+            <div className='groups-click-row-div'>
               <DataGrid
                 rowHeight={42}
                 rows={groupsRows}

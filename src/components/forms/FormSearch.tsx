@@ -26,14 +26,14 @@ const FormSearch: React.FC<DatabaseSearchProps> = ({
 
   return (
     <FormSearchContainer
-      style={{ pointerEvents: databasePull ? 'auto' : 'none' }}
+      className={`${databasePull ? 'pointer-auto' : 'pointer-none'}`}
       theme={themeMode}
     >
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />
         <SearchInput
           onChange={handleSearchDatabase}
-          style={{ color: getTheme(themeMode).textColorPrimary }}
+          className='color-text-primary'
           type="text"
           placeholder="Search Forms"
         />

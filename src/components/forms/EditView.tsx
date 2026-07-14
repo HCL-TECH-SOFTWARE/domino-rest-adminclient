@@ -553,7 +553,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               {loading.status ? <div className="all-columns-list-item"><APILoadingProgress label="Columns" /></div> :
                 fetchedColumns.map((column: any, index: any) => (
                   <div key={index}>
-                    <hr style={{ margin: '0 0 0 0' }} />
+                    <hr className='m-0' />
                     <div
                       key={column.name}
                       className={`

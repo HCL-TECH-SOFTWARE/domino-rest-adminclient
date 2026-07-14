@@ -650,7 +650,7 @@ const FormsContainer = () => {
 
   return (
     <ErrorWrapper errorStatus={errorStatus}>
-      <TopContainer style={{ marginTop: '15px' }}>
+      <TopContainer className='mt-15'>
         <span className="top-nav color-text-primary">
             Schema Management
         </span>
@@ -666,7 +666,7 @@ const FormsContainer = () => {
                 value={value} 
                 onChange={handleTabChange} 
                 variant='scrollable'
-                style={{ fontWeight: 'bold', display: 'flex' }}
+                className='text-bold flex'
                 slotProps={{
                   indicator: {
                     title: 'indicator',
@@ -759,18 +759,9 @@ const FormsContainer = () => {
             </Stack>
           </>
         ) : (
-          <div
-            style={{
-              height: 'calc(100vh - 170px)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'column',
-              width: '100%'
-            }}
-          >
+          <div className='forms-container-loading-container'>
             <CircularProgress color="primary" />
-            <div style={{ margin: '10px 0', display: 'flex' }}>
+            <div className='m-0 mt-10 mb-10 flex'>
               <span className="color-text-primary">Getting&nbsp;</span>
               <span className="color-base">
                 {`Schema ${dbName}`}

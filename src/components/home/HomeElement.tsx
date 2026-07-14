@@ -150,7 +150,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
                     className='toggle-button'
                     onClick={toggleMenu}
                 >
-                    <CollapseMenuIcon style={{ fontSize: 21 }} />
+                    <CollapseMenuIcon className='large-text' />
                 </IconButton>
                 ) : (
                 <IconButton 
@@ -158,7 +158,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
                     className='toggle-button'
                     onClick={toggleMenu}
                 >
-                    <ExpandMenuIcon style={{ fontSize: 21 }} />
+                    <ExpandMenuIcon className='large-text' />
                 </IconButton>
                 )
             )}
