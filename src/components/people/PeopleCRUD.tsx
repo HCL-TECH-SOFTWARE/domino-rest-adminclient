@@ -374,7 +374,7 @@ const PeopleCRUD: React.FC = () => {
         <PageTitle>
           <TopBanner>
             <PeopleIcon />
-            <span style={{ marginLeft: 10 }}>People Management</span>
+            <span className='ml-10'>People Management</span>
           </TopBanner>
         </PageTitle>
         <Button
@@ -382,18 +382,11 @@ const PeopleCRUD: React.FC = () => {
           className="button-create"
           onClick={createAction}
         >
-          <AddIcon style={{ margin: '0 5px' }} />
+          <AddIcon className='m-0 mt-5 mb-5' />
           Add Person
         </Button>
         <LitTooltip content="Click on Row for more details!">
-          <div
-            style={{
-              height: 500,
-              width: '100%',
-              marginTop: 60,
-              cursor: 'pointer',
-            }}
-          >
+          <div className='people-crud-div'>
             <DataGrid
               rowHeight={42}
               rows={peopleRows}

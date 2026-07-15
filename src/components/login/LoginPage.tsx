@@ -17,7 +17,6 @@ import {
   IMG_DIR,
   BUILD_VERSION,
 } from '../../config.dev';
-import { CASTLE_BACKGROUND } from './styles';
 import { AppState } from '../../store';
 import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
 import { styled } from '@linaria/react';
@@ -96,17 +95,6 @@ const PasskeySignUpContainer = styled.div`
   right: 5px;
   padding: 7px;
 
-  .sign-up-text {
-    font-size: 14px;
-    cursor: pointer;
-    text-transform: none;
-  }
-
-  .sign-up-text:hover {
-    color: red;
-    text-decoration: underline;
-  }
-
   .passkey-icon {
     padding-left: 5px;
     transform: translateY(18%);
@@ -129,6 +117,7 @@ const LoginForm = styled.form`
   align-items: center;
   gap: 10px;
   margin: 40px 10px 0 10px;
+  width: 100%;
 
   .hidden {
     visibility: hidden;
@@ -568,10 +557,10 @@ const LoginPage = () => {
               </div>
             )}
             <section
-              className="flex flex-col items-center gap-10 m-10"
+              className="flex flex-col items-center gap-10 m-10 full-width"
             >
               <LitButton
-                className="login-lit-button"
+                className="login-lit-button full-width"
                 onClick={handleLogInWithPassword}
                 appearance='outlined'
               >
@@ -579,15 +568,7 @@ const LoginPage = () => {
               </LitButton>
               {isHttps &&
                 <LitButton
-                  style={isDark ? ({
-                    width: '100%',
-                    '--wa-color-brand-80': '#7e57c2',
-                    '--wa-color-brand-50': '#7e57c2',
-                    '--wa-color-brand-border-loud': '#7e57c2',
-                    '--wa-color-brand-fill-loud': '#7e57c2',
-                    color: '#7e57c2',
-                    borderColor: '#7e57c2',
-                  } as React.CSSProperties) : { width: '100%' }}
+                  className="login-lit-button full-width"
                   onClick={handleLogInWithPasskey}
                   appearance='outlined'
                 >
@@ -596,15 +577,7 @@ const LoginPage = () => {
               }
               {displayKeepIdp &&
                 <LitButton
-                  style={isDark ? ({
-                    width: '100%',
-                    '--wa-color-brand-80': '#7e57c2',
-                    '--wa-color-brand-50': '#7e57c2',
-                    '--wa-color-brand-border-loud': '#7e57c2',
-                    '--wa-color-brand-fill-loud': '#7e57c2',
-                    color: '#7e57c2',
-                    borderColor: '#7e57c2',
-                  } as React.CSSProperties) : { width: '100%' }}
+                  className="login-lit-button full-width"
                   onClick={() => {handleLogInUsingIdp("")}}
                   appearance='outlined'
                 >
@@ -613,7 +586,7 @@ const LoginPage = () => {
               }
             </section>
             <LoginForm>
-              <section style={{ width: '100%' }}>
+              <section className='full-width'>
                 <LitInputText
                   id='form-username'
                   label='Username'
@@ -622,40 +595,29 @@ const LoginPage = () => {
                   required
                 />
                 {authType === 'oidc' && idpList.length > 0 &&
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '8px' }}>
+                  <div className='flex justify-center items-center full-width mt-8'>
                     <LitDropdown
                       id='form-oidc'
                       choices={idpList.map((idp: IdP) => {return idp.name})}
                       ref={oidcRef}
                       onChange={(e: any) => handleChooseOidc(idpList.find((idp: IdP) => idp.name === e.detail.value))}
-                      style={{ display: 'inline-block', margin: '0 auto' }}
+                      className='login-page-oidc-dropdown'
                       selected={selectedOidc}
                     />
                   </div>
                 }
               </section>
-              <section style={{ width: '100%' }}>
+              <section className='full-width'>
                 <LitInputPassword
                   id='section-password'
                   className='input'
                   label='Password'
-                  // style={{ width: '100%' }}
                   ref={passwordRef}
                   required
                 />
               </section>
               <LitButton
-                style={isDark ? ({
-                  width: '100%', marginTop: '30px',
-                  '--wa-color-brand-80': '#7e57c2',
-                  '--wa-color-brand-50': '#7e57c2',
-                  '--wa-color-brand-border-loud': '#7e57c2',
-                  '--wa-color-brand-fill-loud': '#7e57c2',
-                  '--wa-color-brand': '#7e57c2',
-                  '--wa-color-brand-on': '#7e57c2',
-                  color: '#7e57c2',
-                  borderColor: '#7e57c2',
-                } as React.CSSProperties) : { width: '100%', marginTop: '30px' }}
+                className="login-submit-button"
                 onClick={handleClickLogIn}
                 pill
               >
@@ -664,21 +626,11 @@ const LoginPage = () => {
               <PasskeySignUpContainer id='passkey-signup'>
                 {isHttps && (
                   <button
-                    className="text-button"
+                    className="no-background color-text-primary"
                     disabled={!displayKeepIdp}
-                    style={{
-                      cursor: "pointer",
-                      background: 'none',
-                      border: 'none',
-                      margin: 5,
-                      padding: 0,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
                   >
                     <span
-                      className="sign-up-text"
+                      className="login-page-signup-text"
                       onClick={handleSignUpWithPasskey}
                     >
                       Sign up with Passkey
@@ -690,25 +642,14 @@ const LoginPage = () => {
                 )}
               </PasskeySignUpContainer>
             </LoginForm>
-            <Box sx={{ mt: 7 }}>
+            <Box className='mt-7'>
               <Copyright />
             </Box>
             <LitApiErrorDialog ref={ref} errorMessage='Error initiating authorization request. Check the console or network for more details.' />
           </div>
         </DivPaper>
       </Grid>
-      {!matches && <Grid
-        sx={{
-          backgroundColor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],
-          width: "40%",
-          backgroundImage: CASTLE_BACKGROUND,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          flexBasis: "44%",
-          maxWidth: "40%",
-        }}
-      />}
+      {!matches && <Grid className="login-castle-bg" />}
     </GridRoot>
   );
 };

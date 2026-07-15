@@ -66,6 +66,10 @@
     font-size: 30px;
 }
 
+.giant-text {
+    font-size: 60px;
+}
+
 .line-height-normal {
     line-height: normal;
 }
@@ -122,6 +126,10 @@
     color: var(--copyright-color);
 }
 
+.color-border {
+    color: var(--border-color);
+}
+
 .block {
     display: block;
 }
@@ -156,6 +164,10 @@ body[data-theme="dark"] .color-text-primary {
 
 body[data-theme="dark"] .color-text-disabled {
     color: #8d8d8d;
+}
+
+.color-text-secondary {
+    color: var(--text-color-secondary);
 }
 
 .dialog {
@@ -487,6 +499,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .mt-5 {
     margin-top: 5px;
+}
+
+.mt-7 {
+    margin-top: 7px;
 }
 
 .mt-8 {
@@ -1844,10 +1860,21 @@ body[data-theme="dark"] .add-import-svg-icon {
 /* LoginPage.tsx */
 .login-page-grid {
     padding: 90px;
-    flex-basis: 100%;
     height: 100%;
     background-color: var(--body-color);
     color: var(--text-color-primary);
+}
+
+.login-castle-bg {
+    width: 40%;
+    flex-basis: 44%;
+    max-width: 40%;
+    height: 100vh;
+    background-color: light-dark(#fafafa, #212121);
+    background-image: url('/img/castlebg.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
 }
 
 .login-page-alert {
@@ -1868,7 +1895,8 @@ body[data-theme='dark'] lit-button[appearance="accent"]::part(label) {
 }
 
 .login-lit-button {
-    width: 100%;
+    --lit-button-display: block;
+    --lit-button-width: 100%;
 }
 
 body[data-theme='dark'] .login-lit-button {
@@ -1878,4 +1906,61 @@ body[data-theme='dark'] .login-lit-button {
     --wa-color-brand-fill-loud: #7e57c2;
     color: #7e57c2;
     border-color: #7e57c2;
+}
+
+.login-submit-button {
+    --lit-button-display: block;
+    --lit-button-width: 100%;
+    margin-top: 30px;
+}
+
+body[data-theme='dark'] .login-submit-button {
+    --wa-color-brand-80: #7e57c2;
+    --wa-color-brand-50: #7e57c2;
+    --wa-color-brand-border-loud: #7e57c2;
+    --wa-color-brand-fill-loud: #7e57c2;
+    --wa-color-brand: #7e57c2;
+    --wa-color-brand-on: #7e57c2;
+    color: #7e57c2;
+    border-color: #7e57c2;
+}
+
+.login-page-signup-text {
+    font-size: 14px;
+    cursor: pointer;
+    text-transform: none;
+}
+
+.login-page-signup-text:hover {
+    color: red;
+    text-decoration: underline;
+}
+
+.login-page-oidc-dropdown {
+    --lit-dropdown-display: inline-block;
+    --lit-dropdown-width: auto;
+}
+
+/* PeopleCRUD.tsx */
+
+.people-crud-div {
+    height: 500px;
+    width: 100%;
+    margin-top: 60px;
+    cursor: pointer;
+}
+
+/* GroupMembers.tsx */
+.group-members-div {
+    height: 500px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* PeopleSelector.tsx */
+.people-selector-div {
+    height: 350px;
+    width: 98%;
+    margin-top: 20px;
+    border-width: 5px;
 }

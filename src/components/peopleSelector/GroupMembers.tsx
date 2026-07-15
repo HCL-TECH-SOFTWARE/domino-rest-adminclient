@@ -29,7 +29,7 @@ const GroupMembers: React.FC = () => {
 
   return (
     <AppFormContext.Provider value={[formContext, setFormContext]}>
-      <div style={{ height: 350, width: '100%', marginTop: 20 }}>
+      <div className='group-members-div'>
         <DataGrid
           rowHeight={28}
           rows={memberRows}

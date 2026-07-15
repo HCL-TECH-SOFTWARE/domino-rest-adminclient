@@ -82,7 +82,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 : ' View Person Details'}
             </span>
 
-            <InputContainer style={{ marginTop: 10 }}>
+            <InputContainer className='mt-10'>
               <TextField
                 fullWidth
                 slotProps={{ input: { readOnly: true } }}
@@ -243,7 +243,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
         ) : (
           <PanelContent onSubmit={formik.handleSubmit}>
             {peopleError && peopleErrorMessage && (
-              <Alert style={{ margin: '5px 0' }} severity="error">
+              <Alert className='m- mt-5 mb-5' severity="error">
                 <AlertTitle>Error: Unable to save People</AlertTitle>
                 <span className="big-text">
                   {peopleErrorMessage}
@@ -261,7 +261,7 @@ const PeopleForm: React.FC<PeopleFormProps> = ({ formik }) => {
                 ? ' Update New Person'
                 : ' View Person Details'}
             </span>
-            <InputContainer style={{ marginTop: 10 }}>
+            <InputContainer className='mt-10'>
               <TextField
                 fullWidth
                 onChange={formik.handleChange}

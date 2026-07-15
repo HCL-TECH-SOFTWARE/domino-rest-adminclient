@@ -11,15 +11,8 @@ import { FormContainer } from '../../styles/CommonStyles';
 const Mail = () => {
   return (
     <FormContainer>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <DashboardIcon color="secondary" style={{ fontSize: 60 }} />
+      <div className='flex flex-col justify-center items-center'>
+        <DashboardIcon className='giant-text color-text-secondary' />
         <span className="large-text color-text-primary">
           Mail
         </span>

@@ -78,18 +78,18 @@ const BreadcrumbRouter: React.FC = () => {
         <PageTitle>
           <TopBanner>
             { pathname === '/' &&
-                (<span style={{ float: 'left', fontSize: '24px', color: getTheme(themeMode).textColorPrimary }}
-                onClick={()=>handleOnClick(2)}
+                (<span
+                  className='float-left huge-text color-text-primary'
+                  onClick={()=>handleOnClick(2)}
                 >
                   {breadcrumbTitle}
                 </span>)
             }
             { pathname !== '/' &&
             <Breadcrumbs
-              style={{color: getTheme(themeMode).textColorPrimary, marginTop: '10px'}}
-              separator={<span style={{ color: getTheme(themeMode).textColorPrimary }}>/</span>}
+              separator={<span className='color-text-primary'>/</span>}
               aria-label="breadcrumb"
-              className="routing"
+              className="color-text-primary mt-10"
             >
               <span
                 className="color-text-primary flex items-center"
@@ -108,7 +108,6 @@ const BreadcrumbRouter: React.FC = () => {
                 >
                   <span
                     className={`color-text-primary${location.pathname.split('/').length === 2 ? ' weight-600' : ''}`}
-                    style={location.pathname.split('/').length === 2 ? { color: activeColor } : {}}
                     onClick={()=>handleOnClick(2)}
                   >
                     {breadcrumbTitle}
@@ -119,7 +118,6 @@ const BreadcrumbRouter: React.FC = () => {
               {location.pathname.split('/').length === 3 && (
                 <span
                   className={`color-text-primary${location.pathname.split('/').length === 3 ? ' weight-600 nowrap' : ''}`}
-                  style={location.pathname.split('/').length === 3 ? { color: activeColor } : {}}
                 >
                   {location.pathname.split('/')[2].charAt(0).toUpperCase() + location.pathname.split('/')[2].slice(1)}
                 </span>
@@ -132,7 +130,6 @@ const BreadcrumbRouter: React.FC = () => {
                 >
                   <span
                     className={`color-text-primary${location.pathname.split('/').length === 4 ? ' weight-600 nowrap' : ''}`}
-                    style={location.pathname.split('/').length === 4 ? { color: activeColor } : {}}
                     onClick={()=>handleOnClick(4)}
                   >
                     {location.pathname.split('/')[3]}
@@ -151,7 +148,6 @@ const BreadcrumbRouter: React.FC = () => {
               {location.pathname.split('/').length === 6 && (
                 <span
                   className={`color-text-primary${location.pathname.split('/').length === 6 ? ' weight-600 nowrap' : ''}`}
-                  style={location.pathname.split('/').length === 6 ? { color: activeColor } : {}}
                 >
                   {`${decodeURIComponent(location.pathname.split('/')[4])} Access Mode`}
                 </span>
