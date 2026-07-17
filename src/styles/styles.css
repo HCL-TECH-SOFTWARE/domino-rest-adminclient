@@ -62,7 +62,7 @@
     font-size: 24px;
 }
 
-.very-large-text {
+.very-huge-text {
     font-size: 30px;
 }
 
@@ -271,6 +271,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .full-width {
     width: 100%;
+}
+
+.no-min-width {
+    min-width: 0;
 }
 
 .min-width-85 {
@@ -599,6 +603,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .z-100 {
     z-index: 100;
+}
+
+.z-1300 {
+    z-index: 1300;
 }
 
 .justify-start {
@@ -1963,4 +1971,40 @@ body[data-theme='dark'] .login-submit-button {
     width: 98%;
     margin-top: 20px;
     border-width: 5px;
+}
+
+/* OptionList.tsx */
+.option-list-container-button {
+    width: 181px;
+    height: 42px;
+    border-radius: 20px;
+    background: #aa1f51;
+    color: #fff;
+    font-weight: 700;
+}
+
+/* ProfileMenu.tsx */
+.profile-menu-user-icon {
+    width: 36px;
+    height: 36px;
+}
+
+/* ProfileMenuDialog.tsx */
+.profile-menu-dialog-user {
+    margin: 0 0 115px 8px;
+}
+
+/* SideNav.tsx */
+.side-nav-logo-img {
+    width: 37px;
+    height: 37px;
+    object-fit: contain;
+    display: block;
+    margin-top: 30px;
+}
+
+.side-nav-text-link {
+    margin-left: -4px;
+    font-size: 16px;
+    font-weight: 400;
 }

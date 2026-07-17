@@ -96,12 +96,6 @@ const SidebarContainer = styled(List)<{ theme: string }>`
     .consent-list {
       border-left: 3px solid ${(props) => getTheme(props.theme).sidenav.border};
       background: ${(props) => getTheme(props.theme).sidenav.active};
-      .text-link {
-        margin-left: -4px;
-        color: ${(props) => getTheme(props.theme).sidenav.activeTextColor} !important;
-        font-size: 16px;
-        font-weight: 400;
-      }
       svg {
         margin-left: -4px;
         color: ${(props) => getTheme(props.theme).sidenav.activeIconColor} !important;
@@ -211,20 +205,14 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
               window.location.href = window.location.origin;
             }}>
             <img
-              className="keep-icon"
+              className="keep-icon side-nav-logo-img"
               src={`${IMG_DIR}/KeepNewIcon.png`}
               alt="HCL Domino REST API Icon"
-              style={{
-                width: 37,
-                height: 37,
-                objectFit: 'contain',
-                display: 'block',
-              }}
             />
           </Logo>
           {open && (
             <KeepAdmin>
-              <span className="title" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+              <span className="medium-text color-text-primary text-bold">
                 HCL Domino REST API
               </span>
             </KeepAdmin>
@@ -256,17 +244,12 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                 className={`full-width /${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                 to={route.uri}>
                 <LitTooltip placement="right" content={route.label} className='full-width'>
-                  <ListItemButton className="link-container" key={route.label}>
-                    <ListItemIcon>
-                      <Icon
-                        style={{
-                          color: getTheme(themeMode).sidenav.iconColor,
-                          fontSize: 19
-                        }}
-                      />
+                  <ListItemButton className="link-container medium-text" key={route.label}>
+                    <ListItemIcon className='tiny-text'>
+                      <Icon className='color-text-primary' />
                     </ListItemIcon>
                     <ListItemText>
-                      <span className="text-link color-text-primary">
+                      <span className="side-nav-text-link color-text-primary">
                         {route.label}
                       </span>
                     </ListItemText>
@@ -285,14 +268,9 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
                   <LitTooltip placement="right" content={route.label} className='full-width' id={`here ${route.label}`}>
-                    <ListItemButton className="link-container" key={route.label}>
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).sidenav.iconColor,
-                            fontSize: 19
-                          }}
-                        />
+                    <ListItemButton className="link-container medium-text" key={route.label}>
+                      <ListItemIcon className='tiny-text'>
+                        <Icon className='color-text-primary' />
                       </ListItemIcon>
                       <ListItemText>
                         <span className="color-text-primary">
@@ -307,17 +285,12 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
 
           <QuickConfigButton className="quick-config full-width">
             <LitTooltip placement="right" content="Quick Config" className='full-width'>
-              <ListItemButton className="link-container" key="Quick Config" onClick={handleQuickConfig}>
-                <ListItemIcon>
-                  <FlashOnIcon
-                    style={{
-                      color: getTheme(themeMode).sidenav.iconColor,
-                      fontSize: 19
-                    }}
-                  />
+              <ListItemButton className="link-container medium-text" key="Quick Config" onClick={handleQuickConfig}>
+                <ListItemIcon className='tiny-text'>
+                  <FlashOnIcon className='color-text-primary' />
                 </ListItemIcon>
                 <ListItemText>
-                <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                <span className="side-nav-text-link">
                   Quick Config
                 </span>
                 </ListItemText>
@@ -334,17 +307,12 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   className={`/${location.pathname}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
                   <LitTooltip placement="right" content={route.label} className='full-width'>
-                    <ListItemButton className={location.pathname === route.uri ? 'link-container' : ''} key={route.label}>
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).sidenav.iconColor,
-                            fontSize: 19
-                          }}
-                        />
+                    <ListItemButton className={location.pathname === route.uri ? 'link-container medium-text' : 'medium-text'} key={route.label}>
+                      <ListItemIcon className='tiny-text'>
+                        <Icon className='color-text-primary' />
                       </ListItemIcon>
                       <ListItemText>
-                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="side-nav-text-link">
                           {route.label}
                         </span>
                       </ListItemText>
@@ -363,17 +331,12 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
                   <LitTooltip placement="right" content={route.label}>
-                    <ListItemButton className="link-container" key={route.label}>
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).sidenav.iconColor,
-                            fontSize: 19
-                          }}
-                        />
+                    <ListItemButton className="link-container medium-text" key={route.label}>
+                      <ListItemIcon className='tiny-text'>
+                        <Icon className='color-text-primary' />
                       </ListItemIcon>
                       <ListItemText>
-                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="side-nav-text-link">
                           {route.label}
                         </span>
                       </ListItemText>
@@ -392,17 +355,12 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
                   <LitTooltip placement="right" content={route.label}>
-                    <ListItemButton className="link-container" key={route.label}>
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).sidenav.iconColor,
-                            fontSize: 19
-                          }}
-                        />
+                    <ListItemButton className="link-container medium-text" key={route.label}>
+                      <ListItemIcon className='tiny-text'>
+                        <Icon className='color-text-primary' />
                       </ListItemIcon>
                       <ListItemText>
-                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="side-nav-text-link">
                           {route.label}
                         </span>
                       </ListItemText>
@@ -424,17 +382,12 @@ const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
                   <LitTooltip placement="right" content={route.label}>
-                    <ListItemButton className="link-container" key={route.label}>
-                      <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).sidenav.iconColor,
-                            fontSize: 19
-                          }}
-                        />
+                    <ListItemButton className="link-container medium-text" key={route.label}>
+                      <ListItemIcon className='tiny-text'>
+                        <Icon className='color-text-primary' />
                       </ListItemIcon>
                       <ListItemText>
-                        <span className="text-link" style={{ color: getTheme(themeMode).sidenav.textColor }}>
+                        <span className="side-nav-text-link">
                           {route.label}
                         </span>
                       </ListItemText>

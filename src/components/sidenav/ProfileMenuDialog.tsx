@@ -81,7 +81,11 @@ const ProfileMenu = () => {
         placement="right"
         content="Profile"
       >
-        <UserIcon style={{width: '36px', height:'36px', margin: '0 0 115px 8px', cursor: 'pointer'}} onClick={handleClick} data-testid="profileIcon" />
+        <UserIcon
+          className='profile-menu-user-icon profile-menu-dialog-user cursor-pointer'
+          onClick={handleClick}
+          data-testid="profileIcon"
+        />
       </LitTooltip>
       <Popper open={open} anchorEl={anchorEl} placement="bottom-end" transition>
         {({ TransitionProps }) => (

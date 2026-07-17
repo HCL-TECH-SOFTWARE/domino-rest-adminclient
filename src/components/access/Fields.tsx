@@ -20,7 +20,7 @@ import { getTheme } from '../../store/styles/action';
 import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
-import { FormSearchContainer, HorizontalDivider, SearchContainer, SearchInput } from '../../styles/CommonStyles';
+import { FormSearchContainer, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 import { LitTooltip } from '../lit-elements/LitElements';
 
 const FieldContainer = styled.div<{ theme: string }>`
@@ -411,7 +411,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
           </FormSearchContainer>
         </FieldsDropDown>
       </Box>
-      <HorizontalDivider />
+      <hr className='divider pt-5 pb-10 mb-10 no-background' />
       {loading.status ? (
         <div className="field-config">
           <CircularProgress color="primary" />

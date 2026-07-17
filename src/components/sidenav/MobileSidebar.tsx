@@ -145,12 +145,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   <LitTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).textColorPrimary,
-                            fontSize: 19
-                          }}
-                        />
+                        <Icon className='color-text-primary big-text' />
                       </ListItemIcon>
                       <ListItemText>
                         <span className="text-link color-text-primary">
@@ -167,12 +162,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
               <LitTooltip placement="right" content="Quick Config">
                 <ListItemButton className="link-container" key="Quick Config" onClick={handleQuickConfig}>
                   <ListItemIcon>
-                    <FlashOnIcon
-                      style={{
-                        color: getTheme(themeMode).textColorPrimary,
-                        fontSize: 19
-                      }}
-                    />
+                    <FlashOnIcon className='color-text-primary big-text' />
                   </ListItemIcon>
                   <ListItemText>
                     <span className="text-link color-text-primary">
@@ -195,12 +185,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
-                          <Icon
-                            style={{
-                              color: getTheme(themeMode).textColorPrimary,
-                              fontSize: 19
-                            }}
-                          />
+                          <Icon className='color-text-primary big-text' />
                         </ListItemIcon>
                         <ListItemText>
                           <span className="text-link color-text-primary">
@@ -225,12 +210,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
-                          <Icon
-                            style={{
-                              color: getTheme(themeMode).textColorPrimary,
-                              fontSize: 19
-                            }}
-                          />
+                          <Icon className='color-text-primary big-text' />
                         </ListItemIcon>
                         <ListItemText>
                           <span className="text-link color-text-primary">
@@ -255,12 +235,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
-                          <Icon
-                            style={{
-                              color: getTheme(themeMode).textColorPrimary,
-                              fontSize: 19
-                            }}
-                          />
+                          <Icon className='color-text-primary big-text' />
                         </ListItemIcon>
                         <ListItemText>
                           <span className="text-link color-text-primary">

@@ -896,12 +896,6 @@ export const SideNavContainer = styled.div`
   }
 `
 
-export const HorizontalDivider = () => {return (
-  <Box style={{ width: '100%', padding: 0, margin: 0 }}>
-    <hr color='#C8D2DD' style={{ height: 1 }} />
-  </Box>
-)}
-
 export const WarningIcon = () => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 35 35" fill="none">

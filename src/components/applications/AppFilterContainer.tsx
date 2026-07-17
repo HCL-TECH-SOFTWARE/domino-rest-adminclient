@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
-import { DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
+import { DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import { styled } from '@linaria/react';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -161,7 +161,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                 />
               </RadioGroup>
             </Section>
-            <HorizontalDivider />
+            <hr className='divider pt-5 pb-10 mb-10 no-background' />
             <Section>
               <span className='big-text'>Authentication method</span>
               <RadioGroup value={filterAppSecret} onChange={(e) => setFilterAppSecret(e.currentTarget.value)} className='radio-group'>
@@ -222,7 +222,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                 />
               </RadioGroup>
             </Section>
-            <HorizontalDivider />
+            <hr className='divider pt-5 pb-10 mb-10 no-background' />
             <ButtonsContainer>
               <LitButtonNeutral onClick={handleClickReset} text='Reset' />
               <LitButtonNo onClick={() => dispatch(toggleAppFilterDrawer())} text='Cancel' />

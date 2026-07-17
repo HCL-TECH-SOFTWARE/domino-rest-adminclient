@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import { convert2FieldType } from './functions';
 import { Box } from '@mui/material';
-import { BlueSwitch, EncryptSignOptions, HorizontalDivider } from '../../styles/CommonStyles';
+import { BlueSwitch, EncryptSignOptions } from '../../styles/CommonStyles';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import { LitTooltip } from '../lit-elements/LitElements';
 
@@ -188,7 +188,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
         <p className='field-item-title m-0'>Item Name</p>
         <p className='field-item-name'>{item.name}</p>
       </div>
-      <HorizontalDivider />
+      <hr className='divider pt-5 pb-10 mb-10 no-background' />
       <div>
         <p className='field-setting-text m-0'>Field Setting</p>
         <div className='field-setting-details-container'>
