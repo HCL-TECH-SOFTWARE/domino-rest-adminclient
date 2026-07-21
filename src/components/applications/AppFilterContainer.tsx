@@ -130,34 +130,19 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                   value='All'
                   control={<StyledRadio color='default' size='small' />}
                   label='All'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='Active'
                   control={<StyledRadio color='default' size='small' />}
                   label='Active'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='Inactive'
                   control={<StyledRadio color='default' size='small' />}
                   label='Inactive'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
               </RadioGroup>
             </Section>
@@ -169,56 +154,31 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                   value='All'
                   control={<StyledRadio color='default' size='small' />}
                   label='All'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='App secret'
                   control={<StyledRadio color='default' size='small' />}
                   label='App secret'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='App secret generated'
                   control={<StyledRadio color='default' size='small' />}
                   label='App secret generated'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='App secret not generated'
                   control={<StyledRadio color='default' size='small' />}
                   label='App secret not generated'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='PKCE'
                   control={<StyledRadio color='default' size='small' />}
                   label='PKCE'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
               </RadioGroup>
             </Section>

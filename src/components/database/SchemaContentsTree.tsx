@@ -37,7 +37,7 @@ function StyledTreeItem(props: StyledTreeItemProps) {
     <TreeItem
       label={
         <div className='flex items-center p-0 pt-4 pb-4'>
-          <LabelIcon color="primary" sx={{ marginRight: '8px' }} />
+          <LabelIcon className='color-text-primary mr-8' />
           <span className='color-text-primary small-text'>
             {labelText}
           </span>

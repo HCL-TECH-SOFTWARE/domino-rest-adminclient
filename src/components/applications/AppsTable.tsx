@@ -211,7 +211,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
               <TableRow>
                 <TableCell className='launch' />
                 <TableCell className='app-name text'>
-                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div className='full-width flex flex-col gap-3'>
                     <span className='small-text text-bold flex items-center gap-3'>
                       App Name
                       <button
@@ -225,7 +225,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                     {/* <LitInputText
                       hint='Search App Name'
                     /> */}
-                  </Box>
+                  </div>
                 </TableCell>
                 <TableCell className='app-id-secret text'>
                   <div className='full-width flex flex-col gap-3'>

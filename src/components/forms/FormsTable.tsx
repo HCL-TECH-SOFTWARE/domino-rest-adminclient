@@ -60,11 +60,6 @@ const StyledTableContainer = styled(TableContainer)<{ themeMode?: string }>`
   box-sizing: border-box;
   border: 1px solid ${(props) => props.themeMode ? getTheme(props.themeMode).borderColor : '#B9B9B9'};
   background: ${(props) => props.themeMode ? getTheme(props.themeMode).secondary : '#FFF'};
-
-  .diamond-marker {
-    margin-right: 5px;
-    transform: translateY(-7%);
-  }
 `
 
 const StatusHeader = styled.div`
@@ -274,19 +269,19 @@ const FormsTable: React.FC<FormsTableProps> = ({
   return (
     <>
       <StyledTableContainer themeMode={themeMode}>
-        <Table sx={{ padding: "30px" }} aria-label="views and agents table">
+        <Table className="p-30" aria-label="views and agents table">
           <TableHead>
             <TableRow>
               <StyledTableCell width="50px" />
               <StyledTableCell width="350px">
-                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                  <Box sx={{ visibility: 'hidden' }} className='diamond-marker'>
+                <div className="flex flex-row">
+                  <div className='forms-table-diamond-marker mr-5 hidden'>
                     <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                       <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                     </svg>
-                  </Box>
+                  </div>
                   Form Name
-                </Box>
+                </div>
               </StyledTableCell>
               <StyledTableCell width="350px">Form Aliases</StyledTableCell>
               <StyledTableCell width="150px">Modes Available</StyledTableCell>
@@ -313,11 +308,11 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </StyledTableCell>
                 <StyledTableCell width="550px">
                   <ViewNameDisplay>
-                    <Box sx={{ visibility: formList.includes(form.formName) ? 'hidden' : 'visible' }} className='diamond-marker'>
+                    <div className={`forms-table-diamond-marker ${formList.includes(form.formName) ? 'hidden' : 'visible'}`}>
                       <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                       </svg>
-                    </Box>
+                    </div>
                     <Box className="text">
                       <span>{form.formName}</span>
                       {!formList.includes(form.formName) && <span className='custom-form'>custom form</span>}
@@ -355,7 +350,9 @@ const FormsTable: React.FC<FormsTableProps> = ({
       <ActivateDialogContainer ref={ref}>
         <Box className='header-close'>
           <Box className='header'>
-            <Box sx={{ width: '30px', height: '30px', padding: 0, display: 'flex', alignItems: 'center' }}><WarningIcon /></Box>
+            <div className="w-30px h-30px p-0 flex items-center">
+              <WarningIcon />
+            </div>
             <span className='title'>Activate Form?</span>
           </Box>
           <ButtonBase onClick={handleCloseActivateDialog}><IoMdClose size='1.5em' /></ButtonBase>

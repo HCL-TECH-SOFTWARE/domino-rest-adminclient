@@ -356,7 +356,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
 
   return (
     <FieldContainer theme={themeMode} className="field-container">
-      <Box sx={{ padding: '0 23.5px' }}>
+      <div className='fields-dropdown-div'>
         <FieldsDropDownHeader className="fields-dropdown-header">
           <p className="small-text p-0 full-width m-0">Show fields from:</p>
           <LitTooltip
@@ -410,7 +410,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
             </SearchContainer>
           </FormSearchContainer>
         </FieldsDropDown>
-      </Box>
+      </div>
       <hr className='divider pt-5 pb-10 mb-10 no-background' />
       {loading.status ? (
         <div className="field-config">

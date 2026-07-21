@@ -95,7 +95,7 @@ interface AgentsTableProps {
 const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleInactive }) => {
   return (
     <StyledTableContainer>
-      <Table sx={{ padding: "30px" }} aria-label="views and agents table">
+      <Table className='p-30' aria-label="views and agents table">
         <TableHead>
           <TableRow>
             <StyledTableCell width="550px"><AgentNameHeader>Agent Name</AgentNameHeader></StyledTableCell>

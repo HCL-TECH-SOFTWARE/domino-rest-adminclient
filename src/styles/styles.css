@@ -401,6 +401,10 @@ body[data-theme="dark"] .color-text-disabled {
     padding: 20px;
 }
 
+.p-30 {
+    padding: 30px;
+}
+
 .pr-0 {
     padding-right: 0;
 }
@@ -555,6 +559,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .ml-15 {
     margin-left: 15px;
+}
+
+.mr-5 {
+    margin-right: 5px;
 }
 
 .mr-8 {
@@ -722,6 +730,11 @@ body[data-theme="dark"] .color-text-disabled {
 
 .float-left {
     float: left;
+}
+
+.small-icon {
+    width: 15px;
+    height: 15px;
 }
 
 /* AccessMode.tsx */
@@ -948,6 +961,10 @@ body[data-theme="dark"] .field-batch-delete-text {
 
 .fields-displayed-container {
     overflow-y: scroll;
+}
+
+.fields-dropdown-div {
+    padding: 0 23.5px;
 }
 
 /* ModeCompare.tsx */
@@ -1347,6 +1364,10 @@ body[data-theme="dark"] .add-import-svg-icon {
 .table-cell-activate-menu {
     white-space: nowrap;
     width: 200px;
+}
+
+.forms-table-diamond-marker {
+    transform: translateY(-7%);
 }
 
 /* DetailsSection.tsx */
@@ -2007,4 +2028,14 @@ body[data-theme='dark'] .login-submit-button {
     margin-left: -4px;
     font-size: 16px;
     font-weight: 400;
+}
+
+/* Tip.tsx */
+.tip-card-media {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    background-color: transparent;
+    padding: 0;
 }

@@ -124,7 +124,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
   
   return (
     <StyledTableContainer>
-      <Table sx={{ padding: "30px" }} aria-label="views and agents table">
+      <Table className='p-30' aria-label="views and agents table">
         <StyledTableHead>
           <TableRow>
             <StyledTableCell width="50px" />

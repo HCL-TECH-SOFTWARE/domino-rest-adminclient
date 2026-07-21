@@ -298,7 +298,9 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               <LitTooltip
                 content='Please understand this option before enabling, see the documentation on enabling encryption.'
               >
-                <HelpCenterIcon sx={{ color: '#2D91E3', fontSize: '14px' }} />
+                <div className='small-icon'>
+                  <HelpCenterIcon className='small-text script-editor-help-icon' />
+                </div>
               </LitTooltip>
               <BlueSwitch size='small' checked={encrypt} onChange={toggleEncrypt} />
             </section>

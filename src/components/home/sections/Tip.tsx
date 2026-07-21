@@ -79,18 +79,7 @@ const Tip: React.FC<TipProps> = ({
             component="img"
             image={backgroungImage}
             title={description}
-            sx={{
-              /* Image scales to fit the card width with no
-                 horizontal letterboxing; height is derived from
-                 the natural aspect ratio so the entire picture
-                 is shown end-to-end. */
-              width: '100%',
-              height: '100%',
-              display: 'block',
-              objectFit: 'cover',
-              backgroundColor: 'transparent',
-              padding: 0,
-            }}
+            className='tip-card-media'
           />
           <CardContent className='flex flex-col'>
             <span className="huge-text wrap color-text-primary">

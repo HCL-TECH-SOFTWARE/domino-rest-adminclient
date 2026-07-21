@@ -271,7 +271,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </Box>
               ) : (
                 // Need to be implemented
-                <Box sx={{ borderRadius: 16 }} {...defaultProps}>
+                <div className='rounded-16' {...defaultProps}>
                   <GroupMembers />
                   <Button
                     className="group-form-button-style group-form-button-small group-remove-member-button"
@@ -279,7 +279,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                     <ArrowLeftIcon />
                     Remove Member
                   </Button>
-                </Box>
+                </div>
               )}
             </Box>
           </PanelContent>
