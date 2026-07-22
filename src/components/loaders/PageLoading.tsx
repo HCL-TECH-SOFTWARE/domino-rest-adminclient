@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 const Loader = styled.div`
   display: flex;

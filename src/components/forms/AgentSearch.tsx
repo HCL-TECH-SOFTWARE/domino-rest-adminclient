@@ -25,14 +25,14 @@ const AgentSearch: React.FC<AgentSearchProps> = ({ handleSearchAgent }) => {
 
   return (
     <FormSearchContainer
-      style={{ pointerEvents: scopePull ? 'auto' : 'none' }}
+      className={`${scopePull ? 'pointer-auto' : 'pointer-none'}`}
       theme={themeMode}
     >
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />
         <SearchInput
           onChange={handleSearchAgent}
-          style={{ color: getTheme(themeMode).textColorPrimary }}
+          className='color-text-primary'
           type="text"
           placeholder="Search Agents"
         />

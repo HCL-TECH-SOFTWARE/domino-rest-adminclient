@@ -17,7 +17,7 @@ import { getTheme } from '../../../store/styles/action';
 const ListRoles = () => {
   const { themeMode } = useSelector((state: AppState) => state.styles);
   return (
-    <List style={{ width: '100%' }}>
+    <List className='full-width'>
       {[
         'Cleo Beverly',
         'Kenneth Manalo',
@@ -41,7 +41,7 @@ const ListRoles = () => {
             />
           </ListItem>
           <Divider
-            style={{ background: getTheme(themeMode).borderColor }}
+            className='color-border'
             component="li"
           />
         </div>

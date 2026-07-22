@@ -10,16 +10,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
   Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   TextField,
 } from "@mui/material";
 import { AppState } from "../../store";
 import { validateFormSchemaName } from "../../store/databases/scripts";
-import styled from "styled-components";
-import { ButtonNeutral, ButtonYes, CommonDialog, TopNavigator } from "../../styles/CommonStyles";
+import { styled } from '@linaria/react';
+import { TopNavigator } from "../../styles/CommonStyles";
 import { RxDividerVertical } from "react-icons/rx";
 import FormSearch from "./FormSearch";
 import {
@@ -31,7 +27,12 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import { LitButton, LitButtonNeutral, LitButtonYes, LitSwitch } from "../lit-elements/LitElements";
+import {
+  LitButton,
+  LitButtonNeutral,
+  LitButtonYes,
+  LitSwitch
+} from "../lit-elements/LitElements";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -325,32 +326,29 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
         <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />
-        <Box style={{ width: '100%', height: '10vh' }}>
+        <Box className='full-width h-10vh'>
           <TextField
             value={value ? value : ""}
             onChange={handleFormNameInput}
             variant="outlined"
             error={formNameError}
             helperText={formNameErrorMessage}
-            style={{ width: '100%' }}
+            className='full-width'
           />
         </Box>
-        <ButtonsPanel style={{ justifyContent: 'flex-end', gap: '10px', padding: '10px 0 0 0', margin: 0 }}>
-          <ButtonNeutral
+        <ButtonsPanel className='flex justify-start items-center gap-10 p-0 m-0'>
+          <LitButtonNeutral
             onClick={() => {
               setCreateFormOpen(false)
               setValue("")
               dispatch(addForm(false) as any)
             }}
-          >
-            Cancel
-          </ButtonNeutral>
-          <ButtonYes
+            text='Cancel'
+          />
+          <LitButtonYes
             onClick={handleClickCreateForm}
-            disabled={formNameError}
-          >
-            Create
-          </ButtonYes>
+            text='Create'
+          />
         </ButtonsPanel>
       </CreateFormDialogContainer>
       <FormsTable

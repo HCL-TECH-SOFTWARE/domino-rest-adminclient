@@ -6,7 +6,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppState } from '../../store';
@@ -243,13 +243,11 @@ const AppItem: React.FC<AppItemProps> = ({
                     <AppImage
                         src={`data:image/svg+xml;base64, ${appIcons[app.appIcon]}`}
                         alt="db-icon"
-                        style={{
-                            color: getTheme(themeMode).hoverColor
-                        }}
+                        className='color-hover'
                     />
                     <div className='flex flex-col gap-2'>
                         <span className='small-text'>{app.appName}</span>
-                        <div style={{ width: '100%' }}>
+                        <div className='full-width'>
                           <LitAppStatus status={app.appStatus === 'isActive'} />
                         </div>
                     </div>
@@ -296,7 +294,7 @@ const AppItem: React.FC<AppItemProps> = ({
                           app.appHasSecret ? <>
                             <button
                               onClick={() => handleClickGenerate(false)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                              className='no-background no-border cursor-pointer m-0 p-0'
                             >
                               <MdRefresh color='#2873F0' />
                             </button>
@@ -343,7 +341,7 @@ const AppItem: React.FC<AppItemProps> = ({
                       </button>
                     </LitTooltip>
                     <div>
-                      <div style={{ height: '31px', width: '1px', backgroundColor: 'light-dark(black, white)'}}></div>  
+                      <div className='short-vertical' />
                     </div>
                     <LitTooltip content="Delete Application">
                       <button

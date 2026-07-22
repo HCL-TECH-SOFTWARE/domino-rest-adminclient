@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import * as React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -43,7 +43,7 @@ const StyledTableBody = styled(TableBody)`
 
 const StyledTableRow = styled(TableRow)`
   &:nth-of-type(odd) {
-    background-color: light-dark(#F8FBFF, #1e1e2e);
+    background-color: light-dark(#f8fbff, #1e1e2e);
     border-bottom: none;
   }
 
@@ -124,7 +124,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
   
   return (
     <StyledTableContainer>
-      <Table sx={{ padding: "30px" }} aria-label="views and agents table">
+      <Table className='p-30' aria-label="views and agents table">
         <StyledTableHead>
           <TableRow>
             <StyledTableCell width="50px" />
@@ -165,7 +165,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                     {' '}
                     <LitTooltip content={`A change was made in this view.`} placement='bottom'>
                       <span>
-                        <AiOutlineQuestionCircle style={{ color: 'light-dark(#0F52BA, #008000)' }} />
+                        <AiOutlineQuestionCircle className='views-table-question-circle' />
                       </span>
                     </LitTooltip>
                   </span> 

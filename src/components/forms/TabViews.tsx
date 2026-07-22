@@ -11,7 +11,7 @@ import { Button } from '@mui/material';
 import { AppState } from '../../store';
 import ViewSearch from './ViewSearch';
 import { handleDatabaseViews } from '../../store/databases/action';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
@@ -218,7 +218,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
       <TopNavigator>
         <ViewSearch handleSearchView={handleSearchView} />
       </TopNavigator>
-      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+      <div className='flex flex-row justify-between'>
         <ButtonsPanel>
           <Button
             disabled={views.length === 0 || loading}

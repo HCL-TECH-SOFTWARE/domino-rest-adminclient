@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import * as React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 const NoResultFound = styled.div`
   display: flex;

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Error400 from './400.svg';
 import Error403 from './403.png';
 import Error404 from './404.svg';

@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector, useDispatch } from 'react-redux';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -222,7 +222,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
           fullWidth
           value={searchValue}
           onChange={handleSearchValue}
-          style={{ marginTop: '8px' }}
+          className='mt-8'
         />
         <SearchDatabaseContainer>
           <SchemaContentsTree
@@ -244,25 +244,25 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
 
         <span className="scope-form-header">
           <StorageIcon />
-          <span style={{ marginLeft: 10 }}>{isEdit ? `Edit Scope` : `Add New Scope`}</span>
+          <span className='ml-10'>{isEdit ? `Edit Scope` : `Add New Scope`}</span>
         </span>
         {dbError && dbErrorMessage && (
-          <Alert style={{ margin: '10px 0' }} severity="error">
+          <Alert className='m-0 mt-0 mb-0' severity="error">
             <AlertTitle>{`Error: Unable to ${isEdit?'edit':'add'} scope`}</AlertTitle>
             <span className='color-text-danger big-text'>
               {dbErrorMessage}
             </span>
           </Alert>
         )}
-        <InputContainer style={{ marginTop: 5 }}>
+        <InputContainer className='mt-5'>
           <span className='color-text-primary flex'>
-            <span style={{ minWidth: '85px' }}>Database:</span>
+            <span className='min-width-85'>Database:</span>
             <span>{nsfPath}</span>
           </span>
         </InputContainer>
         <InputContainer>
           <span className='scope-form-text-schema'>
-            <span style={{ minWidth: '85px' }}>Schema:</span>
+            <span className='min-width-85'>Schema:</span>
             <span>{schemaName}</span>
           </span>
         </InputContainer>
@@ -271,7 +271,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
               {`${formik.errors.schemaName}`}
             </span>
           ) : null}
-        <InputContainer style={{ marginTop: 5 }}>
+        <InputContainer className='mt-5'>
           <TextField
             onChange={handleScopeNameChange}
             value={formik.values.apiName}
@@ -325,7 +325,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             helperText={
               <div>
                 <span>Optional : Server name must be heirarchical or canonical format.<br/>For example:</span>
-                <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
+                <ul className='m-0 mt-4 mb-4 pl-20'>
                   <li>Server/Org</li>
                   <li>CN=Server/O=Org</li>
                 </ul>
@@ -338,7 +338,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             </span>
           ) : null}
         </InputContainer>
-        <InputContainer className='flex flex-col'>
+        <InputContainer className='flex flex-col w-fit'>
           <span className="small-text">
             Maximum Access Level
           </span>
@@ -346,10 +346,10 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             aria-controls="acl-menu"
             aria-haspopup="true"
             onClick={handleSelectAcl}
-            className="icon-select"
+            className="icon-select color-text-primary p-0 w-fit"
           >
             {maximumAccessLevel ? maximumAccessLevel : "Editor"}
-            <ChevronDown style={{ fontSize: 18 }} />
+            <ChevronDown className='big-text' />
           </Button>
           <Menu
             id="acl-menu"
@@ -378,28 +378,21 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             aria-controls="icons-menu"
             aria-haspopup="true"
             onClick={handleSelectIcon}
-            className="icon-select"
+            className="icon-select color-text-primary p-0 w-fit flex gap-5"
           >
             {
               checkIcon(icon) ? (
                 <img
-                  className="icon-image"
+                  className="quick-config-icon-image"
                   src={`data:image/svg+xml;base64, ${appIcons[icon]}`}
                   alt="db-icon"
-                  style={{
-                    width: 35,
-                    height: 35,
-                    objectFit: 'contain',
-                    display: 'block',
-                    marginRight: 10,
-                  }}
                 />
               ) : (
-                <StorageIcon style={{ width: '35px', marginRight: '15px'}}/>
+                <StorageIcon className='w-35px mr-15' />
               )
             }
             {checkIcon(icon) ? icon : ''}
-            <ChevronDown style={{ fontSize: 18 }} />
+            <ChevronDown className='big-text' />
           </Button>
           <Menu
             id="lock-menu"
@@ -414,19 +407,13 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
                 key={iconName}
                 selected={index === selectedIndex}
                 onClick={(event) => handleMenuItemClick(event, index)}
+                className='flex gap-5'
               >
                 <>
                   <img
-                    className="icon-image"
+                    className="quick-config-icon-image"
                     src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                     alt="db-icon"
-                    style={{
-                      width: 35,
-                      height: 35,
-                      objectFit: 'contain',
-                      display: 'block',
-                      marginRight: 10,
-                    }}
                   />
                   {iconName}
                 </>
@@ -444,7 +431,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
         </div>
         <section>
           <LitButton
-              style={{ width: '25%' }}
+              className='quarter-width'
               onClick={() => {
                 formik.resetForm();
                 dispatch(toggleDrawer());
@@ -453,7 +440,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
               Close
             </LitButton>
             <LitButton 
-              style={{ width: '25%' }}
+              className='quarter-width'
               disabled={isEdit ? updateButtonDisabled : isDisabled}
               onClick={() => handleAdd(formik.values.apiName)}
             >
@@ -461,7 +448,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             </LitButton>
             { isEdit &&
               <LitButton
-                style={{ width: '25%' }}
+                className='quarter-width'
                 onClick={()=>handleDelete(formik.values.apiName)}
               >
                 Delete

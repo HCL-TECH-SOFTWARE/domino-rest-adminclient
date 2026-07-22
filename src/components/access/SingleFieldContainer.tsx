@@ -6,7 +6,7 @@
 
 import React, { useContext } from 'react';
 import AddIcon from '@mui/icons-material/Add';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 import { AccessContext } from './AccessContext';
 import { capitalizeFirst } from '../../utils/common';

@@ -6,7 +6,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '@mui/material/Button';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -898,7 +898,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             <ArrowDropDownIcon />
           </Button>
           <Menu
-            style={{ maxWidth: '70%' }}
             anchorEl={anchorEl}
             open={open}
             onClose={handleFieldListOnClose}
@@ -910,11 +909,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           >
             {sortedModes.map((eachMode: any, idx: any) => (
               <MenuItem
-                style={{
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
+                className='nowrap overflow-hidden text-ellipsis'
                 key={idx}
                 onClick={() => handleFieldListOnSelect(eachMode.modeName)}
               >

@@ -12,8 +12,7 @@ import RemoveIcon from '@mui/icons-material/Delete';
 import SecurityIcon from '@mui/icons-material/Security';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormikProps } from 'formik';
-import Tooltip from '@mui/material/Tooltip';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Button from '@mui/material/Button';
 import { AppProp, AppFormProp } from '../../../store/applications/types';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
@@ -179,7 +178,10 @@ const AppCard: React.FC<AppCardProps> = ({
         onMouseEnter={() => {setShowActions(true)}}
         onMouseLeave={() => {setShowActions(false)}}
       >
-        <Action className="actions" style={{ visibility: showActions ? 'visible' : 'hidden' }} onFocus={() => {setShowActions(true)}} >
+        <Action
+          className={`actions ${showActions ? 'visible' : 'hidden'}`}
+          onFocus={() => {setShowActions(true)}}
+        >
           {
             item.appHasSecret ? (
               <LitTooltip content="This application has an application secret configured">
@@ -218,19 +220,10 @@ const AppCard: React.FC<AppCardProps> = ({
               <AppImage
                 src={`data:image/svg+xml;base64, ${appIcons[item.appIcon]}`}
                 alt="db-icon"
-                style={{
-                  color: getTheme(themeMode).hoverColor
-                }}
+                className='color-hover'
               />
             ) : (
-              <ApplicationIcon
-                style={{
-                  background: getTheme(themeMode).primary,
-                  color: getTheme(themeMode).hoverColor,
-                  height: 40,
-                  width: 40
-                }}
-              />
+              <ApplicationIcon className='app-card-app-icon' />
             )}
           </Icon>
           <LitTooltip content={item.appName}>
@@ -292,7 +285,7 @@ const AppCard: React.FC<AppCardProps> = ({
             )
           )}
         </Footer>
-        <InputContainer style={actionBarStyle}>
+        <InputContainer className='p-0 pt-2 pb-2 flex justify-center'>
           {item.appStatus === 'isActive' && item.appStartPage !== 'null' ? (
             <Button className="launch" onClick={launch} onKeyDown={(e) => {handleKeyPress(e, () => {launch()}, true)}}>
               Launch

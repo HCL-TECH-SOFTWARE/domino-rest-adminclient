@@ -5,8 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
-import Tooltip from '@mui/material/Tooltip';
+import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useLocation } from 'react-router-dom';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
@@ -118,17 +117,23 @@ const ScopesAlphabeticalView: React.FC<ScopesAlphabeticalSchemaViewProps> = ({
                 </span>
                 {alphabets[letter].map((data: any, index: number) => (
                   // Hide keppconfig database to
-                  <Db onClick={() => openScope(data)} key={index} tabIndex={1} onKeyDown={(e) => {handleKeyPress(e, data)}}>
+                  <Db
+                    className='flex gap-5'
+                    onClick={() => openScope(data)}
+                    key={index}
+                    tabIndex={1}
+                    onKeyDown={(e) => {handleKeyPress(e, data)}}
+                  >
                     {checkIcon(data.iconName) ? (
                       <img
-                        style={{ height: 30, marginRight: 10 }}
+                        className='h-30px'
                         src={`data:image/svg+xml;base64, ${
                           appIcons[data.iconName]
                         }`}
                         alt="database-icon"
                       />
                     ) : (
-                      <DBIcon style={{}} />
+                      <DBIcon />
                     )}
                     <LitTooltip content={data.apiName} without-arrow>
                       <span

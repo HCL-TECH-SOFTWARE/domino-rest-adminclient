@@ -8,7 +8,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../store';
 import { fetchMyApps } from '../../store/applications/action';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { Box } from '@mui/material';
 import Consents from './kanban/Consents';
 import { useNavigate } from 'react-router-dom';

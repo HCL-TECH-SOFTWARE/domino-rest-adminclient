@@ -12,7 +12,7 @@ import { toggleConsentsDrawer } from '../../store/drawer/action';
 import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -155,10 +155,10 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
   
   return (
     <Drawer anchor="right" open={consentsDrawer} onClose={handleClickOpen}>
-      <DrawerFormContainer style={{ width: '35vw' }}>
+      <DrawerFormContainer className='w-35vw'>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <div className='flex flex-col p-20'>
-            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+            <div className='full-width flex justify-end'>
               <LitTooltip content="Close" placement='bottom'>
                 <CloseIcon
                   cursor="pointer"
@@ -166,7 +166,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                   onClick={() => dispatch(toggleConsentsDrawer())}
                 />
               </LitTooltip>
-            </Box>
+            </div>
             <span className='text-bold big-text'>Filter</span>
             <Section>
               <span className='big-text m-0 p-0'>Status</span>
@@ -175,23 +175,13 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                   value='All'
                   control={<StyledRadio size='small' />}
                   label='All'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
                 <FormControlLabel
                   value='Active'
                   control={<StyledRadio size='small' />}
                   label='Active'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
               </RadioGroup>
             </Section>
@@ -211,34 +201,19 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                   value='All'
                   control={<StyledRadio size='small' />}
                   label='All'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
                 <FormControlLabel
                   value='None'
                   control={<StyledRadio size='small' />}
                   label='None'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
                 <FormControlLabel
                   value='Custom'
                   control={<StyledRadio size='small' />}
                   label='Custom'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
               </RadioGroup>
               {filterExp.expiration !== "All" && filterExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterExp.date)} onChange={e => setFilterExp({ expiration: filterExp.expiration, date: e ? e.toDate() : filterExp.date})} />}
@@ -251,34 +226,19 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                   value='All'
                   control={<StyledRadio size='small' />}
                   label='All'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
                 <FormControlLabel
                   value='None'
                   control={<StyledRadio size='small' />}
                   label='None'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
                 <FormControlLabel
                   value='Custom'
                   control={<StyledRadio size='small' />}
                   label='Custom'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='small-text p-0'
                 />
               </RadioGroup>
               {filterTokenExp.expiration !== "All" && filterTokenExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterTokenExp.date)} onChange={e => setFilterTokenExp({ expiration: filterTokenExp.expiration, date: e ? e.toDate() : filterTokenExp.date }) } />}
@@ -286,7 +246,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
             <hr className='divider' />
             <Section>
               <span className='big-text m-0 p-0'>Scopes</span>
-              <Box style={{ display: 'flex', flexFlow: 'row wrap', width: '100%' }}>
+              <div className='flex flex-flow-row-wrap full-width'>
                 {collectScopes(consents).length > 0 &&
                   collectScopes(consents).map(scope => (
                     <div className='half-width' key={scope}>
@@ -299,7 +259,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                     </div>
                   ))
                 }
-              </Box>
+              </div>
             </Section>
             <ButtonsContainer>
               <LitButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())} text='Cancel' />

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { Card } from '@mui/material';
-import styled, { css } from 'styled-components';
+import { styled } from '@linaria/react';
 import { getTheme } from '../../../../../store/styles/action';
 
 export const SchemaCardContainer = styled(Card)<{
@@ -34,18 +34,14 @@ export const SchemaCardContainer = styled(Card)<{
     width: 250px !important;
   }
 
-  ${(props) =>
-    props.state.open &&
-    css`
-      pointer-events: none;
-      opacity: ${props.state.apiName === props.state.selected ? 1 : 0.2};
-    `};
+  pointer-events: ${(props) => (props.state.open ? 'none' : 'auto')};
+  opacity: ${(props) => (props.state.open ? (props.state.apiName === props.state.selected ? 1 : 0.2) : 1)};
 
   user-select: none;
   cursor: pointer;
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor};
+    border: 1px solid var(--hover-color);
 
     .more {
       visibility: visible;

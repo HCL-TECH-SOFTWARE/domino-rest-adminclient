@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect } from 'react';
-import styled from 'styled-components';
+import { useEffect } from 'react';
+import { styled } from '@linaria/react';
 import { useDispatch, useSelector } from 'react-redux';
 import Tip from './Tip';
 import database from './appdev.jpg';

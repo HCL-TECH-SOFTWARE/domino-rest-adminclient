@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import * as React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -211,12 +211,12 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
               <TableRow>
                 <TableCell className='launch' />
                 <TableCell className='app-name text'>
-                  <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div className='full-width flex flex-col gap-3'>
                     <span className='small-text text-bold flex items-center gap-3'>
                       App Name
                       <button
                         onClick={handleSortAppNames}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                        className='no-background no-border cursor-pointer m-0 p-0'
                       >
                         <FaSort />
                       </button>
@@ -225,7 +225,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                     {/* <LitInputText
                       hint='Search App Name'
                     /> */}
-                  </Box>
+                  </div>
                 </TableCell>
                 <TableCell className='app-id-secret text'>
                   <div className='full-width flex flex-col gap-3'>
@@ -242,7 +242,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                     <span className='small-text text-bold'>
                       Description
                     </span>
-                    <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
+                    <input type='text' className='search-bar hidden' />
                   </div>
                 </TableCell>
                 <TableCell className='icons' />
@@ -273,39 +273,39 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   page={page}
                   onPageChange={handleChangePage}
                   onRowsPerPageChange={handleChangeRowsPerPage}
-                  sx={{
-                    '& .MuiToolbar-root': {
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      justifyContent: 'flex-end',
-                    },
-                    '& .MuiTablePagination-spacer': {
-                      flex: '1 1 100%',
-                    },
-                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                      margin: 0,
-                      lineHeight: 1.5,
-                    },
-                    '& .MuiTablePagination-input': {
-                      marginTop: 0,
-                      marginBottom: 0,
-                      marginLeft: '8px',
-                      marginRight: '24px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                    },
-                    '& .MuiTablePagination-select': {
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      paddingTop: '4px',
-                      paddingBottom: '4px',
-                    },
-                    '& .MuiTablePagination-actions': {
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                    },
-                  }}
+                  // sx={{
+                  //   '& .MuiToolbar-root': {
+                  //     display: 'flex',
+                  //     alignItems: 'center',
+                  //     flexWrap: 'wrap',
+                  //     justifyContent: 'flex-end',
+                  //   },
+                  //   '& .MuiTablePagination-spacer': {
+                  //     flex: '1 1 100%',
+                  //   },
+                  //   '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  //     margin: 0,
+                  //     lineHeight: 1.5,
+                  //   },
+                  //   '& .MuiTablePagination-input': {
+                  //     marginTop: 0,
+                  //     marginBottom: 0,
+                  //     marginLeft: '8px',
+                  //     marginRight: '24px',
+                  //     display: 'inline-flex',
+                  //     alignItems: 'center',
+                  //   },
+                  //   '& .MuiTablePagination-select': {
+                  //     display: 'inline-flex',
+                  //     alignItems: 'center',
+                  //     paddingTop: '4px',
+                  //     paddingBottom: '4px',
+                  //   },
+                  //   '& .MuiTablePagination-actions': {
+                  //     display: 'inline-flex',
+                  //     alignItems: 'center',
+                  //   },
+                  // }}
                   slotProps={{
                     select: {
                       inputProps: {
@@ -319,7 +319,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                     }
                   }}
                   ActionsComponent={({ count, page }) => (
-                    <div style={{ flexShrink: 0, marginLeft: 10, display: 'inline-flex', alignItems: 'center' }}>
+                    <div className='apps-table-bottom-row'>
                       <IconButton disabled={page === 0} aria-label='First Page' onClick={(e) => handleChangePage(e, 0)}>
                         <FirstPage />
                       </IconButton>

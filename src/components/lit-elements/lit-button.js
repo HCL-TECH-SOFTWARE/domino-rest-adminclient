@@ -5,6 +5,13 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 class Button extends LitElement {
   static styles = [
     css`
+      :host {
+        display: var(--lit-button-display, inline-block);
+        width: var(--lit-button-width, auto);
+      }
+      wa-button {
+        width: var(--lit-button-width, auto);
+      }
       :host([data-theme="dark"]) wa-button[appearance="outlined"]::part(base) {
         --wa-color-brand-50: #f4e9ff;
         --wa-color-brand-border-loud: #f4e9ff;

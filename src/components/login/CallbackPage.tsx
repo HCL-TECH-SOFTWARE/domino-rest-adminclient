@@ -59,8 +59,8 @@ const CallbackPage: React.FC = () => {
 
   const CallbackElement: React.FC = () => {
     return (
-      <section style={{ display: 'flex', flexDirection: 'column', padding: '40px 0', gap: '10px' }}>
-        <span style={{ float: 'left', fontSize: '24px', color: 'black'}}>HCL Domino REST API Administrator</span>
+      <section className='flex flex-col p-0 pt-40 pb-40 gap-10'>
+        <span className='float-left huge-text color-text-primary'>HCL Domino REST API Administrator</span>
         <h1>{displayText}</h1>
       </section>
     )

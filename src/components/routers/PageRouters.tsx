@@ -4,8 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import BreadcrumbRouter from './BreadcrumbRouter';
 
 const PageRouterContainer = styled.div`

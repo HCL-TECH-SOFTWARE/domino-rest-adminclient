@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 const ColumnBarContainer = styled.div`
   box-sizing: border-box;

@@ -8,6 +8,13 @@ import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 
 class Dropdown extends LitElement {
     static styles = css`
+      :host {
+        display: var(--lit-dropdown-display, inline-block);
+        width: var(--lit-dropdown-width, auto);
+      }
+      wa-dropdown {
+        width: var(--lit-dropdown-width, auto);
+      }
       wa-dropdown::part(base) {
         width: 100%;
         display: flex;

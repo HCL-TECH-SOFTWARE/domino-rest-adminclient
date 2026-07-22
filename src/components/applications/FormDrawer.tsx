@@ -50,7 +50,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
           // Group form
           case 'GroupForm':
             return (
-              <div style={{ width: '55vw' }}>
+              <div className='w-55vw'>
                 <GroupForm formik={formik} />
               </div>
             )
@@ -58,7 +58,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
           // People form
           case 'PeopleForm':
             return (
-              <div style={{ width: '50vw' }}>
+              <div className='w-50vw'>
                 <PeopleForm formik={formik} />
               </div>
             )
@@ -66,7 +66,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
              // Test form
           case 'TestForm':
             return (
-              <div style={{ width: '50vw' }}>
+              <div className='w-50vw'>
                 <TestForm formik={formik} />
               </div>
             )

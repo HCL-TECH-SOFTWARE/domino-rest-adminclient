@@ -7,7 +7,7 @@
 /* eslint-disable no-use-before-define */
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 
 const AutoContainer = styled.div`
   margin: 20px 0;

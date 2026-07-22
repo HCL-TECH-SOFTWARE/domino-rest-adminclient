@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useSelector } from 'react-redux';
 import { IMG_DIR } from '../../config.dev';

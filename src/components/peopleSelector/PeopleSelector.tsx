@@ -35,14 +35,7 @@ const PeopleSelector: React.FC = () => {
 
   return (
     <AppFormContext.Provider value={[formContext, setFormContext]}>
-      <div
-        style={{
-          height: 350,
-          width: '98%',
-          marginTop: 20,
-          borderWidth: '5px',
-        }}
-      >
+      <div className='people-selector-div'>
         <DataGrid
           rowHeight={28}
           rows={peopleRows}

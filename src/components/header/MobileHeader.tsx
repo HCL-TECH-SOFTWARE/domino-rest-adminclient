@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseMenuIcon from '@mui/icons-material/ChevronLeft';
 import ProfileMenuDialog from '../sidenav/ProfileMenuDialog';
@@ -34,18 +34,17 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
 }) => {
   return (
     <MobileHeaderContainer>
-      <div style={{ flex: 1 }}>
+      <div className='flex-1'>
         {open ? (
-          <CloseMenuIcon style={{ fontSize: 30 }} onClick={toggleMobileMenu} />
+          <CloseMenuIcon className='very-large-text' onClick={toggleMobileMenu} />
         ) : (
-          <MenuIcon style={{ fontSize: 30 }} onClick={toggleMobileMenu} />
+          <MenuIcon className='very-large-text' onClick={toggleMobileMenu} />
         )}
       </div>
       {!open && (
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        <div className='flex-1 flex justify-center'>
           <img
             className="keep-icon"
-            style={{ height: 32 }}
             src={`${IMG_DIR}/KeepNewIcon.png`}
             alt="HCL Domino REST API Icon"
           />

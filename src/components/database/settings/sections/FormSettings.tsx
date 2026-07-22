@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { SettingContext } from '../SettingContext';
 
 const FormSettingsContainer = styled.div`

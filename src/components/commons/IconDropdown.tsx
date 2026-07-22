@@ -43,17 +43,14 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                 className="icon-select"
             >
                 <img
-                    className="icon-image"
+                    className="icon-dropdown-image"
                     src={`data:image/svg+xml;base64, ${appIcons[displayIconName]}`}
                     alt="db-icon"
-                    style={{
-                    color: getTheme(themeMode).hoverColor,
-                    width: `${size}px`,
-                    height: `${size}px`
-                    }}
                 />
-                <span style={{ textTransform: 'capitalize', paddingLeft: '11px', color: 'light-dark(#000, #e0e0e0)' }}>{displayIconName.toLowerCase()}</span>
-                <ChevronDown style={{ fontSize: 18 }} />
+                <span className='icon-dropdown-span'>
+                    {displayIconName.toLowerCase()}
+                </span>
+                <ChevronDown className='big-text' />
             </Button>
             <Menu
                 id="lock-menu"
@@ -71,15 +68,9 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                     >
                         <>
                             <img
-                                className="icon-image"
+                                className="icon-dropdown-image"
                                 src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                                 alt="db-icon"
-                                style={{
-                                    color: getTheme(themeMode).hoverColor,
-                                    height: 35,
-                                    width: 35,
-                                    marginRight: 10,
-                                }}
                             />
                             {iconName}
                         </>

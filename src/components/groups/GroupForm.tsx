@@ -85,7 +85,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 : ' View Group Details'}
             </span>
 
-            <InputContainer style={{ marginTop: 5 }}>
+            <InputContainer className='mt-5'>
               <TextField
                 autoComplete="off"
                 fullWidth
@@ -146,9 +146,9 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </span>
               ) : null}
             </InputContainer>
-            <Box sx={{ display: 'flex' }}>
-              <Box sx={{ borderRadius: 16 }} {...defaultViewProps}>
-                <div style={{ height: 350, width: '100%', marginTop: 20 }}>
+            <Box className='flex'>
+              <Box className='rounded-16' {...defaultViewProps}>
+                <div className='h-fit full-width mt-20'>
                   <DataGrid
                     rowHeight={28}
                     rows={formik.values.groupMembers}
@@ -163,7 +163,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
         ) : (
           <PanelContent onSubmit={formik.handleSubmit}>
             {groupsError && groupsErrorMessage && (
-              <Alert style={{ margin: '5px 0' }} severity="error">
+              <Alert className='m-0 mt-0 mb-0' severity="error">
                 <AlertTitle>Error: Unable to save Group</AlertTitle>
                 <span className="big-text">
                   {groupsErrorMessage}
@@ -183,7 +183,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 ? ' Update a Group '
                 : 'View Group Details'}
             </span>
-            <InputContainer style={{ marginTop: 5 }}>
+            <InputContainer className='mt-5'>
               <TextField
                 autoComplete="off"
                 fullWidth
@@ -241,20 +241,19 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </span>
               ) : null}
             </InputContainer>
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box sx={{ borderRadius: 16 }} {...defaultProps}>
+            <Box className='flex justify-center'>
+              <Box className='rounded-16' {...defaultProps}>
                 <PeopleSelector />
                 <Button
-                  className="button-style, button-small"
-                  style={{ width: '125px', float: 'right', marginRight: '6px' }}
+                  className="group-form-button-style group-form-button-small group-add-member-button"
                 >
                   Add Member
                   <ArrowRightIcon />
                 </Button>
               </Box>
               {formContext === 'Edit' ? (
-                <Box sx={{ borderRadius: 16 }} {...defaultProps}>
-                  <div style={{ height: 350, width: '100%', marginTop: 20 }}>
+                <Box className='rounded-16' {...defaultProps}>
+                  <div className='full-width mt-20'>
                     <DataGrid
                       rowHeight={28}
                       rows={formik.values.groupMembers}
@@ -264,8 +263,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                     />
                   </div>
                   <Button
-                    className="button-style, button-small"
-                    style={{ width: '150px', float: 'left' }}
+                    className="group-form-button-style group-form-button-small group-remove-member-button"
                   >
                     <ArrowLeftIcon />
                     Remove Member
@@ -273,23 +271,22 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
                 </Box>
               ) : (
                 // Need to be implemented
-                <Box sx={{ borderRadius: 16 }} {...defaultProps}>
+                <div className='rounded-16' {...defaultProps}>
                   <GroupMembers />
                   <Button
-                    className="button-style, button-small"
-                    style={{ width: '150px', float: 'left' }}
+                    className="group-form-button-style group-form-button-small group-remove-member-button"
                   >
                     <ArrowLeftIcon />
                     Remove Member
                   </Button>
-                </Box>
+                </div>
               )}
             </Box>
           </PanelContent>
         )}
-        <ActionButtonBar style={{ marginTop: 30 }}>
+        <ActionButtonBar className='mt-30'>
           <Button
-            className="button-style"
+            className="group-form-button-style"
             onClick={() => {
               dispatch(toggleApplicationDrawer());
             }}
@@ -297,11 +294,11 @@ const GroupForm: React.FC<GroupFormProps> = ({ formik }) => {
             Close
           </Button>
           {formContext === 'Add' ? (
-            <Button className="button-style" onClick={formik.submitForm}>
+            <Button className="group-form-button-style" onClick={formik.submitForm}>
               Add
             </Button>
           ) : formContext === 'Edit' ? (
-            <Button className="button-style" onClick={formik.submitForm}>
+            <Button className="group-form-button-style" onClick={formik.submitForm}>
               Update
             </Button>
           ) : (

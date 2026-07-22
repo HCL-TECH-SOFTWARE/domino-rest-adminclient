@@ -11,7 +11,7 @@ import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import UserIcon from '@mui/icons-material/AccountCircleOutlined';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
@@ -81,7 +81,11 @@ const ProfileMenu = () => {
         placement="right"
         content="Profile"
       >
-        <UserIcon style={{width: '36px', height:'36px', margin: '0 0 115px 8px', cursor: 'pointer'}} onClick={handleClick} data-testid="profileIcon" />
+        <UserIcon
+          className='profile-menu-user-icon profile-menu-dialog-user cursor-pointer'
+          onClick={handleClick}
+          data-testid="profileIcon"
+        />
       </LitTooltip>
       <Popper open={open} anchorEl={anchorEl} placement="bottom-end" transition>
         {({ TransitionProps }) => (

@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
 import ColumnDetails from './ColumnDetails';
 import { useDispatch } from 'react-redux';
 import { fetchViews, updateSchema } from '../../store/databases/action';
@@ -554,7 +553,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               {loading.status ? <div className="all-columns-list-item"><APILoadingProgress label="Columns" /></div> :
                 fetchedColumns.map((column: any, index: any) => (
                   <div key={index}>
-                    <hr style={{ margin: '0 0 0 0' }} />
+                    <hr className='m-0' />
                     <div
                       key={column.name}
                       className={`

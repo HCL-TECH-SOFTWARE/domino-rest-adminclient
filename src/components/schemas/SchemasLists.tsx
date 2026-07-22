@@ -177,7 +177,7 @@ const SchemasLists = () => {
     <SettingContext.Provider value={[context, setContext]}>
       <WrapperContainer>
           <>
-            <TopContainer style={{ marginTop: '15px' }}>
+            <TopContainer className='mt-15'>
               <span className="top-nav color-text-primary">
                 Schema Management
               </span>
@@ -188,7 +188,7 @@ const SchemasLists = () => {
                 Add Schema
               </LitButton>
             </TopContainer>
-            <TopContainer style={{ marginTop: 0 }}>
+            <TopContainer className='mt-0'>
               <DatabaseSearch handleSearchDatabase={handleSearchDatabase} changeSearchType={changeSearchType} searchType={searchType}/>
               <CardViewOptions changeView={changeView} />
             </TopContainer>

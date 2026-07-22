@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Dialog } from '@mui/material';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import {
   deleteApplication,
   addApplication,
@@ -170,7 +170,7 @@ const Kanban: React.FC = () => {
   return (
     <>
       <AppContainer>
-        <TopContainer  style={{ marginTop: '15px' }}>
+        <TopContainer className='mt-15'>
           <p className='header-text'>
             Application Management
           </p>
@@ -186,11 +186,10 @@ const Kanban: React.FC = () => {
             >
               OAuth Consents
             </LitButton>
-            <div style={{ height: '46px', width: '1px', backgroundColor: 'light-dark(#000, #3a3a4a)' }} />
+            <div className='kanban-div' />
             <button
               onClick={() => dispatch(toggleAppFilterDrawer())}
-              className='option'
-              style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+              className='option no-background no-border cursor-pointer m-0 p-0'
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>

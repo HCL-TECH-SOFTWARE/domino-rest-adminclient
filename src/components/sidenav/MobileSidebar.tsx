@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { NavLink, useLocation } from 'react-router-dom';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import List from '@mui/material/List';
@@ -14,7 +14,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
-import { appRoutes as routes, apps, databases, groups, people } from './Routes';
+import { appRoutes as routes, apps, groups, people } from './Routes';
 import { IMG_DIR, BUILD_VERSION } from '../../config.dev';
 import { getTheme } from '../../store/styles/action';
 import { AppState } from '../../store';
@@ -31,6 +31,43 @@ const SideContainer = styled.aside`
 `;
 
 const QuickConfigButton = styled.div``;
+
+const SidebarContainer = styled(List)<{ theme: string }>`
+  a {
+    display: block;
+    text-decoration: none !important;
+    color: #82cafa;
+  }
+
+  .route-active {
+    .link-container {
+      border-left: 4px solid KEEP_ADMIN_BASE_COLOR;
+
+      background: #addfff;
+
+      .text-link {
+        margin-left: -4px;
+        color: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'} !important;
+        font-size: 20px;
+      }
+      .keep-icon {
+        width: 30px;
+      }
+
+      svg {
+        margin-left: -4px;
+        color: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'} !important;
+        font-size: 20px;
+        cursor: pointer;
+        font-weight: 800;
+      }
+    }
+  }
+`;
+
+const ContentWrapper = styled.div`
+  flex-grow: 1;
+`;
 
 const Logo = styled.div`
   display: flex;
@@ -81,44 +118,6 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
     dispatch(toggleQuickConfigDrawer());
   };
 
-  const SidebarContainer = styled(List)`
-    a {
-      display: block;
-      text-decoration: none !important;
-      color: #82cafa;
-    }
-
-    .route-active {
-      background-collor: yellow;
-      .link-container {
-        border-left: 4px solid KEEP_ADMIN_BASE_COLOR;
-
-        background: #addfff;
-
-        .text-link {
-          margin-left: -4px;
-          color: ${getTheme(themeMode).hoverColor} !important;
-          font-size: 20px;
-        }
-        .keep-icon {
-          width: 30px;
-        }
-
-        svg {
-          margin-left: -4px;
-          color: ${getTheme(themeMode).hoverColor} !important;
-          font-size: 20px;
-          cursor: pointer;
-          font-weight: 800;
-        }
-      }
-    }
-  `;
-
-  const ContentWrapper = styled.div`
-    flex-grow: 1;
-  `;
-
   return (
     <SideNavContainer>
       <SideContainer
@@ -127,7 +126,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
           close: !open
         })}>
         <LinksContainer>
-          <SidebarContainer>
+          <SidebarContainer theme={themeMode}>
             <Logo>
               <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="HCL Domino REST API Icon" />
               <span className="title color-text-primary">
@@ -146,12 +145,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   <LitTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
-                        <Icon
-                          style={{
-                            color: getTheme(themeMode).textColorPrimary,
-                            fontSize: 19
-                          }}
-                        />
+                        <Icon className='color-text-primary big-text' />
                       </ListItemIcon>
                       <ListItemText>
                         <span className="text-link color-text-primary">
@@ -168,12 +162,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
               <LitTooltip placement="right" content="Quick Config">
                 <ListItemButton className="link-container" key="Quick Config" onClick={handleQuickConfig}>
                   <ListItemIcon>
-                    <FlashOnIcon
-                      style={{
-                        color: getTheme(themeMode).textColorPrimary,
-                        fontSize: 19
-                      }}
-                    />
+                    <FlashOnIcon className='color-text-primary big-text' />
                   </ListItemIcon>
                   <ListItemText>
                     <span className="text-link color-text-primary">
@@ -196,12 +185,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
-                          <Icon
-                            style={{
-                              color: getTheme(themeMode).textColorPrimary,
-                              fontSize: 19
-                            }}
-                          />
+                          <Icon className='color-text-primary big-text' />
                         </ListItemIcon>
                         <ListItemText>
                           <span className="text-link color-text-primary">
@@ -226,12 +210,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
-                          <Icon
-                            style={{
-                              color: getTheme(themeMode).textColorPrimary,
-                              fontSize: 19
-                            }}
-                          />
+                          <Icon className='color-text-primary big-text' />
                         </ListItemIcon>
                         <ListItemText>
                           <span className="text-link color-text-primary">
@@ -256,12 +235,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     <LitTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
-                          <Icon
-                            style={{
-                              color: getTheme(themeMode).textColorPrimary,
-                              fontSize: 19
-                            }}
-                          />
+                          <Icon className='color-text-primary big-text' />
                         </ListItemIcon>
                         <ListItemText>
                           <span className="text-link color-text-primary">

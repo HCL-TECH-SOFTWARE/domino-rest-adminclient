@@ -8,9 +8,9 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
-import { DrawerFormContainer, HorizontalDivider, StyledRadio } from '../../styles/CommonStyles';
+import { DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { fetchMyApps } from '../../store/applications/action';
@@ -118,7 +118,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   
   return (
     <LitDrawer label="Filter" open={appFilterDrawer}>
-      <DrawerFormContainer style={{ width: '35vw' }}>
+      <DrawerFormContainer className='w-35vw'>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
             <div className='full-width flex justify-end'>
@@ -130,38 +130,23 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                   value='All'
                   control={<StyledRadio color='default' size='small' />}
                   label='All'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='Active'
                   control={<StyledRadio color='default' size='small' />}
                   label='Active'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='Inactive'
                   control={<StyledRadio color='default' size='small' />}
                   label='Inactive'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
               </RadioGroup>
             </Section>
-            <HorizontalDivider />
+            <hr className='divider pt-5 pb-10 mb-10 no-background' />
             <Section>
               <span className='big-text'>Authentication method</span>
               <RadioGroup value={filterAppSecret} onChange={(e) => setFilterAppSecret(e.currentTarget.value)} className='radio-group'>
@@ -169,60 +154,35 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
                   value='All'
                   control={<StyledRadio color='default' size='small' />}
                   label='All'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='App secret'
                   control={<StyledRadio color='default' size='small' />}
                   label='App secret'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='App secret generated'
                   control={<StyledRadio color='default' size='small' />}
                   label='App secret generated'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='App secret not generated'
                   control={<StyledRadio color='default' size='small' />}
                   label='App secret not generated'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
                 <FormControlLabel
                   value='PKCE'
                   control={<StyledRadio color='default' size='small' />}
                   label='PKCE'
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontSize: '14px',
-                      padding: 0,
-                    }
-                  }}
+                  className='tiny-text p-0'
                 />
               </RadioGroup>
             </Section>
-            <HorizontalDivider />
+            <hr className='divider pt-5 pb-10 mb-10 no-background' />
             <ButtonsContainer>
               <LitButtonNeutral onClick={handleClickReset} text='Reset' />
               <LitButtonNo onClick={() => dispatch(toggleAppFilterDrawer())} text='Cancel' />

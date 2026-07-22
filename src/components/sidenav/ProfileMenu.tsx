@@ -12,7 +12,7 @@ import Paper from '@mui/material/Paper';
 import Fade from '@mui/material/Fade';
 import Collapse from '@mui/material/Collapse';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
@@ -158,7 +158,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
             onClick={handleIconClick}
             data-testid="profileIcon"
           >
-            <UserIcon style={{ width: '36px', height: '36px' }} />
+            <UserIcon className='profile-menu-user-icon' />
           </IconWrapper>
         </LitTooltip>
 
@@ -170,7 +170,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
           orientation="horizontal"
           timeout={open ? OPEN_TRANSITION_MS : CLOSE_TRANSITION_MS}
           unmountOnExit
-          style={{ flex: 1, minWidth: 0 }}
+          className='flex-1 no-min-width'
         >
           <Fade in={open} timeout={open ? OPEN_TRANSITION_MS : CLOSE_TRANSITION_MS}>
             <ProfileInfo>
@@ -193,10 +193,10 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
         in={open}
         timeout={open ? OPEN_TRANSITION_MS : CLOSE_TRANSITION_MS}
         unmountOnExit
-        style={{ width: '100%' }}
+        className='full-width'
       >
         <Fade in={open} timeout={open ? OPEN_TRANSITION_MS : CLOSE_TRANSITION_MS}>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className='flex justify-center'>
             <OptionList toggleMenu={() => undefined} theme={themeMode} />
           </div>
         </Fade>
@@ -210,14 +210,14 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
         anchorEl={iconRef.current}
         placement="right-end"
         transition
-        style={{ zIndex: 1300 }}
+        className='z-1300'
       >
         {({ TransitionProps }) => (
           <ClickAwayListener onClickAway={handlePopperClose}>
             <Fade {...TransitionProps} timeout={250}>
               <ProfileMenuCard>
                 <PopperAvatarContainer theme={themeMode}>
-                  <ProfileInfo style={{ marginLeft: 0 }}>
+                  <ProfileInfo className='ml-0'>
                     <span className="color-text-primary weight-700 medium-text nowrap">
                       {user}
                     </span>

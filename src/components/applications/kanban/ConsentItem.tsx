@@ -6,7 +6,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { Box, Collapse, TableCell, TableRow, Tooltip } from '@mui/material';
 import { AppState } from '../../../store';
 import { toggleDeleteConsent } from '../../../store/consents/action';
@@ -110,14 +110,14 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                     {!showDetails && 
                     <button
                       onClick={() => {setShowDetails(true)}}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                      className='no-background no-border cursor-pointer m-0 p-0'
                     >
                       <ExpandMoreIcon />
                     </button>}
                     {showDetails && 
                     <button
                       onClick={() => {setShowDetails(false)}}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                      className='no-background no-border cursor-pointer m-0 p-0'
                     >
                       <ExpandLessIcon />
                     </button>}
@@ -151,8 +151,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                 <TableCell className='off-border'>
                   <button
                     onClick={handleClickRevoke}
-                    className='revoke'
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                    className='revoke no-background no-border cursor-pointer m-0 p-0'
                   >
                     Revoke
                   </button>
@@ -165,7 +164,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                             <span><b>URL:</b></span>
                             <a href={consent.redirect_uri} target='_blank' rel='noreferrer' className='value'>{consent.redirect_uri}</a>
                         </UrlContainer>
-                        <UrlContainer style={{ flexDirection: 'column' }}>
+                        <UrlContainer className='flex-col'>
                             <span><b>Scopes</b></span>
                             <Box className='scope-box'>
                               {consentScopes.map((scope) =>

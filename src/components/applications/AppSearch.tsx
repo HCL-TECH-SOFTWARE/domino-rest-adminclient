@@ -28,7 +28,7 @@ const AppSearch: React.FC<AppsSearchProps> = ({ handleSearchApp }) => {
         <SearchIcon color="primary" className="search-icon" />
         <SearchInput
           onChange={handleSearchApp}
-          style={{ color: getTheme(themeMode).textColorPrimary }}
+          className='color-text-primary'
           type="text"
           placeholder="Search Application"
         />

@@ -10,7 +10,7 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { FormikProps } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
@@ -86,7 +86,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
   const dispatch = useDispatch();
 
   return (
-    <FormContentContainer role="presentation" style={{width: '100%'}}>
+    <FormContentContainer role="presentation" className='full-width'>
       {!displayTestResults &&
         <TestsPanel>
           <CloseIcon
@@ -153,7 +153,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
                 label="On Save Formula"
               />
             </FormGroup>
-            <InputContainer style={{ marginTop: 5 }}>
+            <InputContainer className='mt-5'>
               <TextField
                 autoComplete="off"
                 fullWidth

@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useSelector, useDispatch } from 'react-redux';
 import ClearIcon from '@mui/icons-material/Clear';
 import { IconButton } from '@mui/material';
@@ -218,7 +218,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           fullWidth
           value={searchValue}
           onChange={handleSearchValue}
-          style={{ marginTop: '8px' }}
+          className='mt-8'
           id={`Search ${listType}`}
           slotProps={{
             input: {
@@ -254,17 +254,17 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
       <FormContentContainer className='full-width flex flex-col'>
         <span className="scope-form-header">
           <StorageIcon />
-          <span style={{ marginLeft: 10 }}>{`Quick Config`}</span>
+          <span className='ml-10'>{`Quick Config`}</span>
         </span>
         {dbError && dbErrorMessage && (
-          <Alert style={{ margin: '10px 0' }} severity="error">
+          <Alert className='m-0 mt-10 mb-10' severity="error">
             <AlertTitle>{`Quick config error:`}</AlertTitle>
             <span className='color-text-danger small-text'>
               {dbErrorMessage}
             </span>
           </Alert>
         )}
-        <InputContainer style={{ marginTop: 5 }}>
+        <InputContainer className='mt-5'>
           <span className='color-text-primary font-15'>{`Database: ${nsfPath}`}</span>
         </InputContainer>
         {!nsfPath && formik.touched.schemaName ? (
@@ -272,7 +272,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
               {`${formik.errors.nsfPath}`}
             </span>
           ) : null}
-        <InputContainer style={{ marginTop: 5 }}>
+        <InputContainer className='mt-5'>
           <TextField
             onChange={handleSchemaNameChange}
             value={formik.values.schemaName}
@@ -329,7 +329,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             </span>
           ) : null}
         </InputContainer>
-        <InputContainer>
+        <InputContainer className='flex flex-col'>
           <span className="small-text color-text-primary full-width">
             {`${itemType} Icon`}
           </span>
@@ -337,22 +337,15 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             aria-controls="icons-menu"
             aria-haspopup="true"
             onClick={handleSelectIcon}
-            className="icon-select"
+            className="icon-select flex gap-5 small-text w-fit"
           >
             <img
-              className="icon-image"
+              className="quick-config-icon-image"
               src={`data:image/svg+xml;base64, ${appIcons[icon]}`}
               alt="db-icon"
-              style={{
-                width: 35,
-                height: 35,
-                objectFit: 'contain',
-                display: 'block',
-                marginRight: 10,
-              }}
             />
-            {icon}
-            <ChevronDown style={{ fontSize: 18 }} />
+            <span>{icon}</span>
+            <ChevronDown className='big-text' />
           </Button>
           <Menu
             id="lock-menu"
@@ -368,21 +361,14 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
                 selected={index === selectedIndex}
                 onClick={(event) => handleMenuItemClick(event, index)}
               >
-                <>
+                <div className='flex items-center gap-5'>
                   <img
-                    className="icon-image"
+                    className="quick-config-icon-image"
                     src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                     alt="db-icon"
-                    style={{
-                      width: 35,
-                      height: 35,
-                      objectFit: 'contain',
-                      display: 'block',
-                      marginRight: 10,
-                    }}
                   />
                   {iconName}
-                </>
+                </div>
               </MenuItem>
             ))}
           </Menu>
@@ -393,14 +379,6 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
             size='m'
           />
-        <div className="flex flex-row items-center gap-2">
-          <LitCheckbox
-            checked={formik.values.isActive}
-            onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
-            size='m'
-          />
-          <span>Active</span>
-        </div>
           <span>Active</span>
         </div>
         <InputContainer className='flex flex-col full-width'>
@@ -438,14 +416,14 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         </InputContainer>
         <section>
           <LitButton
-            style={{ width: '25%' }}
+            className='quarter-width'
             onClick={resetForm}
           >
             Close
           </LitButton>
           <LitButton 
             disabled={isDisabled}
-            style={{ width: '25%' }}
+            className='quarter-width'
             onClick={handleAdd}>
             Add
           </LitButton>

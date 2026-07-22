@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { checkIcon } from '../../../../../styles/scripts';
@@ -34,7 +34,7 @@ const AlphabeticalViewContainer = styled.div`
 
   .all-rows {
     height: 50vh;
-    overflow-y: scroll;
+    overflow-y: auto;
     scroll-behavior: smooth;
   }
 
@@ -292,7 +292,7 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
             ))
           }
         </Box>
-        <hr color='#C8D2DD' style={{ height: 1, margin: '30px 0 0 0' }} />
+        <hr className='divider' />
         <Box className='all-rows'>
           {
             Object.keys(alphabets).map((letter) => (
@@ -309,7 +309,7 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
                         </LitTooltip>
                         {checkIcon(data.iconName) ? (
                           <img
-                            style={{ height: 44, paddingRight: 15, paddingLeft: 10 }}
+                            className='h-44px'
                             src={`data:image/svg+xml;base64, ${
                               appIcons[data.iconName]
                             }`}
@@ -340,7 +340,7 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
                     ))}
                   </Box>
                 </BlockContainer>
-                <hr color='#C8D2DD' style={{ height: 1, margin: 0 }} />
+                <hr className='divider' />
               </Box>
             ))
           }

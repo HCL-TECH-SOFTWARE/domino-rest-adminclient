@@ -75,7 +75,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
         <span className='big-text mb-10 color-text-primary'>
           HCL Domino REST API Databases Schema
         </span>
-        <ExtraFlex style={{ display: 'flex', gap: '10px' }}>
+        <ExtraFlex className='flex flex-row gap-5 flex-wrap'>
           {
             mappedDatabases.map((database: any, index: number) => {
               return (

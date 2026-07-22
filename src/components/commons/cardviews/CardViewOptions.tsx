@@ -41,21 +41,19 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
   };
 
   return (
-    <MultiCardViewContainer
-      style={{ width: '200px', height: '43px', pointerEvents: scopePull ? 'auto' : 'none' }}
-      theme={themeMode}
+    <div
+      className={`multicard-view-container ${scopePull ? 'pointer-auto' : 'pointer-none'}`}
     >
       <Button
-          className='view-dropdown'
+          className='flex full-width text-transform-none medium-text justify-between color-text-primary'
           id="view-dropdown-button"
           aria-controls={open ? 'basic-menu' : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
           onClick={handleClick}
-          style={{textTransform: 'none', paddingLeft: '15px', width: '100%', fontSize: '16px', justifyContent: 'space-between', color: themeMode === 'dark' ? '#e0e0e0' : '#000'}}
        >
-        {view === "nsf" ? view.toUpperCase() : view.charAt(0).toUpperCase() + view.slice(1)} View
-        <ArrowDropDownIcon style={{ color: themeMode === 'dark' ? '#e0e0e0' : '#2B2B2B' }}/>
+        <span>{view === "nsf" ? view.toUpperCase() : view.charAt(0).toUpperCase() + view.slice(1)} View</span>
+        <ArrowDropDownIcon className='color-text-primary' />
       </Button>
       <Menu
           id="simple-menu"
@@ -72,7 +70,7 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
               </MenuItem>
           ))}
       </Menu>   
-    </MultiCardViewContainer> 
+    </div> 
   );
 };
 

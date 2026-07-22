@@ -5,22 +5,19 @@
  * ========================================================================== */
 
 import React from 'react';
-import Button from '@mui/material/Button';
 import LogoutIcon from '@mui/icons-material/ExitToApp';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/account/action';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { useNavigate } from 'react-router-dom';
 
 const OptionListContainer = styled.div`
 `;
 
-const OptionListContainerRoot = styled(OptionListContainer)(
-  ({ theme: Theme }) => ({
-    width: "100%",
-    maxWidth: 360,
-  })
-);
+const OptionListContainerRoot = styled(OptionListContainer)`
+  width: 100%;
+  max-width: 360px;
+`;
 
 interface OptionListProps {
   theme: string;
@@ -57,23 +54,16 @@ const OptionList: React.FC<OptionListProps> = ({ theme, toggleMenu }) => {
 
   return (
     <OptionListContainerRoot>
-      <Button
+      <button
         data-testid="signOut"
-        fullWidth
-        variant="contained"
-        style={{
-          width: "181px",
-          height: "42px",
-          borderRadius: "20px",
-          background: "#AA1F51",
-          color: "#fff",
-          fontWeight: 700,
-        }}
+        className='option-list-container-button flex justify-center gap-2 items-center'
         onClick={logoutUser}
       >
-        <LogoutIcon style={{ marginRight: 5 }} fontSize="small" />
-        Sign Out
-      </Button>
+        <div className='profile-menu-user-icon'>
+          <LogoutIcon className='mt-5' />
+        </div>
+        <span className='small-text'>SIGN OUT</span>
+      </button>
     </OptionListContainerRoot>
   );
 };

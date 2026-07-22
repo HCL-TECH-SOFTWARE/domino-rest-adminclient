@@ -5,25 +5,27 @@
  * ========================================================================== */
 
 import React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { RiDeleteBinLine } from 'react-icons/ri';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  paddingLeft: "30px",
-  paddingRight: "30px",
-  [`&.${tableCellClasses.head}`]: {
-    fontWeight: "bold",
-    paddingTop: "30px",
-    borderBottom: "1px solid light-dark(#848484, #3a3a4a)",
-  },
-  [`&.${tableCellClasses.body}`]: {
-    paddingTop: "20px",
-    paddingBottom: "20px",
-    borderBottom: '1px solid light-dark(#bdbdbd, #3a3a4a)',
+const StyledTableCell = styled(TableCell)`
+  padding-left: 30px;
+  padding-right: 30px;
+
+  &.${tableCellClasses.head} {
+    font-weight: bold;
+    padding-top: 30px;
+    border-bottom: 1px solid light-dark(#848484, #3a3a4a);
   }
-}));
+
+  &.${tableCellClasses.body} {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid light-dark(#bdbdbd, #3a3a4a);
+  }
+`
 
 const ColumnDetailsContainer = styled.div`
   box-sizing: border-box;

@@ -5,14 +5,14 @@
  * ========================================================================== */
 
 import * as React from 'react';
-import styled from 'styled-components';
+import { styled } from '@linaria/react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, IconButton, TableFooter, TablePagination } from '@mui/material';
+import { IconButton, TableFooter, TablePagination } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
@@ -317,48 +317,48 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                 <TableRow>
                   <TableCell className='expand' />
                   <TableCell className='user'>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div className='full-width flex flex-col gap-3'>
                       <span className='small-text text-bold flex items-center gap-3'>
                         User
                         <button
                           onClick={handleSortUsers}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                          className='no-background no-border cursor-pointer m-0 p-0'
                         >
                           <FaSort />
                         </button>
                       </span>
                       <input type='text' placeholder='Search User' value={user} onChange={(e) => setUser(e.target.value)} className='search-bar' />
-                    </Box>
+                    </div>
                   </TableCell>
                   <TableCell className='app-name text'>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div className='full-width flex flex-col gap-3'>
                       <span className='small-text text-bold flex items-center gap-3'>
                         App Name
                         <button
                           onClick={handleSortAppNames}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', margin: 0, padding: 0 }}
+                          className='no-background no-border cursor-pointer m-0 p-0'
                         >
                           <FaSort />
                         </button>
                       </span>
                       <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
-                    </Box>
+                    </div>
                   </TableCell>
                   <TableCell className='expirations text'>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div className='full-width flex flex-col gap-3'>
                       <span className='small-text text-bold flex items-center gap-3'>
                         Expirations
                       </span>
-                      <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
-                    </Box>
+                      <input type='text' className='search-bar hidden' />
+                    </div>
                   </TableCell>
                   <TableCell className='action text'>
-                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div className='full-width flex flex-col gap-3'>
                       <span className='small-text text-bold flex items-center gap-3'>
                         Action
                       </span>
-                      <input type='text' className='search-bar' style={{ visibility: 'hidden' }} />
-                    </Box>
+                      <input type='text' className='search-bar hidden' />
+                    </div>
                   </TableCell>
                 </TableRow>
               </StyledTableHead>
@@ -399,7 +399,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                       }
                     }}
                     ActionsComponent={({ count, page }) => (
-                      <div style={{ flexShrink: 0, marginLeft: 10 }}>
+                      <div className='shrink-0 ml-10'>
                         <IconButton disabled={page === 0} aria-label='First Page' onClick={() => setPage(0)}>
                           <FirstPage />
                         </IconButton>

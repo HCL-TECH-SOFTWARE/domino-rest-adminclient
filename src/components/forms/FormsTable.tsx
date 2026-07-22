@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import * as React from "react";
-import styled from "styled-components";
+import { styled } from '@linaria/react';
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell, { tableCellClasses } from "@mui/material/TableCell";
@@ -25,44 +25,41 @@ import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
 import { getTheme } from "../../store/styles/action";
 import { AppState } from "../../store";
-import { LitTooltip } from "../lit-elements/LitElements";
-const StyledTableCell = styled(TableCell)<{ themeMode?: string }>(({ themeMode }) => ({
-  paddingLeft: "30px",
-  paddingRight: "30px",
-  [`&.${tableCellClasses.head}`]: {
-    fontWeight: "bold",
-    paddingTop: "30px",
-    borderBottom: `1px solid ${themeMode ? getTheme(themeMode).borderColor : '#b8b8b8'}`,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-    paddingTop: "20px",
-    paddingBottom: "20px",
-    borderBottom: "none",
-  },
-}));
+import { LitButtonNeutral, LitButtonYes, LitTooltip } from "../lit-elements/LitElements";
 
-const StyledTableRow = styled(TableRow)<{ themeMode?: string }>(({ themeMode }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: themeMode && getTheme(themeMode).bodyColor !== '#f5f5f5' ? getTheme(themeMode).primary : "#F8FBFF",
-    borderBottom: "none",
-  },
-  // hide last border
-  "&:last-child th, &:last-child td": {
-    borderBottom: 0,
-  },
-}));
+const StyledTableCell = styled(TableCell)`
+  padding-left: 30px;
+  padding-right: 30px;
+
+  &.${tableCellClasses.head} {
+    font-weight: bold;
+    padding-top: 30px;
+    border-bottom: 1px solid #b8b8b8;
+  }
+
+  &.${tableCellClasses.body} {
+    font-size: 14px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: none;
+  }
+`;
+
+const StyledTableRow = styled(TableRow)`
+  &:nth-of-type(odd) {
+    background-color: light-dark(#f8fbff, #1e1e2e);
+  }
+
+  &:last-child th, &:last-child td {
+    border-bottom: 0;
+  }
+`;
 
 const StyledTableContainer = styled(TableContainer)<{ themeMode?: string }>`
   border-radius: 10px;
   box-sizing: border-box;
   border: 1px solid ${(props) => props.themeMode ? getTheme(props.themeMode).borderColor : '#B9B9B9'};
   background: ${(props) => props.themeMode ? getTheme(props.themeMode).secondary : '#FFF'};
-
-  .diamond-marker {
-    margin-right: 5px;
-    transform: translateY(-7%);
-  }
 `
 
 const StatusHeader = styled.div`
@@ -272,19 +269,19 @@ const FormsTable: React.FC<FormsTableProps> = ({
   return (
     <>
       <StyledTableContainer themeMode={themeMode}>
-        <Table sx={{ padding: "30px" }} aria-label="views and agents table">
+        <Table className="p-30" aria-label="views and agents table">
           <TableHead>
             <TableRow>
-              <StyledTableCell themeMode={themeMode} width="50px" />
-              <StyledTableCell themeMode={themeMode} width="350px">
-                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                  <Box sx={{ visibility: 'hidden' }} className='diamond-marker'>
+              <StyledTableCell width="50px" />
+              <StyledTableCell width="350px">
+                <div className="flex flex-row">
+                  <div className='forms-table-diamond-marker mr-5 hidden'>
                     <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                       <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                     </svg>
-                  </Box>
+                  </div>
                   Form Name
-                </Box>
+                </div>
               </StyledTableCell>
               <StyledTableCell width="350px">Form Aliases</StyledTableCell>
               <StyledTableCell width="150px">Modes Available</StyledTableCell>
@@ -303,7 +300,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
           </TableHead>
           <TableBody>
             {forms.map((form,i) => (
-              <StyledTableRow key={form.formName+i} themeMode={themeMode}>
+              <StyledTableRow key={form.formName+i}>
                 <StyledTableCell component="th" scope="row" width="50px">
                   <EditIcon onClick={() => openForm(form.formName, form.formModes.length)}>
                     <Button title={form.formName}><FiEdit2 size='1.5em' /></Button>
@@ -311,11 +308,11 @@ const FormsTable: React.FC<FormsTableProps> = ({
                 </StyledTableCell>
                 <StyledTableCell width="550px">
                   <ViewNameDisplay>
-                    <Box sx={{ visibility: formList.includes(form.formName) ? 'hidden' : 'visible' }} className='diamond-marker'>
+                    <div className={`forms-table-diamond-marker ${formList.includes(form.formName) ? 'hidden' : 'visible'}`}>
                       <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"/>
                       </svg>
-                    </Box>
+                    </div>
                     <Box className="text">
                       <span>{form.formName}</span>
                       {!formList.includes(form.formName) && <span className='custom-form'>custom form</span>}
@@ -353,7 +350,9 @@ const FormsTable: React.FC<FormsTableProps> = ({
       <ActivateDialogContainer ref={ref}>
         <Box className='header-close'>
           <Box className='header'>
-            <Box sx={{ width: '30px', height: '30px', padding: 0, display: 'flex', alignItems: 'center' }}><WarningIcon /></Box>
+            <div className="w-30px h-30px p-0 flex items-center">
+              <WarningIcon />
+            </div>
             <span className='title'>Activate Form?</span>
           </Box>
           <ButtonBase onClick={handleCloseActivateDialog}><IoMdClose size='1.5em' /></ButtonBase>
@@ -362,8 +361,8 @@ const FormsTable: React.FC<FormsTableProps> = ({
           <span className='text-content'>This form is inactive. Activate this form to edit it?</span>
         </Box>
         <Box className='buttons'>
-          <ButtonYes className='button-ok' onClick={handleConfirmActivate} style={{ color: '#FFF' }}>OK</ButtonYes>
-          <ButtonNeutral className='button-cancel' onClick={handleCloseActivateDialog}>Cancel</ButtonNeutral>
+          <LitButtonYes text='OK' onClick={handleConfirmActivate} />
+          <LitButtonNeutral text='Cancel' onClick={handleCloseActivateDialog} />
         </Box>
       </ActivateDialogContainer>
     </>
