@@ -273,39 +273,39 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   page={page}
                   onPageChange={handleChangePage}
                   onRowsPerPageChange={handleChangeRowsPerPage}
-                  sx={{
-                    '& .MuiToolbar-root': {
-                      display: 'flex',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      justifyContent: 'flex-end',
-                    },
-                    '& .MuiTablePagination-spacer': {
-                      flex: '1 1 100%',
-                    },
-                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                      margin: 0,
-                      lineHeight: 1.5,
-                    },
-                    '& .MuiTablePagination-input': {
-                      marginTop: 0,
-                      marginBottom: 0,
-                      marginLeft: '8px',
-                      marginRight: '24px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                    },
-                    '& .MuiTablePagination-select': {
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      paddingTop: '4px',
-                      paddingBottom: '4px',
-                    },
-                    '& .MuiTablePagination-actions': {
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                    },
-                  }}
+                  // sx={{
+                  //   '& .MuiToolbar-root': {
+                  //     display: 'flex',
+                  //     alignItems: 'center',
+                  //     flexWrap: 'wrap',
+                  //     justifyContent: 'flex-end',
+                  //   },
+                  //   '& .MuiTablePagination-spacer': {
+                  //     flex: '1 1 100%',
+                  //   },
+                  //   '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  //     margin: 0,
+                  //     lineHeight: 1.5,
+                  //   },
+                  //   '& .MuiTablePagination-input': {
+                  //     marginTop: 0,
+                  //     marginBottom: 0,
+                  //     marginLeft: '8px',
+                  //     marginRight: '24px',
+                  //     display: 'inline-flex',
+                  //     alignItems: 'center',
+                  //   },
+                  //   '& .MuiTablePagination-select': {
+                  //     display: 'inline-flex',
+                  //     alignItems: 'center',
+                  //     paddingTop: '4px',
+                  //     paddingBottom: '4px',
+                  //   },
+                  //   '& .MuiTablePagination-actions': {
+                  //     display: 'inline-flex',
+                  //     alignItems: 'center',
+                  //   },
+                  // }}
                   slotProps={{
                     select: {
                       inputProps: {
