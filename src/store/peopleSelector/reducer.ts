@@ -52,7 +52,11 @@ export default function memberReducer(
         const memberIndex = state.members.findIndex(
           (member) => member.id === action.payload
         );
-        draft.members.splice(memberIndex, 1);
+        // Guard against findIndex returning -1 (id not present); splice(-1, 1)
+        // would otherwise remove the LAST member instead of nothing.
+        if (memberIndex !== -1) {
+          draft.members.splice(memberIndex, 1);
+        }
       });
     // Remove All Members
     case REMOVE_ALL_MEMBERS:
@@ -60,7 +64,10 @@ export default function memberReducer(
         const memberIndex = state.members.findIndex(
           (members) => members.id === action.payload
         );
-        draft.members.splice(memberIndex, 1);
+        // Guard against findIndex returning -1 (see REMOVE_MEMBER above).
+        if (memberIndex !== -1) {
+          draft.members.splice(memberIndex, 1);
+        }
       });
     // Fetch the list of group members
     case FETCH_ALL_MEMBERS:
