@@ -9,7 +9,6 @@
     "@babel/preset-typescript": "^7.29.7",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@linaria/babel-preset": "^5.0.4",
     "@linaria/core": "^8.0.0",
     "@linaria/react": "^8.0.0",
     "@lit/react": "^1.0.8",
@@ -39,7 +38,6 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
-    "@linaria/vite": "^5.0.4",
     "@swc/core": "1.15.43",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "6.9.1",
@@ -62,10 +60,16 @@
   },
   "overrides": {
     "yaml": "^2.6.1",
-    "dompurify": "^3.3.2",
+    "dompurify": "^3.4.12",
     "test-exclude": "^7.0.2",
     "jsdom": "^29.0.1",
-    "glob": "^13.0.6"
+    "glob": "^13.0.6",
+    "@babel/core": "^7.29.6",
+    "brace-expansion@^2.0.0": "^2.1.2",
+    "brace-expansion@^5.0.0": "^5.0.7",
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "^3.15.0"
+    }
   },
   "scripts": {
     "start": "vite",
