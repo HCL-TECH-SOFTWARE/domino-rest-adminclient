@@ -17,6 +17,7 @@ React removal.
 | 02 | [React → Lit / WebAwesome](./02-react-to-lit-webawesome.md) | Component-by-component inventory → `wa-*` / existing `lit-*` / new Lit / keep; the 4 hard cases | After 03 tokens |
 | 03 | [wa-page & design tokens](./03-wa-page-and-design-tokens.md) | App-shell on `wa-page` + WA tokens, Linaria migration, stripping Material Design | Gate + foundation |
 | 04 | [Remove React](./04-remove-react.md) | Capstone roadmap: routing, `react-redux`→Lit controllers, Formik, entry point, dependency-ordered sequencing | Last (depends on 02+03) |
+| 05 | [Dependabot triage](./05-dependabot-triage.md) | Triage of the 9 open Dependabot alerts: 8/9 are build/test-only, both "criticals" removed by dropping vestigial Linaria v5 deps | Independent follow-up |
 
 ## How they fit together
 
