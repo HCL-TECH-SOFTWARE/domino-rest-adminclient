@@ -53,6 +53,33 @@ describe('memberReducer', () => {
     expect(next.members).toEqual([{ id: 'a', fullName: 'Alice' }]);
   });
 
+  // Regression: findIndex returns -1 for an absent id, and splice(-1, 1) used to
+  // delete the LAST member instead of leaving the list untouched.
+  it('REMOVE_MEMBER leaves the list unchanged when the id is not present', () => {
+    const members = [
+      { id: 'a', fullName: 'Alice' },
+      { id: 'b', fullName: 'Bob' },
+    ];
+    const state: MembersState = { ...initial, members };
+    const next = memberReducer(state, { type: REMOVE_MEMBER, payload: 'missing' });
+    expect(next.members).toEqual(members);
+  });
+
+  it('REMOVE_ALL_MEMBERS leaves the list unchanged when the id is not present', () => {
+    const members = [
+      { id: 'a', fullName: 'Alice' },
+      { id: 'b', fullName: 'Bob' },
+    ];
+    const state: MembersState = { ...initial, members };
+    const next = memberReducer(state, { type: REMOVE_ALL_MEMBERS, payload: 'missing' });
+    expect(next.members).toEqual(members);
+  });
+
+  it('REMOVE_MEMBER on an empty list is a no-op', () => {
+    const next = memberReducer(initial, { type: REMOVE_MEMBER, payload: 'a' });
+    expect(next.members).toEqual([]);
+  });
+
   it('FETCH_ALL_MEMBERS replaces the members list with the payload', () => {
     const list = [{ id: 'x', fullName: 'X' }];
     const next = memberReducer(initial, { type: FETCH_ALL_MEMBERS, payload: list });
