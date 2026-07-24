@@ -41,7 +41,7 @@ describe('memberReducer', () => {
     expect(next.members).toEqual([{ id: 'b', fullName: 'Bob' }]);
   });
 
-  it('REMOVE_ALL_MEMBERS removes the member whose id matches the payload', () => {
+  it('REMOVE_ALL_MEMBERS clears the entire members list', () => {
     const state: MembersState = {
       ...initial,
       members: [
@@ -50,7 +50,7 @@ describe('memberReducer', () => {
       ],
     };
     const next = memberReducer(state, { type: REMOVE_ALL_MEMBERS, payload: 'b' });
-    expect(next.members).toEqual([{ id: 'a', fullName: 'Alice' }]);
+    expect(next.members).toEqual([]);
   });
 
   // Regression: findIndex returns -1 for an absent id, and splice(-1, 1) used to
@@ -65,14 +65,16 @@ describe('memberReducer', () => {
     expect(next.members).toEqual(members);
   });
 
-  it('REMOVE_ALL_MEMBERS leaves the list unchanged when the id is not present', () => {
-    const members = [
-      { id: 'a', fullName: 'Alice' },
-      { id: 'b', fullName: 'Bob' },
-    ];
-    const state: MembersState = { ...initial, members };
+  it('REMOVE_ALL_MEMBERS clears members regardless of the payload id', () => {
+    const state: MembersState = {
+      ...initial,
+      members: [
+        { id: 'a', fullName: 'Alice' },
+        { id: 'b', fullName: 'Bob' },
+      ],
+    };
     const next = memberReducer(state, { type: REMOVE_ALL_MEMBERS, payload: 'missing' });
-    expect(next.members).toEqual(members);
+    expect(next.members).toEqual([]);
   });
 
   it('REMOVE_MEMBER on an empty list is a no-op', () => {

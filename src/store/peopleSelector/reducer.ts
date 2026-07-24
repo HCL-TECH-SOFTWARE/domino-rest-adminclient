@@ -58,17 +58,14 @@ export default function memberReducer(
           draft.members.splice(memberIndex, 1);
         }
       });
-    // Remove All Members
+    // Remove All Members: the group (and therefore all of its members) was
+    // deleted, so drop every member. The payload (the group id) is used only by
+    // the caller's API request, not by this reducer — hence no id matching here.
     case REMOVE_ALL_MEMBERS:
-      return produce(state, (draft: MembersState) => {
-        const memberIndex = state.members.findIndex(
-          (members) => members.id === action.payload
-        );
-        // Guard against findIndex returning -1 (see REMOVE_MEMBER above).
-        if (memberIndex !== -1) {
-          draft.members.splice(memberIndex, 1);
-        }
-      });
+      return {
+        ...state,
+        members: [],
+      };
     // Fetch the list of group members
     case FETCH_ALL_MEMBERS:
       return {
