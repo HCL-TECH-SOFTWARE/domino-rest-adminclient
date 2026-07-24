@@ -1,14 +1,15 @@
-import '@testing-library/jest-dom';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import EditViewDialog from './EditView';
+import * as databasesActions from '../../store/databases/action';
 
 // ---- Mocks ----
 
 // Mock ColumnDetails to render a minimal table for testing
-jest.mock('./ColumnDetails', () => {
-  return function MockColumnDetails({ chosenColumns, handleEditColumn, setRemoveColumn }: any) {
+vi.mock('./ColumnDetails', () => ({
+  default: function MockColumnDetails({ chosenColumns, handleEditColumn, setRemoveColumn }: any) {
     return (
       <div data-testid="column-details">
         {chosenColumns.map((col: any) => (
@@ -31,34 +32,34 @@ jest.mock('./ColumnDetails', () => {
         ))}
       </div>
     );
-  };
-});
-
-jest.mock('../../store/databases/action', () => ({
-  fetchViews: jest.fn(() => ({ type: 'NOOP' })),
-  updateSchema: jest.fn(() => ({ type: 'NOOP' })),
+  },
 }));
 
-jest.mock('../../store/loading/action', () => ({
-  setLoading: jest.fn((payload: any) => ({ type: 'SET_LOADING', payload })),
+vi.mock('../../store/databases/action', () => ({
+  fetchViews: vi.fn(() => ({ type: 'NOOP' })),
+  updateSchema: vi.fn(() => ({ type: 'NOOP' })),
 }));
 
-jest.mock('../../store/account/action', () => ({
-  getToken: jest.fn(() => 'mock-token'),
+vi.mock('../../store/loading/action', () => ({
+  setLoading: vi.fn((payload: any) => ({ type: 'SET_LOADING', payload })),
 }));
 
-jest.mock('../../styles/scripts', () => ({
-  checkIcon: jest.fn(() => true),
+vi.mock('../../store/account/action', () => ({
+  getToken: vi.fn(() => 'mock-token'),
 }));
 
-jest.mock('../../styles/app-icons', () => ({}));
-
-jest.mock('../../utils/common', () => ({
-  fullEncode: jest.fn((v: string) => encodeURIComponent(v)),
+vi.mock('../../styles/scripts', () => ({
+  checkIcon: vi.fn(() => true),
 }));
 
-jest.mock('../../utils/api-retry', () => ({
-  apiRequestWithRetry: jest.fn(() =>
+vi.mock('../../styles/app-icons', () => ({ default: {} }));
+
+vi.mock('../../utils/common', () => ({
+  fullEncode: vi.fn((v: string) => encodeURIComponent(v)),
+}));
+
+vi.mock('../../utils/api-retry', () => ({
+  apiRequestWithRetry: vi.fn(() =>
     Promise.resolve({
       response: { ok: true },
       data: {
@@ -70,14 +71,14 @@ jest.mock('../../utils/api-retry', () => ({
   ),
 }));
 
-jest.mock('../loading/APILoadingProgress', () => {
-  return function MockAPILoadingProgress() {
+vi.mock('../loading/APILoadingProgress', () => ({
+  default: function MockAPILoadingProgress() {
     return <div>Loading...</div>;
-  };
-});
+  },
+}));
 
-jest.mock('../dialogs/UnsavedChangesDialog', () => {
-  return function MockUnsavedChangesDialog({ open, onSave, onDiscard, onCancel }: any) {
+vi.mock('../dialogs/UnsavedChangesDialog', () => ({
+  default: function MockUnsavedChangesDialog({ open, onSave, onDiscard, onCancel }: any) {
     if (!open) return null;
     return (
       <div role="dialog">
@@ -87,8 +88,8 @@ jest.mock('../dialogs/UnsavedChangesDialog', () => {
         <button onClick={onSave}>Yes</button>
       </div>
     );
-  };
-});
+  },
+}));
 
 // ---- Helpers ----
 
@@ -137,9 +138,9 @@ const defaultColumns = [
 ];
 
 function renderEditView(overrides: Partial<React.ComponentProps<typeof EditViewDialog>> = {}) {
-  const handleClose = jest.fn();
-  const setOpen = jest.fn();
-  const setSchemaData = jest.fn();
+  const handleClose = vi.fn();
+  const setOpen = vi.fn();
+  const setSchemaData = vi.fn();
   const store = createMockStore();
 
   const props = {
@@ -167,19 +168,14 @@ function renderEditView(overrides: Partial<React.ComponentProps<typeof EditViewD
 // ---- Tests ----
 
 describe('EditViewDialog — dirty form tracking', () => {
-  beforeAll(() => {
-    HTMLDialogElement.prototype.showModal = jest.fn();
-    HTMLDialogElement.prototype.close = jest.fn();
-  });
-
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Suppress fetch errors from the useEffect
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    (console.error as jest.Mock).mockRestore?.();
+    vi.mocked(console.error).mockRestore?.();
   });
 
   describe('clean state (no changes)', () => {
@@ -353,7 +349,7 @@ describe('EditViewDialog — dirty form tracking', () => {
 
   describe('dirty dialog — Yes (save) button', () => {
     it('saves and closes the form when Yes is clicked', async () => {
-      const { updateSchema } = jest.requireMock('../../store/databases/action');
+      const { updateSchema } = databasesActions;
       const { handleClose } = renderEditView();
 
       await waitFor(() => {
@@ -481,7 +477,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       fireEvent.click(screen.getByTestId('remove-Col1'));
 
       const event = new Event('beforeunload', { cancelable: true });
-      Object.defineProperty(event, 'preventDefault', { value: jest.fn() });
+      Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
       window.dispatchEvent(event);
 
       expect(event.preventDefault).toHaveBeenCalled();
@@ -495,7 +491,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       });
 
       const event = new Event('beforeunload', { cancelable: true });
-      Object.defineProperty(event, 'preventDefault', { value: jest.fn() });
+      Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
       window.dispatchEvent(event);
 
       expect(event.preventDefault).not.toHaveBeenCalled();
@@ -505,7 +501,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       renderEditView({ open: false });
 
       const event = new Event('beforeunload', { cancelable: true });
-      Object.defineProperty(event, 'preventDefault', { value: jest.fn() });
+      Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
       window.dispatchEvent(event);
 
       expect(event.preventDefault).not.toHaveBeenCalled();

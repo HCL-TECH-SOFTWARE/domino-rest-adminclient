@@ -1,15 +1,16 @@
-import '@testing-library/jest-dom';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import TabsAccess from './TabsAccess';
+import * as databasesActions from '../../store/databases/action';
 
 // ---- Mocks ----
 
 // Heavy child component mocks
-jest.mock('./FieldDndContainer', () => {
-  return function MockFieldDNDContainer(props: any) {
+vi.mock('./FieldDndContainer', () => ({
+  default: function MockFieldDNDContainer(props: any) {
     return (
       <div data-testid="field-dnd">
         <button
@@ -66,48 +67,48 @@ jest.mock('./FieldDndContainer', () => {
         </button>
       </div>
     );
-  };
-});
+  },
+}));
 
-jest.mock('./AddModeDialog', () => {
-  return function MockAddModeDialog() {
+vi.mock('./AddModeDialog', () => ({
+  default: function MockAddModeDialog() {
     return <div data-testid="add-mode-dialog" />;
-  };
-});
+  },
+}));
 
-jest.mock('../applications/FormDrawer', () => {
-  return function MockFormDrawer() {
+vi.mock('../applications/FormDrawer', () => ({
+  default: function MockFormDrawer() {
     return <div data-testid="form-drawer" />;
-  };
-});
+  },
+}));
 
-jest.mock('../applications/DeleteApplicationDialog', () => {
-  return function MockDeleteApplicationDialog() {
+vi.mock('../applications/DeleteApplicationDialog', () => ({
+  default: function MockDeleteApplicationDialog() {
     return <div data-testid="delete-dialog" />;
-  };
-});
-
-jest.mock('../../store/databases/action', () => ({
-  testFormula: jest.fn(() => () => Promise.resolve()),
-  updateFormMode: jest.fn(() => () => Promise.resolve()),
-  deleteFormMode: jest.fn(() => () => Promise.resolve()),
-  updateSchema: jest.fn(() => () => Promise.resolve()),
+  },
 }));
 
-jest.mock('../../store/drawer/action', () => ({
-  toggleApplicationDrawer: jest.fn(() => ({ type: 'NOOP' })),
+vi.mock('../../store/databases/action', () => ({
+  testFormula: vi.fn(() => () => Promise.resolve()),
+  updateFormMode: vi.fn(() => () => Promise.resolve()),
+  deleteFormMode: vi.fn(() => () => Promise.resolve()),
+  updateSchema: vi.fn(() => () => Promise.resolve()),
 }));
 
-jest.mock('../../store/dialog/action', () => ({
-  toggleDeleteDialog: jest.fn(() => ({ type: 'NOOP' })),
+vi.mock('../../store/drawer/action', () => ({
+  toggleApplicationDrawer: vi.fn(() => ({ type: 'NOOP' })),
 }));
 
-jest.mock('../../store/alerts/action', () => ({
-  toggleAlert: jest.fn(() => ({ type: 'NOOP' })),
+vi.mock('../../store/dialog/action', () => ({
+  toggleDeleteDialog: vi.fn(() => ({ type: 'NOOP' })),
 }));
 
-jest.mock('../dialogs/UnsavedChangesDialog', () => {
-  return function MockUnsavedChangesDialog({ open, onSave, onDiscard, onCancel }: any) {
+vi.mock('../../store/alerts/action', () => ({
+  toggleAlert: vi.fn(() => ({ type: 'NOOP' })),
+}));
+
+vi.mock('../dialogs/UnsavedChangesDialog', () => ({
+  default: function MockUnsavedChangesDialog({ open, onSave, onDiscard, onCancel }: any) {
     if (!open) return null;
     return (
       <div role="dialog">
@@ -117,20 +118,20 @@ jest.mock('../dialogs/UnsavedChangesDialog', () => {
         <button onClick={onSave}>Yes</button>
       </div>
     );
-  };
-});
-
-jest.mock('../../store/databases/scripts', () => ({
-  findScopeBySchema: jest.fn(() => -1),
+  },
 }));
 
-jest.mock('../../utils/form', () => ({
-  isEmptyOrSpaces: jest.fn((s: string) => !s || s.trim().length === 0),
-  verifyModeName: jest.fn(() => true),
+vi.mock('../../store/databases/scripts', () => ({
+  findScopeBySchema: vi.fn(() => -1),
 }));
 
-jest.mock('../../store/styles/action', () => ({
-  getTheme: jest.fn(() => ({
+vi.mock('../../utils/form', () => ({
+  isEmptyOrSpaces: vi.fn((s: string) => !s || s.trim().length === 0),
+  verifyModeName: vi.fn(() => true),
+}));
+
+vi.mock('../../store/styles/action', () => ({
+  getTheme: vi.fn(() => ({
     textColorPrimary: '#000',
     borderColor: '#ccc',
     hoverColor: '#eee',
@@ -214,10 +215,10 @@ function renderTabsAccess(options: RenderOptions = {}) {
     state = makeState(),
   } = options;
 
-  const setHasUnsavedChanges = jest.fn();
-  const setPageIndex = jest.fn();
-  const setCurrentModeIndex = jest.fn();
-  const saveRef = { current: jest.fn(() => Promise.resolve()) };
+  const setHasUnsavedChanges = vi.fn();
+  const setPageIndex = vi.fn();
+  const setCurrentModeIndex = vi.fn();
+  const saveRef = { current: vi.fn(() => Promise.resolve()) };
   const postSaveActionRef = { current: null as 'add' | 'clone' | null };
 
   const store = createMockStore();
@@ -233,13 +234,13 @@ function renderTabsAccess(options: RenderOptions = {}) {
           currentModeIndex={currentModeIndex}
           setPageIndex={setPageIndex}
           setCurrentModeIndex={setCurrentModeIndex}
-          remove={jest.fn()}
-          update={jest.fn()}
-          addField={jest.fn(() => '')}
+          remove={vi.fn()}
+          update={vi.fn()}
+          addField={vi.fn(() => '')}
           schemaData={makeSchemaData()}
-          setSchemaData={jest.fn()}
+          setSchemaData={vi.fn()}
           fieldIndex={0}
-          setFieldIndex={jest.fn()}
+          setFieldIndex={vi.fn()}
           setHasUnsavedChanges={setHasUnsavedChanges}
           saveRef={saveRef}
           postSaveActionRef={postSaveActionRef}
@@ -263,12 +264,22 @@ function renderTabsAccess(options: RenderOptions = {}) {
 
 describe('TabsAccess — Form Schema dirty tracking', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.clearAllMocks();
+    vi.useFakeTimers();
+    // React Testing Library's `waitFor` only auto-advances timers when it
+    // detects a global `jest` (it checks `typeof jest !== 'undefined'` and then
+    // whether the faked `setTimeout` carries a `clock` marker — which Vitest's
+    // fake timers do). Without this shim, `waitFor` sits on a frozen fake clock
+    // and hangs. Exposing `jest.advanceTimersByTime` reproduces the exact
+    // fake-timer polling behaviour these tests relied on under Jest.
+    (globalThis as any).jest = {
+      advanceTimersByTime: (ms: number) => vi.advanceTimersByTime(ms),
+    };
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    delete (globalThis as any).jest;
+    vi.useRealTimers();
   });
 
   describe('initial state (no user edits)', () => {
@@ -276,7 +287,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
       // Advance past the pauseDirtyTracking delay
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
 
       // setHasUnsavedChanges may have been called with false during init, but not true
       const calls = setHasUnsavedChanges.mock.calls;
@@ -290,7 +301,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
       // Let the pauseDirtyTracking timer expire so edits are tracked
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
       // Toggle computeWithForm via the mocked FieldDndContainer
@@ -308,7 +319,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
       // Let init settle
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
       // Change scripts
@@ -333,7 +344,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
     it('marks dirty when a required field is added', async () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
       fireEvent.click(screen.getByTestId('change-required'));
@@ -348,7 +359,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
     it('clears dirty when required fields revert to original', async () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
       // Add required
@@ -371,7 +382,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
     it('marks dirty when validation rules change', async () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
       fireEvent.click(screen.getByTestId('change-validation'));
@@ -386,7 +397,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
     it('clears dirty when validation rules revert to original', async () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
       fireEvent.click(screen.getByTestId('change-validation'));
@@ -411,7 +422,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       ];
       const { setHasUnsavedChanges } = renderTabsAccess({ modes });
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
       // Make dirty
@@ -441,7 +452,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       ];
       renderTabsAccess({ modes });
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
 
       // Without making dirty, switch mode
       const modeButton = screen.getByText('default');
@@ -463,7 +474,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       ];
       const { setHasUnsavedChanges, setCurrentModeIndex } = renderTabsAccess({ modes });
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
 
       // Make dirty
       fireEvent.click(screen.getByTestId('change-scripts'));
@@ -501,7 +512,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       ];
       const { setHasUnsavedChanges } = renderTabsAccess({ modes });
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
 
       // Make dirty
       fireEvent.click(screen.getByTestId('change-scripts'));
@@ -539,7 +550,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       ];
       const { setHasUnsavedChanges, saveRef } = renderTabsAccess({ modes });
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
 
       // Make dirty
       fireEvent.click(screen.getByTestId('change-scripts'));
@@ -562,7 +573,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
 
       // Save action was dispatched (saveRef.current gets overwritten by the component,
       // so we verify the Redux action was called instead)
-      const { updateFormMode } = jest.requireMock('../../store/databases/action');
+      const { updateFormMode } = databasesActions;
       expect(updateFormMode).toHaveBeenCalled();
       // Dialog dismissed (MUI keeps closed dialogs in DOM)
       await waitFor(() => {
@@ -577,7 +588,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
     it('shows dirty dialog when Clone Mode is clicked while dirty', async () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
 
       // Make dirty
       fireEvent.click(screen.getByTestId('change-scripts'));
@@ -599,7 +610,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
     it('shows dirty dialog when Add Mode is clicked while dirty', async () => {
       const { setHasUnsavedChanges } = renderTabsAccess();
 
-      act(() => { jest.advanceTimersByTime(600); });
+      act(() => { vi.advanceTimersByTime(600); });
 
       // Make dirty
       fireEvent.click(screen.getByTestId('change-scripts'));

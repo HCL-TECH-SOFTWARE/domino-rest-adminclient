@@ -1,25 +1,34 @@
+import { test, expect, vi, beforeAll } from 'vitest';
 import { render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from "react-redux";
 import { rootReducer } from "./store";
 
-const mockFetch = (data: any) => jest.fn().mockImplementation(() =>
+const mockFetch = (data: any) => vi.fn().mockImplementation(() =>
   Promise.resolve({
     ok: true,
     json: () => data,
   }),
 );
 
+// jsdom 29 ships its own `attachInternals`, so the guarded polyfill in
+// setupTests.ts is skipped and jsdom's implementation wins — but it is
+// incompatible with WebAwesome's form-associated <wa-button> (its
+// ElementInternals lacks `setValidity`, throwing async during Lit updates).
+// Unconditionally override with a complete stub so the full <App> render is
+// clean. (This is the one stub that is NOT a global duplicate.)
 beforeAll(() => {
-  HTMLElement.prototype.attachInternals = jest.fn(() => ({
-    setFormValue: jest.fn(),
-    setValidity: jest.fn(),
-    checkValidity: jest.fn(),
-    reportValidity: jest.fn(),
+  HTMLElement.prototype.attachInternals = vi.fn(() => ({
+    setFormValue: vi.fn(),
+    setValidity: vi.fn(),
+    checkValidity: vi.fn(() => true),
+    reportValidity: vi.fn(() => true),
     validationMessage: '',
     validity: {},
-    willValidate: true
+    willValidate: true,
+    states: { add: vi.fn(), delete: vi.fn(), has: vi.fn(() => false) },
+    shadowRoot: null,
   }) as any);
 });
 
