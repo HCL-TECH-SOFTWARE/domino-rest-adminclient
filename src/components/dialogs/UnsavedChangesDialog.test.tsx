@@ -1,23 +1,17 @@
-import '@testing-library/jest-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import UnsavedChangesDialog from './UnsavedChangesDialog';
-
-// JSDOM does not implement native dialog methods
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = jest.fn();
-  HTMLDialogElement.prototype.close = jest.fn();
-});
 
 describe('UnsavedChangesDialog', () => {
   const defaultProps = {
     open: true,
-    onSave: jest.fn(),
-    onDiscard: jest.fn(),
-    onCancel: jest.fn(),
+    onSave: vi.fn(),
+    onDiscard: vi.fn(),
+    onCancel: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders title, message, and all three buttons when open', () => {
