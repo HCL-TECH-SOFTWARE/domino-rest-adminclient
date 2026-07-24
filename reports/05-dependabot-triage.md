@@ -1,155 +1,162 @@
-# 05 — Dependabot Vulnerability Triage
+# 05 — Dependabot Vulnerability Triage & Remediation
 
-Generated 2026-07-24. Triage of the **9 open Dependabot alerts** on the default
-branch (`main`) of `HCL-TECH-SOFTWARE/domino-rest-adminclient`, reported at push
-time as **2 critical, 4 high, 1 moderate, 2 low**.
+Generated 2026-07-24 · **Remediation applied & verified 2026-07-25** on branch
+`fix/dependabot-alerts` (stacked on `post-1.8-ux`).
 
-> **Bottom line:** despite two "critical" labels, **none of these are remotely
-> exploitable against the running application.** 8 of 9 live entirely in
-> **build/test tooling** and never reach the browser bundle; the only
-> browser-runtime one is a **low**-severity DOMPurify issue via Monaco. The two
-> criticals are a build-time DOM sandbox (Linaria style extraction) and are fully
-> removed by deleting two **unused legacy dependencies**. This is dependency
-> hygiene, not an incident.
+Triage of the **9 open Dependabot alerts** on `HCL-TECH-SOFTWARE/domino-rest-adminclient`,
+reported at push time as **2 critical, 4 high, 1 moderate, 2 low**.
+
+> **Bottom line:** despite two "critical" labels, **none of these were remotely
+> exploitable against the running application.** 8 of 9 lived entirely in
+> **build/test tooling** and never reached the browser bundle; the only
+> browser-runtime one was a **low**-severity DOMPurify issue via Monaco. All 9
+> are now fixed and the change is verified green (audit + build + tests).
+
+> ✅ **Status: DONE.** `npm audit` clears all 9; `npm run build` and `npm test`
+> pass. See [Remediation applied](#remediation-applied--verified). One **new,
+> out-of-scope** finding surfaced during the refresh — a `react-router` cluster
+> that was *not* in the original 9; see [that section](#new-finding-out-of-scope--react-router).
 
 Method: alerts pulled via `gh api .../dependabot/alerts`; every package traced to
-its resolved version, dev/prod flag, and dependency chain in `package-lock.json`
-(`node_modules` was not installed in the worktree, so all provenance is from the
-committed lockfile).
+its resolved version, dev/prod flag, and dependency chain in `package-lock.json`;
+fixes applied and verified against a real `npm install` (Node 26 / npm 11).
 
 ---
 
 ## Triage table
 
-| # | GH sev | Package | Resolved | Patched | Comes from | Ships to browser? | **Real exposure** |
-|---|--------|---------|----------|---------|------------|:---:|--------------------|
-| 110 | 🔴 critical | happy-dom | **10.8.0** | 20.0.0 | `@linaria/babel-preset` (build) | ❌ | Build-time DOM sandbox only |
-| 109 | 🔴 critical | happy-dom | **10.8.0** | 15.10.2 | `@linaria/babel-preset` (build) | ❌ | Build-time DOM sandbox only |
-| 111 | 🟠 high | happy-dom | **10.8.0** | 20.8.9 | `@linaria/babel-preset` (build) | ❌ | Build-time DOM sandbox only |
+| # | GH sev | Package | Was | Patched to | Comes from | Ships to browser? | **Real exposure** |
+|---|--------|---------|-----|-----------|------------|:---:|--------------------|
+| 110 | 🔴 critical | happy-dom | 10.8.0 | **removed** | `@linaria/babel-preset` (build) | ❌ | Build-time DOM sandbox only |
+| 109 | 🔴 critical | happy-dom | 10.8.0 | **removed** | `@linaria/babel-preset` (build) | ❌ | Build-time DOM sandbox only |
+| 111 | 🟠 high | happy-dom | 10.8.0 | **removed** | `@linaria/babel-preset` (build) | ❌ | Build-time DOM sandbox only |
 | 112 | 🟠 high | brace-expansion | 2.1.1 | 2.1.2 | `minimatch` ← Linaria/wyw (build) | ❌ | Build-time ReDoS |
-| 108 | 🟠 high | brace-expansion | 5.0.5 | 5.0.7 | top-level `minimatch` (dev) | ❌ | Build/test ReDoS |
+| 108 | 🟠 high | brace-expansion | 5.0.5 | 5.0.8 | top-level `minimatch` (dev) | ❌ | Build/test ReDoS |
 | 113 | 🟠 high | js-yaml | 3.14.2 | 3.15.0 | `@istanbuljs/load-nyc-config` (jest coverage) | ❌ | Test-time ReDoS |
 | 107 | 🟡 moderate | js-yaml | 3.14.2 | 3.15.0 | `@istanbuljs/load-nyc-config` (jest coverage) | ❌ | Test-time ReDoS |
 | 114 | ⚪ low | dompurify | 3.4.11 | 3.4.12 | **`monaco-editor`** (runtime) | ✅ | **Browser**, but low sev |
-| 105 | ⚪ low | @babel/core | 7.29.0 | 7.29.6 | Babel toolchain (build) | ❌ | Build-time file read |
+| 105 | ⚪ low | @babel/core | 7.29.0 | 7.29.7 | Babel toolchain (build) | ❌ | Build-time file read |
 
 **Why "critical" ≠ urgent here:** `happy-dom` is a server-side DOM emulator. Its
 RCE / VM-escape CVEs require feeding attacker-controlled HTML/JS into its sandbox.
-The only consumer here is Linaria's build-time style evaluator, whose input is
-*your own source code*. Exploiting it means already having malicious code in the
-build — a supply-chain concern, not a runtime attack surface. It is not in the
-shipped bundle.
+The only consumer was Linaria's build-time style evaluator, whose input is *your
+own source code*. Exploiting it means already having malicious code in the build —
+a supply-chain concern, not a runtime attack surface. It was never in the shipped
+bundle.
 
 ---
 
 ## Key findings
 
-1. **The two criticals + one high (alerts 109/110/111) all point at a single
-   vulnerable copy: `happy-dom@10.8.0`, pulled only by `@linaria/babel-preset@5`.**
-   The other `happy-dom` in the tree (`@wyw-in-js/transform` → `20.10.6`) is
-   already patched.
-2. **`@linaria/vite@^5.0.4` and `@linaria/babel-preset@^5.0.4` are vestigial.**
-   The Vite build uses `@wyw-in-js/vite` (see `vite.config.mts`); `@linaria/core`
-   and `@linaria/react` are v8 (the wyw-in-js–era runtime `styled`). The v5
-   `@linaria/vite`/`@linaria/babel-preset` are the *old* toolchain and are
-   referenced nowhere but `package.json`. Removing them deletes `happy-dom@10.8.0`
-   entirely.
-3. **Only one alert touches the browser runtime: DOMPurify (114, low)**, via
-   `monaco-editor` (Monaco uses it to sanitize hover/markdown HTML). There are
-   **no direct `dompurify` imports in `src/`**. Already pinned in `overrides`
-   (`^3.3.2` → resolves to 3.4.11); just bump to `^3.4.12`.
-4. **The js-yaml alerts (113/107) are jest-coverage-only** (`@istanbuljs/load-nyc-config`).
-   They disappear with the **Vitest migration** in
-   [`01-vitest-and-coverage.md`](./01-vitest-and-coverage.md), which removes
-   jest/istanbul.
-5. **Caveat on existing `overrides`:** the current block pins `jsdom: "^29.0.1"`
-   and `glob: "^13.0.6"` — versions that do not appear to exist on npm (jsdom
-   tops out ~25, glob ~11). Validate these resolve when you refresh the lockfile;
-   they may be silently ignored (also flagged in reports 00 and 01).
+1. **The two criticals + one high (109/110/111) all pointed at a single vulnerable
+   copy: `happy-dom@10.8.0`, pulled only by `@linaria/babel-preset@5`.** The other
+   `happy-dom` in the tree (`@wyw-in-js/transform` → `20.10.6`) was already patched.
+2. **`@linaria/vite@5` and `@linaria/babel-preset@5` were vestigial.** The Vite
+   build uses `@wyw-in-js/vite` (see `vite.config.mts`); `@linaria/core` and
+   `@linaria/react` are v8 (the wyw-in-js–era runtime `styled`). The v5 packages
+   were the *old* toolchain, referenced nowhere but `package.json`. Removing them
+   deleted `happy-dom@10.8.0` outright — and pruned ~1,850 lines of transitive
+   lockfile entries.
+3. **Only one alert touched the browser runtime: DOMPurify (114, low)**, via
+   `monaco-editor` (Monaco uses it to sanitize hover/markdown HTML). No direct
+   `dompurify` imports exist in `src/`. Fixed by bumping the existing override to
+   `^3.4.12`.
+4. **The js-yaml alerts (113/107) were jest-coverage-only** (`@istanbuljs/load-nyc-config`).
+   Fixed here with a scoped override; they also disappear entirely with the
+   **Vitest migration** in [`01-vitest-and-coverage.md`](./01-vitest-and-coverage.md)
+   (which removes jest/istanbul).
+5. **~~Caveat~~ Correction on existing `overrides`:** an earlier draft of this
+   report (and report 01) speculated that `jsdom: "^29.0.1"` and `glob: "^13.0.6"`
+   pinned non-existent versions. **That was wrong** — `jsdom@29.1.1` and
+   `glob@13.0.6` are current, real releases and resolve cleanly. No action needed;
+   this note supersedes those caveats.
 
 ---
 
-## Remediation plan
+## Remediation applied & verified
 
-Ordered by value ÷ effort. **All changes need a lockfile refresh + build/test
-verification** (`npm install` → `npm run build` → `npm test` → `npm audit`);
-they were **not applied** here because this worktree can't install/verify.
+Applied to `package.json` (verified with `npm install` → `audit` → `build` → `test`):
 
-### Fix 1 — Remove vestigial Linaria v5 toolchain  ✅ clears 109, 110, 111 (both criticals) · effort **S**
-Delete from `package.json`:
 ```jsonc
-// dependencies
+// dependencies — removed
 - "@linaria/babel-preset": "^5.0.4",
-// devDependencies
+// devDependencies — removed
 - "@linaria/vite": "^5.0.4",
-```
-Keep `@linaria/core@^8` and `@linaria/react@^8` (runtime `styled`, still used).
-Verify `npm run build` + `npm run dev` still compile styles via `@wyw-in-js/vite`.
-This removes `happy-dom@10.8.0` and prunes duplicate `brace-expansion@2.1.1` /
-`js-yaml@4` copies under `@linaria/babel-preset`.
 
-### Fix 2 — Bump the one runtime dep (DOMPurify)  ✅ clears 114 · effort **S**
-```jsonc
-"overrides": {
-  "dompurify": "^3.4.12",   // was ^3.3.2
-  ...
-}
-```
-Monaco is compatible with DOMPurify 3.4.x. This is the only browser-facing fix.
-
-### Fix 3 — Refresh build/test transitive deps via overrides  ✅ clears 112, 108, 105 · effort **S**
-```jsonc
-"overrides": {
-  ...
-  "@babel/core": "^7.29.6",       // 105
-  "brace-expansion": "^5.0.7"     // 112, 108 — API is stable across majors; verify build
-}
-```
-`brace-expansion` has a tiny, stable API, so forcing 5.0.7 across the (2.x + 5.x)
-minimatch consumers is normally safe — confirm the build after.
-
-### Fix 4 — js-yaml (113, 107): prefer the Vitest migration  ✅ clears 113, 107 · effort **M** (or S stopgap)
-The vulnerable `js-yaml@3.14.2` is only reachable through jest coverage
-(`@istanbuljs/load-nyc-config`). The durable fix is
-[report 01](./01-vitest-and-coverage.md) (drops jest + istanbul). If you need it
-gone sooner, add a **scoped** override — but first confirm `js-yaml@3.15.0` is
-actually published (the 3.x line historically ended at 3.14.1):
-```jsonc
-"@istanbuljs/load-nyc-config": { "js-yaml": "^3.15.0" }
-```
-
-### Proposed final `overrides` block (Fixes 2–3)
-```jsonc
+// overrides — final block
 "overrides": {
   "yaml": "^2.6.1",
-  "dompurify": "^3.4.12",
+  "dompurify": "^3.4.12",              // 114  (was ^3.3.2)
   "test-exclude": "^7.0.2",
-  "jsdom": "^29.0.1",        // ⚠️ validate — may not exist on npm
-  "glob": "^13.0.6",         // ⚠️ validate — may not exist on npm
-  "@babel/core": "^7.29.6",
-  "brace-expansion": "^5.0.7"
+  "jsdom": "^29.0.1",                  // unchanged — valid (jsdom@29.1.1 exists)
+  "glob": "^13.0.6",                   // unchanged — valid (glob@13.0.6 exists)
+  "@babel/core": "^7.29.6",            // 105
+  "brace-expansion@^2.0.0": "^2.1.2",  // 112  (2.x line)
+  "brace-expansion@^5.0.0": "^5.0.7",  // 108  (5.x line)
+  "@istanbuljs/load-nyc-config": {     // 113, 107  (scoped to the vulnerable path)
+    "js-yaml": "^3.15.0"
+  }
 }
 ```
 
-### Verification checklist
+### ⚠️ Gotcha worth recording — why `brace-expansion` uses **two range-keyed** overrides
+The obvious fix — a single `"brace-expansion": "^5.0.7"` — **broke the build**:
+
+```
+@wyw-in-js/vite/node_modules/minimatch/dist/esm/index.js
+  import expand from 'brace-expansion';
+  SyntaxError: The requested module 'brace-expansion' does not provide an export named 'default'
+```
+
+Two incompatible majors coexist in the tree: the older `minimatch` nested under
+Linaria/`@wyw-in-js` uses a **default** import (needs `brace-expansion@2.x`), while
+the top-level `minimatch` uses a **named** import (needs `5.x`). Forcing everything
+to 5.x removed the default export the 2.x consumers rely on. The fix is
+**version-range-keyed overrides** (`brace-expansion@^2.0.0` → `^2.1.2`,
+`brace-expansion@^5.0.0` → `^5.0.7`), which patch each line *within its own major*.
+Likewise, the `js-yaml` override is **scoped** to `@istanbuljs/load-nyc-config` so
+it doesn't drag the safe `js-yaml@4.x` copies (used by `cosmiconfig`) down to 3.x.
+
+### Verification evidence
+
+| Check | Before | After |
+|-------|--------|-------|
+| `npm audit` (of these 9) | 2 critical, 4 high, 1 mod, 2 low | **0 remaining** |
+| `npm audit` (total) | 9 | 2 — both the out-of-scope react-router cluster |
+| `happy-dom` in tree | `10.8.0` (vuln) + `20.10.6` | only `20.10.6` (patched); `10.8.0` gone |
+| `brace-expansion` | `2.1.1`, `5.0.5` (vuln) | `2.1.2` (Linaria/wyw) + `5.0.8` (top) |
+| `dompurify` | `3.4.11` | `3.4.12` |
+| `@babel/core` | `7.29.0` | `7.29.7` |
+| `npm run build` | — | ✅ built in ~2.7s, 195 kB CSS emitted (Linaria intact) |
+| `npm test` | — | ✅ 4 suites / **34 tests** pass, coverage runs |
+| lockfile size | — | −1,849 / +102 lines (vestigial subtree pruned) |
+
+### Reproduce
 ```bash
-rm -rf node_modules package-lock.json && npm install   # regenerate lockfile
-npm run build        # wyw-in-js/vite must still extract Linaria styles
-npm test             # (or the Vitest suite once report 01 lands)
-npm audit            # expect 0 of these 9 remaining
+npm install
+npm audit          # only react-router (out of scope) remains
+npm run build      # wyw-in-js/vite still extracts Linaria styles
+npm test           # 34 tests pass
 ```
 
 ---
 
-## Coverage after each fix
+## New finding (out of scope) — react-router
 
-| Fix | Alerts cleared | Browser-runtime risk removed? |
-|-----|----------------|:---:|
-| 1 — drop Linaria v5 | 109, 110, 111 | n/a (build-time) |
-| 2 — dompurify bump | 114 | ✅ (the only one) |
-| 3 — babel/brace-expansion overrides | 112, 108, 105 | n/a (build-time) |
-| 4 — Vitest migration (report 01) | 113, 107 | n/a (test-time) |
-| **Total** | **all 9** | |
+Refreshing the lockfile surfaced a **`react-router` / `react-router-dom` cluster**
+(1 high + 1 moderate; 4 CVEs — open redirect, XSS, constructor injection, DoS) that
+was **not among the original 9 Dependabot alerts** (those advisories post-date the
+repo's last Dependabot scan). It is **pre-existing** — `react-router-dom@^7.17.0`
+was already a dependency; this change did not introduce it.
+
+**Deliberately excluded from this PR** because:
+- It is a **runtime routing** bump — needs real app/route testing, not just build+unit.
+- Report [`04-remove-react.md`](./04-remove-react.md) plans to **remove
+  `react-router-dom` entirely**, so a version bump here is largely throwaway.
+
+**Recommendation:** handle it separately — either `npm audit fix` (a semver-compatible
+`react-router` patch is available) in its own PR with route smoke-testing, or fold it
+into the report-04 routing replacement. Track it so it isn't lost.
 
 ---
 
@@ -157,16 +164,13 @@ npm audit            # expect 0 of these 9 remaining
 
 - **Wire dependency scanning into CI.** Report 00 found the `lint` script is dead
   and CI runs only `build` + `test`. Add `npm audit --audit-level=high` (or
-  Dependabot **grouped** security PRs) so transitive drift is caught automatically.
+  Dependabot **grouped** security PRs) so transitive drift is caught automatically —
+  it would have surfaced the react-router cluster.
 - **Distinguish runtime vs. build exposure in the security process.** Dependabot's
   "runtime/development" scope is derived from the manifest tree and mislabels
-  build-only transitive deps (e.g. these `happy-dom`/`brace-expansion` alerts show
-  as runtime). Triage on *"does it reach the browser bundle?"*, not the label.
+  build-only transitive deps (these `happy-dom`/`brace-expansion` alerts showed as
+  runtime). Triage on *"does it reach the browser bundle?"*, not the label.
 - **The migration program shrinks this surface structurally.** Vitest (01) removes
-  the jest/istanbul chain; removing React/MUI/Formik (02–04) and consolidating on
-  one Linaria/wyw toolchain removes large transitive subtrees. Fewer build deps →
-  fewer alerts.
-
-> **Nothing here blocks the current docs PR.** These are dependency changes that
-> should land as their own PR with a green `npm install` + build + audit, not be
-> bundled with analysis docs.
+  the jest/istanbul chain; removing React/MUI/Formik/react-router (02–04) and
+  consolidating on one Linaria/wyw toolchain removes large transitive subtrees.
+  Fewer build deps → fewer alerts.
