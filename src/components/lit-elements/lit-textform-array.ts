@@ -128,7 +128,10 @@ export default class TextFormArray extends KeepLitElement {
 
   @property({ type: Array }) data: Rule[] = [];
   @property({ type: String }) title = '';
-  @property({ attribute: false }) setData: (data: Rule[]) => void = () => {};
+  // Loose parameter type so consumer callbacks with a more specific row shape
+  // (e.g. ScriptEditor's setValidationRules) remain assignable under
+  // contravariant function-parameter checking.
+  @property({ attribute: false }) setData: (data: any[]) => void = () => {};
 
   @state() private deleteRule = '';
   private index = 0;
