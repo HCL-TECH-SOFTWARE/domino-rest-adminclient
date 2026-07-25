@@ -1,5 +1,5 @@
 import { html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
@@ -30,7 +30,9 @@ export default class Dropdown extends KeepLitElement {
 
   @property({ type: Array }) choices: string[] = [];
 
-  @state() private selected?: string;
+  // Public reactive property: consumers (e.g. LoginPage) pass `selected` in,
+  // and it is also updated internally when a dropdown-item is chosen.
+  @property({ type: String }) selected?: string;
 
   render() {
     return html`
