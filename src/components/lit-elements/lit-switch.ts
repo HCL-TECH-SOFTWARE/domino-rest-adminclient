@@ -1,8 +1,15 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/switch/switch.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class Switch extends LitElement {
-
+/**
+ * Thin wrapper around `<wa-switch>`.
+ * Tag: `lit-switch`. Exposes a single `onToggle` callback wired to the inner
+ * switch's `wa-change` event.
+ */
+@customElement('lit-switch')
+export default class Switch extends KeepLitElement {
   static styles = css`
     :host {
       color-scheme: inherit;
@@ -25,14 +32,7 @@ class Switch extends LitElement {
     }
   `;
 
-  static properties = {
-    onToggle: { type: Function },
-  };
-
-  constructor() {
-    super()
-    this.onToggle = null
-  }
+  @property({ attribute: false }) onToggle: ((e: Event) => void) | null = null;
 
   render() {
     return html`
@@ -43,6 +43,8 @@ class Switch extends LitElement {
   }
 }
 
-customElements.define('lit-switch', Switch);
-
-export default Switch
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-switch': Switch;
+  }
+}
