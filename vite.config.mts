@@ -8,7 +8,18 @@ export default defineConfig({
     wyw({
       include: ['**/*.{ts,tsx}']
     }),
-    react()
+    // tsDecorators + useDefineForClassFields:false let SWC transpile the Lit
+    // elements' TypeScript experimental decorators (@customElement/@property/
+    // @state/@query) with legacy semantics, so decorated class fields don't
+    // shadow Lit's reactive accessors (see lit.dev/msg/class-field-shadowing).
+    react({
+      tsDecorators: true,
+      useAtYourOwnRisk_mutateSwcOptions(options) {
+        options.jsc ??= {};
+        options.jsc.transform ??= {};
+        options.jsc.transform.useDefineForClassFields = false;
+      },
+    })
   ],
   build: {
     assetsDir: 'admin/assets'

@@ -11,7 +11,20 @@ export default defineConfig({
   plugins: [
     // Keep wyw so Linaria `styled` components resolve to real components.
     wyw({ include: ['**/*.{ts,tsx}'] }),
-    react(),
+    // tsDecorators enables SWC transpilation of TypeScript experimental
+    // decorators (tsconfig `experimentalDecorators`), which the Lit elements
+    // use (@customElement/@property/@state/@query). useDefineForClassFields
+    // must be false so decorated class fields compile to constructor
+    // assignments instead of `defineProperty`, which would otherwise shadow
+    // Lit's reactive accessors (see lit.dev/msg/class-field-shadowing).
+    react({
+      tsDecorators: true,
+      useAtYourOwnRisk_mutateSwcOptions(options) {
+        options.jsc ??= {};
+        options.jsc.transform ??= {};
+        options.jsc.transform.useDefineForClassFields = false;
+      },
+    }),
   ],
   test: {
     globals: true,
@@ -49,6 +62,9 @@ export default defineConfig({
         branches: 16,
         'src/store/**/reducer.ts': { lines: 95, statements: 95, functions: 90, branches: 88 },
         'src/utils/**': { lines: 85, statements: 85, functions: 55, branches: 60 },
+        // Converted Lit elements (.js → .ts). Conservative floor that holds
+        // across all batches; ratchet up once the large components (source) land.
+        'src/components/lit-elements/**': { lines: 70, statements: 70, functions: 60, branches: 50 },
       },
     },
   },

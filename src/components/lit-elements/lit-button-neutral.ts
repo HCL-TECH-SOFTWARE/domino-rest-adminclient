@@ -1,6 +1,13 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class ButtonNeutral extends LitElement {
+/**
+ * Plain neutral (outlined) button. Tag: `lit-button-neutral`.
+ * Exposed via `LitElements.tsx` as `LitButtonNeutral`.
+ */
+@customElement('lit-button-neutral')
+export default class ButtonNeutral extends KeepLitElement {
   static styles = css`
     button {
         padding: 6px 16px;
@@ -24,14 +31,7 @@ class ButtonNeutral extends LitElement {
     }
   `;
 
-  static properties = {
-    text: { type: String },
-  };
-
-  constructor() {
-    super()
-    this.text = ''
-  }
+  @property({ type: String }) text = '';
 
   render() {
     return html`
@@ -40,6 +40,8 @@ class ButtonNeutral extends LitElement {
   }
 }
 
-customElements.define('lit-button-neutral', ButtonNeutral);
-
-export default ButtonNeutral
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-button-neutral': ButtonNeutral;
+  }
+}
