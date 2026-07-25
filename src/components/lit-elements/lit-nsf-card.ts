@@ -1,11 +1,27 @@
-import { LitElement, css, html } from 'lit';
-import './lit-schema-status.js';
+import { css, html, PropertyValues } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import './lit-schema-status';
 import '@awesome.me/webawesome/dist/components/input/input.js';
-import { IMG_DIR } from '../../config.dev.ts';
-import appIcons from '../../styles/app-icons.ts';
+import { IMG_DIR } from '../../config.dev';
+import appIcons from '../../styles/app-icons';
+import { KeepLitElement } from './keep-lit-element';
 
-class NsfCard extends LitElement {
+const ICONS = appIcons as Record<string, string>;
 
+type DatabaseEntry = {
+  schemaName?: string;
+  apiName?: string;
+  nsfPath?: string;
+  iconName?: string;
+};
+type Database = { fileName?: string; databases?: DatabaseEntry[] };
+
+/**
+ * Card listing the schemas/APIs of a database file, with a search filter.
+ * Tag: `lit-nsf-card`. Renders a `lit-schema-status` per entry.
+ */
+@customElement('lit-nsf-card')
+export default class NsfCard extends KeepLitElement {
   static styles = css`
     /* Opt the shadow DOM into both color schemes so light-dark()
        resolves correctly in here regardless of host inheritance.
@@ -67,37 +83,30 @@ class NsfCard extends LitElement {
     }
   `;
 
-  static properties = {
-    database: { type: Object },
-    items: { type: Array },
-    schemasWithScopes: { type: Array },
-    iconName: { type: String },
-    deleteFn: { type: Function },
-    open: { type: Function },
-  };
+  @property({ type: Object }) database: Database = {};
+  @property({ type: Array }) items: DatabaseEntry[] = [];
+  @property({ type: Array }) schemasWithScopes: string[] = [];
+  @property({ type: String }) iconName = 'beach';
+  @property({ attribute: false }) deleteFn: (data: DatabaseEntry) => void = () => {};
+  @property({ attribute: false }) open: (schema: DatabaseEntry) => void = () => {};
 
-  constructor() {
-    super()
-    this.database = {}
-    this.items = []
-    this.isSchema = window.location.pathname.endsWith('/schema')
-    this.schemasWithScopes = []
-    this.iconName = 'beach'
-    this.searchItem = ''
-    this.deleteFn = (data) => {}
-    this.open = (schema) => {}
-  }
+  private isSchema = window.location.pathname.endsWith('/schema');
+  private searchItem = '';
 
-  updated(changedProperties) {
+  protected updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('database')) {
-      this.items = this.database.databases
-      this.iconName = this.database.databases ? this.database.databases[0]?.iconName : 'beach';
+      this.items = this.database.databases ?? [];
+      this.iconName = this.database.databases ? (this.database.databases[0]?.iconName ?? 'beach') : 'beach';
     }
   }
 
-  _handleSearchInput(e) {
-    this.searchItem = e.target.value;
-    this.items = this.isSchema ? this.database.databases.filter((item) => item.schemaName.toLowerCase().includes(this.searchItem.toLowerCase())) : this.database.databases.filter((item) => item.apiName.toLowerCase().includes(this.searchItem.toLowerCase()));
+  private _handleSearchInput(e: Event) {
+    this.searchItem = (e.target as HTMLInputElement).value;
+    const list = this.database.databases ?? [];
+    const needle = this.searchItem.toLowerCase();
+    this.items = this.isSchema
+      ? list.filter((item) => item.schemaName?.toLowerCase().includes(needle))
+      : list.filter((item) => item.apiName?.toLowerCase().includes(needle));
   }
 
   render() {
@@ -105,13 +114,15 @@ class NsfCard extends LitElement {
       <section>
         <div class="card-title">
             <div style="font-size: 32px;">
-                ${this.iconName && appIcons[this.iconName] ? html`
-                    <wa-icon 
-                        src=${`data:image/svg+xml;base64,${appIcons[this.iconName]}`} 
+                ${this.iconName && ICONS[this.iconName]
+                  ? html`
+                    <wa-icon
+                        src=${`data:image/svg+xml;base64,${ICONS[this.iconName]}`}
                         label=${this.iconName}
                     ></wa-icon>
-                ` : html`
-                    <wa-icon src=${`data:image/svg+xml;base64,${appIcons['beach']}`} ></wa-icon>
+                `
+                  : html`
+                    <wa-icon src=${`data:image/svg+xml;base64,${ICONS['beach']}`}></wa-icon>
                 `}
             </div>
             <text class="nsf-filename">${this.database.fileName}</text>
@@ -125,7 +136,8 @@ class NsfCard extends LitElement {
             <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/search.svg"></wa-icon>
         </wa-input>
         <div class="list-container">
-            ${this.items.map(item => html`
+            ${this.items.map(
+              (item) => html`
                 <lit-schema-status
                     key=${item.schemaName + '-' + item.nsfPath}
                     .item=${item}
@@ -134,7 +146,7 @@ class NsfCard extends LitElement {
                     .onDelete=${() => this.deleteFn(item)}
                     .onClickOpen=${() => this.open(item)}
                 >
-                </lit-schema-status>`
+                </lit-schema-status>`,
             )}
         </div>
       </section>
@@ -142,6 +154,8 @@ class NsfCard extends LitElement {
   }
 }
 
-customElements.define('lit-nsf-card', NsfCard);
-
-export default NsfCard
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-nsf-card': NsfCard;
+  }
+}
