@@ -1,12 +1,19 @@
-import { LitElement, html, css } from 'lit';
-import './lit-source.js';
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
-// Import Shoelace components
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import './lit-source';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
+import { KeepLitElement } from './keep-lit-element';
 
-class SourceContents extends LitElement {
+type TreeEl = HTMLElement & { editedContent: unknown };
+
+/**
+ * Source editor chrome: a Tree/Text view switcher plus copy/download/cancel/save
+ * actions, wrapping the `lit-source-tree` editor. Tag: `lit-source` (note: the
+ * file is `lit-source-header` but the registered tag is `lit-source`).
+ */
+@customElement('lit-source')
+export default class SourceContents extends KeepLitElement {
   static styles = css`
     select {
         border: none;
@@ -72,89 +79,81 @@ class SourceContents extends LitElement {
     }
   `;
 
-  static properties = {
-    selectedOption: { type: String },
-    content: { type: Object },
-    onSave: { type: Function },
-    onCancel: { type: Function },
-    onDropdownChange: { type: Function },
-    getExternalContent: { type: Function },
-  };
+  @property({ type: String }) selectedOption = '';
+  @property({ type: Object }) content: Record<string, unknown> = {};
+  @property({ attribute: false }) onSave: () => void = () => {};
+  @property({ attribute: false }) onCancel: () => void = () => {};
+  @property({ attribute: false }) onDropdownChange: (newOption: string) => void = () => {};
+  @property({ attribute: false }) getExternalContent: () => string = () => '';
 
-  constructor() {
-    super()
-    this.selectedOption = ''
-    this.content = {}
-    this.onSave = () => {}
-    this.onCancel = () => {}
-    this.onDropdownChange = (newOption) => {}
-    this.getExternalContent = () => {}
-  }
-
-  handleDropdownChange(event) {
-    const newOption = event.target.value
-    const confirmSwitch = confirm('Switching the view will discard any current changes. Do you want to proceed?');
+  handleDropdownChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const newOption = target.value;
+    const confirmSwitch = confirm(
+      'Switching the view will discard any current changes. Do you want to proceed?',
+    );
     if (confirmSwitch) {
-        this.selectedOption = newOption
-        this.onDropdownChange(newOption)
+      this.selectedOption = newOption;
+      this.onDropdownChange(newOption);
     } else {
-        event.target.value = this.selectedOption
+      target.value = this.selectedOption;
     }
   }
 
   handleSaveClick() {
     if (this.onSave) {
-        this.content = this.getEditedContent()
-        this.onSave()
+      this.content = this.getEditedContent() as Record<string, unknown>;
+      this.onSave();
     }
   }
 
   handleCancelClick() {
     if (this.onCancel) {
-        this.content = this.getEditedContent()
-        this.onCancel()
+      this.content = this.getEditedContent() as Record<string, unknown>;
+      this.onCancel();
     }
   }
 
   handleCopyClick() {
-    let content;
+    let content: unknown;
     if (this.selectedOption === 'tree') {
-        content = this.getEditedContent();
+      content = this.getEditedContent();
     } else {
-        content = JSON.parse(this.getExternalContent());
+      content = JSON.parse(this.getExternalContent());
     }
-    navigator.clipboard.writeText(JSON.stringify(content, null, 2))
+    navigator.clipboard
+      .writeText(JSON.stringify(content, null, 2))
       .then(() => {
-        alert('Schema copied to clipboard!')
+        alert('Schema copied to clipboard!');
       })
-      .catch(err => {
-        alert('Failed to copy schema: ', err);
+      .catch((err) => {
+        alert('Failed to copy schema: ' + err);
       });
   }
 
   handleDownloadClick() {
-    let content;
+    let content: unknown;
     if (this.selectedOption === 'tree') {
-        content = this.getEditedContent();
+      content = this.getEditedContent();
     } else {
-        content = JSON.parse(this.getExternalContent());
+      content = JSON.parse(this.getExternalContent());
     }
-    const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'schema.json'
-    a.click()
-    URL.revokeObjectURL(url)
-    alert('Schema downloaded as schema.json!')
+    const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'schema.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('Schema downloaded as schema.json!');
   }
 
-  getEditedContent() {
-    if (this.shadowRoot.querySelector('lit-source-tree')) {
-        return this.shadowRoot.querySelector('lit-source-tree').editedContent
-    } else {
-        return this.content
+  getEditedContent(): unknown {
+    const tree = this.shadowRoot!.querySelector('lit-source-tree') as TreeEl | null;
+    if (tree) {
+      return tree.editedContent;
     }
+    return this.content;
   }
 
   render() {
@@ -184,9 +183,11 @@ class SourceContents extends LitElement {
             </section>
         </header>
         <main>
-            ${this.selectedOption === 'tree' ? html`
+            ${this.selectedOption === 'tree'
+              ? html`
                 <lit-source-tree .content="${this.content}"></lit-source-tree>
-                ` : html`
+                `
+              : html`
                 <section></section>
             `}
         </main>
@@ -194,6 +195,8 @@ class SourceContents extends LitElement {
   }
 }
 
-customElements.define('lit-source', SourceContents);
-
-export default SourceContents
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-source': SourceContents;
+  }
+}
