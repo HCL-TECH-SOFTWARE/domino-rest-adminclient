@@ -265,6 +265,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         ref.current?.close();
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const BackArrow = (

@@ -63,7 +63,7 @@ const ColumnBar: React.FC<ColumnBarProps> = ({
         <ColumnBarContainer>
             <AllColumnsList>
               {columns.map((column: any) => (
-                  <div className="listitem" onClick={chooseColumn(column)}>
+                  <div key={column.name} className="listitem" onClick={chooseColumn(column)}>
                     <span className="block columnName">{column.name}</span>
                     <span className="block columnDetails">{`Column Position ${column.position}`}</span>
                     {column.title.length > 0 && <span className="block columnDetails">{`Title: ${column.title}`}</span>}

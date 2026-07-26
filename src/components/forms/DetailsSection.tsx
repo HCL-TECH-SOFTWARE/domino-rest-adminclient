@@ -220,7 +220,10 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
       requireRevisionToUpdate,
       icon,
       isActive,
-      prohibitRefresh,
+      // The memo body reads the `prohibitRefreshValue` state, not the
+      // `prohibitRefresh` prop, so it must depend on the state or toggling the
+      // checkbox leaves this memo stale.
+      prohibitRefreshValue,
     ]
   );
   const [dbContext, setDbContext] = useState(selectedDB);

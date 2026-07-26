@@ -85,7 +85,7 @@ const SchemaContentsTree: React.FC<SchemaContentsTreeProps> = ({
           labelText={content.title}
           labelIcon={DBIcon}
         >
-          {[...new Set(content.apinames)].length > 0 &&
+          {new Set(content.apinames).size > 0 &&
             [...new Set(content.apinames)].map((api, idx) => (
               <StyledTreeItem
                 key={`${api}-${idx}`}

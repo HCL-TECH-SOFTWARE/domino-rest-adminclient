@@ -182,6 +182,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
         maximumAccessLevel: 'Editor',
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [database, visible])
 
   return (

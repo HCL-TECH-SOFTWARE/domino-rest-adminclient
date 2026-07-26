@@ -370,7 +370,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
             {formsSorted.map((form: any, idx: any) => (
               <MenuItem
                 key={`${form.externalName}-${idx}`}
-                value={!!form.externalName ? form.externalName : 'All Fields'}
+                value={form.externalName ? form.externalName : 'All Fields'}
                 onClick={() => {
                   handleFormListOnSelect(form);
                 }}>

@@ -52,15 +52,15 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   const [encrypt, setEncrypt] = useState(item.encryptedField)
   const [formatValue, setFormatValue] = React.useState(() => {
     if (item.type === 'array') {
-      if (!!item.items) {
+      if (item.items) {
         return item.items.format
-      } else if (!!item.format) {
+      } else if (item.format) {
         return item.format
       } else {
         return 'string'
       }
     } else {
-      if (!!item.format) {
+      if (item.format) {
         return item.format
       } else {
         return 'string'
@@ -81,13 +81,13 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   useEffect(() => {
     let fmt = 'string'
     if (editedItem.type === 'array') {
-      if (!!editedItem.items) {
+      if (editedItem.items) {
         fmt = editedItem.items.format
-      } else if (!!editedItem.format) {
+      } else if (editedItem.format) {
         fmt = editedItem.format
       }
     } else {
-      if (!!editedItem.format) {
+      if (editedItem.format) {
         fmt = editedItem.format
       }
     }
@@ -195,7 +195,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
           <div className='half-width pt-5 pb-5'>
             <TextField 
               label="Field Name" 
-              value={!!editedItem.externalName ? editedItem.externalName || '' : editedItem.content || ''} 
+              value={editedItem.externalName ? editedItem.externalName || '' : editedItem.content || ''} 
               className='field-name-input'
               onChange={handleFieldNameChange} 
               id="field-name"

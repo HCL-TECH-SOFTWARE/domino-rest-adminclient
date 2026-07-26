@@ -289,17 +289,10 @@ const Groups: React.FC = () => {
 
       // Put each member in Datagrid rows
 
-      let i: number = 0;
-      const memberList: Array<any> = [];
-      data.Members.length === 0
-        ? (updateValues.groupMembers = [])
-        : data.Members.forEach((member: any) => {
-            memberList.push({
-              id: i,
-              memberName: member
-            });
-            i++;
-          });
+      const memberList: Array<any> = data.Members.map((member: any, i: number) => ({
+        id: i,
+        memberName: member
+      }));
       updateValues.groupMembers = memberList;
 
       formik.setValues(updateValues);
@@ -356,17 +349,10 @@ const Groups: React.FC = () => {
 
       // Put each member in Datagrid rows
 
-      let i: number = 0;
-      const memberList: Array<any> = [];
-      data.Members.length === 0
-        ? (updateValues.groupMembers = [])
-        : data.Members.forEach((member: any) => {
-            memberList.push({
-              id: i,
-              memberName: member
-            });
-            i++;
-          });
+      const memberList: Array<any> = data.Members.map((member: any, i: number) => ({
+        id: i,
+        memberName: member
+      }));
       updateValues.groupMembers = memberList;
 
       formik.setValues(updateValues);

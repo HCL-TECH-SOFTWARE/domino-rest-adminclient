@@ -19,8 +19,8 @@ interface ScriptEditorProps {
   data: any;
   setScripts: (data: any) => void;
   test: () => void;
-  validationRules: Array<{ formula: String, formulaType: String, message: String }>;
-  setValidationRules: (data: Array<{ formula: String, formulaType: String, message: String }>) => void;
+  validationRules: Array<{ formula: string, formulaType: string, message: string }>;
+  setValidationRules: (data: Array<{ formula: string, formulaType: string, message: string }>) => void;
 }
 
 /**
@@ -154,7 +154,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               <div className='p-0 justify-between flex items-center'>
                 <p className='small-text weight-500 m-0'>Formula for Read Access</p>
                 <ButtonBase 
-                  disabled={!(!!data.readAccessFormula)} 
+                  disabled={!(data.readAccessFormula)} 
                   onClick={() => openDialog("Formula for Read Access", data.readAccessFormula.formula)}
                 >
                   <FiEdit2 />
@@ -167,7 +167,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               <div className='p-0 justify-between flex items-center'>
                 <p className='small-text weight-500 m-0'>Formula for Write Access</p>
                 <ButtonBase 
-                  disabled={!(!!data.writeAccessFormula)} 
+                  disabled={!(data.writeAccessFormula)} 
                   onClick={() => openDialog("Formula for Write Access", data.writeAccessFormula.formula)}
                 >
                   <FiEdit2 />
@@ -188,7 +188,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               <div className='p-0 justify-between flex items-center'>
                 <p className='small-text weight-500 m-0'>Formula for Delete Access</p>
                 <ButtonBase 
-                  disabled={!(!!data.deleteAccessFormula)} 
+                  disabled={!(data.deleteAccessFormula)} 
                   onClick={() => openDialog("Formula for Delete Access", data.deleteAccessFormula.formula)}
                 >
                   <FiEdit2 />
@@ -201,7 +201,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               <div className='p-0 justify-between flex items-center'>
                 <p className='small-text weight-500 m-0'>On Load Formula</p>
                 <ButtonBase 
-                  disabled={!(!!data.onLoad)} 
+                  disabled={!(data.onLoad)} 
                   onClick={() => openDialog("On Load Formula", data.onLoad.formula)}
                 >
                   <FiEdit2 />
@@ -216,7 +216,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
               <div className='p-0 justify-between flex items-center'>
                 <p className='small-text weight-500 m-0'>On Save Formula</p>
                 <ButtonBase 
-                  disabled={!(!!data.onSave)} 
+                  disabled={!(data.onSave)} 
                   onClick={() => openDialog("On Save Formula", data.onSave.formula)}
                 >
                   <FiEdit2 />

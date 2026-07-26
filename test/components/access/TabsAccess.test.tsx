@@ -51,7 +51,7 @@ vi.mock('../../../src/components/access/FieldDndContainer', () => ({
         <button
           data-testid="change-validation"
           onClick={() =>
-            props.setValidationRules({ ...(props.validationRules || {}), test: 'rule' })
+            props.setValidationRules({ ...props.validationRules, test: 'rule' })
           }
         >
           Add Validation

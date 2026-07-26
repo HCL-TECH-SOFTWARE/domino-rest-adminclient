@@ -118,6 +118,7 @@ const AccessMode: React.FC = () => {
         [currentKey]: chosenFields,
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schemaData, newForm.form, formName])
 
   useEffect(() => {

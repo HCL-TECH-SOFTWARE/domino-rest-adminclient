@@ -167,6 +167,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
     } else {
       setLists([...views, ...updatedFolders]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showActive, views, updatedFolders])
 
   const handleSearchView = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -6,12 +6,19 @@
 
 import { useSelector, useDispatch } from 'react-redux';
 import Snackbar from '@mui/material/Snackbar';
-import Slide from '@mui/material/Slide';
+import Slide, { SlideProps } from '@mui/material/Slide';
 import { AppState } from '../../store';
 import { closeSnackbar } from '../../store/alerts/action';
 
-function TransitionDown(props: {}) {
-  return <Slide children={<div></div>} {...props} direction="down" />;
+function TransitionDown(props: SlideProps) {
+  const { children, ...rest } = props;
+  // Slide needs a single element child. Fall back to an empty one when the
+  // Snackbar supplies none, which is what the former `children` prop default did.
+  return (
+    <Slide {...rest} direction="down">
+      {children ?? <div />}
+    </Slide>
+  );
 }
 
 const Notification = () => {

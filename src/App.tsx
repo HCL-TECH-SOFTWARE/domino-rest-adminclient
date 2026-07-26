@@ -65,7 +65,7 @@ const App: React.FC = () => {
             dispatch(removeAuth());
           }
         }
-      } catch (e) {
+      } catch {
         // Token is corrupted — clear it and force re-login
         localStorage.removeItem('user_token');
         dispatch(removeAuth());

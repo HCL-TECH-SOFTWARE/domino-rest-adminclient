@@ -88,7 +88,7 @@ const ColumnDetails: React.FC<ColumnDetailsProps> = ({
               <StyledTableCell><RiDeleteBinLine size={"1.3em"} className='delete-icon' onClick={() => setRemoveColumn(column.name)} /></StyledTableCell>
               <StyledTableCell>{column.name}</StyledTableCell>
               <StyledTableCell><TextField hiddenLabel fullWidth 
-                error={!!column.error ? (column.error === null ? false : true) : false} 
+                error={column.error ? (column.error === null ? false : true) : false} 
                 helperText={!!column.error && errorTypes(column.error)}
                 placeholder={column.externalName} 
                 onChange={(event) => {handleEditColumn(column, event.target.value)}} />
