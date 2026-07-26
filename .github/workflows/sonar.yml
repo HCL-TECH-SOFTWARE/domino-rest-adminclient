@@ -1,21 +1,32 @@
 # ========================================================================== #
-# Copyright (C) 2023 HCL America Inc.                                        #
+# Copyright (C) 2026 HCL America Inc.                                        #
 # Apache-2.0 license   https://www.apache.org/licenses/LICENSE-2.0           #
 # ========================================================================== #
-name: Run test for a PR
+#
+# Branch analysis. `pr_check.yml` analyses pull requests; this keeps the long-lived
+# branches analysed so Sonar has a baseline to compare "new code" against. Without
+# it, new-code metrics on a PR have nothing meaningful to diff.
+name: SonarQube Cloud branch analysis
 on:
   workflow_dispatch:
-  pull_request:
+  push:
+    branches:
+      - main
+      - new_code
+
+# Sonar rejects concurrent analyses of the same project branch, and a superseded
+# analysis is worthless anyway — keep only the newest push per branch.
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    name: PR preflight check
+  sonar:
+    name: Analyse ${{ github.ref_name }}
     runs-on: ubuntu-latest
-    env:
-      REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -27,29 +38,11 @@ jobs:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
-      - run: npm run lint
-      - run: npm run build
+      # No lint/build step: the scanner reads sources plus the two reports this
+      # produces (coverage/lcov.info and coverage/sonar-report.xml). `pr_check.yml`
+      # is where lint and build are gated.
       - run: npm run test
-      - name: Publish test coverage summary
-        if: always()
-        run: |
-          if [ -f coverage/coverage-summary.json ]; then
-            {
-              echo "## Test Coverage Summary"
-              echo ""
-              echo "| Metric | Coverage | Covered/Total |"
-              echo "| --- | --- | --- |"
-              jq -r '.total as $t | ["lines","statements","functions","branches"][] | . as $k | $t[$k] | "| \($k) | \(.pct)% | \(.covered)/\(.total) |"' coverage/coverage-summary.json
-            } >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "Coverage report not found." >> "$GITHUB_STEP_SUMMARY"
-          fi
 
-      # --- SonarQube Cloud analysis ------------------------------------------ #
-      # SONAR_TOKEN is never exposed to pull requests from forks, so the token is
-      # probed first and the analysis is skipped rather than failing the PR. These
-      # steps also do not run at all if lint/build/test failed above: analysing a
-      # red run would publish partial coverage as if it were the real number.
       - name: Check for a SonarQube token
         id: sonar
         env:
@@ -59,14 +52,14 @@ jobs:
             echo 'available=true' >> "$GITHUB_OUTPUT"
           else
             echo 'available=false' >> "$GITHUB_OUTPUT"
-            echo '_SonarQube analysis skipped: no `SONAR_TOKEN` available (fork PR, or the secret is not configured)._' >> "$GITHUB_STEP_SUMMARY"
+            echo '_SonarQube analysis skipped: no `SONAR_TOKEN` configured for this repository._' >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: SonarQube Cloud scan
         if: steps.sonar.outputs.available == 'true'
         uses: SonarSource/sonarqube-scan-action@v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      # Report-only: `continue-on-error` keeps a red gate from failing the PR while
+      # Report-only: `continue-on-error` keeps a red gate from failing the run while
       # the gate is still being tuned. Delete that one line to make it blocking.
       - name: SonarQube quality gate
         id: sonar_gate

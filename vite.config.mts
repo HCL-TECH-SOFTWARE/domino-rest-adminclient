@@ -26,21 +26,16 @@ export default defineConfig({
   },
   server: {
     headers: {
-      // WebAwesome is bundled from npm and its Font Awesome glyphs are served from
-      // `services/icon-library.ts`, so nothing is fetched from a CDN at runtime. The
-      // `cdn.jsdelivr.net/npm/@awesome.me/webawesome/` grants that used to sit in
-      // script-src, style-src-elem and font-src are gone with it — re-adding one would
-      // mean something started loading remotely again.
-      'disabledContent-Security-Policy': `
-        default-src 'self' data: gap: 'unsafe-inline' *;
-        script-src 'self' 'unsafe-inline' data: gap: https://ssl.gstatic.com;
-        worker-src 'self' blob:;
-        connect-src 'self' data: *;
-        style-src-attr 'none';
-        style-src-elem 'self' 'unsafe-hashes' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=';
-        font-src 'self' data: https://fonts.gstatic.com;
-        img-src 'self' data: gap:;
-        report-uri /admin/ui
+
+        'Content-Security-Policy-Report-Only': `
+        default-src 'self';
+        connect-src 'self';
+        font-src 'self' data:;
+        img-src 'self' data:;
+        script-src 'self';
+        style-src 'self' 'unsafe-inline';
+        worker-src 'self' data:;
+        report-uri /api/csp-violation-report
       `
         .replace(/\s+/g, ' ')
         .trim()
