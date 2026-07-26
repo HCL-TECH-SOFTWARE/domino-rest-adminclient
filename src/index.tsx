@@ -17,8 +17,8 @@ import { rootReducer } from './store';
 
 // No `setBasePath()` here on purpose. In WebAwesome 3.x the base path feeds exactly
 // one consumer — the autoloader, which lazily `import()`s `components/<tag>/<tag>.js`
-// from it. This app does not autoload; it imports all 38 of its WebAwesome components
-// explicitly, so nothing ever reads the value. Icons are unaffected either way: they
+// from it. This app does not autoload; it imports each of the 18 WebAwesome components
+// it uses explicitly, so nothing ever reads the value. Icons are unaffected either way: they
 // resolve through `setIconPath()`/kit code, which is a separate setting, and this app
 // serves its own glyphs from `services/icon-library.ts`.
 //
