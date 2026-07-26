@@ -2,18 +2,31 @@
 
 **Scope:** Map every React component under `src/components/**` (plus top-level `App.tsx`, `Views.tsx`, `Footer.tsx`) to a migration target: an existing hand-written `keep-*` component, a real WebAwesome `wa-*` component, a **new** Lit component to author, or **KEEP** (leave on React/MUI for now).
 
-> **Refreshed 2026-07-27** against branch `new_code` @ `7594672`. Originally written
-> 2026-07-24, when the Lit layer was 27 untyped `.js` files under `lit-elements/`.
+> **Refreshed 2026-07-27** against branch `new_code` @ `e17010c`. Previously refreshed
+> 2026-07-27 against `7594672`; originally written 2026-07-24, when the Lit layer was
+> 27 untyped `.js` files under `lit-elements/`.
 >
 > **Phase 0 (Foundation) is essentially COMPLETE.** All elements are TypeScript with
 > decorators on a shared base class, renamed `lit-*` → `keep-*`, each with a unit test.
 > One Phase-0 item — collapsing the four button components — is **not** done.
 >
-> **Two mapping corrections** after re-verifying against the installed
-> `@awesome.me/webawesome@3.10.0` (was 3.6.0):
-> - ✅ **`<wa-page>` is FREE**, not Pro. Report 03's biggest go/no-go gate is resolved.
+> **The first real screen conversion landed (PR #669).** The Source tab of
+> `FormsContainer.tsx` now renders `keep-monaco-editor` through the `@lit/react` bridge
+> instead of `@monaco-editor/react`, gained a **Diff view**, moved its icons onto a
+> self-hosted Font Awesome library, and pushed theme switching into
+> `src/services/theme-service.ts`. §5.3 is now a *done* section with a short tail.
+>
+> **Two mapping corrections** (unchanged, re-verified against the installed
+> `@awesome.me/webawesome@3.10.0`):
+> - ✅ **`<wa-page>` is FREE**, not Pro — `dist/components/page/` ships in the npm
+>   package. Report 03's biggest go/no-go gate is resolved.
 > - 🔴 **There is no WebAwesome data grid or date picker in _any_ tier.** "Buy WA Pro
 >   Data Grid" was never a real option; §5.1 is corrected below.
+>
+> **One standing claim retracted:** §2.1 used to say `src/index.tsx` "sets the asset base
+> path". The two `setBasePath()` calls were **deleted** in PR #673 and must not come back
+> — in WebAwesome 3.x the base path feeds only the autoloader, which this app never uses.
+> See §2.1.
 
 **Companion reports (cross-reference):**
 - `reports/03-wa-page-and-design-tokens.md` — layout primitives → `wa-*` CSS utilities, theming, design tokens, dark mode, CSP. All "layout only" and "token/theme" concerns are deferred there.
@@ -25,6 +38,21 @@
 
 ## 0. What changed since 2026-07-24
 
+### 0.1 New this refresh (`7594672` → `e17010c`, PRs #667–#673)
+
+| §  | Item | Status | Where |
+|----|------|:---:|---|
+| §5.3 | Wire `keep-monaco-editor` into the Source tab | ✅ **DONE** — `FormsContainer.tsx` imports `KeepMonacoEditor` from `KeepElements` and renders it at line 658; **`@monaco-editor/react` has zero imports left in `src`** | PR #669 |
+| §5.3 | **Diff view** (new capability, not in the old plan) | ✅ **DONE** — third option in the view dropdown after Tree/Text. `keep-source-header.ts` exports `TEXTUAL_VIEWS`/`isTextualView()`; Text and Diff share one Monaco buffer, so switching preserves edits. `keep-monaco-editor` gained `diffMode`/`originalValue` and a `createDiffEditor` path | PR #669 |
+| §5.3 | Test `keep-monaco-editor` | ✅ **DONE** — two suites, deliberately: `keep-monaco-editor.test.ts` drives a **fake** `monaco-editor` (component behaviour), while `.lifecycle.test.ts` runs **real** Monaco under jsdom via `test/test-utils/monaco.ts` (library invariants a fake cannot reach — it caught a dispose-ordering bug the fake suite passed through). `document.queryCommandSupported` polyfilled in `test/setupTests.ts`. See report 01 §A10 | PRs #668, #673 |
+| §5.3 | Move `prettier` to `dependencies` | ✅ **DONE** — and its three modules are now **dynamically** `import()`ed, splitting `babel` 316.53 kB / `estree` 210.43 kB / `standalone` 81.05 kB out of the entry chunk | PR #673 |
+| §5.3 | Make the **Monaco** import dynamic | 🔴 **NOT DONE** — `keep-monaco-editor.ts:11` is still a top-level `import * as monaco from 'monaco-editor'`. Entry chunk is **6,322.51 kB / 1,703.85 kB gzip**; the drop from 6.94 MB was prettier, not Monaco | — |
+| §5.5 | Icons off absolute asset paths | 🟡 **STARTED** — `src/services/icon-library.ts` registers a **self-hosted Font Awesome** library as `library="fa"` (11 glyphs bundled from `@fortawesome/fontawesome-free@7.3.1` via `?url`), replacing `<wa-icon src="${IMG_DIR}/…">` in the source-editor chrome. **38 `IMG_DIR` references and 9 `<wa-icon src=…>` occurrences remain elsewhere** — see §5.5 | PR #669 |
+| §6.5 | Centralise the theme carriers | 🟡 **PARTIAL** — `src/services/theme-service.ts` is now the single writer for the three DOM carriers of appearance: `wa-dark` on `<html>`, `<html>.style.colorScheme`, and `body.dataset.theme`. This is *plumbing*, not tokens — the per-component hardcoded colors are untouched | PR #669 |
+| §2.1 | `setBasePath()` | ✅ **REMOVED** — both calls deleted. In WebAwesome 3.x the base path feeds exactly one consumer (the autoloader); this app imports its **18 distinct** WA components explicitly, so the value was never read. The old call also pointed at a *file* under `webawesome@3.6.0`, a version no longer installed. `src/index.tsx:18-27` documents why it must not return | PR #673 |
+
+### 0.2 Carried forward from the previous refresh
+
 | §  | Item | Status | Where |
 |----|------|:---:|---|
 | §6.1 | Author elements in TypeScript with `lit` decorators | ✅ **DONE** — all 26 elements, `@customElement`/`@property`/`@state`/`@query` | PRs #652–#659 |
@@ -33,8 +61,7 @@
 | §6.3 | Single global `webawesome.css` import | ✅ **DONE** — exactly one import, in `src/index.tsx`; components import only the `wa-*` element modules they render | PRs #652–#659 |
 | §6.6 | Predictable registration | ✅ **DONE** — one file per tag, self-registering via `@customElement`, all re-exported through `KeepElements.tsx` |  |
 | §6.x | Naming | ✅ **DONE** — `lit-elements/` → `keep-elements/`, `lit-*` → `keep-*`, `LitElements.tsx` → `KeepElements.tsx`, `lit-overrides.css` → `keep-overrides.css` | `8ea711b`, PR #666 |
-| — | Test coverage for the element layer | ✅ **DONE** — 26 suites, `test/test-utils/lit.ts` (`mountLit`/`cleanupLit`); shadow-DOM assertions work | report 01 §B2 |
-| §5.3 | `lit-monaco` wrapper | 🟡 **AUTHORED, NOT WIRED** — `keep-monaco-editor.ts` (538 lines) exists and is exported as `KeepMonacoEditor`, but `FormsContainer.tsx` still imports `@monaco-editor/react`. It also ships **no test** and breaks the suite — see report 01 §0 | `7594672` |
+| — | Test coverage for the element layer | ✅ **DONE** — 28 suites under `test/components/keep-elements/` (26 elements + the base class + a Monaco lifecycle suite), `test/test-utils/lit.ts` (`mountLit`/`cleanupLit`); shadow-DOM assertions work. The directory now sits at **84.2 % line coverage** | report 01 §B2 |
 | §6.2 | Collapse `lit-button*` into one component | 🔴 **NOT DONE** — `keep-button` (wraps `wa-button`) still coexists with `keep-button-yes`/`-no`/`-neutral`, which are plain `<button>`s with hardcoded hex | — |
 | §6.5 | Move ad-hoc dark-mode overrides to a token layer | 🔴 **NOT DONE** — e.g. `keep-button.ts` still carries a `#f4e9ff` `::part` override; `keep-source*.ts` use `light-dark(#1e1e2e, …)` literals | report 03 |
 | §7 P0 | Decide the DataGrid + date-picker strategy | 🔴 **NOT DONE** — and the option set has changed (§5.1, §5.2) | — |
@@ -42,36 +69,52 @@
 | — | `home/About.tsx` | ✅ **REMOVED** (`757e657`) — drop from the inventory | — |
 | — | `src/custom-elements.d.ts` | ✅ **REMOVED** — stale JSX intrinsic tags (`app-status`, `drawer-container`) dropped; typing now comes from each element's `HTMLElementTagNameMap` augmentation | `88a47bd`, `8ea711b` |
 
-**Net progress on the component migration itself (Phases 1–6): minimal.** The React
-surface is essentially unchanged — this period bought *foundation quality*, not converted
-screens. That was the right order, and Phases 1–3 can now start on solid ground.
+**Net progress on the component migration itself: one screen, and it was the hard one.**
+The Source tab is the first React surface to be handed to a `keep-*` element that owns
+real behaviour rather than presentation, and it proved the bridge end-to-end: props in,
+`change` events out, theme observed from the DOM, a new feature (Diff) built in Lit rather
+than React. Everything else is unchanged — 68 `.tsx` files still import `@mui/material`.
+The previous refresh bought *foundation quality*; this one bought *proof*. Phases 1–3 are
+still the right next move.
 
 ---
 
 ## 1. Executive summary
 
-- **130 React `.tsx` files**; **69** import `@mui/material`, **45** import
+- **130 React `.tsx` files**; **68** import `@mui/material`, **44** import
   `@mui/icons-material`, **18** use `react-icons`, **19** use Formik, **77** touch
-  `react-redux`.
+  `react-redux`. Counted across all of `src`, MUI is imported in **82 files**:
+  **175** `@mui/material` references, **99** `@mui/icons-material`, **5** `@mui/x-data-grid`.
 - **26 TypeScript Lit elements** in `src/components/keep-elements/`, on a shared
-  `KeepElement` base, wrapped for React via `@lit/react`'s `createComponent` in
-  `KeepElements.tsx`. Most wrap a `wa-*` element internally. Every one has a unit test.
-- **Raw `wa-*` usage in React is still small**: 23 `<wa-icon>`, 7 `<wa-input>`,
-  5 `<wa-option>`, 5 `<wa-dropdown-item>`, 4 `<wa-button>`, and 1–2 each of
-  `wa-switch`, `wa-dropdown`, `wa-drawer`, `wa-checkbox`, `wa-card`, `wa-callout`,
-  `wa-tree`, `wa-tree-item`, `wa-tooltip`, `wa-select`, `wa-details` — 26 files total.
+  `KeepElement` base, of which **25** are wrapped for React via `@lit/react`'s
+  `createComponent` in `KeepElements.tsx`. Most wrap a `wa-*` element internally. Every
+  one has a unit test. (The 26th, `keep-schema-status`, is deliberately internal —
+  `keep-nsf-card` renders it inside its own template, so no React wrapper is needed.)
+- **Raw `wa-*` tags live almost entirely inside the Lit layer, not in React.** Across
+  `src` there are **17 files** with raw `wa-*` markup, and exactly **one is a `.tsx`**
+  (`scopes/ScopeLists.tsx`, a `<wa-drawer>`). Everything else is inside `keep-*` element
+  templates, which is where it belongs. Counts: 28 `<wa-icon>`, 8 `<wa-button>`,
+  7 `<wa-input>`, 5 `<wa-option>`, 5 `<wa-dropdown-item>`, 2 each of `wa-switch`,
+  `wa-dropdown`, `wa-drawer`, `wa-checkbox`, `wa-card`, `wa-callout`, and 1 each of
+  `wa-tree`, `wa-tree-item`, `wa-tooltip`, `wa-select`, `wa-details`. In total the app
+  imports **18 distinct** WebAwesome components.
+
+  > **Correction:** the previous revision reported these as "raw `wa-*` usage in React …
+  > 26 files total". Both halves were wrong — it is 17 files, and it is not React.
+
 - **The bulk of the UI still maps cleanly to free WebAwesome components** (buttons,
   inputs, checkbox, switch, select, dialog, drawer, tabs, tooltip, card, dropdown/menu,
   alert→callout, spinner, breadcrumb, tree, divider, avatar, badge, radio, textarea,
   **page**).
-- **The hard cases narrowed, and one got harder.** `<wa-page>` turned out to be free
-  (removing report 03's licensing gate), but **WebAwesome ships no data grid and no date
-  picker at any tier** — so those two are custom-or-third-party, full stop. Monaco is
-  solved in principle (the element exists) and just needs wiring. Formik (19 files) is
-  unchanged: a state library, not a widget.
-- **Consistency debt is mostly paid.** What remains: the four-way button duplication and
-  the per-component hardcoded colors, both of which are cheap and both of which block
-  report 03's token work.
+- **The hard cases narrowed, and one is now closed.** `<wa-page>` is free (removing
+  report 03's licensing gate), but **WebAwesome ships no data grid and no date picker at
+  any tier** — so those two are custom-or-third-party, full stop. **Monaco is done**: the
+  element is authored, tested, wired into the Source tab, and has already grown a feature
+  (Diff) that the React wrapper never had. Formik (19 files) is unchanged: a state
+  library, not a widget.
+- **Consistency debt is mostly paid.** What remains: the four-way button duplication, the
+  per-component hardcoded colors, and the 38 `IMG_DIR` icon paths — all cheap, and all of
+  which block report 03's token work.
 
 ---
 
@@ -88,15 +131,38 @@ Key facts as built today:
 
 - **Props → properties:** `createComponent` forwards React props onto the custom element.
   Element classes declare typed reactive properties via `@property({ type: … })`.
+  The Source tab is the worked example: `<KeepMonacoEditor language="json"
+  value={sourceTabContent} diffMode={selectedOption === 'diff'}
+  originalValue={savedSchemaText} />` — three of those are properties the element reacts
+  to in `updated()`.
 - **Events → React callbacks:** `KeepCheckbox` maps `{ onChange: 'change' }`, and
-  `KeepMonacoEditor` now does the same. All other elements rely on the `KeepElement.emit()`
-  contract plus plain DOM listeners. Adding an `events` map per element is the remaining
-  polish.
+  `KeepMonacoEditor` does the same. All other elements rely on the `KeepElement.emit()`
+  contract plus plain DOM listeners — **2 of the 25 wrappers declare an `events` map**.
+  Adding one per emitting element is the remaining polish.
+- **Refs work.** `FormsContainer` holds `litsourceRef`/`editorRef` and calls imperative
+  methods on the elements. That is the escape hatch that made the Source tab conversion
+  possible without rewriting its save/cancel flow.
 - **Registration:** each file self-registers via `@customElement('keep-…')` as an import
-  side effect. `src/index.tsx` registers WebAwesome and sets the asset base path.
+  side effect. `src/index.tsx` imports `webawesome.css` once; the 18 WA components in use
+  are imported explicitly by the element that renders them.
+
+  > 🚫 **Do not call `setBasePath()`.** Both calls were removed in PR #673 and the
+  > reasoning is pinned in a comment at `src/index.tsx:18-27`, guarded by
+  > `test/services/icon-library.test.ts`. In WebAwesome 3.x the base path has exactly one
+  > consumer — the **autoloader**, which lazily `import()`s `components/<tag>/<tag>.js`
+  > from it. This app never autoloads, so the value was never read; the call was inert and
+  > therefore never failed loudly, even though it pointed at a *file* (not a directory)
+  > under a `webawesome@3.6.0` path that is no longer installed. Icons are a separate
+  > setting (`setIconPath()`/kit code) and are now served from
+  > `src/services/icon-library.ts` regardless.
+
 - **Typing:** each element file augments `HTMLElementTagNameMap`, so `document.querySelector`
   and `document.createElement` are typed. The old `any`-typed `src/custom-elements.d.ts`
   is gone.
+- **Shared helpers cross the bridge too.** `FormsContainer.tsx` imports `isTextualView`
+  from `keep-source-header.ts` — the view-mode predicate is defined once, next to the
+  element that owns the dropdown, and React consumes it. Prefer this over duplicating
+  view logic on the React side.
 
 > ⚠️ **Tag/file naming inversion to fix.** `keep-source.ts` registers the tag
 > **`keep-source-tree`**, while `keep-source-header.ts` registers **`keep-source`**.
@@ -119,8 +185,10 @@ export class KeepElement extends LitElement {
 ```
 
 Intentionally thin. Its second job — a home for shared theme/token wiring so the
-per-component dark-mode overrides can be consolidated — is **not yet used**. That is the
-hook report 03's token work should land on.
+per-component dark-mode overrides can be consolidated — is **still not used**. That is the
+hook report 03's token work should land on. Note that PR #669 solved a *different* theme
+problem (how appearance reaches the DOM, §2.5); the per-component color literals are
+untouched.
 
 ### 2.3 How Lit components receive Redux state
 
@@ -133,9 +201,33 @@ Redux-agnostic — none imports the store. Keep enforcing this: it is what makes
 
 1. Add an explicit `events` map in `KeepElements.tsx` for every element that emits, so
    React consumers get typed `on*` callbacks instead of manual `addEventListener`.
+   Currently **2 of 25** wrappers have one (`KeepCheckbox`, `KeepMonacoEditor`).
 2. Finish standardising outbound events on `emit()` — `keep-drawer` still takes a
-   `closeFn` **property** rather than emitting.
-3. Fix the `keep-source` / `keep-source-tree` tag inversion (§2.1).
+   `closeFn` **property** (`keep-drawer.ts:39`, consumed by
+   `database/ScopeFormContainer.tsx:192`) rather than emitting.
+3. Fix the `keep-source` / `keep-source-tree` tag inversion (§2.1). Still open, and now
+   marginally more confusing: `keep-source-header.ts` has grown into the view-switcher
+   *and* the exporter of `isTextualView()`, so it is no longer plausibly "just a header".
+
+### 2.5 How appearance reaches the DOM (new — `services/theme-service.ts`)
+
+A dark-mode toggle has to write **three** independent DOM carriers or the page ends up
+half-dark. PR #669 made `src/services/theme-service.ts` the single writer for all three:
+
+| Carrier | Read by |
+|---|---|
+| `wa-dark` class on `<html>` | every WebAwesome component; also `keep-monaco-editor`, which derives its Monaco theme by observing `<html>`'s `class` attribute |
+| `<html>.style.colorScheme` | native form controls, scrollbars, and every `light-dark()` literal in the `keep-*` styles |
+| `body.dataset.theme` | the app's own `:host-context(body[data-theme="dark"])` rules |
+
+`applyAppearance()` is idempotent by design, because `keep-monaco-editor`'s
+`MutationObserver` fires on every attribute *write*, not only on real changes. The boot
+script in `index.html` applies the same three from `localStorage` before React mounts to
+avoid a flash; the service keeps them correct for every in-session toggle.
+
+**Consequence for the migration:** any new Lit element that needs to know the theme should
+observe `<html>.wa-dark` (or read a `--wa-*` token), never React state. That is what makes
+elements usable outside the React tree, and it is a precondition for report 04.
 
 ---
 
@@ -145,9 +237,13 @@ Legend: **Free** = ships in the npm package · **Pro** = requires a Web Awesome 
 · **None** = no WebAwesome component exists in any tier · **Custom** = author a Lit
 component · **CSS/util** = layout/util, handled in report 03.
 
-Verified against `@awesome.me/webawesome@3.10.0`. The Pro set is exactly:
-`wa-combobox`, `wa-file-input`, `wa-toast`/`wa-toast-item`, `wa-sparkline`, the chart
-family, and the video family.
+Verified against `@awesome.me/webawesome@3.10.0` by listing
+`node_modules/@awesome.me/webawesome/dist/components/`. The Pro set — present in the docs,
+absent from the npm dist — is exactly: `wa-combobox`, `wa-file-input`,
+`wa-toast`/`wa-toast-item`, `wa-sparkline`, the chart family, and the video family.
+`page/` **is** in the dist, so `<wa-page>` is free. Nothing matching `date`, `calendar`,
+`grid` or `table` is in the dist under any name (only the `format-date`/`known-date`
+formatting helpers), which is the evidence behind §5.1 and §5.2.
 
 | MUI (and where) | Target | Tier | Notes |
 |---|---|---|---|
@@ -177,7 +273,8 @@ family, and the video family.
 | `Accordion` / `Collapse`+`ExpandMore` disclosure | `wa-details`, or **`wa-accordion` + `wa-accordion-item`** for grouped/exclusive disclosure | Free | `wa-accordion` is **new since 3.6** — a better fit than hand-grouping `wa-details` in `ConsentItem`/`DetailsSection`. |
 | `Popper` / `Popover` | `wa-popover` or `wa-popup` | Free | `ProfileMenu`, `ProfileMenuDialog`. |
 | `TreeView` / `TreeItem` (`@mui/x-tree-view`) | `wa-tree` + `wa-tree-item` | Free | Good free fit for `FileContentsTree`, `SchemaContentsTree`. Already used raw in 1 file. |
-| `SvgIcon` + `@mui/icons-material` + `react-icons` | `wa-icon` | Free | 45 + 18 files. **See report 03 §6.4** — a base64 SVG registry (`src/styles/app-icons.ts`) and `@fortawesome/fontawesome-free` have since landed, changing the approach. |
+| `SvgIcon` + `@mui/icons-material` + `react-icons` | `wa-icon library="fa"` | Free | 44 + 18 files. **The approach is now settled:** `src/services/icon-library.ts` registers a self-hosted Font Awesome library (11 glyphs bundled from `@fortawesome/fontawesome-free@7.3.1` via `?url`). Use `<wa-icon library="fa" name="…">` and add the glyph to `ICONS`. See §5.5 and report 03 §6.4. |
+| **legacy** `<wa-icon src="${IMG_DIR}/…">` | `wa-icon library="fa"` | Free | 🔴 **38 `IMG_DIR` references across 17 files; 9 `<wa-icon src=…>` occurrences.** These hardcode `/admin/img/...`, so they only resolve when the app is mounted at `/admin/` — elsewhere the request falls through to `index.html` and the icon renders empty *silently*. §5.5. |
 | `Box`/`Grid`/`Stack`/`Paper`/`Container` | `wa-grid`/`wa-cluster`/`wa-stack`/`wa-flank` + plain `div` | CSS/util | **Deferred to report 03.** `Box` appears 148×. |
 | `CssBaseline` / `ThemeProvider` / `@mui/material/styles` | `webawesome.css` + WA theme tokens | CSS/util | **Deferred to report 03.** |
 | `useMediaQuery` | native `matchMedia` | n/a | Behaviour, not markup. |
@@ -187,7 +284,7 @@ family, and the video family.
 | `InputAdornment` | `wa-input` `start`/`end` slots | Free | Search fields, password toggles. |
 | `DatePicker`/`LocalizationProvider` (`@mui/x-date-pickers`) | **No WA equivalent, any tier** | **None** | See §5.2. `AppFilterContainer`, `ConsentFilterContainer`. (`wa-time-input` exists — time only.) |
 | `DataGrid` (`@mui/x-data-grid`) | **No WA equivalent, any tier** | **None** | See §5.1 — biggest risk. |
-| Monaco `Editor` (`@monaco-editor/react`) | **`keep-monaco-editor`** ✅ authored | Custom | See §5.3 — needs wiring into `FormsContainer`. |
+| Monaco `Editor` (`@monaco-editor/react`) | **`keep-monaco-editor`** ✅ authored **and wired** | Custom | See §5.3. `@monaco-editor/react` has **zero imports left in `src`**; the package is now a dead dependency. |
 | Formik (`formik`) | **Not a widget** — form-state strategy | Custom | See §5.4. 19 files. |
 
 ### 3.1 Newly available since 3.6 (worth a look)
@@ -220,9 +317,9 @@ Target key: **[wa]** = replace with a `wa-*` (§3) · **[keep]** = an existing `
 | `FieldDndContainer.tsx` | wa (`wa-tab-group`) | L | Drag-and-drop + Tabs; DnD needs a plan. |
 | `Fields.tsx` | new-lit (list) + `wa-input` | M | List/ListItem + search. |
 | `ModeCompare.tsx` (760 LOC) | wa | M | Search + compare UI. |
-| `ScriptEditor.tsx` | stay (Monaco-adjacent) | L | `wa-details` for expand/collapse; code editing — see §5.3. |
+| `ScriptEditor.tsx` | wa (`wa-details`) + optional `keep-monaco-editor` | M | ⚠️ **Correction:** this file has **never used Monaco** — it edits formulas in a MUI `TextField` with `Collapse`/`ButtonBase`. Putting `keep-monaco-editor` here is an *enhancement*, not a migration; the mechanical conversion is `Collapse` → `wa-details` and `TextField` → `wa-textarea`. |
 | `SingleFieldContainer.tsx` | wa (`wa-button`+`wa-icon`) | S | |
-| `TabsAccess.tsx` (1,007 LOC) | wa (`wa-tab-group`) + `wa-button` | L | Formik + tabs + add/delete. **Has a test.** |
+| `TabsAccess.tsx` (1,010 LOC) | wa (`wa-tab-group`) + `wa-button` | L | Formik + tabs + add/delete. **Has a test.** |
 | `TestForm.tsx` | wa (`wa-input`/`wa-checkbox`) | M | Formik form. |
 
 ### applications/ (+ kanban/)
@@ -292,8 +389,8 @@ Target key: **[wa]** = replace with a `wa-*` (§3) · **[keep]** = an existing `
 | `ColumnBar.tsx` | wa/css | M | |
 | `ColumnDetails.tsx` | new-lit (table cell) | M | |
 | `DetailsSection.tsx` (690 LOC) | wa (`wa-details`/`wa-dropdown`/`wa-spinner`) | M | |
-| `EditView.tsx` (618 LOC) | stay | L | **Has a test.** Complex. |
-| `FormsContainer.tsx` (830 LOC) | stay → **wire `keep-monaco-editor`** | L | §5.3 — the editor swap is now unblocked. Tabs → `wa-tab-group`. |
+| `EditView.tsx` (621 LOC) | stay | L | **Has a test.** Complex. |
+| `FormsContainer.tsx` (806 LOC) | stay → **Source tab ✅ converted** | L | §5.3 — the Source tab now renders `KeepSource` + `KeepMonacoEditor` (line 658) with a Diff mode. **Remaining here:** the MUI `Tabs`/`Tab`/`TabPanel` shell → `wa-tab-group`, and `CircularProgress` → `wa-spinner`. |
 | `TabAgents.tsx` / `TabForms.tsx` / `TabViews.tsx` | wa (`wa-tab-panel` content) | M each | |
 
 ### groups/ · people/ · peopleSelector/
@@ -328,10 +425,10 @@ Target key: **[wa]** = replace with a `wa-*` (§3) · **[keep]** = an existing `
 | `settings/mail/MailSettingsPage.tsx` | wa (`wa-switch`, `wa-input`) | M | |
 | `settings/roles/ListRoles.tsx` | new-lit (list) + `wa-avatar`/`wa-divider` | M | |
 | `settings/roles/RolesPage.tsx` | wa | M | |
-| `home/Homepage.tsx` / `HomeElement.tsx` | stay→css | M | Shell + `useMediaQuery`. |
+| `home/Homepage.tsx` / `HomeElement.tsx` | stay→css | M | Shell + `useMediaQuery`. `HomeElement` drives the app-wide theme switch via `theme-service.applyTheme()` (§2.5). |
 | ~~`home/About.tsx`~~ | ✅ **deleted** | — | Removed in `757e657`. |
 | `home/sections/Section.tsx` / `Tip.tsx` | keep card (`wa-card`) | S | |
-| `login/LoginPage.tsx` (657 LOC) | wa (`wa-input`/`wa-button`) | L | Formik + Grid + theme toggle; entry screen. |
+| `login/LoginPage.tsx` (659 LOC) | wa (`wa-input`/`wa-button`) | L | Formik + Grid; entry screen. Its theme toggle already delegates to `theme-service.applyAppearance()` (§2.5) — one less thing to untangle. |
 | `login/CallbackPage.tsx` | wa | S | |
 | `alerts/Notification.tsx` | stay or `wa-toast` (Pro) | M | Snackbar+Slide. |
 | `loaders/PageLoading.tsx` · `loading/APILoadingProgress.tsx` · `loading/GenericLoading.tsx` | wa (`wa-spinner`/`wa-progress-bar`/`wa-skeleton`) | S each | Easy early wins. |
@@ -345,11 +442,20 @@ Target key: **[wa]** = replace with a `wa-*` (§3) · **[keep]** = an existing `
 `keep-button` · `keep-button-yes` · `keep-button-no` · `keep-button-neutral` ·
 `keep-checkbox` · `keep-default-card` · `keep-dialog-actions` · `keep-dialog-content` ·
 `keep-dialog-header` · `keep-drawer` · `keep-dropdown` · `keep-input-password` ·
-`keep-input-text` · `keep-monaco-editor` · `keep-nsf-card` · `keep-schema-status` ·
+`keep-input-text` · **`keep-monaco-editor`** · `keep-nsf-card` · `keep-schema-status` ·
 `keep-source` *(file: `keep-source-header.ts`)* · `keep-source-tree` *(file: `keep-source.ts`)* ·
 `keep-switch` · `keep-textform` · `keep-textform-array` · `keep-tooltip`.
 
-Plus the non-element base class `keep-element.ts` and the bridge `KeepElements.tsx`.
+Plus the non-element base class `keep-element.ts` and the bridge `KeepElements.tsx`
+(28 files in `src/components/keep-elements/`).
+
+`keep-monaco-editor` (582 LOC) is the newest and by some distance the most capable — it is
+the only element that owns an external engine, its own worker bundles, a theme observer and
+a second (diff) rendering mode. It is also the only element **consumed by a converted
+screen** rather than by another element or a React shell: `FormsContainer.tsx`'s Source tab.
+
+`KeepElements.tsx` exports **25** React wrappers. `keep-schema-status` has none by design —
+it is rendered from inside `keep-nsf-card`'s template and never crosses the bridge.
 
 ---
 
@@ -396,36 +502,61 @@ project already depends on `dayjs`.
 picker) formatted with `dayjs`. For two filter screens that is sufficient. Effort **M**,
 low risk. Reach for a custom Lit date picker only if the native control's UX is rejected.
 
-### 5.3 **Monaco editor** — ✅ element authored, ⚠️ not wired
+### 5.3 **Monaco editor** — ✅ SOLVED (element authored, tested, and wired)
 
-`src/components/keep-elements/keep-monaco-editor.ts` (538 lines) now exists and implements
-this section's recommendation, with more besides:
+**This section is closed as a migration blocker.** `keep-monaco-editor.ts` (582 LOC) is
+authored, covered by two test suites, and consumed in production code by the Source tab.
+
+What it does:
 
 - Bundles `monaco-editor` as **ESM** (plus `editor.worker`, `json.worker`, `ts.worker` via
   Vite's `?worker` imports) instead of the AMD loader.
 - Theme is generated from live WebAwesome tokens — `src/services/editor-theme.ts`
   (`buildEditorTheme`, `EDITOR_TOKENS`), `wa-color.ts`, `wa-typography.ts` — so the editor
   re-colors with the design system instead of the two hardcoded `json-light`/`json-dark`
-  JSON themes.
-- Integrates `prettier/standalone` for formatting.
+  JSON themes. It re-derives on every `class` mutation of `<html>` (§2.5), caching the last
+  result so the idempotent writes from `theme-service` cost nothing.
+- Formats with `prettier/standalone`, **dynamically imported** so the three prettier
+  chunks (babel 316.53 kB, estree 210.43 kB, standalone 81.05 kB) load on demand.
+- Supports a **diff mode** (`diffMode` / `originalValue` properties, `createDiffEditor`).
+  Note the ordering constraint PR #673 had to fix: dispose the widget **before** the models
+  it holds, or Monaco's `DiffEditorWidget` throws "TextModel got disposed before
+  DiffEditorWidget model got reset". Any future element that owns Monaco models inherits
+  this rule.
 - Exported as `KeepMonacoEditor` with `events: { onChange: 'change' }`.
 
-**Remaining work, in order:**
+**How the Source tab uses it** (`FormsContainer.tsx` ~line 647–665):
 
-1. 🔴 **Fix the fallout it caused.** The top-level `import * as monaco` breaks 4 test
-   suites, and the element has no test, breaching the coverage gate — see report 01 §0.
-   Make the Monaco import dynamic (inside `firstUpdated()`); that fixes tests *and*
-   code-splits ~6 MB out of the entry chunk.
-2. 🔴 **Move `prettier` to `dependencies`** — it is imported by shipped code but declared
-   as a devDependency (report 00 P0-10).
-3. 🟡 **Wire `FormsContainer.tsx`** to `<KeepMonacoEditor>`; move its
-   `defineTheme('json-light'/'json-dark')` logic to `editor-theme.ts`;
-   `handleEditorDidMount` becomes `firstUpdated`.
-4. 🟡 **Then** drop `@monaco-editor/react` + `@monaco-editor/loader` and delete the
-   already-disabled `postinstall` copy step (report 00 P2-9).
-5. 🟡 Do the same for `access/ScriptEditor.tsx`.
+| View | Rendered by | Notes |
+|---|---|---|
+| Tree | `keep-source-tree` (inside `KeepSource`) | JSON tree editor, unchanged |
+| Text | `KeepMonacoEditor` | `language="json"`, `value={sourceTabContent}` |
+| **Diff** | `KeepMonacoEditor` with `diffMode` | `originalValue={savedSchemaText}` — saved schema on the left, edits on the right |
 
-Effort for 1–2: **S**. For 3–5: **M**.
+Text and Diff are the two **textual** views and share one Monaco buffer, so switching
+between them preserves in-flight edits. That predicate lives in the element file, not the
+container: `keep-source-header.ts` exports `TEXTUAL_VIEWS` and `isTextualView()`, and
+`FormsContainer` imports the latter to decide whether to mount the editor at all.
+
+**Remaining tail (none of it blocking):**
+
+1. 🔴 **Make the Monaco import dynamic.** `keep-monaco-editor.ts:11` is still
+   `import * as monaco from 'monaco-editor'` at module scope. The test problem it used to
+   cause was solved differently — a `vi.mock('monaco-editor')` fake inside
+   `keep-monaco-editor.test.ts`, plus a `document.queryCommandSupported` polyfill in
+   `test/setupTests.ts` — so what is left is purely payload: the entry chunk is
+   **6,322.51 kB / 1,703.85 kB gzip**, and moving the import into `firstUpdated()` is the
+   single largest available reduction. **S.**
+2. 🟡 **Drop the dead dependencies.** `@monaco-editor/react` (^4.8.0-rc.3) and
+   `@monaco-editor/loader` (^1.7.0) are still in `dependencies` with **zero imports in
+   `src`** — the only textual match is a comment inside `keep-monaco-editor.ts`. Delete
+   both, and the already-disabled `disabledpostinstall` copy step with them (report 00
+   P2-9). **S.**
+3. 🟡 `access/ScriptEditor.tsx` — **not** a Monaco migration; see the note in §4. If you
+   want syntax highlighting for formulas, that is a new feature, and `keep-monaco-editor`
+   is now the obvious vehicle for it.
+
+~~Move `prettier` to `dependencies`~~ — ✅ done in PR #673.
 
 ### 5.4 **Formik** (19 files) — unchanged
 
@@ -453,8 +584,27 @@ submission + `yup`. Do **not** port Formik into Lit. `useFormik` appears in 8 fi
 - **Snackbar/Toast**: `wa-toast` is Pro; keep the React toaster or author a small Lit
   toaster.
 - **`Autocomplete`**: `wa-combobox` is Pro; free path is the existing `keep-autocomplete`.
-- **Icons**: see report 03 §6.4 — the approach changed materially (a base64 SVG registry
-  plus `@fortawesome/fontawesome-free` now exist in-tree).
+- **Icons — the approach is settled, the sweep is not.** `src/services/icon-library.ts`
+  registers a self-hosted Font Awesome library under the explicit name `fa` (not
+  `default`, so it cannot affect how WebAwesome's own components resolve their internal
+  icons). Eleven glyphs are bundled from `@fortawesome/fontawesome-free@7.3.1` through
+  Vite `?url` imports; an unknown name logs a warning rather than rendering an empty
+  glyph. This deliberately avoids two failure modes: WebAwesome's default CDN resolver
+  (`ka-f.fontawesome.com`, an external runtime dependency a deployment CSP is likely to
+  block) and absolute `/admin/...` paths.
+
+  **Remaining debt, measured at `e17010c`:**
+
+  | What | Count | Why it matters |
+  |---|---:|---|
+  | `IMG_DIR` references | **38** across 17 files | Hardcodes `/admin/img/...`; resolves only when the app is mounted at `/admin/` |
+  | `<wa-icon src=…>` occurrences | **9** | 8 live templates (`keep-textform-array` ×4, `keep-nsf-card` ×2, `keep-api-error-dialog` ×1, `keep-button`'s dynamic `src` ×1) plus 1 in a doc comment |
+
+  The failure mode is the reason to care: off `/admin/`, the request falls through to the
+  SPA's `index.html`, `wa-icon` receives HTML instead of SVG, and the icon **silently**
+  disappears — the button keeps its box and its click handler, so nothing looks broken.
+  Convert the remaining call sites to `library="fa"` and add each glyph to `ICONS`.
+  See report 03 §6.4 for the wider `wa-icon` sweep across React.
 
 ---
 
@@ -469,19 +619,33 @@ The debt catalogue from the original report, re-scored:
 2. 🔴 **Button duplication — still open.** `keep-button` wraps `wa-button`, but
    `keep-button-yes`/`-no`/`-neutral` are plain `<button>`s with hardcoded hex
    (`#0F5FDC`, `#0B4AAE`, `#96BCF8`). Collapse into a single `keep-button` with
-   `variant`/`appearance`, update `KeepElements.tsx`, and migrate the ~57 consumers.
-   Doing this **before** report 03's tokenization avoids tokenizing three components that
-   should not exist. Effort **M**.
+   `variant`/`appearance`, update `KeepElements.tsx`, and migrate the consumers:
+   **49 usages of the three legacy tags across 21 files** (`<KeepButtonYes>` ×24,
+   `<KeepButtonNeutral>` ×23, `<KeepButtonNo>` ×2), against 19 `<KeepButton>` usages.
+   Note `FormsContainer`'s newly converted Source tab still reaches for
+   `KeepButtonNeutral`/`KeepButtonYes` in its two confirm dialogs — converted screens keep
+   feeding this debt until it is paid. Doing this **before** report 03's tokenization
+   avoids tokenizing three components that should not exist. Effort **M**.
 3. ✅ **Repeated CSS imports.** `webawesome.css` is imported exactly once
    (`src/index.tsx`); components import only the specific `wa-*` element modules they
    render.
 4. ✅ **Event contract.** `KeepElement.emit()` gives one composed, bubbling `CustomEvent`
-   pattern. 🟡 Residual: `keep-drawer` still takes a `closeFn` **property**; only 2 of 26
-   elements declare an `events` map in `KeepElements.tsx`.
-5. 🔴 **Ad-hoc dark-mode overrides — still open.** Per-component hardcoded colors persist
-   (`keep-button.ts`'s `#f4e9ff` `::part` override; `light-dark(#1e1e2e, …)` in the source
-   elements). `KeepElement` was built as the hook for a shared token layer but nothing
-   uses it yet. **This is report 03's landing site** — do it there, not per element.
+   pattern. 🟡 Residual: `keep-drawer` still takes a `closeFn` **property**; only 2 of the
+   25 wrappers declare an `events` map in `KeepElements.tsx`.
+5. 🔴 **Ad-hoc dark-mode overrides — still open.** *Delivery* of the theme is now clean
+   (`services/theme-service.ts`, §2.5) and 7 element files pick it up via
+   `:host-context(body[data-theme="dark"])`. But the **values** are still hardcoded
+   per component: `keep-button.ts` writes `#f4e9ff` into `--wa-color-brand-50`,
+   `--wa-color-brand-border-loud` and `--wa-color-brand-fill-loud` (plus two
+   `!important`s), and there are **100 `light-dark()` literals** across
+   `src/components/keep-elements/`, **12** of them in `keep-source-header.ts` alone
+   (`#D7EBFD`/`#3a3a5a`, `#1e1e2e`, plus bare `#ED0000`/`#007E0D` for cancel/save).
+   `KeepElement` was built as the hook for a shared token layer and **still nothing uses
+   it**. **This is report 03's landing site** — do it there, not per element.
+   ⚠️ Direction of travel: PR #669 *consolidated* the Source tab's colors — moving them
+   out of inline `style=` attributes into the element's `static styles` — which is the
+   right move, but it also added a new hardcoded pair for the diff hint. Feature work is
+   outrunning the token layer, which is an argument for pulling report 03's P3 forward.
 6. ✅ **Registration.** One tag per file, self-registering, all re-exported through
    `KeepElements.tsx`. 🟡 Residual: the `keep-source` / `keep-source-tree` file/tag
    inversion (§2.1).
@@ -504,15 +668,23 @@ last.**
 - [ ] **Decide the DataGrid strategy** (§5.1) and the **date-picker approach** (§5.2).
       Now cheaper to decide: §5.2 has one obvious answer, and §5.1 is down to three.
 
-### Phase 0.5 — Pay off the Monaco commit (do this first) — 🔴 NEW
-- [ ] Polyfill `document.queryCommandSupported` in `test/setupTests.ts` (report 01 §0.1). **S**
-- [ ] Test `keep-monaco-editor` or justify excluding it (report 01 §0.2). **S–M**
-- [ ] Make the Monaco import dynamic; move `prettier` to `dependencies`. **S**
+### Phase 0.5 — Pay off the Monaco commit — ✅ MOSTLY DONE
+- [x] Polyfill `document.queryCommandSupported` in `test/setupTests.ts` (PR #668).
+- [x] Test `keep-monaco-editor` — a fake-Monaco behaviour suite (PR #668) plus a real-Monaco
+      lifecycle suite (PR #673), which caught a diff-editor dispose-ordering bug.
+- [x] Move `prettier` to `dependencies`, and make its import dynamic (PR #673).
+- [ ] **Make the Monaco import dynamic** (§5.3.1) — the only item left, and now purely a
+      bundle-size play: entry chunk **6,322.51 kB / 1,703.85 kB gzip**. **S**
+- [ ] Drop the dead `@monaco-editor/react` + `@monaco-editor/loader` dependencies and the
+      `disabledpostinstall` script (§5.3.2). **S**
 
 ### Phase 1 — Presentational leaves & feedback (low risk, high volume)
 - [ ] Loaders/spinners/progress → `wa-spinner`/`wa-progress-bar`/`wa-skeleton`.
 - [ ] Headings/empty states/`Footer`/`Section`/`Tip` → small Lit elements + `wa-card`.
-- [ ] `wa-divider`, `wa-avatar`, `wa-badge`; begin the `wa-icon` sweep (report 03 §6.4).
+- [ ] `wa-divider`, `wa-avatar`, `wa-badge`; continue the `wa-icon` sweep (report 03 §6.4).
+- [ ] **Finish the icon library migration** (§5.5): 38 `IMG_DIR` references and 9
+      `<wa-icon src=…>` occurrences → `library="fa"`. Cheap, mechanical, and it removes a
+      class of *silent* rendering failure. **S–M**
 
 ### Phase 2 — Form controls (the reusable core)
 - [ ] Add wrappers for `wa-textarea`, `wa-number-input`, `wa-radio-group`.
@@ -543,8 +715,12 @@ last.**
 - [ ] `login/LoginPage` (entry screen; do once controls are proven).
 
 ### Phase 6 — Hard/data-heavy views (last)
-- [ ] Wire `keep-monaco-editor` → `FormsContainer`, `ScriptEditor`; drop
-      `@monaco-editor/*`. **(§5.3)**
+- [x] **Wire `keep-monaco-editor` → `FormsContainer`'s Source tab** (PR #669) — done
+      early and out of order, which turned out to be the right call: it validated the
+      bridge on the hardest widget in the app before committing to Phases 1–5.
+- [ ] Drop `@monaco-editor/*` (now dead, not blocked). **(§5.3)**
+- [ ] `FormsContainer`'s remaining MUI: `Tabs`/`Tab` → `wa-tab-group`,
+      `CircularProgress` → `wa-spinner`.
 - [ ] Native `wa-input type="date"` → `AppFilterContainer`, `ConsentFilterContainer`. **(§5.2)**
 - [ ] DataGrid screens per the chosen strategy → `Groups`, `GroupForm`, `PeopleCRUD`,
       `GroupMembers`, `PeopleSelector`. **(§5.1)**
