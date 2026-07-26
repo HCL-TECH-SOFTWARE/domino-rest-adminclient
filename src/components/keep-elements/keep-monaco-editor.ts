@@ -284,16 +284,20 @@ export default class MonacoEditor extends LitElement {
     this._completionDisposable?.dispose();
     this._completionDisposable = undefined;
 
-    this._originalModel?.dispose();
-    this._modifiedModel?.dispose();
-    this._originalModel = undefined;
-    this._modifiedModel = undefined;
-
+    // Widgets before models. `DiffEditorWidget` subscribes to its models'
+    // `onWillDispose` and throws "TextModel got disposed before DiffEditorWidget
+    // model got reset" if one disappears while it still holds it — which happened
+    // on every diff-mode teardown while these two blocks were the other way round.
     this.diffEditor?.dispose();
     this.diffEditor = undefined;
 
     this.editor?.dispose();
     this.editor = undefined;
+
+    this._originalModel?.dispose();
+    this._modifiedModel?.dispose();
+    this._originalModel = undefined;
+    this._modifiedModel = undefined;
 
     this._resizeObserver?.disconnect();
     this._resizeObserver = undefined;
