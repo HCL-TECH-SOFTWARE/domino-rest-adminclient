@@ -1,18 +1,25 @@
-import { LitElement, html, css } from 'lit';
-import './lit-textform.js';
-import './lit-button-yes.js';
-import './lit-button-neutral.js';
-import './lit-dialog-content.js';
-import './lit-dialog-header.js';
-import './lit-dialog-actions.js';
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
-// Import Shoelace components
+import { html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import './lit-textform';
+import './lit-button-yes';
+import './lit-button-neutral';
+import './lit-dialog-content';
+import './lit-dialog-header';
+import './lit-dialog-actions';
 import '@awesome.me/webawesome/dist/components/details/details.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
+import { KeepLitElement } from './keep-lit-element';
 
-class TextFormArray extends LitElement {
+type Rule = Record<string, any>;
+
+/**
+ * Editable list of formula rules with add/delete dialogs. Tag:
+ * `lit-textform-array`. Each rule is edited via a nested lit-textform, and
+ * changes are pushed up through the `setData` callback.
+ */
+@customElement('lit-textform-array')
+export default class TextFormArray extends KeepLitElement {
   static styles = css`
     .container {
       padding: 10px;
@@ -119,68 +126,76 @@ class TextFormArray extends LitElement {
     }
   `;
 
-  static properties = {
-    data: { type: Array },
-    title: { type: String },
-    setData: { type: Function },
-  };
+  @property({ type: Array }) data: Rule[] = [];
+  @property({ type: String }) title = '';
+  // Loose parameter type so consumer callbacks with a more specific row shape
+  // (e.g. ScriptEditor's setValidationRules) remain assignable under
+  // contravariant function-parameter checking.
+  @property({ attribute: false }) setData: (data: any[]) => void = () => {};
 
-  constructor() {
-    super()
-    this.data = [];
-    this.title = '';
-    this.setData = (data) => {};
-    this.deleteRule = ''
-    this.index = 0
+  @state() private deleteRule = '';
+  private index = 0;
+
+  handleDataChanged(index: number, event: Event) {
+    const newData = [...this.data];
+    newData[index] = (event as CustomEvent).detail;
+    this.data = newData;
+    this.setData(newData);
   }
 
-  handleDataChanged(index, event) {
-    const newData = [...this.data]
-    newData[index] = event.detail
-    this.data = newData
-    this.setData(newData)
+  handleDelete(e: Event) {
+    const newData = this.data.filter((_, i) => i !== this.index);
+    this.data = newData;
+    this.setData(newData);
+    const dialog = (e.target as HTMLElement)
+      .closest('div')!
+      .querySelector('dialog#delete') as HTMLDialogElement;
+    dialog.close();
   }
 
-  handleDelete(e) {
-    const newData = this.data.filter((_, i) => i !== this.index)
-    this.data = newData
-    this.setData(newData)
-    const dialog = e.target.closest('div').querySelector('dialog#delete')
-    dialog.close()
+  handleCancel(e: Event) {
+    const dialog = (e.target as HTMLElement)
+      .closest('div')!
+      .querySelector('dialog#delete') as HTMLDialogElement;
+    dialog.close();
   }
 
-  handleCancel(e) {
-    const dialog = e.target.closest('div').querySelector('dialog#delete')
-    dialog.close()
+  handleClickDelete(e: Event, index: number) {
+    this.deleteRule = this.data[index].message;
+    this.index = index;
+    const dialog = (e.target as HTMLElement)
+      .closest('div')!
+      .querySelector('dialog#delete') as HTMLDialogElement;
+    dialog.showModal();
   }
 
-  handleClickDelete(e, index) {
-    this.deleteRule = this.data[index].message
-    this.requestUpdate()
-    this.index = index
-    const dialog = e.target.closest('div').querySelector('dialog#delete')
-    dialog.showModal()
+  handleCancelAdd(e: Event) {
+    const dialog = (e.target as HTMLElement)
+      .closest('div')!
+      .querySelector('dialog#add') as HTMLDialogElement;
+    dialog.close();
   }
 
-  handleCancelAdd(e) {
-    const dialog = e.target.closest('div').querySelector('dialog#add')
-    dialog.close()
+  handleClickAdd(e: Event) {
+    const dialog = (e.target as HTMLElement)
+      .closest('div')!
+      .querySelector('dialog#add') as HTMLDialogElement;
+    dialog.showModal();
   }
 
-  handleClickAdd(e) {
-    const dialog = e.target.closest('div').querySelector('dialog#add')
-    dialog.showModal()
+  handleAdd(e: Event) {
+    const dialog = (e.target as HTMLElement)
+      .closest('div')!
+      .querySelector('dialog#add') as HTMLDialogElement;
+    const form = (e.target as HTMLElement)
+      .closest('dialog#add')!
+      .querySelector('lit-textform') as HTMLElement & { data: Rule };
+    this.data = [...this.data, form.data];
+    this.setData(this.data);
+    dialog.close();
   }
 
-  handleAdd(e) {
-    const dialog = e.target.closest('div').querySelector('dialog#add')
-    const form = e.target.closest('dialog#add').querySelector('lit-textform')
-    this.data = [...this.data, form.data]
-    this.setData(this.data)
-    dialog.close()
-  }
-
-  handleCloseDialog(e) {
+  handleCloseDialog(e: any) {
     this.handleCancelAdd(e.detail);
   }
 
@@ -196,15 +211,15 @@ class TextFormArray extends LitElement {
         ${this.data.map(
           (item, index) => html`
             <wa-details summary=${item[this.title] || `Item ${index + 1}`}>
-              <lit-textform .data=${item} @data-changed=${(event) => this.handleDataChanged(index, event)}></lit-textform>
+              <lit-textform .data=${item} @data-changed=${(event: Event) => this.handleDataChanged(index, event)}></lit-textform>
               <section class="buttons-container">
-                <button class="delete" @click=${(e) => this.handleClickDelete(e, index)}>
+                <button class="delete" @click=${(e: Event) => this.handleClickDelete(e, index)}>
                     <wa-icon src="${IMG_DIR}/shoelace/trash.svg" label="Delete"></wa-icon>
                     Delete Rule
                 </button>
               </section>
             </wa-details>
-          `
+          `,
         )}
         <dialog id="delete">
           <lit-dialog-header>
@@ -233,7 +248,7 @@ class TextFormArray extends LitElement {
             </button>
           </lit-dialog-header>
           <lit-dialog-content>
-            <lit-textform .data=${{formulaType: 'domino', formula: '', message: ''}}></lit-textform>
+            <lit-textform .data=${{ formulaType: 'domino', formula: '', message: '' }}></lit-textform>
           </lit-dialog-content>
           <lit-dialog-actions>
             <lit-button-yes text="Add" @click=${this.handleAdd}></lit-button-yes>
@@ -245,6 +260,8 @@ class TextFormArray extends LitElement {
   }
 }
 
-customElements.define('lit-textform-array', TextFormArray);
-
-export default TextFormArray
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-textform-array': TextFormArray;
+  }
+}

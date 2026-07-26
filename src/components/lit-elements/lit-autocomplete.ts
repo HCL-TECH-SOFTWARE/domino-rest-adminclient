@@ -1,15 +1,14 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
+import type { PropertyValues } from 'lit';
+import { customElement, property, state, query } from 'lit/decorators.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class Autocomplete extends LitElement {
-  static properties = {
-    options: { type: Array },
-    selectedOption: { type: String },
-    error: { type: Boolean },
-    errorMessage: { type: String },
-    initialOption: { type: String },
-    icons: { type: Object },
-  };
-
+/**
+ * Autocomplete text input with a filterable dropdown of options.
+ * Tag: `lit-autocomplete`. Exposed via `LitElements.tsx` as `LitAutocomplete`.
+ */
+@customElement('lit-autocomplete')
+export default class Autocomplete extends KeepLitElement {
   static styles = css`
     .parent-container {
       position: relative;
@@ -136,22 +135,28 @@ class Autocomplete extends LitElement {
     }
   `;
 
+  @property({ type: Array }) options: string[] = [];
+  @property({ type: String }) selectedOption = '';
+  @property({ type: Boolean }) error = false;
+  @property({ type: String }) errorMessage = '';
+  @property({ type: String }) initialOption = '';
+  @property({ type: Object }) icons: Record<string, string> = {};
 
-  constructor() {
-    super();
-    this.options = [];
-    this.selectedOption = '';
-    this.filteredOptions = this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase()));
-    this.highlightedOptionIndex = -1;
-    this.showDropdown = false;
-    this.error = false;
-    this.errorMessage = '';
-    this.initialOption = '';
-    this.icons = {};
-    this.hasIcons = false;
-  }
+  @state() private filteredOptions: string[] = [];
+  @state() private highlightedOptionIndex = -1;
+  @state() private showDropdown = false;
 
-  updated(changedProperties) {
+  /**
+   * Cached in `updated()` and read during `render()`. Deliberately NOT reactive
+   * (kept a plain field, matching the original): assigning it must not trigger
+   * an extra render on its own.
+   */
+  private hasIcons = false;
+
+  @query('input') private _input!: HTMLInputElement;
+  @query('.dropdown') private _dropdown!: HTMLElement;
+
+  updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('icons')) {
       this.hasIcons = Object.keys(this.icons).length > 0;
     }
@@ -207,13 +212,13 @@ class Autocomplete extends LitElement {
                   @mousedown="${() => this._handleOptionClick(option)}"
                   style="display: flex; align-items: center;"
                 >
-                  ${this.hasIcons ? 
+                  ${this.hasIcons ?
                     html`<img
                       src="data:image/svg+xml;base64,${this.icons[option]}"
                       alt=""
                       style="width:24px; height:24px; vertical-align: middle; margin-right: 8px;"
-                    >` 
-                    : 
+                    >`
+                    :
                     ''} ${option}
                 </li>
               `)}
@@ -225,10 +230,10 @@ class Autocomplete extends LitElement {
     `;
   }
 
-  _handleInput(e) {
+  private _handleInput(e: Event): void {
     this.showDropdown = true;
-    this.selectedOption = e.target.value;
-    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    this.selectedOption = (e.target as HTMLInputElement).value;
+    this.emit('change');
     this.filteredOptions = this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase()));
     this.requestUpdate();
     setTimeout(() => {
@@ -238,16 +243,16 @@ class Autocomplete extends LitElement {
     }, 0);
   }
 
-  _handleOptionClick(option) {
+  private _handleOptionClick(option: string): void {
     this.selectedOption = option;
-    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    this.emit('change');
     this.showDropdown = false;
     this.requestUpdate();
   }
 
-  _handleFocusOut(e) {
+  private _handleFocusOut(e: FocusEvent): void {
     // Check if the new focused element is outside the component
-    if (!this.shadowRoot.contains(e.relatedTarget)) {
+    if (!this.shadowRoot!.contains(e.relatedTarget as Node | null)) {
       setTimeout(() => {
         this.showDropdown = false;
         this.requestUpdate();
@@ -255,7 +260,7 @@ class Autocomplete extends LitElement {
     }
   }
 
-  _handleKeyDown(e) {
+  private _handleKeyDown(e: KeyboardEvent): void {
     switch (e.key) {
       case 'ArrowDown':
         if (this.highlightedOptionIndex < this.filteredOptions.length - 1) {
@@ -270,7 +275,7 @@ class Autocomplete extends LitElement {
       case 'Enter':
         if (this.highlightedOptionIndex >= 0) {
           this.selectedOption = this.filteredOptions[this.highlightedOptionIndex];
-          this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+          this.emit('change');
         }
         this.showDropdown = false;
         break;
@@ -281,24 +286,24 @@ class Autocomplete extends LitElement {
     this._scrollIntoView();
   }
 
-  _scrollIntoView() {
+  private _scrollIntoView(): void {
     if (this.highlightedOptionIndex >= 0) {
-      const optionElement = this.shadowRoot.getElementById(`option-${this.highlightedOptionIndex}`);
+      const optionElement = this.shadowRoot!.getElementById(`option-${this.highlightedOptionIndex}`);
       if (optionElement) {
         optionElement.scrollIntoView({ block: 'nearest' });
       }
     }
   }
 
-  _handleClearInput() {
+  private _handleClearInput(): void {
     this.selectedOption = ''
-    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    this.emit('change');
     this.initialOption = ''
     this.filteredOptions = this.options
     this.requestUpdate()
   }
 
-  _toggleDropdown() {
+  private _toggleDropdown(): void {
     this.filteredOptions = this.selectedOption !== '' ? this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase())) : this.options;
     this.showDropdown = !this.showDropdown;
     this.requestUpdate();
@@ -309,9 +314,9 @@ class Autocomplete extends LitElement {
     }, 0);
   }
 
-  _adjustDropdownPosition() {
-    const inputRect = this.shadowRoot.querySelector('input').getBoundingClientRect();
-    const dropdown = this.shadowRoot.querySelector('.dropdown');
+  private _adjustDropdownPosition(): void {
+    const inputRect = this._input.getBoundingClientRect();
+    const dropdown = this._dropdown;
     const spaceBelow = window.innerHeight - inputRect.bottom;
     const spaceAbove = inputRect.top;
 
@@ -327,6 +332,8 @@ class Autocomplete extends LitElement {
   }
 }
 
-customElements.define('lit-autocomplete', Autocomplete)
-
-export default Autocomplete
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-autocomplete': Autocomplete;
+  }
+}
