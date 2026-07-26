@@ -1,401 +1,340 @@
-# 01 — Jest → Vitest Migration & Test-Coverage Strategy
+# 01 — Vitest Migration & Test-Coverage Strategy
 
-> Companion to `reports/00-code-quality.md` — general code-quality issues are catalogued there and are **not** repeated here. This report is scoped to the test toolchain and coverage.
+> Companion to `reports/00-code-quality.md` — general code-quality issues are catalogued
+> there and are **not** repeated here. This report is scoped to the test toolchain and
+> coverage.
+
+> **Refreshed 2026-07-27** against branch `new_code` @ `7594672`. Originally written
+> 2026-07-24 as a Jest→Vitest migration plan.
+>
+> **Part A (the migration) is COMPLETE** — landed in `f7907a3` / PR #649, with the test
+> tree relocated in `4d7ab3b` / PR #663. **Part B Phase 1 (pure logic) is COMPLETE**;
+> Phase 3 (Lit elements) landed alongside the TypeScript conversion in PRs #652–#659.
+>
+> ⚠️ **The suite is currently RED on this branch** — not because of the migration, but
+> because the last commit added an untested, jsdom-hostile component. See
+> [§0 Current status](#0-current-status-suite-is-red).
 
 ## TL;DR
 
-- The build already runs on **Vite 8** (`vite.config.mts`) with `@wyw-in-js/vite` (Linaria) + `@vitejs/plugin-react-swc`. Vitest reuses that exact pipeline, so the migration is low-risk and removes a redundant `ts-jest` + `@swc/jest` double-transform.
-- Only **4 test files** exist for **210 source files** → effectively **~0 % coverage**. The migration is the moment to also stand up a coverage baseline and a ratchet.
-- Migration is mechanical but has **three sharp edges**: (1) default-export component mocks must return `{ default: … }`, (2) `jest.Mock` type casts break, (3) `jest.requireMock` has no direct twin. All three appear in the current tests.
-- Highest-value new tests: **pure Redux reducers** (`src/store/*/reducer.ts`) and **`src/utils/*`** — no DOM, no mocks, fast, high line-count payoff.
+- **Jest is gone.** Vitest 4.1 runs on the same Vite plugin graph as the build
+  (`@wyw-in-js` + `@vitejs/plugin-react-swc`), so Linaria `styled` components and the Lit
+  decorators transform identically to `npm run build`.
+- **4 tests → 509 tests across 53 files.** Global line coverage went from ~0 % to
+  **26.5 %**, with `src/utils` at **99 %** and every `src/store/**/reducer.ts` above the
+  **95 %** gate.
+- **The coverage ratchet is real and enforced.** `vitest.config.ts` sets a global floor
+  *plus* three per-directory gates; CI fails when they slip. They are slipping right now.
+- **Two regressions, both from `7594672`, both S-sized:** a missing jsdom polyfill blocks
+  4 suites from loading, and a 538-line untested element breaches the `keep-elements`
+  gate.
+- Remaining work is **Phase 2 (React component tests)** and raising the ratchet — the
+  toolchain questions this report opened are all settled.
 
 ---
 
-## Current state snapshot (verified)
+## 0. Current status — suite is RED
 
-| Area | Today | Source of truth |
-|---|---|---|
-| Runner | Jest 30 | `package.json` `test` script, `jest.config.ts` |
-| Transform | `preset: 'ts-jest'` **and** `@swc/jest` (redundant double-config) | `jest.config.ts` L3–17 |
-| Environment | `jest-environment-jsdom`, `url: http://localhost/admin/ui` | `jest.config.ts` L18–21 |
-| ESM allow-list | `transformIgnorePatterns` for `@shoelace-style\|@awesome.me\|uuid\|@lit\|lit\|lit-html\|lit-element\|nanoid` | `jest.config.ts` L22–24 |
-| Asset/style mocks | `__mocks__/fileMock.js` (`'test-file-stub'`), `__mocks__/styleMock.js` (`{}`) | `jest.config.ts` L25–28 |
-| Globals | `TextEncoder` / `TextDecoder` | `jest.config.ts` L29 |
-| Setup file | `src/setupTests.ts` exists **but is NOT wired in** (no `setupFilesAfterEnv`). Each test imports `@testing-library/jest-dom` by hand. | `jest.config.ts` (absent), `src/*.test.tsx` L1 |
-| Sonar | `jest-sonar-reporter` via `--testResultsProcessor` → `coverage/sonar-report.xml` (a **test-execution** report, not coverage) | `package.json` L72, `jestSonar` block L103–107 |
-| Coverage | `jest --coverage` (Istanbul → `coverage/lcov.info`) | `package.json` L72 |
-| Test files | `src/App.test.tsx`, `src/components/forms/EditView.test.tsx`, `src/components/access/TabsAccess.test.tsx`, `src/components/dialogs/UnsavedChangesDialog.test.tsx` | — |
-| Stack | React 19, Redux (plain reducers) + RTK store, react-router 7, MUI 9, Linaria, Monaco, Lit/WebAwesome custom elements | — |
+`npm run test` on `new_code` @ `7594672`:
 
-**Gap worth fixing during migration:** `src/setupTests.ts` is dead config today — nothing loads it. Wiring it as Vitest `setupFiles` centralises the `@testing-library/jest-dom` import, the `attachInternals` polyfill, and the `HTMLDialogElement` stubs that are currently copy-pasted into individual test files.
+```
+ Test Files  4 failed | 49 passed (53)
+      Tests  475 passed (475)
+```
+
+### 0.1 Root cause — jsdom lacks `document.queryCommandSupported`
+
+```
+TypeError: document.queryCommandSupported is not a function
+ ❯ node_modules/monaco-editor/esm/vs/editor/contrib/clipboard/browser/clipboard.js:29
+ ❯ node_modules/monaco-editor/esm/vs/language/css/monaco.contribution.js:8
+ ❯ node_modules/monaco-editor/esm/vs/editor/editor.main.js:1
+```
+
+`src/components/keep-elements/keep-monaco-editor.ts` does a **top-level**
+`import * as monaco from 'monaco-editor'`, and `KeepElements.tsx` imports that module to
+export the `KeepMonacoEditor` wrapper. Every test that touches *any* component using the
+React bridge therefore evaluates the whole Monaco ESM bundle inside jsdom, which executes
+`document.queryCommandSupported` at module scope.
+
+Affected suites (all fail at import, 0 tests run):
+`test/App.test.tsx` · `test/components/access/TabsAccess.test.tsx` ·
+`test/components/forms/EditView.test.tsx` ·
+`test/components/dialogs/UnsavedChangesDialog.test.tsx`.
+
+**Fix (verified):** add to `test/setupTests.ts`, next to the existing Popover and
+`<dialog>` stubs —
+
+```ts
+// jsdom implements neither queryCommandSupported nor execCommand; monaco-editor
+// calls the former at module scope when its clipboard contribution registers.
+if (!(document as any).queryCommandSupported) {
+  (document as any).queryCommandSupported = () => false;
+  (document as any).execCommand = () => false;
+}
+```
+
+With that one hunk applied, the run is **53 files / 509 tests, all passing**.
+
+**Better long-term fix:** move the Monaco import inside `firstUpdated()` (dynamic
+`import('monaco-editor')`), so the React bridge stays cheap and the editor is code-split
+out of the 6.94 MB entry chunk as well (report 00 P2-3/P0-10).
+
+### 0.2 Second failure — the `keep-elements` coverage gate
+
+Even with the polyfill, `npm test` still exits non-zero:
+
+```
+ERROR: Coverage for lines (60.27%) does not meet "src/components/keep-elements/**" threshold (70%)
+ERROR: Coverage for statements (60.91%) does not meet "src/components/keep-elements/**" threshold (70%)
+ERROR: Coverage for branches (46.89%) does not meet "src/components/keep-elements/**" threshold (50%)
+```
+
+`keep-monaco-editor.ts` is 538 lines with **no test file** — the only element in the
+directory without one. It drags the directory average below the gate the other 25
+elements earned.
+
+**Options, best first:**
+1. **Write `test/components/keep-elements/keep-monaco-editor.test.ts`.** Mount with
+   `mountLit`, assert the `value`/`language`/`theme` reactive properties, the emitted
+   `change` event, and editor disposal on `disconnectedCallback`. Mock `monaco-editor`
+   with `vi.mock` so no real editor is constructed (this also sidesteps §0.1 for that
+   file).
+2. **Exclude it from coverage**, the way `keep-source.ts` already is — but only with a
+   comment justifying why, and paired with a tracked follow-up. Excluding an untested
+   538-line component silently is how ratchets rot.
 
 ---
 
-# Part A — Jest → Vitest migration plan
+## Current state snapshot (verified 2026-07-27)
 
-## A1. Why Vitest is the right fit
-
-Vitest consumes `vite.config.mts`'s plugin graph directly. That means Linaria `styled` components and SWC/React transforms behave **identically** to `npm run build`/`dev`, eliminating the class of "passes in Jest, breaks in prod" bugs. It also lets us delete the `ts-jest` **and** `@swc/jest` transforms (the current config configures both — redundant) plus `babel.config.js`.
-
-## A2. `vitest.config.ts` (new file — copy-paste ready)
-
-A **standalone** `vitest.config.ts` is preferred over merging a `test` block into `vite.config.mts`, because the build config carries a dev-server `Content-Security-Policy` header and an `/api` proxy that are irrelevant (and slightly confusing) in a test context. Reuse the plugins, drop the server bits.
-
-```ts
-/// <reference types="vitest/config" />
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react-swc';
-import wyw from '@wyw-in-js/vite';
-
-export default defineConfig({
-  plugins: [
-    // Keep wyw so Linaria `styled` components resolve to real components.
-    // (Do NOT drop it — @linaria/react's `styled` needs this transform.)
-    wyw({ include: ['**/*.{ts,tsx}'] }),
-    react(),
-  ],
-  test: {
-    globals: true,                       // replaces @types/jest globals; gives describe/it/expect/vi
-    environment: 'jsdom',
-    environmentOptions: {
-      jsdom: { url: 'http://localhost/admin/ui' },   // == jest testEnvironmentOptions.url
-    },
-    setupFiles: ['./src/setupTests.ts'],
-    css: false,                          // don't process/apply CSS → replaces __mocks__/styleMock.js
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    clearMocks: true,                    // auto clears mock history each test (replaces jest.clearAllMocks)
-    reporters: process.env.CI
-      ? ['default', ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }]]
-      : ['default'],
-    coverage: {
-      provider: 'v8',                    // @vitest/coverage-v8
-      reportsDirectory: 'coverage',
-      reporter: ['text', 'lcov', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        'src/**/*.d.ts',
-        'src/**/*.test.{ts,tsx}',
-        'src/index.tsx',
-        'src/**/types.ts',               // pure type/const modules
-        'src/**/*.js',                   // hand-authored lit elements (optional)
-      ],
-      thresholds: { lines: 5, functions: 5, branches: 5, statements: 5 },  // see B4 for ratchet
-    },
-  },
-});
-```
-
-**Notes**
-- `css: false` is the direct replacement for `styleMock.js` — CSS/`.less`/Linaria virtual modules are ignored, not applied.
-- **`transformIgnorePatterns` is not needed.** Vite transforms ESM in `node_modules` natively, so `@awesome.me/webawesome`, `lit*`, `uuid`, `nanoid` "just work". *Fallback if you hit a CJS/ESM interop error from Lit/WebAwesome:* add `test.server.deps.inline: [/@awesome\.me/, /^lit/, /lit-html/, /lit-element/]`.
-- **The asset `fileMock` can be dropped.** Vite resolves `import x from './logo.png'` to a URL string by default — equivalent behaviour to the stub. Keep an alias only if a test asserts on the exact string `'test-file-stub'` (none do today).
-
-## A3. `src/setupTests.ts` (extend the existing dead file & wire it in)
-
-```ts
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
-import { TextEncoder, TextDecoder } from 'node:util';
-
-// Was jest.config globals — needed by uuid/nanoid/react-router in some jsdom builds
-if (typeof globalThis.TextEncoder === 'undefined') {
-  globalThis.TextEncoder = TextEncoder as any;
-  globalThis.TextDecoder = TextDecoder as any;
-}
-
-// Custom-element form internals (WebAwesome / Lit) — jsdom lacks attachInternals
-if (!HTMLElement.prototype.attachInternals) {
-  HTMLElement.prototype.attachInternals = function () {
-    return {
-      setValidity: () => {}, checkValidity: () => true, reportValidity: () => true,
-      states: { add: () => {}, delete: () => {}, has: () => false },
-      shadowRoot: null,
-    } as any;
-  };
-}
-
-// jsdom does not implement <dialog> modal methods (currently stubbed per-file in tests)
-if (!HTMLDialogElement.prototype.showModal) {
-  HTMLDialogElement.prototype.showModal = vi.fn();
-  HTMLDialogElement.prototype.close = vi.fn();
-}
-
-// MUI reads matchMedia on mount
-if (!window.matchMedia) {
-  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-    matches: false, media: query, onchange: null,
-    addListener: vi.fn(), removeListener: vi.fn(),
-    addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn(),
-  }));
-}
-```
-
-## A4. Feature-by-feature mapping
-
-| Jest feature | Where (today) | Vitest equivalent |
-|---|---|---|
-| `preset: 'ts-jest'` + `@swc/jest` transform | `jest.config.ts` L3–17 | **Deleted.** Vite + `@vitejs/plugin-react-swc` handle TS/JSX. |
-| `testEnvironment: jsdom` | L18 | `test.environment: 'jsdom'` (needs `jsdom` dep — already present) |
-| `testEnvironmentOptions.url` | L19–21 | `test.environmentOptions.jsdom.url: 'http://localhost/admin/ui'` |
-| `transformIgnorePatterns` (WA/Lit/uuid/nanoid) | L22–24 | **Not needed** (Vite transforms node_modules). Fallback: `test.server.deps.inline`. |
-| `moduleNameMapper` css/less → `styleMock` | L27 | `test.css: false` |
-| `moduleNameMapper` assets → `fileMock` | L26 | **Not needed** (Vite returns asset URL strings). Optional `test.alias` if you need a fixed stub. |
-| `globals: { TextEncoder, TextDecoder }` | L29 | Set in `setupFiles` (see A3) |
-| `setupFilesAfterEnv` | *absent* | `test.setupFiles: ['./src/setupTests.ts']` (finally wires the existing file) |
-| `--coverage` (Istanbul, lcov) | `package.json` L72 | `@vitest/coverage-v8`, `coverage.reporter: ['lcov', …]` |
-| `jest-sonar-reporter` (test-execution xml) | L72, `jestSonar` block | `vitest-sonar-reporter` → `coverage/sonar-report.xml` |
-| `jest.fn/mock/spyOn/useFakeTimers/clearAllMocks` | in tests | `vi.fn/mock/spyOn/useFakeTimers/clearAllMocks` (see A6) |
-
-## A5. Exact `package.json` changes
-
-**Scripts** (replace the single `test`):
-```jsonc
-"scripts": {
-  "test": "cross-env CI=true vitest run --coverage",
-  "test:watch": "vitest",
-  "test:ui": "vitest --ui",
-  "coverage": "vitest run --coverage"
-}
-```
-> `CI=true` still works to force non-watch/non-TTY; `vitest run` is already single-shot, so `CI` is belt-and-braces (and drives the Sonar reporter branch in the config).
-
-**Add (devDependencies):**
-| Package | Why |
-|---|---|
-| `vitest` | runner (match the major that supports Vite 8 — currently the v4 line) |
-| `@vitest/coverage-v8` | coverage provider (must match `vitest` version) |
-| `@vitest/ui` | `test:ui` dashboard |
-| `vitest-sonar-reporter` | emits `sonar-report.xml` (SonarQube test-execution report) |
-
-`@testing-library/react`, `@testing-library/jest-dom`, and `jsdom` **stay**.
-
-**Remove (devDependencies + files):**
-| Remove | Reason |
-|---|---|
-| `jest`, `@types/jest` | runner + types gone |
-| `jest-environment-jsdom` | replaced by `test.environment` + `jsdom` |
-| `@swc/jest`, `ts-jest` | redundant transforms; Vite handles it |
-| `jest-sonar-reporter` | replaced by `vitest-sonar-reporter` |
-| `jest.config.ts` (file) | replaced by `vitest.config.ts` |
-| `babel.config.js` (file) | only fed jest's ts-jest/babel path — **verify** nothing else imports it before deleting |
-| `jestSonar` block in `package.json` | reporter now configured in `vitest.config.ts` |
-| `__mocks__/styleMock.js`, `__mocks__/fileMock.js` | replaced by `css:false` / Vite asset handling |
-| `eslintConfig.extends: "react-app/jest"` | jest-specific lint preset; swap for `eslint-plugin-vitest` or drop |
-
-> `@swc/core` may still be needed by `@vitejs/plugin-react-swc` transitively — leave it unless `npm ls @swc/core` shows it orphaned.
-> Note: the `overrides` pin `"jsdom": "^29.0.1"` is unusual (jsdom has no v29 line); confirm it resolves during install — Vitest's jsdom environment needs a real jsdom present.
-
-## A6. API differences that will bite (these appear in the current 4 tests)
-
-| Jest | Vitest | Notes |
-|---|---|---|
-| `jest.fn()` | `vi.fn()` | global with `globals:true` |
-| `jest.mock(p, factory)` | `vi.mock(p, factory)` | both hoisted; factory referencing outer vars must use `vi.hoisted(() => …)` |
-| `jest.spyOn` | `vi.spyOn` | — |
-| `jest.useFakeTimers()` / `advanceTimersByTime` | `vi.useFakeTimers()` / `vi.advanceTimersByTime` | `TabsAccess.test.tsx` uses these |
-| `jest.clearAllMocks()` | `vi.clearAllMocks()` (or `clearMocks:true` config) | — |
-| `jest.requireMock(p)` | **no direct twin** → `vi.mocked(await import(p))` or just import at top (the top-level import already receives the mock) | `TabsAccess.test.tsx` L565, `EditView.test.tsx` L356 |
-| `as jest.Mock` type cast | `as unknown as import('vitest').Mock` / `vi.mocked(x)` | `EditView.test.tsx` L183 `(console.error as jest.Mock)` will not compile |
-| `@testing-library/jest-dom` import | same package/import — matchers auto-extend `expect` via setup | keep |
-
-### ⚠️ The one that breaks silently — default-export component mocks
-Jest's `jest.mock('./X', () => Fn)` (factory **returns the function directly**) relies on CJS interop mapping `module.exports` → `default`. **All four test files use this pattern** (e.g. `EditView.test.tsx` mocks `./ColumnDetails`, `TabsAccess.test.tsx` mocks `./FieldDndContainer`, `./AddModeDialog`, etc.). Under Vitest/ESM you **must** wrap in `{ default: … }`:
-
-```ts
-// Jest (today)
-jest.mock('./ColumnDetails', () => {
-  return function MockColumnDetails(props: any) { /* … */ };
-});
-
-// Vitest (required)
-vi.mock('./ColumnDetails', () => ({
-  default: function MockColumnDetails(props: any) { /* … */ },
-}));
-```
-Named-export factories (`() => ({ fetchViews: vi.fn(), … })`) migrate unchanged apart from `jest.fn`→`vi.fn`.
-
-## A7. TypeScript / globals
-
-Add a small tsconfig for tests (or extend the existing `tsconfig.json`) so `vi`, `describe`, `expect` and the jest-dom matchers type-check:
-
-```jsonc
-// tsconfig.json → compilerOptions
-"types": ["vitest/globals", "@testing-library/jest-dom"]
-```
-Alternatively add `/// <reference types="vitest/globals" />` at the top of a `src/vitest.d.ts`. Either way, remove reliance on `@types/jest`. Replace any `jest.Mock`/`jest.SpyInstance` type references with `import type { Mock } from 'vitest'`.
-
-## A8. SonarQube expectation changes
-
-Two distinct Sonar inputs — keep them separate:
-
-| Sonar property | Fed by | File |
-|---|---|---|
-| `sonar.testExecutionReportPaths` | `vitest-sonar-reporter` (was `jest-sonar-reporter`) | `coverage/sonar-report.xml` |
-| `sonar.javascript.lcov.reportPaths` | `@vitest/coverage-v8` `lcov` reporter (was Istanbul) | `coverage/lcov.info` |
-
-The `jest-sonar-reporter` produced the **test-execution** report (via `--testResultsProcessor`); coverage was a *separate* Istanbul lcov artifact. Vitest keeps this split. No Sonar server change is required **if** the CI Sonar config already points at `coverage/sonar-report.xml` and `coverage/lcov.info` (no `sonar-project.properties` was found in-repo, so the mapping lives in CI — confirm those two paths there). The `jestSonar` block in `package.json` becomes dead config and should be removed.
-
-## A9. Migration sequence (with rollback safety)
-
-| # | Step | Effort |
-|---|---|---|
-| 1 | Add `vitest` deps **alongside** Jest; add `vitest.config.ts` + extend `src/setupTests.ts`; add `test:watch`/`test:ui` scripts but leave `test` on Jest. | S |
-| 2 | Port the 4 tests: `jest.*`→`vi.*`, wrap default-export mocks in `{ default: … }`, fix the `as jest.Mock` cast, replace `jest.requireMock`. Run `vitest run` until green **while `npm test` still runs Jest** (both green = behaviour-parity proof). | M |
-| 3 | Flip `test` script to Vitest; verify `coverage/lcov.info` + `coverage/sonar-report.xml` are produced in CI. | S |
-| 4 | Remove Jest deps, `jest.config.ts`, `babel.config.js`, `__mocks__/*`, `jestSonar` block, `react-app/jest` lint. | S |
-| **Rollback** | Until step 4, `git checkout package.json jest.config.ts` restores Jest instantly; the two runners coexist because they read different config files and the same `.test.tsx` files (mocks that still use `jest.*` simply won't run under Vitest and vice-versa — port one file at a time). | — |
-
----
-
-# Part B — Coverage improvement strategy
-
-## B1. Highest-value untested modules (prioritised)
-
-Ranked by *payoff ÷ effort*: pure logic first (no DOM, no mocks, deterministic).
-
-| Rank | Module(s) | ~LOC | Why high value | Test type | Effort |
-|---|---|---|---|---|---|
-| 1 | `src/utils/common.ts` | 112 | 8 pure fns: `fullEncode`, `insertCharacter`, `capitalizeFirst`, `stringExpiration`, `deepEqual`, `areArraysEqual`, `checkForResponse`, `AlertManager` | unit | S |
-| 2 | `src/store/databases/scripts.ts` + `src/utils/mapper.ts` | 51 + 26 | pure index/finder + schema-grouping logic; `findScopeBySchema` already relied on by `TabsAccess.test` | unit | S |
-| 3 | `src/store/*/reducer.ts` (16 plain reducers) | ~30–120 each | pure `(state, action) → state`; deterministic; ~1.1k LOC total excl. databases | unit | S–M |
-| 4 | `src/utils/form.ts` | 12 | `isEmptyOrSpaces`, `verifyModeName` (regex edge cases) | unit | S |
-| 5 | `src/store/databases/reducer.ts` | 627 | largest single reducer; high branch count | unit (table-driven) | M |
-| 6 | `src/utils/token-emitter.ts` | 16 | `emitTokenEvent`/`waitForToken` promise resolution | unit (async) | S |
-| 7 | `src/utils/api-retry.ts` | 171 | `apiRequestWithRetry`: 401→refresh→retry, error/`notify` paths | unit w/ mocks (`refreshToken`, `notify`, custom element) | M |
-| 8 | Small presentational components (e.g. `Footer.tsx`, dialogs) | — | RTL smoke render | component | M |
-
-Reducers and `utils/common.ts` alone are ~1.7k lines of pure code — testing them moves the global coverage number substantially for very little effort.
-
-## B2. Phased plan
-
-**Phase 1 — Pure logic (fastest ROI).** `src/utils/*` + all `src/store/*/reducer.ts`. No jsdom features needed beyond the runner. Table-driven tests per reducer (unknown action → same state; each `case` → expected transition).
-
-**Phase 2 — Component tests (`@testing-library/react`).** Follow the *existing* pattern already proven in the repo: a local `createMockStore()` + `<Provider>` + `<MemoryRouter>` wrapper (see `TabsAccess.test.tsx` L142, `EditView.test.tsx` L95). Extract that wrapper into a shared `src/test-utils/renderWithProviders.tsx` to stop re-declaring it. Mock heavy children (Monaco, drag-and-drop, dialogs) as the current tests do.
-
-**Phase 3 — Web-component (Lit/WebAwesome) tests.** The `lit-*` elements self-register via `customElements.define` in their `.js` modules (e.g. `src/components/lit-elements/lit-button-yes.js` L46), and are re-exported through `@lit/react`'s `createComponent` in `LitElements.tsx`. **Importing the component under test transitively registers the elements** — no manual registry setup needed (jsdom supports `customElements`). Assert on the light-DOM tags (`document.querySelector('lit-button-yes')`) exactly as `UnsavedChangesDialog.test.tsx` L30–32 does. Shadow-DOM internals have only partial jsdom support — assert on the wrapper/props, not shadow content.
-
-### Example 1 — pure reducer (Phase 1)
-```ts
-// src/store/dialog/reducer.test.ts
-import { describe, it, expect } from 'vitest';
-import dialogReducer from './reducer';
-import { TOGGLE_DELETE_DIALOG, TOGGLE_ERROR_DIALOG, INIT_STATE } from './types';
-
-const initial = {
-  deleteDialog: false, errorDialogOpen: false,
-  errorDialogMessage: '', loading: false, resetViewDialog: false,
-};
-
-describe('dialogReducer', () => {
-  it('returns initial state for an unknown action', () => {
-    expect(dialogReducer(undefined, { type: '@@INIT' } as any)).toEqual(initial);
-  });
-
-  it('toggles the delete dialog', () => {
-    const next = dialogReducer(initial, { type: TOGGLE_DELETE_DIALOG } as any);
-    expect(next.deleteDialog).toBe(true);
-  });
-
-  it('sets error dialog message on TOGGLE_ERROR_DIALOG', () => {
-    const next = dialogReducer(initial, { type: TOGGLE_ERROR_DIALOG, payload: 'boom' } as any);
-    expect(next).toMatchObject({ errorDialogOpen: true, errorDialogMessage: 'boom' });
-  });
-
-  it('resets to initial on INIT_STATE', () => {
-    const dirty = { ...initial, deleteDialog: true, loading: true };
-    expect(dialogReducer(dirty, { type: INIT_STATE } as any)).toEqual(initial);
-  });
-});
-```
-
-### Example 2 — pure util (Phase 1)
-```ts
-// src/utils/common.test.ts
-import { describe, it, expect } from 'vitest';
-import { fullEncode, capitalizeFirst, deepEqual, stringExpiration } from './common';
-
-describe('common utils', () => {
-  it('fullEncode percent-encodes reserved chars', () => {
-    expect(fullEncode('a/b&c')).toBe('a%2fb%26c');
-    expect(fullEncode('plain')).toBe('plain');
-  });
-
-  it('capitalizeFirst upper-cases only the first letter', () => {
-    expect(capitalizeFirst('hello')).toBe('Hello');
-  });
-
-  it('deepEqual compares nested structures', () => {
-    expect(deepEqual({ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] })).toBe(true);
-    expect(deepEqual({ a: 1 }, { a: 2 })).toBe(false);
-  });
-
-  it('stringExpiration formats ms as dd:hh:mm', () => {
-    expect(stringExpiration(90 * 60 * 1000)).toBe('0:01:30');
-  });
-});
-```
-
-## B3. Realistic coverage thresholds (start low, ratchet)
-
-Set a **global floor** that CI can never drop below, plus **higher per-directory gates** for the cheap-to-cover pure code. Bump the numbers as phases land — the point is a monotonic ratchet, not a big-bang target.
-
-```ts
-// vitest.config.ts → test.coverage.thresholds
-thresholds: {
-  // Global floor — start here on day one (near-zero today)
-  lines: 5, functions: 5, branches: 5, statements: 5,
-  autoUpdate: false,               // set true once to snapshot current %, then commit & set false
-
-  // Per-directory gates ratcheted up as Phase 1 lands
-  'src/utils/**':          { lines: 80, functions: 80, branches: 70, statements: 80 },
-  'src/store/**/reducer.ts': { lines: 70, functions: 70, branches: 60, statements: 70 },
-},
-```
-
-Suggested ratchet schedule:
-
-| Milestone | Global lines | `utils/**` | `store/**/reducer` |
+| Area | 2026-07-24 | **Today** | Source of truth |
 |---|---|---|---|
-| Day 1 (config lands) | 5 % | — | — |
-| After Phase 1 | 20 % | 80 % | 70 % |
-| After Phase 2 | 35 % | 80 % | 70 % |
-| Steady state | ratchet +5 %/PR to ~50 % | 85 % | 80 % |
+| Runner | Jest 30 | **Vitest 4.1.10** | `package.json` `test`, `vitest.config.ts` |
+| Transform | `ts-jest` **and** `@swc/jest` (redundant) | **Vite plugin graph** — `@wyw-in-js/vite` + `@vitejs/plugin-react-swc` | `vitest.config.ts` |
+| Decorators | n/a | `tsDecorators: true` + `useDefineForClassFields: false` (mirrors `vite.config.mts`) | `vitest.config.ts` |
+| Environment | `jest-environment-jsdom` | **`jsdom` 29.1.1**, `url: http://localhost/admin/ui` | `vitest.config.ts` |
+| ESM allow-list | `transformIgnorePatterns` | **not needed** — Vite transforms `node_modules` natively | — |
+| Asset/style mocks | `__mocks__/fileMock.js`, `styleMock.js` | **deleted** — `css: false` + Vite asset URLs | `vitest.config.ts` |
+| Setup file | `src/setupTests.ts` existed but was **never loaded** | **`test/setupTests.ts`, wired via `setupFiles`** | `vitest.config.ts` |
+| Test location | 4 files scattered under `src/` | **top-level `test/` tree** mirroring `src/` | `4d7ab3b` |
+| Sonar | `jest-sonar-reporter` | **`vitest-sonar-reporter` 3.0** → `coverage/sonar-report.xml` (CI only) | `vitest.config.ts` |
+| Coverage | Istanbul via `--coverage` | **`@vitest/coverage-v8`** → `text`, `lcov`, `html`, `json-summary` | `vitest.config.ts` |
+| Thresholds | none | **global floor + 3 per-directory gates** | `vitest.config.ts` |
+| Test files / tests | 4 / 34 | **53 / 509** | `npm test` |
+| CI | `build` + `test` | **`lint` → `build` → `test`** on Node 24 | `.github/workflows/pr_check.yml` |
 
-Wire the same into SonarQube via a **Quality Gate on New Code** (e.g. "coverage on new code ≥ 80 %") so every PR is held to a high bar even while the legacy baseline is low. Sonar reads coverage from `coverage/lcov.info` (A8).
+### Scripts as shipped
 
-## B4. Pitfalls specific to this stack
+```jsonc
+"test":       "cross-env CI=true vitest run --coverage",
+"test:watch": "vitest",
+"test:ui":    "vitest --ui",
+"coverage":   "vitest run --coverage"
+```
 
-| Pitfall | Symptom | Mitigation |
+`CI=true` drives the Sonar reporter branch in the config (and keeps `vitest run`
+non-interactive).
+
+---
+
+# Part A — Migration ✅ COMPLETE
+
+Recorded as-built, so the decisions stay discoverable. Nothing here is outstanding work.
+
+## A1. Why Vitest was the right fit — confirmed in practice
+
+Vitest consumes the same plugin graph as the build. This paid off immediately during the
+`.js` → TypeScript Lit conversion (report 02): the decorator configuration
+(`tsDecorators` + `useDefineForClassFields: false`) had to be identical in
+`vite.config.mts` and `vitest.config.ts`, and because both files construct the plugin the
+same way, "passes in tests, breaks in prod" never happened. Had Jest kept its own
+`ts-jest`/`@swc/jest` pipeline, the class-field-shadowing bug
+([lit.dev/msg/class-field-shadowing](https://lit.dev/msg/class-field-shadowing)) would
+have behaved differently in each.
+
+## A2. `vitest.config.ts` — as shipped
+
+Standalone rather than a `test` block inside `vite.config.mts`, so the dev-server CSP
+header and `/api` proxy stay out of the test context. Key deviations from the original
+plan:
+
+| Planned | Shipped | Why |
 |---|---|---|
-| **Monaco editor** (`@monaco-editor/react` in `FormsContainer.tsx`; loader copies to `public/monaco-editor-core`) | Hangs / "Cannot read AMD loader" in jsdom | `vi.mock('@monaco-editor/react', () => ({ default: () => <div data-testid="monaco" /> }))` and mock `@monaco-editor/loader`. Never render real Monaco in unit tests. |
-| **Redux store helper** | Each test re-declares `createMockStore()` (`TabsAccess`/`EditView`) → drift | Extract `renderWithProviders()` into `src/test-utils/`; seed only the slices under test. |
-| **react-router 7** | `useNavigate`/`useParams` throw without a router | Wrap in `<MemoryRouter initialEntries={[…]}>` (already the pattern in `TabsAccess.test.tsx` L227). |
-| **MUI 9 / Linaria** | `matchMedia is not a function`; missing styles | `matchMedia` stub in `setupTests.ts` (A3); `css:false` means styles are absent — assert on roles/text/`data-testid`, never on computed CSS. Keep `wyw` in the Vitest plugin list so `styled` components stay real components. |
-| **WebAwesome / Lit custom elements** | `attachInternals` undefined; `showModal` not a function; elements not upgraded | `setupTests.ts` polyfills `attachInternals` + `HTMLDialogElement` (A3). Registration happens automatically on import — assert on the light-DOM tag (`querySelector('lit-…')`), don't reach into shadow DOM. |
-| **`beforeunload` / native events** | dirty-guard tests | Existing `EditView.test.tsx` pattern (dispatch a `cancelable` Event, spy `preventDefault`) ports to Vitest unchanged apart from `jest.fn`→`vi.fn`. |
+| `setupFiles: ['./src/setupTests.ts']` | `['./test/setupTests.ts']` | whole test tree moved out of `src/` (`4d7ab3b`) |
+| `include: ['src/**/*.{test,spec}.{ts,tsx}']` | `['test/**/*.{test,spec}.{ts,tsx}']` | ditto |
+| `reporter: ['text','lcov','html']` | `+ 'json-summary'` | machine-readable badge/ratchet input |
+| `exclude: [... 'src/**/*.js']` | `+ 'src/components/keep-elements/keep-source.ts'` | 764-line interactive tree/source editor; covered at API level by `keep-source.test.ts`, exhaustive jsdom coverage impractical. **Documented in-config.** |
+| `thresholds: { lines: 5, … }` | global **20/20/17/16** + 3 per-directory gates | ratcheted up as phases landed (§B3) |
+| — | `react({ tsDecorators, useAtYourOwnRisk_mutateSwcOptions })` | required by the Lit conversion (see A1) |
+
+## A3. `test/setupTests.ts` — what it actually polyfills
+
+Wiring the previously-dead setup file was the highest-leverage part of the migration.
+It now centralises:
+
+| Stub | Why it is needed | Note |
+|---|---|---|
+| `@testing-library/jest-dom/vitest` | matchers registered against Vitest's `expect` | replaces per-file imports |
+| `TextEncoder` / `TextDecoder` | uuid/nanoid/react-router in some jsdom builds | was `jest.config` `globals` |
+| `HTMLElement.prototype.attachInternals` | **installed unconditionally** — jsdom 29 ships its own `ElementInternals` that lacks `setValidity`, which WebAwesome's form-associated elements call during Lit's update cycle | a discovery from the migration; the original plan's `if (!…)` guard would have been wrong |
+| `HTMLDialogElement.showModal` / `.close` | jsdom has no `<dialog>` modal methods | was copy-pasted per test file |
+| Popover API (`showPopover`/`hidePopover`/`togglePopover`) | used by `keep-alert` | added during the overlay batch |
+| `localStorage` stub | `store/styles/reducer.ts` reads it at import time | jsdom does not always expose it before module evaluation |
+| `window.matchMedia` | MUI reads it on mount | as planned |
+| ❌ `document.queryCommandSupported` | **missing** — see §0.1 | the one gap |
+
+## A4–A9. Migration mechanics — resolved
+
+All three predicted sharp edges materialised and were handled:
+
+- **Default-export component mocks** — every `jest.mock('./X', () => Fn)` became
+  `vi.mock('./X', () => ({ default: Fn }))`. This was the silent breaker, exactly as
+  flagged.
+- **`as jest.Mock` casts** — replaced with `vi.mocked(…)`.
+- **`jest.requireMock`** — replaced by relying on the hoisted top-level import.
+
+Removed in the process: `jest`, `@types/jest`, `jest-environment-jsdom`, `@swc/jest`,
+`ts-jest`, `jest-sonar-reporter`, `jest.config.ts`, `babel.config.js`, `__mocks__/*`, the
+`jestSonar` block, and the `react-app/jest` lint preset. Type globals moved to
+`src/vitest.d.ts` (`/// <reference types="vitest/globals" />`).
+
+**Sonar wiring is unchanged in shape:** `sonar.testExecutionReportPaths` ←
+`coverage/sonar-report.xml` (now from `vitest-sonar-reporter`),
+`sonar.javascript.lcov.reportPaths` ← `coverage/lcov.info` (now from v8 instead of
+Istanbul). No Sonar server change was required.
+
+---
+
+# Part B — Coverage
+
+## B1. Where coverage actually stands
+
+Measured with the §0.1 polyfill applied, so all 53 files run:
+
+```
+Statements   : 26.89 % ( 1306/4856 )
+Branches     : 23.08 % (  536/2322 )
+Functions    : 24.41 % (  302/1237 )
+Lines        : 26.52 % ( 1236/4660 )
+```
+
+| Area | Lines | Status |
+|---|---|---|
+| `src/utils/**` | **99.1 %** (branches 90.6 %) | ✅ Phase 1 complete — `common`, `form`, `mapper`, `token-emitter`, `api-retry` |
+| `src/store/**/reducer.ts` | **≥95 %** (gate passes) | ✅ Phase 1 complete — 17 reducers, table-driven |
+| `src/components/keep-elements/**` | **60.3 %** | 🔴 gate is 70 % — breached by `keep-monaco-editor.ts` (§0.2) |
+| `src/styles` | 83.3 % | incidental |
+| `src` (top level) | 61.5 % | `App.test.tsx` |
+| `src/services` | 10.6 % | new layer (`log-service`, `editor-theme`, `wa-color`, `wa-typography`) — largely untested |
+| `src/components/**` (React views) | ~0 % | 🟡 **Phase 2 — the remaining gap** |
+
+Ranked by payoff ÷ effort, the original B1 table is now fully consumed except its last
+row. The next-highest-value untested modules are:
+
+| Rank | Module(s) | Why | Test type | Effort |
+|---|---|---|---|---|
+| 1 | `src/services/log-service.ts` (142) | pure, no DOM: level filtering, `getLogger` namespacing, `setLogTarget` validation | unit | **S** |
+| 2 | `src/services/wa-color.ts` (105) + `wa-typography.ts` (67) | pure token resolution from computed styles; jsdom-friendly with a stubbed `getComputedStyle` | unit | **S** |
+| 3 | `src/components/keep-elements/keep-monaco-editor.ts` (538) | unblocks the ratchet (§0.2) | unit w/ `vi.mock('monaco-editor')` | **S–M** |
+| 4 | `src/services/editor-theme.ts` (175) | `buildEditorTheme` is a pure mapping | unit | S |
+| 5 | `src/store/*/action.ts` thunks | highest LOC left; needs `fetch` mocking | unit w/ mocks | M |
+| 6 | Presentational React components | RTL smoke renders | component | M |
+
+## B2. Phased plan — status
+
+**Phase 1 — Pure logic.** ✅ **DONE.** `src/utils/*` + all 17 `src/store/*/reducer.ts`,
+plus `store/databases/scripts.ts`. Table-driven per reducer (unknown action → same state;
+each `case` → expected transition), exactly as sketched.
+
+**Phase 2 — React component tests.** 🟡 **NOT STARTED.** The 4 pre-existing suites
+(`App`, `TabsAccess`, `EditView`, `UnsavedChangesDialog`) were ported and still carry the
+whole React-view coverage story. The shared `renderWithProviders()` helper proposed in the
+original B2 was **not** extracted — `createMockStore()` is still re-declared per file.
+That extraction is the natural first move when Phase 2 starts, and it becomes cheap once
+`test/test-utils/` exists (it does — see Phase 3).
+
+**Phase 3 — Web-component (Lit/WebAwesome) tests.** ✅ **DONE, and it went further than
+planned.** 26 element suites live in `test/components/keep-elements/`, backed by
+`test/test-utils/lit.ts`:
+
+```ts
+// mountLit: create by tag, assign reactive props, append, await updateComplete
+const el = await mountLit<KeepButton>('keep-button', { variant: 'brand' });
+// cleanupLit(): document.body.innerHTML = '' in afterEach
+```
+
+The original guidance to *"assert on the light-DOM tag, not shadow content"* turned out to
+be **too conservative**: with the `attachInternals` stub installed unconditionally (A3),
+shadow-DOM assertions work fine in jsdom, and the element suites assert on shadow content
+directly. That is why `keep-elements` reached ~92 % lines on the early batches.
+
+## B3. The ratchet — as configured
+
+```ts
+thresholds: {
+  lines: 20, statements: 20, functions: 17, branches: 16,   // global floor
+  'src/store/**/reducer.ts': { lines: 95, statements: 95, functions: 90, branches: 88 },
+  'src/utils/**':            { lines: 85, statements: 85, functions: 55, branches: 60 },
+  'src/components/keep-elements/**': { lines: 70, statements: 70, functions: 60, branches: 50 },
+}
+```
+
+Global floors sit just below the measured baseline so CI fails on regression rather than
+demanding new work. Per-directory gates hold the already-covered pure code to a high bar.
+
+**Suggested next steps for the ratchet:**
+
+| Milestone | Global lines | `utils/**` | `store/**/reducer` | `keep-elements/**` | `services/**` |
+|---|---|---|---|---|---|
+| Today (baseline) | 20 % | 85 % | 95 % | 70 % 🔴 | — |
+| After §0.2 is fixed | 25 % | 85 % | 95 % | **75 %** | — |
+| After services tests (B1 #1–#4) | 30 % | 90 % | 95 % | 80 % | **80 %** |
+| After Phase 2 | 40 % | 90 % | 95 % | 85 % | 85 % |
+| Steady state | +2 %/PR toward ~55 % | 90 % | 95 % | 90 % | 85 % |
+
+Keep the Sonar **Quality Gate on New Code** (e.g. "coverage on new code ≥ 80 %") as the
+real enforcement for incoming work — it holds every PR to a high bar while the legacy
+baseline catches up. Sonar reads `coverage/lcov.info`.
+
+> **Ratchet hygiene:** `7594672` is the cautionary tale. A 538-line component landed with
+> no test and the gate caught it — but only *after* merge, because the same commit also
+> broke suite loading, which masks threshold output behind a hard failure. Fix red suites
+> before trusting a green threshold report.
+
+## B4. Pitfalls specific to this stack — updated
+
+| Pitfall | Status | Mitigation |
+|---|---|---|
+| **Monaco editor** | 🔴 **live** — now bites at *import* time, not render time (§0.1) | Polyfill `queryCommandSupported`; `vi.mock('monaco-editor')` in the element's own test; ideally make the import dynamic. The old `@monaco-editor/react` advice (`vi.mock('@monaco-editor/react')`) still applies to `FormsContainer.tsx`, which has not yet been swapped. |
+| **Redux store helper** | 🟡 open | `createMockStore()` is still re-declared in each React suite. Extract `test/test-utils/renderWithProviders.tsx` alongside the existing `lit.ts`. |
+| **react-router 7** | ✅ handled | `<MemoryRouter initialEntries={[…]}>` as before. |
+| **MUI 9 / Linaria** | ✅ handled | `matchMedia` stub in setup; `css: false` means no computed styles — assert on roles/text/`data-testid`. `wyw` stays in the plugin list so `styled` components remain real components. |
+| **WebAwesome / Lit custom elements** | ✅ handled, with a twist | jsdom 29's own `attachInternals` is *incompatible* with WA form-associated elements, so the stub is installed **unconditionally** rather than conditionally. Registration still happens automatically on import. Shadow-DOM assertions are fine. |
+| **Popover / top layer** | ✅ handled | polyfilled in setup for `keep-alert`. |
+| **`beforeunload` / native events** | ✅ handled | `EditView.test.tsx` pattern ported unchanged. |
+| **jsdom `localStorage` timing** | ✅ handled | stubbed in setup because `store/styles/reducer.ts` reads it at import time. |
+| **Vite server won't exit** | 🟡 cosmetic | Every run ends with `close timed out after 10000ms / something prevents Vite server from exiting`. Harmless today (exit code is still correct) but it adds ~10 s per CI run. Chase with the `hanging-process` reporter when convenient. |
 
 ---
 
 ## Master checklist
 
-| # | Task | Effort |
-|---|---|---|
-| A1 | Add `vitest` + `@vitest/coverage-v8` + `@vitest/ui` + `vitest-sonar-reporter` (versions matched to Vite 8) | S |
-| A2 | Create `vitest.config.ts` (§A2) | S |
-| A3 | Extend & wire `src/setupTests.ts` as `setupFiles` (§A3) | S |
-| A4 | Add `test:watch` / `test:ui` / `coverage` scripts; keep `test` on Jest for now | S |
-| A5 | Port `App.test.tsx` — `jest.fn`→`vi.fn`, mock-fetch tweaks | S |
-| A6 | Port `UnsavedChangesDialog.test.tsx` — `jest.fn`→`vi.fn`, move `showModal` stub to setup | S |
-| A7 | Port `EditView.test.tsx` — wrap default-export mocks in `{ default: … }`, fix `as jest.Mock`, `jest.requireMock`→top-import/`vi.mocked` | M |
-| A8 | Port `TabsAccess.test.tsx` — same, plus `vi.useFakeTimers` | M |
-| A9 | Verify Vitest green **while Jest still green** (parity proof) | S |
-| A10 | Flip `test` script to `vitest run --coverage`; confirm `coverage/lcov.info` + `coverage/sonar-report.xml` in CI | S |
-| A11 | Remove Jest deps/files (§A5); update `tsconfig` types (§A7); confirm Sonar CI paths (§A8) | S |
-| B1 | Add `src/test-utils/renderWithProviders.tsx` | S |
-| B2 | Phase 1 tests: `utils/*` + all `store/*/reducer.ts` | M |
-| B3 | Set global threshold floor + per-dir gates; run once with `autoUpdate` to snapshot baseline | S |
-| B4 | Phase 2 component smoke tests (shared render helper, Monaco mocked) | M |
-| B5 | Phase 3 Lit/WA custom-element tests | M |
-| B6 | Add Sonar "coverage on new code ≥ 80 %" quality gate; ratchet global % per PR | S |
+| # | Task | Status | Effort |
+|---|---|---|---|
+| A1–A11 | Jest → Vitest migration (deps, config, setup, port 4 tests, flip script, purge Jest) | ✅ **DONE** (`f7907a3`, PR #649) | — |
+| A12 | Move tests to a top-level `test/` tree | ✅ **DONE** (`4d7ab3b`, PR #663) | — |
+| B1 | Phase 1 — `utils/*` + all 17 `store/*/reducer.ts` | ✅ **DONE** | — |
+| B2 | Phase 3 — 26 Lit element suites + `test/test-utils/lit.ts` | ✅ **DONE** (PRs #652–#659) | — |
+| B3 | Coverage thresholds + per-directory gates | ✅ **DONE** | — |
+| **C1** | **Polyfill `document.queryCommandSupported` in `test/setupTests.ts`** — unblocks 4 suites | 🔴 **TODO** | **S** |
+| **C2** | **Test `keep-monaco-editor.ts`** (or justify an exclusion) — restores the `keep-elements` gate | 🔴 **TODO** | **S–M** |
+| C3 | Make the Monaco import dynamic so the React bridge stays cheap (also helps bundle size) | 🟡 TODO | S–M |
+| C4 | Test `src/services/**` (`log-service`, `wa-color`, `wa-typography`, `editor-theme`) | 🟡 TODO | S |
+| C5 | Extract `test/test-utils/renderWithProviders.tsx`; stop re-declaring `createMockStore()` | 🟡 TODO | S |
+| C6 | Phase 2 — React component smoke tests, starting with the presentational leaves | 🟡 TODO | M |
+| C7 | Raise the ratchet per the §B3 schedule as each of the above lands | 🟡 TODO | S |
+| C8 | Split `tsconfig` so `npm run build` stops type-checking `test/` (report 00 P1-9) | 🟡 TODO | S |
+| C9 | Investigate the 10 s "Vite server won't exit" tail on every run | 🟢 nice-to-have | S |
 
-_For unrelated code-quality findings (dead code, the commented-out `notify` block in `api-retry.ts`, the unused `jsdom@^29` override, etc.), see `reports/00-code-quality.md`._
+_For unrelated code-quality findings, see `reports/00-code-quality.md`._
