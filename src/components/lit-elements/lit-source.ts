@@ -1,7 +1,6 @@
-import { LitElement, html, css, render } from 'lit';
+import { html, css, render, type PropertyValues } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/tree/tree.js';
 import '@awesome.me/webawesome/dist/components/tree-item/tree-item.js';
@@ -17,8 +16,18 @@ import '@awesome.me/webawesome/dist/components/input/input.js';
 // Import setBasePath for Web Awesome assets
 import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import { IMG_DIR } from '../../config.dev';
+import { KeepLitElement } from './keep-lit-element';
 
-function parseStringToArray(input) {
+/** WebAwesome custom elements are not typed as native inputs — narrow only the
+ *  members the code actually touches (matches reports/02 §6.3 guidance). */
+type WithValue = HTMLElement & { value: string };
+type WithValidatedValue = HTMLElement & { value: string; pattern: string; validity: ValidityState };
+type WithOpen = HTMLElement & { open: boolean };
+type WithLazy = HTMLElement & { lazy: boolean };
+
+type JsonRecord = Record<string, any>;
+
+function parseStringToArray(input: string): any[] {
   // Ensure the input is encased in []
   if (!input.startsWith('[') || !input.endsWith(']')) {
     throw new Error('Input must be encased in []');
@@ -27,12 +36,12 @@ function parseStringToArray(input) {
   // Remove the enclosing []
   input = input.slice(1, -1).trim();
 
-  const result = [];
+  const result: any[] = [];
   let currentItem = '';
   let inString = false;
   let inObject = false;
   let inArray = false;
-  let stack = [];
+  let stack: string[] = [];
 
   for (let i = 0; i < input.length; i++) {
     const char = input[i];
@@ -75,7 +84,7 @@ function parseStringToArray(input) {
   return result;
 }
 
-function parseItem(item) {
+function parseItem(item: string): any {
   // Check for object values (using JSON.parse)
   if (item.startsWith('{') && item.endsWith('}')) {
     try {
@@ -91,7 +100,7 @@ function parseItem(item) {
   if (item.toLowerCase() === 'false') return false;
 
   // Check for number values
-  if (!isNaN(item) && item !== '') return Number(item);
+  if (!isNaN(item as any) && item !== '') return Number(item);
 
   // Check for array values (recursively parse)
   if (item.startsWith('[') && item.endsWith(']')) {
@@ -102,7 +111,7 @@ function parseItem(item) {
   return item;
 }
 
-function getLabelName(arrayName, key) {
+function getLabelName(arrayName: string, key: string): string {
   switch (arrayName) {
     case 'forms':
       return 'formName'
@@ -122,10 +131,18 @@ function getLabelName(arrayName, key) {
       return key
   }
 }
-class SourceTree extends LitElement {
-  static properties = {
-    content: { type: Object },
-  };
+@customElement('lit-source-tree')
+export default class SourceTree extends KeepLitElement {
+  @property({ type: Object }) content: JsonRecord = {};
+
+  /** Working copy of `content`; read externally by `lit-source-header`. Plain
+   *  (non-reactive) field: reassignments drive renders via explicit
+   *  `requestUpdate()` calls, exactly as in the original. */
+  editedContent: JsonRecord = {};
+
+  /** Tracks in-flight leaf input values. Plain (non-reactive) field — updating
+   *  it must NOT itself trigger a render (matches the original). */
+  currentInputValues: JsonRecord = {};
 
   static styles = css`
     :host {
@@ -332,24 +349,21 @@ class SourceTree extends LitElement {
   constructor() {
     super();
     setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.6.0/cdn/')
-    this.content = {}
-    this.editedContent = JSON.parse(JSON.stringify(this.content))
-    this.currentInputValues = {}
   }
 
-  updated(changedProperties) {
+  updated(changedProperties: PropertyValues) {
     if (changedProperties.has('content')) {
       this.editedContent = JSON.parse(JSON.stringify(this.content))
       this.requestUpdate()
     }
   }
 
-  updatePattern(event) {
-    const selectElement = event.target;
+  updatePattern(event: Event) {
+    const selectElement = event.target as WithValue;
     const selectedType = selectElement.value;
-    const inputElement = event.target.closest('wa-tree-item').querySelector('#new-value');
+    const inputElement = (event.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-value') as WithValidatedValue | null;
 
-    const patterns = {
+    const patterns: Record<string, string> = {
       String: '.*',
       Boolean: '^(true|True|false|False)$',
       Number: '^-?\\d+$',
@@ -362,19 +376,19 @@ class SourceTree extends LitElement {
   }
 
   render() {
-    const generateTreeItems = (obj, path = '') => {
+    const generateTreeItems = (obj: JsonRecord, path = ''): unknown => {
       return Object.entries(obj).map(([key, value]) => {
         const fullPath = path ? `${path}.${key}` : key
         const isObjectOrArray = typeof value === 'object' && value !== null;
         const isModified = this.currentInputValues[fullPath] !== value;
         const keyNames = fullPath.split('.')
         const element = keyNames[keyNames.length - 2]
-        const isArrayChild = !isNaN(keyNames[keyNames.length - 1])
+        const isArrayChild = !isNaN(keyNames[keyNames.length - 1] as any)
         const label = isArrayChild && isObjectOrArray ? (value[getLabelName(element, key)] || key) : key
         const type = isObjectOrArray ? Array.isArray(value) ? 'array' : 'object' : 'other'
 
         return html`
-          <wa-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @wa-lazy-load="${isObjectOrArray ? (e) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
+          <wa-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @wa-lazy-load="${isObjectOrArray ? (e: Event) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
             <wa-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></wa-icon>
             <wa-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></wa-icon>
             <section class="${isObjectOrArray ? 'object-array-container' : `key-value-container ${isModified ? 'modified' : ''}`}">
@@ -387,12 +401,12 @@ class SourceTree extends LitElement {
                   data-id="input-${fullPath}"
                   class="tree"
                   style="color: light-dark(#C7621D, #CE9178)"
-                  @input=${(e) => {
+                  @input=${(e: Event) => {
                     this.currentInputValues = {
                       ...this.currentInputValues,
-                      [fullPath]: e.target.value
+                      [fullPath]: (e.target as HTMLInputElement).value
                     }
-                    this.updateEditedContent(e, key, this.editedContent, e.target.value, fullPath)
+                    this.updateEditedContent(e, key, this.editedContent, (e.target as HTMLInputElement).value, fullPath)
                   }}
                   value=${value}
                   @contextmenu="${this.handleRightClick}"
@@ -400,17 +414,17 @@ class SourceTree extends LitElement {
               `}
               <wa-dropdown>
                 <wa-button>
-                  <wa-icon appearance="filled" class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></wa-icon>  
+                  <wa-icon appearance="filled" class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></wa-icon>
                 </wa-button>
-                <wa-dropdown-item @click="${(e) => this.handleClickAdd(e, fullPath)}">
+                <wa-dropdown-item @click="${(e: Event) => this.handleClickAdd(e, fullPath)}">
                   Add
                   <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></wa-icon>
                 </wa-dropdown-item>
-                <wa-dropdown-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e) => {this.handleClickEdit(e, key, value, fullPath)}}">
+                <wa-dropdown-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e: Event) => {this.handleClickEdit(e, key, value, fullPath)}}">
                   Edit
                   <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></wa-icon>
                 </wa-dropdown-item>
-                <wa-dropdown-item ?disabled=${!isObjectOrArray} @click="${isObjectOrArray ? (e) => {this.handleClickDuplicate(e, fullPath, key, value)} : null}">
+                <wa-dropdown-item ?disabled=${!isObjectOrArray} @click="${isObjectOrArray ? (e: Event) => {this.handleClickDuplicate(e, fullPath, key, value)} : null}">
                   Duplicate
                   <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></wa-icon>
                 </wa-dropdown-item>
@@ -424,10 +438,10 @@ class SourceTree extends LitElement {
               <form class="input-validation-pattern">
                 <section class="dialog-content">
                   <section class="dialog-input">
-                    ${type === 'array' ? 
+                    ${type === 'array' ?
                       html`<wa-input label="Key" disabled title="Key is not required when adding to an array"></wa-input>
-                      <wa-input disabled id="new-key" value="${value.length}" style="display: none;"></wa-input>` 
-                      : 
+                      <wa-input disabled id="new-key" value="${value.length}" style="display: none;"></wa-input>`
+                      :
                       html`<wa-input label="Key" required id="new-key" @wa-invalid="${this.handleInvalid}"></wa-input>`}
                     <div id="key-error" class="dialog-error" aria-live="polite" hidden></div>
                   </section>
@@ -449,8 +463,8 @@ class SourceTree extends LitElement {
                   </section>
                 </section>
                 <section class="dialog-content buttons">
-                  <button id="dialog-insert" style="display:none;" @click="${(e) => this.handleInsertButtonClick(e, fullPath)}">Insert</button>
-                  <button id="dialog-edit" style="display:none;" @click="${(e) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
+                  <button id="dialog-insert" style="display:none;" @click="${(e: Event) => this.handleInsertButtonClick(e, fullPath)}">Insert</button>
+                  <button id="dialog-edit" style="display:none;" @click="${(e: Event) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
                   <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
               </form>
@@ -471,10 +485,10 @@ class SourceTree extends LitElement {
     `;
   }
 
-  handleClickAdd(e) {
-    const dialog = e.target.closest('wa-tree-item').querySelector('dialog')
-    const insertButton = dialog.querySelector('#dialog-insert')
-    const editButton = dialog.querySelector('#dialog-edit')
+  handleClickAdd(e: Event, fullPath?: string) {
+    const dialog = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')!
+    const insertButton = dialog.querySelector('#dialog-insert')!
+    const editButton = dialog.querySelector('#dialog-edit')!
     insertButton.setAttribute('style', 'display:block')
     editButton.setAttribute('style', 'display:none')
     if (dialog) {
@@ -482,40 +496,40 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleClickEdit(e, key, value, fullPath) {
-    const dialog = e.target.closest('wa-tree-item').querySelector('dialog')
-    const insertButton = dialog.querySelector('#dialog-insert')
-    const editButton = dialog.querySelector('#dialog-edit')
+  handleClickEdit(e: Event, key: string, value: any, fullPath: string) {
+    const dialog = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')
+    const insertButton = dialog!.querySelector('#dialog-insert')!
+    const editButton = dialog!.querySelector('#dialog-edit')!
     insertButton.setAttribute('style', 'display:none')
     editButton.setAttribute('style', 'display:block')
     if (dialog) {
-      dialog.querySelector('#new-key').value = key
-      dialog.querySelector('#new-value').value = value
+      (dialog.querySelector('#new-key') as WithValue).value = key
+      ;(dialog.querySelector('#new-value') as WithValue).value = value
       dialog.showModal();
     } else {
       console.error('Dialog element not found');
     }
   }
 
-  handleClickRemove(key, parentObj, fullPath)  {
+  handleClickRemove(key: string, parentObj: JsonRecord, fullPath: string)  {
     this.removeItem(key, parentObj, fullPath)
     this.editedContent = parentObj
 
     this.requestUpdate()
   }
 
-  removeItem(key, parentObj, fullPath) {
-    const keys = fullPath.split('.')
+  removeItem(key: string, parentObj: JsonRecord, fullPath?: string) {
+    const keys = fullPath!.split('.')
     // Traverse the parentObj using the keys array
     const lastKey = keys.pop();
-    const targetObj = keys.reduce((obj, k) => (obj && obj[k] !== 'undefined') ? obj[k] : undefined, parentObj);
+    const targetObj = keys.reduce((obj: any, k) => (obj && obj[k] !== 'undefined') ? obj[k] : undefined, parentObj);
     if (targetObj && lastKey !== undefined) {
       if (Array.isArray(targetObj)) {
         const index = parseInt(key, 10);
         if (!isNaN(index) && index >= 0 && index < targetObj.length) {
           targetObj.splice(index, 1);
           // Set the new value of the parentObj following the original path
-          keys.reduce((obj, k, i) => {
+          keys.reduce((obj: any, k, i) => {
             if (i === keys.length - 1) {
               obj[k] = targetObj;
             }
@@ -535,10 +549,10 @@ class SourceTree extends LitElement {
       }
     }
     this.editedContent = parentObj
-  
+
   }
 
-  handleClickDuplicate(e, fullPath, key, value) {
+  handleClickDuplicate(e: Event, fullPath: string, key: string, value: any) {
     const paths = fullPath.split('.')
     let obj = this.editedContent
     const newKey = `${key}_copy`
@@ -560,26 +574,26 @@ class SourceTree extends LitElement {
     this.requestUpdate()
   }
 
-  handleRightClick(e) {
+  handleRightClick(e: Event) {
     e.preventDefault(); // Prevent the default context menu from showing up
-    const dropdown = e.target.closest('wa-tree-item').querySelector('wa-dropdown');
+    const dropdown = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('wa-dropdown') as WithOpen | null;
     if (dropdown) {
       dropdown.open = true
     }
   }
 
-  handleClickCancel(e) {
-    e.target.closest('wa-tree-item').querySelector('#new-key').value = ''
-    e.target.closest('wa-tree-item').querySelector('#new-value').value = ''
-    e.target.closest('wa-tree-item').querySelector('dialog').close()
+  handleClickCancel(e: Event) {
+    ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-key') as WithValue).value = ''
+    ;((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-value') as WithValue).value = ''
+    ;(e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')!.close()
   }
 
-  insertItem(e, fullPath) {
+  insertItem(e: Event, fullPath: string) {
     const paths = fullPath.split('.')
-    const keyType = e.target.closest('dialog').getAttribute('aria-label')
-    const newKey = e.target.closest('wa-tree-item').querySelector('#new-key').value
-    let newValue = e.target.closest('wa-tree-item').querySelector('#new-value').value
-    const newType = e.target.closest('wa-tree-item').querySelector('#new-type').value
+    const keyType = (e.target as HTMLElement).closest('dialog')!.getAttribute('aria-label')
+    const newKey = ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-key') as WithValue).value
+    let newValue: any = ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-value') as WithValue).value
+    const newType = ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-type') as WithValue).value
     let obj = this.editedContent
 
     if (newType === 'Boolean') {
@@ -595,22 +609,22 @@ class SourceTree extends LitElement {
     } else if (newType === 'Object') {
       newValue = JSON.parse(newValue)
     }
-    
+
     const lastIndex = keyType === "object" || keyType === "array" ? paths.length - 1 : paths.length - 2;
     if (paths.length === 1) {
       keyType === "object" || keyType === "array" ? obj[paths[0]][newKey] = newValue : obj[newKey] = newValue
-      e.target.closest('wa-tree-item').querySelector('dialog').close()
-      if (!isNaN(newKey) && newKey.trim() !== '') {
-        e.target.closest('wa-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
+      ;(e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')!.close()
+      if (!isNaN(newKey as any) && newKey.trim() !== '') {
+        ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-key') as WithValue).value = (Number(newKey) + 1).toString();
       }
     } else {
       for (let i = 0; i <= lastIndex; i++) {
         if (i === lastIndex) {
           // If we're at the last key in the path, add the new key-value pair
           obj[paths[i]][newKey] = newValue
-          e.target.closest('wa-tree-item').querySelector('dialog').close()
-          if (!isNaN(newKey) && newKey.trim() !== '') {
-            e.target.closest('wa-tree-item').querySelector('#new-key').value = (Number(newKey) + 1).toString();
+          ;(e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')!.close()
+          if (!isNaN(newKey as any) && newKey.trim() !== '') {
+            ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-key') as WithValue).value = (Number(newKey) + 1).toString();
           }
         } else {
           // Otherwise, move to the next level of the object
@@ -620,25 +634,25 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleClickInsert(e, fullPath, edit = false) {
+  handleClickInsert(e: Event, fullPath: string, edit = false) {
     e.preventDefault()
-    const newKey = e.target.closest('wa-tree-item').querySelector('#new-key').value
+    const newKey = ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-key') as WithValue).value
 
     this.insertItem(e, fullPath)
 
     if (edit) {
       this.removeItem(newKey, this.editedContent)
     }
-  
+
     // Trigger a re-render
     this.requestUpdate()
   }
 
-  handleInvalid(e) {
+  handleInvalid(e: Event) {
     // Suppress the browser's constraint validation message
     e.preventDefault();
 
-    const errorMessage = {
+    const errorMessage: Record<string, string> = {
       String: 'string',
       Boolean: 'true | false',
       Number: '12345',
@@ -646,15 +660,16 @@ class SourceTree extends LitElement {
       Object: '{ "key": "value" }'
     }
 
-    if (e.target.id === 'new-key') {
-      const keyError = e.target.closest('wa-tree-item').querySelector('#key-error');
+    const target = e.target as HTMLElement;
+    if (target.id === 'new-key') {
+      const keyError = target.closest('wa-tree-item')!.querySelector('#key-error') as HTMLElement;
       keyError.textContent = `Error: This input field is required.`;
       keyError.hidden = false;
       return
-    } else if (e.target.id === 'new-value') {
-      const typeInputElement = e.target.closest('wa-tree-item').querySelector('#new-type')
-      const valueInputElement = e.target.closest('wa-tree-item').querySelector('#new-value')
-      const valueError = e.target.closest('wa-tree-item').querySelector('#value-error');
+    } else if (target.id === 'new-value') {
+      const typeInputElement = target.closest('wa-tree-item')!.querySelector('#new-type') as WithValue
+      const valueInputElement = target.closest('wa-tree-item')!.querySelector('#new-value') as WithValidatedValue
+      const valueError = target.closest('wa-tree-item')!.querySelector('#value-error') as HTMLElement;
       if (valueInputElement.validity.patternMismatch) {
         valueError.textContent = `Error: Make sure to follow the appropriate format - ${errorMessage[typeInputElement.value]}`;
         valueError.hidden = false;
@@ -664,18 +679,18 @@ class SourceTree extends LitElement {
       }
     }
 
-    e.target.focus();
+    target.focus();
   }
 
-  async handleInsertButtonClick(e, fullPath) {
+  async handleInsertButtonClick(e: Event, fullPath: string) {
     // Hide the error messages
-    const keyError = e.target.closest('wa-tree-item').querySelector('#key-error')
-    const valueError = e.target.closest('wa-tree-item').querySelector('#value-error')
+    const keyError = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#key-error') as HTMLElement
+    const valueError = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#value-error') as HTMLElement
     keyError.hidden = true
     valueError.hidden = true
-    
-    const form = e.target.closest('wa-tree-item').querySelector('.input-validation-pattern');
-    
+
+    const form = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('.input-validation-pattern') as HTMLFormElement;
+
     // Wait for controls to be defined before attaching form listeners
     await Promise.all([
       customElements.whenDefined('wa-button'),
@@ -688,16 +703,16 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleClickDialogEdit(e, key, fullPath) {
+  handleClickDialogEdit(e: Event, key: string, fullPath: string) {
     e.preventDefault()
-    const treeItem = e.target.closest('wa-tree-item')
-    const newKey = treeItem.querySelector('#new-key').value
-    const section = treeItem.querySelector('section.key-value-container')
-    const inputField = section.querySelector(`input`)
-    let newValue = e.target.closest('wa-tree-item').querySelector('#new-value').value
-    const dialog = treeItem.querySelector(`dialog`)
+    const treeItem = (e.target as HTMLElement).closest('wa-tree-item')!
+    const newKey = (treeItem.querySelector('#new-key') as WithValue).value
+    const section = treeItem.querySelector('section.key-value-container')!
+    const inputField = section.querySelector('input')!
+    let newValue = ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-value') as WithValue).value
+    const dialog = treeItem.querySelector('dialog')!
     if (dialog.id === fullPath)  {
-      newValue = dialog.querySelector('#new-value').value
+      newValue = (dialog.querySelector('#new-value') as WithValue).value
     }
     inputField.value = newValue
 
@@ -705,12 +720,12 @@ class SourceTree extends LitElement {
     if (newKey !== key)  {
       this.removeItem(key, this.editedContent)
     }
-  
+
     // Trigger a re-render
     this.requestUpdate()
   }
 
-  updateEditedContent(e, key, parentObj, newValue, fullPath) {
+  updateEditedContent(e: Event, key: string, parentObj: JsonRecord, newValue: any, fullPath: string) {
     const paths = fullPath.split('.')
     newValue = newValue === "true" ? true : newValue === "false" ? false : newValue
     if (paths.length === 1) {
@@ -728,9 +743,9 @@ class SourceTree extends LitElement {
     }
   }
 
-  handleLazyLoad(e, value, fullPath, generate) {
-    const treeItem = e.target.closest('wa-tree-item[lazy]')
-    
+  handleLazyLoad(e: Event, value: any, fullPath: string, generate: (obj: JsonRecord, path?: string) => unknown) {
+    const treeItem = (e.target as HTMLElement).closest('wa-tree-item[lazy]') as WithLazy
+
     // Prevent re-rendering the same tree item
     if (treeItem.hasAttribute('data-processed')) return
 
@@ -745,9 +760,11 @@ class SourceTree extends LitElement {
 
     treeItem.setAttribute('data-processed', 'true')
   }
-  
+
 }
 
-customElements.define('lit-source-tree', SourceTree)
-
-export default SourceTree
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-source-tree': SourceTree;
+  }
+}
