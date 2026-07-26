@@ -6,6 +6,9 @@
     "@awesome.me/webawesome": "^3.10.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@fontsource-variable/crimson-pro": "^5.3.0",
+    "@fontsource-variable/quicksand": "^5.3.0",
+    "@fortawesome/fontawesome-free": "7.3.1",
     "@linaria/react": "^8.1.1",
     "@lit/react": "^1.0.8",
     "@monaco-editor/loader": "^1.7.0",
@@ -21,7 +24,7 @@
     "formik": "^2.4.9",
     "immer": "11.1.15",
     "lit": "^3.3.3",
-    "monaco-editor": "^0.56.0",
+    "monaco-editor": "^0.55.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-icons": "^5.7.0",
@@ -46,6 +49,7 @@
     "cross-env": "10.1.0",
     "jsdom": "^29.1.1",
     "oxlint": "^1.75.0",
+    "prettier": "^3.9.6",
     "typescript": "^7.0.2",
     "vite": "^8.1.5",
     "vitest": "^4.1.10",
@@ -79,9 +83,11 @@
     "build:win": "tsc -b && vite build",
     "lint": "oxlint src test",
     "preview": "vite preview",
-    "postinstall": "cp -R ./node_modules/monaco-editor/min/vs ./public/monaco-editor-core"
+    "disabledpostinstall": "cp -R ./node_modules/monaco-editor/min/vs ./public/monaco-editor-core",
+    "typecheck": "tsc --noEmit"
   },
   "allowScripts": {
-    "@swc/core@1.15.46": true
+    "@swc/core@1.15.46": true,
+    "fsevents@2.3.3": true
   }
 }
