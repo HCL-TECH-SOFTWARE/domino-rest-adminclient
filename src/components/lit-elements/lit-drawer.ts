@@ -1,12 +1,13 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/drawer/drawer.js';
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class Drawer extends LitElement {
-    static styles = css`
+@customElement('lit-drawer')
+export default class Drawer extends KeepLitElement {
+  static styles = css`
         wa-drawer::part(panel) {
             background: light-dark(#fff, #1e1e2e);
             color: light-dark(inherit, #e0e0e0);
@@ -31,32 +32,29 @@ class Drawer extends LitElement {
             display: flex;
             flex-direction: column;
         }
-    `
+    `;
 
-    static properties = {
-        label: { type: String },
-        open: { type: Boolean },
-        closeFn: { type: Function },
-        buttons: { type: Array },
-    };
-  
-    constructor() {
-      super()
-      this.label = "Drawer Label"
-      this.open = false
-      this.closeFn = () => {}
-      this.buttons = []
-    }
-  
-    render() {
-      return html`
-        <wa-drawer label="${this.label}" ?open="${this.open}" style="--size: 40vw;" @wa-after-hide="${this.closeFn}">
-            <slot></slot>
-        </wa-drawer>
-      `;
-    }
+  @property({ type: String }) label = 'Drawer Label';
+  @property({ type: Boolean }) open = false;
+  @property({ attribute: false }) closeFn: (...args: unknown[]) => void = () => {};
+  @property({ type: Array }) buttons: unknown[] = [];
+
+  render() {
+    return html`
+      <wa-drawer
+        label="${this.label}"
+        ?open="${this.open}"
+        style="--size: 40vw;"
+        @wa-after-hide="${this.closeFn}"
+      >
+        <slot></slot>
+      </wa-drawer>
+    `;
+  }
 }
 
-customElements.define('lit-drawer', Drawer);
-
-export default Drawer
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-drawer': Drawer;
+  }
+}

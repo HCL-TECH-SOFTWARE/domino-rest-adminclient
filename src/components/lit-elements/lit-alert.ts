@@ -1,20 +1,21 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
+import type { PropertyValues } from 'lit';
+import { customElement, property, state, query } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/callout/callout.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
-import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import '@awesome.me/webawesome/dist/components/callout/callout.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class Alert extends LitElement {
-  static properties = {
-    message: { type: String },
-    variant: { type: String },  // brand | success | warning | danger | neutral
-    heading: { type: String },
-    _visible: { type: Boolean, state: true },
-  };
- 
+/**
+ * Top-layer toast alert built on `<wa-callout>`.
+ * Tag: `lit-alert`. Exposed via `LitElements.tsx` as `LitAlert`.
+ *
+ * Uses the Popover API so it renders above `<dialog>`-based components
+ * (e.g. `wa-drawer`). Emits the standardized `alert-closed` event once it has
+ * fully dismissed.
+ */
+@customElement('lit-alert')
+export default class Alert extends KeepLitElement {
   static styles = css`
     /* Reset default popover UA styles and anchor top-right.
        Popover puts us in the top layer, which renders above <dialog> elements like wa-drawer. */
@@ -41,7 +42,7 @@ class Alert extends LitElement {
     :host(:not(:popover-open)) {
       display: none;
     }
- 
+
     .toast-wrapper {
       position: relative;
       min-width: 280px;
@@ -50,27 +51,27 @@ class Alert extends LitElement {
       opacity: 0;
       pointer-events: none;
     }
- 
+
     .toast-wrapper.visible {
       animation: slideIn 0.3s ease forwards;
       pointer-events: auto;
     }
- 
+
     .toast-wrapper.hiding {
       animation: slideOut 0.25s ease forwards;
       pointer-events: none;
     }
- 
+
     @keyframes slideIn {
       from { opacity: 0; transform: translateX(32px); }
       to   { opacity: 1; transform: translateX(0);    }
     }
- 
+
     @keyframes slideOut {
       from { opacity: 1; transform: translateX(0);    }
       to   { opacity: 0; transform: translateX(32px); }
     }
- 
+
     /* Close button — floats in the top-right corner of the callout */
     .close-btn {
       position: absolute;
@@ -91,12 +92,12 @@ class Alert extends LitElement {
       transition: opacity 0.15s ease, background 0.15s ease;
       z-index: 1;
     }
- 
+
     .close-btn:hover {
       opacity: 1;
       background: color-mix(in srgb, currentColor 12%, transparent);
     }
- 
+
     .close-btn svg {
       width: 14px;
       height: 14px;
@@ -105,19 +106,19 @@ class Alert extends LitElement {
       stroke-width: 2.5;
       stroke-linecap: round;
     }
- 
+
     /* Give the callout message room so it never slides under the X button */
     wa-callout::part(base),
     wa-callout::part(message),
     wa-callout::part(body) {
       padding-right: 2.5rem;
     }
- 
+
     .message {
       display: block;
       padding-right: 2rem;
     }
-    
+
     @media (prefers-color-scheme: dark) {
       .close-btn {
         color: #888;
@@ -128,15 +129,17 @@ class Alert extends LitElement {
       color: #888 !important;
     }
   `;
- 
-  constructor() {
-    super();
-    this.message  = '';
-    this.variant  = 'neutral';
-    this.heading = 'Network error!';
-    this._visible = false;
-    this._timer   = null;
-  }
+
+  @property({ type: String }) message = '';
+  @property({ type: String }) variant = 'neutral'; // brand | success | warning | danger | neutral
+  @property({ type: String }) heading = 'Network error!';
+
+  @state() private _visible = false;
+
+  private _timer: ReturnType<typeof setTimeout> | null = null;
+  private _movedToBody = false;
+
+  @query('.toast-wrapper') private _wrapper?: HTMLElement | null;
 
   connectedCallback() {
     super.connectedCallback();
@@ -145,16 +148,16 @@ class Alert extends LitElement {
       this.setAttribute('popover', 'manual');
     }
   }
- 
+
   /**
    * Show the alert for `duration` ms (default 1 000 — change to 5 000 for production).
    * Called externally by the notify() helper.
    */
-  show(message, variant = 'neutral', duration = 5000, heading) {
-    clearTimeout(this._timer);
+  show(message: string, variant = 'neutral', duration = 5000, heading?: string) {
+    clearTimeout(this._timer ?? undefined);
 
-    this.message  = message;
-    this.variant  = variant;
+    this.message = message;
+    this.variant = variant;
     if (heading !== undefined) {
       this.heading = heading;
     }
@@ -171,26 +174,33 @@ class Alert extends LitElement {
       if (typeof this.showPopover === 'function' && !this.matches(':popover-open')) {
         this.showPopover();
       }
-    } catch (_) { /* already open */ }
+    } catch (_) {
+      /* already open */
+    }
 
     this.updateComplete.then(() => {
       this._timer = setTimeout(() => this._hide(), duration);
     });
   }
- 
-  _hide() {
-    const wrapper = this.shadowRoot?.querySelector('.toast-wrapper');
+
+  private _hide() {
+    const wrapper = this._wrapper;
     const finish = () => {
       this._visible = false;
       try {
         if (typeof this.hidePopover === 'function' && this.matches(':popover-open')) {
           this.hidePopover();
         }
-      } catch (_) { /* not open */ }
-      this.dispatchEvent(new CustomEvent('alert-closed', { bubbles: true, composed: true }));
+      } catch (_) {
+        /* not open */
+      }
+      this.emit('alert-closed');
     };
 
-    if (!wrapper) { finish(); return; }
+    if (!wrapper) {
+      finish();
+      return;
+    }
 
     wrapper.classList.remove('visible');
     wrapper.classList.add('hiding');
@@ -203,18 +213,17 @@ class Alert extends LitElement {
       { once: true },
     );
   }
- 
-  _onClose() {
-    clearTimeout(this._timer);
+
+  private _onClose() {
+    clearTimeout(this._timer ?? undefined);
     this._hide();
   }
- 
+
   // Auto-show whenever the `message` attribute/property transitions to a non-empty value.
   // This lets React consumers just render <lit-alert message={msg} /> without manually calling show().
-  updated(changed) {
+  protected updated(changed: PropertyValues) {
     if (changed.has('_visible') && this._visible) {
-      const wrapper = this.shadowRoot?.querySelector('.toast-wrapper');
-      wrapper?.classList.add('visible');
+      this._wrapper?.classList.add('visible');
     }
     if (changed.has('message')) {
       const prev = changed.get('message');
@@ -223,7 +232,7 @@ class Alert extends LitElement {
       }
     }
   }
- 
+
   render() {
     return html`
       <div class="toast-wrapper">
@@ -246,6 +255,8 @@ class Alert extends LitElement {
   }
 }
 
-customElements.define('lit-alert', Alert);
-
-export default Alert
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-alert': Alert;
+  }
+}
