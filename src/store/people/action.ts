@@ -19,6 +19,9 @@ import { toggleAlert } from '../alerts/action';
 import { TOGGLE_DELETE_DIALOG } from '../dialog/types';
 import { toggleApplicationDrawer } from '../drawer/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('store/people');
 
 /**
  * action.ts provides the action methods for the People page
@@ -58,7 +61,7 @@ export function fetchPeople() {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error reading People: ${error.message}`);
+        log.error(`Error reading People: ${error.message}`);
         dispatch(
           toggleAlert(`Error reading People: ${error.message}`)
         );
@@ -66,7 +69,7 @@ export function fetchPeople() {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error reading People: ${err.message}`);
+        log.error(`Error reading People: ${err.message}`);
         dispatch(toggleAlert(`Error reading People: ${err.message}`));
       }
     }
@@ -153,7 +156,7 @@ export const addPeople = (peopleData: any) => {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error Creating People: ${error.message}`);
+        log.error(`Error Creating People: ${error.message}`);
         dispatch(
           toggleAlert(`Error Creating People: ${error.message}`)
         );
@@ -161,7 +164,7 @@ export const addPeople = (peopleData: any) => {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error Creating People: ${err.message}`);
+        log.error(`Error Creating People: ${err.message}`);
         dispatch(toggleAlert(`Error Creating People: ${err.message}`));
       }
     }
@@ -231,14 +234,14 @@ export function updatePeople(personId: string, peopleData: any) {
 
       // Use the Keep response error if it's available
       if (error.message) {
-        console.log(`Error Updating People: ${error.message}`);
+        log.error(`Error Updating People: ${error.message}`);
         dispatch(
           toggleAlert(`Error Updating People: ${error.message}`)
         );
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error Updating People: ${error}`);
+        log.error(`Error Updating People: ${error}`);
         dispatch(toggleAlert(`Error Updating People: ${error}`));
       }
     }
@@ -280,7 +283,7 @@ export function deletePeople(personId: string) {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error deleting in User: ${error.message}`);
+        log.error(`Error deleting in User: ${error.message}`);
         dispatch(
           toggleAlert(`Error deleting in User: ${error.message}`)
         );
@@ -288,7 +291,7 @@ export function deletePeople(personId: string) {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error deleting in User: ${err.message}`);
+        log.error(`Error deleting in User: ${err.message}`);
         dispatch(toggleAlert(`Error deleting in User: ${err.message}`));
       }
     }

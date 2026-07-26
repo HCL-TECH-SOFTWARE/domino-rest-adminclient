@@ -1,6 +1,9 @@
 // PKCE Implementation in JavaScript
 
 import { AlertManager } from "../../utils/common";
+import { getLogger } from "../../services/log-service";
+
+const log = getLogger("components/login/pkce");
 
 // Generate Code Verifier
 function dec2hex(dec) {
@@ -116,7 +119,7 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
         return data;
     })
     .catch(err => {
-        console.error(err);
+        log.error('OIDC callback failed', err);
         return { error: err.message }
     });
 
@@ -164,7 +167,7 @@ export async function refreshToken() {
             return { error: data.error || "Failed to refresh token" };
         }
     } catch (err) {
-        console.error(err);
+        log.error('Token refresh failed', err);
         localStorage.removeItem('user_token');
         AlertManager.showAlert("Invalid credentials. Going back to the login page.");
         window.location.reload();

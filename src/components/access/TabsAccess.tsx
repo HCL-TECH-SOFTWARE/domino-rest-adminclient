@@ -38,6 +38,9 @@ import { FiSave } from "react-icons/fi";
 import { getTheme } from '../../store/styles/action';
 import { Database } from '../../store/databases/types';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/access/TabsAccess');
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
@@ -255,7 +258,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         await saveRef.current();
       }
     } catch (e) {
-      console.error('Save failed:', e);
+      log.error('Save failed', e as Error);
     }
     setHasUnsavedChanges(false);
     pauseDirtyTracking();

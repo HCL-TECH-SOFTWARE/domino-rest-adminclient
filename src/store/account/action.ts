@@ -31,6 +31,9 @@ import { AnyAction } from 'redux';
 import { apiRequestWithRetry, notify } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
 import { checkForResponse } from '../../utils/common';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('store/account');
 
 export function setLoginError(error: boolean) {
   return {
@@ -102,17 +105,40 @@ export function renewToken() {
       return;
     }
 
-    const response = await
-      fetch(`${BASE_KEEP_API_URL}/auth/extend`, {
+    // Every failure below ends the same way: drop the session and let the user log
+    // in again. `renewToken` is dispatched once, from App.tsx's bootstrap, and the
+    // sibling branch there already calls `removeAuth()` when the stored token has
+    // expired — so a failed extend landing in the same place is consistent, and far
+    // better than the previous behaviour of putting `undefined` in the store.
+    let response: Response;
+    let newToken: { bearer?: string } | undefined;
+    try {
+      response = await fetch(`${BASE_KEEP_API_URL}/auth/extend`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${oldToken.bearer}`,
           'Content-Type': 'application/json'
         },
         body: localStorage.getItem('user_token'),
-      })
-    const data = await response.json()
-    const newToken = data;
+      });
+      // `checkForResponse` parses the body on both paths; it does not throw on !ok,
+      // so the status still has to be checked below.
+      newToken = await checkForResponse(response);
+    } catch (err) {
+      // Network failure, or a body that is not JSON at all.
+      log.warn('Token renewal request failed; signing out', err as Error);
+      dispatch(removeAuth());
+      return;
+    }
+
+    if (!response.ok || !newToken?.bearer) {
+      log.warn('Token renewal rejected; signing out', {
+        status: response.status,
+        hasBearer: Boolean(newToken?.bearer)
+      });
+      dispatch(removeAuth());
+      return;
+    }
 
     // Set token to account store
     dispatch({
@@ -122,7 +148,14 @@ export function renewToken() {
 
     // Apply new token on local storage
     localStorage.setItem('user_token', JSON.stringify(newToken));
-    emitTokenEvent(newToken)
+    // `emitTokenEvent` is declared `(token: string)`, but this and the other two call
+    // sites in this file all hand it the token *object* — and its only consumer,
+    // `showPages()`, interpolates what it receives straight into
+    // `Authorization: Bearer ${token}`, yielding `Bearer [object Object]`. That is a
+    // pre-existing bug (it type-checked only because those locals were `any`), not
+    // something P0-4 introduced. Behaviour is preserved here rather than changed
+    // under an unrelated fix; see the follow-ups in the PR description.
+    emitTokenEvent(newToken as unknown as string)
   };
 }
 
@@ -142,7 +175,9 @@ export function login(credentials: Credentials, successCallback: () => void) {
     const data = await checkForResponse(response)
 
     if (response.ok) {
-      console.log("Login successful, setting token and updating state.")
+      // debug, not info: auth-flow state is exactly the kind of thing that should not
+      // be sitting in a production console by default (P0-6).
+      log.debug('Login successful, setting token and updating state')
       const jwtData = data;
       localStorage.setItem('user_token', JSON.stringify(jwtData));
       emitTokenEvent(jwtData)
@@ -152,7 +187,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
       dispatch(setToken(jwtData));
       successCallback()
     } else {
-      console.log("Login failed, dispatching error state.")
+      log.debug('Login failed, dispatching error state')
       dispatch(setLoginError(true));
       dispatch(setErrorMessage(`${data.status} error: ${data.message}`));
       notify(`${data.message}`, 'danger');
@@ -256,14 +291,12 @@ export function showPages() {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(
-          `Error reading page configuration: ${error.statusText}`
-        );
+        log.error('Error reading page configuration', { statusText: error.statusText });
       }
 
       // Otherwise use the generic error
       else {
-        console.log(`Error reading page configuration: ${error.message}`);
+        log.error('Error reading page configuration', { message: error.message });
       }
     }
   };

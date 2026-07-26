@@ -19,6 +19,9 @@ import { getToken } from '../account/action';
 import { toggleAlert } from '../alerts/action';
 import { toggleApplicationDrawer } from '../drawer/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('store/peopleSelector');
 
 /**
  * action.ts provides the action methods for group members
@@ -63,7 +66,7 @@ export function fetchGroupMembers(currentRow: Array<any>) {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error reading Member: ${error.message}`);
+        log.error(`Error reading Member: ${error.message}`);
         dispatch(
           toggleAlert(`Error reading Member: ${error.message}`)
         );
@@ -71,7 +74,7 @@ export function fetchGroupMembers(currentRow: Array<any>) {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error reading Member: ${err.message}`);
+        log.error(`Error reading Member: ${err.message}`);
         dispatch(toggleAlert(`Error reading Member: ${err.message}`));
       }
     }
@@ -145,7 +148,7 @@ export const addMember = (membersData: any) => {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error in Adding Member: ${error.message}`);
+        log.error(`Error in Adding Member: ${error.message}`);
         dispatch(
           toggleAlert(`Error in Adding Member: ${error.message}`)
         );
@@ -153,7 +156,7 @@ export const addMember = (membersData: any) => {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error in Adding Member: ${err.message}`);
+        log.error(`Error in Adding Member: ${err.message}`);
         dispatch(toggleAlert(`Error in Adding Member: ${err.message}`));
       }
     }
@@ -213,7 +216,7 @@ export function removeMember(memberId: string) {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error in removing Member: ${error.message}`);
+        log.error(`Error in removing Member: ${error.message}`);
         dispatch(
           toggleAlert(`Error in removing Member: ${error.message}`)
         );
@@ -221,7 +224,7 @@ export function removeMember(memberId: string) {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error in removing Member: ${err.message}`);
+        log.error(`Error in removing Member: ${err.message}`);
         dispatch(toggleAlert(`Error in removing Member: ${err.message}`));
       }
     }
@@ -263,7 +266,7 @@ export function removeAllMembers(memberId: string) {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error in removing Members: ${error.message}`);
+        log.error(`Error in removing Members: ${error.message}`);
         dispatch(
           toggleAlert(`Error in removing Members: ${error.message}`)
         );
@@ -271,7 +274,7 @@ export function removeAllMembers(memberId: string) {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error in removing Members: ${err.message}`);
+        log.error(`Error in removing Members: ${err.message}`);
         dispatch(toggleAlert(`Error in removing Members: ${err.message}`));
       }
     }

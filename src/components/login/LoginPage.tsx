@@ -40,6 +40,9 @@ import { AlertManager, checkForResponse } from '../../utils/common';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { applyAppearance } from '../../services/theme-service';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/login/LoginPage');
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -262,7 +265,7 @@ const LoginPage = () => {
       })
       .catch((err) => {
         dispatch(toggleAlert(`Authentication failed`));
-        console.error(err);
+        log.error('Authentication failed', err as Error);
       })
   }
 
@@ -343,10 +346,10 @@ const LoginPage = () => {
         logInWithPassword(username, password);
       } else {
         if (usernameRef.current?.shadowRoot.querySelector('wa-input')) {
-          console.log("invalid username")
+          log.debug('Invalid username')
           usernameInput.setAttribute('data-user-invalid', username.length === 0)
         } else if (passwordRef.current?.shadowRoot.querySelector('wa-input')) {
-          console.log("invalid password")
+          log.debug('Invalid password')
           passwordInput.setAttribute('data-user-invalid', password.length === 0)
         }
       }

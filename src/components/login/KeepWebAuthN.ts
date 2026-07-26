@@ -8,6 +8,9 @@
  */
 
 import { base64urlEncode, base64urlDecode } from "./base64url-arraybuffer";
+import { getLogger } from "../../services/log-service";
+
+const log = getLogger("components/login/KeepWebAuthN");
 
 // Helper to sucessfully GET JSON, boiler plate
 const jsonGet = (path: string, bearer: any) => {
@@ -131,7 +134,7 @@ const jsonGet = (path: string, bearer: any) => {
             };
             return result;
           } else {
-            console.error(e);
+            log.error('Passkey authentication failed', e as Error);
             throw e;
           }
         });

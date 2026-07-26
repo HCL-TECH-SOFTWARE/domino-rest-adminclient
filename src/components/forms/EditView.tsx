@@ -25,6 +25,9 @@ import { apiRequestWithRetry } from '../../utils/api-retry';
 import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/forms/EditView');
 
 interface EditViewDialogProps {
   open: boolean;
@@ -421,7 +424,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         });
         setFetchedColumns(fetchedColumnsBuffer)
       } catch (error: any) {
-        console.error('Error fetching columns:', error);
+        log.error('Error fetching columns', error as Error);
         // Handle error appropriately
       } finally {
         dispatch(setLoading({ status: false }));

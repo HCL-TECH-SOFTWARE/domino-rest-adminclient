@@ -20,6 +20,9 @@ import { toggleAlert } from '../alerts/action';
 import { toggleApplicationDrawer } from '../drawer/action';
 import { toggleDeleteDialog } from '../dialog/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('store/groups');
 
 /**
  * action.ts provides the action methods for the Groups page
@@ -54,7 +57,7 @@ export function fetchGroups() {
     } catch (err: any) {
       // Use the Keep response error if it's available
       if (err.response && err.response.statusText) {
-        console.log(`Error reading Groups: ${err.response.statusText}`);
+        log.error(`Error reading Groups: ${err.response.statusText}`);
         dispatch(
           toggleAlert(`Error reading Groups: ${err.response.statusText}`)
         );
@@ -62,7 +65,7 @@ export function fetchGroups() {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error reading Groups: ${err.message}`);
+        log.error(`Error reading Groups: ${err.message}`);
         dispatch(toggleAlert(`Error reading Groups: ${err.message}`));
       }
     }
@@ -140,7 +143,7 @@ export function createGroup(_groupData: object) {
 
       // Use the Keep response error if it's available
       if (error.message) {
-        console.log(`Error creating Group: ${error.message}`);
+        log.error(`Error creating Group: ${error.message}`);
         dispatch(
           toggleAlert(`Error creating Group: ${error}`)
         );
@@ -148,7 +151,7 @@ export function createGroup(_groupData: object) {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error creating Group: ${err.message}`);
+        log.error(`Error creating Group: ${err.message}`);
         dispatch(toggleAlert(`Error creating Group: ${err.message}`));
       }
     }
@@ -198,7 +201,7 @@ export function updateGroup(groupId: string, groupData: any) {
 
       // Use the Keep response error if it's available
       if (error.message) {
-        console.log(`Error updating Group: ${error.message}`);
+        log.error(`Error updating Group: ${error.message}`);
         dispatch(
           toggleAlert(`Error updating Group: ${error}`)
         );
@@ -206,7 +209,7 @@ export function updateGroup(groupId: string, groupData: any) {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error updating Group: ${err.message}`);
+        log.error(`Error updating Group: ${err.message}`);
         dispatch(toggleAlert(`Error updating Group: ${err.message}`));
       }
     }
@@ -250,7 +253,7 @@ export function deleteGroup(groupId: string) {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error deleting Group: ${error.message}`);
+        log.error(`Error deleting Group: ${error.message}`);
         dispatch(
           toggleAlert(`Error deleting Group: ${error.message}`)
         );
@@ -258,7 +261,7 @@ export function deleteGroup(groupId: string) {
 
       // Otherwise use the generic error
       else {
-        console.log(`Error deleting Group: ${err.message}`);
+        log.error(`Error deleting Group: ${err.message}`);
         dispatch(toggleAlert(`Error deleting Group: ${err.message}`));
       }
     }

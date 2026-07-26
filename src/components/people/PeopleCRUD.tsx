@@ -39,6 +39,9 @@ import {
 } from '../../styles/CommonStyles';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/people/PeopleCRUD');
 
 /**
  * PeopleCRUD.tsx provides support for CRUD Operations
@@ -267,11 +270,11 @@ const PeopleCRUD: React.FC = () => {
       const error = JSON.parse(err)
       // Use the Keep response error if it's available
       if (err.response && err.response.statusText) {
-        console.log(`Error in reading user: ${error.statusText}`);
+        log.error('Error in reading user', { statusText: error.statusText });
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error in reading user: ${error.message}`);
+        log.error('Error in reading user', { message: error.message });
       }
     }
   };
@@ -329,11 +332,11 @@ const PeopleCRUD: React.FC = () => {
       const error = JSON.parse(err)
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error in viewing user: ${error.statusText}`);
+        log.error('Error in viewing user', { statusText: error.statusText });
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error in viewing user: ${error.message}`);
+        log.error('Error in viewing user', { message: error.message });
       }
     }
   };

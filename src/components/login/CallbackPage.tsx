@@ -7,6 +7,9 @@ import { deepEqual } from '../../utils/common';
 import HomeElement from '../home/HomeElement';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/login/CallbackPage');
 
 const CallbackPage: React.FC = () => {
   const [tokenResponse, setTokenResponse] = useState<any>({})
@@ -29,7 +32,7 @@ const CallbackPage: React.FC = () => {
           'not-before-policy': notBeforePolicy,
         }
         if (userToken.error) {
-          console.error('Fetched token error:', userToken.error)
+          log.error('Fetched token error', { error: userToken.error })
           setDisplayText("Error fetching token. Please try again.")
         } else {
           localStorage.setItem('user_token', JSON.stringify(userToken))
@@ -45,7 +48,7 @@ const CallbackPage: React.FC = () => {
       getTokenResponse()
     } else if (error) {
       setDisplayText("Error authenticating. Please try again.")
-      console.error('Failed to initialize authorization request:', error)
+      log.error('Failed to initialize authorization request', { error })
     }
   }, [dispatch, navigate])
 
