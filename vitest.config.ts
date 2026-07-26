@@ -32,9 +32,9 @@ export default defineConfig({
     environmentOptions: {
       jsdom: { url: 'http://localhost/admin/ui' }, // == old jest testEnvironmentOptions.url
     },
-    setupFiles: ['./src/setupTests.ts'],
+    setupFiles: ['./test/setupTests.ts'],
     css: false, // ignore CSS/Linaria virtual modules (replaces __mocks__/styleMock.js)
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['test/**/*.{test,spec}.{ts,tsx}'],
     clearMocks: true, // reset mock history between tests (replaces jest.clearAllMocks)
     reporters: process.env.CI
       ? ['default', ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }]]
@@ -46,10 +46,8 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.d.ts',
-        'src/**/*.test.{ts,tsx}',
         'src/**/types.ts', // pure type/const modules
         'src/index.tsx',
-        'src/test-utils/**',
         // lit-source is a 752-line interactive tree/source editor (context
         // menus, drag, dialogs, validation). It is covered at the API level
         // by lit-source.test.ts, but exhaustive unit coverage in jsdom is
