@@ -202,7 +202,17 @@ Removed in the process: `jest`, `@types/jest`, `jest-environment-jsdom`, `@swc/j
 **Sonar wiring is unchanged in shape:** `sonar.testExecutionReportPaths` ←
 `coverage/sonar-report.xml` (now from `vitest-sonar-reporter`),
 `sonar.javascript.lcov.reportPaths` ← `coverage/lcov.info` (now from v8 instead of
-Istanbul). No Sonar server change was required.
+Istanbul).
+
+> ⚠️ **But nothing consumes either file.** Verified 2026-07-27: no `sonar-project.properties`
+> exists, none of the three GitHub Actions workflows (`pr_check`, `publish`,
+> `push-snapshot`) invokes a scanner, and `pom.xml` has no Sonar configuration. Every CI
+> run therefore writes a `coverage/sonar-report.xml` that is read by no one. Either wire
+> up an analysis step (see §B3) or drop `vitest-sonar-reporter` and the reporter branch in
+> `vitest.config.ts` — carrying dead reporting config invites the assumption that quality
+> gates are being enforced somewhere when they are not. The **enforcement that actually
+> exists today is the `vitest.config.ts` threshold block**, and it is doing real work
+> (§0.2).
 
 ---
 
@@ -293,9 +303,13 @@ demanding new work. Per-directory gates hold the already-covered pure code to a 
 | After Phase 2 | 40 % | 90 % | 95 % | 85 % | 85 % |
 | Steady state | +2 %/PR toward ~55 % | 90 % | 95 % | 90 % | 85 % |
 
-Keep the Sonar **Quality Gate on New Code** (e.g. "coverage on new code ≥ 80 %") as the
-real enforcement for incoming work — it holds every PR to a high bar while the legacy
-baseline catches up. Sonar reads `coverage/lcov.info`.
+A Sonar **Quality Gate on New Code** (e.g. "coverage on new code ≥ 80 %") would be the
+ideal enforcement for incoming work — it holds every PR to a high bar while the legacy
+baseline catches up, reading `coverage/lcov.info`. **This does not exist today** (§A8):
+no scanner runs in CI. Until one does, the per-directory thresholds above are the only
+enforcement, so keep ratcheting them — and prefer *adding* a directory gate when a new
+area gets covered over nudging the global floor, since a directory gate is what catches a
+single untested file (which is precisely how §0.2 was caught).
 
 > **Ratchet hygiene:** `7594672` is the cautionary tale. A 538-line component landed with
 > no test and the gate caught it — but only *after* merge, because the same commit also
@@ -335,6 +349,7 @@ baseline catches up. Sonar reads `coverage/lcov.info`.
 | C6 | Phase 2 — React component smoke tests, starting with the presentational leaves | 🟡 TODO | M |
 | C7 | Raise the ratchet per the §B3 schedule as each of the above lands | 🟡 TODO | S |
 | C8 | Split `tsconfig` so `npm run build` stops type-checking `test/` (report 00 P1-9) | 🟡 TODO | S |
-| C9 | Investigate the 10 s "Vite server won't exit" tail on every run | 🟢 nice-to-have | S |
+| C9 | Resolve the dead Sonar reporting (§A8): wire a scanner into CI, or drop `vitest-sonar-reporter` | 🟡 TODO | S |
+| C10 | Investigate the 10 s "Vite server won't exit" tail on every run | 🟢 nice-to-have | S |
 
 _For unrelated code-quality findings, see `reports/00-code-quality.md`._
