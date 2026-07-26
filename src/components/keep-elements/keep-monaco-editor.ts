@@ -13,12 +13,40 @@ import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 import monacoStyles from 'monaco-editor/min/vs/editor/editor.main.css?inline';
-import * as prettier from 'prettier/standalone';
-import * as prettierPluginBabel from 'prettier/plugins/babel';
-import * as prettierPluginEstree from 'prettier/plugins/estree';
 import { EDITOR_THEME_ID, EDITOR_TOKENS, buildEditorTheme } from '../../services/editor-theme.js';
 import { resolveWaColors } from '../../services/wa-color.js';
 import { resolveWaTypography } from '../../services/wa-typography.js';
+
+/**
+ * Prettier, loaded on first use rather than at module scope.
+ *
+ * Two reasons. It is a runtime dependency of this element but weighs ~1 MB, and a
+ * static import puts all of it in the entry chunk even for the many sessions that
+ * never open a JavaScript buffer — only `language === 'javascript'` ever formats.
+ * And it is used in exactly one function, on paths that are already async.
+ *
+ * The promise itself is memoised, so concurrent callers share one download and
+ * later calls resolve immediately.
+ */
+function fetchPrettier() {
+  return Promise.all([
+    import('prettier/standalone'),
+    import('prettier/plugins/babel'),
+    import('prettier/plugins/estree')
+  ]).then(([standalone, babel, estree]) => ({
+    format: standalone.format,
+    // Inferred, not annotated: these are plugin *namespaces*, and spelling out the
+    // type would mean casting through `unknown` to satisfy Prettier's `Plugin`.
+    plugins: [babel, estree]
+  }));
+}
+
+let prettierBundle: ReturnType<typeof fetchPrettier> | undefined;
+
+function loadPrettier() {
+  prettierBundle ??= fetchPrettier();
+  return prettierBundle;
+}
 
 self.MonacoEnvironment = {
   getWorker(_: any, label: string) {
@@ -73,9 +101,10 @@ export default class MonacoEditor extends LitElement {
       // Wrap in parentheses to make it a valid expression for Prettier
       const codeToFormat = isCouchDBFunction ? `(${code})` : code;
 
-      const formatted = await prettier.format(codeToFormat, {
+      const { format, plugins } = await loadPrettier();
+      const formatted = await format(codeToFormat, {
         parser: 'babel',
-        plugins: [prettierPluginBabel, prettierPluginEstree],
+        plugins,
         semi: true,
         singleQuote: false,
         tabWidth: 2,
