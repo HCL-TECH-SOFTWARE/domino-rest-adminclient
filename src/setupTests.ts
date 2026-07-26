@@ -44,6 +44,15 @@ if (!HTMLDialogElement.prototype.close) {
   HTMLDialogElement.prototype.close = vi.fn();
 }
 
+// jsdom does not implement the Popover / top-layer API used by lit-alert.
+if (!HTMLElement.prototype.showPopover) {
+  HTMLElement.prototype.showPopover = function () {};
+  HTMLElement.prototype.hidePopover = function () {};
+  HTMLElement.prototype.togglePopover = function () {
+    return false;
+  };
+}
+
 // Some modules read localStorage at import time (e.g. store/styles/reducer.ts).
 // jsdom does not always expose it before module evaluation, so provide a stub.
 if (typeof globalThis.localStorage === 'undefined' || globalThis.localStorage == null) {

@@ -1,6 +1,9 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class ButtonNo extends LitElement {
+@customElement('lit-button-no')
+export default class ButtonNo extends KeepLitElement {
   static styles = css`
     button {
         padding: 6px 16px;
@@ -26,14 +29,7 @@ class ButtonNo extends LitElement {
     }
   `;
 
-  static properties = {
-    text: { type: String },
-  };
-
-  constructor() {
-    super()
-    this.text = ''
-  }
+  @property({ type: String }) text = '';
 
   render() {
     return html`
@@ -42,6 +38,8 @@ class ButtonNo extends LitElement {
   }
 }
 
-customElements.define('lit-button-no', ButtonNo);
-
-export default ButtonNo
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-button-no': ButtonNo;
+  }
+}
