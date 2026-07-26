@@ -7,6 +7,7 @@ Once you have Domino Rest API, you can access it on http://localhost:8880/admin/
 Check Contributing for details on how to contribute.
 
 ## 📔 Documentation
+
 - [Using Domino REST API Admin Client](https://opensource.hcltechsw.com/Domino-rest-api/references/usingdominorestapi/administrationui.html)
 - [Contributing](/CONTRIBUTING.md)
 
@@ -14,12 +15,12 @@ Check Contributing for details on how to contribute.
 
 Domino Rest Admin Client uses Maven to build the WebJar. As such, the following dependencies are needed:
 
-| Dependency | Version |
-| --- | --- |
-| Java | 1.8 |
-| maven-clean-plugin | 3.1.0 |
-| maven-jar-plugin | 3.2.2 |
-| exec-maven-plugin | 3.0.0 |
+| Dependency         | Version |
+| ------------------ | ------- |
+| Java               | 1.8     |
+| maven-clean-plugin | 3.1.0   |
+| maven-jar-plugin   | 3.2.2   |
+| exec-maven-plugin  | 3.0.0   |
 
 All these dependencies are listed in the pom.xml file.
 
@@ -35,32 +36,38 @@ The config.json file contains the configurations for Admin UI and the paths that
 
 We are now in the process of slowly migrating our current components to Lit 3.0 web components. To build a custom Lit element, please follow the following steps:
 
-1. Place your Lit element file in *src/components/lit-elements*. For example, we currently have Lit element with the tag name `lit-autocomplete`, under the class name `Autocomplete`.
+1. Place your Lit element file in _src/components/lit-elements_. For example, we currently have Lit element with the tag name `lit-autocomplete`, under the class name `Autocomplete`.
+
 ```javascript
 import { LitElement, html, css } from 'lit';
 
 class Autocomplete extends LitElement {
-    // definition of custom lit element goes here
+  // definition of custom lit element goes here
 }
 
-customElements.define('lit-autocomplete', Autocomplete)
+customElements.define('lit-autocomplete', Autocomplete);
 
-export default Autocomplete
+export default Autocomplete;
 ```
-2. Add your Lit element's React counterpart in *src/components/lit-elements/LitElements.tsx* using the `createComponent` method (see [documentation](https://lit.dev/docs/frameworks/react/#createcomponent) for details). For example:
+
+2. Add your Lit element's React counterpart in _src/components/lit-elements/LitElements.tsx_ using the `createComponent` method (see [documentation](https://lit.dev/docs/frameworks/react/#createcomponent) for details). For example:
+
 ```typescript
 export const LitAutocomplete = createComponent({
   tagName: 'lit-autocomplete',
   elementClass: Autocomplete,
-  react: React,
+  react: React
 });
 ```
+
 3. From here, you will be able to import the Lit element in a component as another React component:
+
 ```javascript
-import { LitAutocomplete } from '../lit-elements/LitElements'
+import { LitAutocomplete } from '../lit-elements/LitElements';
 ```
 
 ### 🗝️ Accessing Values
+
 To access the Lit element's properties, create a reference using React's `useRef` hook and pass it onto the Lit element as a prop.
 
 ```javascript
@@ -74,17 +81,22 @@ const autocompleteRef = useRef<any>(null)
 The properties are accessible through the Lit element's shadow root.
 
 ```javascript
-autocompleteRef.current.shadowRoot.querySelector('input')
+autocompleteRef.current.shadowRoot.querySelector('input');
 ```
 
 ### 👠 Shoelace
 
+!!! warning
+Shoelace has been deprecated in favour of LIT and webawesome
+
 As part of our move to web components, we are also using Shoelace, which is built under Lit, for more standard web components. Shoelace has an icon and an icon button; however, we couldn't use import the icons through reference, so we include them in the `IMG_DIR` (check config.dev).
 
 To use icons with Shoelace, add your icon SVG or PNG to the `IMG_DIR`, and reference that path in the `src` attribute of the Shoelace element. For example:
+
 ```javascript
 <sl-icon src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
 ```
+
 See the [Shoelace documentation](https://shoelace.style/components/icon/#custom-icons) for more details on custom icons.
 
 ## 🛠️ Building
@@ -101,4 +113,4 @@ To build, run the following from the main project directory:
 
 ## License
 
-Copyright 2022-25, HCL America, Inc. under Apache License.
+Copyright 2022, 2026, HCL America, Inc. under Apache 2.0 License.
