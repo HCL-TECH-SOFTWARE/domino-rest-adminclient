@@ -104,7 +104,7 @@ export function saveGroupsList(groupRows: any) {
  *
  * @param groupData the values needed for the Create
  */
-export function createGroup(groupData: object) {
+export function createGroup(_groupData: object) {
   return async (dispatch: Dispatch) => {
     try {
       const { response, data } = await apiRequestWithRetry(() =>

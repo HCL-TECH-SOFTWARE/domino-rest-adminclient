@@ -36,7 +36,7 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
 }) => {
   const [context] = useContext(AccessContext) as any;
   const handleClick = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     item: ItemProp
   ) => {
     const section = Object.keys(context);

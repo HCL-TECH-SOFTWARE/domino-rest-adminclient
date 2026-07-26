@@ -18,10 +18,6 @@ export const SET_VALUE = 'SET_VALUE';
 
 export const TOGGLE_DETAILS_LOADING = 'TOGGLE_DETAILS_LOADING';
 
-interface SetSet {
-  type: typeof SET_VALUE;
-}
-
 interface ToggleDetailsLoading {
   type: typeof TOGGLE_DETAILS_LOADING;
 }

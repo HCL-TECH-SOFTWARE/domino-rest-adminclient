@@ -27,7 +27,7 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
       </span>
       <ExtraFlex className='flex gap-10'>
         {databases.length > 0 ? (
-          mapSchemas(databases, 'schemas').map((database: any, index: any) => {
+          mapSchemas(databases, 'schemas').map((database: any) => {
             return (
               <LitNsfCard
                 database={database}

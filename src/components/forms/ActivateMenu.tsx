@@ -30,7 +30,7 @@ interface ActivateMenuProps {
 
 
 
-const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, forms, nsfPath, dbName, schemaData, setSchemaData, formList, toggleActivate }) => {
+const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, schemaData, setSchemaData, formList, toggleActivate }) => {
   const [active, setActive] = useState(form.formModes.length > 0 ? true : false);
   const [open, setOpen] = useState(false)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)

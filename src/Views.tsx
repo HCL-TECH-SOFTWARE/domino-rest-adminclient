@@ -46,7 +46,7 @@ interface ViewsProps {
   open: boolean;
 }
 
-const Views: React.FC<ViewsProps> = ({ open }) => {
+const Views: React.FC<ViewsProps> = () => {
   const dispatch = useDispatch();
 
   const path = useLocation();

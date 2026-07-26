@@ -77,7 +77,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
         </span>
         <ExtraFlex className='flex flex-row gap-5 flex-wrap'>
           {
-            mappedDatabases.map((database: any, index: number) => {
+            mappedDatabases.map((database: any) => {
               return (
                 <LitNsfCard
                   key={database.fileName}

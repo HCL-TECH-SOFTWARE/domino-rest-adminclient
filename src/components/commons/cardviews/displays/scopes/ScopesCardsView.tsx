@@ -4,13 +4,9 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React from 'react';
 import { ExtraFlex } from '../../../../flex';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
-import { Database } from '../../../../../store/databases/types';
-import { setDbIndex } from '../../../../../store/databases/action';
-import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { SchemasMainContainer } from './ScopeStyles';
 import { LitDefaultCard } from '../../../../lit-elements/LitElements';
 import appIcons from '../../../../../styles/app-icons';
@@ -24,32 +20,6 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
   databases,
   openScope
 }) => {
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const setOption = useState({})[1];
-
-  const [selectedDB, setSelectedDB] = useState('');
-  const dispatch = useDispatch();
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  const loadDatabase = (
-    event: React.MouseEvent<HTMLElement>,
-    database: Database
-  ) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
-    setOption(database);
-    setSelectedDB(database.schemaName);
-
-    // Set Selected Database Index to Redux Store
-    dispatch(
-      setDbIndex(
-        getDatabaseIndex(databases, database.schemaName, database.nsfPath)
-      )
-    );
-  };
 
   return (
     <SchemasMainContainer>

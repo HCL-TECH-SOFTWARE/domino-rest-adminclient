@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useLocation } from 'react-router-dom';

@@ -25,12 +25,6 @@ import NsfCard from './lit-nsf-card';
 import Tooltip from './lit-tooltip';
 import Checkbox from './lit-checkbox';
 
-interface EditedContentChangedEvent extends Event {
-  detail: {
-    value: any; // Replace 'any' with the actual type of the value
-  };
-}
-
 export const LitAutocomplete = createComponent({
   tagName: 'lit-autocomplete',
   elementClass: Autocomplete,

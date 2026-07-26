@@ -29,9 +29,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "moduleDetection": "force",
-    /* TODO: Set the next 2 to true when ready */
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
   },
   "include": [
     "src",

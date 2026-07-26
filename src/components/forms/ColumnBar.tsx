@@ -55,10 +55,6 @@ interface ColumnBarProps {
 }
 
 const ColumnBar: React.FC<ColumnBarProps> = ({
-  viewName,
-  dbName,
-  nsfPathDecode,
-  scopes,
   columns,
   chooseColumn
 }) => {
@@ -66,7 +62,7 @@ const ColumnBar: React.FC<ColumnBarProps> = ({
     <div>
         <ColumnBarContainer>
             <AllColumnsList>
-              {columns.map((column: any, index: any) => (
+              {columns.map((column: any) => (
                   <div className="listitem" onClick={chooseColumn(column)}>
                     <span className="block columnName">{column.name}</span>
                     <span className="block columnDetails">{`Column Position ${column.position}`}</span>

@@ -548,7 +548,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
         makeMode({ modeName: 'default' }),
         makeMode({ modeName: 'readOnly' }),
       ];
-      const { setHasUnsavedChanges, saveRef } = renderTabsAccess({ modes });
+      const { setHasUnsavedChanges } = renderTabsAccess({ modes });
 
       act(() => { vi.advanceTimersByTime(600); });
 

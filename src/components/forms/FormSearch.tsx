@@ -7,7 +7,6 @@ import React from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import { getTheme } from '../../store/styles/action';
 import {
   FormSearchContainer,
   SearchContainer,

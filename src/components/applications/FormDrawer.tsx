@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { FormikProps } from 'formik';
 import { AppState } from '../../store';
 import AppForm from './AppForm';
@@ -33,7 +33,6 @@ interface FormDrawerProps {
  */
 const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
   const { applicationDrawer } = useSelector((state: AppState) => state.drawer);
-  const dispatch = useDispatch();
 
   return (
     <LitDrawer open={applicationDrawer} label="Application Form">

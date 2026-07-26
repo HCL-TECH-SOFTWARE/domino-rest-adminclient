@@ -2,7 +2,6 @@ import { html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import { IMG_DIR } from '../../config.dev';
 import { KeepLitElement } from './keep-lit-element';
 
 @customElement('lit-dialog-header')

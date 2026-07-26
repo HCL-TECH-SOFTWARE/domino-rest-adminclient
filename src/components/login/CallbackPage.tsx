@@ -4,7 +4,6 @@ import { loginWithPkce } from '../../store/account/action';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { deepEqual } from '../../utils/common';
-import { Home } from '@mui/icons-material';
 import HomeElement from '../home/HomeElement';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { cleanupLit, mountLit } from '../../test-utils/lit';
 import './lit-textform';
 import type TextForm from './lit-textform';

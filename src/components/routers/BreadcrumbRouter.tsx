@@ -54,7 +54,6 @@ const BreadcrumbRouter: React.FC = () => {
   const { guardedNavigate } = useNavigationGuard();
   const { pathname } = location;
 
-  const activeColor = getTheme(themeMode).breadcrumb.lastActiveColor;
   const pathnameArr = pathname && pathname.split('/');
   let breadcrumbTitle;
   if (pathname.startsWith('/schema')) {

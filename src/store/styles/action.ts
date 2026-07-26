@@ -12,8 +12,6 @@ import {
   SWITCH_THEME,
 } from './types';
 import {
-  DARK_PRIMARY_COLOR,
-  DARK_SECONDARY_COLOR,
   HCL_BASE_COLOR,
   KEEP_ADMIN_BASE_COLOR,
 } from '../../config.dev';

@@ -27,10 +27,8 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
   );
 
   const { deleteDialog } = useSelector((state: AppState) => state.dialog);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  
+
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
-  const setOption = useState({})[1];
   const navigate = useNavigate();
 
   const [selectedDB, setSelectedDB] = useState('');
@@ -46,8 +44,6 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
       setSchemasWithScopes(schemasScopes);
     }
   }, [scopes]);
-
-  const open = Boolean(anchorEl);
 
   const openSchema = (database: any) => {
     navigate(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);

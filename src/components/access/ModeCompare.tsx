@@ -305,7 +305,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
       return formulaEqual
     }
 
-    function getFieldKeys(selectedModes: Array<string>, fieldName: string) {
+    function getFieldKeys(selectedModes: Array<string>, _fieldName: string) {
       let fieldKeys: any[];
       fieldKeys = [];
 
@@ -401,7 +401,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
     }
   }, [selectedModeNames, allModes]);
 
-  const handleModeChange = (event: any, currentModeName: string, index: number) => {
+  const handleModeChange = (event: any, _currentModeName: string, index: number) => {
     let newMode = event.target.value;
     let selectedModesBuffer = selectedModeNames.map((mode: string, idx: number) => {
       if (idx === index) {
@@ -688,7 +688,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                                   allModes[getFormModeIndex(allModes, modeName)].fields[
                                     getFieldIndex(allModes[getFormModeIndex(allModes, modeName)].fields, fieldName)
                                   ]
-                                ).map((key: any, idx: number) => {
+                                ).map((key: any) => {
                                   return (
                                     <>
                                       {!(key === 'name' || key === 'externalName') && (

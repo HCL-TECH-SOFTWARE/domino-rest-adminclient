@@ -177,7 +177,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   // Pending action pattern: when user tries to switch mode / clone / add
   // while dirty, we stash the action and show a dialog.
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
-  const [pendingModeName, setPendingModeName] = useState<string | null>(null);
+  const [, setPendingModeName] = useState<string | null>(null);
 
   // Ref mirror of pendingAction — immune to closure staleness across async
   // boundaries (e.g. after await saveRef.current()).  Handlers read from
@@ -756,25 +756,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
 
     // Open the Test Formula Form drawer
     dispatch(toggleApplicationDrawer());
-  };
-
-  const handleChange = (event: React.ChangeEvent<any>) => {
-    const value =
-      event.target.name === 'computeWithForm'
-        ? event.target.checked
-        : event.target.value;
-
-    // map the value in object
-    const formulaObj = {
-      formulaType: 'domino',
-      formula: value,
-    };
-
-    setScripts({
-      ...scripts,
-      [event.target.name]:
-        event.target.name === 'computeWithForm' ? value : formulaObj,
-    });
   };
 
   /**

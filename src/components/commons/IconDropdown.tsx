@@ -7,11 +7,8 @@
 import { Button, Menu, MenuItem } from '@mui/material';
 import appIcons from '../../styles/app-icons';
 import { InputContainer } from '../../styles/CommonStyles';
-import { getTheme } from '../../store/styles/action';
 import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../store';
 
 type IconDropdownProps = {
     handleSelectIcon: (event: React.MouseEvent<HTMLElement>) => void;
@@ -30,10 +27,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
     handleClose,
     selectedIndex,
     handleMenuItemClick,
-    size = 98,
 }) => {
-    const { themeMode } = useSelector((state: AppState) => state.styles);
-
     return (
         <InputContainer>
             <Button

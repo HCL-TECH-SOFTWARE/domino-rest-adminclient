@@ -7,7 +7,6 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from '@linaria/react';
 import { useDispatch, useSelector } from 'react-redux';
-import Box from '@mui/material/Box';
 import { MenuItem, CircularProgress, Select } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
@@ -159,28 +158,6 @@ const DivSpacer = styled.div`
 
 const anchorEmoji = '⚓';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  dir?: string;
-  index: any;
-  value: any;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-      {...other}>
-      {value === index && <Box>{children}</Box>}
-    </div>
-  );
-}
-
 interface FieldsProps {
   fields: any;
   moveTo: (item: any, from: string) => void;
@@ -193,7 +170,7 @@ interface FieldsProps {
   setTabValue: (index: number) => void;
 }
 
-const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, formName, tabValue, setTabValue }) => {
+const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, setTabValue }) => {
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
@@ -230,7 +207,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, addField, schemaName, nsfPath, 
 
   const { activeFields, newForm } = useSelector((state: AppState) => state.databases);
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [, setAnchorEl] = useState<null | HTMLElement>(null);
   const initialFormState = formsInDb.length > 0 ? formName : 'Not Selected';
   const [currentFormValue, setCurrentFormValue] = useState(initialFormState || 'N/A');
   const [searchFieldKey, setSearchFieldKey] = useState('');
