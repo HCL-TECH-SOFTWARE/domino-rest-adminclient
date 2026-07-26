@@ -712,6 +712,17 @@ const FormsContainer = () => {
   );
 };
 
+/**
+ * Orders forms by name, tolerating entries that have none.
+ *
+ * Exported for test: it is the logic that the bare `catch {}` below used to hide.
+ */
+export function compareFormNames(a: { formName?: string }, b: { formName?: string }): number {
+  return String(a.formName ?? '')
+    .toLowerCase()
+    .localeCompare(String(b.formName ?? '').toLowerCase());
+}
+
 function loadUnconfiguredForms(
   apiData: {
     forms: Array<any>,
@@ -730,12 +741,14 @@ function loadUnconfiguredForms(
     });
   });
 
-  // Sort the form names alphabetically
-  try {
-    allForms.sort((a, b) =>
-      a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1
-    );
-  } catch {}
+  // Sort the form names alphabetically.
+  //
+  // This used to be wrapped in a bare `catch {}`: a design element with no `@name`
+  // makes `formName` undefined, `undefined.toLowerCase()` throws, and Array#sort
+  // propagates that out — so one nameless form left the *entire* list unsorted, with
+  // nothing logged. `compareFormNames` cannot throw, so the failure is removed rather
+  // than hidden or merely logged.
+  allForms.sort(compareFormNames);
 
   // Save Forms Data
   setData(apiData.forms);
