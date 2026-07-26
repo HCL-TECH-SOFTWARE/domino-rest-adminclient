@@ -1,11 +1,12 @@
-import { LitElement, html, css } from 'lit';
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
+import { html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { IMG_DIR } from '../../config.dev';
+import { KeepLitElement } from './keep-lit-element';
 
-class DialogHeader extends LitElement {
+@customElement('lit-dialog-header')
+export default class DialogHeader extends KeepLitElement {
   static styles = css`
     section {
       display: flex;
@@ -39,10 +40,6 @@ class DialogHeader extends LitElement {
     }
   `;
 
-  constructor() {
-    super()
-  }
-
   render() {
     return html`
       <section>
@@ -53,6 +50,8 @@ class DialogHeader extends LitElement {
   }
 }
 
-customElements.define('lit-dialog-header', DialogHeader);
-
-export default DialogHeader
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-dialog-header': DialogHeader;
+  }
+}
