@@ -135,12 +135,12 @@ time coverage has been visible on a PR without downloading an artifact — and i
 | Setup file | `src/setupTests.ts` existed but was **never loaded** | **`test/setupTests.ts`, wired via `setupFiles`** | `vitest.config.ts` |
 | Test location | 4 files scattered under `src/` | **top-level `test/` tree** mirroring `src/` | `4d7ab3b` |
 | Test helpers | none | **`test/test-utils/lit.ts`** + **`test/test-utils/monaco.ts`** | §A10 |
-| Sonar | `jest-sonar-reporter` | **`vitest-sonar-reporter` 3.0** → `coverage/sonar-report.xml` (CI only, **consumed by nobody**) | `vitest.config.ts` |
+| Sonar | `jest-sonar-reporter` | **`vitest-sonar-reporter` 3.0** → `coverage/sonar-report.xml` (CI only), **now consumed by a real scanner** (§C9) | `vitest.config.ts`, `sonar-project.properties` |
 | Coverage | Istanbul via `--coverage` | **`@vitest/coverage-v8`** → `text`, `lcov`, `html`, `json-summary` | `vitest.config.ts` |
 | Thresholds | none | **global floor + 3 per-directory gates**, all passing | `vitest.config.ts` |
 | Test files / tests | 4 / 34 | **63 / 636** | `npm test` |
 | Global line coverage | ~0 % | **32.44 %** | `coverage/coverage-summary.json` |
-| CI | `build` + `test` | **`lint` → `build` → `test` → `publish coverage summary`** on Node 24 | `.github/workflows/pr_check.yml` |
+| CI | `build` + `test` | **`lint` → `build` → `test` → `publish coverage summary` → `Sonar scan`** on Node 24 | `.github/workflows/pr_check.yml` |
 
 ### Scripts as shipped
 
@@ -231,15 +231,23 @@ Removed in the process: `jest`, `@types/jest`, `jest-environment-jsdom`, `@swc/j
 `sonar.javascript.lcov.reportPaths` ← `coverage/lcov.info` (now from v8 instead of
 Istanbul).
 
-> ⚠️ **But nothing consumes either file.** Re-verified at `e17010c`: no
-> `sonar-project.properties` exists, none of the three GitHub Actions workflows
-> (`pr_check`, `publish`, `push-snapshot`) invokes a scanner, and `pom.xml` has no Sonar
-> configuration. Every CI run therefore writes a `coverage/sonar-report.xml` that is read
-> by no one. Either wire up an analysis step (see §B3) or drop `vitest-sonar-reporter` and
-> the reporter branch in `vitest.config.ts` — carrying dead reporting config invites the
-> assumption that quality gates are being enforced somewhere when they are not. The
-> **enforcement that actually exists today is the `vitest.config.ts` threshold block**
-> (plus, since #671, the coverage table on every PR).
+> ✅ **A scanner now consumes both files** (#688). `sonar-project.properties` points
+> SonarQube Cloud at `coverage/lcov.info` and `coverage/sonar-report.xml`, and two
+> workflows run it: `pr_check.yml` (pull-request analysis, alongside the existing
+> lint/build/test job) and `sonar.yml` (branch analysis on pushes to `main` and
+> `new_code`, so new-code metrics have a baseline to diff against). `publish.yml` and
+> `push-snapshot.yml` are untouched.
+>
+> Two deliberate limits, both one-line changes when the time comes:
+>
+> - **The analysis skips instead of failing when `SONAR_TOKEN` is absent** — which is
+>   the case for fork PRs, and for every run until an admin provisions the secret. The
+>   job summary says so explicitly rather than going quietly green.
+> - **The quality gate is report-only** (`continue-on-error: true`): its status lands
+>   in the job summary but does not fail the run while the gate is still being tuned
+>   server-side. So the **enforcement that actually blocks a merge today is still the
+>   `vitest.config.ts` threshold block** (plus, since #671, the coverage table on
+>   every PR). Dropping `continue-on-error` makes the gate binding.
 
 ## A10. Monaco under jsdom — two suites, deliberately
 
@@ -438,9 +446,10 @@ exists — and it is the row that stops the next `7594672` from happening.
 
 A Sonar **Quality Gate on New Code** (e.g. "coverage on new code ≥ 80 %") would be the
 ideal enforcement for incoming work — it holds every PR to a high bar while the legacy
-baseline catches up, reading `coverage/lcov.info`. **This still does not exist** (§A4–A9):
-no scanner runs in CI. Until one does, the per-directory thresholds are the only
-enforcement, so keep ratcheting them — and prefer *adding* a directory gate when a new
+baseline catches up, reading `coverage/lcov.info`. **The scanner that feeds it now runs**
+(#688, §A4–A9), but the gate itself is **report-only** until it is defined in SonarQube
+Cloud and `continue-on-error` is dropped from the workflows. Until then the per-directory
+thresholds remain the only *blocking* enforcement, so keep ratcheting them — and prefer *adding* a directory gate when a new
 area gets covered over nudging the global floor, since a directory gate is what catches a
 single untested file (which is precisely how the `keep-monaco-editor` gap was caught).
 
@@ -488,7 +497,7 @@ single untested file (which is precisely how the `keep-monaco-editor` gap was ca
 | C6 | Phase 2 — React component smoke tests, starting with the presentational leaves | 🟡 TODO | M |
 | C12 | Phase 1c — thunk tests for the remaining `store/*/action.ts`, following `store/account/action.test.ts`; `store/databases/action.ts` first | 🟡 TODO | M–L |
 | C8 | Split `tsconfig` so `npm run build` stops type-checking `test/` (`tsconfig.json` still has `"include": ["src", "test", …]`; report 00 P1-9) | 🟡 TODO | S |
-| C9 | Resolve the dead Sonar reporting (§A4–A9): wire a scanner into CI, or drop `vitest-sonar-reporter` | 🟡 TODO | S |
+| C9 | Resolve the dead Sonar reporting (§A4–A9) — wired a scanner into CI: `sonar-project.properties` + PR analysis in `pr_check.yml` + branch analysis in `sonar.yml`, skipping when `SONAR_TOKEN` is absent, gate report-only | ✅ **DONE** (#688) | — |
 | C13 | Delete the duplicated `queryCommandSupported` block in `test/setupTests.ts` (§0.2) | 🟢 nice-to-have | **XS** |
 | C10 | Investigate the 10 s "Vite server won't exit" tail on every run | 🟢 nice-to-have | S |
 
