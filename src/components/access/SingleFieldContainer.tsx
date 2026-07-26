@@ -11,7 +11,7 @@ import { styled } from '@linaria/react';
 import { AccessContext } from './AccessContext';
 import { capitalizeFirst } from '../../utils/common';
 import { InfoOutlined } from '@mui/icons-material';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 const ButtonAdd = styled.button`
   border: 0;
@@ -75,12 +75,12 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
         </span>
       </div>
       {item.kind.length > 0 && 
-        <LitTooltip
+        <KeepTooltip
           content={`This field is ${item.kind in kindReadableText ? kindReadableText[item.kind as keyof typeof kindReadableText] : item.kind}`}
           className='add-field'
         >
           <InfoOutlined />
-        </LitTooltip>
+        </KeepTooltip>
       }
     </div>
   );

@@ -26,7 +26,7 @@ import { AppState } from '../../store';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import GenericLoading from '../loading/GenericLoading';
 import ModeCompare from './ModeCompare';
-import { LitButton } from '../lit-elements/LitElements';
+import { KeepButton } from '../keep-elements/KeepElements';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 
 const AccessMode: React.FC = () => {
@@ -352,12 +352,12 @@ const AccessMode: React.FC = () => {
             <p className='header-text'>
               Schema Management - {formName}
             </p>
-            <LitButton 
+            <KeepButton 
               onClick={handleClickOpenModeCompare}
               disabled={modes.length === 1 || newForm === null}
             >
               Open Mode Compare
-            </LitButton>
+            </KeepButton>
           </div>
           <AccessModeContainer>
             {!matches && (

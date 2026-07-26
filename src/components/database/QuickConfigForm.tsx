@@ -28,10 +28,10 @@ import {
 } from '../../styles/CommonStyles';
 import { clearDBError } from '../../store/databases/action';
 import {
-  LitButton,
-  LitCheckbox,
-  LitTooltip,
-} from '../lit-elements/LitElements';
+  KeepButton,
+  KeepCheckbox,
+  KeepTooltip,
+} from '../keep-elements/KeepElements';
 
 const Forms = styled.form`
   display: flex;
@@ -216,7 +216,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           slotProps={{
             input: {
               endAdornment: !hideClearIcon && (
-                <LitTooltip content="Clear" placement='bottom'>
+                <KeepTooltip content="Clear" placement='bottom'>
                   <IconButton
                     size="small"
                     aria-label="clear search bar"
@@ -224,7 +224,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
                   >
                     <ClearIcon color="primary" className="clear-icon" />
                   </IconButton>
-                </LitTooltip>
+                </KeepTooltip>
               )
             }
           }}
@@ -367,7 +367,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           </Menu>
         </InputContainer>
         <div className="flex flex-row items-center gap-2">
-          <LitCheckbox
+          <KeepCheckbox
             checked={formik.values.isActive}
             onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
             size='m'
@@ -379,28 +379,28 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             Additional Modes
           </span>
           <div className='pl-10'>
-            <LitCheckbox
+            <KeepCheckbox
               checked={formik.values.additionalModes.odata}
               onChange={(e) => formik.setFieldValue('additionalModes.odata', (e.target as any).checked)}
             />
             <span>Odata</span>
           </div>
           <div className='pl-10'>
-            <LitCheckbox
+            <KeepCheckbox
               checked={formik.values.additionalModes.dql}
               onChange={(e) => formik.setFieldValue('additionalModes.dql', (e.target as any).checked)}
             />
             <span>DQL</span>
           </div>
           <div className='pl-10'>
-            <LitCheckbox
+            <KeepCheckbox
               checked={formik.values.additionalModes.odata}
               onChange={(e) => formik.setFieldValue('additionalModes.odata', (e.target as any).checked)}
             />
             <span>Odata</span>
           </div>
           <div className='pl-10'>
-            <LitCheckbox
+            <KeepCheckbox
               checked={formik.values.additionalModes.dql}
               onChange={(e) => formik.setFieldValue('additionalModes.dql', (e.target as any).checked)}
             />
@@ -408,18 +408,18 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           </div>
         </InputContainer>
         <section>
-          <LitButton
+          <KeepButton
             className='quarter-width'
             onClick={resetForm}
           >
             Close
-          </LitButton>
-          <LitButton 
+          </KeepButton>
+          <KeepButton 
             disabled={isDisabled}
             className='quarter-width'
             onClick={handleAdd}>
             Add
-          </LitButton>
+          </KeepButton>
         </section>
       </FormContentContainer>
     </Forms>

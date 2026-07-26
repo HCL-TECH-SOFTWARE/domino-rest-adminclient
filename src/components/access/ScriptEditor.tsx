@@ -12,7 +12,7 @@ import TestIcon from '@mui/icons-material/PlayArrow';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { LitButtonNeutral, LitButtonYes, LitTextformArray, LitTooltip } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes, KeepTextformArray, KeepTooltip } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 interface ScriptEditorProps {
@@ -230,9 +230,9 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                 <span className='color-text-primary m-0 p-0'>
                   Sign Document
                 </span>
-                <LitTooltip content="Please understand this option before enabling, see the documentation on enabling encryption.">
+                <KeepTooltip content="Please understand this option before enabling, see the documentation on enabling encryption.">
                   <HelpCenterIcon className='script-editor-help-icon' />
-                </LitTooltip>
+                </KeepTooltip>
                 <BlueSwitch size='small' checked={data.sign} onChange={handleToggleSign} />
               </section>
               <span className='color-text-disabled tiny-text m-0 p-0'>
@@ -278,8 +278,8 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
             </div>
             <hr className='divider' />
             <div className='dialog-actions pl-30 pr-30 gap-20'>
-              <LitButtonNeutral onClick={handleClickCancel} text='Cancel' />
-              <LitButtonYes onClick={handleClickSave} text='Save' />
+              <KeepButtonNeutral onClick={handleClickCancel} text='Cancel' />
+              <KeepButtonYes onClick={handleClickSave} text='Save' />
             </div>
           </dialog>
         </Collapse>
@@ -294,7 +294,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
           </div>
         </div>
         <Collapse in={validationExpanded} timeout="auto" unmountOnExit>
-          <LitTextformArray data={validationRules} setData={setValidationRules} title='message' />
+          <KeepTextformArray data={validationRules} setData={setValidationRules} title='message' />
         </Collapse>
       </div>
     </>

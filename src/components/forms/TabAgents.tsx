@@ -17,7 +17,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { LitButtonNeutral, LitButtonYes, LitSwitch } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes, KeepSwitch } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 /**
@@ -153,7 +153,7 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
             Deactivate All
           </Button>
         </Box>
-        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
+        <KeepSwitch onToggle={handleToggleShowActive}>Show Active</KeepSwitch>
       </ButtonsPanel>
       <div className="flex-container">
         <AgentsTable 
@@ -179,8 +179,8 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
           </text>
         </div>
         <div className='dialog-actions'>
-          <LitButtonNeutral onClick={() => {setResetAllAgents(false)}} text='No' />
-          <LitButtonYes onClick={handleDeactivateAll} text='Yes' />
+          <KeepButtonNeutral onClick={() => {setResetAllAgents(false)}} text='No' />
+          <KeepButtonYes onClick={handleDeactivateAll} text='Yes' />
         </div>
       </dialog>
     </>

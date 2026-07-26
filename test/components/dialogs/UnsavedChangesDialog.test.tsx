@@ -21,9 +21,9 @@ describe('UnsavedChangesDialog', () => {
     expect(
       screen.getByText(/Changes have been made/)
     ).toBeInTheDocument();
-    expect(document.querySelector('lit-button-yes')).toBeInTheDocument();
-    expect(document.querySelector('lit-button-no')).toBeInTheDocument();
-    expect(document.querySelector('lit-button-neutral')).toBeInTheDocument();
+    expect(document.querySelector('keep-button-yes')).toBeInTheDocument();
+    expect(document.querySelector('keep-button-no')).toBeInTheDocument();
+    expect(document.querySelector('keep-button-neutral')).toBeInTheDocument();
   });
 
   it('does not show the dialog when open is false', () => {
@@ -33,7 +33,7 @@ describe('UnsavedChangesDialog', () => {
 
   it('calls onSave when Yes is clicked', () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
-    fireEvent.click(document.querySelector('lit-button-yes')!);
+    fireEvent.click(document.querySelector('keep-button-yes')!);
     expect(defaultProps.onSave).toHaveBeenCalledTimes(1);
     expect(defaultProps.onDiscard).not.toHaveBeenCalled();
     expect(defaultProps.onCancel).not.toHaveBeenCalled();
@@ -41,7 +41,7 @@ describe('UnsavedChangesDialog', () => {
 
   it('calls onDiscard when No is clicked', () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
-    fireEvent.click(document.querySelector('lit-button-no')!);
+    fireEvent.click(document.querySelector('keep-button-no')!);
     expect(defaultProps.onDiscard).toHaveBeenCalledTimes(1);
     expect(defaultProps.onSave).not.toHaveBeenCalled();
     expect(defaultProps.onCancel).not.toHaveBeenCalled();
@@ -49,7 +49,7 @@ describe('UnsavedChangesDialog', () => {
 
   it('calls onCancel when Cancel is clicked', () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
-    fireEvent.click(document.querySelector('lit-button-neutral')!);
+    fireEvent.click(document.querySelector('keep-button-neutral')!);
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
     expect(defaultProps.onSave).not.toHaveBeenCalled();
     expect(defaultProps.onDiscard).not.toHaveBeenCalled();

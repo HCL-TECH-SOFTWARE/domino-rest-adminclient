@@ -19,7 +19,7 @@ import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
-import { LitDrawer } from '../lit-elements/LitElements';
+import { KeepDrawer } from '../keep-elements/KeepElements';
 
 type ScopeFormContainerProps = {
   database?: any;
@@ -186,7 +186,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
   }, [database, visible])
 
   return (
-    <LitDrawer
+    <KeepDrawer
       label={`${isEdit ? 'Edit' : 'Add New'} Scope`}
       open={visible}
       closeFn={handleCLoseDrawer}
@@ -210,7 +210,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
           open={deleteDialog}
         />
       </DrawerFormContainer>
-    </LitDrawer>
+    </KeepDrawer>
   );
 }
 export default ScopeFormContainer;

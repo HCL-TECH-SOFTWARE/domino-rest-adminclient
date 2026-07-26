@@ -17,7 +17,7 @@ import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { TokenProps } from '../../store/account/types';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 /**
  * Profile section rendered in the sidenav.
@@ -148,7 +148,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
   return (
     <ProfileContainer open={open}>
       <AvatarRow open={open}>
-        <LitTooltip
+        <KeepTooltip
           placement="right"
           content={open ? '' : 'Profile'}
         >
@@ -160,7 +160,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
           >
             <UserIcon className='profile-menu-user-icon' />
           </IconWrapper>
-        </LitTooltip>
+        </KeepTooltip>
 
         {/* Username / role - fades and collapses in sync with the
             sidenav width so partial letters never peek through the

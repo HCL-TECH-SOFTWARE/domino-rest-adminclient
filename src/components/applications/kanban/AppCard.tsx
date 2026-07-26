@@ -30,7 +30,7 @@ import {
 } from '../../../styles/CommonStyles';
 import { checkIcon } from '../../../styles/scripts';
 import { apiRequestWithRetry } from '../../../utils/api-retry';
-import { LitTooltip } from '../../lit-elements/LitElements';
+import { KeepTooltip } from '../../keep-elements/KeepElements';
 
 const AppImage = styled.img`
   margin-top: 8px;
@@ -175,27 +175,27 @@ const AppCard: React.FC<AppCardProps> = ({
         >
           {
             item.appHasSecret ? (
-              <LitTooltip content="This application has an application secret configured">
+              <KeepTooltip content="This application has an application secret configured">
                 <SecurityIcon />
-              </LitTooltip>
+              </KeepTooltip>
             ) : (
               ''
             )
           }
-          <LitTooltip 
+          <KeepTooltip 
             content="Delete" 
             onKeyDown={(e) => {handleKeyPress(e, () => {deleteApplication(item.appId)})}}
             onFocus={() => {setShowActions(false)}}
           >
             <RemoveIcon onClick={() => deleteApplication(item.appId)} />
-          </LitTooltip>
-          <LitTooltip 
+          </KeepTooltip>
+          <KeepTooltip 
             content="Edit" 
             onKeyDown={(e) => {handleKeyPress(e, () => {viewEdit()})}}
           >
             <EditIcon onClick={viewEdit} />
-          </LitTooltip>
-          <LitTooltip 
+          </KeepTooltip>
+          <KeepTooltip 
             content="Generate Application Secret" 
             onKeyDown={(e) => {handleKeyPress(e, () => {generate(item.appId, item.appStatus)})}} 
           >
@@ -203,7 +203,7 @@ const AppCard: React.FC<AppCardProps> = ({
               onClick={() => generate(item.appId, item.appStatus)}
               className="generate"
             />
-          </LitTooltip>
+          </KeepTooltip>
         </Action>
         <Header>
           <Icon>
@@ -217,24 +217,24 @@ const AppCard: React.FC<AppCardProps> = ({
               <ApplicationIcon className='app-card-app-icon' />
             )}
           </Icon>
-          <LitTooltip content={item.appName}>
+          <KeepTooltip content={item.appName}>
             <span className="appName" color="textPrimary">
               {item.appName}
             </span>
-          </LitTooltip>
+          </KeepTooltip>
         </Header>
-        <LitTooltip content={item.appDescription ? item.appDescription : ''}>
+        <KeepTooltip content={item.appDescription ? item.appDescription : ''}>
           <span className="appDescription" color="textPrimary">
             {item.appDescription
               ? item.appDescription
               : 'No Description Available'}
           </span>
-        </LitTooltip>
+        </KeepTooltip>
         <Footer className="footer-actions">
           <span className="heading" color="textPrimary">
             App Id:
           </span>
-          <LitTooltip 
+          <KeepTooltip 
             content="Copy App Id" 
             onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
             onFocus={handleCardFocus}
@@ -246,7 +246,7 @@ const AppCard: React.FC<AppCardProps> = ({
             >
               {item.appId}
             </span>
-          </LitTooltip>
+          </KeepTooltip>
         </Footer>
         <Footer className="footer-actions">
           {generating ? (
@@ -259,7 +259,7 @@ const AppCard: React.FC<AppCardProps> = ({
                 <span className="heading" color="textPrimary">
                   App Secret:
                 </span>
-                <LitTooltip 
+                <KeepTooltip 
                   content="Copy Application Secret" 
                   onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
                 >
@@ -271,7 +271,7 @@ const AppCard: React.FC<AppCardProps> = ({
                   >
                     {appSecret}
                   </span>
-                </LitTooltip>
+                </KeepTooltip>
               </>
             )
           )}

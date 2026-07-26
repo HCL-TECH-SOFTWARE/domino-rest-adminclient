@@ -24,7 +24,7 @@ import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
 
 interface EditViewDialogProps {
   open: boolean;
@@ -601,8 +601,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
           </text>
         </div>
         <div className='dialog-actions'>
-          <LitButtonNeutral onClick={() => {setResetDialogOpen(false)}} text='No' />
-          <LitButtonYes onClick={handleConfirmReset} text='Yes' />
+          <KeepButtonNeutral onClick={() => {setResetDialogOpen(false)}} text='No' />
+          <KeepButtonYes onClick={handleConfirmReset} text='Yes' />
         </div>
       </dialog>
       <UnsavedChangesDialog

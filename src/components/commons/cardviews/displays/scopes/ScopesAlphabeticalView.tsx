@@ -12,7 +12,7 @@ import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { checkIcon } from '../../../../../styles/scripts';
 import appIcons from '../../../../../styles/app-icons';
 import { Scope } from '../../../../../store/databases/types';
-import { LitTooltip } from '../../../../lit-elements/LitElements';
+import { KeepTooltip } from '../../../../keep-elements/KeepElements';
 
 const AlphabeticalViewContainer = styled.div`
   display: flex;
@@ -135,14 +135,14 @@ const ScopesAlphabeticalView: React.FC<ScopesAlphabeticalSchemaViewProps> = ({
                     ) : (
                       <DBIcon />
                     )}
-                    <LitTooltip content={data.apiName} without-arrow>
+                    <KeepTooltip content={data.apiName} without-arrow>
                       <span
                         key={data.apiName}
                         className="schemas-alphabetical-schema-name color-text-primary"
                       >
                         {data.apiName}
                       </span>
-                    </LitTooltip>
+                    </KeepTooltip>
                   </Db>
                 ))}
               </BlockContainer>

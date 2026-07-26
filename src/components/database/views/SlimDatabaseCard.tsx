@@ -18,7 +18,7 @@ import { DeleteIcon } from '../../../styles/CommonStyles';
 import { useDispatch } from 'react-redux';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { toggleAlert } from '../../../store/alerts/action';
-import { LitTooltip } from '../../lit-elements/LitElements';
+import { KeepTooltip } from '../../keep-elements/KeepElements';
 
 const CardContainer = styled(Card)<{
   theme: string;
@@ -193,20 +193,20 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
           )}
         </ModeLogo>
         <div className='text-content'>
-          <LitTooltip content={isSchema ? database.schemaName + '(' + database.nsfPath + ')' : database.apiName} without-arrow placement='bottom'>
+          <KeepTooltip content={isSchema ? database.schemaName + '(' + database.nsfPath + ')' : database.apiName} without-arrow placement='bottom'>
             <span className="api-name bold color-text-primary">
               {isSchema ? database.schemaName : database.apiName}
             </span>
-          </LitTooltip>
+          </KeepTooltip>
           {isSchema && <span className="block api-nsf">
             {database.nsfPath}
           </span>}
         </div>
       </CardHeader>
       {isSchema && <div className='delete' onClick={handleClickDelete} onKeyUp={handleKeyPressDelete}>
-        <LitTooltip content="Delete schema">
+        <KeepTooltip content="Delete schema">
           <DeleteIcon className="delete-icon" tabIndex={1} />
-        </LitTooltip>
+        </KeepTooltip>
       </div>}
     </CardContainer>
   );

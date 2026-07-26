@@ -48,11 +48,11 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/**/types.ts', // pure type/const modules
         'src/index.tsx',
-        // lit-source is a 752-line interactive tree/source editor (context
+        // keep-source is a 752-line interactive tree/source editor (context
         // menus, drag, dialogs, validation). It is covered at the API level
-        // by lit-source.test.ts, but exhaustive unit coverage in jsdom is
+        // by keep-source.test.ts, but exhaustive unit coverage in jsdom is
         // impractical, so it is excluded from the coverage ratchet.
-        'src/components/lit-elements/lit-source.ts',
+        'src/components/keep-elements/keep-source.ts',
       ],
       // Enforced ratchet gate. Global floors sit just below the current baseline
       // so CI fails if coverage regresses; the per-directory gates hold the
@@ -67,7 +67,7 @@ export default defineConfig({
         'src/utils/**': { lines: 85, statements: 85, functions: 55, branches: 60 },
         // Converted Lit elements (.js → .ts). Conservative floor that holds
         // across all batches; ratchet up once the large components (source) land.
-        'src/components/lit-elements/**': { lines: 70, statements: 70, functions: 60, branches: 50 },
+        'src/components/keep-elements/**': { lines: 70, statements: 70, functions: 60, branches: 50 },
       },
     },
   },

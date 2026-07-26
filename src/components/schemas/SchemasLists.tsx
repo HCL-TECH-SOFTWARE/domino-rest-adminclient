@@ -27,7 +27,7 @@ import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
 import { IMG_DIR } from '../../config.dev';
-import { LitButton, LitTooltip } from '../lit-elements/LitElements';
+import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 
 const SchemasLists = () => {
@@ -179,12 +179,12 @@ const SchemasLists = () => {
               <span className="top-nav color-text-primary">
                 Schema Management
               </span>
-              <LitButton onClick={handleRefresh} src={`${IMG_DIR}/shoelace/rotate.svg`}>
+              <KeepButton onClick={handleRefresh} src={`${IMG_DIR}/shoelace/rotate.svg`}>
                 Refresh
-              </LitButton>
-              <LitButton src={`${IMG_DIR}/shoelace/plus.svg`} onClick={handleClickOpen}>
+              </KeepButton>
+              <KeepButton src={`${IMG_DIR}/shoelace/plus.svg`} onClick={handleClickOpen}>
                 Add Schema
-              </LitButton>
+              </KeepButton>
             </TopContainer>
             <TopContainer className='mt-0'>
               <DatabaseSearch handleSearchDatabase={handleSearchDatabase} changeSearchType={changeSearchType} searchType={searchType}/>
@@ -194,7 +194,7 @@ const SchemasLists = () => {
               <span className="medium-text flex items-center">
                 Only show schemas configured with scopes
               </span>
-              <LitTooltip content={onlyShowSchemasWithScopes ? 'On' : 'Off'} placement="top">
+              <KeepTooltip content={onlyShowSchemasWithScopes ? 'On' : 'Off'} placement="top">
                 <BlueSwitch
                   checked={onlyShowSchemasWithScopes}
                   onChange={onChange}
@@ -202,7 +202,7 @@ const SchemasLists = () => {
                   size="small"
                   slotProps={{ input: { 'aria-label': 'Only show schemas configured with scopes' } }}
                 />
-              </LitTooltip>
+              </KeepTooltip>
             </FilterContainer>
             {results.length !== 0 && !loading.status && <SchemasMultiView databases={results} view={view} />}
             {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <ZeroResultsWrapper mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}

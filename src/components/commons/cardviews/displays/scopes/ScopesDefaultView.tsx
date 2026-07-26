@@ -9,7 +9,7 @@ import { ExtraFlex } from '../../../../flex';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { mapSchemas } from '../../../../../utils/mapper';
 import { SchemasMainContainer } from './ScopeStyles';
-import { LitNsfCard } from '../../../../lit-elements/LitElements';
+import { KeepNsfCard } from '../../../../keep-elements/KeepElements';
 
 type ScopesDefaultViewProps = {
   databases: Array<any>;
@@ -29,7 +29,7 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
         {databases.length > 0 ? (
           mapSchemas(databases, 'schemas').map((database: any) => {
             return (
-              <LitNsfCard
+              <KeepNsfCard
                 key={database.fileName}
                 database={database}
                 iconName={database.iconName}

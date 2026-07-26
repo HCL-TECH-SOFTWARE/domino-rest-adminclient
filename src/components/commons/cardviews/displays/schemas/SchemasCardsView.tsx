@@ -12,7 +12,7 @@ import { AppState } from '../../../../../store';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { Database } from '../../../../../store/databases/types';
 import { SchemasMainContainer } from './SchemaStyles';
-import { LitDefaultCard } from '../../../../lit-elements/LitElements';
+import { KeepDefaultCard } from '../../../../keep-elements/KeepElements';
 import appIcons from '../../../../../styles/app-icons';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
@@ -67,7 +67,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
         {
           databases.map((database: any, index: any) => {
             return (
-              <LitDefaultCard
+              <KeepDefaultCard
                 key={database.schemaName + database.nsfPath + index}
                 title={database.schemaName}
                 subtitle={database.nsfPath}

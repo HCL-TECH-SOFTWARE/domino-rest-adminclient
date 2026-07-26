@@ -37,7 +37,7 @@ import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
 import { getTheme } from '../../store/styles/action';
 import { Database } from '../../store/databases/types';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 const TabAccessContainer = styled.div<{ width: number; top: number }>`
   width: ${(props) => props.width}%;
@@ -951,7 +951,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               </>
             )}
             
-            <LitTooltip content={saveTooltip}>
+            <KeepTooltip content={saveTooltip}>
               <button
                 onClick={save}
                 className={`
@@ -972,7 +972,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                   Save
                 </span>
               </button>
-            </LitTooltip>
+            </KeepTooltip>
           </div>
         </TabsContainer>
         <div className='flex flex-col access-load-tab-container'>

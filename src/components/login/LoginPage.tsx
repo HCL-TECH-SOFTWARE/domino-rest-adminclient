@@ -28,14 +28,14 @@ import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from 'react-router-dom';
 import {
-  LitAlert,
-  LitApiErrorDialog,
-  LitButton,
-  LitDropdown,
-  LitInputPassword,
-  LitInputText,
-  LitTooltip
-} from '../lit-elements/LitElements';
+  KeepAlert,
+  KeepApiErrorDialog,
+  KeepButton,
+  KeepDropdown,
+  KeepInputPassword,
+  KeepInputText,
+  KeepTooltip
+} from '../keep-elements/KeepElements';
 import { AlertManager, checkForResponse } from '../../utils/common';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -532,11 +532,11 @@ const LoginPage = () => {
   return (
     <GridRoot container>
       <CssBaseline />
-      <LitTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
+      <KeepTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
         <LoginThemeToggle onClick={toggleTheme}>
           {isDark ? <DarkModeIcon className='huge-text' /> : <LightModeIcon className='huge-text' />}
         </LoginThemeToggle>
-      </LitTooltip>
+      </KeepTooltip>
       <Grid
         className={`login-page-grid ${matches ? 'full-width' : 'w-60'}`}
         component={Paper}
@@ -553,41 +553,41 @@ const LoginPage = () => {
           <div className='flex-1'>
             {error && (
               <div className='login-page-alert'>
-                <LitAlert variant='danger' heading='Error logging in!' message={errorMessage} />
+                <KeepAlert variant='danger' heading='Error logging in!' message={errorMessage} />
               </div>
             )}
             <section
               className="flex flex-col items-center gap-10 m-10 full-width"
             >
-              <LitButton
-                className="login-lit-button full-width"
+              <KeepButton
+                className="login-keep-button full-width"
                 onClick={handleLogInWithPassword}
                 appearance='outlined'
               >
                 LOG IN WITH PASSWORD
-              </LitButton>
+              </KeepButton>
               {isHttps &&
-                <LitButton
-                  className="login-lit-button full-width"
+                <KeepButton
+                  className="login-keep-button full-width"
                   onClick={handleLogInWithPasskey}
                   appearance='outlined'
                 >
                   LOG IN WITH PASSKEY
-                </LitButton>
+                </KeepButton>
               }
               {displayKeepIdp &&
-                <LitButton
-                  className="login-lit-button full-width"
+                <KeepButton
+                  className="login-keep-button full-width"
                   onClick={() => {handleLogInUsingIdp("")}}
                   appearance='outlined'
                 >
                   LOG IN WITH OIDC
-                </LitButton>
+                </KeepButton>
               }
             </section>
             <LoginForm>
               <section className='full-width'>
-                <LitInputText
+                <KeepInputText
                   id='form-username'
                   label='Username'
                   onChange={handleUsernameChange}
@@ -596,7 +596,7 @@ const LoginPage = () => {
                 />
                 {authType === 'oidc' && idpList.length > 0 &&
                   <div className='flex justify-center items-center full-width mt-8'>
-                    <LitDropdown
+                    <KeepDropdown
                       id='form-oidc'
                       choices={idpList.map((idp: IdP) => {return idp.name})}
                       ref={oidcRef}
@@ -608,7 +608,7 @@ const LoginPage = () => {
                 }
               </section>
               <section className='full-width'>
-                <LitInputPassword
+                <KeepInputPassword
                   id='section-password'
                   className='input'
                   label='Password'
@@ -616,13 +616,13 @@ const LoginPage = () => {
                   required
                 />
               </section>
-              <LitButton
+              <KeepButton
                 className="login-submit-button"
                 onClick={handleClickLogIn}
                 pill
               >
                 LOG IN
-              </LitButton>
+              </KeepButton>
               <PasskeySignUpContainer id='passkey-signup'>
                 {isHttps && (
                   <button
@@ -645,7 +645,7 @@ const LoginPage = () => {
             <Box className='mt-7'>
               <Copyright />
             </Box>
-            <LitApiErrorDialog ref={ref} errorMessage='Error initiating authorization request. Check the console or network for more details.' />
+            <KeepApiErrorDialog ref={ref} errorMessage='Error initiating authorization request. Check the console or network for more details.' />
           </div>
         </DivPaper>
       </Grid>

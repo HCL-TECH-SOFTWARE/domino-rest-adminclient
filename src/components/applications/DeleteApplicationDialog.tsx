@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
 import { toggleDeleteDialog } from '../../store/dialog/action';
-import { LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
 
 interface DeleteApplicationDialogProps {
   dialogTitle: string;
@@ -56,11 +56,11 @@ const DeleteApplicationDialog: React.FC<DeleteApplicationDialogProps> = ({
         </text>
       </div>
       <div className='dialog-actions'>
-        <LitButtonNeutral
+        <KeepButtonNeutral
           onClick={() => dispatch(toggleDeleteDialog())}
           text='No'
         />
-        <LitButtonYes onClick={handleDelete} text='Yes' autoFocus />
+        <KeepButtonYes onClick={handleDelete} text='Yes' autoFocus />
       </div>
     </dialog>
   );

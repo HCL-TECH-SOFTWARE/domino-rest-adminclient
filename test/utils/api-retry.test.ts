@@ -13,18 +13,18 @@ vi.mock('../../src/components/login/pkce', () => ({
 
 // `notify()` lives inside api-retry itself, so it cannot be swapped via
 // vi.mock (the internal call binds to the module-local function, not the
-// export). Its observable side effect is `document.createElement('lit-alert')`
+// export). Its observable side effect is `document.createElement('keep-alert')`
 // followed by `el.show(message, variant, duration)`. We register a stub
 // custom element whose `show` is a spy, letting us both (a) keep notify from
 // throwing in jsdom and (b) assert the toast that was surfaced.
 const showSpy = vi.fn();
-class LitAlertStub extends HTMLElement {
+class KeepAlertStub extends HTMLElement {
   show(...args: unknown[]): void {
     showSpy(...args);
   }
 }
-if (!customElements.get('lit-alert')) {
-  customElements.define('lit-alert', LitAlertStub);
+if (!customElements.get('keep-alert')) {
+  customElements.define('keep-alert', KeepAlertStub);
 }
 
 // ---- Helpers ----

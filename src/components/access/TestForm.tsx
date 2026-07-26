@@ -24,7 +24,7 @@ import {
   ActionButtonBar,
   AutoContainer,
 } from '../../styles/CommonStyles';
-import { LitCheckbox } from '../lit-elements/LitElements';
+import { KeepCheckbox } from '../keep-elements/KeepElements';
 
 const TestsPanel = styled.div`
   padding-left: 35px;
@@ -109,7 +109,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
             <FormGroup className='flex p-16 gap-5'>
               <FormControlLabel
               control={
-                  <LitCheckbox
+                  <KeepCheckbox
                     checked={formik.values.readFormula}
                     onChange={(e: any) => formik.setFieldValue('readFormula', e.target.checked)}
                   />
@@ -118,7 +118,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
               />
               <FormControlLabel
                 control={
-                  <LitCheckbox
+                  <KeepCheckbox
                     checked={formik.values.writeFormula}
                     onChange={(e: any) => formik.setFieldValue('writeFormula', e.target.checked)}
                   />
@@ -127,7 +127,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
               />
               <FormControlLabel
                 control={
-                  <LitCheckbox
+                  <KeepCheckbox
                     checked={formik.values.deleteFormula}
                     onChange={(e: any) => formik.setFieldValue('deleteFormula', e.target.checked)}
                   />
@@ -136,7 +136,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
               />
               <FormControlLabel
                 control={
-                  <LitCheckbox
+                  <KeepCheckbox
                     checked={formik.values.loadFormula}
                     onChange={(e: any) => formik.setFieldValue('loadFormula', e.target.checked)}
                   />
@@ -145,7 +145,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
               />
               <FormControlLabel
                 control={
-                  <LitCheckbox
+                  <KeepCheckbox
                     checked={formik.values.saveFormula}
                     onChange={(e: any) => formik.setFieldValue('saveFormula', e.target.checked)}
                   />

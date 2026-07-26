@@ -15,7 +15,7 @@ import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
 import appIcons from '../../styles/app-icons';
-import { LitAlert, LitDrawer } from '../lit-elements/LitElements';
+import { KeepAlert, KeepDrawer } from '../keep-elements/KeepElements';
 
 const QuickConfigFormSchema = Yup.object().shape({
   schemaName: Yup.string()
@@ -130,7 +130,7 @@ export default function QuickConfigFormContainer() {
   
   return (
     <>
-      <LitDrawer label="Quick Config" open={quickConfigDrawer}>
+      <KeepDrawer label="Quick Config" open={quickConfigDrawer}>
         <DrawerFormContainer>
           <QuickConfigForm
             isDisabled={isDisabled}
@@ -140,9 +140,9 @@ export default function QuickConfigFormContainer() {
             path={{ nsfPath, setNsfPath: handleNsfPath }}
           />
         </DrawerFormContainer>
-      </LitDrawer>
+      </KeepDrawer>
       {dbError && (
-        <LitAlert
+        <KeepAlert
           variant='danger'
           heading='Quick config error!'
           message={dbErrorMessage}

@@ -25,7 +25,7 @@ import {
   FormContentContainer,
   InputContainer,
 } from '../../styles/CommonStyles';
-import { LitButton, LitCheckbox } from '../lit-elements/LitElements';
+import { KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
 
 const Forms = styled.form`
   display: flex;
@@ -421,7 +421,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
           </Menu>
         </InputContainer>
         <div className="flex flex-row items-center gap-2">
-          <LitCheckbox
+          <KeepCheckbox
             checked={formik.values.isActive}
             onChange={(e) => handleActiveButtonToggle(e)}
             size='m'
@@ -429,7 +429,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
           <span>Active</span>
         </div>
         <section>
-          <LitButton
+          <KeepButton
               className='quarter-width'
               onClick={() => {
                 formik.resetForm();
@@ -437,21 +437,21 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
               }}
             >
               Close
-            </LitButton>
-            <LitButton 
+            </KeepButton>
+            <KeepButton 
               className='quarter-width'
               disabled={isEdit ? updateButtonDisabled : isDisabled}
               onClick={() => handleAdd(formik.values.apiName)}
             >
                 {isEdit ? 'Update' : 'Add'}
-            </LitButton>
+            </KeepButton>
             { isEdit &&
-              <LitButton
+              <KeepButton
                 className='quarter-width'
                 onClick={()=>handleDelete(formik.values.apiName)}
               >
                 Delete
-              </LitButton>
+              </KeepButton>
             }
         </section>
       </FormContentContainer>

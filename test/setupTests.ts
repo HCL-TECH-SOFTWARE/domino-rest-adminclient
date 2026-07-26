@@ -44,7 +44,7 @@ if (!HTMLDialogElement.prototype.close) {
   HTMLDialogElement.prototype.close = vi.fn();
 }
 
-// jsdom does not implement the Popover / top-layer API used by lit-alert.
+// jsdom does not implement the Popover / top-layer API used by keep-alert.
 if (!HTMLElement.prototype.showPopover) {
   HTMLElement.prototype.showPopover = function () {};
   HTMLElement.prototype.hidePopover = function () {};

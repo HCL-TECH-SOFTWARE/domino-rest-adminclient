@@ -16,10 +16,10 @@ import { DeleteIcon } from '../../styles/CommonStyles';
 import { MdRefresh, MdEdit } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
-import { LitAppStatus, LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
+import { KeepAppStatus, KeepButtonNeutral, KeepButtonYes, KeepTooltip } from '../keep-elements/KeepElements';
 
 const StyledTableRow = styled(TableRow)`
-  .expand lit-tooltip {
+  .expand keep-tooltip {
     display: block;
   }
 
@@ -214,7 +214,7 @@ const AppItem: React.FC<AppItemProps> = ({
         <>
             <StyledTableRow>
                 <TableCell className='expand'>
-                    {app.appStatus === 'isActive' && <LitTooltip content={`Launch ${app.appName}`} className='w-30px'>
+                    {app.appStatus === 'isActive' && <KeepTooltip content={`Launch ${app.appName}`} className='w-30px'>
                         <button
                           onClick={launch}
                           className='no-background no-border cursor-pointer m-0 p-0 full-width'
@@ -225,14 +225,14 @@ const AppItem: React.FC<AppItemProps> = ({
                                 <path d="M16.666 13.3333L26.666 19.9999L16.666 26.6666V13.3333Z" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </button>
-                    </LitTooltip>}
-                    {app.appStatus === 'disabled' && <LitTooltip content="This application is inactive.">
+                    </KeepTooltip>}
+                    {app.appStatus === 'disabled' && <KeepTooltip content="This application is inactive.">
                         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect width="40" height="40" fill="transparent"/>
                             <path d="M20.0007 36.6666C29.2054 36.6666 36.6673 29.2047 36.6673 19.9999C36.6673 10.7952 29.2054 3.33325 20.0007 3.33325C10.7959 3.33325 3.33398 10.7952 3.33398 19.9999C3.33398 29.2047 10.7959 36.6666 20.0007 36.6666Z" fill="#A5AFBE" stroke="#A5AFBE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M16.666 13.3333L26.666 19.9999L16.666 26.6666V13.3333Z" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                    </LitTooltip>}
+                    </KeepTooltip>}
                 </TableCell>
                 <TableCell className='app-name'>
                   <AppNameContainer>
@@ -244,7 +244,7 @@ const AppItem: React.FC<AppItemProps> = ({
                     <div className='flex flex-col gap-2'>
                         <span className='small-text'>{app.appName}</span>
                         <div className='full-width'>
-                          <LitAppStatus status={app.appStatus === 'isActive'} />
+                          <KeepAppStatus status={app.appStatus === 'isActive'} />
                         </div>
                     </div>
                   </AppNameContainer>
@@ -253,7 +253,7 @@ const AppItem: React.FC<AppItemProps> = ({
                   <Box>
                     <AppIdSecretContainer>
                       <span className='small-text'>App ID:</span>
-                      <LitTooltip
+                      <KeepTooltip
                         content="Copy App Id"
                         onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}}
                       >
@@ -263,7 +263,7 @@ const AppItem: React.FC<AppItemProps> = ({
                         >
                           {app.appId}
                         </span>
-                      </LitTooltip>
+                      </KeepTooltip>
                     </AppIdSecretContainer>
                     { app.usePkce ? (
                       <AppIdSecretContainer>
@@ -274,7 +274,7 @@ const AppItem: React.FC<AppItemProps> = ({
                         <span className='small-text'>App Secret:</span>
                         {
                           hasAppSecret ? <>
-                            <LitTooltip
+                            <KeepTooltip
                               content="Copy Application Secret"
                               onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}} 
                             >
@@ -285,7 +285,7 @@ const AppItem: React.FC<AppItemProps> = ({
                               >
                                 {appSecret}
                               </span>
-                              </LitTooltip>
+                              </KeepTooltip>
                           </> :
                           app.appHasSecret ? <>
                             <button
@@ -297,7 +297,7 @@ const AppItem: React.FC<AppItemProps> = ({
                             <span className='small-text color-text-hint'>********************</span>
                           </> : <>
                             {app.appSecret?.length > 0 ? <>
-                              <LitTooltip
+                              <KeepTooltip
                                 content="Copy Application Secret"
                                 onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}} 
                               >
@@ -308,7 +308,7 @@ const AppItem: React.FC<AppItemProps> = ({
                                 >
                                   {appSecret}
                                 </span>
-                              </LitTooltip>
+                              </KeepTooltip>
                             </> : <>
                             <button
                               onClick={() => handleClickGenerate(true)}
@@ -328,25 +328,25 @@ const AppItem: React.FC<AppItemProps> = ({
                 </TableCell>
                 <TableCell>
                   <OptionsContainer>
-                    <LitTooltip content="Edit Application" className='w-30px flex flex-end'>
+                    <KeepTooltip content="Edit Application" className='w-30px flex flex-end'>
                       <button
                         onClick={viewEdit}
                         className='no-background no-border cursor-pointer m-0 p-0 color-text-primary'
                       >
                         <MdEdit size={20} />
                       </button>
-                    </LitTooltip>
+                    </KeepTooltip>
                     <div>
                       <div className='short-vertical' />
                     </div>
-                    <LitTooltip content="Delete Application">
+                    <KeepTooltip content="Delete Application">
                       <button
                         onClick={() => deleteApplication(app.appId)}
                         className='no-background no-border cursor-pointer m-0 p-0'
                       >
                         <DeleteIcon className='delete-icon' />
                       </button>
-                    </LitTooltip>
+                    </KeepTooltip>
                   </OptionsContainer>
                 </TableCell>
             </StyledTableRow>
@@ -360,8 +360,8 @@ const AppItem: React.FC<AppItemProps> = ({
                   </text>
                 </div>
                 <div className='dialog-actions'>
-                    <LitButtonNeutral text='No' onClick = {() => setIsGenerate(false)} />
-                    <LitButtonYes text='Yes' onClick={regenerateSecret} />
+                    <KeepButtonNeutral text='No' onClick = {() => setIsGenerate(false)} />
+                    <KeepButtonYes text='Yes' onClick={regenerateSecret} />
                 </div>
             </dialog>
       </>

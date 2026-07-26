@@ -15,7 +15,7 @@ import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
 import { toggleAlert } from '../../store/alerts/action';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { LitButtonNeutral, LitButtonYes, LitCheckbox, LitTooltip } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes, KeepCheckbox, KeepTooltip } from '../keep-elements/KeepElements';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -222,7 +222,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
           </Button>}
           {batchDelete && <div className='flex justify-between full-width p-0 items-center'>
             <div className='flex flex-wrap'>
-              <LitTooltip
+              <KeepTooltip
                 content={deleteFields.length === 0 ? "Please select which field/s to remove first." : ""}
                 placement='bottom'
               >
@@ -241,7 +241,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                     Remove
                   </p>
                 </Button>
-              </LitTooltip>
+              </KeepTooltip>
               <Button 
                 className='field-batch-delete-button'
                 onClick={toggleBatchDelete} 
@@ -254,7 +254,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                 </p>
               </Button>
             </div>
-            <LitCheckbox
+            <KeepCheckbox
               className='field-checkbox' 
               onChange={handleSelectAll}
               size='s'
@@ -306,7 +306,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                         {`${capitalizeFirst(format)} ${format ? '•' : ''} ${rwFlag} ${fieldGroup ? '•' : ''} ${fieldGroup} ${isRequired ? '• Required' : ''}`}
                       </div>
                     </div>
-                    {batchDelete && <LitCheckbox 
+                    {batchDelete && <KeepCheckbox 
                       key={`${item.name}-${idx}-checkbox`}
                       checked={deleteFields.filter((field) => field.name === item.name).length === 1}
                       onChange={(e) => {handleSelectField(e, item)}}
@@ -360,8 +360,8 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
           <p className='dialog-content-text'>on this mode?</p>
         </div>
         <div className='dialog-actions'>
-          <LitButtonNeutral onClick={handleCloseDialog} text='Cancel' />
-          <LitButtonYes onClick={handleBatchDelete} text='OK' autoFocus />
+          <KeepButtonNeutral onClick={handleCloseDialog} text='Cancel' />
+          <KeepButtonYes onClick={handleBatchDelete} text='OK' autoFocus />
         </div>
       </dialog>
     </div>

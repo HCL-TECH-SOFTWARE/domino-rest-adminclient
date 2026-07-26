@@ -28,11 +28,11 @@ import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
 import {
-  LitButton,
-  LitButtonNeutral,
-  LitButtonYes,
-  LitSwitch
-} from "../lit-elements/LitElements";
+  KeepButton,
+  KeepButtonNeutral,
+  KeepButtonYes,
+  KeepSwitch
+} from "../keep-elements/KeepElements";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -298,11 +298,11 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
     <>
       <TopNavigator>
         <FormSearch handleSearchDatabase={handleSearchDatabase} />
-        <LitButton
+        <KeepButton
           onClick={() => setCreateFormOpen(true)}
         >
           Add New Form Schema
-        </LitButton>
+        </KeepButton>
       </TopNavigator>
       <ButtonsPanel>
         <Box>
@@ -322,7 +322,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
             Deactivate All
           </Button>
         </Box>
-        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
+        <KeepSwitch onToggle={handleToggleShowActive}>Show Active</KeepSwitch>
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
         <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />
@@ -337,7 +337,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           />
         </Box>
         <ButtonsPanel className='flex justify-start items-center gap-10 p-0 m-0'>
-          <LitButtonNeutral
+          <KeepButtonNeutral
             onClick={() => {
               setCreateFormOpen(false)
               setValue("")
@@ -345,7 +345,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
             }}
             text='Cancel'
           />
-          <LitButtonYes
+          <KeepButtonYes
             onClick={handleClickCreateForm}
             text='Create'
           />
@@ -380,8 +380,8 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           </text>
         </div>
         <div className='dialog-actions'>
-          <LitButtonNeutral onClick={() => {setResetAllForms(false)}} text='No' />
-          <LitButtonYes onClick={handleDeactivateAll} text='Yes' />
+          <KeepButtonNeutral onClick={() => {setResetAllForms(false)}} text='No' />
+          <KeepButtonYes onClick={handleDeactivateAll} text='Yes' />
         </div>
       </dialog>
     </>
