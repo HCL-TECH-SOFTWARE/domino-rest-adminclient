@@ -84,20 +84,36 @@ The properties are accessible through the Lit element's shadow root.
 autocompleteRef.current.shadowRoot.querySelector('input');
 ```
 
-### 👠 Shoelace
+### 🎨 Icons
 
 !!! warning
-Shoelace has been deprecated in favour of LIT and webawesome
+Shoelace has been deprecated in favour of Lit and Web Awesome
 
-As part of our move to web components, we are also using Shoelace, which is built under Lit, for more standard web components. Shoelace has an icon and an icon button; however, we couldn't use import the icons through reference, so we include them in the `IMG_DIR` (check config.dev).
+Icons are Font Awesome glyphs served from this app, never from a CDN. Web Awesome's
+built-in resolver would fetch `<wa-icon name="…">` from `ka-f.fontawesome.com` at
+runtime, so `src/services/icon-library.ts` registers a `fa` library whose glyphs are
+bundled from the `@fortawesome/fontawesome-free` dependency instead.
 
-To use icons with Shoelace, add your icon SVG or PNG to the `IMG_DIR`, and reference that path in the `src` attribute of the Shoelace element. For example:
+To use an icon, reference it by its Font Awesome name through that library:
 
 ```javascript
-<sl-icon src="${IMG_DIR}/shoelace/copy.svg"></sl-icon>
+<wa-icon library="${FA_LIBRARY}" name="copy"></wa-icon>
 ```
 
-See the [Shoelace documentation](https://shoelace.style/components/icon/#custom-icons) for more details on custom icons.
+`KeepButton` takes the name directly:
+
+```jsx
+<KeepButton icon="plus" onClick={handleAdd}>Add</KeepButton>
+```
+
+Only the glyphs listed in `ICONS` are bundled — to add one, import its URL in
+`icon-library.ts` and add it to that map. An unregistered name logs a warning and
+renders an empty glyph, and `test/services/icon-library.test.ts` fails the build for
+any name used in markup that isn't bundled.
+
+Don't reference icons by URL (`<wa-icon src="${IMG_DIR}/…">`): that hardcodes `/admin/`
+and renders blank wherever the app isn't mounted there. Data URIs are fine — the
+app-specific icons in `styles/app-icons.ts` are inlined that way.
 
 ## 🛠️ Building
 

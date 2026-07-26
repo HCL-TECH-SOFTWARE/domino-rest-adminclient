@@ -15,7 +15,6 @@ import { Database, Field } from '../../store/databases/types';
 import { Box, MenuItem, Select } from '@mui/material';
 import { Mode } from 'fs';
 import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
-import { IMG_DIR } from '../../config.dev';
 
 const ModeCardsContainer = styled.div`
   padding: 0;
@@ -486,7 +485,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 />
               </div>
               <div className="add-container">
-                <KeepButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`}>
+                <KeepButton onClick={handleAddColumn} icon="plus">
                   Add New Column
                 </KeepButton>
               </div>

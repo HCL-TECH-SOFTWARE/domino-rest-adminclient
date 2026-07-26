@@ -26,7 +26,6 @@ import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
-import { IMG_DIR } from '../../config.dev';
 import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 
@@ -179,10 +178,10 @@ const SchemasLists = () => {
               <span className="top-nav color-text-primary">
                 Schema Management
               </span>
-              <KeepButton onClick={handleRefresh} src={`${IMG_DIR}/shoelace/rotate.svg`}>
+              <KeepButton onClick={handleRefresh} icon="arrows-rotate">
                 Refresh
               </KeepButton>
-              <KeepButton src={`${IMG_DIR}/shoelace/plus.svg`} onClick={handleClickOpen}>
+              <KeepButton icon="plus" onClick={handleClickOpen}>
                 Add Schema
               </KeepButton>
             </TopContainer>

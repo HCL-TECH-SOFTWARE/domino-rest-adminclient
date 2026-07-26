@@ -29,7 +29,6 @@ import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
-import { IMG_DIR } from '../../../config.dev';
 import { KeepButton } from '../../keep-elements/KeepElements';
 
 const AppContainer = styled.div`
@@ -176,7 +175,7 @@ const Kanban: React.FC = () => {
           </p>
           <OptionsContainer>
             <KeepButton
-              src={`${IMG_DIR}/shoelace/plus.svg`}
+              icon="plus"
               onClick={createAction}
             >
               Add Application

@@ -30,6 +30,7 @@
 import { registerIconLibrary } from '@awesome.me/webawesome/dist/components/icon/library.js';
 import { getLogger } from './log-service.js';
 
+import arrowsRotate from '@fortawesome/fontawesome-free/svgs/solid/arrows-rotate.svg?url';
 import circlePlus from '@fortawesome/fontawesome-free/svgs/solid/circle-plus.svg?url';
 import codeCompare from '@fortawesome/fontawesome-free/svgs/solid/code-compare.svg?url';
 import copy from '@fortawesome/fontawesome-free/svgs/solid/copy.svg?url';
@@ -38,7 +39,9 @@ import download from '@fortawesome/fontawesome-free/svgs/solid/download.svg?url'
 import file from '@fortawesome/fontawesome-free/svgs/solid/file.svg?url';
 import folder from '@fortawesome/fontawesome-free/svgs/solid/folder.svg?url';
 import floppyDisk from '@fortawesome/fontawesome-free/svgs/solid/floppy-disk.svg?url';
+import magnifyingGlass from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url';
 import pencil from '@fortawesome/fontawesome-free/svgs/solid/pencil.svg?url';
+import plus from '@fortawesome/fontawesome-free/svgs/solid/plus.svg?url';
 import squareCaretDown from '@fortawesome/fontawesome-free/svgs/solid/square-caret-down.svg?url';
 import squareMinus from '@fortawesome/fontawesome-free/svgs/solid/square-minus.svg?url';
 import squarePlus from '@fortawesome/fontawesome-free/svgs/solid/square-plus.svg?url';
@@ -49,6 +52,7 @@ const log = getLogger('services/icon-library');
 
 /** Font Awesome name → bundled URL. Keys are the canonical Font Awesome 7 names. */
 export const ICONS: Record<string, string> = {
+  'arrows-rotate': arrowsRotate,
   'circle-plus': circlePlus,
   'code-compare': codeCompare,
   copy,
@@ -57,7 +61,9 @@ export const ICONS: Record<string, string> = {
   file,
   folder,
   'floppy-disk': floppyDisk,
+  'magnifying-glass': magnifyingGlass,
   pencil,
+  plus,
   'square-caret-down': squareCaretDown,
   'square-minus': squareMinus,
   'square-plus': squarePlus,

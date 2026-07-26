@@ -5,7 +5,7 @@ import './keep-dialog-header';
 import './keep-dialog-actions';
 import './keep-button-yes';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import { IMG_DIR } from '../../config.dev';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 /**
@@ -40,7 +40,7 @@ export default class ApiErrorDialog extends KeepElement {
             <h3>Error calling API</h3>
           </header>
           <button class="close" @click=${this.handleCancel}>
-            <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></wa-icon>
+            <wa-icon library="${FA_LIBRARY}" name="xmark" label="Close"></wa-icon>
           </button>
         </keep-dialog-header>
         <keep-dialog-content>${this.errorMessage}</keep-dialog-content>

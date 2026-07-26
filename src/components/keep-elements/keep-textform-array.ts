@@ -8,7 +8,7 @@ import './keep-dialog-header';
 import './keep-dialog-actions';
 import '@awesome.me/webawesome/dist/components/details/details.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import { IMG_DIR } from '../../config.dev';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 type Rule = Record<string, any>;
@@ -204,7 +204,7 @@ export default class TextFormArray extends KeepElement {
       <div class="container">
         <section class="buttons-container top">
           <button class="add" @click=${this.handleClickAdd}>
-              <wa-icon src="${IMG_DIR}/shoelace/plus-circle.svg" label="Add"></wa-icon>
+              <wa-icon library="${FA_LIBRARY}" name="circle-plus" label="Add"></wa-icon>
               Add Rule
           </button>
         </section>
@@ -214,7 +214,7 @@ export default class TextFormArray extends KeepElement {
               <keep-textform .data=${item} @data-changed=${(event: Event) => this.handleDataChanged(index, event)}></keep-textform>
               <section class="buttons-container">
                 <button class="delete" @click=${(e: Event) => this.handleClickDelete(e, index)}>
-                    <wa-icon src="${IMG_DIR}/shoelace/trash.svg" label="Delete"></wa-icon>
+                    <wa-icon library="${FA_LIBRARY}" name="trash" label="Delete"></wa-icon>
                     Delete Rule
                 </button>
               </section>
@@ -227,7 +227,7 @@ export default class TextFormArray extends KeepElement {
               <h3>Delete Rule</h3>
             </header>
             <button class="close" @click=${this.handleCancel}>
-              <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></wa-icon>
+              <wa-icon library="${FA_LIBRARY}" name="xmark" label="Close"></wa-icon>
             </button>
           </keep-dialog-header>
           <keep-dialog-content>
@@ -244,7 +244,7 @@ export default class TextFormArray extends KeepElement {
               <h3>Add Rule</h3>
             </header>
             <button class="close" @click=${this.handleCancelAdd}>
-                <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg" label="Close"></wa-icon>
+                <wa-icon library="${FA_LIBRARY}" name="xmark" label="Close"></wa-icon>
             </button>
           </keep-dialog-header>
           <keep-dialog-content>
