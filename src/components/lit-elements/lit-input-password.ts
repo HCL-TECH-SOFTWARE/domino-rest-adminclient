@@ -1,10 +1,11 @@
-import { LitElement, html, css } from 'lit';
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { KeepLitElement } from './keep-lit-element';
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/input/input.js';
 
-class InputPassword extends LitElement {
+@customElement('lit-input-password')
+export default class InputPassword extends KeepLitElement {
   static styles = css`
     :host {
       color-scheme: inherit;
@@ -31,20 +32,13 @@ class InputPassword extends LitElement {
     }
   `;
 
-  static properties = {
-    label: { type: String },
-    helpText: { type: String },
-    placeholder: { type: String },
-    required: { type: Boolean },
-  };
+  @property({ type: String }) label = '';
+  @property({ type: String }) helpText?: string;
+  @property({ type: String }) placeholder = '';
+  @property({ type: Boolean }) required = false;
 
-  constructor() {
-    super()
-    this.label = ''
-    this.hint = ''
-    this.placeholder = ''
-    this.required = false
-  }
+  /** Plain field used by render() (matches original — not the `helpText` property). */
+  hint = '';
 
   render() {
     return html`
@@ -63,6 +57,8 @@ class InputPassword extends LitElement {
   }
 }
 
-customElements.define('lit-input-password', InputPassword);
-
-export default InputPassword
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-input-password': InputPassword;
+  }
+}

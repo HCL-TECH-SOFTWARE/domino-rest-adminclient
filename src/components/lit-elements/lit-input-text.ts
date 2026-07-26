@@ -1,10 +1,11 @@
-import { LitElement, html, css } from 'lit';
-// Import Shoelace theme (light/dark)
-import '@awesome.me/webawesome/dist/styles/webawesome.css';
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { KeepLitElement } from './keep-lit-element';
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/input/input.js';
 
-class InputText extends LitElement {
+@customElement('lit-input-text')
+export default class InputText extends KeepLitElement {
   static styles = css`
     :host {
       color-scheme: inherit;
@@ -31,20 +32,10 @@ class InputText extends LitElement {
     }
   `;
 
-  static properties = {
-    label: { type: String },
-    hint: { type: String },
-    placeholder: { type: String },
-    required: { type: Boolean },
-  };
-
-  constructor() {
-    super()
-    this.label = ''
-    this.hint = ''
-    this.placeholder = ''
-    this.required = false
-  }
+  @property({ type: String }) label = '';
+  @property({ type: String }) hint = '';
+  @property({ type: String }) placeholder = '';
+  @property({ type: Boolean }) required = false;
 
   render() {
     return html`
@@ -61,6 +52,8 @@ class InputText extends LitElement {
   }
 }
 
-customElements.define('lit-input-text', InputText);
-
-export default InputText
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-input-text': InputText;
+  }
+}
