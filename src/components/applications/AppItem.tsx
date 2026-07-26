@@ -18,7 +18,6 @@ import { DeleteIcon } from '../../styles/CommonStyles';
 import { MdRefresh, MdEdit } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
-import '../webcomponents/copyable-text';
 import { LitAppStatus, LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
 
 const StyledTableRow = styled(TableRow)`
