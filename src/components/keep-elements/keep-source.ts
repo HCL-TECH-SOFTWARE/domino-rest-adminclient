@@ -15,7 +15,7 @@ import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 // Import setBasePath for Web Awesome assets
 import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
-import { IMG_DIR } from '../../config.dev';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 /** WebAwesome custom elements are not typed as native inputs — narrow only the
@@ -379,8 +379,8 @@ export default class SourceTree extends KeepElement {
 
         return html`
           <wa-tree-item class="custom-icons" ?lazy=${isObjectOrArray} @wa-lazy-load="${isObjectOrArray ? (e: Event) => this.handleLazyLoad(e, value, fullPath, generateTreeItems) : null}">
-            <wa-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></wa-icon>
-            <wa-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></wa-icon>
+            <wa-icon library="${FA_LIBRARY}" name="square-plus" slot="expand-icon"></wa-icon>
+            <wa-icon library="${FA_LIBRARY}" name="square-minus" slot="collapse-icon"></wa-icon>
             <section class="${isObjectOrArray ? 'object-array-container' : `key-value-container ${isModified ? 'modified' : ''}`}">
               ${isObjectOrArray ? html`
                 ${`${label} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
@@ -404,23 +404,23 @@ export default class SourceTree extends KeepElement {
               `}
               <wa-dropdown>
                 <wa-button>
-                  <wa-icon appearance="filled" class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></wa-icon>
+                  <wa-icon appearance="filled" class="icon-button" slot="trigger" library="${FA_LIBRARY}" name="square-caret-down" label="Context Menu"></wa-icon>
                 </wa-button>
                 <wa-dropdown-item @click="${(e: Event) => this.handleClickAdd(e)}">
                   Add
-                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></wa-icon>
+                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="circle-plus"></wa-icon>
                 </wa-dropdown-item>
                 <wa-dropdown-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e: Event) => {this.handleClickEdit(e, key, value)}}">
                   Edit
-                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></wa-icon>
+                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="pencil"></wa-icon>
                 </wa-dropdown-item>
                 <wa-dropdown-item ?disabled=${!isObjectOrArray} @click="${isObjectOrArray ? (e: Event) => {this.handleClickDuplicate(e, fullPath, key, value)} : null}">
                   Duplicate
-                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/copy.svg"></wa-icon>
+                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="copy"></wa-icon>
                 </wa-dropdown-item>
                 <wa-dropdown-item @click="${() => this.handleClickRemove(key, this.editedContent, fullPath)}">
                   Remove
-                  <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/trash.svg"></wa-icon>
+                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="trash"></wa-icon>
                 </wa-dropdown-item>
               </wa-dropdown>
             </section>
@@ -467,8 +467,8 @@ export default class SourceTree extends KeepElement {
     return html`
       <main>
         <wa-tree class="custom-icons">
-          <wa-icon src="${IMG_DIR}/shoelace/plus-square.svg" slot="expand-icon"></wa-icon>
-          <wa-icon src="${IMG_DIR}/shoelace/dash-square.svg" slot="collapse-icon"></wa-icon>
+          <wa-icon library="${FA_LIBRARY}" name="square-plus" slot="expand-icon"></wa-icon>
+          <wa-icon library="${FA_LIBRARY}" name="square-minus" slot="collapse-icon"></wa-icon>
           ${generateTreeItems(this.editedContent)}
         </wa-tree>
       </main>

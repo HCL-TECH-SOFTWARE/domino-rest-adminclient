@@ -106,11 +106,15 @@ export default class MonacoEditor extends LitElement {
       value: this.value,
       language: this.language,
       theme: monacoTheme,
-      minimap: { enabled: false },
+      // Both match the pre-`keep-monaco-editor` behaviour, where the Source tab used
+      // `@monaco-editor/react` with neither option set and so got Monaco's own
+      // defaults: the minimap is the document overview in the right margin, and long
+      // lines scroll horizontally rather than wrapping.
+      minimap: { enabled: true },
       automaticLayout: true,
       ...this._typographyOptions(),
       scrollBeyondLastLine: false,
-      wordWrap: 'on',
+      wordWrap: 'off',
       lineNumbers: 'on',
       glyphMargin: false,
       folding: true,
@@ -179,8 +183,8 @@ export default class MonacoEditor extends LitElement {
       automaticLayout: true,
       ...this._typographyOptions(),
       scrollBeyondLastLine: false,
-      wordWrap: 'on',
-      minimap: { enabled: false },
+      // Kept in step with the standard editor above.
+      wordWrap: 'off',
       ignoreTrimWhitespace: false,
       theme: monacoTheme
     });
@@ -194,6 +198,13 @@ export default class MonacoEditor extends LitElement {
     });
 
     const modifiedEditor = this.diffEditor.getModifiedEditor();
+
+    // `minimap` is the one option the diff editor drops on its way to the inner
+    // editors — passing it to `createDiffEditor`, or to the diff widget's own
+    // `updateOptions`, both leave it disabled. It has to be set on the inner editor
+    // directly. Only the modified side gets one, matching how VS Code renders a diff:
+    // a single overview in the right margin.
+    modifiedEditor.updateOptions({ minimap: { enabled: true } });
 
     // Forward changes from the modified pane
     modifiedEditor.onDidChangeModelContent(() => {

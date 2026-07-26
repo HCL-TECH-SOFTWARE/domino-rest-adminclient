@@ -2,10 +2,22 @@ import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import './keep-source';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import { IMG_DIR } from '../../config.dev';
+import '@awesome.me/webawesome/dist/components/button/button.js';
 import { KeepElement } from './keep-element';
+import { FA_LIBRARY } from '../../services/icon-library';
 
 type TreeEl = HTMLElement & { editedContent: unknown };
+
+/**
+ * The views backed by the Monaco editor rather than the JSON tree. They share one
+ * buffer, so switching between them preserves edits.
+ */
+export const TEXTUAL_VIEWS = ['text', 'diff'] as const;
+
+/** True for the views that read and write the shared Monaco buffer. */
+export function isTextualView(option: string): boolean {
+  return (TEXTUAL_VIEWS as readonly string[]).includes(option);
+}
 
 /**
  * Source editor chrome: a Tree/Text view switcher plus copy/download/cancel/save
@@ -63,19 +75,40 @@ export default class SourceContents extends KeepElement {
         max-height: 60vh;
     }
 
-    button {
-        background-color: transparent;
-        border: none;
-        padding: 0;
-        margin: 0;
-        color: light-dark(#000, #e0e0e0);
-
-        &:hover {
-            cursor: pointer;
-        }
+    section.button-group {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 13px;
     }
-    button[disabled] {
-        cursor: not-allowed;
+
+    section.view-switcher {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Names which side is which, so the diff isn't ambiguous at a glance. */
+    .diff-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: light-dark(#4a4a4a, #b8b8b8);
+    }
+
+    /* Plain wa-buttons acting as icon buttons: keep the icon's own colour and drop
+       the default text-button padding so the header keeps its original density. */
+    wa-button {
+        --wa-form-control-padding-inline: 0.4em;
+        color: light-dark(#000, #e0e0e0);
+    }
+    wa-button.cancel {
+        color: #ED0000;
+    }
+    wa-button.save {
+        color: #007E0D;
     }
   `;
 
@@ -89,6 +122,16 @@ export default class SourceContents extends KeepElement {
   handleDropdownChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const newOption = target.value;
+
+    // Text and Diff are two views of the *same* editor buffer, so moving between
+    // them discards nothing and must not prompt — and in particular Diff has to
+    // keep the pending edits, or there would be nothing left to diff against.
+    if (isTextualView(this.selectedOption) && isTextualView(newOption)) {
+      this.selectedOption = newOption;
+      this.onDropdownChange(newOption);
+      return;
+    }
+
     const confirmSwitch = confirm(
       'Switching the view will discard any current changes. Do you want to proceed?',
     );
@@ -159,26 +202,37 @@ export default class SourceContents extends KeepElement {
   render() {
     return html`
         <header>
-            <select @change="${this.handleDropdownChange}" .value="${this.selectedOption}">
-                <option value="tree">Tree View</option>
-                <option value="text">Text View</option>
-            </select>
+            <section class="view-switcher">
+                <select @change="${this.handleDropdownChange}" .value="${this.selectedOption}">
+                    <option value="tree">Tree View</option>
+                    <option value="text">Text View</option>
+                    <option value="diff">Diff View</option>
+                </select>
+                ${this.selectedOption === 'diff'
+                  ? html`
+                    <span class="diff-hint">
+                        <wa-icon library="${FA_LIBRARY}" name="code-compare" label="Diff view"></wa-icon>
+                        saved vs. your edits
+                    </span>
+                    `
+                  : ''}
+            </section>
             <section class="buttons-container">
-                <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
-                    <button title="Copy" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleCopyClick}"><wa-icon src="${IMG_DIR}/shoelace/copy.svg"></wa-icon></button>
-                    <button title="Download" style="color: light-dark(#000, #e0e0e0);" @click="${this.handleDownloadClick}"><wa-icon src="${IMG_DIR}/shoelace/download.svg"></wa-icon></button>
+                <section class="button-group">
+                    <wa-button appearance="plain" size="s" title="Copy" label="Copy to clipboard" @click="${this.handleCopyClick}">
+                        <wa-icon library="${FA_LIBRARY}" name="copy" label="Copy to clipboard"></wa-icon>
+                    </wa-button>
+                    <wa-button appearance="plain" size="s" title="Download" label="Download" @click="${this.handleDownloadClick}">
+                        <wa-icon library="${FA_LIBRARY}" name="download" label="Download"></wa-icon>
+                    </wa-button>
                 </section>
-                <section style="display: flex; flex-direction: row; align-items: center; gap: 13px;">
-                    <section>
-                        <button title="Cancel" style="color: #ED0000" @click="${this.handleCancelClick}">
-                            <wa-icon src="${IMG_DIR}/shoelace/x-lg.svg"></wa-icon>
-                        </button>
-                    </section>
-                    <section>
-                        <button title="Save" style="color: #007E0D" @click="${this.handleSaveClick}">
-                            <wa-icon src="${IMG_DIR}/shoelace/floppy.svg"></wa-icon>
-                        </button>
-                    </section>
+                <section class="button-group">
+                    <wa-button class="cancel" appearance="plain" size="s" title="Cancel" label="Cancel" @click="${this.handleCancelClick}">
+                        <wa-icon library="${FA_LIBRARY}" name="xmark" label="Cancel"></wa-icon>
+                    </wa-button>
+                    <wa-button class="save" appearance="plain" size="s" title="Save" label="Save" @click="${this.handleSaveClick}">
+                        <wa-icon library="${FA_LIBRARY}" name="floppy-disk" label="Save"></wa-icon>
+                    </wa-button>
                 </section>
             </section>
         </header>

@@ -23,6 +23,7 @@ import MobileSidebar from '../sidenav/MobileSidebar';
 import { getTheme, switchTheme } from '../../store/styles/action';
 import Footer from '../../Footer';
 import theme from '../../theme';
+import { applyTheme } from '../../services/theme-service';
 
 const AppContainer = styled.main`
   display: flex;
@@ -116,9 +117,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const isDark = themeMode === 'dark';
-    document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    applyTheme(themeMode);
   }, [themeMode]);
 
   return (

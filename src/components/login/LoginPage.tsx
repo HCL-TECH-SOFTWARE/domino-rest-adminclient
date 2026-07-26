@@ -39,6 +39,7 @@ import {
 import { AlertManager, checkForResponse } from '../../utils/common';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { applyAppearance } from '../../services/theme-service';
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
@@ -171,9 +172,7 @@ const LoginPage = () => {
   const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
 
   useEffect(() => {
-    const theme = isDark ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', theme);
-    document.documentElement.style.colorScheme = theme;
+    applyAppearance(isDark ? 'dark' : 'light');
   }, [isDark]);
 
   const toggleTheme = () => {
