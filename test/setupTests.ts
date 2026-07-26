@@ -91,3 +91,13 @@ if (!window.matchMedia) {
     dispatchEvent: vi.fn(),
   }));
 }
+
+// Monaco probes this at import time (clipboard/browser/clipboard.js) to decide
+// whether to register its paste command. jsdom implements neither this
+// long-deprecated API nor `navigator.clipboard`, so the bare property access
+// throws and takes down every suite that transitively imports KeepElements.
+// Reporting `false` is accurate for jsdom and simply leaves the command
+// unregistered.
+if (!document.queryCommandSupported) {
+  document.queryCommandSupported = vi.fn().mockReturnValue(false);
+}
