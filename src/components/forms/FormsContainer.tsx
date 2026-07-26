@@ -19,7 +19,7 @@ import {
 import { AppState } from '../../store';
 import { getDatabaseIndex } from '../../store/databases/scripts';
 import DetailsSection from './DetailsSection';
-import { MONACO_EDITOR_DIR, SETUP_KEEP_API_URL } from '../../config.dev';
+import { SETUP_KEEP_API_URL } from '../../config.dev';
 import {
   setForms,
   setCurrentForms,
@@ -42,9 +42,8 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import EditViewDialog from './EditView';
-import { KeepButtonNeutral, KeepButtonYes, KeepSource } from '../keep-elements/KeepElements';
-import { Editor } from '@monaco-editor/react';
-import loader from '@monaco-editor/loader';
+import { KeepButtonNeutral, KeepButtonYes, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
+import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
@@ -184,6 +183,9 @@ const FormsContainer = () => {
   const [editedContent, setEditedContent] = useState({})
   
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
+  // The left-hand side of the diff: the schema as last saved on the server. Same
+  // formatting as the editor buffer, so the diff shows real edits and not whitespace.
+  const savedSchemaText = React.useMemo(() => JSON.stringify(schemaData, null, 1), [schemaData])
   const [selectedOption, setSelectedOption] = useState('tree');
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
   const [discardChangesDialog, setDiscardChangesDialog] = useState(false);
@@ -193,6 +195,8 @@ const FormsContainer = () => {
   const [openViewName, setOpenViewName] = useState('');
 
   const editorRef = useRef<any>(null)
+  // Lets the reset effect below tell a view switch apart from a schemaData refresh.
+  const previousViewRef = useRef(selectedOption)
   const saveRef = useRef<HTMLDialogElement>(null);
   const discardRef = useRef<HTMLDialogElement>(null);
 
@@ -228,59 +232,6 @@ const FormsContainer = () => {
       console.error("Error fetching subforms:", error);
     }
   }
-
-  useEffect(() => {
-    // Override the createElement method to set the type attribute on script tags
-    const originalCreateElement = document.createElement.bind(document);
-    document.createElement = (tagName: string, options: any) => {
-      const element = originalCreateElement(tagName, options);
-      if (tagName === 'script') {
-        (element as HTMLScriptElement).type = 'application/javascript';
-      }
-      return element;
-    };
-  
-    // Configure the loader to use the correct path for the copied version
-    loader.config({ paths: { vs: `${MONACO_EDITOR_DIR}` } });
-
-    // Define our custom JSON themes as soon as the Monaco instance is
-    // available — BEFORE any <Editor /> is mounted. Defining themes
-    // after the editor has already created its model causes the main
-    // editor view to render tokens with the previously-active theme
-    // (the minimap repaints every frame so it picks up the new colors,
-    // which is why the minimap looked themed but the text did not).
-    loader.init().then((monaco) => {
-      monaco.editor.defineTheme('json-light', {
-        base: 'vs',
-        inherit: true,
-        rules: [
-          { token: 'string.key.json', foreground: '0451A5', fontStyle: 'bold' },
-          { token: 'string.value.json', foreground: 'C7621D' },
-          { token: 'number', foreground: '098658' },
-          { token: 'keyword.json', foreground: '0000FF' },
-        ],
-        colors: {},
-      });
-      monaco.editor.defineTheme('json-dark', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-          { token: 'string.key.json', foreground: '9CDCFE', fontStyle: 'bold' },
-          { token: 'string.value.json', foreground: 'CE9178' },
-          { token: 'number', foreground: 'B5CEA8' },
-          { token: 'keyword.json', foreground: '569CD6' },
-        ],
-        colors: {
-          'editor.background': '#1e1e2e',
-        },
-      });
-    }).catch(() => { /* loader failed; editor will fall back to default theme */ });
-  
-    // Cleanup function to restore the original createElement method
-    return () => {
-      document.createElement = originalCreateElement;
-    };
-  }, []);
 
   useEffect(() => {
     setSourceTabContent(JSON.stringify(schemaData, null, 1))
@@ -376,9 +327,19 @@ const FormsContainer = () => {
     }
   };
 
+  // Moving between Text and Diff keeps the same editor buffer, so the live text has
+  // to be captured before the switch — `value` is what the rebuilt editor reads, and
+  // it would otherwise still hold the pre-edit content.
+  const handleViewChange = (newOption: string) => {
+    if (isTextualView(selectedOption) && isTextualView(newOption)) {
+      setSourceTabContent(showValue());
+    }
+    setSelectedOption(newOption);
+  }
+
   const handleClickSave = async () => {
     if (litsourceRef.current && litsourceRef.current.shadowRoot) {
-      if (selectedOption === 'text') {
+      if (isTextualView(selectedOption)) {
         setEditedContent(JSON.parse(showValue()))
         setSourceTabContent(showValue())
       } else if (selectedOption === 'tree') {
@@ -399,7 +360,7 @@ const FormsContainer = () => {
   }
 
   const handleClickCancel = () => {
-    if (selectedOption === 'text') {
+    if (isTextualView(selectedOption)) {
       setSourceTabContent(showValue())
     } else if (litsourceRef.current && litsourceRef.current.shadowRoot) {
       setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
@@ -414,7 +375,7 @@ const FormsContainer = () => {
   }
 
   const handleKeepEditing = () => {
-    if (selectedOption === 'text') {
+    if (isTextualView(selectedOption)) {
       setSourceTabContent(showValue())
     } else if (selectedOption === 'tree') {
       setSourceTabContent(JSON.stringify(litsourceRef.current.content, null, 2))
@@ -425,18 +386,6 @@ const FormsContainer = () => {
   const handleClickNo = () => {
     setSourceTabContent(JSON.stringify(editedContent, null, 1))
     setSaveChangesDialog(false)
-  }
-
-  const handleEditorDidMount = (editor: any, monaco: any) => {
-    editorRef.current = editor;
-
-    // Ensure the model's language is JSON so the tokenizer kicks in.
-    const model = editor.getModel();
-    if (model) {
-      monaco.editor.setModelLanguage(model, 'json');
-    }
-
-    monaco.editor.setTheme(themeMode === 'dark' ? 'json-dark' : 'json-light');
   }
 
   const showValue = () => {
@@ -490,7 +439,18 @@ const FormsContainer = () => {
 
   // Reset the source tab content (i.e. discard edits) when switching views
   useEffect(() => {
-    if (selectedOption === 'tree' || selectedOption === 'text') {
+    const previous = previousViewRef.current;
+    previousViewRef.current = selectedOption;
+
+    // Text ⇄ Diff is a change of lens, not of buffer: both render the same pending
+    // edits, and resetting here would leave the diff with nothing to show. Any other
+    // switch keeps the original discard behaviour, as does a schemaData refresh
+    // (where previous === selectedOption, so this guard doesn't apply).
+    if (previous !== selectedOption && isTextualView(previous) && isTextualView(selectedOption)) {
+      return;
+    }
+
+    if (selectedOption === 'tree' || isTextualView(selectedOption)) {
       setSourceTabContent(JSON.stringify(schemaData, null, 1));
     }
   }, [selectedOption, schemaData])
@@ -688,17 +648,17 @@ const FormsContainer = () => {
                   selectedOption={selectedOption}
                   onSave={handleClickSave}
                   onCancel={handleClickCancel}
-                  onDropdownChange={setSelectedOption}
+                  onDropdownChange={handleViewChange}
                   getExternalContent={showValue}
                   ref={litsourceRef}
                 />
-                {selectedOption === 'text' && <Editor
-                  height='70vh'
+                {isTextualView(selectedOption) && <KeepMonacoEditor
+                  ref={editorRef}
+                  style={{ height: '70vh' }}
                   language="json"
-                  defaultLanguage="json"
-                  defaultValue={sourceTabContent}
-                  onMount={handleEditorDidMount}
-                  theme={themeMode === 'dark' ? 'json-dark' : 'json-light'}
+                  value={sourceTabContent}
+                  diffMode={selectedOption === 'diff'}
+                  originalValue={savedSchemaText}
                 />}
                 <dialog ref={saveRef} className='dialog'>
                   <FormDialogHeader

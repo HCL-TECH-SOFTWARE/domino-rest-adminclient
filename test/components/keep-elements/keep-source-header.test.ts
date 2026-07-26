@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanupLit, mountLit } from '../../test-utils/lit';
 import '../../../src/components/keep-elements/keep-source-header';
+import { isTextualView } from '../../../src/components/keep-elements/keep-source-header';
 import type SourceContents from '../../../src/components/keep-elements/keep-source-header';
 
 const TAG = 'keep-source';
@@ -18,10 +19,58 @@ describe('keep-source-header (tag: keep-source)', () => {
     expect(q(el, 'select')).toBeTruthy();
     expect(q(el, 'option[value="tree"]')).toBeTruthy();
     expect(q(el, 'option[value="text"]')).toBeTruthy();
-    expect(q(el, 'button[title="Copy"]')).toBeTruthy();
-    expect(q(el, 'button[title="Download"]')).toBeTruthy();
-    expect(q(el, 'button[title="Cancel"]')).toBeTruthy();
-    expect(q(el, 'button[title="Save"]')).toBeTruthy();
+    expect(q(el, 'wa-button[title="Copy"]')).toBeTruthy();
+    expect(q(el, 'wa-button[title="Download"]')).toBeTruthy();
+    expect(q(el, 'wa-button[title="Cancel"]')).toBeTruthy();
+    expect(q(el, 'wa-button[title="Save"]')).toBeTruthy();
+  });
+
+  it('offers Diff View alongside Tree and Text', async () => {
+    const el = await mountLit<SourceContents>(TAG);
+    expect(q(el, 'option[value="diff"]')).toBeTruthy();
+  });
+
+  it('names the two sides only while in diff view', async () => {
+    const diff = await mountLit<SourceContents>(TAG, { selectedOption: 'diff' });
+    expect(q(diff, 'wa-icon[name="code-compare"]')).toBeTruthy();
+
+    const text = await mountLit<SourceContents>(TAG, { selectedOption: 'text' });
+    expect(q(text, 'wa-icon[name="code-compare"]')).toBeNull();
+  });
+
+  describe('isTextualView', () => {
+    it('covers the Monaco-backed views and excludes the tree', () => {
+      expect(isTextualView('text')).toBe(true);
+      expect(isTextualView('diff')).toBe(true);
+      expect(isTextualView('tree')).toBe(false);
+    });
+  });
+
+  // Text and Diff share one editor buffer. Prompting to discard on that switch would
+  // be a lie, and actually discarding would leave the diff with nothing to show.
+  it('switches straight between Text and Diff without a discard prompt', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const onDropdownChange = vi.fn();
+    const el = await mountLit<SourceContents>(TAG, { selectedOption: 'text', onDropdownChange });
+    const select = q(el, 'select') as HTMLSelectElement;
+    select.value = 'diff';
+    select.dispatchEvent(new Event('change'));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(el.selectedOption).toBe('diff');
+    expect(onDropdownChange).toHaveBeenCalledWith('diff');
+  });
+
+  it('still prompts to discard when leaving the tree for a text view', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const onDropdownChange = vi.fn();
+    const el = await mountLit<SourceContents>(TAG, { selectedOption: 'tree', onDropdownChange });
+    const select = q(el, 'select') as HTMLSelectElement;
+    select.value = 'diff';
+    select.dispatchEvent(new Event('change'));
+
+    expect(confirmSpy).toHaveBeenCalledOnce();
+    expect(el.selectedOption).toBe('diff');
   });
 
   it('renders the tree editor only in tree view', async () => {
@@ -35,14 +84,14 @@ describe('keep-source-header (tag: keep-source)', () => {
   it('invokes onSave when the save button is clicked', async () => {
     const onSave = vi.fn();
     const el = await mountLit<SourceContents>(TAG, { selectedOption: 'text', content: { a: 1 }, onSave });
-    (q(el, 'button[title="Save"]') as HTMLButtonElement).click();
+    (q(el, 'wa-button[title="Save"]') as HTMLElement).click();
     expect(onSave).toHaveBeenCalledOnce();
   });
 
   it('invokes onCancel when the cancel button is clicked', async () => {
     const onCancel = vi.fn();
     const el = await mountLit<SourceContents>(TAG, { selectedOption: 'text', onCancel });
-    (q(el, 'button[title="Cancel"]') as HTMLButtonElement).click();
+    (q(el, 'wa-button[title="Cancel"]') as HTMLElement).click();
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
@@ -73,7 +122,7 @@ describe('keep-source-header (tag: keep-source)', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
     vi.spyOn(window, 'alert').mockImplementation(() => {});
     const el = await mountLit<SourceContents>(TAG, { selectedOption: 'tree', content: { a: 1 } });
-    (q(el, 'button[title="Copy"]') as HTMLButtonElement).click();
+    (q(el, 'wa-button[title="Copy"]') as HTMLElement).click();
     expect(writeText).toHaveBeenCalledOnce();
   });
 
@@ -83,7 +132,7 @@ describe('keep-source-header (tag: keep-source)', () => {
     (URL as unknown as { revokeObjectURL: unknown }).revokeObjectURL = vi.fn();
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     const el = await mountLit<SourceContents>(TAG, { selectedOption: 'tree', content: { a: 1 } });
-    (q(el, 'button[title="Download"]') as HTMLButtonElement).click();
+    (q(el, 'wa-button[title="Download"]') as HTMLElement).click();
     expect(URL.createObjectURL).toHaveBeenCalled();
     expect(click).toHaveBeenCalled();
   });
