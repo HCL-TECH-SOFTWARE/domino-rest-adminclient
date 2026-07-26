@@ -59,7 +59,7 @@
 | §6.7 | Shared base class | ✅ **DONE** — `KeepElement` (`keep-element.ts`) with a typed, composed `emit()` | `88a47bd` |
 | §6.4 | Consistent event contract | ✅ **DONE** — `emit()` dispatches `bubbles: true, composed: true`; `KeepElements.tsx` maps `events` for `KeepCheckbox` and `KeepMonacoEditor` | `88a47bd` |
 | §6.3 | Single global `webawesome.css` import | ✅ **DONE** — exactly one import, in `src/index.tsx`; components import only the `wa-*` element modules they render | PRs #652–#659 |
-| §6.6 | Predictable registration | ✅ **DONE** — one file per tag, self-registering via `@customElement`, all re-exported through `KeepElements.tsx` |  |
+| §6.6 | Predictable registration | ✅ **DONE** — one file per tag, self-registering via `@customElement`; 25 of the 26 re-exported through `KeepElements.tsx` (`keep-schema-status` is internal by design) |  |
 | §6.x | Naming | ✅ **DONE** — `lit-elements/` → `keep-elements/`, `lit-*` → `keep-*`, `LitElements.tsx` → `KeepElements.tsx`, `lit-overrides.css` → `keep-overrides.css` | `8ea711b`, PR #666 |
 | — | Test coverage for the element layer | ✅ **DONE** — 28 suites under `test/components/keep-elements/` (26 elements + the base class + a Monaco lifecycle suite), `test/test-utils/lit.ts` (`mountLit`/`cleanupLit`); shadow-DOM assertions work. The directory now sits at **84.2 % line coverage** | report 01 §B2 |
 | §6.2 | Collapse `lit-button*` into one component | 🔴 **NOT DONE** — `keep-button` (wraps `wa-button`) still coexists with `keep-button-yes`/`-no`/`-neutral`, which are plain `<button>`s with hardcoded hex | — |
@@ -144,7 +144,7 @@ Key facts as built today:
   possible without rewriting its save/cancel flow.
 - **Registration:** each file self-registers via `@customElement('keep-…')` as an import
   side effect. `src/index.tsx` imports `webawesome.css` once; the 18 WA components in use
-  are imported explicitly by the element that renders them.
+  are imported explicitly by whichever file renders them.
 
   > 🚫 **Do not call `setBasePath()`.** Both calls were removed in PR #673 and the
   > reasoning is pinned in a comment at `src/index.tsx:18-27`, guarded by
@@ -252,7 +252,7 @@ formatting helpers), which is the evidence behind §5.1 and §5.2.
 | `TextField` (`multiline`) | `wa-textarea` | Free | ✅ confirmed present in 3.10. No `keep-*` wrapper yet — author one. |
 | `TextField` (`type=number`) | `wa-number-input` | Free | Stepper built-in. |
 | password field / `Visibility` toggle | `wa-input type="password" password-toggle` | Free | Wrapped as `keep-input-password` (custom toggle today; can use the built-in). |
-| `Checkbox` | `wa-checkbox` | Free | Wrapped as `keep-checkbox` (the one element with an `events` map). |
+| `Checkbox` | `wa-checkbox` | Free | Wrapped as `keep-checkbox` (one of the two wrappers with an `events` map). |
 | `Switch` | `wa-switch` | Free | Wrapped as `keep-switch`. |
 | `Select` + `MenuItem` | `wa-select` + `wa-option` | Free | Wrapped-ish via `keep-dropdown`. |
 | `Autocomplete` (in `DropdownFormulaEngine`) | `wa-combobox` | **Pro** | Free fallback = existing custom `keep-autocomplete`. **Still Pro at 3.10.** |
@@ -633,8 +633,10 @@ The debt catalogue from the original report, re-scored:
    pattern. 🟡 Residual: `keep-drawer` still takes a `closeFn` **property**; only 2 of the
    25 wrappers declare an `events` map in `KeepElements.tsx`.
 5. 🔴 **Ad-hoc dark-mode overrides — still open.** *Delivery* of the theme is now clean
-   (`services/theme-service.ts`, §2.5) and 7 element files pick it up via
-   `:host-context(body[data-theme="dark"])`. But the **values** are still hardcoded
+   (`services/theme-service.ts`, §2.5) and **6** element files pick it up via
+   `:host-context(body[data-theme="dark"])` (`keep-alert`, `keep-source`,
+   `keep-default-card`, `keep-input-text`, `keep-input-password`, `keep-switch`).
+   But the **values** are still hardcoded
    per component: `keep-button.ts` writes `#f4e9ff` into `--wa-color-brand-50`,
    `--wa-color-brand-border-loud` and `--wa-color-brand-fill-loud` (plus two
    `!important`s), and there are **100 `light-dark()` literals** across
@@ -646,9 +648,18 @@ The debt catalogue from the original report, re-scored:
    out of inline `style=` attributes into the element's `static styles` — which is the
    right move, but it also added a new hardcoded pair for the diff hint. Feature work is
    outrunning the token layer, which is an argument for pulling report 03's P3 forward.
-6. ✅ **Registration.** One tag per file, self-registering, all re-exported through
-   `KeepElements.tsx`. 🟡 Residual: the `keep-source` / `keep-source-tree` file/tag
-   inversion (§2.1).
+
+   > 🐛 **New finding — that `keep-button` override is dead code.** Its selector is
+   > `:host([data-theme='dark']) wa-button[appearance='outlined']::part(base)`, i.e. it
+   > requires `data-theme` on the **`keep-button` element itself**. Nothing sets it —
+   > `theme-service` writes `body.dataset.theme`, and no consumer passes the attribute
+   > down. It is the only `:host([data-theme` selector in the tree; the other 6 elements
+   > correctly use `:host-context(body[data-theme="dark"])`. So the rule never matches:
+   > either fix the selector or delete the block. Confirm which before tokenizing it,
+   > otherwise report 03 will faithfully tokenize a style that has never rendered.
+6. ✅ **Registration.** One tag per file, self-registering; 25 of 26 re-exported through
+   `KeepElements.tsx` (`keep-schema-status` is internal to `keep-nsf-card` by design).
+   🟡 Residual: the `keep-source` / `keep-source-tree` file/tag inversion (§2.1).
 7. ✅ **Shared base class.** `KeepElement` exists. Its theme-wiring role is unused (see 5).
 
 ---

@@ -439,7 +439,8 @@ report-02 pass so a view loses its React icons at the same time it loses its Rea
 ### `src/index.tsx` → `src/index.ts`
 
 Replace `ReactDOM.createRoot(...).render(<Provider><App/></Provider>)` with a
-custom-element mount. Everything else (CSS imports, `setBasePath`, theme init) stays.
+custom-element mount. Everything else (the five CSS imports, theme init) stays. There is
+**no `setBasePath()` call to carry across** — see the note below.
 
 ```ts
 // src/index.ts (was index.tsx)
@@ -490,9 +491,11 @@ The shell itself becomes `<wa-page>` — see **report 03 §2.3** (now confirmed 
 | `standalone-*.js` (prettier) | 81.05 kB | — | on first format |
 | ~60 Monaco language chunks | — | — | per language |
 
-The previous refresh measured the entry chunk at **6.94 MB / 1.88 MB gzip**. The ~608 kB
-drop is entirely #673: `prettier` moved from `devDependencies` to `dependencies` *and* its
-three modules moved behind a memoised dynamic `import()` in `keep-monaco-editor.ts`:
+The previous refresh measured the entry chunk at **6.94 MB / 1.88 MB gzip**. The drop is
+entirely #673: `prettier` moved from `devDependencies` to `dependencies` *and* its three
+modules moved behind a memoised dynamic `import()` in `keep-monaco-editor.ts`. Those three
+modules are exactly the `babel` + `estree` + `standalone` chunks above — **608.01 kB** that
+the entry chunk no longer carries:
 
 ```ts
 const fetchPrettier = () => Promise.all([
@@ -509,7 +512,7 @@ observations follow from it:
 
 1. **`React.lazy`/`Suspense` are used 0 times** — the React app does no route-level code
    splitting at all. That is not worth retrofitting *into* React given this report's
-   direction, but it means the whole app, all 130 views, ships in one chunk today.
+   direction, but it means the whole app — all 130 `.tsx` files — ships in one chunk today.
 2. **Monaco core is the next and largest target.** `keep-monaco-editor.ts` still imports it
    statically (§5). Moving `import * as monaco from 'monaco-editor'` into `firstUpdated()`
    applies exactly the `loadPrettier()` shape above and should take several MB more out of

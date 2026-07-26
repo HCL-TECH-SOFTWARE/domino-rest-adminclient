@@ -63,7 +63,7 @@ still **not used anywhere** in `src/`. The **theming substrate** has moved, thou
 | 5 | **WebAwesome token scaffolding exists and has grown.** `keep-overrides.css` defines the full `--wa-color-brand-{05..95}` ramp, brand aliases, **`--wa-font-size-scale: 0.85`**, and a `@media (prefers-color-scheme: dark)` brand override. | 🟢 improved | The token system is live; the work is *extending* it to the shell + Linaria, not bootstrapping it. |
 | 6 | ~~**CSP is not being sent at all** — a regression that blocks `wa-page`~~ → **the finding was wrong.** `vite.config.mts:29`'s `'disabledContent-Security-Policy'` key configures the **Vite dev server only**; the production CSP comes from **`config.json`, outside this repo**. | ➖ **WITHDRAWN** | Nothing to fix in-repo, and **CSP is not a prerequisite for `wa-page`**. §5 rewritten as a requirements note for whoever owns `config.json`. |
 | 6b | ~~`setBasePath` points at **webawesome@3.6.0** while **3.10.0** is installed~~ | ✅ **RESOLVED** (#673) | Both calls **deleted**. `src/index.tsx` now carries a comment explaining why there is none: in WA 3.x the base path feeds only the autoloader, and this app imports its **18** WA components explicitly. Guarded by source scans in `test/services/icon-library.test.ts`. |
-| 7 | **The icon situation is _three_ systems, not two:** `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** — a 216 KB registry of **86** base64-encoded SVG data URIs, imported by **19** modules. | 🟡 **improving** | §6.4 rewritten. A **fourth**, better-behaved system landed in #669 — `src/services/icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from bundled `@fortawesome/fontawesome-free` SVGs (11 glyphs so far). That is the template the other three should converge on. |
+| 7 | **The icon situation is _four_ systems.** Three legacy: `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** (a 216 KB registry of **86** base64 SVG data URIs, imported by **19** modules), plus **9** `<wa-icon src="${IMG_DIR}/shoelace/*.svg">` sites over 13 hand-copied SVGs. The fourth, **`src/services/icon-library.ts`** (#669), is the intended destination. | 🟡 **improving** | §6.4 rewritten. `icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from `@fortawesome/fontawesome-free` SVGs bundled by Vite (11 glyphs, 11 unit tests) and logs a warning on an unknown name instead of rendering an empty glyph. **That is the template the other three converge on** — the icon plan is no longer speculative. |
 | 7b | **Dead weight in `src/styles/`:** `icons.json` (144 KB, 36 entries) and `text-manipulation.css` (6 lines) are imported by **nothing**; two `@fontsource-variable` packages (`quicksand`, `crimson-pro`) are declared dependencies that **no source file imports**. | 🔴 open | Pure deletion (P0.5). `@fortawesome/fontawesome-free` is **no longer** in this list — `icon-library.ts` imports it. |
 | 8 | **The WA-token readers are now tested.** `src/services/wa-color.ts` resolves any `--wa-*` color token to concrete sRGB hex (probe element → computed `color` → 1×1 canvas readback); `wa-typography.ts` does the same for font tokens; `editor-theme.ts` maps 16 Monaco color ids onto WA semantic tokens. **29 unit tests** across the three landed in #670. | ✅ **proven** | This is a *working, tested precedent* for "read WA design tokens from JS", not a proposal. Reuse it anywhere JS needs a concrete value (charts, canvas, `<meta name="theme-color">`, third-party widgets) rather than re-reading `getPropertyValue()`, which returns unevaluated `var()`/`color-mix()` chains. §3.6. |
 | 9 | **NEW: `src/services/theme-service.ts` is the single writer for appearance.** One module sets all three DOM carriers — `.wa-dark` on `<html>`, `documentElement.style.colorScheme`, `body.dataset.theme` — and **both** runtime togglers call it (`HomeElement.tsx:120`, `LoginPage.tsx:178`). 10 unit tests. | ✅ **done** | Closes the "make the *runtime* toggle set `.wa-dark` too" item that this report has carried since the original. `.wa-dark` is now safe to treat as the canonical dark-mode hook (§3.5). §3.7. |
@@ -202,7 +202,7 @@ the host for responsive CSS. Region widths: `--menu-width`, `--main-width`,
 | `PageRouters` breadcrumb / page title | `subheader` | Sticky breadcrumb row — exactly what `subheader` is for. |
 | `SideNav.tsx` (routes list) | `navigation` (`menu`) | Auto-drawer on mobile ⇒ **delete** `MobileSidebar.tsx`, the `open` state, `RightPanel` width math, and the `.toggle-button`. Keep the gradient via `::part(menu)`. |
 | Sidenav logo + "HCL Domino REST API" title | `navigation-header` | Column-stacked by default. |
-| Sidenav theme toggle + `ProfileMenu` | `navigation-footer` | Pinned to the bottom of the nav. |
+| Sidenav theme toggle + `ProfileMenu` | `navigation-footer` | Pinned to the bottom of the nav. The toggle keeps dispatching `switchTheme`; the DOM writes stay in `HomeElement`'s `applyTheme(themeMode)` effect (§3.7) — do not re-implement them in the slot. |
 | `Views.tsx` `<Routes>` main content | default slot | React Router `<Routes>` mounts here. |
 | `QuickConfigFormContainer` (`wa-drawer`) | default slot (or `aside`) | Keep as an overlay drawer; or promote to `aside` if it should dock. |
 | `Footer.tsx` | `footer` | Always below the viewport (page becomes scrollable). |
@@ -317,10 +317,12 @@ wa-page[view="desktop"] [data-toggle-nav] { display: none; }
 
 ### 2.4 Free-tier CSS-grid fallback — ⚠️ no longer needed
 
-> Retained only as an escape hatch if `wa-page` proves unworkable (e.g. an unresolvable
-> CSP or sticky-behaviour conflict). **`wa-page` is free — prefer §2.3.** Choosing this
-> path means re-implementing sticky logic, the skip link, and the auto height vars by hand
-> for no licensing benefit.
+> Retained only as an escape hatch if `wa-page` proves unworkable (e.g. a sticky-behaviour
+> conflict, or a production CSP that cannot relax `style-src-attr` — §5.1 item 1).
+> **`wa-page` is free — prefer §2.3.** Choosing this path means re-implementing sticky
+> logic, the skip link, and the auto height vars by hand for no licensing benefit. Note it
+> does **not** dodge the inline-style question entirely: WA form controls and `::part`
+> sizing still write inline styles.
 
 ```tsx
 // AppShell.free.tsx
@@ -420,8 +422,9 @@ Use `wa-gap-*` utility classes on flex/grid containers instead of ad-hoc `margin
 > or re-map sizes at 1.0.
 >
 > ⚠️ **Two `@fontsource-variable` packages (`quicksand`, `crimson-pro`) are declared
-> dependencies but imported nowhere.** Either wire them into `--wa-font-family-*` (and
-> `font-src` in CSP) or drop them.
+> dependencies but imported nowhere.** Either wire them into `--wa-font-family-*` — they
+> would be bundled from `node_modules`, so `font-src 'self'` covers them and the
+> `fonts.gstatic.com` entry sketched in §5 stays unnecessary — or drop them (P0.5).
 
 ### 3.4 Border radius / shadows / focus
 
@@ -549,7 +552,8 @@ Strategy, in order:
    + border-inline-end: var(--wa-border-width-s) solid var(--wa-color-surface-border);
    + background-image: var(--keep-sidenav-gradient);
    ```
-2. **Replace literal hex/px in `CommonStyles.tsx`** (936 LOC, highest fan-out) per §3.
+2. **Replace literal hex/px in `CommonStyles.tsx`** (still **936 LOC**, 44 `styled.`
+   blocks — the highest fan-out in the repo) per §3.
    `KEEP_ADMIN_BASE_COLOR` → `var(--wa-color-brand-fill-loud)`; `#0F5FDC` →
    `var(--wa-color-blue-50)`; `#F01648` → `var(--wa-color-danger-fill-loud)`;
    `border-radius: 10px` → `var(--wa-border-radius-l)`; `padding: 6px 16px` →
@@ -569,11 +573,16 @@ Strategy, in order:
    existing class-based CSS keeps working while call sites migrate.
 6. **Leave `styled(MuiComponent)` blocks** (`CommonDialog = styled(Dialog)`, …) for
    **report 02** — those disappear when the underlying MUI component is replaced;
-   re-tokenizing them now is throwaway work.
+   re-tokenizing them now is throwaway work. There are **10** such wrappers in
+   `CommonStyles.tsx` alone.
+7. **Where a token genuinely has to reach JavaScript**, call `resolveWaColors()` /
+   `resolveWaTypography()` (§3.6) instead of reviving a `getTheme()`-shaped color object.
+   The Monaco theme is the proof this works.
 
 Linaria stays as the authoring tool — it just emits `var(--wa-*)` references. No build
 change is required (`@wyw-in-js/vite` extracts to a bundled stylesheet, served from
-`'self'`).
+`'self'`). **Scale check:** 198 `styled.` blocks across 69 files, currently referencing
+`--wa-*` in only 110 places repo-wide — most of that surface is still literals.
 
 ---
 
