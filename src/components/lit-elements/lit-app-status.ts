@@ -1,11 +1,13 @@
-import { LitElement, html, css } from 'lit';
+import { html, css, type PropertyValues } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class AppStatus extends LitElement {
-
-  static properties = {
-    status: { type: Boolean },
-  };
-
+/**
+ * Small status pill showing an Active/Inactive state.
+ * Tag: `lit-app-status`.
+ */
+@customElement('lit-app-status')
+export default class AppStatus extends KeepLitElement {
   static styles = css`
     div {
         display: flex;
@@ -21,12 +23,9 @@ class AppStatus extends LitElement {
     }
   `;
 
-  constructor() {
-    super()
-    this.status = false
-  }
+  @property({ type: Boolean }) status = false;
 
-  updated(changedProperties) {
+  updated(changedProperties: PropertyValues) {
     if (changedProperties.has('status')) {
       this.style.setProperty('--status-color', this.status ? '#000' : '#6C7882');
       this.style.setProperty('--status-bg-color', this.status ? '#A1E596' : '#E6EBF5');
@@ -45,6 +44,8 @@ class AppStatus extends LitElement {
   }
 }
 
-customElements.define('lit-app-status', AppStatus);
-
-export default AppStatus
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-app-status': AppStatus;
+  }
+}

@@ -1,8 +1,16 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class DefaultCard extends LitElement {
-    static styles = css`
+/**
+ * Card summarising a single Keep entity (schema/scope/…) built on `<wa-card>`.
+ * Tag: `lit-default-card`. Exposed via `LitElements.tsx` as `LitDefaultCard`.
+ */
+@customElement('lit-default-card')
+export default class DefaultCard extends KeepLitElement {
+  static styles = [
+    css`
         /* Inherit color-scheme from the host's ancestor (documentElement
            toggles it via inline style in HomeElement / LoginPage) so
            light-dark() resolves correctly inside this shadow root. */
@@ -155,33 +163,20 @@ class DefaultCard extends LitElement {
             top: 20px;
             border-radius: 50%;
         }
-    `;
+    `,
+  ];
 
-    static properties = {
-      status: { type: Boolean },
-      icon: { type: String },
-      title: { type: String },
-      subtitle: { type: String },
-      acl: { type: String },
-      description: { type: String },
-      delete: { type: Boolean },
-      onDelete: { type: Function },
-    };
-  
-    constructor() {
-        super()
-        this.status = false
-        this.icon = ''
-        this.title = ''
-        this.subtitle = ''
-        this.acl = ''
-        this.description = ''
-        this.delete = false
-        this.onDelete = () => {}
-    }
+  @property({ type: Boolean }) status = false;
+  @property({ type: String }) icon = '';
+  @property({ type: String }) title = '';
+  @property({ type: String }) subtitle = '';
+  @property({ type: String }) acl = '';
+  @property({ type: String }) description = '';
+  @property({ type: Boolean }) delete = false;
+  @property({ attribute: false }) onDelete: () => void = () => {};
 
-    render() {
-      return html`
+  render() {
+    return html`
         <wa-card>
             <section class="delete">
                 <div class="status" style="background-color: ${this.status ? '#4CAF50' : '#F44336'}"></div>
@@ -193,7 +188,7 @@ class DefaultCard extends LitElement {
                 <section class="titles">
                     <strong><text>${this.title}</text></strong>
                     <text class="medium">${this.subtitle}</text>
-                    ${this.acl ? 
+                    ${this.acl ?
                         html`
                             <strong>
                                 <text
@@ -202,27 +197,29 @@ class DefaultCard extends LitElement {
                                     ${this.acl}
                                 </text>
                             </strong>
-                        ` 
+                        `
                         : ''}
                 </section>
             </div>
             <section class="description">
                 <text class="medium">${this.description}</text>
             </section>
-            <section class="delete" @click=${(e) => { e.stopPropagation(); this.onDelete(); }}>
-                ${this.delete ? 
+            <section class="delete" @click=${(e: Event) => { e.stopPropagation(); this.onDelete(); }}>
+                ${this.delete ?
                     html`
                         <div class="delete"></div>
-                    ` 
-                    : 
+                    `
+                    :
                     ''
                 }
             </section>
         </wa-card>
       `;
-    }
   }
-  
-  customElements.define('lit-default-card', DefaultCard);
-  
-  export default DefaultCard
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-default-card': DefaultCard;
+  }
+}

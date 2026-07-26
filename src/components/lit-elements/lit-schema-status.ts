@@ -1,10 +1,19 @@
-import { LitElement, css, html } from 'lit';
+import { css, html, PropertyValues } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
+import { KeepLitElement } from './keep-lit-element';
 
-class SchemaStatus extends LitElement {
+type SchemaItem = { schemaName?: string; apiName?: string; nsfPath?: string };
 
+/**
+ * Row showing a schema/API name with a used-by-scopes status dot and (in schema
+ * mode) a delete control. Tag: `lit-schema-status`. Consumed internally by
+ * `lit-nsf-card`.
+ */
+@customElement('lit-schema-status')
+export default class SchemaStatus extends KeepLitElement {
   static styles = css`
     div.main {
       display: flex;
@@ -78,33 +87,25 @@ class SchemaStatus extends LitElement {
     }
   `;
 
-  static properties = {
-    item: { type: Object },
-    schemasWithScopes: { type: Array },
-    isSchema: { type: Boolean },
-    name: { type: String },
-    status: { type: String },
-    usedByScopes: { type: Boolean },
-    onDelete: { type: Function },
-    onClickOpen: { type: Function },
-  };
+  @property({ type: Object }) item: SchemaItem = {};
+  @property({ type: Array }) schemasWithScopes?: string[];
+  @property({ type: Boolean }) isSchema = window.location.pathname.endsWith('/schema');
+  @property({ type: String }) name = '';
+  @property({ type: String }) status = this.schemasWithScopes?.includes(
+    this.item.nsfPath + ':' + this.item.schemaName,
+  )
+    ? 'Used by Scopes'
+    : 'Not used by Scopes';
+  @property({ type: Boolean }) usedByScopes = false;
+  @property({ attribute: false }) onDelete: (e: Event) => void = () => {};
+  @property({ attribute: false }) onClickOpen: (e: Event) => void = () => {};
 
-  constructor() {
-    super()
-    this.item = {}
-    this.isSchema = window.location.pathname.endsWith('/schema')
-    this.name = "";
-    this.status = this.schemasWithScopes?.includes(this.item.nsfPath + ":" + this.item.schemaName) ? 'Used by Scopes' : 'Not used by Scopes';
-    this.usedByScopes = false
-    this.onDelete = () => {};
-    this.onClickOpen = () => {};
-  }
-
-  updated(changedProperties) {
+  protected updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('item')) {
-        this.name = this.isSchema ? this.item.schemaName : this.item.apiName;
-        this.usedByScopes = this.schemasWithScopes?.includes(this.item.nsfPath + ":" + this.item.schemaName)
-        this.status = this.usedByScopes ? 'Used by Scopes' : 'Not used by Scopes';
+      this.name = (this.isSchema ? this.item.schemaName : this.item.apiName) ?? '';
+      this.usedByScopes =
+        this.schemasWithScopes?.includes(this.item.nsfPath + ':' + this.item.schemaName) ?? false;
+      this.status = this.usedByScopes ? 'Used by Scopes' : 'Not used by Scopes';
     }
   }
 
@@ -112,21 +113,27 @@ class SchemaStatus extends LitElement {
     return html`
       <div class="main">
         <div class="description" @click=${this.onClickOpen}>
-            ${this.isSchema ? html`<wa-tooltip content="${this.status}" placement="top">
+            ${this.isSchema
+              ? html`<wa-tooltip content="${this.status}" placement="top">
                 <div class="api-status ${this.usedByScopes ? '' : 'unused'}"></div>
-            </wa-tooltip>` : ''}
+            </wa-tooltip>`
+              : ''}
             <div class="name" title="${this.name}">${this.name}</div>
         </div>
-        ${this.isSchema ? html`<div class="delete" @click=${this.onDelete}>
+        ${this.isSchema
+          ? html`<div class="delete" @click=${this.onDelete}>
             <svg class="trash-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14M10 11v6M14 11v6"/>
             </svg>
-        </div>` : ''}
+        </div>`
+          : ''}
       </div>
     `;
   }
 }
 
-customElements.define('lit-schema-status', SchemaStatus);
-
-export default SchemaStatus
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-schema-status': SchemaStatus;
+  }
+}
