@@ -27,8 +27,8 @@ interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   test: () => void;
   required: string[];
   setRequired: (required: string[]) => void;
-  validationRules: Array<{ formula: String, formulaType: String, message: String }>;
-  setValidationRules: (data: Array<{ formula: String, formulaType: String, message: String }>) => void;
+  validationRules: Array<{ formula: string, formulaType: string, message: string }>;
+  setValidationRules: (data: Array<{ formula: string, formulaType: string, message: string }>) => void;
   fieldIndex: number;
   setFieldIndex: (fieldIndex: number) => void;
 }
@@ -67,6 +67,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
     } else {
       setEditField(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, fieldIndex]);
 
   const ref = useRef<HTMLDialogElement>(null);
@@ -266,7 +267,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
               return state[list].length && (state[list].map((item: any, index: any) => {
                 const fieldGroup = item.fieldGroup || '';
                 let rwFlag;
-                if (!!item.isMultiValue) {
+                if (item.isMultiValue) {
                   item = {
                     ...item,
                     isMultiValue: item.isMultiValue,
@@ -288,7 +289,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
                 } else {
                   rwFlag = insertCharacter(item.fieldAccess, 1, " / ");
                 }
-                const format = !item.isMultiValue ? item.format : (!!item.items ? item.items.format : item.format);
+                const format = !item.isMultiValue ? item.format : (item.items ? item.items.format : item.format);
                 item = {
                   ...item,
                   delete: false,

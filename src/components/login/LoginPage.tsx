@@ -440,7 +440,7 @@ const LoginPage = () => {
         }
       })
       .catch((e) => dispatch(toggleAlert(e)));
-  }, [])
+  }, [dispatch])
 
   useEffect(() => {
     async function handleIdps() {
@@ -480,6 +480,7 @@ const LoginPage = () => {
         }
         break
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

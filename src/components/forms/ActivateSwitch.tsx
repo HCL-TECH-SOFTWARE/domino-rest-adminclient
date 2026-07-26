@@ -88,7 +88,7 @@ interface ActivateSwitchProps {
 }
 
 const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, toggleInactive, type }) => {
-  const [toggle, setToggle] = useState(!!view.viewActive ? view.viewActive : view.agentActive);
+  const [toggle, setToggle] = useState(view.viewActive ? view.viewActive : view.agentActive);
   const [resetView, setResetView] = useState(false);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { updateViewError, updateAgentError } = useSelector((state: AppState) => state.databases);

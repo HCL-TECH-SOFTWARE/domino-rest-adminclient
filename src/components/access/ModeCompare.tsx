@@ -177,7 +177,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
   });
   const [selectedModeNames, setSelectedModeNames] = useState(Array<any>); // ensure all selected mode names are unique
   const [diffFields, setdiffFields] = useState({});
-  const [diffFormulas, setDiffFormulas] = useState(Array<String>)
+  const [diffFormulas, setDiffFormulas] = useState(Array<string>)
   const [allFieldNames, setAllFieldNames] = useState(Array<string | unknown>);
   const [showDiffOnly, setShowDiffOnly] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -390,7 +390,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
         setdiffFields(diffFieldsBuffer);
       });
 
-      let diffFormulasBuffer: String[] = []
+      let diffFormulasBuffer: string[] = []
       formulas.forEach((formula: string) => {
         if (!isFormulaEqual(formula)) {
           diffFormulasBuffer.push(formula)
@@ -399,6 +399,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
         setDiffFormulas(diffFormulasBuffer);
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModeNames, allModes]);
 
   const handleModeChange = (event: any, _currentModeName: string, index: number) => {
@@ -559,7 +560,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                   );
                 } else {
                   return (
-                    <Box className="card-top">
+                    <Box className="card-top" key={`${modeName}-${idx}`}>
                       <Box className='mode-compare-card-container'>
                         <div className='mode-compare-delete-container'>
                           <div className='mode-compare-delete-adjacent' />
@@ -677,7 +678,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                       return <Box className={`field-detail`} key={`${modeName}-${modeIdx}`} />;
                     } else {
                       return (
-                        <Box className={`field-detail ${Object.keys(diffFields).includes(fieldName) ? 'diff' : ''}`}>
+                        <Box key={`${modeName}-${modeIdx}`} className={`field-detail ${Object.keys(diffFields).includes(fieldName) ? 'diff' : ''}`}>
                           {allModes[getFormModeIndex(allModes, modeName)].fields[
                             getFieldIndex(allModes[getFormModeIndex(allModes, modeName)].fields, fieldName)
                           ] ? (

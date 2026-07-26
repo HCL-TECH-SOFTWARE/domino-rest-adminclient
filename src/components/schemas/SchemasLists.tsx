@@ -128,6 +128,7 @@ const SchemasLists = () => {
     if (!databasePull && databasesOverview.length === 0) {
       dispatch(fetchKeepDatabases() as any)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, databasePull])
 
   const computeResults = () => {
@@ -167,6 +168,7 @@ const SchemasLists = () => {
     if (!areArraysEqual(results, uniqueSchemas)) {
       setResults(uniqueSchemas);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [databasesOverview, scopes, onlyShowSchemasWithScopes, searchKey, searchType, results]);
   
   return (

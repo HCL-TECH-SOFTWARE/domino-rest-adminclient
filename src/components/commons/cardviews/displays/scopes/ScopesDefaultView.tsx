@@ -30,6 +30,7 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
           mapSchemas(databases, 'schemas').map((database: any) => {
             return (
               <LitNsfCard
+                key={database.fileName}
                 database={database}
                 iconName={database.iconName}
                 open={openScope}

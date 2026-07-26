@@ -181,7 +181,7 @@ export function logout() {
         throw new Error(JSON.stringify(data))
 
       }
-    } catch (e: any) {
+    } catch {
       // Logout failed, but we still clear local state below
     } finally {
       dispatch(removeAuth());

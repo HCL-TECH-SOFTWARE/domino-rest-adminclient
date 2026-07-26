@@ -43,6 +43,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
     if (schemasWithScopes !== schemasScopes) {
       setSchemasWithScopes(schemasScopes);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scopes]);
 
   const openSchema = (database: any) => {

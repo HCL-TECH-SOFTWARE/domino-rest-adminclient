@@ -2,15 +2,16 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "react"],
   "categories": {
-    "correctness": "warn"
+    "correctness": "error"
   },
   "rules": {
     "no-unused-vars": [
-      "warn",
+      "error",
       {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
+        "caughtErrorsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
       }
     ]
   },

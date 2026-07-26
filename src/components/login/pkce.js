@@ -77,7 +77,7 @@ export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redi
     window.location.href = authUrl;
 
     return true
-    } catch (err) {
+    } catch {
         return false
     }
 }
@@ -148,7 +148,7 @@ export async function refreshToken() {
             // Store the new token and return the data
             localStorage.setItem('user_token', JSON.stringify(data));
             return data;
-        } else if (!!data.error) {
+        } else if (data.error) {
             // Handle specific error cases
             if (data.error === 'invalid_grant') {
                 alert("Invalid refresh token. Please log in again.");

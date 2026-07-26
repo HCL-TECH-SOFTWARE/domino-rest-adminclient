@@ -184,7 +184,7 @@ export function deleteSchema(dbData: any) {
           dispatch(toggleDeleteDialog());
           dispatch(toggleAlert(`Delete schema failed! ${error.message}`));
         }
-      } catch (err: any) {
+      } catch {
         dispatch(setApiLoading(false));
         dispatch(toggleDeleteDialog());
         dispatch(toggleAlert(`Delete schema failed!`));
@@ -319,7 +319,7 @@ const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any
         type: SET_VALUE,
         payload: { status: false }
       });
-    } catch (e) {
+    } catch {
       //console.log("Exception:"+e);
     }
 
@@ -337,7 +337,7 @@ const processBuffer = (
   let newArray = lastLine ? buffer.split('\n') : buffer.split('\n').slice(0, -1);
   newArray.forEach((part) => {
     let processedPart = processPart(part, dispatch, displayResult, scopeList, schemasWithoutScopes);
-    if (!!processedPart) schemasWithoutScopes = [...schemasWithoutScopes, processedPart];
+    if (processedPart) schemasWithoutScopes = [...schemasWithoutScopes, processedPart];
   });
   buffer = newArray[newArray.length - 1];
   return schemasWithoutScopes;
@@ -448,7 +448,7 @@ export const fetchKeepDatabases = () => {
       }
 
       processResponse(response, dispatch, scopeList);
-    } catch (e: any) {
+    } catch {
         const response = await fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
           method: 'POST',
           headers: {
@@ -1085,7 +1085,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
           throw new Error(JSON.stringify(data))
         }
 
-        if (!!setSchemaData) {
+        if (setSchemaData) {
           setSchemaData(data);
         }
         dispatch({
@@ -1909,7 +1909,7 @@ export const deleteFormMode = (
         dispatch(toggleAlert(`Delete form mode failed! ${error.message}`));
       }
       dispatch(clearDBError());
-    } catch (err: any) {
+    } catch {
       dispatch(toggleDeleteDialog());
       dispatch(toggleAlert(`Delete mode failed!`));
     }
@@ -1961,7 +1961,7 @@ export const deleteForm = (
           throw new Error(JSON.stringify(data))
         }
 
-        if (!!setSchemaData) {
+        if (setSchemaData) {
           setSchemaData({
             ...data,
           });
@@ -2606,7 +2606,7 @@ export const retry = (count: number) => {
   };
 };
 
-export const appendConfiguredForm = (formIndex: number, data: Object) => {
+export const appendConfiguredForm = (formIndex: number, data: object) => {
   return {
     type: APPEND_CONFIGURED_FORM,
     payload: {
@@ -2657,7 +2657,7 @@ export const testFormula = (dataSource: string, formulaData: any, formulaType: s
       const error = JSON.parse(err)
 
       // Use the response error if it's available
-      if (!!error.message) {
+      if (error.message) {
         dispatch(saveResult(formulaType, error.message));
       }
       // Otherwise use the generic error

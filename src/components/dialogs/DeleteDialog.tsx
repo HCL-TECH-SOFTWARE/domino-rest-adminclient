@@ -30,7 +30,11 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({ open, selected }) => {
   };
 
   const onDelete = () => {
-    isDeleteSchema ? dispatch(deleteSchema({ nsfPath, schemaName }) as any) : dispatch(deleteScope(apiName) as any);
+    if (isDeleteSchema) {
+      dispatch(deleteSchema({ nsfPath, schemaName }) as any);
+    } else {
+      dispatch(deleteScope(apiName) as any);
+    }
   };
 
   useEffect(() => {

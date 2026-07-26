@@ -75,7 +75,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   const { appErrorMessage } = useSelector((state: AppState) => state.apps);
   const { scopes } = useSelector((state: AppState) => state.databases);
   const scopeValueArr = formik.values.appScope.length > 0 && formik.values.appScope.split(',');
-  const [scopeValues, setScopeValues] = useState<Array<String>>(formContext === 'Edit' ? scopeValueArr : []);
+  const [scopeValues, setScopeValues] = useState<Array<string>>(formContext === 'Edit' ? scopeValueArr : []);
   const [selectedIcon, setSelectedIcon] = useState('beach');
 
   const scopeAutocompleteRef = useRef<any>(null)
@@ -105,7 +105,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
     formik.values.appScope = scopeValuesStr;
   };
 
-  const removeScopeFromApp = (scope: String) => {
+  const removeScopeFromApp = (scope: string) => {
     const newScopeValues = scopeValues.filter(oriScope => oriScope !== scope)
     setScopeValues(newScopeValues);
     // store scope as string join by ',', due to openapi.core.json appScope validation need to be string

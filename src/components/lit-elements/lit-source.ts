@@ -79,7 +79,7 @@ function parseItem(item: string): any {
   if (item.startsWith('{') && item.endsWith('}')) {
     try {
       return JSON.parse(item);
-    } catch (e) {
+    } catch {
       console.error('Invalid JSON object:', item);
       throw new Error('Invalid JSON object');
     }
@@ -602,7 +602,11 @@ export default class SourceTree extends KeepLitElement {
 
     const lastIndex = keyType === "object" || keyType === "array" ? paths.length - 1 : paths.length - 2;
     if (paths.length === 1) {
-      keyType === "object" || keyType === "array" ? obj[paths[0]][newKey] = newValue : obj[newKey] = newValue
+      if (keyType === "object" || keyType === "array") {
+        obj[paths[0]][newKey] = newValue
+      } else {
+        obj[newKey] = newValue
+      }
       ;(e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')!.close()
       if (!isNaN(newKey as any) && newKey.trim() !== '') {
         ((e.target as HTMLElement).closest('wa-tree-item')!.querySelector('#new-key') as WithValue).value = (Number(newKey) + 1).toString();

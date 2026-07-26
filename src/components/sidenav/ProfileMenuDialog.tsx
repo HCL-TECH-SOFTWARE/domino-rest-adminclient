@@ -58,9 +58,9 @@ const ProfileMenu = () => {
   if (token) {
     if (idpLogin) {
       const accessToken = JSON.parse(atob(JSON.parse(token).access_token.split('.')[1]))
-      if (!!accessToken.email) {
+      if (accessToken.email) {
         user = accessToken.email
-      } else if (!!accessToken.CN) {
+      } else if (accessToken.CN) {
         user = accessToken.CN
       }
     } else {

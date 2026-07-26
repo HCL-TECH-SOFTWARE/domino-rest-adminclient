@@ -775,7 +775,7 @@ function loadUnconfiguredForms(
     allForms.sort((a, b) =>
       a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1
     );
-  } catch (e) {}
+  } catch {}
 
   // Save Forms Data
   setData(apiData.forms);

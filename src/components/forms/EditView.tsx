@@ -119,7 +119,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     if (existingColumn.length === 0) {
       let updatedColumn = {
         name: column.name,
-        externalName: !!column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
+        externalName: column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_'),
         title: column.title,
       }
       setChosenColumns ([...chosenColumns, updatedColumn]);
@@ -329,7 +329,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       const matchingColumn = chosenColumns.find(chosenColumn => chosenColumn.name === column.name);
       return {
         name: column.name,
-        externalName: matchingColumn ? matchingColumn.externalName : (!!column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_')),
+        externalName: matchingColumn ? matchingColumn.externalName : (column.title ? column.title.replace(/[$@-]/g, '').replace(/\s/g, '_') : column.name.replace(/[$@-]/g, '').replace(/\s/g, '_')),
       }
     });
     setChosenColumns(updatedColumns);
@@ -341,7 +341,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     
     // set original placeholder to column title or name
     if (newExternalName === "") {
-      newExternalName = !!editedColumn.title ? editedColumn.title.replaceAll(/[^a-zA-Z0-9 ]/g, "").replaceAll(' ', '_') : editedColumn.name.replaceAll(/[^a-zA-Z0-9 ]/g, "").replaceAll(' ', '_')
+      newExternalName = editedColumn.title ? editedColumn.title.replaceAll(/[^a-zA-Z0-9 ]/g, "").replaceAll(' ', '_') : editedColumn.name.replaceAll(/[^a-zA-Z0-9 ]/g, "").replaceAll(' ', '_')
     }
     let externalNamesArray = chosenColumns.map((column: any) => {
       if (column.name === columnName) {
@@ -437,7 +437,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
 
     if (views) {
       views.forEach((view: any) => {
-        if (!!view.columns) {
+        if (view.columns) {
           if (view.name === viewName) {
             const cols = view.columns.map((c: any) => ({ name: c.name, externalName: c.externalName }));
             setChosenColumns(view.columns);
@@ -558,7 +558,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
                       key={column.name}
                       className={`
                         all-columns-list-item
-                        ${[...chosenColumns.map((column) => {return column.name})].includes(column.name) ? 'all-columns-added-column' : ''}
+                        ${chosenColumns.map((column) => {return column.name}).includes(column.name) ? 'all-columns-added-column' : ''}
                       `} 
                       onClick={() => handleClickColumn(column)} onMouseOver={() => {setHoveredColumn(column)}} onMouseLeave={() => {setHoveredColumn({})}}
                     >
@@ -569,7 +569,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
                       </div>
                       <div className='inline-block'>
                         <div className='all-columns-icon'>
-                          {[...chosenColumns.map((column) => {return column.name})].includes(column.name) ? 
+                          {chosenColumns.map((column) => {return column.name}).includes(column.name) ? 
                             <BsCheck2Circle className='all-columns-check-icon' /> : 
                             ( (column === hoveredColumn) && <FiPlusSquare/> )}
                         </div>

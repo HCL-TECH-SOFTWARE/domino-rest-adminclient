@@ -146,7 +146,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     onLoad: modes[currentModeIndex].onLoad,
     onSave: modes[currentModeIndex].onSave,
     sign: modes[currentModeIndex].sign,
-    continueOnError: !!modes[currentModeIndex].continueOnError ? modes[currentModeIndex].continueOnError : true,
+    continueOnError: modes[currentModeIndex].continueOnError ? modes[currentModeIndex].continueOnError : true,
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentModeValue, setCurrentModeValue] = useState(
@@ -392,6 +392,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
       validationRules: modes[currentModeIndex].validationRules,
       fields: currentFields,
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modes, currentModeIndex])
 
   const urls = useLocation();
@@ -426,7 +427,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
 
     // Check if creating new form schema or editing a form
     // Then save it off and post an alert
-    if (!!newForm.form) {
+    if (newForm.form) {
       // add form to the schema by creating a new schema with the additional form
       const newSchema = {
         ...schemaData,
@@ -532,6 +533,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
 
   useEffect(() => {
     setCurrentModeValue(modes[currentModeIndex].modeName)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentModeIndex])
 
   useEffect(() => {
@@ -572,6 +574,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
     const requiredChanged = JSON.stringify(required) !== JSON.stringify(snap.required);
     const rulesChanged = JSON.stringify(validationRules) !== JSON.stringify(snap.validationRules);
     setHasUnsavedChanges(scriptsChanged || requiredChanged || rulesChanged || isFieldsDirty());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scripts, required, validationRules])
 
   /**
@@ -621,6 +624,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         setHasUnsavedChanges(fieldsChanged || scriptsChanged || requiredChanged || rulesChanged);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
   /**
