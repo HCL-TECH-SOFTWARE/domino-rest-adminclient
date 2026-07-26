@@ -25,7 +25,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiView';
 import { toggleAlert } from '../../store/alerts/action';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
-import { IMG_DIR } from '../../config.dev';
 import { KeepButton } from '../keep-elements/KeepElements';
 
 const ScopeLists = () => {
@@ -128,12 +127,12 @@ const ScopeLists = () => {
               <span className="top-nav color-text-primary">
                 Scope Management
               </span>
-              <KeepButton src={`${IMG_DIR}/shoelace/rotate.svg`} onClick={handleRefresh}>
+              <KeepButton icon="arrows-rotate" onClick={handleRefresh}>
                 Refresh
               </KeepButton>
               <KeepButton
                 onClick={handleClickOpen}
-                src={`${IMG_DIR}/shoelace/plus.svg`}
+                icon="plus"
               >
                 Add Scope
               </KeepButton>

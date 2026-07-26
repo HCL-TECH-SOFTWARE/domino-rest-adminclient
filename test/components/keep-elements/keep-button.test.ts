@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanupLit, mountLit } from '../../test-utils/lit';
 import '../../../src/components/keep-elements/keep-button';
 import type Button from '../../../src/components/keep-elements/keep-button';
+import { FA_LIBRARY } from '../../../src/services/icon-library';
 
 const TAG = 'keep-button';
 
@@ -39,14 +40,17 @@ describe('keep-button', () => {
     expect(waButton(el).hasAttribute('pill')).toBe(true);
   });
 
-  it('renders a wa-icon with the given src', async () => {
-    const el = await mountLit<Button>(TAG, { src: '/icons/plus.svg' });
+  it('renders a wa-icon resolved through the bundled Font Awesome library', async () => {
+    const el = await mountLit<Button>(TAG, { icon: 'plus' });
     const icon = el.shadowRoot!.querySelector('wa-icon');
     expect(icon).toBeTruthy();
-    expect(icon!.getAttribute('src')).toBe('/icons/plus.svg');
+    expect(icon!.getAttribute('name')).toBe('plus');
+    // The library attribute is what keeps this off Web Awesome's Font Awesome CDN.
+    expect(icon!.getAttribute('library')).toBe(FA_LIBRARY);
+    expect(icon!.hasAttribute('src')).toBe(false);
   });
 
-  it('renders no wa-icon when src is empty', async () => {
+  it('renders no wa-icon when icon is empty', async () => {
     const el = await mountLit<Button>(TAG);
     expect(el.shadowRoot!.querySelector('wa-icon')).toBeNull();
   });

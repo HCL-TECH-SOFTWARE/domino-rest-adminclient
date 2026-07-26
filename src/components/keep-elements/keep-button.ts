@@ -3,6 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { KeepElement } from './keep-element';
+import { FA_LIBRARY } from '../../services/icon-library';
 
 /**
  * Thin wrapper around `<wa-button>` (+ optional leading `<wa-icon>`).
@@ -29,7 +30,8 @@ export default class Button extends KeepElement {
     `,
   ];
 
-  @property({ type: String }) src = '';
+  /** Font Awesome glyph name — must be registered in `services/icon-library` ICONS. */
+  @property({ type: String }) icon = '';
   @property({ type: String }) variant = 'brand';
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) outline = false;
@@ -47,7 +49,7 @@ export default class Button extends KeepElement {
         appearance="${this.appearance}"
         ?pill="${this.pill}"
       >
-        ${this.src ? html`<wa-icon src="${this.src}"></wa-icon>` : ''}
+        ${this.icon ? html`<wa-icon library="${FA_LIBRARY}" name="${this.icon}"></wa-icon>` : ''}
         <slot></slot>
       </wa-button>
     `;

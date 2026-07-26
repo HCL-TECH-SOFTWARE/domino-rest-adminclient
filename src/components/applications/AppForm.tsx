@@ -13,7 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
 import { Alert, AlertTitle } from '@mui/material';
 import ApplicationIcon from '@mui/icons-material/Apps';
-import { IMG_DIR, KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
+import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from './ApplicationContext';
 import { AppState } from '../../store';
@@ -247,7 +247,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
               className='half-width'
             />
           <KeepButton
-            src={`${IMG_DIR}/shoelace/plus.svg`}
+            icon="plus"
             onClick={onClickAddScope}
           >
           </KeepButton>

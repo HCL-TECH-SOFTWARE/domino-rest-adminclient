@@ -26,6 +26,7 @@ export default defineConfig({
   },
   server: {
     headers: {
+
         'Content-Security-Policy-Report-Only': `
         default-src 'self';
         connect-src 'self';

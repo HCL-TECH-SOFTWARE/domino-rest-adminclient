@@ -2,7 +2,7 @@ import { css, html, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import './keep-schema-status';
 import '@awesome.me/webawesome/dist/components/input/input.js';
-import { IMG_DIR } from '../../config.dev';
+import { FA_LIBRARY } from '../../services/icon-library';
 import appIcons from '../../styles/app-icons';
 import { KeepElement } from './keep-element';
 
@@ -133,7 +133,7 @@ export default class NsfCard extends KeepElement {
             .value=${this.searchItem}
             @wa-input=${this._handleSearchInput}
         >
-            <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/search.svg"></wa-icon>
+            <wa-icon slot="prefix" library="${FA_LIBRARY}" name="magnifying-glass"></wa-icon>
         </wa-input>
         <div class="list-container">
             ${this.items.map(
