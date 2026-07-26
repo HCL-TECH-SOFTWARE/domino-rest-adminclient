@@ -5,6 +5,7 @@
     "correctness": "error"
   },
   "rules": {
+    "no-console": "error",
     "no-unused-vars": [
       "error",
       {
@@ -21,5 +22,19 @@
     "jar",
     "appscan",
     "public/monaco-editor-core"
+  ],
+  "overrides": [
+    {
+      "files": ["src/services/log-service.ts"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["test/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
   ]
 }

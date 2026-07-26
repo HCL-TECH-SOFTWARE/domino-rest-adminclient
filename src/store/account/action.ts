@@ -175,7 +175,9 @@ export function login(credentials: Credentials, successCallback: () => void) {
     const data = await checkForResponse(response)
 
     if (response.ok) {
-      console.log("Login successful, setting token and updating state.")
+      // debug, not info: auth-flow state is exactly the kind of thing that should not
+      // be sitting in a production console by default (P0-6).
+      log.debug('Login successful, setting token and updating state')
       const jwtData = data;
       localStorage.setItem('user_token', JSON.stringify(jwtData));
       emitTokenEvent(jwtData)
@@ -185,7 +187,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
       dispatch(setToken(jwtData));
       successCallback()
     } else {
-      console.log("Login failed, dispatching error state.")
+      log.debug('Login failed, dispatching error state')
       dispatch(setLoginError(true));
       dispatch(setErrorMessage(`${data.status} error: ${data.message}`));
       notify(`${data.message}`, 'danger');
@@ -289,14 +291,12 @@ export function showPages() {
 
       // Use the Keep response error if it's available
       if (err) {
-        console.log(
-          `Error reading page configuration: ${error.statusText}`
-        );
+        log.error('Error reading page configuration', { statusText: error.statusText });
       }
 
       // Otherwise use the generic error
       else {
-        console.log(`Error reading page configuration: ${error.message}`);
+        log.error('Error reading page configuration', { message: error.message });
       }
     }
   };

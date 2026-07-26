@@ -10,6 +10,9 @@ import { getToken } from '../account/action';
 import { toggleUsersLoading } from '../loading/action';
 import { SET_USERS } from './types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('store/access');
 
 export function fetchUsers (startsWith?: string) {
   const callUrl = startsWith?.length === 0 ? `${ADMIN_KEEP_API_URL}/access/users` : 
@@ -38,7 +41,7 @@ export function fetchUsers (startsWith?: string) {
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
-      console.error(error);
+      log.error('Error fetching users', { error });
     }
   }
 }

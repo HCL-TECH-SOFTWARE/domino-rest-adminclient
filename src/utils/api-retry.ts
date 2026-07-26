@@ -1,5 +1,8 @@
 import { refreshToken } from "../components/login/pkce";
 import { checkForResponse } from "./common";
+import { getLogger } from "../services/log-service";
+
+const log = getLogger('utils/api-retry');
 
 export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
     try {
@@ -45,9 +48,10 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
             }
 
             const errorMsg = `Error ${error.status}: ${error.message || 'An error occurred during the API request.'}`
-            console.log(errorMsg)
+            // Was logged twice — console.log and console.error with the identical
+            // string, either side of the notify(). Kept once, at error.
             notify(errorMsg, 'danger')
-            console.error(errorMsg)
+            log.error(errorMsg)
 
             // For other errors, return the error details
             return returnError;

@@ -14,6 +14,9 @@ import '@awesome.me/webawesome/dist/components/select/select.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import { FA_LIBRARY } from '../../services/icon-library';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/keep-source');
 import { KeepElement } from './keep-element';
 
 /** WebAwesome custom elements are not typed as native inputs — narrow only the
@@ -78,7 +81,7 @@ function parseItem(item: string): any {
     try {
       return JSON.parse(item);
     } catch {
-      console.error('Invalid JSON object:', item);
+      log.error('Invalid JSON object', { item });
       throw new Error('Invalid JSON object');
     }
   }
@@ -490,7 +493,7 @@ export default class SourceTree extends KeepElement {
       ;(dialog.querySelector('#new-value') as WithValue).value = value
       dialog.showModal();
     } else {
-      console.error('Dialog element not found');
+      log.error('Dialog element not found');
     }
   }
 

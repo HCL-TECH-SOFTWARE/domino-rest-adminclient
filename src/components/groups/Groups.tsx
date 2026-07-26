@@ -40,6 +40,9 @@ import {
 } from '../../styles/CommonStyles';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/groups/Groups');
 /**
  * Groups.tsx provides support for Domino groups
  *
@@ -304,11 +307,11 @@ const Groups: React.FC = () => {
       const error = JSON.parse(err)
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error reading Groups: ${error.statusText}`);
+        log.error('Error reading Groups', { statusText: error.statusText });
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error reading Groups: ${error.message}`);
+        log.error('Error reading Groups', { message: error.message });
       }
     }
   };
@@ -364,11 +367,11 @@ const Groups: React.FC = () => {
       const error = JSON.parse(err)
       // Use the Keep response error if it's available
       if (err) {
-        console.log(`Error reading Groups: ${error.statusText}`);
+        log.error('Error reading Groups', { statusText: error.statusText });
       }
       // Otherwise use the generic error
       else {
-        console.log(`Error reading Groups: ${error.message}`);
+        log.error('Error reading Groups', { message: error.message });
       }
     }
   }

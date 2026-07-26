@@ -46,6 +46,9 @@ import { KeepButtonNeutral, KeepButtonYes, KeepMonacoEditor, KeepSource } from '
 import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('components/forms/FormsContainer');
 
 const CoreContainer = styled.div<{ show: boolean }>`
   padding: 0;
@@ -229,7 +232,7 @@ const FormsContainer = () => {
         status: error.status,
         statusText: error.message,
       });
-      console.error("Error fetching subforms:", error);
+      log.error('Error fetching subforms', error as Error);
     }
   }
 
@@ -313,13 +316,13 @@ const FormsContainer = () => {
         } catch (e: any) {
           const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
           const error = JSON.parse(err)
-          console.error("Error fetching configured forms:", error);
+          log.error('Error fetching configured forms', error as Error);
         }
       }
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
-      console.error("Error fetching forms:", error);
+      log.error('Error fetching forms', error as Error);
       setErrorStatus({
         status: error.status,
         statusText: error.message,
@@ -413,7 +416,7 @@ const FormsContainer = () => {
           await pullSubForms();
           setIsFetch(true);
         } catch (error) {
-          console.log(error);
+          log.error('Error refreshing forms', error as Error);
         }
       } else {
         try {
@@ -421,7 +424,7 @@ const FormsContainer = () => {
           await pullSubForms();
           setIsFetch(true);
         } catch (error) {
-          console.log(error);
+          log.error('Error loading forms', error as Error);
           setIsFetch(true);
         }
       }
@@ -797,7 +800,7 @@ function loadConfiguredForms(
       dispatch(setForms(dbName, allForms));
       dispatch(setCurrentForms(dbName, allForms));
     })
-    .catch((e: any) => console.log('Error processing: ' + e));
+    .catch((e: any) => log.error('Error processing unconfigured forms', e as Error));
 }
 
 export default FormsContainer;

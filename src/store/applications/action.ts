@@ -22,6 +22,9 @@ import { toggleAlert } from '../alerts/action';
 import { toggleApplicationDrawer } from '../drawer/action';
 import { TOGGLE_DELETE_DIALOG } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('store/applications');
 
 export function toggleDeleteDialog() {
   return {
@@ -417,7 +420,7 @@ export const generateSecret = (
             `Error Generating App Secret: ${error.message}`
           )
         );
-        console.error(err)
+        log.error('Error generating app secret', { error: err })
       }
       // Otherwise use the generic error
       else {

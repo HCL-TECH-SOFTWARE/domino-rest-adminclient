@@ -76,6 +76,9 @@ import { AlertManager, fullEncode } from '../../utils/common';
 import appIcons from '../../styles/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { getLogger } from '../../services/log-service';
+
+const log = getLogger('store/databases');
 
 /**
  * action.ts provides the action methods for the Database page
@@ -241,7 +244,7 @@ export const fetchScope = async (scopeData: any) => {
   } catch (e: any) {
     const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
     const error = JSON.parse(err)
-    console.error(`Error fetching scope ${apiName}:`, error.message);
+    log.error(`Error fetching scope ${apiName}`, { error });
   }
 };
 
@@ -278,7 +281,7 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
-      console.log(error.message);
+      log.error('Error fetching schema', { error });
     }
   };
 };
@@ -691,7 +694,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
-      console.log(err);
+      log.error('Error fetching fields', { error: err });
       dispatch(toggleErrorDialog(`${error.statusCode}: ${error.message}`));
     }
   };
@@ -744,7 +747,7 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
-      console.log(error.message);
+      log.error('Error fetching views', { error });
     }
   };
 };
@@ -796,7 +799,7 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
-      console.log("Error fetching folders:", error)
+      log.error('Error fetching folders', { error })
     }
   };
 };
@@ -847,7 +850,7 @@ export const fetchAgents = (dbName: string, nsfPath: string) => {
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
-      console.log("Error fetching agents:", error);
+      log.error('Error fetching agents', { error });
     }
   };
 };
@@ -1043,7 +1046,7 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
 
       // Use the response error if it's available
       if (error) {
-        console.log(error)
+        log.error('Error adding schema', { error })
         dispatch(setDBError(error.message));
       } else {
         dispatch(setDBError(error));
@@ -2093,7 +2096,7 @@ export const fetchDBConfig = (config: string) => {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
-      console.log(error);
+      log.error('Error fetching database configuration', { error });
     }
   };
 };
@@ -2157,7 +2160,7 @@ export const updateScope = (active: boolean, data?: any) => {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
-      console.error("Error updating scope:", error.message)
+      log.error('Error updating scope', { error })
     }
   };
 };
@@ -2332,16 +2335,14 @@ export const processViewsAgents = (
           const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
           const error = JSON.parse(err)
 
-          console.log(`Error in saveViewsAgents: ${error.statusCode}`);
-          console.log(`Error text: ${error.message}`);
+          log.error('Error in saveViewsAgents', { statusCode: error.statusCode, message: error.message });
         }
       }
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
-      console.log(`Error in processViewsAgents: ${error.statusCode}`);
-      console.log(`Error text: ${error.message}`);
+      log.error('Error in processViewsAgents', { statusCode: error.statusCode, message: error.message });
     }
   };
 };
@@ -2473,7 +2474,7 @@ export const saveNewForm = (
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
-      console.error("Error creating new form schema:", error.message);
+      log.error('Error creating new form schema', { error });
     }
   };
 };
@@ -2838,7 +2839,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
-      console.error("Error fetching all fields:", error.message)
+      log.error('Error fetching all fields', { error })
     }
   };
 };
@@ -2870,7 +2871,7 @@ export const fetchKeepPermissions = () => {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
-      console.error("Error fetching Keep permissions:", error.message)
+      log.error('Error fetching Keep permissions', { error })
     }
   };
 };
