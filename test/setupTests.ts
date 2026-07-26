@@ -54,10 +54,13 @@ if (!HTMLElement.prototype.showPopover) {
 }
 
 // jsdom implements neither of the deprecated execCommand APIs. monaco-editor's clipboard
-// contribution calls queryCommandSupported at MODULE scope, so merely importing anything
+// contribution (clipboard/browser/clipboard.js) calls queryCommandSupported at MODULE
+// scope to decide whether to register its paste command, so merely importing anything
 // that reaches `monaco-editor` throws before a single test runs — and KeepElements.tsx
 // imports keep-monaco-editor, so that is every component test going through the React
-// bridge. Stubbing both here keeps the failure from being load-bearing on import order.
+// bridge. Reporting `false` is accurate for jsdom and simply leaves the command
+// unregistered; stubbing both here keeps the failure from being load-bearing on import
+// order.
 // (The durable fix is to make keep-monaco-editor's Monaco import dynamic; see reports/01.)
 if (!document.queryCommandSupported) {
   document.queryCommandSupported = () => false;
@@ -101,14 +104,4 @@ if (!window.matchMedia) {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   }));
-}
-
-// Monaco probes this at import time (clipboard/browser/clipboard.js) to decide
-// whether to register its paste command. jsdom implements neither this
-// long-deprecated API nor `navigator.clipboard`, so the bare property access
-// throws and takes down every suite that transitively imports KeepElements.
-// Reporting `false` is accurate for jsdom and simply leaves the command
-// unregistered.
-if (!document.queryCommandSupported) {
-  document.queryCommandSupported = vi.fn().mockReturnValue(false);
 }

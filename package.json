@@ -6,8 +6,6 @@
     "@awesome.me/webawesome": "^3.10.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@fontsource-variable/crimson-pro": "^5.3.0",
-    "@fontsource-variable/quicksand": "^5.3.0",
     "@fortawesome/fontawesome-free": "7.3.1",
     "@linaria/react": "^8.1.1",
     "@lit/react": "^1.0.8",
@@ -81,7 +79,6 @@
     "build:win": "tsc -b && vite build",
     "lint": "oxlint src test",
     "preview": "vite preview",
-    "disabledpostinstall": "cp -R ./node_modules/monaco-editor/min/vs ./public/monaco-editor-core",
     "typecheck": "tsc --noEmit"
   },
   "allowScripts": {
