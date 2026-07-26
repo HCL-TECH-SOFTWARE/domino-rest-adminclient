@@ -54,20 +54,29 @@ export default defineConfig({
         // impractical, so it is excluded from the coverage ratchet.
         'src/components/keep-elements/keep-source.ts',
       ],
-      // Enforced ratchet gate. Global floors sit just below the current baseline
-      // so CI fails if coverage regresses; the per-directory gates hold the
-      // already-covered pure logic (reducers, utils) to a high bar. Raise these
-      // numbers as more of the codebase gets tested (see reports/01).
+      // Enforced ratchet gate. Every floor sits a few points below what is actually
+      // measured, so a routine refactor does not fail CI but a real regression does.
+      // Raise these as coverage grows — a gate far below reality protects nothing.
+      //
+      // Measured on `new_code` when these numbers were last set:
+      //   global          lines 32.4  stmts 32.8  funcs 28.9  branches 29.6
+      //   keep-elements   lines 84.2  stmts 83.7  funcs 78.0  branches 68.6
+      //   services        lines 96.8  stmts 96.9  funcs 96.7  branches 95.2
+      //   store reducers  lines 100   stmts 100   funcs 100   branches 96.3
+      //   utils           lines 99.1  stmts 99.1  funcs 96.2  branches 90.6
       thresholds: {
-        lines: 20,
-        statements: 20,
-        functions: 17,
-        branches: 16,
+        lines: 30,
+        statements: 30,
+        functions: 27,
+        branches: 28,
         'src/store/**/reducer.ts': { lines: 95, statements: 95, functions: 90, branches: 88 },
         'src/utils/**': { lines: 85, statements: 85, functions: 55, branches: 60 },
-        // Converted Lit elements (.js → .ts). Conservative floor that holds
-        // across all batches; ratchet up once the large components (source) land.
-        'src/components/keep-elements/**': { lines: 70, statements: 70, functions: 60, branches: 50 },
+        // The 26 converted Lit elements. Raised from 70/70/60/50 once the element
+        // suites and the Monaco tests landed.
+        'src/components/keep-elements/**': { lines: 80, statements: 80, functions: 72, branches: 62 },
+        // Pure, well-covered helpers (log, theme, icon library, WA token readers).
+        // Nothing here should ever ship untested.
+        'src/services/**': { lines: 90, statements: 90, functions: 90, branches: 88 },
       },
     },
   },
