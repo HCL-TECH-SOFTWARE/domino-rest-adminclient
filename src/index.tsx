@@ -13,10 +13,18 @@ import App from './App';
 import { configureStore } from '@reduxjs/toolkit';
 import '@awesome.me/webawesome/dist/styles/webawesome.css';
 import '../src/styles/keep-overrides.css';
-import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import { rootReducer } from './store';
 
-setBasePath('https://ka-f.webawesome.com/webawesome@3.6.0/webawesome.loader.js');
+// No `setBasePath()` here on purpose. In WebAwesome 3.x the base path feeds exactly
+// one consumer — the autoloader, which lazily `import()`s `components/<tag>/<tag>.js`
+// from it. This app does not autoload; it imports all 38 of its WebAwesome components
+// explicitly, so nothing ever reads the value. Icons are unaffected either way: they
+// resolve through `setIconPath()`/kit code, which is a separate setting, and this app
+// serves its own glyphs from `services/icon-library.ts`.
+//
+// The call that used to live here passed `.../webawesome@3.6.0/webawesome.loader.js`
+// — a *file*, where a directory is expected, and pinned to a version no longer
+// installed. It was inert, so it never failed loudly. Guarded by icon-library.test.ts.
 
 const store = configureStore({ reducer: rootReducer });
 const root = ReactDOM.createRoot(document.getElementById('root') as Element);

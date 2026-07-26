@@ -13,8 +13,6 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
-// Import setBasePath for Web Awesome assets
-import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
@@ -335,11 +333,6 @@ export default class SourceTree extends KeepElement {
       color: light-dark(black, #e0e0e0);
     }
   `;
-
-  constructor() {
-    super();
-    setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.6.0/cdn/')
-  }
 
   updated(changedProperties: PropertyValues) {
     if (changedProperties.has('content')) {
