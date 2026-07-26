@@ -1,5 +1,5 @@
 import React from 'react';
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import Autocomplete from './keep-autocomplete';
 import SourceTree from './keep-source';
 import SourceContents from './keep-source-header';
@@ -25,6 +25,7 @@ import NsfCard from './keep-nsf-card';
 import Tooltip from './keep-tooltip';
 import Checkbox from './keep-checkbox';
 import MonacoEditor from './keep-monaco-editor';
+import Tree, { type KeepTreeSelectDetail } from './keep-tree';
 
 export const KeepAutocomplete = createComponent({
   tagName: 'keep-autocomplete',
@@ -170,6 +171,15 @@ export const KeepCheckbox = createComponent({
   react: React,
   events: {
     onChange: 'change'
+  }
+});
+
+export const KeepTree = createComponent({
+  tagName: 'keep-tree',
+  elementClass: Tree,
+  react: React,
+  events: {
+    onItemSelect: 'item-select' as EventName<CustomEvent<KeepTreeSelectDetail>>
   }
 });
 

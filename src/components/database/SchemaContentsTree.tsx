@@ -7,45 +7,19 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import DBIcon from '@mui/icons-material/Storage';
-import ArrowRightIcon from '@mui/icons-material/ChevronRight';
-import DocumentIcon from '@mui/icons-material/InsertDriveFile';
-import ArrowDropDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { SvgIconProps } from '@mui/material/SvgIcon';
 import { AvailableDatabases } from '../../store/databases/types';
 import APILoadingProgress from '../loading/APILoadingProgress';
-import { SimpleTreeView, TreeItem, TreeItemProps } from '@mui/x-tree-view';
+import { KeepTree } from '../keep-elements/KeepElements';
+import type { KeepTreeNode, KeepTreeSelectDetail } from '../keep-elements/keep-tree';
 
-declare module 'csstype' {
-  interface Properties {
-    '--tree-view-color'?: string;
-    '--tree-view-bg-color'?: string;
-  }
-}
+/** Font Awesome glyphs registered in `services/icon-library`. */
+const DATABASE_ICON = 'database';
+const DOCUMENT_ICON = 'file';
 
-type StyledTreeItemProps = TreeItemProps & {
-  bgColor?: string;
-  color?: string;
-  labelIcon: React.ElementType<SvgIconProps>;
-  labelText: string;
-};
-
-function StyledTreeItem(props: StyledTreeItemProps) {
-  const { labelText, labelIcon: LabelIcon, color, bgColor, ...other } = props;
-
-  return (
-    <TreeItem
-      label={
-        <div className='flex items-center p-0 pt-4 pb-4'>
-          <LabelIcon className='color-text-primary mr-8' />
-          <span className='color-text-primary small-text'>
-            {labelText}
-          </span>
-        </div>
-      }
-      {...other}
-    />
-  );
+/** Payload carried on the schema (leaf) nodes and echoed back on selection. */
+interface SchemaValue {
+  nsfpath: string;
+  api: string;
 }
 
 interface SchemaContentsTreeProps {
@@ -62,45 +36,37 @@ const SchemaContentsTree: React.FC<SchemaContentsTreeProps> = ({
   const { databasePull } = useSelector(
     (state: AppState) => state.databases
   );
-  const handleTreeOnClick = (data: any) => {
-    const { nsfpath, api } = data;
-    setNsfPath(nsfpath);
-    setSchemaName(api);
+
+  const nodes: KeepTreeNode[] = contents.map((content, idx) => ({
+    id: `db-${idx}`,
+    label: content.title,
+    icon: DATABASE_ICON,
+    children: [...new Set(content.apinames)].map((api, apiIdx) => ({
+      id: `db-${idx}-${api}-${apiIdx}`,
+      label: api,
+      icon: DOCUMENT_ICON,
+      value: { nsfpath: content.nsfpath, api } as SchemaValue
+    }))
+  }));
+
+  const handleItemSelect = (event: CustomEvent<KeepTreeSelectDetail>) => {
+    const value = event.detail.value as SchemaValue | undefined;
+    // A database with no APIs has no children, so `keep-tree` treats it as a
+    // selectable leaf. It carries no payload and was not clickable before.
+    if (!value) return;
+    setNsfPath(value.nsfpath);
+    setSchemaName(value.api);
   };
 
   return (
-    <SimpleTreeView
-      className="file-contents"
-      defaultExpandedItems={['5']}
-      slots={{
-        collapseIcon: () => <ArrowDropDownIcon className='medium-text' />,
-        expandIcon: () => <ArrowRightIcon className='medium-text' />,
-        endIcon: () => <div className='huge-text' />,
-      }}
-    >
-      {contents.map((content, idx) => (
-        <StyledTreeItem
-          key={idx}
-          itemId={idx.toString()}
-          labelText={content.title}
-          labelIcon={DBIcon}
-        >
-          {new Set(content.apinames).size > 0 &&
-            [...new Set(content.apinames)].map((api, idx) => (
-              <StyledTreeItem
-                key={`${api}-${idx}`}
-                itemId={`${api}-${idx}`}
-                labelText={api}
-                labelIcon={DocumentIcon}
-                onClick={() => handleTreeOnClick({nsfpath: content.nsfpath, api})}
-                color="#1a73e8"
-                bgColor="#e8f0fe"
-              />
-            ))}
-        </StyledTreeItem>
-      ))}
+    <>
+      <KeepTree
+        className="file-contents"
+        nodes={nodes}
+        onItemSelect={handleItemSelect}
+      />
       {!databasePull && <APILoadingProgress label="Schemas" />}
-    </SimpleTreeView>
+    </>
   );
 };
 

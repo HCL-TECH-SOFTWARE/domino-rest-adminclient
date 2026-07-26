@@ -33,7 +33,10 @@ import { getLogger } from './log-service.js';
 import circlePlus from '@fortawesome/fontawesome-free/svgs/solid/circle-plus.svg?url';
 import codeCompare from '@fortawesome/fontawesome-free/svgs/solid/code-compare.svg?url';
 import copy from '@fortawesome/fontawesome-free/svgs/solid/copy.svg?url';
+import database from '@fortawesome/fontawesome-free/svgs/solid/database.svg?url';
 import download from '@fortawesome/fontawesome-free/svgs/solid/download.svg?url';
+import file from '@fortawesome/fontawesome-free/svgs/solid/file.svg?url';
+import folder from '@fortawesome/fontawesome-free/svgs/solid/folder.svg?url';
 import floppyDisk from '@fortawesome/fontawesome-free/svgs/solid/floppy-disk.svg?url';
 import pencil from '@fortawesome/fontawesome-free/svgs/solid/pencil.svg?url';
 import squareCaretDown from '@fortawesome/fontawesome-free/svgs/solid/square-caret-down.svg?url';
@@ -49,7 +52,10 @@ export const ICONS: Record<string, string> = {
   'circle-plus': circlePlus,
   'code-compare': codeCompare,
   copy,
+  database,
   download,
+  file,
+  folder,
   'floppy-disk': floppyDisk,
   pencil,
   'square-caret-down': squareCaretDown,
