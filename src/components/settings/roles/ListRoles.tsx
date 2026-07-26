@@ -10,12 +10,8 @@ import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../../store';
-import { getTheme } from '../../../store/styles/action';
 
 const ListRoles = () => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   return (
     <List className='full-width'>
       {[

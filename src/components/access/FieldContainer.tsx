@@ -34,7 +34,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
   required,
   setRequired,
 }) => {
-  const [rwMode, setRWMode] = React.useState(() => {
+  const [, setRWMode] = React.useState(() => {
     if (item.fieldAccess == null || item.fieldAccess.trim() === "") {
       if (item.readOnly && !item.writeOnly) {
         return READ_ONLY;

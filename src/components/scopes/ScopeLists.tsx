@@ -6,9 +6,6 @@
 
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import AddIcon from '@mui/icons-material/Add';
-import CachedIcon from '@mui/icons-material/Cached';
-import { Button } from '@mui/material';
 import { AppState } from '../../store';
 import { toggleDrawer } from '../../store/drawer/action';
 import { clearDBError,
@@ -38,7 +35,6 @@ const ScopeLists = () => {
   const permissionCreate = permissions.createDbMapping;
   const [results, setResults] = useState([]) as any;
   const [searchKey, setSearchKey] = useState('');
-  const { visible } = useSelector((state: AppState) => state.drawer);
   const dispatch = useDispatch();
 
   const navigate = useNavigate();

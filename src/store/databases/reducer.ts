@@ -306,12 +306,10 @@ export default function databaseReducer(
         draft.forms = action.payload.forms ;
       });
     case CACHE_MODES:
-      return produce(state, (draft: DBState) => {
-        const { formName, formModes } = action.payload;
-        const index = getDatabaseIndex(state.databasesOverview, action.payload.db, action.payload.nsfPath);
+      return produce(state, () => {
       });
     case CACHE_FORM_FIELDS:
-      return produce(state, (draft: DBState) => {
+      return produce(state, () => {
       });
     case SET_RETRY_COUNT:
       return {

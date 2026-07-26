@@ -87,30 +87,6 @@ const Heading = styled.div`
   }
 `;
 
-const FormulaBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  x-overflow: hidden;
-  max-width: 100%;
-
-  .title {
-    font-size: 14px;
-  }
-  .subtitle {
-    margin-top: 22px;
-    font-size: 16px;
-    width: 100%;
-  }
-  .description {
-    font-size: 12px;
-  }
-  .formula {
-    font-size: 14px;
-    padding: 0 0 20px;
-    word-wrap: break-word;
-  }
-`;
-
 const ListConfig = styled.div`
   padding: 0 0 0 1px;
 `;
@@ -162,13 +138,6 @@ const StatusIcon = styled.div`
   z-index: 2;
 `;
 
-const DialogContainer = styled.div`
-  .title {
-    font-size: 16px;
-    font-weight: bold;
-  }
-`;
-
 const ViewButtons = styled.div`
   margin-bottom: 30px;
 
@@ -185,28 +154,8 @@ const Expander = styled.div`
   align-items: center;
 `;
 
-const ConfigContainer = styled(Box)`
-  display: flex;
-  width: 100%;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
-  gap: 10%;
-
-  .row {
-    display: flex;
-    justify-content: space-between;
-    width: 40%;
-  }
-
-  .two-columns {
-    justify-content: space-between;
-    background-color: yellow;
-  }
-`;
-
-const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, schemaData, setSchemaData }) => {
+const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, setSchemaData }) => {
   const { scopes } = useSelector((state: AppState) => state.databases);
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const {
     apiName,
     description,
@@ -398,7 +347,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, nsfPathProp, sc
     setAnchorEl(null);
   };
 
-  const handleMenuItemClick = (event: React.MouseEvent<HTMLElement>, index: number) => {
+  const handleMenuItemClick = (_event: React.MouseEvent<HTMLElement>, index: number) => {
     setSelectedIndex(index);
     setAnchorEl(null);
     const _iconName = Object.keys(appIcons)[index];

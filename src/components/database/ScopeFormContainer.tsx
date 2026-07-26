@@ -110,7 +110,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
       dispatch(changeScope(formData, isEdit) as any);
     },
   });
-  const handleDelete = (apiName:string) => {
+  const handleDelete = () => {
     if(permissions.deleteDbMapping){
       dispatch(toggleDeleteDialog());
     }else{

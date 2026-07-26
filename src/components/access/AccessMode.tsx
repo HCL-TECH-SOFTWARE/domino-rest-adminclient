@@ -10,7 +10,6 @@ import { useLocation } from 'react-router-dom';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
 import Fields from './Fields';
-import { reorder, copy, move } from './functions';
 import { AccessModeContainer } from './styles';
 import TabsAccess from './TabsAccess';
 import PageLoading from '../loaders/PageLoading';
@@ -197,49 +196,7 @@ const AccessMode: React.FC = () => {
     // eslint-disable-next-line
   }, [urls, allModes, dbName, formName]); //NOSONAR
 
-  const onDragEnd = (result: any) => {
-    const { source, destination } = result;
-
-    if (!destination) {
-      return;
-    }
-
-    switch (source.droppableId) {
-      case destination.droppableId:
-        setstate({
-          ...state,
-          [destination.droppableId]: reorder(
-            state[source.droppableId],
-            source.index,
-            destination.index
-          ),
-        });
-        break;
-      case 'ITEMS':
-        setstate({
-          ...state,
-          [destination.droppableId]: copy(
-            loadedFields,
-            state[destination.droppableId],
-            source,
-            destination
-          ),
-        });
-        break;
-      default:
-        setstate(
-          move(
-            state[source.droppableId],
-            state[destination.droppableId],
-            source,
-            destination
-          )
-        );
-        break;
-    }
-  };
-
-  const remove = (idx: number, fieldList: any, all?: boolean) => {
+  const remove = (_idx: number, fieldList: any, all?: boolean) => {
     if (all) {
       setstate({ [uuid()]: [] })
     } else {

@@ -97,10 +97,6 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
     }
   }, [appFilterDrawer]);
 
-  const handleClickOpen = () => {
-    dispatch(toggleAppFilterDrawer());
-  };
-
   const handleClickShowResults = () => {
     dispatch(fetchMyApps() as any)
     setStatus(filterStatus)

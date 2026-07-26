@@ -318,7 +318,7 @@ export function loginWithPkce(token: any) {
 }
 
 // Thunk action to get the current idpLogin state
-export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, AnyAction> => (dispatch, getState) => {
+export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, AnyAction> => (_dispatch, getState) => {
   const { idpLogin } = getState().account;
   return idpLogin;
 };

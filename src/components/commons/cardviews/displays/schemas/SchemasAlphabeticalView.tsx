@@ -302,7 +302,7 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
                     {letter}
                   </span>
                   <Box className='schemas'>
-                    {alphabets[letter].map((data: any, index: number) => (
+                    {alphabets[letter].map((data: any) => (
                       <Db key={data.schemaName + data.nsfPath}>
                         <LitTooltip content={schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? 'Used by Scopes' : 'Not used by Scopes'}>
                           <Box className={`api-status ${schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? '' : 'unused'}`} />

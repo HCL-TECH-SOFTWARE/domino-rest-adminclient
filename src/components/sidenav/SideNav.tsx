@@ -173,7 +173,7 @@ interface SidenavProps {
   toggleMenu: () => void;
 }
 
-const SideNav: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
+const SideNav: React.FC<SidenavProps> = ({ open }) => {
   const location = useLocation();
   const { navitems } = useSelector((state: AppState) => state.account);
   const { databasePull } = useSelector((state: AppState) => state.databases);

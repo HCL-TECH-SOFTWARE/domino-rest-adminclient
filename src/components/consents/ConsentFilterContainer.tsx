@@ -84,7 +84,6 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
   setExp,
   tokenExp,
   setTokenExp,
-  setReset,
   scopes,
   setScopes,
 }) => {

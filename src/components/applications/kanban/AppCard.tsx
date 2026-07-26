@@ -10,13 +10,12 @@ import ApplicationIcon from '@mui/icons-material/Apps';
 import GenerateIcon from '@mui/icons-material/RotateLeft';
 import RemoveIcon from '@mui/icons-material/Delete';
 import SecurityIcon from '@mui/icons-material/Security';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { FormikProps } from 'formik';
 import { styled } from '@linaria/react';
 import Button from '@mui/material/Button';
 import { AppProp, AppFormProp } from '../../../store/applications/types';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
-import { AppState } from '../../../store';
 import appIcons from '../../../styles/app-icons';
 import { getToken } from '../../../store/account/action';
 import { AppFormContext } from '../ApplicationContext';
@@ -30,7 +29,6 @@ import {
   InputContainer
 } from '../../../styles/CommonStyles';
 import { checkIcon } from '../../../styles/scripts';
-import { getTheme } from '../../../store/styles/action';
 import { apiRequestWithRetry } from '../../../utils/api-retry';
 import { LitTooltip } from '../../lit-elements/LitElements';
 
@@ -41,12 +39,6 @@ const AppImage = styled.img`
   padding: 6px;
   height: 40px !important;
 `;
-
-const actionBarStyle = {
-  padding: '2px 0', 
-  display: 'flex',
-  justifyContent: 'center'
-}
 
 const Icon = styled.div`
   padding-right: 10px;
@@ -65,7 +57,6 @@ const AppCard: React.FC<AppCardProps> = ({
 }) => {
   const dispatch = useDispatch();
   const [, setFormContext] = useContext(AppFormContext) as any;
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const [generating, setGenerating] = useState(false);
   const [appSecret, setAppSecret] = useState(null);
   const appSecretTextRef = useRef(null) as any;
@@ -130,7 +121,7 @@ const AppCard: React.FC<AppCardProps> = ({
     setGenerating(true);
     
     try {
-      const { response, data } = await apiRequestWithRetry(() =>
+      const { data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`, {
           method: 'POST',
           headers: {

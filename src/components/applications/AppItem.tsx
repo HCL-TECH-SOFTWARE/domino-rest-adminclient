@@ -5,13 +5,11 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { styled } from '@linaria/react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
-import { AppState } from '../../store';
 import appIcons from '../../styles/app-icons';
-import { getTheme } from '../../store/styles/action';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
 import { DeleteIcon } from '../../styles/CommonStyles';
@@ -119,9 +117,8 @@ const AppItem: React.FC<AppItemProps> = ({
   formik,
 }) => {
   const dispatch = useDispatch()
-  const { themeMode } = useSelector((state: AppState) => state.styles)
 
-  const [generating, setGenerating] = useState(false)
+  const [, setGenerating] = useState(false)
   const [appSecret, setAppSecret] = useState('')
   const appSecretTextRef = useRef(null) as any
   const clickToGenerateText = "Click to Generate Secret"
@@ -158,7 +155,7 @@ const AppItem: React.FC<AppItemProps> = ({
     setIsGenerate(false);
   }
 
-  const handleKeyPress = (e: any, callback: any, focus?: boolean) => {
+  const handleKeyPress = (e: any, callback: any) => {
     if (e.key === "Enter") {
       callback();
     }
@@ -258,7 +255,7 @@ const AppItem: React.FC<AppItemProps> = ({
                       <span className='small-text'>App ID:</span>
                       <LitTooltip
                         content="Copy App Id"
-                        onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}}
+                        onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}}
                       >
                         <span
                           className='small-text cursor-pointer color-text-hint'
@@ -279,7 +276,7 @@ const AppItem: React.FC<AppItemProps> = ({
                           hasAppSecret ? <>
                             <LitTooltip
                               content="Copy Application Secret"
-                              onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                              onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}} 
                             >
                               <span
                                 className='small-text cursor-pointer script-editor-help-icon'
@@ -302,7 +299,7 @@ const AppItem: React.FC<AppItemProps> = ({
                             {app.appSecret?.length > 0 ? <>
                               <LitTooltip
                                 content="Copy Application Secret"
-                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)}, true)}} 
+                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}} 
                               >
                                 <span
                                   className='small-text cursor-pointer script-editor-help-icon'

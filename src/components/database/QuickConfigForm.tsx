@@ -99,7 +99,6 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   );
   const [schemas, setSchemas] = useState([]) as any;
   const [hideClearIcon, setHideClearIcon] = useState(true);
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
   const [schemaNameError, setSchemaNameError] = useState('');
@@ -107,18 +106,12 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   const [searchValue, setSearchValue] = useState('');
   const [filtered, setFiltered] = useState([...availableDatabases]);
 
-  const [formulaEngine, setFormulaEngine] = React.useState('Domino');
-
   useEffect(() => {
     const schemas = databases.map((database) => {
       return database.nsfPath + ":" + database.schemaName;
     });
     setSchemas(schemas);
   }, [databases]);
-
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setFormulaEngine(event.target.value as string);
-  };
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(1);
@@ -128,7 +121,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   };
 
   const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     index: number
   ) => {
     setSelectedIndex(index);

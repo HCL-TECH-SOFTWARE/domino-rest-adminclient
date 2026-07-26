@@ -72,14 +72,6 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
     }
 };
 
-// https://shoelace.style/components/alert#toast-notifications
-// Always escape HTML for text arguments!
-function escapeHtml(html: string) {
-    const div = document.createElement('div');
-    div.textContent = html;
-    return div.innerHTML;
-  }
-
 // // https://shoelace.style/components/alert#toast-notifications
 // // Custom function to emit toast notifications
 // export function notify(message: string, variant = 'brand') {

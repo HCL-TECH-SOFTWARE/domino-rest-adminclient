@@ -19,7 +19,7 @@ import {
 import { AppState } from '../../store';
 import { getDatabaseIndex } from '../../store/databases/scripts';
 import DetailsSection from './DetailsSection';
-import { KEEP_ADMIN_BASE_COLOR, MONACO_EDITOR_DIR, SETUP_KEEP_API_URL } from '../../config.dev';
+import { MONACO_EDITOR_DIR, SETUP_KEEP_API_URL } from '../../config.dev';
 import {
   setForms,
   setCurrentForms,
@@ -41,7 +41,6 @@ import TabAgents from './TabAgents';
 import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
-import { toggleAlert } from '../../store/alerts/action';
 import EditViewDialog from './EditView';
 import { LitButtonNeutral, LitButtonYes, LitSource } from '../lit-elements/LitElements';
 import { Editor } from '@monaco-editor/react';
@@ -182,7 +181,6 @@ const FormsContainer = () => {
 
   const nsfPathDecode = decodeURIComponent(nsfPath);
   
-  const [styledObjMode, setStyledObjMode] = useState(true);
   const [editedContent, setEditedContent] = useState({})
   
   const [sourceTabContent, setSourceTabContent] = useState(JSON.stringify(schemaData, null, 1))
@@ -190,7 +188,6 @@ const FormsContainer = () => {
   const [saveChangesDialog, setSaveChangesDialog] = useState(false);
   const [discardChangesDialog, setDiscardChangesDialog] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
-  const [exportFileName, setExportFileName] = useState(`${dbName}.json`);
 
   const [viewOpen, setViewOpen] = useState(false);
   const [openViewName, setOpenViewName] = useState('');
@@ -447,26 +444,8 @@ const FormsContainer = () => {
     return editorRef.current.getValue()
   }
 
-  const handleClickExport = () => {
-    download();
-    dispatch(toggleAlert('Schema exported in your default downloads folder.'));
-  }
-
   const handleCloseEditView = () => {
     setViewOpen(false);
-  }
-
-  const download = () => {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(sourceTabContent));
-    element.setAttribute('download', exportFileName);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
   }
 
   useEffect(() => {
@@ -587,7 +566,7 @@ const FormsContainer = () => {
   }
   const [value, setValue]  = React.useState(0);
 
-  const handleTabChange = (event: any, newValue: number) => {
+  const handleTabChange = (_event: any, newValue: number) => {
 
     // Need future improvements:
     // Issue : userBlock component on react-dom-router version 6
@@ -618,10 +597,6 @@ const FormsContainer = () => {
       }
     }
     
-  };
-
-  const handleToggle = () => {
-    setStyledObjMode(!styledObjMode);
   };
 
   useEffect(() => {
@@ -826,7 +801,7 @@ function loadConfiguredForms(
 
   // Wait for all configured forms to be loaded
   Promise.allSettled(formPromises)
-    .then((results) => {
+    .then(() => {
       // Once we have all the results build a complete list
       // and update our state
       // Add unconfigured forms

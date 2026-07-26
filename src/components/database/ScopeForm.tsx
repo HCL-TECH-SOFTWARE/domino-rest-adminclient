@@ -95,7 +95,6 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
   const { dbError, dbErrorMessage } = useSelector(
     (state: AppState) => state.databases
   );
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
   const [searchValue, setSearchValue] = useState('');
@@ -120,7 +119,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
   };
 
   const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     index: number
   ) => {
     setSelectedIndex(index);
@@ -130,7 +129,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
   };
 
   const handleAclMenuClick = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     index: number
   ) => {
     setAclIndex(index);

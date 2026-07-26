@@ -115,7 +115,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
   const [sortAppName, setSortAppName] = React.useState(true)
 
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number,
   ) => {
     setPage(newPage);

@@ -10,7 +10,6 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import QuickConfigForm from './QuickConfigForm';
 import { AppState } from '../../store';
-import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { quickConfig } from '../../store/databases/action';
 import {
   DrawerFormContainer,
@@ -65,7 +64,7 @@ export default function QuickConfigFormContainer() {
   }, [quickConfigDrawer]);
 
   const [nsfPath, setNsfPath] = useState('');
-  const [schemaName, setSchemaName] = useState('');
+  const [schemaName] = useState('');
   const [icon, setIcon] = useState('beach');
   const [isDisabled, setIsDisabled] = useState(true);
 
@@ -117,11 +116,6 @@ export default function QuickConfigFormContainer() {
       dispatch(quickConfig(formData) as any);
     },
   });
-
-  const handleClickOpen = () => {
-    formik.resetForm({});
-    dispatch(toggleQuickConfigDrawer());
-  };
 
   const resetForm = () => {
     formik.resetForm({});

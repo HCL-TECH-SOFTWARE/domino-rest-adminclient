@@ -28,7 +28,7 @@ import theme from './theme';
 import CallbackPage from './components/login/CallbackPage';
 
 const App: React.FC = () => {
-  const [open, setOpen] = useState(false);
+  const [open] = useState(false);
   const [valid, setValid] = useState(false);
   const dispatch = useDispatch();
   const { themeMode } = useSelector((state: AppState) => state.styles);

@@ -7,7 +7,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import { Box, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { addSchema } from '../../store/databases/action';
 import { Autocomplete } from '@mui/material';
@@ -222,12 +222,11 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   };
 
   const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     index: number
   ) => {
     setSelectedIndex(index);
     setAnchorEl(null);
-    const _iconName = Object.keys(appIcons)[index];
     setIconName(Object.keys(appIcons)[index]);
   };
 

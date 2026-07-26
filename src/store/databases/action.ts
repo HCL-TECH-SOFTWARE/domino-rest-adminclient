@@ -525,7 +525,7 @@ export const fetchScopes = () => {
         });
 
         // Begin fetch detailed schemas and refresh store
-        simpleSchemas.forEach((schema: any) => {
+        simpleSchemas.forEach(() => {
           dispatch(setPullScope(true));
           if (!pulled) {
             pulled = true;
@@ -672,7 +672,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
       }
 
       // Strip away @alias, @hide, and @name
-      const draggableFields: Array<any> = transformFields.filter((value, idx) => {
+      const draggableFields: Array<any> = transformFields.filter((_value, idx) => {
         return idx > 2;
       });
 
@@ -1118,73 +1118,6 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
   };
 };
 
-function loadUnconfiguredForms(
-  apiData: any,
-  allForms: any[],
-  dbName: string,
-  setData: React.Dispatch<React.SetStateAction<string[]>>,
-  dispatch: Dispatch<any>
-) {
-  apiData.data.forms.forEach((form: any) => {
-    allForms.push({
-      dbName,
-      formName: form['@name'],
-      alias: form['@alias'],
-      formModes: []
-    });
-  });
-
-  // Sort the form names alphabetically
-  try {
-    allForms.sort((a, b) => (a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1));
-  } catch (e) {}
-
-  // Save Forms Data
-  setData(apiData.forms);
-  dispatch(setForms(dbName, allForms));
-  dispatch(setCurrentForms(dbName, allForms));
-}
-
-function loadConfiguredForms(
-  configformsList: any[],
-  allForms: any[],
-  dbName: string,
-  apiData: any,
-  setData: React.Dispatch<React.SetStateAction<string[]>>,
-  dispatch: Dispatch<any>
-) {
-  let formPromises: Array<any> = [];
-
-  for (const form of configformsList) {
-    allForms.push({ dbName, ...form });
-  }
-
-  // Wait for all configured forms to be loaded
-  Promise.allSettled(formPromises)
-    .then((results) => {
-      // Once we have all the results build a complete list
-      // and update our state
-      // Add unconfigured forms
-      let configformsNameList = configformsList.map((form) => form.formName);
-      apiData.forms.forEach((form: any) => {
-        if (!configformsNameList.includes(form['@name']))
-          allForms.push({
-            dbName,
-            formName: form['@name'],
-            alias: form['@alias'],
-            formModes: []
-          });
-      });
-      // Sort the form names alphabetically
-      allForms.sort((a, b) => (a.formName.toLowerCase() > b.formName.toLowerCase() ? 1 : -1));
-      // Save Forms Data
-      setData(apiData.forms);
-      dispatch(setForms(dbName, allForms));
-      dispatch(setCurrentForms(dbName, allForms));
-    })
-    .catch((e: any) => console.log('Error processing: ' + e));
-}
-
 /**
  * Prepare form object to pass into the schema data payload.
  *
@@ -1241,10 +1174,7 @@ export const handleDatabaseForms = (
   };
 };
 
-export const pullForms = (nsfPath: string, dbName: string, setData: React.Dispatch<React.SetStateAction<string[]>>) => {
-  let allForms: Array<any> = [];
-  let configformsList: Array<any> = [];
-
+export const pullForms = (nsfPath: string, _dbName: string, _setData: React.Dispatch<React.SetStateAction<string[]>>) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
@@ -1560,7 +1490,7 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
 
 // Get view elements by calling the design API
 async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolean) {
-  const { response, data } = await apiRequestWithRetry(() =>
+  const { data } = await apiRequestWithRetry(() =>
     fetch(
       `${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`,
       {
@@ -2173,7 +2103,7 @@ export const updateScope = (active: boolean, data?: any) => {
     dispatch(closeSnackbar());
     dispatch(setApiLoading(true));
     const { contextViewIndex, scopes } = getState().databases;
-    const { apiName, schemaName, nsfPath, description, isActive } = scopes[contextViewIndex];
+    const { apiName, schemaName, nsfPath, description } = scopes[contextViewIndex];
 
     const formData = {
       apiName,
@@ -2840,7 +2770,6 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
         TYPE_TIME_RANGE: 'date-time'
       };
       const allFieldsKey = Object.keys(allFields);
-      let requiredFields: any[] = [];
       let finalFields: {
         content: any;
         name: any;

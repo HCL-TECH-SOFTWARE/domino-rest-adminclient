@@ -24,7 +24,7 @@ interface OptionListProps {
   toggleMenu: (open: boolean) => void;
 }
 
-const OptionList: React.FC<OptionListProps> = ({ theme, toggleMenu }) => {
+const OptionList: React.FC<OptionListProps> = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate()
   

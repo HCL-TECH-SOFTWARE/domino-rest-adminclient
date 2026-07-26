@@ -12,7 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Box, IconButton, TableFooter, TablePagination } from '@mui/material';
+import { IconButton, TableFooter, TablePagination } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { FaSort } from "react-icons/fa";
@@ -111,7 +111,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
   const dispatch = useDispatch()
 
   const handleChangePage = (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number,
   ) => {
     setPage(newPage);

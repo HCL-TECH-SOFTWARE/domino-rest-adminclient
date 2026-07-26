@@ -17,7 +17,6 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { Alert, AlertTitle } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import { AppState } from '../../store';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from '../applications/ApplicationContext';
 import {

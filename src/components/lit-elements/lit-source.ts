@@ -39,8 +39,6 @@ function parseStringToArray(input: string): any[] {
   const result: any[] = [];
   let currentItem = '';
   let inString = false;
-  let inObject = false;
-  let inArray = false;
   let stack: string[] = [];
 
   for (let i = 0; i < input.length; i++) {
@@ -52,21 +50,13 @@ function parseStringToArray(input: string): any[] {
 
     if (!inString) {
       if (char === '{') {
-        inObject = true;
         stack.push(char);
       } else if (char === '}') {
         stack.pop();
-        if (stack.length === 0) {
-          inObject = false;
-        }
       } else if (char === '[') {
-        inArray = true;
         stack.push(char);
       } else if (char === ']') {
         stack.pop();
-        if (stack.length === 0) {
-          inArray = false;
-        }
       } else if (char === ',' && stack.length === 0) {
         result.push(parseItem(currentItem.trim()));
         currentItem = '';
@@ -416,11 +406,11 @@ export default class SourceTree extends KeepLitElement {
                 <wa-button>
                   <wa-icon appearance="filled" class="icon-button" slot="trigger" src="${IMG_DIR}/shoelace/caret-down-square.svg" label="Context Menu"></wa-icon>
                 </wa-button>
-                <wa-dropdown-item @click="${(e: Event) => this.handleClickAdd(e, fullPath)}">
+                <wa-dropdown-item @click="${(e: Event) => this.handleClickAdd(e)}">
                   Add
                   <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/plus-circle.svg"></wa-icon>
                 </wa-dropdown-item>
-                <wa-dropdown-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e: Event) => {this.handleClickEdit(e, key, value, fullPath)}}">
+                <wa-dropdown-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e: Event) => {this.handleClickEdit(e, key, value)}}">
                   Edit
                   <wa-icon slot="prefix" src="${IMG_DIR}/shoelace/pencil.svg"></wa-icon>
                 </wa-dropdown-item>
@@ -485,7 +475,7 @@ export default class SourceTree extends KeepLitElement {
     `;
   }
 
-  handleClickAdd(e: Event, fullPath?: string) {
+  handleClickAdd(e: Event) {
     const dialog = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')!
     const insertButton = dialog.querySelector('#dialog-insert')!
     const editButton = dialog.querySelector('#dialog-edit')!
@@ -496,7 +486,7 @@ export default class SourceTree extends KeepLitElement {
     }
   }
 
-  handleClickEdit(e: Event, key: string, value: any, fullPath: string) {
+  handleClickEdit(e: Event, key: string, value: any) {
     const dialog = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')
     const insertButton = dialog!.querySelector('#dialog-insert')!
     const editButton = dialog!.querySelector('#dialog-edit')!
@@ -552,7 +542,7 @@ export default class SourceTree extends KeepLitElement {
 
   }
 
-  handleClickDuplicate(e: Event, fullPath: string, key: string, value: any) {
+  handleClickDuplicate(_e: Event, fullPath: string, key: string, value: any) {
     const paths = fullPath.split('.')
     let obj = this.editedContent
     const newKey = `${key}_copy`
@@ -725,7 +715,7 @@ export default class SourceTree extends KeepLitElement {
     this.requestUpdate()
   }
 
-  updateEditedContent(e: Event, key: string, parentObj: JsonRecord, newValue: any, fullPath: string) {
+  updateEditedContent(_e: Event, key: string, parentObj: JsonRecord, newValue: any, fullPath: string) {
     const paths = fullPath.split('.')
     newValue = newValue === "true" ? true : newValue === "false" ? false : newValue
     if (paths.length === 1) {

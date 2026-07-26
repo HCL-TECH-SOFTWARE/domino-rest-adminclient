@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppState } from '../../store';
 import {
@@ -106,9 +106,7 @@ const SchemasLists = () => {
     setSearchType(key);
   };
 
-  const onChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | any>
-  ) => {
+  const onChange = () => {
     dispatch(setOnlyShowSchemasWithScopes(!onlyShowSchemasWithScopes));
   };
 
@@ -131,8 +129,6 @@ const SchemasLists = () => {
       dispatch(fetchKeepDatabases() as any)
     }
   }, [dispatch, databasePull])
-
-  const lastRun = useRef(Date.now());
 
   const computeResults = () => {
     let schemas = databasesOverview.slice();

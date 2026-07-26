@@ -19,7 +19,7 @@ import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useNavigate } from 'react-router-dom';
 import { Database } from "../../store/databases/types";
 import ActivateMenu from "./ActivateMenu";
-import { ButtonNeutral, ButtonYes, WarningIcon } from "../../styles/CommonStyles";
+import { WarningIcon } from "../../styles/CommonStyles";
 import { IoMdClose } from "react-icons/io";
 import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";

@@ -58,11 +58,8 @@ interface ColumnDetailsProps {
 }
 
 const ColumnDetails: React.FC<ColumnDetailsProps> = ({
-  viewName,
-  column,
   chosenColumns,
   handleEditColumn,
-  setEditColumn,
   setRemoveColumn,
 }) => {
   

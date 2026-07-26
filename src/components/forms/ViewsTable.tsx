@@ -13,7 +13,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import ActivateSwitch from './ActivateSwitch';
-import { Button, Tooltip } from '@mui/material';
+import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { useDispatch } from 'react-redux';
@@ -106,7 +106,7 @@ interface ViewsTableProps {
   setOpenViewName: any;
 }
 
-const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInactive, dbName, nsfPath, setViewOpen, setOpenViewName }) => {
+const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInactive, setViewOpen, setOpenViewName }) => {
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { folders } = useSelector((state: AppState) => state.databases);
   const folderNames = folders.map((folder) => {return folder.viewName});

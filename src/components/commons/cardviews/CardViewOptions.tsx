@@ -10,14 +10,12 @@ import { useLocation } from 'react-router-dom';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
-import { MultiCardViewContainer } from './CarViewstyles';
 
 interface CardViewOptionsProps {
   changeView: (view: string) => void;
 }
 
 const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { scopePull } = useSelector((state: AppState) => state.databases);
   const location = useLocation();
   const { search } = location;
@@ -27,7 +25,7 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
   let views = ['Stack View', 'Card View', 'Alphabetical View', 'NSF View'];
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const handleMenuItemClick = (event: any, view: string) => {
+  const handleMenuItemClick = (view: string) => {
     changeView(view);
     setAnchorEl(null);
   }
@@ -64,7 +62,7 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
         >
           {views.map((key) => (
               <MenuItem key={key}
-                onClick={(event) => handleMenuItemClick(event, key.replace(" View","").toLowerCase())}
+                onClick={() => handleMenuItemClick(key.replace(" View","").toLowerCase())}
               >
               {key}
               </MenuItem>

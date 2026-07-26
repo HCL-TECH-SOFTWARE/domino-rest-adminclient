@@ -5,8 +5,6 @@
  * ========================================================================== */
 
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../store';
 
 interface FormDialogHeaderProps {
   title: string;

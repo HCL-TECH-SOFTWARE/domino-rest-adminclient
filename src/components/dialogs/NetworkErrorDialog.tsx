@@ -11,12 +11,6 @@ import { AppState } from '../../store';
 import { toggleErrorDialog } from '../../store/dialog/action';
 import { LitButtonYes } from '../lit-elements/LitElements';
 
-interface NetworkErrorDialogProps {
-  dialogTitle: string;
-  errorMessage: string;
-  handleDelete: () => void;
-}
-
 /**
  * This component displays a Delete confirmation dialog
  *

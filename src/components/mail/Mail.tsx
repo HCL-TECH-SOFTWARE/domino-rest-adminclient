@@ -4,7 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
 import DashboardIcon from '@mui/icons-material/Email';
 import { FormContainer } from '../../styles/CommonStyles';
 

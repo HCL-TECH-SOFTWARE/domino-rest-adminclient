@@ -516,11 +516,6 @@ interface updateSchema {
   payload: Array<DatabaseOverview>;
 }
 
-interface UpdateSchema {
-  type: typeof UPDATE_SCHEMA;
-  payload: Database;
-}
-
 interface FetchAvailableDatabases {
   type: typeof FETCH_AVAILABLE_DATABASES;
   payload: any;
@@ -635,11 +630,6 @@ interface ClearFormulaResults {
 
 interface ClearDatabasePullResult {
   type: typeof CLEAR_DATABASEPULL_RESULT;
-}
-
-interface SetOnlyShowSchemaWithScopes {
-  type: typeof SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES;
-  payload: boolean;
 }
 
 /**

@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { styled } from '@linaria/react';
-import { Box, Collapse, TableCell, TableRow, Tooltip } from '@mui/material';
+import { Box, Collapse, TableCell, TableRow } from '@mui/material';
 import { AppState } from '../../../store';
 import { toggleDeleteConsent } from '../../../store/consents/action';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -73,13 +73,10 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const { apps } = useSelector((state: AppState) => state.apps)
-  const { scopes } = useSelector((state: AppState) => state.databases)
   const { users } = useSelector((state: AppState) => state.users)
   const dispatch = useDispatch()
 
-  const scope = scopes.find((scope: any) => scope.apiName === consent.scope)
-
-  // Show delete consent dialog when clicking the Revoke 
+  // Show delete consent dialog when clicking the Revoke
   
 
   const handleClickRevoke = () => {

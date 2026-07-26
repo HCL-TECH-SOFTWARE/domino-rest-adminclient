@@ -4,7 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -187,7 +186,7 @@ const LoginPage = () => {
   const [idpList, setIdpList] = useState([]);
   const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
   const [authType, setAuthType] = useState('password');
-  const [selectedOidc, setSelectedOidc] = useState('');
+  const [selectedOidc] = useState('');
 
   const usernameRef = useRef<any>(null)
   const passwordRef = useRef<any>(null)
@@ -282,7 +281,7 @@ const LoginPage = () => {
     },
     validationSchema: SignupSchema,
 
-    onSubmit: async (values, form) => {
+    onSubmit: async (values) => {
       dispatch(set401Error(false));
       const data = JSON.stringify(values, null, 2);
       const parseData = JSON.parse(data);
@@ -369,7 +368,7 @@ const LoginPage = () => {
     }
   }
 
-  const handleLogInUsingIdp = async (idp: any) => {
+  const handleLogInUsingIdp = async (_idp: any) => {
     setAuthType('oidc')
   }
 
@@ -410,7 +409,7 @@ const LoginPage = () => {
     }
   }
 
-  const handleChooseOidc = (idp: any) => {
+  const handleChooseOidc = (_idp: any) => {
     
   }
 
