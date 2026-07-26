@@ -53,6 +53,17 @@ if (!HTMLElement.prototype.showPopover) {
   };
 }
 
+// jsdom implements neither of the deprecated execCommand APIs. monaco-editor's clipboard
+// contribution calls queryCommandSupported at MODULE scope, so merely importing anything
+// that reaches `monaco-editor` throws before a single test runs — and KeepElements.tsx
+// imports keep-monaco-editor, so that is every component test going through the React
+// bridge. Stubbing both here keeps the failure from being load-bearing on import order.
+// (The durable fix is to make keep-monaco-editor's Monaco import dynamic; see reports/01.)
+if (!document.queryCommandSupported) {
+  document.queryCommandSupported = () => false;
+  document.execCommand = () => false;
+}
+
 // Some modules read localStorage at import time (e.g. store/styles/reducer.ts).
 // jsdom does not always expose it before module evaluation, so provide a stub.
 if (typeof globalThis.localStorage === 'undefined' || globalThis.localStorage == null) {
