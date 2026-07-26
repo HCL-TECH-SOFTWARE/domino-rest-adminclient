@@ -6,7 +6,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import FormDialogHeader from './FormDialogHeader';
-import { LitButtonNeutral, LitButtonNo, LitButtonYes } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonNo, KeepButtonYes } from '../keep-elements/KeepElements';
 
 interface UnsavedChangesDialogProps {
   open: boolean;
@@ -53,9 +53,9 @@ const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
         </p>
       </div>
       <div className='dialog-actions'>
-        <LitButtonNeutral onClick={onCancel} text='Cancel' />
-        <LitButtonNo onClick={onDiscard} text='No' />
-        <LitButtonYes onClick={onSave} text='Yes' autoFocus />
+        <KeepButtonNeutral onClick={onCancel} text='Cancel' />
+        <KeepButtonNo onClick={onDiscard} text='No' />
+        <KeepButtonYes onClick={onSave} text='Yes' autoFocus />
       </div>
     </dialog>
   );

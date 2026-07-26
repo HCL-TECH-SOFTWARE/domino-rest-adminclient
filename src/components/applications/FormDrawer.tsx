@@ -15,7 +15,7 @@ import TestForm from '../access/TestForm';
 import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
-import { LitDrawer } from '../lit-elements/LitElements';
+import { KeepDrawer } from '../keep-elements/KeepElements';
 
 interface FormDrawerProps {
   formName: string;
@@ -35,7 +35,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
   const { applicationDrawer } = useSelector((state: AppState) => state.drawer);
 
   return (
-    <LitDrawer open={applicationDrawer} label="Application Form">
+    <KeepDrawer open={applicationDrawer} label="Application Form">
       {(() => {
         switch (formName) {
           // Application form
@@ -71,7 +71,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
             )
         }
       })()}
-    </LitDrawer>
+    </KeepDrawer>
   );
 };
 

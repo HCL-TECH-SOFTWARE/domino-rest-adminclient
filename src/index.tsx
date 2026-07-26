@@ -12,7 +12,7 @@ import { Provider } from 'react-redux';
 import App from './App';
 import { configureStore } from '@reduxjs/toolkit';
 import '@awesome.me/webawesome/dist/styles/webawesome.css';
-import '../src/styles/lit-overrides.css';
+import '../src/styles/keep-overrides.css';
 import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import { rootReducer } from './store';
 

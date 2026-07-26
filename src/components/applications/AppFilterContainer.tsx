@@ -14,7 +14,7 @@ import { styled } from '@linaria/react';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { fetchMyApps } from '../../store/applications/action';
-import { LitButtonNeutral, LitButtonNo, LitButtonYes, LitDrawer } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonNo, KeepButtonYes, KeepDrawer } from '../keep-elements/KeepElements';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -113,7 +113,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   }
   
   return (
-    <LitDrawer label="Filter" open={appFilterDrawer}>
+    <KeepDrawer label="Filter" open={appFilterDrawer}>
       <DrawerFormContainer className='w-35vw'>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
@@ -180,14 +180,14 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             </Section>
             <hr className='divider pt-5 pb-10 mb-10 no-background' />
             <ButtonsContainer>
-              <LitButtonNeutral onClick={handleClickReset} text='Reset' />
-              <LitButtonNo onClick={() => dispatch(toggleAppFilterDrawer())} text='Cancel' />
-              <LitButtonYes onClick={handleClickShowResults} text='Show Results' />
+              <KeepButtonNeutral onClick={handleClickReset} text='Reset' />
+              <KeepButtonNo onClick={() => dispatch(toggleAppFilterDrawer())} text='Cancel' />
+              <KeepButtonYes onClick={handleClickShowResults} text='Show Results' />
             </ButtonsContainer>
           </FilterContainer>
         </LocalizationProvider>
       </DrawerFormContainer>
-    </LitDrawer>
+    </KeepDrawer>
   );
 }
 

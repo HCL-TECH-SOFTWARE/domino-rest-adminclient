@@ -16,7 +16,7 @@ import { AppState } from '../../../store';
 import { useDispatch } from 'react-redux';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
-import { LitButtonNeutral, LitButtonYes } from '../../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes } from '../../keep-elements/KeepElements';
 import ZeroResultsWrapper from '../../commons/ZeroResultsWrapper';
 import FormDialogHeader from '../../dialogs/FormDialogHeader';
 const ConsentsContainer = styled.div`
@@ -173,8 +173,8 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
           </div>
         </div>
         <div className='dialog-actions'>
-          <LitButtonYes text='Yes' onClick={confirmDeleteConsent} />
-          <LitButtonNeutral text='No' onClick={handleCloseDialog} />
+          <KeepButtonYes text='Yes' onClick={confirmDeleteConsent} />
+          <KeepButtonNeutral text='No' onClick={handleCloseDialog} />
         </div>
       </dialog>
     </ConsentsContainer>

@@ -23,7 +23,7 @@ import {
   InputContainer,
   PanelContent,
 } from '../../styles/CommonStyles';
-import { LitAutocomplete, LitButton, LitCheckbox } from '../lit-elements/LitElements';
+import { KeepAutocomplete, KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
 import appIcons from '../../styles/app-icons';
 
 interface AppFormProps {
@@ -241,16 +241,16 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
               ))}
           </PillBoxRow>
           <ScopeField>
-            <LitAutocomplete
+            <KeepAutocomplete
               options={scopeList}
               ref={scopeAutocompleteRef}
               className='half-width'
             />
-          <LitButton
+          <KeepButton
             src={`${IMG_DIR}/shoelace/plus.svg`}
             onClick={onClickAddScope}
           >
-          </LitButton>
+          </KeepButton>
           </ScopeField>
           {!formik.values.appScope && formik.touched.appScope ? (
             <span className="small-text color-text-danger">
@@ -259,7 +259,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           ) : null}
         </InputContainer>
         <div className="flex flex-row items-center gap-2">
-          <LitCheckbox
+          <KeepCheckbox
             checked={formik.values.appStatus}
             onChange={(e: any) => formik.setFieldValue('appStatus', e.target.checked)}
             size='m'
@@ -287,17 +287,17 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
           ) : null}
         </InputContainer>
         <small>App Icons</small>
-        <LitAutocomplete
+        <KeepAutocomplete
           ref={iconAutocompleteRef}
           options={Object.keys(appIcons)}
           icons={appIcons}
           className='half-width'
           selectedOption={selectedIcon}
           onChange={(e) => setSelectedIcon(e.currentTarget.selectedOption)}
-          onInput={(e) => setSelectedIcon(e.currentTarget.selectedOption)} // Add this if your LitAutocomplete supports it
+          onInput={(e) => setSelectedIcon(e.currentTarget.selectedOption)} // Add this if your KeepAutocomplete supports it
         />
         <div className="flex flex-row items-center gap-2">
-          <LitCheckbox
+          <KeepCheckbox
             checked={formik.values.usePkce}
             onChange={(e: any) => formik.setFieldValue('usePkce', e.target.checked)}
             size='m'

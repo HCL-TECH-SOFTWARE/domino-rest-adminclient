@@ -27,7 +27,7 @@ import { Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { LitButtonNeutral, LitButtonYes, LitTooltip } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes, KeepTooltip } from '../keep-elements/KeepElements';
 
 interface DetailsSectionProps {
   dbName: string;
@@ -443,9 +443,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
         <span className='details-section-icon-container'>
           {SchemaIcon}
           <StatusIcon>
-            <LitTooltip content={apiStatus.slice(1, apiStatus.length - 1)} placement='bottom' without-arrow>
+            <KeepTooltip content={apiStatus.slice(1, apiStatus.length - 1)} placement='bottom' without-arrow>
               <SchemaIconStatus className={isInUse ? 'schema-icon-in-use' : 'schema-icon-not-in-use'} />
-            </LitTooltip>
+            </KeepTooltip>
           </StatusIcon>
         </span>
         <span className="api-name">
@@ -518,11 +518,11 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
               <Config>
                 <div className='flex flex-row full-width flex-wrap'>
                   <div className="details-section-config-name">
-                    <LitTooltip content="Include this in $DATA scope" placement='bottom'>
+                    <KeepTooltip content="Include this in $DATA scope" placement='bottom'>
                       <text className={`color-text-primary small-text ${dqlAccess ? '' : 'details-section-config-unchecked'}`}>
                         In $DATA Scope
                       </text>
-                    </LitTooltip>
+                    </KeepTooltip>
                   </div>
                   <div className='details-section-checkbox-container'>
                     {openAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
@@ -666,8 +666,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
           />
         </div>
         <div className='dialog-actions pr-30 pl-30'>
-          <LitButtonNeutral onClick={handleClickCloseDetails} text='Cancel' />
-          <LitButtonYes onClick={handleClickSave} text='Save' />
+          <KeepButtonNeutral onClick={handleClickCloseDetails} text='Cancel' />
+          <KeepButtonYes onClick={handleClickSave} text='Save' />
         </div>
       </dialog>
       <dialog ref={discardRef} className='dialog'>
@@ -679,8 +679,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
           <text className='dialog-content-text'>Are you sure you want to discard the changes you made?</text>
         </div>
         <div className='dialog-actions'>
-          <LitButtonNeutral text='No' onClick={() => {setDiscardDialog(false)}} />
-          <LitButtonYes text='Yes' onClick={clearEdits} />
+          <KeepButtonNeutral text='No' onClick={() => {setDiscardDialog(false)}} />
+          <KeepButtonYes text='Yes' onClick={clearEdits} />
         </div>
       </dialog>
     </div>

@@ -1,0 +1,173 @@
+import React from 'react';
+import {createComponent} from '@lit/react';
+import Autocomplete from './keep-autocomplete';
+import SourceTree from './keep-source';
+import SourceContents from './keep-source-header';
+import TextForm from './keep-textform';
+import TextFormArray from './keep-textform-array';
+import ButtonYes from './keep-button-yes';
+import ButtonNo from './keep-button-no';
+import ButtonNeutral from './keep-button-neutral';
+import DialogHeader from './keep-dialog-header';
+import DialogContent from './keep-dialog-content';
+import DialogActions from './keep-dialog-actions';
+import Button from './keep-button';
+import InputText from './keep-input-text';
+import InputPassword from './keep-input-password';
+import Dropdown from './keep-dropdown';
+import AppStatus from './keep-app-status';
+import ApiErrorDialog from './keep-api-error-dialog';
+import DefaultCard from './keep-default-card';
+import Alert from './keep-alert';
+import Drawer from './keep-drawer';
+import Switch from './keep-switch';
+import NsfCard from './keep-nsf-card';
+import Tooltip from './keep-tooltip';
+import Checkbox from './keep-checkbox';
+
+export const KeepAutocomplete = createComponent({
+  tagName: 'keep-autocomplete',
+  elementClass: Autocomplete,
+  react: React,
+});
+
+export const KeepSourceTree = createComponent({
+  tagName: 'keep-source-tree',
+  elementClass: SourceTree,
+  react: React,
+});
+
+export const KeepSource = createComponent({
+  tagName: 'keep-source',
+  elementClass: SourceContents,
+  react: React,
+});
+
+export const KeepTextform = createComponent({
+  tagName: 'keep-textform',
+  elementClass: TextForm,
+  react: React,
+});
+
+export const KeepTextformArray = createComponent({
+  tagName: 'keep-textform-array',
+  elementClass: TextFormArray,
+  react: React,
+});
+
+export const KeepButtonYes = createComponent({
+  tagName: 'keep-button-yes',
+  elementClass: ButtonYes,
+  react: React,
+});
+
+export const KeepButtonNo = createComponent({
+  tagName: 'keep-button-no',
+  elementClass: ButtonNo,
+  react: React,
+});
+
+export const KeepButtonNeutral = createComponent({
+  tagName: 'keep-button-neutral',
+  elementClass: ButtonNeutral,
+  react: React,
+});
+
+export const KeepDialogContent = createComponent({
+  tagName: 'keep-dialog-content',
+  elementClass: DialogContent,
+  react: React,
+});
+
+export const KeepDialogHeader = createComponent({
+  tagName: 'keep-dialog-header',
+  elementClass: DialogHeader,
+  react: React,
+});
+
+export const KeepDialogActions = createComponent({
+  tagName: 'keep-dialog-actions',
+  elementClass: DialogActions,
+  react: React,
+});
+
+export const KeepButton = createComponent({
+  tagName: 'keep-button',
+  elementClass: Button,
+  react: React,
+});
+
+export const KeepInputText = createComponent({
+  tagName: 'keep-input-text',
+  elementClass: InputText,
+  react: React,
+});
+
+export const KeepInputPassword = createComponent({
+  tagName: 'keep-input-password',
+  elementClass: InputPassword,
+  react: React,
+});
+
+export const KeepDropdown = createComponent({
+  tagName: 'keep-dropdown',
+  elementClass: Dropdown,
+  react: React,
+});
+
+export const KeepAppStatus = createComponent({
+  tagName: 'keep-app-status',
+  elementClass: AppStatus,
+  react: React,
+})
+
+export const KeepApiErrorDialog = createComponent({
+  tagName: 'keep-api-error-dialog',
+  elementClass: ApiErrorDialog,
+  react: React,
+})
+
+export const KeepDefaultCard = createComponent({
+  tagName: 'keep-default-card',
+  elementClass: DefaultCard,
+  react: React,
+})
+
+export const KeepAlert = createComponent({
+  tagName: 'keep-alert',
+  elementClass: Alert,
+  react: React,
+})
+
+export const KeepDrawer = createComponent({
+  tagName: 'keep-drawer',
+  elementClass: Drawer,
+  react: React,
+})
+
+export const KeepSwitch = createComponent({
+  tagName: 'keep-switch',
+  elementClass: Switch,
+  react: React,
+})
+
+export const KeepNsfCard = createComponent({
+  tagName: 'keep-nsf-card',
+  elementClass: NsfCard,
+  react: React,
+})
+
+export const KeepTooltip = createComponent({
+  tagName: 'keep-tooltip',
+  elementClass: Tooltip,
+  react: React,
+})
+
+export const KeepCheckbox = createComponent({
+  tagName: 'keep-checkbox',
+  elementClass: Checkbox,
+  react: React,
+  events: {
+    onChange: 'change',
+  },
+})

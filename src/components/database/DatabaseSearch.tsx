@@ -19,7 +19,7 @@ import {
   SearchContainer,
   SearchInput
 } from '../../styles/CommonStyles';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 interface DatabaseSearchProps {
   handleSearchDatabase: (e: any) => void;
@@ -114,7 +114,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
           ref={searchInputRef}
         />
         {!hideClearIcon && 
-          <LitTooltip content="Clear" placement='bottom'>
+          <KeepTooltip content="Clear" placement='bottom'>
             <IconButton
               size="small"
               aria-label="clear search bar"
@@ -122,7 +122,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
             >
               <ClearIcon color="primary" className="clear-icon" />
             </IconButton>
-          </LitTooltip>
+          </KeepTooltip>
         }
       </SearchContainer>
     </FormSearchContainer>

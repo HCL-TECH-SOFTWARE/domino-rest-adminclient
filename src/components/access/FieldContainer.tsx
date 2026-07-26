@@ -11,7 +11,7 @@ import { convert2FieldType } from './functions';
 import { Box } from '@mui/material';
 import { BlueSwitch, EncryptSignOptions } from '../../styles/CommonStyles';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 interface SingleFieldContainerProps {
   item?: any;
@@ -253,7 +253,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
               <MenuItem value={"WO"}>Write Only</MenuItem>
             </TextField>
           </div>
-          <LitTooltip
+          <KeepTooltip
             content={editedItem.fieldGroup?.length > 0 ? "Field group should be empty to toggle off multi-value" : ""}
             className='flex flex-row half-width'
             placement='bottom'
@@ -270,8 +270,8 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 id='multi-value'
               />
             </div>
-          </LitTooltip>
-          <LitTooltip
+          </KeepTooltip>
+          <KeepTooltip
             content={isMultiValue ? "" : "Enable multi-value to input a field group"}
             className='flex flex-row half-width'
           >
@@ -289,19 +289,19 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 }}
               />
             </div>
-          </LitTooltip>
+          </KeepTooltip>
           <EncryptSignOptions>
             <section className='main-row'>
               <p className='small-text m-0'>
                 Encrypt
               </p>
-              <LitTooltip
+              <KeepTooltip
                 content='Please understand this option before enabling, see the documentation on enabling encryption.'
               >
                 <div className='small-icon'>
                   <HelpCenterIcon className='small-text script-editor-help-icon' />
                 </div>
-              </LitTooltip>
+              </KeepTooltip>
               <BlueSwitch size='small' checked={encrypt} onChange={toggleEncrypt} />
             </section>
             <text className='warning-text'>

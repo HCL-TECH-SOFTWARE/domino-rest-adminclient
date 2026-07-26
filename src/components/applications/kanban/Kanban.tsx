@@ -30,7 +30,7 @@ import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
 import { IMG_DIR } from '../../../config.dev';
-import { LitButton } from '../../lit-elements/LitElements';
+import { KeepButton } from '../../keep-elements/KeepElements';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -175,17 +175,17 @@ const Kanban: React.FC = () => {
             Application Management
           </p>
           <OptionsContainer>
-            <LitButton
+            <KeepButton
               src={`${IMG_DIR}/shoelace/plus.svg`}
               onClick={createAction}
             >
               Add Application
-            </LitButton>
-            <LitButton
+            </KeepButton>
+            <KeepButton
               onClick={handleOpenConsents}
             >
               OAuth Consents
-            </LitButton>
+            </KeepButton>
             <div className='kanban-div' />
             <button
               onClick={() => dispatch(toggleAppFilterDrawer())}

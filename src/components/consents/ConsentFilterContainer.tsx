@@ -17,11 +17,11 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import {
-  LitButtonNeutral,
-  LitButtonYes,
-  LitCheckbox,
-  LitTooltip,
-} from '../lit-elements/LitElements';
+  KeepButtonNeutral,
+  KeepButtonYes,
+  KeepCheckbox,
+  KeepTooltip,
+} from '../keep-elements/KeepElements';
 
 const Section = styled(Box)`
   padding-top: 10px;
@@ -158,13 +158,13 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <div className='flex flex-col p-20'>
             <div className='full-width flex justify-end'>
-              <LitTooltip content="Close" placement='bottom'>
+              <KeepTooltip content="Close" placement='bottom'>
                 <CloseIcon
                   cursor="pointer"
                   className="close-icon float-right"
                   onClick={() => dispatch(toggleConsentsDrawer())}
                 />
-              </LitTooltip>
+              </KeepTooltip>
             </div>
             <span className='text-bold big-text'>Filter</span>
             <Section>
@@ -249,7 +249,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                 {collectScopes(consents).length > 0 &&
                   collectScopes(consents).map(scope => (
                     <div className='half-width' key={scope}>
-                      <LitCheckbox
+                      <KeepCheckbox
                         checked={filterScopes.includes(scope)}
                         size='m'
                         onChange={(e) => handleClickScopeCheckbox(e, scope)}
@@ -261,8 +261,8 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               </div>
             </Section>
             <ButtonsContainer>
-              <LitButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())} text='Cancel' />
-              <LitButtonYes onClick={handleClickShowResults} text='Show Results' />
+              <KeepButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())} text='Cancel' />
+              <KeepButtonYes onClick={handleClickShowResults} text='Show Results' />
             </ButtonsContainer>
           </div>
         </LocalizationProvider>

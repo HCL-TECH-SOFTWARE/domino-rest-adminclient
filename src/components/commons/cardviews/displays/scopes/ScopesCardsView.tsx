@@ -8,7 +8,7 @@ import React from 'react';
 import { ExtraFlex } from '../../../../flex';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { SchemasMainContainer } from './ScopeStyles';
-import { LitDefaultCard } from '../../../../lit-elements/LitElements';
+import { KeepDefaultCard } from '../../../../keep-elements/KeepElements';
 import appIcons from '../../../../../styles/app-icons';
 
 type ScopesCardsViewProps = {
@@ -30,7 +30,7 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
         {databases.length > 0 ? (
           databases.map((database: any, index: any) => {
             return (
-              <LitDefaultCard
+              <KeepDefaultCard
                 key={database.apiName + database.schemaName + index}
                 status={database.isActive}
                 icon={`data:image/svg+xml;base64, ${

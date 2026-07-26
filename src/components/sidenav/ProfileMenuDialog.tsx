@@ -16,7 +16,7 @@ import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import { TokenProps } from '../../store/account/types';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 const ProfileMenuCard = styled(Paper)`
   padding: 30px 30px 30px 30px;
@@ -77,7 +77,7 @@ const ProfileMenu = () => {
   }
   return (
     <>
-      <LitTooltip
+      <KeepTooltip
         placement="right"
         content="Profile"
       >
@@ -86,7 +86,7 @@ const ProfileMenu = () => {
           onClick={handleClick}
           data-testid="profileIcon"
         />
-      </LitTooltip>
+      </KeepTooltip>
       <Popper open={open} anchorEl={anchorEl} placement="bottom-end" transition>
         {({ TransitionProps }) => (
           <ClickAwayListener onClickAway={handleClose}>

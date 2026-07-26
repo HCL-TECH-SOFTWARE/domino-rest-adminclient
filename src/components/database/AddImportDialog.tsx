@@ -15,7 +15,7 @@ import appIcons from '../../styles/app-icons';
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { LitAutocomplete, LitButtonNeutral, LitButtonYes } from '../lit-elements/LitElements';
+import { KeepAutocomplete, KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 interface AddImportDialogProps {
@@ -325,7 +325,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
           <div className='medium-text'>
             {`${importFlag ? "Import Into Database" : "Database"}`}
           </div>
-          <LitAutocomplete
+          <KeepAutocomplete
             options={availableDatabases.map((database) => database.title)}
             ref={autocompleteRef}
             error={!!formik.errors.nsfPath && formik.touched.nsfPath}
@@ -395,8 +395,8 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       </div>
       <hr className='divider' />
       <div className='dialog-actions pr-30 pl-30 pb-30'>
-        <LitButtonNeutral onClick={handleClickBack} text='Back' />
-        <LitButtonYes onClick={handleClickSaveSchema} text='Save Schema' />
+        <KeepButtonNeutral onClick={handleClickBack} text='Back' />
+        <KeepButtonYes onClick={handleClickSaveSchema} text='Save Schema' />
       </div>
     </>
   )

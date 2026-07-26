@@ -1914,21 +1914,21 @@ body[data-theme="dark"] .add-import-svg-icon {
 }
 
 body[data-theme='dark'] wa-button[appearance="outlined"]::part(label),
-body[data-theme='dark'] lit-button[appearance="outlined"]::part(label) {
+body[data-theme='dark'] keep-button[appearance="outlined"]::part(label) {
     color: #7e57c2 !important;
 }
 
 body[data-theme='dark'] wa-button[appearance="accent"]::part(label),
-body[data-theme='dark'] lit-button[appearance="accent"]::part(label) {
+body[data-theme='dark'] keep-button[appearance="accent"]::part(label) {
     color: #7e57c2 !important;
 }
 
-.login-lit-button {
-    --lit-button-display: block;
-    --lit-button-width: 100%;
+.login-keep-button {
+    --keep-button-display: block;
+    --keep-button-width: 100%;
 }
 
-body[data-theme='dark'] .login-lit-button {
+body[data-theme='dark'] .login-keep-button {
     --wa-color-brand-80: #7e57c2;
     --wa-color-brand-50: #7e57c2;
     --wa-color-brand-border-loud: #7e57c2;
@@ -1938,8 +1938,8 @@ body[data-theme='dark'] .login-lit-button {
 }
 
 .login-submit-button {
-    --lit-button-display: block;
-    --lit-button-width: 100%;
+    --keep-button-display: block;
+    --keep-button-width: 100%;
     margin-top: 30px;
 }
 
@@ -1966,8 +1966,8 @@ body[data-theme='dark'] .login-submit-button {
 }
 
 .login-page-oidc-dropdown {
-    --lit-dropdown-display: inline-block;
-    --lit-dropdown-width: auto;
+    --keep-dropdown-display: inline-block;
+    --keep-dropdown-width: auto;
 }
 
 /* PeopleCRUD.tsx */

@@ -20,7 +20,7 @@ import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, SearchContainer, SearchInput } from '../../styles/CommonStyles';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 const FieldContainer = styled.div<{ theme: string }>`
   border: 1px solid ${(props) => getTheme(props.theme).borderColor};
@@ -336,21 +336,21 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
       <div className='fields-dropdown-div'>
         <FieldsDropDownHeader className="fields-dropdown-header">
           <p className="small-text p-0 full-width m-0">Show fields from:</p>
-          <LitTooltip
+          <KeepTooltip
             content="Refresh List of Fields"
           >
             <IconButton className="icon-button" onClick={handleRefreshFields}>
               <RefreshIcon className="icon" />
             </IconButton>
-          </LitTooltip>
-          <LitTooltip
+          </KeepTooltip>
+          <KeepTooltip
             content="Add All Fields"
             className='w-40'
           >
             <IconButton className="icon-button" onClick={handleAddAll}>
               <MdLibraryAdd className="icon" />
             </IconButton>
-          </LitTooltip>
+          </KeepTooltip>
         </FieldsDropDownHeader>
         <FieldsDropDown>
           <Select

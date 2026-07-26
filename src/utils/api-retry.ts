@@ -75,8 +75,8 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
 // // https://shoelace.style/components/alert#toast-notifications
 // // Custom function to emit toast notifications
 // export function notify(message: string, variant = 'brand') {
-//     // Find the lit-alert element
-//     const alertEl = document.querySelector('lit-alert');
+//     // Find the keep-alert element
+//     const alertEl = document.querySelector('keep-alert');
 //     if (!alertEl) return;
 
 //     // Set properties
@@ -106,15 +106,15 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>) => {
 
 export type NotifyVariant = 'brand' | 'success' | 'warning' | 'danger' | 'neutral';
  
-interface LitAlertElement extends HTMLElement {
+interface KeepAlertElement extends HTMLElement {
   show(message: string, variant: NotifyVariant, duration: number): void;
 }
  
 // ─── Singleton host ────────────────────────────────────────────────────────────
  
-let _alertEl: LitAlertElement | null = null;
+let _alertEl: KeepAlertElement | null = null;
  
-function _getOrCreateAlert(): LitAlertElement {
+function _getOrCreateAlert(): KeepAlertElement {
   if (_alertEl) return _alertEl;
  
   // Fixed viewport anchor — lives outside the React root
@@ -127,7 +127,7 @@ function _getOrCreateAlert(): LitAlertElement {
     pointerEvents:  'none',   // let clicks fall through when no toast is visible
   });
  
-  _alertEl = document.createElement('lit-alert') as LitAlertElement;
+  _alertEl = document.createElement('keep-alert') as KeepAlertElement;
  
   // Restore pointer-events: none once the alert has fully hidden
   _alertEl.addEventListener('alert-closed', () => {

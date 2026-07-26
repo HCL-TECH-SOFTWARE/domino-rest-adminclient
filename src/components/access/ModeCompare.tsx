@@ -14,7 +14,7 @@ import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/datab
 import { Database, Field } from '../../store/databases/types';
 import { Box, MenuItem, Select } from '@mui/material';
 import { Mode } from 'fs';
-import { LitButton, LitTooltip } from '../lit-elements/LitElements';
+import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 import { IMG_DIR } from '../../config.dev';
 
 const ModeCardsContainer = styled.div`
@@ -486,9 +486,9 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                 />
               </div>
               <div className="add-container">
-                <LitButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`}>
+                <KeepButton onClick={handleAddColumn} src={`${IMG_DIR}/shoelace/plus.svg`}>
                   Add New Column
-                </LitButton>
+                </KeepButton>
               </div>
             </div>
             <div className="toggle-container">
@@ -509,7 +509,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                         </div>
                         {showRemove && (
                           <div className='empty-mode-card-container'>
-                            <LitTooltip
+                            <KeepTooltip
                               content="Delete empty mode card"
                             >
                               <DeleteIcon
@@ -517,7 +517,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                                 onClick={() => {
                                   handleRemoveMode(idx);
                                 }}></DeleteIcon>
-                            </LitTooltip>
+                            </KeepTooltip>
                           </div>
                         )}
                         {!showRemove && (
@@ -567,7 +567,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                         </div>
                         {showRemove && (
                           <div className='empty-mode-card-container'>
-                            <LitTooltip
+                            <KeepTooltip
                               content="Remove mode from comparison"
                             >
                               <DeleteIcon
@@ -575,7 +575,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
                                 onClick={() => {
                                   handleRemoveMode(idx);
                                 }}></DeleteIcon>
-                            </LitTooltip>
+                            </KeepTooltip>
                           </div>
                         )}
                         {!showRemove && (

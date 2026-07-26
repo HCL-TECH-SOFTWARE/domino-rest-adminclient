@@ -39,7 +39,7 @@ import {
   TopBanner
 } from '../../styles/CommonStyles';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 /**
  * Groups.tsx provides support for Domino groups
  *
@@ -128,12 +128,12 @@ const Groups: React.FC = () => {
 
         return (
           <span>
-            <LitTooltip className="ml-15" content="Edit Group">
+            <KeepTooltip className="ml-15" content="Edit Group">
               <EditIcon onClick={onUpdateClick} />
-            </LitTooltip>
-            <LitTooltip className="ml-15" content="Delete Group">
+            </KeepTooltip>
+            <KeepTooltip className="ml-15" content="Delete Group">
               <RemoveIcon onClick={onDeleteClick} />
-            </LitTooltip>
+            </KeepTooltip>
           </span>
         );
       }
@@ -419,7 +419,7 @@ const Groups: React.FC = () => {
             <AddIcon className='m-0 mt-5 mb-5' />
             Add Group
           </Button>
-          <LitTooltip placement="top" content="Click on Row for more details!">
+          <KeepTooltip placement="top" content="Click on Row for more details!">
             <div className='groups-click-row-div'>
               <DataGrid
                 rowHeight={42}
@@ -429,7 +429,7 @@ const Groups: React.FC = () => {
                 onRowClick={(param) => handleOnClick(param.row)}
               />
             </div>
-          </LitTooltip>
+          </KeepTooltip>
           <DeleteApplicationDialog
             dialogTitle={deleteGroupTitle}
             deleteMessage={deleteGroupMessage}

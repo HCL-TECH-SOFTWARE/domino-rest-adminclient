@@ -12,7 +12,7 @@ import { SchemasMainContainer } from './SchemaStyles';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { AppState } from '../../../../../store';
-import { LitNsfCard } from '../../../../lit-elements/LitElements';
+import { KeepNsfCard } from '../../../../keep-elements/KeepElements';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
 
@@ -79,7 +79,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
           {
             mappedDatabases.map((database: any) => {
               return (
-                <LitNsfCard
+                <KeepNsfCard
                   key={database.fileName}
                   database={database}
                   schemasWithScopes={schemasWithScopes}

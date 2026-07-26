@@ -25,7 +25,7 @@ import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
 import { getTheme } from "../../store/styles/action";
 import { AppState } from "../../store";
-import { LitButtonNeutral, LitButtonYes, LitTooltip } from "../lit-elements/LitElements";
+import { KeepButtonNeutral, KeepButtonYes, KeepTooltip } from "../keep-elements/KeepElements";
 
 const StyledTableCell = styled(TableCell)`
   padding-left: 30px;
@@ -288,11 +288,11 @@ const FormsTable: React.FC<FormsTableProps> = ({
               <StyledTableCell width="200px">
                 <StatusHeader>
                   <div>
-                    <LitTooltip content={`Activate the Forms that should be accessible\nvia rest API`} placement='bottom' without-arrow>
+                    <KeepTooltip content={`Activate the Forms that should be accessible\nvia rest API`} placement='bottom' without-arrow>
                       <div id='form-status-header-icon'>
                         Status <AiOutlineQuestionCircle className="status-icon" />
                       </div>
-                    </LitTooltip>
+                    </KeepTooltip>
                   </div>
                 </StatusHeader>
               </StyledTableCell>
@@ -361,8 +361,8 @@ const FormsTable: React.FC<FormsTableProps> = ({
           <span className='text-content'>This form is inactive. Activate this form to edit it?</span>
         </Box>
         <Box className='buttons'>
-          <LitButtonYes text='OK' onClick={handleConfirmActivate} />
-          <LitButtonNeutral text='Cancel' onClick={handleCloseActivateDialog} />
+          <KeepButtonYes text='OK' onClick={handleConfirmActivate} />
+          <KeepButtonNeutral text='Cancel' onClick={handleCloseActivateDialog} />
         </Box>
       </ActivateDialogContainer>
     </>

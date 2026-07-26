@@ -16,7 +16,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { LitButtonNeutral, LitButtonYes, LitSwitch } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes, KeepSwitch } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 const TabViewsContainer = styled.div`
@@ -237,7 +237,7 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
             Deactivate All
           </Button>
         </ButtonsPanel>
-        <LitSwitch onToggle={handleToggleShowActive}>Show Active</LitSwitch>
+        <KeepSwitch onToggle={handleToggleShowActive}>Show Active</KeepSwitch>
       </div>
       <ViewPanel>
         <ViewsTable
@@ -267,8 +267,8 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
           </text>
         </div>
         <div className='dialog-actions'>
-          <LitButtonNeutral onClick={() => {setResetAllViews(false)}} text='No' />
-          <LitButtonYes onClick={handleDeactivateAll} text='Yes' />
+          <KeepButtonNeutral onClick={() => {setResetAllViews(false)}} text='No' />
+          <KeepButtonYes onClick={handleDeactivateAll} text='Yes' />
         </div>
       </dialog>
     </TabViewsContainer>

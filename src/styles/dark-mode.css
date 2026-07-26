@@ -351,25 +351,25 @@ wa-card::part(body) {
   color: light-dark(inherit, #e0e0e0);
 }
 
-lit-default-card {
+keep-default-card {
   color: light-dark(inherit, #e0e0e0);
 }
 
 /* ===== NSF Card ===== */
-lit-nsf-card {
+keep-nsf-card {
   color: light-dark(inherit, #e0e0e0);
 }
 
 /* ===== Source tab ===== */
-lit-source-header {
+keep-source-header {
   color: light-dark(inherit, #e0e0e0);
 }
 
-lit-source {
+keep-source {
   color: light-dark(inherit, #e0e0e0);
 }
 
-lit-schema-status {
+keep-schema-status {
   color: light-dark(inherit, #e0e0e0);
 }
 

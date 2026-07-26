@@ -42,7 +42,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import EditViewDialog from './EditView';
-import { LitButtonNeutral, LitButtonYes, LitSource } from '../lit-elements/LitElements';
+import { KeepButtonNeutral, KeepButtonYes, KeepSource } from '../keep-elements/KeepElements';
 import { Editor } from '@monaco-editor/react';
 import loader from '@monaco-editor/loader';
 import { apiRequestWithRetry } from '../../utils/api-retry';
@@ -683,7 +683,7 @@ const FormsContainer = () => {
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />
-                <LitSource
+                <KeepSource
                   content={JSON.parse(sourceTabContent)}
                   selectedOption={selectedOption}
                   onSave={handleClickSave}
@@ -711,8 +711,8 @@ const FormsContainer = () => {
                     </text>
                   </div>
                   <div className='dialog-actions'>
-                    <LitButtonNeutral onClick={handleClickNo} text='No' />
-                    <LitButtonYes onClick={handleSaveChanges} text='Yes' />
+                    <KeepButtonNeutral onClick={handleClickNo} text='No' />
+                    <KeepButtonYes onClick={handleSaveChanges} text='Yes' />
                   </div>
                 </dialog>
                 <dialog ref={discardRef} className='dialog'>
@@ -726,8 +726,8 @@ const FormsContainer = () => {
                     </text>
                   </div>
                   <div className='dialog-actions'>
-                    <LitButtonNeutral onClick={handleDiscardChanges} text='Discard Changes' />
-                    <LitButtonYes onClick={handleKeepEditing} text='Keep Editing' />
+                    <KeepButtonNeutral onClick={handleDiscardChanges} text='Discard Changes' />
+                    <KeepButtonYes onClick={handleKeepEditing} text='Keep Editing' />
                   </div>
                 </dialog>
               </TabPanel>

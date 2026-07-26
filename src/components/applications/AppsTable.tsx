@@ -222,7 +222,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                       </button>
                     </span>
                     <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
-                    {/* <LitInputText
+                    {/* <KeepInputText
                       hint='Search App Name'
                     /> */}
                   </div>

@@ -21,7 +21,7 @@ import { AppState } from '../../store';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { SideNavContainer } from '../../styles/CommonStyles';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 const SideContainer = styled.aside`
   background: white;
@@ -142,7 +142,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <LitTooltip placement="right" content={route.label}>
+                  <KeepTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container" key={route.label}>
                       <ListItemIcon>
                         <Icon className='color-text-primary big-text' />
@@ -153,13 +153,13 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </LitTooltip>
+                  </KeepTooltip>
                 </NavLink>
               );
             })}
 
             <QuickConfigButton className="quick-config">
-              <LitTooltip placement="right" content="Quick Config">
+              <KeepTooltip placement="right" content="Quick Config">
                 <ListItemButton className="link-container" key="Quick Config" onClick={handleQuickConfig}>
                   <ListItemIcon>
                     <FlashOnIcon className='color-text-primary big-text' />
@@ -170,7 +170,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     </span>
                   </ListItemText>
                 </ListItemButton>
-              </LitTooltip>
+              </KeepTooltip>
             </QuickConfigButton>
 
             {navitems.apps &&
@@ -182,7 +182,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     key={route.label}
                     className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                     to={route.uri}>
-                    <LitTooltip placement="right" content={route.label}>
+                    <KeepTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
                           <Icon className='color-text-primary big-text' />
@@ -193,7 +193,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           </span>
                         </ListItemText>
                       </ListItemButton>
-                    </LitTooltip>
+                    </KeepTooltip>
                   </NavLink>
                 );
               })}
@@ -207,7 +207,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     key={route.label}
                     className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                     to={route.uri}>
-                    <LitTooltip placement="right" content={route.label}>
+                    <KeepTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
                           <Icon className='color-text-primary big-text' />
@@ -218,7 +218,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           </span>
                         </ListItemText>
                       </ListItemButton>
-                    </LitTooltip>
+                    </KeepTooltip>
                   </NavLink>
                 );
               })}
@@ -232,7 +232,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                     key={route.label}
                     className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                     to={route.uri}>
-                    <LitTooltip placement="right" content={route.label}>
+                    <KeepTooltip placement="right" content={route.label}>
                       <ListItemButton className="link-container" key={route.label}>
                         <ListItemIcon>
                           <Icon className='color-text-primary big-text' />
@@ -243,7 +243,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
                           </span>
                         </ListItemText>
                       </ListItemButton>
-                    </LitTooltip>
+                    </KeepTooltip>
                   </NavLink>
                 );
               })}

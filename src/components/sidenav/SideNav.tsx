@@ -27,7 +27,7 @@ import { IMG_DIR } from '../../config.dev';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { SideNavContainer } from '../../styles/CommonStyles';
-import { LitTooltip } from '../lit-elements/LitElements';
+import { KeepTooltip } from '../keep-elements/KeepElements';
 
 const SideContainer = styled.aside<{ theme: string }>`
   width: 242px;
@@ -219,7 +219,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
           )}
 
           <ThemeSelectorWrapper>
-            <LitTooltip content={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
+            <KeepTooltip content={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
               <ThemeToggleButton
                 onClick={() => {
                   const newTheme = themeMode === 'dark' ? 'default' : 'dark';
@@ -229,7 +229,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
               >
                 {themeMode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
               </ThemeToggleButton>
-            </LitTooltip>
+            </KeepTooltip>
           </ThemeSelectorWrapper>
 
           <ContentWrapper>
@@ -243,7 +243,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                 key={route.label}
                 className={`full-width /${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                 to={route.uri}>
-                <LitTooltip placement="right" content={route.label} className='full-width'>
+                <KeepTooltip placement="right" content={route.label} className='full-width'>
                   <ListItemButton className="link-container medium-text" key={route.label}>
                     <ListItemIcon className='tiny-text'>
                       <Icon className='color-text-primary' />
@@ -254,7 +254,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                       </span>
                     </ListItemText>
                   </ListItemButton>
-                </LitTooltip>
+                </KeepTooltip>
               </NavLink>
             );
           })}
@@ -267,7 +267,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <LitTooltip placement="right" content={route.label} className='full-width' id={`here ${route.label}`}>
+                  <KeepTooltip placement="right" content={route.label} className='full-width' id={`here ${route.label}`}>
                     <ListItemButton className="link-container medium-text" key={route.label}>
                       <ListItemIcon className='tiny-text'>
                         <Icon className='color-text-primary' />
@@ -278,13 +278,13 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </LitTooltip>
+                  </KeepTooltip>
                 </NavLink>
               );
             })}
 
           <QuickConfigButton className="quick-config full-width">
-            <LitTooltip placement="right" content="Quick Config" className='full-width'>
+            <KeepTooltip placement="right" content="Quick Config" className='full-width'>
               <ListItemButton className="link-container medium-text" key="Quick Config" onClick={handleQuickConfig}>
                 <ListItemIcon className='tiny-text'>
                   <FlashOnIcon className='color-text-primary' />
@@ -295,7 +295,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                 </span>
                 </ListItemText>
               </ListItemButton>
-            </LitTooltip>
+            </KeepTooltip>
           </QuickConfigButton>
 
           {navitems.apps &&
@@ -306,7 +306,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                   key={route.label}
                   className={`/${location.pathname}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <LitTooltip placement="right" content={route.label} className='full-width'>
+                  <KeepTooltip placement="right" content={route.label} className='full-width'>
                     <ListItemButton className={location.pathname === route.uri ? 'link-container medium-text' : 'medium-text'} key={route.label}>
                       <ListItemIcon className='tiny-text'>
                         <Icon className='color-text-primary' />
@@ -317,7 +317,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </LitTooltip>
+                  </KeepTooltip>
                 </NavLink>
               );
             })}
@@ -330,7 +330,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <LitTooltip placement="right" content={route.label}>
+                  <KeepTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container medium-text" key={route.label}>
                       <ListItemIcon className='tiny-text'>
                         <Icon className='color-text-primary' />
@@ -341,7 +341,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </LitTooltip>
+                  </KeepTooltip>
                 </NavLink>
               );
             })}
@@ -354,7 +354,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <LitTooltip placement="right" content={route.label}>
+                  <KeepTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container medium-text" key={route.label}>
                       <ListItemIcon className='tiny-text'>
                         <Icon className='color-text-primary' />
@@ -365,7 +365,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </LitTooltip>
+                  </KeepTooltip>
                 </NavLink>
               );
             })}
@@ -384,7 +384,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                   key={route.label}
                   className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
                   to={route.uri}>
-                  <LitTooltip placement="right" content={route.label}>
+                  <KeepTooltip placement="right" content={route.label}>
                     <ListItemButton className="link-container medium-text" key={route.label}>
                       <ListItemIcon className='tiny-text'>
                         <Icon className='color-text-primary' />
@@ -395,7 +395,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
                         </span>
                       </ListItemText>
                     </ListItemButton>
-                  </LitTooltip>
+                  </KeepTooltip>
                 </NavLink>
               );
             })}

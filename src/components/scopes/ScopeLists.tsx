@@ -26,7 +26,7 @@ import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiVie
 import { toggleAlert } from '../../store/alerts/action';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import { IMG_DIR } from '../../config.dev';
-import { LitButton } from '../lit-elements/LitElements';
+import { KeepButton } from '../keep-elements/KeepElements';
 
 const ScopeLists = () => {
   const { databasePull, scopePull, scopes, permissions } = useSelector(
@@ -128,15 +128,15 @@ const ScopeLists = () => {
               <span className="top-nav color-text-primary">
                 Scope Management
               </span>
-              <LitButton src={`${IMG_DIR}/shoelace/rotate.svg`} onClick={handleRefresh}>
+              <KeepButton src={`${IMG_DIR}/shoelace/rotate.svg`} onClick={handleRefresh}>
                 Refresh
-              </LitButton>
-              <LitButton
+              </KeepButton>
+              <KeepButton
                 onClick={handleClickOpen}
                 src={`${IMG_DIR}/shoelace/plus.svg`}
               >
                 Add Scope
-              </LitButton>
+              </KeepButton>
             </TopContainer>
             <TopContainer className='mt-0'>
               <DatabaseSearch handleSearchDatabase={handleSearchDatabase}  changeSearchType={changeSearchType}  searchType={searchType} />
