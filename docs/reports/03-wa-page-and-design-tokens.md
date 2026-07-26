@@ -63,7 +63,7 @@ still **not used anywhere** in `src/`. The **theming substrate** has moved, thou
 | 5 | **WebAwesome token scaffolding exists and has grown.** `keep-overrides.css` defines the full `--wa-color-brand-{05..95}` ramp, brand aliases, **`--wa-font-size-scale: 0.85`**, and a `@media (prefers-color-scheme: dark)` brand override. | 🟢 improved | The token system is live; the work is *extending* it to the shell + Linaria, not bootstrapping it. |
 | 6 | ~~**CSP is not being sent at all** — a regression that blocks `wa-page`~~ → **the finding was wrong.** `vite.config.mts:29`'s `'disabledContent-Security-Policy'` key configures the **Vite dev server only**; the production CSP comes from **`config.json`, outside this repo**. | ➖ **WITHDRAWN** | Nothing to fix in-repo, and **CSP is not a prerequisite for `wa-page`**. §5 rewritten as a requirements note for whoever owns `config.json`. |
 | 6b | ~~`setBasePath` points at **webawesome@3.6.0** while **3.10.0** is installed~~ | ✅ **RESOLVED** (#673) | Both calls **deleted**. `src/index.tsx` now carries a comment explaining why there is none: in WA 3.x the base path feeds only the autoloader, and this app imports its **18** WA components explicitly. Guarded by source scans in `test/services/icon-library.test.ts`. |
-| 7 | **The icon situation is _four_ systems.** Three legacy: `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** (a 216 KB registry of **86** base64 SVG data URIs, imported by **19** modules), plus **9** `<wa-icon src="${IMG_DIR}/shoelace/*.svg">` sites over 13 hand-copied SVGs. The fourth, **`src/services/icon-library.ts`** (#669), is the intended destination. | 🟡 **improving** | §6.4 rewritten. `icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from `@fortawesome/fontawesome-free` SVGs bundled by Vite (11 glyphs, 11 unit tests) and logs a warning on an unknown name instead of rendering an empty glyph. **That is the template the other three converge on** — the icon plan is no longer speculative. |
+| 7 | **The icon situation is _four_ systems.** Three legacy: `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** (a 216 KB registry of **86** base64 SVG data URIs, imported by **19** modules), plus **8** `<wa-icon src=…>` markup sites over 13 hand-copied SVGs (a repo-wide grep reports 9 — the ninth is inside `icon-library.ts`'s own header comment). The fourth, **`src/services/icon-library.ts`** (#669), is the intended destination. | 🟡 **improving** | §6.4 rewritten. `icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from `@fortawesome/fontawesome-free` SVGs bundled by Vite (11 glyphs, 11 unit tests) and logs a warning on an unknown name instead of rendering an empty glyph. **That is the template the other three converge on** — the icon plan is no longer speculative. |
 | 7b | **Dead weight in `src/styles/`:** `icons.json` (144 KB, 36 entries) and `text-manipulation.css` (6 lines) are imported by **nothing**; two `@fontsource-variable` packages (`quicksand`, `crimson-pro`) are declared dependencies that **no source file imports**. | 🔴 open | Pure deletion (P0.5). `@fortawesome/fontawesome-free` is **no longer** in this list — `icon-library.ts` imports it. |
 | 8 | **The WA-token readers are now tested.** `src/services/wa-color.ts` resolves any `--wa-*` color token to concrete sRGB hex (probe element → computed `color` → 1×1 canvas readback); `wa-typography.ts` does the same for font tokens; `editor-theme.ts` maps 16 Monaco color ids onto WA semantic tokens. **29 unit tests** across the three landed in #670. | ✅ **proven** | This is a *working, tested precedent* for "read WA design tokens from JS", not a proposal. Reuse it anywhere JS needs a concrete value (charts, canvas, `<meta name="theme-color">`, third-party widgets) rather than re-reading `getPropertyValue()`, which returns unevaluated `var()`/`color-mix()` chains. §3.6. |
 | 9 | **NEW: `src/services/theme-service.ts` is the single writer for appearance.** One module sets all three DOM carriers — `.wa-dark` on `<html>`, `documentElement.style.colorScheme`, `body.dataset.theme` — and **both** runtime togglers call it (`HomeElement.tsx:120`, `LoginPage.tsx:178`). 10 unit tests. | ✅ **done** | Closes the "make the *runtime* toggle set `.wa-dark` too" item that this report has carried since the original. `.wa-dark` is now safe to treat as the canonical dark-mode hook (§3.5). §3.7. |
@@ -635,8 +635,8 @@ worker-src 'self' blob:;
    does not have to allow a third-party origin. **Requirement:** the
    `cdn.jsdelivr.net` / `ka-f.*` entries in `style-src-elem`, `font-src` and `script-src`
    can be **dropped** — WA assets are all `'self'`. Confirm no `<wa-icon>` still resolves
-   through WA's default CDN resolver (see §6.4 — 9 `<wa-icon src=…>` sites remain, all
-   same-origin or `data:`).
+   through WA's default CDN resolver (see §6.4 — 8 `<wa-icon src=…>` markup sites remain,
+   all same-origin or `data:`).
 3. **`connect-src`.** The remaining `<wa-icon src="${IMG_DIR}/shoelace/*.svg">` sites fetch
    same-origin SVGs; one uses a `data:` URI. `'self' data:` suffices — the `*` in the
    sketch is far wider than the app needs.
@@ -693,7 +693,7 @@ last one deliberately, as the target pattern. Current inventory:
 | `@mui/icons-material` | dep | **45 files** | Material Symbols glyphs. |
 | `react-icons` | dep | **18 files** | Mixed icon sets. |
 | **`src/styles/app-icons.ts`** | **216 KB**, **86** icons | **19 modules** (`QuickConfigForm`, `AddImportDialog`, `ScopeForm`, `ScopeFormContainer`, `EditView`, `DetailsSection`, `IconDropdown`, `SlimDatabaseCard`, the four `cardviews` displays, `AppItem`/`AppForm`/`AppCard`, `keep-nsf-card.ts`, `store/databases/action.ts`, …) | A `Record<string, string>` of **base64-encoded SVG data URIs**, keyed by name (`archeology`, `binoculars`, `cocktail`, …). Guarded by `checkIcon()` in `styles/scripts.ts`. |
-| `public/img/shoelace/*.svg` | **13 files** | referenced by URL from the **9** remaining `<wa-icon src=…>` sites | Hand-copied Font Awesome Free SVGs (attribution comments intact). Exactly the case `icon-library.ts` was written to replace. |
+| `public/img/shoelace/*.svg` | **13 files** | referenced by URL from the **8** remaining `<wa-icon src=…>` markup sites | Hand-copied Font Awesome Free SVGs (attribution comments intact). Exactly the case `icon-library.ts` was written to replace. |
 | `src/styles/icons.json` | **144 KB**, 36 entries | **0 imports** | Dead file. |
 | `src/styles/text-manipulation.css` | 6 lines | **0 imports** | Dead file. |
 | `@fontsource-variable/quicksand`, `…/crimson-pro` | deps | **0 imports** | Declared but unused (§3.3). |
@@ -708,13 +708,14 @@ last one deliberately, as the target pattern. Current inventory:
    `src/styles/text-manipulation.css`, neither of which has an importer; drop the two
    `@fontsource-variable` packages unless §3.3 wires them into `--wa-font-family-*`. **S**,
    zero risk.
-2. **Finish the migration `icon-library.ts` started.** The **9** remaining
-   `<wa-icon src=…>` sites (`keep-textform-array.ts` ×4, `keep-nsf-card.ts` ×2,
-   `keep-api-error-dialog.ts`, plus the `src` passthrough in `keep-button.ts`) carry
-   exactly the bug that module's header documents — `${IMG_DIR}/shoelace/*.svg` only
+2. **Finish the migration `icon-library.ts` started.** The **8** remaining
+   `<wa-icon src=…>` markup sites — `keep-textform-array.ts` ×4 (L207, 217, 230, 247),
+   `keep-nsf-card.ts` ×2 (L125 is a `data:` URI from `app-icons`, L136 an `IMG_DIR` path),
+   `keep-api-error-dialog.ts` L43, and the `src` passthrough in `keep-button.ts` L50 —
+   carry exactly the bug that module's header documents: `${IMG_DIR}/shoelace/*.svg` only
    resolves when the app is mounted at `/admin/`. Convert them to `library="fa"` names,
    adding each glyph to `ICONS`. **S**, mechanical, and it retires
-   `public/img/shoelace/`.
+   `public/img/shoelace/` (13 files).
 3. **Decide `app-icons.ts`'s fate.** 216 KB of base64 in a TS module is inlined into the
    entry chunk (report 00 P2-3: **6,322.51 kB / 1,703.85 kB gzip**). Two viable ends:
    - **(a) Register it as a second WA custom icon library**, alongside `fa`, so the same
@@ -745,7 +746,7 @@ last one deliberately, as the target pattern. Current inventory:
 | **P1. Token foundation** | Add `keep-theme.css` single-source brand ramp (light + `.wa-dark`); alias legacy `--*` app tokens to `--wa-*`; delete the invalid `--wa-color-brand-600/500/700` (`dark-mode.css:9-11`); consolidate `prefers-color-scheme` (`keep-overrides.css:271`) onto `.wa-dark`. | **S–M** | 🔴 open | Divergent purples change subtly; dark-mode regressions. **De-risked:** `.wa-dark` is now reliably set at boot *and* runtime (§3.7), so it is safe to key on. |
 | **P2. Shell swap** | Build `AppShell` on `wa-page`; map regions to slots; delete `AppContainer`/`RightPanel`/mobile duplication/collapse toggle/`drawerWidth`. **CSP is no longer part of this phase** (§5) — instead, send the `style-src-attr` requirement to the owner of `config.json` so the production policy is ready before this ships. | **M** | 🔴 open | 768px breakpoints and sticky behavior; the 57px collapse rail is not native to `wa-page`; QuickConfig drawer placement. |
 | **P3. Linaria + element tokenization** | Replace `getTheme()` interpolations and literals with `var(--wa-*)` across 22 `getTheme` files and the 198 `styled.` blocks in 69 Linaria files; tokenize the `keep-*` elements (report 02 §6.5); adopt `wa-stack/cluster/split/grid`; retire the `theme` prop plumbing. Where a value genuinely must reach JS, call `wa-color.ts`/`wa-typography.ts` (§3.6) rather than reviving a JS color object. | **L** | 🔴 open | Visual drift; missed hardcoded hex; the `--wa-font-size-scale: 0.85` interaction. **Do report 02 §6.2 first.** |
-| **P4. Icon migration** | §6.4 steps 2–4: convert the 9 `<wa-icon src=…>` sites to `library="fa"`; `app-icons` (86 glyphs) → a second WA custom library; `<wa-icon>` codemod across the 63 MUI/react-icons files. | **M–L** | 🔴 open | Missing/renamed FA glyphs; icon sizing/color inheritance; bundle impact if `app-icons` stays inline. **De-risked:** `icon-library.ts` is a working, tested template. |
+| **P4. Icon migration** | §6.4 steps 2–4: convert the 8 `<wa-icon src=…>` markup sites to `library="fa"`; `app-icons` (86 glyphs) → a second WA custom library; `<wa-icon>` codemod across the **55** distinct MUI/react-icons files (45 + 18 with **8** overlapping). | **M–L** | 🔴 open | Missing/renamed FA glyphs; icon sizing/color inheritance; bundle impact if `app-icons` stays inline. **De-risked:** `icon-library.ts` is a working, tested template. |
 | **P5. Remove MD** | After report-02 components land: delete both `ThemeProvider`s + all three `CssBaseline` mounts + `theme.ts` + the `.Mui*` sheet; drop MUI + Emotion deps. **`@mui/x-data-grid` has no WA successor** — budget a separate grid decision. | **M** | 🔴 open | Any straggler reading the MUI theme; bundle/test fallout; the data-grid gap. |
 
 ### Cross-cutting risks

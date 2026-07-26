@@ -84,7 +84,7 @@ first `keep-*` element went into production use, and the first real bundle win l
 - ➖ **P0-2 "CSP regressed" was wrong.** The disabled header is **dev-server only**; the
   production CSP lives in `config.json`, outside this repo. Reports 00 and 03 corrected.
 - ➖ **`setBasePath` was inert, not merely stale.** In WebAwesome 3.x the base path feeds
-  only the autoloader, and this app imports all 38 of its components explicitly. Both calls
+  only the autoloader, and this app imports each of the 18 components it uses explicitly. Both calls
   deleted (#673) rather than re-pointed — there was nothing to point at. Any advice to
   "set the base path" is obsolete.
 - ⚠️ **Dependabot's 2 criticals are branch skew**, not live risk — see the banner above.
