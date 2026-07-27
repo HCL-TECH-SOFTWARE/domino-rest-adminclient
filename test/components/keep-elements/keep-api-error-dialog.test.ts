@@ -33,9 +33,9 @@ describe('keep-api-error-dialog', () => {
 
   it('offers an OK confirm button', async () => {
     const el = await mountLit<ApiErrorDialog>(TAG);
-    const ok = sr(el).querySelector('keep-button-yes');
+    const ok = sr(el).querySelector('keep-button');
     expect(ok).toBeTruthy();
-    expect(ok!.getAttribute('text')).toBe('OK');
+    expect(ok!.textContent?.trim()).toBe('OK');
   });
 
   it('closes the dialog when the close button is clicked', async () => {

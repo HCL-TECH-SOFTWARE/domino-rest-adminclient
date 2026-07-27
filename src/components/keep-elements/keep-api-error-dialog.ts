@@ -3,14 +3,14 @@ import { customElement, property } from 'lit/decorators.js';
 import './keep-dialog-content';
 import './keep-dialog-header';
 import './keep-dialog-actions';
-import './keep-button-yes';
+import './keep-button';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 /**
  * "Error calling API" dialog composed from the keep-dialog-* primitives and a
- * keep-button-yes. Tag: `keep-api-error-dialog`.
+ * keep-button. Tag: `keep-api-error-dialog`.
  */
 @customElement('keep-api-error-dialog')
 export default class ApiErrorDialog extends KeepElement {
@@ -45,7 +45,7 @@ export default class ApiErrorDialog extends KeepElement {
         </keep-dialog-header>
         <keep-dialog-content>${this.errorMessage}</keep-dialog-content>
         <keep-dialog-actions>
-          <keep-button-yes text="OK" @click=${this.handleCancel}></keep-button-yes>
+          <keep-button @click=${this.handleCancel}>OK</keep-button>
         </keep-dialog-actions>
       </dialog>
     `;

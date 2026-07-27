@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
 import { toggleErrorDialog } from '../../store/dialog/action';
-import { KeepButtonYes } from '../keep-elements/KeepElements';
+import { KeepButton } from '../keep-elements/KeepElements';
 
 /**
  * This component displays a Delete confirmation dialog
@@ -45,7 +45,7 @@ const NetworkErrorDialog: React.FC = () => {
         </text>
       </div>
       <div className='dialog-actions'>
-        <KeepButtonYes onClick={() => dispatch(toggleErrorDialog(errorDialogMessage))} text='OK' autoFocus />
+        <KeepButton onClick={() => dispatch(toggleErrorDialog(errorDialogMessage))} autoFocus>OK</KeepButton>
       </div>
     </dialog>
   );

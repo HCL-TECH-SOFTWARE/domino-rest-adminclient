@@ -25,7 +25,7 @@ import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
 import { getTheme } from "../../store/styles/action";
 import { AppState } from "../../store";
-import { KeepButtonNeutral, KeepButtonYes, KeepTooltip } from "../keep-elements/KeepElements";
+import { KeepButton, KeepTooltip } from "../keep-elements/KeepElements";
 
 const StyledTableCell = styled(TableCell)`
   padding-left: 30px;
@@ -361,8 +361,8 @@ const FormsTable: React.FC<FormsTableProps> = ({
           <span className='text-content'>This form is inactive. Activate this form to edit it?</span>
         </Box>
         <Box className='buttons'>
-          <KeepButtonYes text='OK' onClick={handleConfirmActivate} />
-          <KeepButtonNeutral text='Cancel' onClick={handleCloseActivateDialog} />
+          <KeepButton onClick={handleConfirmActivate}>OK</KeepButton>
+          <KeepButton variant="neutral" appearance="outlined" onClick={handleCloseActivateDialog}>Cancel</KeepButton>
         </Box>
       </ActivateDialogContainer>
     </>

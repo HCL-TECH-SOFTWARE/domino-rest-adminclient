@@ -11,7 +11,7 @@ import { AppState } from '../../store';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { deleteSchema, deleteScope } from '../../store/databases/action';
 import FormDialogHeader from './FormDialogHeader';
-import { KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
+import { KeepButton } from '../keep-elements/KeepElements';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -66,8 +66,8 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({ open, selected }) => {
               <text className='dialog-content-text'>{`Are you sure you want to permanently delete this ${isDeleteSchema? 'schema' : 'scope'}?`}</text>
             </div>
             <div className='dialog-actions pt-30'>
-              <KeepButtonNeutral onClick={handleClose} text='No' />
-              <KeepButtonYes onClick={onDelete} text='Yes' autoFocus />
+              <KeepButton variant="neutral" appearance="outlined" onClick={handleClose}>No</KeepButton>
+              <KeepButton onClick={onDelete} autoFocus>Yes</KeepButton>
             </div>
           </>
         )}

@@ -42,7 +42,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import EditViewDialog from './EditView';
-import { KeepButtonNeutral, KeepButtonYes, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
+import { KeepButton, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
 import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
@@ -673,8 +673,8 @@ const FormsContainer = () => {
                     </text>
                   </div>
                   <div className='dialog-actions'>
-                    <KeepButtonNeutral onClick={handleClickNo} text='No' />
-                    <KeepButtonYes onClick={handleSaveChanges} text='Yes' />
+                    <KeepButton variant="neutral" appearance="outlined" onClick={handleClickNo}>No</KeepButton>
+                    <KeepButton onClick={handleSaveChanges}>Yes</KeepButton>
                   </div>
                 </dialog>
                 <dialog ref={discardRef} className='dialog'>
@@ -688,8 +688,10 @@ const FormsContainer = () => {
                     </text>
                   </div>
                   <div className='dialog-actions'>
-                    <KeepButtonNeutral onClick={handleDiscardChanges} text='Discard Changes' />
-                    <KeepButtonYes onClick={handleKeepEditing} text='Keep Editing' />
+                    <KeepButton variant="neutral" appearance="outlined"
+                      onClick={handleDiscardChanges}
+                    >Discard Changes</KeepButton>
+                    <KeepButton onClick={handleKeepEditing}>Keep Editing</KeepButton>
                   </div>
                 </dialog>
               </TabPanel>

@@ -13,13 +13,7 @@ import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/Commo
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@linaria/react';
-import {
-  KeepButtonNeutral,
-  KeepButtonYes,
-  KeepCheckbox,
-  KeepTooltip,
-  KeepInputDate,
-} from '../keep-elements/KeepElements';
+import { KeepButton, KeepCheckbox, KeepInputDate, KeepTooltip } from '../keep-elements/KeepElements';
 
 /**
  * `<input type="date">` speaks ISO `YYYY-MM-DD` in *local* time, but `new Date('...')`
@@ -272,8 +266,10 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               </div>
             </Section>
             <ButtonsContainer>
-              <KeepButtonNeutral onClick={() => dispatch(toggleConsentsDrawer())} text='Cancel' />
-              <KeepButtonYes onClick={handleClickShowResults} text='Show Results' />
+              <KeepButton variant="neutral" appearance="outlined"
+                onClick={() => dispatch(toggleConsentsDrawer())}
+              >Cancel</KeepButton>
+              <KeepButton onClick={handleClickShowResults}>Show Results</KeepButton>
             </ButtonsContainer>
           </div>
       </DrawerFormContainer>

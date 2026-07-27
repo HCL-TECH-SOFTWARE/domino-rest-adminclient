@@ -12,7 +12,7 @@ import TestIcon from '@mui/icons-material/PlayArrow';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { KeepButtonNeutral, KeepButtonYes, KeepTextformArray, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepButton, KeepTextformArray, KeepTooltip } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 interface ScriptEditorProps {
@@ -278,8 +278,8 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
             </div>
             <hr className='divider' />
             <div className='dialog-actions pl-30 pr-30 gap-20'>
-              <KeepButtonNeutral onClick={handleClickCancel} text='Cancel' />
-              <KeepButtonYes onClick={handleClickSave} text='Save' />
+              <KeepButton variant="neutral" appearance="outlined" onClick={handleClickCancel}>Cancel</KeepButton>
+              <KeepButton onClick={handleClickSave}>Save</KeepButton>
             </div>
           </dialog>
         </Collapse>

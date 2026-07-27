@@ -17,7 +17,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { KeepButtonNeutral, KeepButtonYes, KeepSwitch } from '../keep-elements/KeepElements';
+import { KeepButton, KeepSwitch } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 /**
@@ -179,8 +179,10 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
           </text>
         </div>
         <div className='dialog-actions'>
-          <KeepButtonNeutral onClick={() => {setResetAllAgents(false)}} text='No' />
-          <KeepButtonYes onClick={handleDeactivateAll} text='Yes' />
+          <KeepButton variant="neutral" appearance="outlined"
+            onClick={() => {setResetAllAgents(false)}}
+          >No</KeepButton>
+          <KeepButton onClick={handleDeactivateAll}>Yes</KeepButton>
         </div>
       </dialog>
     </>

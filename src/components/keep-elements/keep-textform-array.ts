@@ -1,8 +1,7 @@
 import { html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import './keep-textform';
-import './keep-button-yes';
-import './keep-button-neutral';
+import './keep-button';
 import './keep-dialog-content';
 import './keep-dialog-header';
 import './keep-dialog-actions';
@@ -234,8 +233,8 @@ export default class TextFormArray extends KeepElement {
             Are you sure you want to delete this validation rule: <strong>${this.deleteRule}</strong>?
           </keep-dialog-content>
           <keep-dialog-actions>
-            <keep-button-yes text="Delete" @click=${this.handleDelete}></keep-button-yes>
-            <keep-button-neutral text="Cancel" @click=${this.handleCancel}></keep-button-neutral>
+            <keep-button @click=${this.handleDelete}>Delete</keep-button>
+            <keep-button variant="neutral" appearance="outlined" @click=${this.handleCancel}>Cancel</keep-button>
           </keep-dialog-actions>
         </dialog>
         <dialog id="add">
@@ -251,8 +250,8 @@ export default class TextFormArray extends KeepElement {
             <keep-textform .data=${{ formulaType: 'domino', formula: '', message: '' }}></keep-textform>
           </keep-dialog-content>
           <keep-dialog-actions>
-            <keep-button-yes text="Add" @click=${this.handleAdd}></keep-button-yes>
-            <keep-button-neutral text="Cancel" @click=${this.handleCancelAdd}></keep-button-neutral>
+            <keep-button @click=${this.handleAdd}>Add</keep-button>
+            <keep-button variant="neutral" appearance="outlined" @click=${this.handleCancelAdd}>Cancel</keep-button>
           </keep-dialog-actions>
         </dialog>
       </div>

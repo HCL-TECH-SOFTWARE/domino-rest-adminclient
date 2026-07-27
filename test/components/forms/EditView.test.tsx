@@ -318,7 +318,10 @@ describe('EditViewDialog — dirty form tracking', () => {
       });
 
       // Click No (discard)
-      fireEvent.click(screen.getByText('No'));
+      // { selector: 'button' } targets the mocked dialog's plain <button>. Since #701
+      // the real confirm button is <keep-button>No</keep-button>, so its label is now a
+      // text node too and a bare getByText('No') matches both.
+      fireEvent.click(screen.getByText('No', { selector: 'button' }));
 
       // Should close without saving
       expect(handleClose).toHaveBeenCalled();
@@ -352,7 +355,7 @@ describe('EditViewDialog — dirty form tracking', () => {
       });
 
       // Click Yes (save)
-      fireEvent.click(screen.getByText('Yes'));
+      fireEvent.click(screen.getByText('Yes', { selector: 'button' }));
 
       // Should save and close
       expect(updateSchema).toHaveBeenCalled();

@@ -63,7 +63,7 @@ describe('keep-textform-array', () => {
     const setData = vi.fn();
     const el = await mountLit<TextFormArray>(TAG, { data: rules(), title: 'formula', setData });
     (qa(el, 'button.delete')[0] as HTMLButtonElement).click(); // selects index 0, opens dialog
-    (q(el, 'dialog#delete keep-button-yes') as HTMLElement).click(); // confirm
+    (q(el, 'dialog#delete keep-button') as HTMLElement).click(); // confirm
     expect(setData).toHaveBeenCalledWith([{ formula: 'F2', message: 'Msg2' }]);
   });
 });

@@ -16,7 +16,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { KeepButtonNeutral, KeepButtonYes, KeepSwitch } from '../keep-elements/KeepElements';
+import { KeepButton, KeepSwitch } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 const TabViewsContainer = styled.div`
@@ -267,8 +267,10 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
           </text>
         </div>
         <div className='dialog-actions'>
-          <KeepButtonNeutral onClick={() => {setResetAllViews(false)}} text='No' />
-          <KeepButtonYes onClick={handleDeactivateAll} text='Yes' />
+          <KeepButton variant="neutral" appearance="outlined"
+            onClick={() => {setResetAllViews(false)}}
+          >No</KeepButton>
+          <KeepButton onClick={handleDeactivateAll}>Yes</KeepButton>
         </div>
       </dialog>
     </TabViewsContainer>

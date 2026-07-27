@@ -12,7 +12,7 @@ import { DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import { styled } from '@linaria/react';
 import { fetchMyApps } from '../../store/applications/action';
-import { KeepButtonNeutral, KeepButtonNo, KeepButtonYes, KeepDrawer } from '../keep-elements/KeepElements';
+import { KeepButton, KeepDrawer } from '../keep-elements/KeepElements';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -177,9 +177,9 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
             </Section>
             <hr className='divider pt-5 pb-10 mb-10 no-background' />
             <ButtonsContainer>
-              <KeepButtonNeutral onClick={handleClickReset} text='Reset' />
-              <KeepButtonNo onClick={() => dispatch(toggleAppFilterDrawer())} text='Cancel' />
-              <KeepButtonYes onClick={handleClickShowResults} text='Show Results' />
+              <KeepButton variant="neutral" appearance="outlined" onClick={handleClickReset}>Reset</KeepButton>
+              <KeepButton variant="danger" onClick={() => dispatch(toggleAppFilterDrawer())}>Cancel</KeepButton>
+              <KeepButton onClick={handleClickShowResults}>Show Results</KeepButton>
             </ButtonsContainer>
           </FilterContainer>
       </DrawerFormContainer>

@@ -7,7 +7,7 @@
 import React, { useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
+import { KeepButton } from '../keep-elements/KeepElements';
 
 interface AddmodeDialogProps {
   open: boolean;
@@ -70,8 +70,11 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
         </div>
       </div>
       <div className='dialog-actions'>
-        <KeepButtonNeutral onClick={handleClose} className='dialog-actions-button' text='Cancel' />
-        <KeepButtonYes onClick={handleSave} className='dialog-actions-button' text='Save' />
+        <KeepButton variant="neutral" appearance="outlined"
+          onClick={handleClose}
+          className='dialog-actions-button'
+        >Cancel</KeepButton>
+        <KeepButton onClick={handleSave} className='dialog-actions-button'>Save</KeepButton>
       </div>
     </dialog>
   );
