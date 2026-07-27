@@ -12,6 +12,19 @@
     <title>HCL Domino Rest API</title>
   </head>
   <body>
+    <script>
+      /* Appearance at parse time, so a dark-mode user never sees a white first paint.
+         Must be inline here, not in the bundle — rationale, measurements and the
+         three DOM carriers are documented in src/services/theme-service.ts, which is
+         the single writer for the same state at runtime. Keep the two in step.
+         Deliberately terse: this is render-blocking HTML on the critical path. */
+      (function () {
+        var dark = localStorage.getItem('theme') === 'dark';
+        document.documentElement.classList.toggle('wa-dark', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        document.body.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>
