@@ -11,7 +11,7 @@
     "@emotion/styled": "^11.14.0",
     "@linaria/babel-preset": "^5.0.4",
     "@linaria/core": "^8.0.0",
-    "@linaria/react": "^8.0.0",
+    "@linaria/react": "^8.1.1",
     "@lit/react": "^1.0.8",
     "@monaco-editor/loader": "^1.7.0",
     "@monaco-editor/react": "^4.8.0-rc.3",
