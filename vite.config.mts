@@ -55,14 +55,15 @@ export default defineConfig({
   server: {
     headers: {
       'Content-Security-Policy-Report-Only': `
-        default-src 'self';
-        connect-src 'self';
-        font-src 'self' data:;
-        img-src 'self' data:;
-        script-src 'self';
-        style-src 'self';
-        style-src-attr 'unsafe-inline';
-        worker-src 'self' data:;
+        default-src 'self' 'report-sample';
+        connect-src 'self' data: 'report-sample';
+        font-src 'self' data: 'report-sample';
+        img-src 'self' data: 'report-sample';
+        script-src 'self' 'report-sample';
+        style-src 'self' 'report-sample';
+        style-src-attr 'unsafe-inline' 'report-sample';
+        style-src-elem 'self' 'unsafe-inline' 'report-sample';
+        worker-src 'self' blob data: 'report-sample';
         report-uri /api/csp-violation-report
       `
         .replace(/\s+/g, ' ')
