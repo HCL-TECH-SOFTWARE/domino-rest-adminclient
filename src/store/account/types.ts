@@ -41,7 +41,6 @@ export interface AccountState {
   error: boolean;
   error401: boolean;
   errorMessage: string;
-  token: string;
   idpLogin: boolean;
   currentIdp: any;
 }
@@ -57,10 +56,8 @@ export const LOGIN = 'LOGIN';
 export const LOGOUT = 'LOGOUT';
 export const AUTHENTICATE = 'AUTHENTICATE';
 export const REMOVE_AUTH = 'REMOVE_AUTH';
-export const SET_TOKEN = 'SET_TOKEN';
 export const SET_LOGIN_ERROR = 'SET_LOGIN_ERROR';
 export const SET_401_ERROR = 'SET_401_ERROR';
-export const RENEW_TOKEN = 'RENEW_TOKEN';
 export const NAVITEMS = 'NAVITEMS';
 export const SET_IDP_LOGIN = 'SET_IDP_LOGIN';
 export const CURRENT_IDP = 'CURRENT_IDP';
@@ -98,16 +95,6 @@ interface RemoveAuth {
   type: typeof REMOVE_AUTH;
 }
 
-interface SetToken {
-  type: typeof SET_TOKEN;
-  payload: string;
-}
-
-interface RenewToken {
-  type: typeof RENEW_TOKEN;
-  payload: string;
-}
-
 interface SetIdpLogin {
   type: typeof SET_IDP_LOGIN;
   payload: boolean;
@@ -130,8 +117,6 @@ export type AccountActionTypes =
   | SetLoginError
   | SetError401
   | Authenticate
-  | RenewToken
-  | SetToken
   | RemoveAuth
   | SetIdpLogin
   | SetCurrentIdp

@@ -28,11 +28,12 @@
 > Earlier revisions of this report (and report 00 P0-2) treated the
 > `'disabledContent-Security-Policy'` key in `vite.config.mts:29` as a shipped regression
 > and made "re-enable CSP" a prerequisite for `wa-page`. **That framing was wrong.** That
-> object configures the **Vite dev server only**; the **production CSP is served from
-> `config.json`, outside this repository.** There is nothing to fix in this repo, and CSP
-> is *not* a blocker or a prerequisite for adopting `wa-page`. §5 is rewritten
-> accordingly: it is now a spec of what the production policy in `config.json` will need,
-> to be handed to whoever owns that file. Report 00 has withdrawn P0-2 on the same basis.
+> object configures the **Vite dev server only**, and CSP is *not* a blocker or a
+> prerequisite for adopting `wa-page`. **But the correction went one step too far** and
+> claimed the production CSP lived outside this repository. It does not: it is
+> **`jar/config/config.json`**, tracked here and packaged into the JAR by `pom.xml`. §5 is
+> rewritten again — it is a real in-repo work item (#685), not a memo. Report 00 P0-2 stays
+> withdrawn as worded, with the same caveat.
 >
 > ### 🟢 Theming grew a spine (#669, #670)
 > `src/services/theme-service.ts` is **new** and is now the single writer for the three
@@ -61,7 +62,7 @@ still **not used anywhere** in `src/`. The **theming substrate** has moved, thou
 | 3 | **The brand/primary color is still defined in four places with four different purples:** `KEEP_ADMIN_BASE_COLOR = #5F1EBE` (`config.dev.ts:24`), `--wa-color-brand-* = #7e57c2` (`styles.css:1932-1952`), `--wa-color-brand-50 = #7c5fd9` (`keep-overrides.css:251`, full ramp), dark-mode `#8B6CE0` (`dark-mode.css:9`). | 🔴 open | Consolidate to **one** WA brand scale. Unchanged since the original report except that `lit-overrides.css` is now `keep-overrides.css`. |
 | 4 | **`dark-mode.css:9-11` still overrides `--wa-color-brand-600 / -500 / -700`** — Shoelace-era **3-digit** tint names. WebAwesome 3.x uses **2-digit** tints (`--wa-color-brand-05 … -95`). Dead code. | 🔴 open | Delete on migration; fold dark brand into the token theme (§3). |
 | 5 | **WebAwesome token scaffolding exists and has grown.** `keep-overrides.css` defines the full `--wa-color-brand-{05..95}` ramp, brand aliases, **`--wa-font-size-scale: 0.85`**, and a `@media (prefers-color-scheme: dark)` brand override. | 🟢 improved | The token system is live; the work is *extending* it to the shell + Linaria, not bootstrapping it. |
-| 6 | ~~**CSP is not being sent at all** — a regression that blocks `wa-page`~~ → **the finding was wrong.** `vite.config.mts:29`'s `'disabledContent-Security-Policy'` key configures the **Vite dev server only**; the production CSP comes from **`config.json`, outside this repo**. | ➖ **WITHDRAWN** | Nothing to fix in-repo, and **CSP is not a prerequisite for `wa-page`**. §5 rewritten as a requirements note for whoever owns `config.json`. |
+| 6 | ~~**CSP is not being sent at all** — a regression that blocks `wa-page`~~ → **the finding was wrong**, and so was half its correction. `vite.config.mts:29`'s key is **dev-server only**, but the production CSP is **`jar/config/config.json`, tracked in this repo** and packaged into the JAR. | ➖ **WITHDRAWN**, but §5 is now a **work item** | **CSP is still not a prerequisite for `wa-page`.** It is, separately, editable here — and the live policy sets `style-src-attr 'none'` while 22 inline `style="…"` attributes ship. Tracked as **#685**. |
 | 6b | ~~`setBasePath` points at **webawesome@3.6.0** while **3.10.0** is installed~~ | ✅ **RESOLVED** (#673) | Both calls **deleted**. `src/index.tsx` now carries a comment explaining why there is none: in WA 3.x the base path feeds only the autoloader, and this app imports its **18** WA components explicitly. Guarded by source scans in `test/services/icon-library.test.ts`. |
 | 7 | **The icon situation is _four_ systems.** Three legacy: `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** (a 216 KB registry of **86** base64 SVG data URIs, imported by **19** modules), plus (until #700) **8** `<wa-icon src=…>` markup sites over 13 hand-copied SVGs. The fourth, **`src/services/icon-library.ts`** (#669), is the intended destination. | 🟡 **improving** | §6.4 rewritten. `icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from `@fortawesome/fontawesome-free` SVGs bundled by Vite (11 glyphs, 11 unit tests) and logs a warning on an unknown name instead of rendering an empty glyph. **That is the template the other three converge on** — the icon plan is no longer speculative. #700 finished the `src=` half: the hand-copied SVGs and `IMG_DIR` are gone, and the only `src=` sites left are the two `data:` URIs `app-icons.ts` feeds `keep-nsf-card`. **`app-icons.ts` itself is untouched** — its 86 entries are user-selectable, multi-element colour illustrations whose `iconName` is persisted server-side, so folding them into `library="fa"` is a UX and data-contract change, not a migration. |
 | 7b | **Dead weight in `src/styles/`:** `icons.json` (144 KB, 36 entries) and `text-manipulation.css` (6 lines) are imported by **nothing**; two `@fontsource-variable` packages (`quicksand`, `crimson-pro`) are declared dependencies that **no source file imports**. | 🔴 open | Pure deletion (P0.5). `@fortawesome/fontawesome-free` is **no longer** in this list — `icon-library.ts` imports it. |
@@ -586,48 +587,83 @@ change is required (`@wyw-in-js/vite` extracts to a bundled stylesheet, served f
 
 ---
 
-## 5. Content-Security-Policy — ➖ not a blocker; requirements for `config.json`
+## 5. Content-Security-Policy — an in-repo work item (`jar/config/config.json`)
 
-> ### Correction
-> Earlier revisions of this report (and report 00 P0-2, since **withdrawn**) called the
+> ### Correction, twice over
+> Earlier revisions of this report (and report 00 P0-2) called the
 > `'disabledContent-Security-Policy'` key at `vite.config.mts:29` a shipped regression, and
-> made "re-enable CSP" a **prerequisite for adopting `wa-page`**. **Both claims were
-> wrong.**
+> made "re-enable CSP" a **prerequisite for adopting `wa-page`**. That was wrong: the object
+> is the Vite **dev-server** header map, affecting `localhost` only. It is not built, not
+> shipped, and not what any browser sees in production. **That part of the correction
+> stands, and CSP still does not gate `wa-page`** — adopt `wa-page` on its own schedule.
 >
-> - That object is the Vite **dev-server** header map. It affects `localhost` only. It is
->   not built, not shipped, and not what any browser sees in production.
-> - The **production CSP is served from `config.json`, outside this repository.** Nothing
->   in this repo controls it.
-> - Therefore: **there is nothing to fix in-repo, and CSP does not gate `wa-page`.** Adopt
->   `wa-page` on its own schedule (P2); do not couple it to a CSP change.
+> **The correction itself then got one thing wrong.** It claimed the production CSP was
+> served from a `config.json` *outside this repository* and concluded "there is nothing to
+> fix in-repo". Both halves are false:
 >
-> What *is* still true is that `wa-page` has real CSP requirements. This section is now a
-> **requirements note to hand to whoever owns `config.json`**, not a work item for this
-> repo.
+> - The file is **`jar/config/config.json`** — tracked here, and packaged verbatim into the
+>   shipped artifact by `pom.xml` (`<resource><directory>jar</directory></resource>`,
+>   commented *"Direct into the JAR"*).
+> - Its git history is a run of CSP changes made in this repo: `079175b Update CSP to add
+>   worker-src and include blob`, `80c4201 Remove unsafe-inline for script-src`,
+>   `547e316 Update CSP headers`, `81c0335 Update CSP for styles`, `b06a4f4 Remove
+>   unsafe-hashes and sha keyword on style-src-elem`.
+>
+> So §5 is **not** a memo to hand to someone else. It is an editable work item, tracked as
+> **#685**.
 
-The dev-server string in `vite.config.mts` is the best available sketch of the intended
-policy, so it is reproduced here as the starting point for the production conversation —
-**not** as something to "restore":
+### 5.0 The policy that actually ships
 
-```
-style-src-attr 'none';
-style-src-elem 'self' https://cdn.jsdelivr.net/npm/@awesome.me/webawesome/ 'unsafe-hashes' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=';
-font-src   'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net/npm/@awesome.me/webawesome/;
-script-src 'self' 'unsafe-inline' data: gap: … https://cdn.jsdelivr.net/npm/@awesome.me/webawesome/;
-connect-src 'self' data: *;
-worker-src 'self' blob:;
-```
+`jar/config/config.json` defines five `webapps.webjars` entries, each with its own `csp`
+string. Two of them serve the SPA — `/admin/ui/*` and `/admin/ui` — and **they disagree
+with each other**. Reproduced from the tracked file (not a sketch):
 
-### 5.1 What the production CSP in `config.json` will need
+| Entry | `csp` |
+|---|---|
+| `/admin/ui/*` | `default-src 'self' data:; script-src 'self' 'unsafe-inline' data: gap: https://ssl.gstatic.com https://cdn.jsdelivr.net/npm/@awesome.me/webawesome/; worker-src 'self' blob:; style-src-attr 'none'; style-src-elem 'self' https://cdn.jsdelivr.net/…; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net/…; img-src 'self' data: gap:; worker-src 'self' data: blob:; connect-src 'self' data: *` |
+| `/admin/ui` | same, **minus** the first `worker-src 'self' blob:`, and `img-src 'self' data: gap: *` |
+| `/adminui.json` | `default-src 'self';` |
+| `/admin/*` | `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; worker-src 'self' data: blob:` |
+| `/monaco-editor-core/*` | as `/admin/*` |
 
-1. **`style-src-attr` must not be `'none'` once `wa-page` ships.** `wa-page` sets inline
-   element styles from JS (`--header-height`, `--banner-height`, `--subheader-height`,
-   nav-drawer state); WA form controls and `::part` sizing also write inline styles. If the
-   production policy sets `style-src-attr 'none'`, `wa-page` will lay out wrongly.
-   **Requirement for `config.json`:** `style-src-attr 'unsafe-inline'` (or an enumerated
-   hash set), *before* `wa-page` reaches production. Note the `sha256-47DEQ…` in the sketch
-   above is the hash of the **empty string** — it authorizes only empty `<style>`/style
-   attributes and carries no useful permission.
+Four defects visible in that table before any `wa-page` work begins:
+
+1. **`/admin/ui/*` declares `worker-src` twice.** CSP takes the **first** occurrence and
+   ignores the rest, so the effective value is `'self' blob:` and the later
+   `'self' data: blob:` is dead. It happens to be the *stricter* one, so Monaco still works
+   — but the duplicate means an edit to the second copy would silently do nothing.
+2. **The two SPA entries diverge**, and `/admin/ui` opens `img-src` to `*` while
+   `/admin/ui/*` does not. Whichever route a user lands on decides their policy.
+3. **`connect-src 'self' data: *`** — the `*` is in the shipped policy, not just an old
+   sketch. It negates the directive.
+4. **`/monaco-editor-core/*` serves a path nothing requests any more.** Monaco is bundled
+   as ESM; `MONACO_EDITOR_DIR` in `config.dev.ts` has no reader (see #675's follow-ups).
+   The entry is dead weight.
+
+### 5.1 Gap analysis against the shipped policy
+
+1. **`style-src-attr 'none'` is already set, and the app already ships inline style
+   attributes.** This is no longer a future `wa-page` requirement — it is a live question.
+   `wa-page` would make it worse (it sets `--header-height`, `--banner-height`,
+   `--subheader-height` and nav-drawer state as inline styles from JS), but **22 static
+   `style="…"` attributes across 12 `.ts`/`.tsx` files render today**, including
+   `keep-nsf-card` (`style="font-size: 32px;"`), `keep-dropdown`, `keep-autocomplete`,
+   `keep-input-text` and three `keep-button*` variants that forward
+   `style="${this.getAttribute('style') || ''}"`.
+
+   Under `style-src-attr 'none'` those attributes should be refused. So exactly one of the
+   following is true, and **finding out which is the first task in #685**:
+
+   - they *are* being blocked in production, and the resulting layout defects have simply
+     not been reported (CSP style violations are silent to the user); or
+   - the policy is not reaching the browser at all — in which case the CSP is not doing any
+     of the work it appears to be doing, and every other directive here is theatre.
+
+   **Fix, once known:** either `style-src-attr 'unsafe-inline'`, or remove the inline
+   attributes (most are trivially expressible as classes or `:host` rules). Note the
+   `sha256-47DEQ…` hash removed in `b06a4f4` was the hash of the **empty string** — it
+   authorized only empty style attributes and carried no useful permission, so dropping it
+   changed nothing.
 2. **No CDN hosts are needed for WebAwesome any more.** The `setBasePath` call to
    `ka-f.webawesome.com` is **gone** (#673) and icons are self-hosted: `services/
    icon-library.ts` registers `<wa-icon library="fa">` against Font Awesome SVGs bundled
@@ -637,22 +673,34 @@ worker-src 'self' blob:;
    can be **dropped** — WA assets are all `'self'`. Confirm no `<wa-icon>` still resolves
    through WA's default CDN resolver (see §6.4 — since #700 the only `<wa-icon src=…>`
    sites left are `data:` URIs).
-3. **`connect-src`.** No `<wa-icon>` fetches an SVG over the network any more: glyphs come
-   from the bundled `library="fa"`, and the two `keep-nsf-card` sites are `data:` URIs.
-   `'self' data:` suffices — the `*` in the sketch is far wider than the app needs.
+3. **`connect-src 'self' data: *` — the `*` is shipping.** No `<wa-icon>` fetches an SVG
+   over the network any more: glyphs come from the bundled `library="fa"`, and the two
+   `keep-nsf-card` sites are `data:` URIs. `'self' data:` suffices. The trailing `*` makes
+   the directive permit any origin, so it is currently providing no protection at all.
 4. **`worker-src 'self' blob:` is load-bearing.** `keep-monaco-editor.ts` instantiates
    Monaco's `editor`/`json`/`ts` workers via Vite's `?worker` imports, which produce blob or
    same-origin worker URLs. **Requirement:** keep this directive in production, or Monaco
    (Source tab, Diff view) breaks.
 5. **`script-src 'unsafe-inline'` is currently required** by the pre-render theme
-   `<script>` in `index.html` (§2.3, §3.7). If production wants to drop `'unsafe-inline'`,
-   that script needs a nonce or hash — a build concern for whoever generates
-   `config.json`'s policy, and the one place where a repo change *would* be needed.
+   `<script>` in `index.html` (§2.3, §3.7). Note `80c4201 Remove unsafe-inline for
+   script-src` once removed it and it is back — worth understanding why before removing it
+   again. Dropping it needs a nonce or hash for that script; both the script and the policy
+   are in this repo, so it is a single coordinated change rather than a cross-team one.
+   `https://ssl.gstatic.com` also sits in `script-src` with no obvious current consumer.
 6. **Linaria/WA bundled stylesheets** are injected as `'self'` `<style>`/`<link>`, covered
    by `style-src-elem 'self'`. No action.
+7. **`img-src`.** Since #700 every image resolves from `/admin/assets/…` (same-origin) or a
+   `data:` URI, so `'self' data:` is exactly right. The `gap:` scheme (Cordova) and the `*`
+   on the `/admin/ui` entry are both removable.
+8. **No `report-uri`/`report-to` in production.** `vite.config.mts` reports dev violations
+   to `/api/csp-violation-report` (`c32a3a6`), but none of the five shipped policies report
+   anything. Adding it is the cheapest way to answer §5.1(1) with data instead of guesswork.
 
-**Repo-side action: none.** Do not rename the `'disabledContent-Security-Policy'` key —
-doing so changes nothing in production and imposes a wide-open policy on `localhost`.
+**Repo-side action: tracked as #685.** Two things not to do: don't rename the
+`'disabledContent-Security-Policy'` key in `vite.config.mts` (it changes nothing in
+production and imposes a wide-open policy on `localhost`), and don't tighten
+`jar/config/config.json` blind — add reporting first, confirm what the current policy is
+actually blocking, then narrow.
 
 ---
 
@@ -670,7 +718,7 @@ Ordering matters: the theme provider cannot be deleted until nothing reads the M
    `MobileSidebar`, the `MobileHeader` duplication, the `open` collapse state +
    `.toggle-button` (`HomeElement.tsx:68,149,157`), and `drawerWidth`
    (`sidenav/style.ts:7`). **This step no longer waits on CSP** — see §5; hand the
-   `style-src-attr` requirement to the `config.json` owner in parallel.
+   `style-src-attr` fix to `jar/config/config.json` in parallel (#685).
 3. **Tokenize Linaria + the `keep-*` elements, retire `getTheme()`** (§4), collapsing the
    four brand definitions into `keep-theme.css` (§3.5) and deleting the invalid
    `--wa-color-brand-600/500/700`.
@@ -744,7 +792,7 @@ last one deliberately, as the target pattern. Current inventory:
 | **P0. Decisions & spike** | ~~WA Pro vs. free-fallback go/no-go~~ ✅ **resolved — `wa-page` is free**. Remaining: pick the brand base hex; decide the `--wa-font-size-scale` question (§3.3); decide the icon strategy (§6.4); spike `wa-page` with dummy slots. | **S** | 🟡 partly done | Font-scale decision has knock-on effects on every px→token mapping. |
 | **P0.5 Housekeeping** | Delete `src/styles/icons.json` and `src/styles/text-manipulation.css` (0 importers each); drop the two `@fontsource-variable/*` packages or wire them into `--wa-font-family-*`. ~~Resolve `@fortawesome/fontawesome-free`~~ ✅ **done** — `services/icon-library.ts` uses it. | **S** | 🟡 partly done | None — pure removal. |
 | **P1. Token foundation** | Add `keep-theme.css` single-source brand ramp (light + `.wa-dark`); alias legacy `--*` app tokens to `--wa-*`; delete the invalid `--wa-color-brand-600/500/700` (`dark-mode.css:9-11`); consolidate `prefers-color-scheme` (`keep-overrides.css:271`) onto `.wa-dark`. | **S–M** | 🔴 open | Divergent purples change subtly; dark-mode regressions. **De-risked:** `.wa-dark` is now reliably set at boot *and* runtime (§3.7), so it is safe to key on. |
-| **P2. Shell swap** | Build `AppShell` on `wa-page`; map regions to slots; delete `AppContainer`/`RightPanel`/mobile duplication/collapse toggle/`drawerWidth`. **CSP is no longer part of this phase** (§5) — instead, send the `style-src-attr` requirement to the owner of `config.json` so the production policy is ready before this ships. | **M** | 🔴 open | 768px breakpoints and sticky behavior; the 57px collapse rail is not native to `wa-page`; QuickConfig drawer placement. |
+| **P2. Shell swap** | Build `AppShell` on `wa-page`; map regions to slots; delete `AppContainer`/`RightPanel`/mobile duplication/collapse toggle/`drawerWidth`. **CSP is no longer a blocker for this phase** (§5), but `jar/config/config.json` must have `style-src-attr` loosened before this ships — an edit in this repo (#685), not a request to anyone. | **M** | 🔴 open | 768px breakpoints and sticky behavior; the 57px collapse rail is not native to `wa-page`; QuickConfig drawer placement. |
 | **P3. Linaria + element tokenization** | Replace `getTheme()` interpolations and literals with `var(--wa-*)` across 22 `getTheme` files and the 198 `styled.` blocks in 69 Linaria files; tokenize the `keep-*` elements (report 02 §6.5); adopt `wa-stack/cluster/split/grid`; retire the `theme` prop plumbing. Where a value genuinely must reach JS, call `wa-color.ts`/`wa-typography.ts` (§3.6) rather than reviving a JS color object. | **L** | 🔴 open | Visual drift; missed hardcoded hex; the `--wa-font-size-scale: 0.85` interaction. **Do report 02 §6.2 first.** |
 | **P4. Icon migration** | §6.4 steps 2–4: convert the 8 `<wa-icon src=…>` markup sites to `library="fa"`; `app-icons` (86 glyphs) → a second WA custom library; `<wa-icon>` codemod across the **55** distinct MUI/react-icons files (45 + 18 with **8** overlapping). | **M–L** | 🔴 open | Missing/renamed FA glyphs; icon sizing/color inheritance; bundle impact if `app-icons` stays inline. **De-risked:** `icon-library.ts` is a working, tested template. |
 | **P5. Remove MD** | After report-02 components land: delete both `ThemeProvider`s + all three `CssBaseline` mounts + `theme.ts` + the `.Mui*` sheet; drop MUI + Emotion deps. **`@mui/x-data-grid` has no WA successor** — budget a separate grid decision. | **M** | 🔴 open | Any straggler reading the MUI theme; bundle/test fallout; the data-grid gap. |
@@ -766,12 +814,12 @@ last one deliberately, as the target pattern. Current inventory:
   `@media (max-width:768px)` rules; audit for others (`1366px` in `CommonStyles`).
 - **Collapse rail (57px).** An app feature separate from `wa-page`'s mobile drawer;
   implement via `--menu-width` toggle, not the drawer.
-- ~~**CSP** — the most likely hard blocker.~~ ➖ **Withdrawn.** The disabled header in
-  `vite.config.mts` is dev-server only and the production policy lives in `config.json`,
-  outside this repo (§5). The one real dependency is that `config.json` must not ship
-  `style-src-attr 'none'` once `wa-page` is live — a coordination item with the
-  `config.json` owner, not a repo blocker. Still worth validating the app under the
-  intended production policy before release.
+- ~~**CSP** — the most likely hard blocker.~~ ➖ **Withdrawn as a blocker**, but not as
+  work. The disabled header in `vite.config.mts` is dev-server only; the production policy
+  is `jar/config/config.json`, **in this repo** (§5). The real dependency stands: it must
+  not ship `style-src-attr 'none'` once `wa-page` is live — and it does today, which is
+  #685's first task, not a coordination item with anyone. Validate the app under the
+  intended policy before release.
 - **Bundle.** The entry chunk is 6,322.51 kB / 1,703.85 kB gzip (down from 6.94 MB /
   1.88 MB — Prettier now lazy-loads). Both `app-icons.ts` (216 KB) and the Monaco import
   chain contribute; the token work should not add to it. Note `icon-library.ts`'s `?url`
@@ -784,6 +832,6 @@ last one deliberately, as the target pattern. Current inventory:
 
 - WebAwesome `wa-page` slots/parts/attributes, layout utilities (`wa-stack/cluster/grid/split/flank/frame`, `wa-gap-*`), tokens, and the Pro-only component list — per the bundled `webawesome` and `webawesome-design` skills shipped inside `@awesome.me/webawesome@3.10.0` (`dist/skills/`). The Pro-only set is enumerated in `dist/skills/webawesome/references/choosing-components.md` under "A note on Pro"; `wa-page` is **not** in it, and there is **no** data grid or date picker in either tier.
 - `reports/02-react-to-lit-webawesome.md` — component migration (prerequisite for §6 step 1; §6.2 is a prerequisite for P3).
-- `reports/00-code-quality.md` — P0-2 (CSP, **withdrawn** — dev-server only, production policy in `config.json`), P0-9 (WA base path, **done** — both `setBasePath` calls deleted in #673), P2-3 (bundle size).
+- `reports/00-code-quality.md` — P0-2 (CSP, **withdrawn as worded** — the `vite.config.mts` key is dev-server only, but the production policy is `jar/config/config.json`, in this repo; see #685), P0-9 (WA base path, **done** — both `setBasePath` calls deleted in #673), P2-3 (bundle size).
 - `reports/04-remove-react.md` — removing React / the Lit-native shell (end-state for §2.3).
 - In-repo sources of truth cited above: `src/services/theme-service.ts`, `wa-color.ts`, `wa-typography.ts`, `editor-theme.ts`, `icon-library.ts`; `test/services/*.test.ts`; `src/styles/keep-overrides.css`, `dark-mode.css`, `styles.css`, `CommonStyles.tsx`; `vite.config.mts:29`.

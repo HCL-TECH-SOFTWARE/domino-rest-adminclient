@@ -16,7 +16,6 @@ import HomeElement from './components/home/HomeElement';
 import { AppState } from './store';
 import {
   authenticate,
-  setToken,
   renewToken,
   removeAuth,
   setIdpLogin,
@@ -50,8 +49,6 @@ const App: React.FC = () => {
         if (idpLogin) dispatch(setIdpLogin(true));
 
         const { issueDate, expSeconds } = parsedToken as TokenProps;
-
-        dispatch(setToken(jwtToken));
 
         const storageToken = new Date(issueDate).getTime() + 1000 * expSeconds;
         const storageTokenTime = new Date(storageToken).getTime();
