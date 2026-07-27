@@ -4,22 +4,37 @@
   /* This line is mandatory to activate light-dark() */
   color-scheme: light dark;
 
-  /* Theme tokens */
+  /* Theme tokens.
+     The brand-derived ones are aliases onto the ramp in keep-theme.css so there
+     is a single place to change the brand (#706). They are kept as names rather
+     than inlined so their ~17 consumers keep working; retiring the names in
+     favour of var(--wa-*) at the call site is #708. Custom properties resolve at
+     computed-value time, so referencing a token defined in a later-imported
+     sheet is fine. */
   --text-color-primary: light-dark(#000, #e0e0e0);
   --text-color-secondary: #e0e0e0;
   --text-color-danger: light-dark(#dc1434, #ff6b6b);
   --text-color-disabled: light-dark(#6c6c6c, #8d8d8d);
   --text-secondary: #e0e0e0;
   --border-color: light-dark(#3a3a4a, #6c7882);
-  --button-primary-color: #8b6ce0;
+  --button-primary-color: var(--wa-color-brand-60);
   --button-secondary-color: #9e9e9e;
   --body-color: light-dark(#fff, #181825);
-  --hover-color: #8b6ce0;
-  --button-hover-color: #7356cd;
-  --dialog-header-color: light-dark(#391b70, #8b6ce0);
+  --hover-color: var(--wa-color-brand-60);
+  --button-hover-color: var(--wa-color-brand-50);
+  --dialog-header-color: light-dark(var(--wa-color-brand-20), var(--wa-color-brand-60));
   --dialog-title-color: #e0e0e0;
-  --badge-color-background: light-dark(#391b70, #8b6ce0);
-  --base-color: light-dark(#5f1ebe, #b38df9);
+  --badge-color-background: light-dark(var(--wa-color-brand-20), var(--wa-color-brand-60));
+  /* --base-color serves two opposite roles: a text colour (.color-base) and a
+     surface colour (.background-keep-base / .app-form-header, which put #fff on
+     it at 24px — WCAG "large text", so the 3.0 threshold applies). The two roles
+     pull in opposite directions, which is why no single step is ideal; splitting
+     it into a text token and a surface token is #708.
+     Dark uses -60 rather than the lighter -70 because -70 measures 2.22:1 against
+     white and -60 measures 3.21:1 — the previous literal #b38df9 was 2.59:1, i.e.
+     already failing AA-large, so -60 fixes a pre-existing contrast bug rather than
+     introducing one. Light: #5f1ebe 8.69:1 -> -40 6.36:1, comfortably AA. */
+  --base-color: light-dark(var(--wa-color-brand-40), var(--wa-color-brand-60));
   --badge-color: #fff;
   --icon-color: light-dark(#000, #fff);
   --hint-text-color: light-dark(#808080, #a9a9a9);
