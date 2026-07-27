@@ -1,0 +1,83 @@
+/* ==========================================================================
+ * keep-theme.css — the single source of truth for Keep's design tokens.
+ *
+ * Everything brand-coloured in the app should resolve, directly or through an
+ * alias, to one of the `--wa-color-brand-*` steps defined here. Nothing else
+ * may define a brand ramp.
+ *
+ * Web Awesome's brand scale is lightness-based and runs 95 (lightest) → 05
+ * (darkest), which is the inverse of the old Shoelace 50…950 scale. Semantic
+ * tokens are derived from it, so overriding the ramp is enough to re-brand
+ * every WA component:
+ *
+ *   --wa-color-brand-fill-loud   = --wa-color-brand-50
+ *   --wa-color-brand-border-loud = --wa-color-brand-60
+ *
+ * Load order (src/index.tsx): webawesome.css → keep-theme.css → keep-overrides.css.
+ * Custom properties resolve at computed-value time, so an alias may reference a
+ * token defined in a later sheet — `styles.css` relies on that.
+ *
+ * Decisions recorded in #705; consolidation tracked by #706. Replacing the
+ * remaining hardcoded literals across the Linaria layer is #708.
+ * ========================================================================== */
+
+:root {
+    /*
+     * Light ramp. Base is --wa-color-brand-50 (#7c5fd9); the other steps hold
+     * hue and saturation constant and vary lightness.
+     *
+     * #7c5fd9 was chosen (#705) because it is what the app already renders:
+     * this ramp previously lived in keep-overrides.css, which is imported last
+     * and so already won over the #7e57c2 values in styles.css.
+     */
+    --wa-color-brand-95: #f1edfa; /* lightest tint */
+    --wa-color-brand-90: #e0d7f5;
+    --wa-color-brand-80: #c3b3ec;
+    --wa-color-brand-70: #a48ee3;
+    --wa-color-brand-60: #8a6fdc;
+    --wa-color-brand-50: #7c5fd9; /* base */
+    --wa-color-brand-40: #684db3;
+    --wa-color-brand-30: #523d8c;
+    --wa-color-brand-20: #3c2d66;
+    --wa-color-brand-10: #261d40;
+    --wa-color-brand-05: #140e20; /* darkest shade */
+
+    /* Base brand aliases used by some components/utilities. */
+    --wa-color-brand: var(--wa-color-brand-50);
+    --wa-color-brand-on: #ffffff;
+
+    /*
+     * Scale Web Awesome's typographic ramp to ~85% of the default. Every
+     * --wa-font-size-* token derives from this, so all WA components shrink
+     * proportionally to match the prior Shoelace sizing.
+     *
+     * #705 decided to keep 0.85 rather than re-map every size at 1.0. Any
+     * px→token mapping must therefore be validated *with this scale applied*,
+     * or converted sizes render ~15% smaller than the literals they replace.
+     */
+    --wa-font-size-scale: 0.85;
+}
+
+/*
+ * Dark ramp.
+ *
+ * Keyed on `.wa-dark`, which `services/theme-service.ts` is the single writer
+ * for — set on <html> at boot (the inline script in index.html) and on every
+ * runtime toggle. It replaces an `@media (prefers-color-scheme: dark)` block
+ * that keyed on the *OS* preference, so the brand went light whenever the OS
+ * was dark even if the app was in light mode, and stayed light when the OS was
+ * light even if the app was in dark mode. Both are fixed by keying on the class.
+ *
+ * Values are the ones dark-mode.css always intended: they were written there as
+ * --wa-color-brand-600/500/700, which are not valid WA token names (the scale is
+ * 05…95), so they never applied. Re-mapped here onto the real steps.
+ */
+:root.wa-dark {
+    --wa-color-brand-70: #b8a3ea;
+    --wa-color-brand-60: #9b7ee8; /* border-loud */
+    --wa-color-brand-50: #8b6ce0; /* base / fill-loud */
+    --wa-color-brand-40: #7b5cd0;
+    --wa-color-brand-30: #63489f;
+
+    --wa-color-brand-on: #ffffff;
+}

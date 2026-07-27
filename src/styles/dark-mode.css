@@ -4,11 +4,12 @@
  * property (set on :root in index.css, toggled in HomeElement.tsx).
  * ========================================================================== */
 
-/* ===== Shoelace primary color overrides for dark mode ===== */
 body[data-theme="dark"] {
-  --wa-color-brand-600: #8B6CE0;
-  --wa-color-brand-500: #9B7EE8;
-  --wa-color-brand-700: #7B5CD0;
+  /* The dark brand ramp lives in keep-theme.css, keyed on `:root.wa-dark`.
+     It used to be declared here as --wa-color-brand-600/500/700, which are
+     not valid Web Awesome token names — WA's brand scale runs 05…95 — so
+     those three declarations never applied to anything (#706). Their values
+     were carried over to the real steps in keep-theme.css. */
 
   /* Default text color in dark mode: white.
      Most components inherit from body / use `light-dark(inherit, ...)`,

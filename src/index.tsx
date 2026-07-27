@@ -12,6 +12,9 @@ import { Provider } from 'react-redux';
 import App from './App';
 import { configureStore } from '@reduxjs/toolkit';
 import '@awesome.me/webawesome/dist/styles/webawesome.css';
+// keep-theme.css must follow webawesome.css (it overrides WA's own brand ramp)
+// and precede keep-overrides.css, which builds component rules on those tokens.
+import '../src/styles/keep-theme.css';
 import '../src/styles/keep-overrides.css';
 import { rootReducer } from './store';
 
