@@ -73,7 +73,6 @@
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage",
     "dev": "vite",
-    "prebuild": "node updateBuildVersion.js",
     "build": "tsc -b tsconfig.app.json && vite build",
     "build:win": "tsc -b tsconfig.app.json && vite build",
     "lint": "oxlint src test",
