@@ -11,8 +11,6 @@ import {
   SET_LOGIN_ERROR,
   SET_401_ERROR,
   AUTHENTICATE,
-  SET_TOKEN,
-  RENEW_TOKEN,
   REMOVE_AUTH,
   NAVITEMS,
   PageListObj,
@@ -70,13 +68,6 @@ export function removeAuth() {
   };
 }
 
-export function setToken(token: string) {
-  return {
-    type: SET_TOKEN,
-    payload: token
-  };
-}
-
 /**
  * The bearer string to put in an `Authorization` header, for either token shape the
  * app stores under `user_token`: a Keep native token (`{ bearer }`) or an IdP/PKCE
@@ -122,15 +113,15 @@ const publishToken = (token: unknown) => {
 };
 
 export function renewToken() {
-  return async (dispatch: Dispatch, getState: () => AppState) => {
-    const {
-      account: { token }
-    } = getState();
-
-    let oldToken;
-    try {
-      oldToken = JSON.parse(token);
-    } catch {
+  return async (dispatch: Dispatch) => {
+    // Reads local storage directly rather than `account.token` (#727). That field held
+    // three different shapes depending on which of the four producers wrote last, and
+    // only the JSON-string form could be parsed here — the other two signed the user out.
+    // `getToken()` resolves the bearer from the same stored value the old path ultimately
+    // came from, one hop earlier, and additionally understands the IdP `access_token`
+    // shape that the `JSON.parse(...).bearer` route did not.
+    const oldBearer = getToken();
+    if (!oldBearer) {
       dispatch(removeAuth());
       return;
     }
@@ -146,7 +137,7 @@ export function renewToken() {
       response = await fetch(`${BASE_KEEP_API_URL}/auth/extend`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${oldToken.bearer}`,
+          Authorization: `Bearer ${oldBearer}`,
           'Content-Type': 'application/json'
         },
         body: localStorage.getItem('user_token'),
@@ -170,13 +161,8 @@ export function renewToken() {
       return;
     }
 
-    // Set token to account store
-    dispatch({
-      type: RENEW_TOKEN,
-      payload: newToken.bearer
-    });
-
-    // Apply new token on local storage
+    // No store dispatch: `account.token` no longer exists (#727). Local storage is the
+    // single home for the credential, and `publishToken` wakes anything waiting on it.
     localStorage.setItem('user_token', JSON.stringify(newToken));
     publishToken(newToken)
   };
@@ -207,7 +193,6 @@ export function login(credentials: Credentials, successCallback: () => void) {
       dispatch({
         type: LOGIN
       });
-      dispatch(setToken(jwtData));
       successCallback()
     } else {
       log.debug('Login failed, dispatching error state')
@@ -369,7 +354,6 @@ export function loginWithPkce(token: any) {
     dispatch({
       type: LOGIN
     });
-    dispatch(setToken(token))
   }
 }
 

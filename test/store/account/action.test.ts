@@ -8,8 +8,7 @@ import {
   renewToken,
   showPages,
 } from '../../../src/store/account/action';
-import { REMOVE_AUTH, RENEW_TOKEN } from '../../../src/store/account/types';
-import type { AppState } from '../../../src/store';
+import { REMOVE_AUTH } from '../../../src/store/account/types';
 import { Level, Logger } from '../../../src/services/log-service';
 import { waitForToken } from '../../../src/utils/token-emitter';
 
@@ -29,8 +28,12 @@ const response = (init: { ok: boolean; status?: number; contentType?: string; bo
 /**
  * `renewToken` used to `await response.json()` with no status check, so a 4xx, a
  * 5xx, an HTML error page or a dropped connection all ended with either an
- * exception escaping the thunk or `RENEW_TOKEN` carrying `undefined`. The store
+ * exception escaping the thunk or a renewal action carrying `undefined`. The store
  * then held a broken session that looked authenticated.
+ *
+ * Since #727 the credential lives only in local storage — `account.token` is gone — so
+ * the success path dispatches nothing at all and these assertions are on local storage
+ * and on the sign-out actions.
  *
  * Every one of those paths must now end at `removeAuth()`, so they are enumerated
  * here rather than covered by a single happy-path test.
@@ -39,8 +42,6 @@ describe('renewToken', () => {
   const STORED = JSON.stringify({ bearer: 'old-bearer' });
   let dispatch: Dispatch & { mock: { calls: unknown[][] } };
   let previousLevel: number;
-
-  const getState = () => ({ account: { token: STORED } }) as unknown as AppState;
 
   const types = () => dispatch.mock.calls.map((call) => (call[0] as { type: string }).type);
 
@@ -66,10 +67,11 @@ describe('renewToken', () => {
     const renewed = { bearer: 'new-bearer', expSeconds: 3600 };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true, body: renewed })));
 
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
-    expect(types()).toEqual([RENEW_TOKEN]);
-    expect(dispatch.mock.calls[0][0]).toEqual({ type: RENEW_TOKEN, payload: 'new-bearer' });
+    // Nothing is dispatched on success: the renewed credential goes to local storage,
+    // which is now its only home.
+    expect(types()).toEqual([]);
     expect(JSON.parse(localStorage.getItem('user_token')!)).toEqual(renewed);
   });
 
@@ -77,7 +79,7 @@ describe('renewToken', () => {
     const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: { bearer: 'new-bearer' } }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
     const [url, options] = fetchMock.mock.calls[0];
     expect(String(url)).toContain('/auth/extend');
@@ -91,7 +93,7 @@ describe('renewToken', () => {
       vi.fn().mockResolvedValue(response({ ok: false, status: 401, body: { message: 'expired' } })),
     );
 
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
     expect(types()).toEqual([REMOVE_AUTH]);
     expect(localStorage.getItem('user_token')).toBeNull();
@@ -104,7 +106,7 @@ describe('renewToken', () => {
       vi.fn().mockResolvedValue(response({ ok: false, status: 502, contentType: 'text/html' })),
     );
 
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
     expect(types()).toEqual([REMOVE_AUTH]);
   });
@@ -112,7 +114,7 @@ describe('renewToken', () => {
   it('signs out when a 200 carries an unparseable body', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true })));
 
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
     expect(types()).toEqual([REMOVE_AUTH]);
   });
@@ -120,7 +122,7 @@ describe('renewToken', () => {
   it('signs out when the request never completes', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
 
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
     expect(types()).toEqual([REMOVE_AUTH]);
   });
@@ -130,18 +132,43 @@ describe('renewToken', () => {
   it('signs out when a 200 carries no bearer', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true, body: { expSeconds: 3600 } })));
 
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
     expect(types()).toEqual([REMOVE_AUTH]);
-    expect(types()).not.toContain(RENEW_TOKEN);
+  });
+
+  /**
+   * The defect #727 describes, as a sequence rather than a unit.
+   *
+   * `login()` wrote a token *object* into `account.token`, and the field was typed
+   * `string`. The next `renewToken()` therefore ran `JSON.parse('[object Object]')`,
+   * threw a SyntaxError, and dispatched `removeAuth()` — the user was signed out by
+   * their own successful login. It only stayed hidden because `renewToken` had exactly
+   * one caller, eight lines after the one dispatch that wrote the readable shape.
+   *
+   * `renewToken` no longer consults the store, so the order of these two no longer
+   * matters. This test would have failed before the field was removed.
+   */
+  it('renews after a login in the same session', async () => {
+    const issued = { bearer: 'issued-by-login', expSeconds: 3600 };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true, body: issued })));
+    await login({ username: 'u', password: 'p' } as never, () => {})(dispatch);
+
+    const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: { bearer: 'renewed' } }));
+    vi.stubGlobal('fetch', fetchMock);
+    await renewToken()(dispatch);
+
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers.Authorization).toBe('Bearer issued-by-login');
+    expect(types()).not.toContain(REMOVE_AUTH);
   });
 
   it('signs out without calling the API when the stored token is corrupt', async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const corrupt = () => ({ account: { token: 'not-json' } }) as unknown as AppState;
+    localStorage.setItem('user_token', 'not-json');
 
-    await renewToken()(dispatch, corrupt);
+    await renewToken()(dispatch);
 
     expect(types()).toEqual([REMOVE_AUTH]);
     expect(fetchMock).not.toHaveBeenCalled();
@@ -181,12 +208,10 @@ describe('token event', () => {
 
   it('resolves a waiter with the renewed bearer as a string', async () => {
     localStorage.setItem('user_token', JSON.stringify({ bearer: 'old-bearer' }));
-    const getState = () =>
-      ({ account: { token: JSON.stringify({ bearer: 'old-bearer' }) } }) as unknown as AppState;
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true, body: { bearer: 'new-bearer' } })));
 
     const pending = waitForToken();
-    await renewToken()(dispatch, getState);
+    await renewToken()(dispatch);
 
     await expect(pending).resolves.toBe('new-bearer');
   });

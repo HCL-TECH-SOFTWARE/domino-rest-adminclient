@@ -15,7 +15,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { BUILD_VERSION } from '../../config.dev';
 import keepLogo from '../../assets/KeepNewIcon.png';
 import { AppState } from '../../store';
-import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
+import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError } from '../../store/account/action';
 import { styled } from '@linaria/react';
 import { FiInfo } from 'react-icons/fi';
 import { Link } from '@mui/material';
@@ -222,7 +222,6 @@ const LoginPage = () => {
     // Login. first
     await logIn()
       .then((token: any) => {
-        dispatch(setToken(token));
         return keepAuthenticator.register(token);
       })
       .then((res) => res.json())
