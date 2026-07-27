@@ -6,6 +6,19 @@ import '@awesome.me/webawesome/dist/components/input/input.js';
 
 @customElement('keep-input-text')
 export default class InputText extends KeepElement {
+  /*
+   * On `:state(user-invalid)` below (#742).
+   *
+   * WebAwesome 3.x publishes validity as CSS *custom states*: its form controls call
+   * `customStates.set('user-invalid', …)`, which writes into `ElementInternals.states` and
+   * is matched by `:state()`. The selector this replaces — `wa-input` with a
+   * `data-user-invalid` attribute — is the Shoelace 2.x convention, and nothing in
+   * WebAwesome's runtime ever sets that attribute, so the rule never matched once.
+   *
+   * The note lives out here rather than inside the `css` template because comments inside
+   * a tagged template are string content: Vite minifies real stylesheets but not these, so
+   * anything written in there ships to every user.
+   */
   static styles = css`
     :host {
       color-scheme: inherit;
@@ -14,7 +27,7 @@ export default class InputText extends KeepElement {
       font-size: 12px;
     }
 
-    wa-input[data-user-invalid]::part(base) {
+    wa-input:state(user-invalid)::part(base) {
       border-color: var(--wa-color-danger-600);
       box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
     }

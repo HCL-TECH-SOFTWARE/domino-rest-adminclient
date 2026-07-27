@@ -44,6 +44,39 @@ const log = getLogger('components/login/LoginPage');
 
 const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-version"]')?.getAttribute("content");
 
+/** Shown on both fields when the server rejects the pair (401), not on either alone. */
+const CREDENTIALS_REJECTED = 'Incorrect username or password';
+
+type WaFormInput = HTMLElementTagNameMap['wa-input'] | null | undefined;
+
+/**
+ * Run WebAwesome's constraint validation on one field and leave it in the `user-invalid`
+ * custom state if it fails, which is what the `:state(user-invalid)` rules in
+ * `keep-input-text` / `keep-input-password` style. Returns whether the field is valid.
+ *
+ * Two details of WebAwesome's API drive the implementation (#742):
+ *
+ * 1. `hasInteracted` is set first because `setCustomStates()` computes
+ *    `user-invalid = !valid && hasInteracted`. WebAwesome's own `reportValidity()` sets
+ *    that flag *after* it runs validation, so a single call leaves a field `invalid` but
+ *    never `user-invalid`.
+ * 2. `checkValidity()` rather than `reportValidity()`: it walks the same
+ *    `updateValidity() → setValidity() → setCustomStates()` path without moving focus or
+ *    opening a validation bubble, so it is safe to call on every field in a form.
+ *
+ * A missing control is reported and treated as invalid. It should not happen once the
+ * element has rendered, and blocking is the safe reading — the previous code read
+ * `.length` off the undefined value and threw instead.
+ */
+const markValidity = (input: WaFormInput, field: string): boolean => {
+  if (!input) {
+    log.error('cannot validate the login form: control not found', { field });
+    return false;
+  }
+  input.hasInteracted = true;
+  return input.checkValidity();
+};
+
 const SignupSchema = Yup.object().shape({
   username: Yup.string().required('Required'),
   password: Yup.string().required('Required'),
@@ -203,20 +236,14 @@ const LoginPage = () => {
    Used for username / password and Webauthn login*/
   const handleSignUpWithPasskey = async (event: any) => {
     event.preventDefault();
-    const username = usernameRef.current?.shadowRoot.querySelector('wa-input')?.value
-    const password = passwordRef.current?.shadowRoot.querySelector('wa-input')?.value
-
-    // Validate inputs
     const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
     const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
 
-    if (!username || !password) {
-      if (!username) {
-        usernameInput.setAttribute('data-user-invalid', username.length === 0)
-      }
-      if (!password) {
-        passwordInput.setAttribute('data-user-invalid', password.length === 0)
-      }
+    // Validate both, so each field reflects its own validity, then bail if either failed.
+    // Both are `required`, so a blank one fails on `valueMissing`.
+    const usernameValid = markValidity(usernameInput, 'username');
+    const passwordValid = markValidity(passwordInput, 'password');
+    if (!usernameValid || !passwordValid) {
       return;
     }
     // Login. first
@@ -330,34 +357,29 @@ const LoginPage = () => {
   }
 
   const handleClickLogIn = () => {
-    const username = usernameRef.current?.shadowRoot.querySelector('wa-input')?.value
-    const password = passwordRef.current?.shadowRoot.querySelector('wa-input')?.value
-
-    // Validate inputs
     const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
     const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
+    const username = usernameInput?.value ?? '';
+    const password = passwordInput?.value ?? '';
+
+    // A new attempt clears the 401 error the effect below applies, so a previous
+    // rejection does not leave both fields marked invalid for the rest of the session.
+    usernameInput?.setCustomValidity('');
+    passwordInput?.setCustomValidity('');
 
     if (authType === 'password') {
-      // Password Login
-      if (username.length > 0 && password.length > 0) {
+      // Password Login. Validate both fields, not just the first one that exists: the
+      // code this replaces branched on whether the *element* was present rather than on
+      // whether it was valid, so a blank password flagged the username field instead.
+      const usernameValid = markValidity(usernameInput, 'username');
+      const passwordValid = markValidity(passwordInput, 'password');
+      if (usernameValid && passwordValid) {
         logInWithPassword(username, password);
-      } else {
-        if (usernameRef.current?.shadowRoot.querySelector('wa-input')) {
-          log.debug('Invalid username')
-          usernameInput.setAttribute('data-user-invalid', username.length === 0)
-        } else if (passwordRef.current?.shadowRoot.querySelector('wa-input')) {
-          log.debug('Invalid password')
-          passwordInput.setAttribute('data-user-invalid', password.length === 0)
-        }
       }
     } else if (authType === 'passkey') {
-      // Passkey Login
-      if (username.length > 0) {
+      // Passkey Login — username only; the password field is hidden in this mode.
+      if (markValidity(usernameInput, 'username')) {
         logInWithPasskey(username)
-      } else {
-        if (usernameRef.current?.shadowRoot.querySelector('wa-input')) {
-          usernameInput.setAttribute('data-user-invalid', username.length === 0)
-        }
       }
     } else if (authType === 'oidc') {
       // OIDC Login
@@ -505,21 +527,20 @@ const LoginPage = () => {
     }
   }, [authType])
 
+  // A 401 means the server rejected the username/password *pair*; neither field violates
+  // a constraint on its own, so this is a custom error rather than `valueMissing`.
+  // setCustomValidity() is WebAwesome's public API for that, and markValidity() then
+  // engages the :state(user-invalid) styling on both fields. Cleared on the next attempt
+  // in handleClickLogIn.
   useEffect(() => {
     if (error401 && !idpLogin) {
-      const username = usernameRef.current?.shadowRoot.querySelector('wa-input')?.value
-      const password = passwordRef.current?.shadowRoot.querySelector('wa-input')?.value
-
-      // Validate inputs
       const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
       const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
 
-      if (usernameInput) {
-        usernameInput.setAttribute('data-user-invalid', username.length === 0)
-      }
-      if (passwordInput) {
-        passwordInput.setAttribute('data-user-invalid', password.length === 0)
-      }
+      usernameInput?.setCustomValidity(CREDENTIALS_REJECTED);
+      passwordInput?.setCustomValidity(CREDENTIALS_REJECTED);
+      markValidity(usernameInput, 'username');
+      markValidity(passwordInput, 'password');
     }
   }, [error401, idpLogin])
 

@@ -6,6 +6,8 @@ import '@awesome.me/webawesome/dist/components/input/input.js';
 
 @customElement('keep-input-password')
 export default class InputPassword extends KeepElement {
+  /* `:state(user-invalid)` below, not the Shoelace-era `data-user-invalid` attribute —
+     see the note in keep-input-text.ts, including why it is out here (#742). */
   static styles = css`
     :host {
       color-scheme: inherit;
@@ -14,7 +16,7 @@ export default class InputPassword extends KeepElement {
       font-size: 12px;
     }
 
-    wa-input[data-user-invalid]::part(base) {
+    wa-input:state(user-invalid)::part(base) {
       border-color: var(--wa-color-danger-600);
       box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
     }
