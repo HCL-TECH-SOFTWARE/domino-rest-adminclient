@@ -557,8 +557,9 @@ correct name first (report 00 P0-2).
 `"jsx": "react-jsx"` is no longer needed once `.tsx` files become `.ts` authoring Lit
 `html`\`…\` templates — remove it. `experimentalDecorators: true` and
 `useDefineForClassFields: false` are **already set** and already suit Lit; leave them.
-Delete `src/react-app-env.d.ts`. Consider splitting out a `tsconfig.test.json` so the
-production build stops type-checking `test/` (report 00 P1-9).
+`src/react-app-env.d.ts` is deleted (#677) and the `tsconfig.test.json` split is done
+(#687), so the production build no longer type-checks `test/`. Note `"jsx"` now lives in
+`tsconfig.app.json`, which `tsconfig.test.json` extends — remove it from the one place.
 
 `.tsx` → `.ts`: each converted file is renamed (no JSX left). This happens file-by-file
 during report 02; the last rename removes the final React import.
