@@ -11,8 +11,6 @@ import { toggleAppFilterDrawer } from '../../store/drawer/action';
 import { DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import { styled } from '@linaria/react';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { fetchMyApps } from '../../store/applications/action';
 import { KeepButtonNeutral, KeepButtonNo, KeepButtonYes, KeepDrawer } from '../keep-elements/KeepElements';
 
@@ -115,7 +113,6 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   return (
     <KeepDrawer label="Filter" open={appFilterDrawer}>
       <DrawerFormContainer className='w-35vw'>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
           <FilterContainer>
             <div className='full-width flex justify-end'>
             </div>
@@ -185,7 +182,6 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
               <KeepButtonYes onClick={handleClickShowResults} text='Show Results' />
             </ButtonsContainer>
           </FilterContainer>
-        </LocalizationProvider>
       </DrawerFormContainer>
     </KeepDrawer>
   );
