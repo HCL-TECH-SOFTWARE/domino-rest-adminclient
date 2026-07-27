@@ -23,9 +23,9 @@ function stampBuildVersion(): Plugin {
       {
         tag: 'meta',
         attrs: { name: 'admin-ui-daily-build-version', content },
-        injectTo: 'head',
-      },
-    ],
+        injectTo: 'head'
+      }
+    ]
   };
 }
 
@@ -46,7 +46,7 @@ export default defineConfig({
         options.jsc ??= {};
         options.jsc.transform ??= {};
         options.jsc.transform.useDefineForClassFields = false;
-      },
+      }
     })
   ],
   build: {
@@ -54,14 +54,14 @@ export default defineConfig({
   },
   server: {
     headers: {
-
-        'Content-Security-Policy-Report-Only': `
+      'Content-Security-Policy-Report-Only': `
         default-src 'self';
         connect-src 'self';
         font-src 'self' data:;
         img-src 'self' data:;
         script-src 'self';
-        style-src 'self' 'unsafe-inline';
+        style-src 'self';
+        style-src-attr 'unsafe-inline';
         worker-src 'self' data:;
         report-uri /api/csp-violation-report
       `
