@@ -25,19 +25,30 @@ const TAG = 'keep-monaco-editor';
 /** Monaco disposes on timers; let them drain so nothing lands after the assertion. */
 const settle = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/*
+ * Warm Monaco here, at module scope, rather than in a hook or on first mount.
+ *
+ * #693 put Monaco behind a dynamic import, so nothing evaluates it until an editor
+ * mounts. That moved several seconds of module evaluation into a test — and Vitest
+ * budgets tests at 5 s and hooks at 10 s, both of which the CI runner blows. Module
+ * evaluation has no such budget, which is exactly where this cost sat before #693 and
+ * why it never needed one; a top-level await puts it back there instead of picking a
+ * magic number that holds on a laptop and not on a runner.
+ *
+ * The stubs have to be installed first — Monaco touches `document` and canvas as it
+ * evaluates — which a hoisted static import could not guarantee. `beforeAll` calls
+ * `installMonacoDomStubs()` again; it is idempotent.
+ */
+installMonacoDomStubs();
+await import('monaco-editor');
+
 describe('keep-monaco-editor — real Monaco lifecycle', () => {
-  let restoreRejectionHandlers: () => void;
-  let capture: { errors: unknown[]; restore: () => void };
+  let restoreRejectionHandlers: (() => void) | undefined;
+  let capture: { errors: unknown[]; restore: () => void } | undefined;
   let errors: unknown[];
 
-  beforeAll(async () => {
+  beforeAll(() => {
     installMonacoDomStubs();
-    // #693 moved Monaco behind a dynamic import, so its ~4 s of module evaluation now
-    // happens on first mount rather than when this file is imported. Pay it here, once:
-    // the hook budget is 10 s, where a test's is 5 s and a loaded full-suite run tips
-    // the first mount over it. Ordering is a bonus — the stubs above are now guaranteed
-    // to be installed before Monaco evaluates, which a hoisted static import could not.
-    await import('monaco-editor');
     restoreRejectionHandlers = ignoreMonacoCancellations();
     // Monaco reports broken invariants as a process-level uncaught exception, not by
     // throwing at the call site — see captureMonacoErrors().
@@ -45,9 +56,11 @@ describe('keep-monaco-editor — real Monaco lifecycle', () => {
     errors = capture.errors;
   });
 
+  // Optional-called: if `beforeAll` ever fails partway, this must not bury the real
+  // error under a `Cannot read properties of undefined` from the teardown.
   afterAll(() => {
-    capture.restore();
-    restoreRejectionHandlers();
+    capture?.restore();
+    restoreRejectionHandlers?.();
   });
 
   afterEach(async () => {
