@@ -401,7 +401,8 @@ export const generateSecret = (
             Authorization: `Bearer ${getToken()}`,
             'Content-Type': 'application/json',
           },
-          // TODO: warn if secret exists ask for confirmation
+          // force=true overwrites any existing secret, breaking integrations still
+          // using it. Confirming with the user first is tracked in #740.
           body: JSON.stringify({ status: appStatus })
         })
       )

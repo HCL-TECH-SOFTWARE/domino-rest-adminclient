@@ -430,7 +430,6 @@ const FormsContainer = () => {
       }
     }
     fetchForms();
-    //TODO
     // eslint-disable-next-line
   }, []); //NOSONAR
 

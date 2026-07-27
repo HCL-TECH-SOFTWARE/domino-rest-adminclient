@@ -28,24 +28,6 @@ const OptionList: React.FC<OptionListProps> = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate()
   
-  /* Themes are off for now
-  const [open, setOpen] = useState(false);
-  const history = useHistory();
-  const [setActiveTheme] = useState(theme);
-  const handleClick = () => {
-    setOpen(!open);
-  };
-  const gotoSettings = () => {
-    toggleMenu(false);
-    history.push('/settings/account');
-  };
-  const changeTheme = (skin: string) => {
-    dispatch(switchTheme(skin));
-    setActiveTheme(skin);
-    localStorage.setItem('theme', skin);
-    toggleMenu(false);
-  };
-  */
 
   const logoutUser = () => {
     dispatch(logout() as any);
