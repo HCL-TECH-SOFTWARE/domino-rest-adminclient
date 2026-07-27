@@ -2,20 +2,59 @@
 // Licensed under the Apache 2.0 License (https://www.apache.org/licenses/LICENSE-2.0.txt)
 
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { createRef, Ref, ref } from 'lit/directives/ref.js';
 import { getLogger } from '../../services/log-service.js';
 
 const log = getLogger('components/keep-monaco-editor');
 
-import * as monaco from 'monaco-editor';
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-import monacoStyles from 'monaco-editor/min/vs/editor/editor.main.css?inline';
+// Types only — `import type` erases at compile time, so naming Monaco's interfaces
+// throughout the class costs nothing at runtime.
+import type * as Monaco from 'monaco-editor';
 import { EDITOR_THEME_ID, EDITOR_TOKENS, buildEditorTheme } from '../../services/editor-theme.js';
 import { resolveWaColors } from '../../services/wa-color.js';
 import { resolveWaTypography } from '../../services/wa-typography.js';
+
+/**
+ * Monaco, its worker wrappers and its stylesheet, loaded on first use rather than at
+ * module scope.
+ *
+ * `KeepElements.tsx` re-exports this element, so a static `import * as monaco` put the
+ * whole editor — several MB of JS plus a 309 kB stylesheet — in the entry chunk for
+ * every session, including the majority that never open a Source tab.
+ *
+ * The promise is memoised, so a second editor on the page shares one download and
+ * resolves immediately.
+ */
+function fetchMonaco() {
+  return Promise.all([
+    import('monaco-editor'),
+    import('monaco-editor/esm/vs/editor/editor.worker?worker'),
+    import('monaco-editor/esm/vs/language/json/json.worker?worker'),
+    import('monaco-editor/esm/vs/language/typescript/ts.worker?worker'),
+    import('monaco-editor/min/vs/editor/editor.main.css?inline')
+  ]).then(([monaco, editorWorker, jsonWorker, tsWorker, styles]) => {
+    // Monaco reads `MonacoEnvironment` off `self` when it first spins up a worker,
+    // which cannot happen before an editor exists. Assigning it here — inside the
+    // memoised promise, before any caller gets the namespace — is therefore early
+    // enough, and it keeps the three worker wrappers out of the entry chunk too.
+    self.MonacoEnvironment = {
+      getWorker(_: unknown, label: string) {
+        if (label === 'json') return new jsonWorker.default();
+        if (label === 'javascript' || label === 'typescript') return new tsWorker.default();
+        return new editorWorker.default();
+      }
+    };
+    return { monaco, styles: styles.default };
+  });
+}
+
+let monacoBundle: ReturnType<typeof fetchMonaco> | undefined;
+
+function loadMonaco() {
+  monacoBundle ??= fetchMonaco();
+  return monacoBundle;
+}
 
 /**
  * Prettier, loaded on first use rather than at module scope.
@@ -48,14 +87,6 @@ function loadPrettier() {
   return prettierBundle;
 }
 
-self.MonacoEnvironment = {
-  getWorker(_: any, label: string) {
-    if (label === 'json') return new jsonWorker();
-    if (label === 'javascript' || label === 'typescript') return new tsWorker();
-    return new editorWorker();
-  }
-};
-
 @customElement('keep-monaco-editor')
 export default class MonacoEditor extends LitElement {
   static styles = css`
@@ -77,7 +108,9 @@ export default class MonacoEditor extends LitElement {
   @property({ type: Boolean }) readOnly = false;
   @property({ type: Boolean }) diffMode = false;
   @property({ type: String }) originalValue = '';
-  @property({ attribute: false }) completionProvider?: monaco.languages.CompletionItemProvider;
+  @property({ attribute: false }) completionProvider?: Monaco.languages.CompletionItemProvider;
+  /** Monaco's stylesheet, empty until the dynamic import lands. See `render()`. */
+  @state() private _monacoStyles = '';
   private _themeObserver?: MutationObserver;
   /**
    * Cache key from the last `_applyTheme()` call that did real work — see
@@ -85,13 +118,31 @@ export default class MonacoEditor extends LitElement {
    */
   private _themeKey?: string;
   private containerRef: Ref<HTMLDivElement> = createRef();
-  private editor?: monaco.editor.IStandaloneCodeEditor;
-  private diffEditor?: monaco.editor.IStandaloneDiffEditor;
-  private _originalModel?: monaco.editor.ITextModel;
-  private _modifiedModel?: monaco.editor.ITextModel;
+  /** The Monaco namespace, once loaded. Its presence is what gates every path below. */
+  private _monaco?: typeof Monaco;
+  /** `_initialise()`'s promise, awaited by `getUpdateComplete()`. */
+  private _ready?: Promise<void>;
+  private editor?: Monaco.editor.IStandaloneCodeEditor;
+  private diffEditor?: Monaco.editor.IStandaloneDiffEditor;
+  private _originalModel?: Monaco.editor.ITextModel;
+  private _modifiedModel?: Monaco.editor.ITextModel;
   private _suppressChange = false;
-  private _completionDisposable?: monaco.IDisposable;
+  private _completionDisposable?: Monaco.IDisposable;
   private _resizeObserver?: ResizeObserver;
+
+  /**
+   * Holds `updateComplete` open until the editor actually exists.
+   *
+   * Lit calls `firstUpdated()` but does not await it, so without this an awaited
+   * `updateComplete` would resolve while Monaco was still downloading — and every
+   * caller that reaches for `getValue()` or `focus()` straight after a render would
+   * see an element with no editor in it.
+   */
+  override async getUpdateComplete(): Promise<boolean> {
+    const complete = await super.getUpdateComplete();
+    await this._ready;
+    return complete;
+  }
 
   private async formatWithPrettier(code: string): Promise<string> {
     try {
@@ -128,8 +179,8 @@ export default class MonacoEditor extends LitElement {
     }
   }
 
-  private _buildStandardEditor(container: HTMLDivElement) {
-    const monacoTheme = this._applyTheme();
+  private _buildStandardEditor(monaco: typeof Monaco, container: HTMLDivElement) {
+    const monacoTheme = this._applyTheme(monaco);
 
     this.editor = monaco.editor.create(container, {
       value: this.value,
@@ -202,8 +253,8 @@ export default class MonacoEditor extends LitElement {
     });
   }
 
-  private _buildDiffEditor(container: HTMLDivElement) {
-    const monacoTheme = this._applyTheme();
+  private _buildDiffEditor(monaco: typeof Monaco, container: HTMLDivElement) {
+    const monacoTheme = this._applyTheme(monaco);
 
     this.diffEditor = monaco.editor.createDiffEditor(container, {
       readOnly: false, // modified pane stays editable
@@ -349,7 +400,7 @@ export default class MonacoEditor extends LitElement {
    *
    * @returns the theme id, for use as `theme` in the editor's construction options
    */
-  private _applyTheme(): string {
+  private _applyTheme(monaco: typeof Monaco): string {
     const key = this._themeCacheKey();
     if (key === this._themeKey) return EDITOR_THEME_ID;
     this._themeKey = key;
@@ -382,25 +433,51 @@ export default class MonacoEditor extends LitElement {
 
   private _rebuildEditor() {
     const container = this.containerRef.value;
-    if (!container) return;
+    const monaco = this._monaco;
+    if (!container || !monaco) return;
 
     this._teardown();
     if (this.diffMode) {
-      this._buildDiffEditor(container);
+      this._buildDiffEditor(monaco, container);
     } else {
-      this._buildStandardEditor(container);
+      this._buildStandardEditor(monaco, container);
     }
   }
 
   firstUpdated() {
+    // Kept synchronous so `_ready` is assigned before Lit resolves this update, which
+    // is what lets `getUpdateComplete()` above wait on it.
+    this._ready = this._initialise();
+  }
+
+  /**
+   * Downloads Monaco, then builds the editor and its observers against whatever the
+   * properties say *at that point* — property changes that arrive mid-download are
+   * absorbed, because `updated()` returns early until this has run.
+   */
+  private async _initialise() {
     const container = this.containerRef.value;
     if (!container) return;
 
-    if (this.diffMode) {
-      this._buildDiffEditor(container);
-    } else {
-      this._buildStandardEditor(container);
+    let bundle: Awaited<ReturnType<typeof loadMonaco>>;
+    try {
+      bundle = await loadMonaco();
+    } catch (err) {
+      log.error('Monaco failed to load; the editor will not render', err as Error);
+      return;
     }
+
+    // The element can be detached while the import is in flight. `disconnectedCallback`
+    // has already run its teardown by then, so building now would strand an editor and
+    // its workers with nothing left to dispose them.
+    if (!this.isConnected) return;
+
+    this._monaco = bundle.monaco;
+    // Schedules a re-render of the <style> block in `render()`. Monaco builds into the
+    // container below in the same task, so the stylesheet lands before the next paint.
+    this._monacoStyles = bundle.styles;
+
+    this._rebuildEditor();
 
     this._resizeObserver = new ResizeObserver(([entry]) => {
       if (this.diffMode && this.diffEditor) {
@@ -417,7 +494,7 @@ export default class MonacoEditor extends LitElement {
 
     // Set up theme observer to watch for theme changes
     this._themeObserver = new MutationObserver(() => {
-      this._applyTheme();
+      this._applyTheme(bundle.monaco);
     });
     this._themeObserver.observe(document.documentElement, {
       attributes: true,
@@ -425,7 +502,10 @@ export default class MonacoEditor extends LitElement {
     });
 
     if (this.completionProvider) {
-      this._completionDisposable = monaco.languages.registerCompletionItemProvider(this.language, this.completionProvider);
+      this._completionDisposable = bundle.monaco.languages.registerCompletionItemProvider(
+        this.language,
+        this.completionProvider
+      );
     }
 
     if (!this.diffMode) {
@@ -448,6 +528,16 @@ export default class MonacoEditor extends LitElement {
   }
 
   updated(changedProperties: Map<string, unknown>) {
+    const monaco = this._monaco;
+    // Nothing to drive until the dynamic import lands. Every branch below needs an
+    // editor that does not exist yet, and `_initialise()` builds from the current
+    // property values once it does — so changes arriving in the meantime are not lost.
+    //
+    // This is also why the first update no longer rebuilds: Lit's first
+    // `changedProperties` contains every declared property, `diffMode` included, so
+    // `updated()` used to tear down the editor `firstUpdated()` had just built.
+    if (!monaco) return;
+
     if (changedProperties.has('diffMode')) {
       this._rebuildEditor();
       return; // models already set inside _buildXxxEditor
@@ -568,7 +658,7 @@ export default class MonacoEditor extends LitElement {
   render() {
     return html`
       <style>
-        ${monacoStyles}
+        ${this._monacoStyles}
       </style>
       <div class="editor-container" ${ref(this.containerRef)}></div>
     `;

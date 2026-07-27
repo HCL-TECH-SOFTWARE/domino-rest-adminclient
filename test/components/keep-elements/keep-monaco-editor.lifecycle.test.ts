@@ -30,8 +30,14 @@ describe('keep-monaco-editor — real Monaco lifecycle', () => {
   let capture: { errors: unknown[]; restore: () => void };
   let errors: unknown[];
 
-  beforeAll(() => {
+  beforeAll(async () => {
     installMonacoDomStubs();
+    // #693 moved Monaco behind a dynamic import, so its ~4 s of module evaluation now
+    // happens on first mount rather than when this file is imported. Pay it here, once:
+    // the hook budget is 10 s, where a test's is 5 s and a loaded full-suite run tips
+    // the first mount over it. Ordering is a bonus — the stubs above are now guaranteed
+    // to be installed before Monaco evaluates, which a hoisted static import could not.
+    await import('monaco-editor');
     restoreRejectionHandlers = ignoreMonacoCancellations();
     // Monaco reports broken invariants as a process-level uncaught exception, not by
     // throwing at the call site — see captureMonacoErrors().
