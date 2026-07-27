@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
-import { convert2FieldType } from './functions';
+import { convert2FieldType } from '../../utils/field-types';
 import { Box } from '@mui/material';
 import { BlueSwitch, EncryptSignOptions } from '../../styles/CommonStyles';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
