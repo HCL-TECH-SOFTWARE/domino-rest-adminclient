@@ -70,15 +70,24 @@ describe('LoginPage without Material UI (#743)', () => {
     expect(offenders, `these still import MUI: ${offenders.join(', ')}`).toEqual([]);
   });
 
-  it('leaves exactly two CssBaseline mounts in the app', () => {
-    // Was three (App.tsx, HomeElement.tsx, LoginPage.tsx). Report 03 §6 step 5 removes the
-    // remaining two; App.tsx's is the next one to go, once the typography change that
-    // follows it has been decided (#705). Update this count when that lands.
+  it('leaves exactly one CssBaseline mount in the app', () => {
+    // Was three — App.tsx, HomeElement.tsx, LoginPage.tsx. LoginPage's went with the MUI
+    // removal and App.tsx's followed once it had no consumer left. HomeElement's is the
+    // last, and goes with the rest of the MUI theme layer (report 03 §6 step 5, #709).
     const mounts = sources('.')
       .filter(({ text }) => /<CssBaseline\s*\/>/.test(code(text)))
       .map(({ file }) => file)
       .sort();
-    expect(mounts).toEqual(['src/App.tsx', 'src/components/home/HomeElement.tsx']);
+    expect(mounts).toEqual(['src/components/home/HomeElement.tsx']);
+  });
+
+  it('leaves theme.ts with a single importer', () => {
+    // The MUI theme object itself. One importer left (HomeElement) means one ThemeProvider
+    // left; when this reaches zero, theme.ts can be deleted outright.
+    const importers = sources('.')
+      .filter(({ file, text }) => file !== 'src/theme.ts' && /from\s+'\.{1,2}(\/\.\.)*\/theme'/.test(code(text)))
+      .map(({ file }) => file);
+    expect(importers).toEqual(['src/components/home/HomeElement.tsx']);
   });
 
   it('renders the form panel and the background panel', async () => {

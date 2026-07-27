@@ -7,8 +7,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { useSelector, useDispatch } from 'react-redux';
 import LoginPage from './components/login/LoginPage';
 import Views from './Views';
@@ -21,16 +19,13 @@ import {
   setIdpLogin,
 } from './store/account/action';
 import PageLoading from './components/loaders/PageLoading';
-import { getTheme } from './store/styles/action';
 import { TokenProps } from './store/account/types';
-import theme from './theme';
 import CallbackPage from './components/login/CallbackPage';
 
 const App: React.FC = () => {
   const [open] = useState(false);
   const [valid, setValid] = useState(false);
   const dispatch = useDispatch();
-  const { themeMode } = useSelector((state: AppState) => state.styles);
 
   const { authenticated } = useSelector((state: AppState) => state.account);
 
@@ -70,25 +65,38 @@ const App: React.FC = () => {
     }
   }, [dispatch]);
 
-  const currentTheme = React.useMemo(
-    () => theme(authenticated, getTheme, themeMode),
-    [authenticated, themeMode]
-  );
-
-  return (
-    <ThemeProvider theme={currentTheme}>
-      <CssBaseline />
-      {valid ? (
-        <Router basename="/admin/ui">
-          <Routes>
-              <Route path='*' element={authenticated ? <HomeElement MainElement={Views} mainElementProps={{ open }} /> : <LoginPage />} />
-              <Route path='/callback' element={<CallbackPage/>}/>
-          </Routes>
-        </Router>
-      ) : (
-        <PageLoading message="loading page" />
-      )}
-    </ThemeProvider>
+  /*
+   * No <ThemeProvider>/<CssBaseline> here, deliberately (#743).
+   *
+   * They used to wrap this whole tree, but they were redundant everywhere except the login
+   * page: HomeElement mounts its own pair from the same `theme(authenticated, getTheme,
+   * themeMode)` expression, and every authenticated route — including /callback, which
+   * renders through HomeElement — sits under that one. PageLoading is pure Linaria. Once
+   * LoginPage stopped importing MUI, this pair had no consumer left.
+   *
+   * The document baseline they provided is not lost: WebAwesome's `native.css` (imported
+   * once in index.tsx) already sets `html { box-sizing: border-box; margin: 0 }`,
+   * `*, *::before, *::after { box-sizing: inherit }` and `body { margin: 0 }` with the same
+   * values. It lives in `@layer wa-native` and CssBaseline was unlayered, so MUI simply won
+   * until now. What does change on the login route is body typography and colour — see the
+   * PR for the measured before/after; the notable ones are `font-size` 16px -> 13.6px (WA's
+   * ramp scaled by `--wa-font-size-scale: 0.85` in keep-overrides.css, which every WA
+   * control on the page was already using) and `strong`/`b` 700 -> 600.
+   *
+   * This also drops App's `state.styles` subscription, so it no longer re-renders on a
+   * theme switch. HomeElement still has its own and still calls `applyTheme(themeMode)`.
+   *
+   * Report 03 §6 step 5; HomeElement's pair is the last one.
+   */
+  return valid ? (
+    <Router basename="/admin/ui">
+      <Routes>
+        <Route path='*' element={authenticated ? <HomeElement MainElement={Views} mainElementProps={{ open }} /> : <LoginPage />} />
+        <Route path='/callback' element={<CallbackPage/>}/>
+      </Routes>
+    </Router>
+  ) : (
+    <PageLoading message="loading page" />
   );
 };
 
