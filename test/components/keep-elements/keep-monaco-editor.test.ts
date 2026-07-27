@@ -645,28 +645,27 @@ describe('keep-monaco-editor', () => {
     expect(changes).toBe(0);
   });
 
-  // ─── known defects ────────────────────────────────────────────────────────────
+  // ─── first render ─────────────────────────────────────────────────────────────
   //
-  // These pin behaviour that is currently WRONG, so the cost is visible and so that
-  // fixing it produces a deliberate, failing signal here rather than a silent change.
+  // These three used to pin a double-build as a KNOWN DEFECT: Lit's first
+  // `changedProperties` contains every declared reactive property, `diffMode` included,
+  // so `updated()` — running immediately after `firstUpdated()`, in the same update —
+  // saw `changedProperties.has('diffMode')` and tore down the editor that had just been
+  // built.
   //
-  // Cause: Lit's first `changedProperties` contains every declared reactive property,
-  // including `diffMode`. `firstUpdated()` builds the editor and its observers, then
-  // `updated()` — which runs immediately after, in the same update — sees
-  // `changedProperties.has('diffMode')` and calls `_rebuildEditor()`.
-  //
-  // Suggested fix: guard the rebuild on `changedProperties.get('diffMode') !== undefined`
-  // (i.e. an actual transition), or skip it while `!this.hasUpdated`.
+  // Loading Monaco through a memoised dynamic import (#693) removed it. `_initialise()`
+  // now builds in a later task, and `updated()` returns early while `this._monaco` is
+  // unset, so there is no editor for the first update to discard. The assertions are
+  // inverted here rather than deleted, so a regression back to two builds still fails.
 
-  it('KNOWN DEFECT: constructs and immediately discards one editor on first render', async () => {
+  it('builds exactly one editor on first render', async () => {
     await mountLit<MonacoEditor>(TAG, { value: 'x', language: 'json' });
 
-    expect(monacoState.editors).toHaveLength(2);
-    expect(monacoState.editors[0]!.disposed).toBe(true);
-    expect(monacoState.editors[1]!.disposed).toBe(false);
+    expect(monacoState.editors).toHaveLength(1);
+    expect(monacoState.editors[0]!.disposed).toBe(false);
   });
 
-  it('KNOWN DEFECT: builds and discards two text models on a first render in diff mode', async () => {
+  it('builds exactly one diff editor and two models on a first render in diff mode', async () => {
     await mountLit<MonacoEditor>(TAG, {
       diffMode: true,
       value: 'modified',
@@ -674,12 +673,12 @@ describe('keep-monaco-editor', () => {
       language: 'json',
     });
 
-    expect(monacoState.diffEditors).toHaveLength(2);
-    expect(monacoState.models).toHaveLength(4);
-    expect(monacoState.models.slice(0, 2).every((m) => m.disposed)).toBe(true);
+    expect(monacoState.diffEditors).toHaveLength(1);
+    expect(monacoState.models).toHaveLength(2);
+    expect(monacoState.models.every((m) => m.disposed)).toBe(false);
   });
 
-  it('KNOWN DEFECT: leaves the ResizeObserver disconnected for the element\'s whole life', async () => {
+  it('leaves the ResizeObserver connected after first render', async () => {
     const observe = vi.fn();
     const disconnect = vi.fn();
     vi.stubGlobal(
@@ -693,10 +692,69 @@ describe('keep-monaco-editor', () => {
 
     await mountLit<MonacoEditor>(TAG, { language: 'json' });
 
-    // Created and observed once in firstUpdated(), then torn down by the rebuild in
-    // updated(). Nothing re-creates it, so the editor never relayouts on resize and the
-    // diff editor never switches out of side-by-side on a narrow container.
+    expect(observe).toHaveBeenCalledTimes(1);
+    expect(disconnect).not.toHaveBeenCalled();
+  });
+
+  it('KNOWN DEFECT: never re-observes the container after a diffMode toggle', async () => {
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe = observe;
+        unobserve() {}
+        disconnect = disconnect;
+      },
+    );
+
+    const el = await mountLit<MonacoEditor>(TAG, { language: 'json' });
+    el.diffMode = true;
+    await el.updateComplete;
+
+    // `_teardown()` disconnects the observer, and only `_initialise()` ever constructs
+    // one — so from the first toggle onwards the editor stops relaying out on resize and
+    // the diff editor stops leaving side-by-side on a narrow container.
+    //
+    // Narrowed but not fixed by #693: the observer now survives first render, where it
+    // previously died immediately. Moving the `observe()` into `_rebuildEditor()`, next
+    // to the editor it drives, would close it — deliberately left out of a bundle-size
+    // change.
     expect(observe).toHaveBeenCalledTimes(1);
     expect(disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  // ─── lazy loading ─────────────────────────────────────────────────────────────
+
+  it('holds updateComplete open until the editor exists', async () => {
+    // `firstUpdated()` is not awaited by Lit, so without the `getUpdateComplete()`
+    // override every caller that renders and then reaches for the editor would find
+    // nothing there.
+    const el = document.createElement(TAG) as MonacoEditor;
+    el.language = 'json';
+    document.body.appendChild(el);
+
+    await el.updateComplete;
+
+    expect(monacoState.editors).toHaveLength(1);
+    expect(el.getValue()).toBe('');
+  });
+
+  it('builds against the properties as they stand when the import lands', async () => {
+    // Changes arriving mid-download must not be lost: `updated()` cannot act on them
+    // (there is no editor yet), so `_initialise()` has to read the current values.
+    const el = document.createElement(TAG) as MonacoEditor;
+    el.language = 'json';
+    document.body.appendChild(el);
+
+    el.diffMode = true;
+    el.value = 'set while loading';
+    await el.updateComplete;
+
+    expect(monacoState.editors).toHaveLength(0);
+    expect(monacoState.diffEditors).toHaveLength(1);
+    // Through the models, as the other diff tests do: the fake's modified editor is not
+    // wired to its model the way real Monaco's is.
+    expect(liveModels()[1]!.getValue()).toBe('set while loading');
   });
 });
