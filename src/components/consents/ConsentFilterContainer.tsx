@@ -13,15 +13,27 @@ import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/Commo
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@linaria/react';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
 import {
   KeepButtonNeutral,
   KeepButtonYes,
   KeepCheckbox,
   KeepTooltip,
+  KeepInputDate,
 } from '../keep-elements/KeepElements';
+
+/**
+ * `<input type="date">` speaks ISO `YYYY-MM-DD` in *local* time, but `new Date('...')`
+ * parses that same string as **UTC** — which lands on the previous day anywhere west of
+ * Greenwich. Both helpers therefore go through the local Y/M/D components rather than
+ * through `toISOString()` or the `Date` string constructor.
+ */
+const dateValue = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const parseDateValue = (value: string, fallback: Date) => {
+  const [y, m, d] = value.split('-').map(Number);
+  return y && m && d ? new Date(y, m - 1, d) : fallback;
+};
 
 const Section = styled(Box)`
   padding-top: 10px;
@@ -155,7 +167,6 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
   return (
     <Drawer anchor="right" open={consentsDrawer} onClose={handleClickOpen}>
       <DrawerFormContainer className='w-35vw'>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
           <div className='flex flex-col p-20'>
             <div className='full-width flex justify-end'>
               <KeepTooltip content="Close" placement='bottom'>
@@ -215,7 +226,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                   className='small-text p-0'
                 />
               </RadioGroup>
-              {filterExp.expiration !== "All" && filterExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterExp.date)} onChange={e => setFilterExp({ expiration: filterExp.expiration, date: e ? e.toDate() : filterExp.date})} />}
+              {filterExp.expiration !== "All" && filterExp.expiration !== "None" && <KeepInputDate value={dateValue(filterExp.date)} onDateChange={(e: Event) => setFilterExp({ expiration: filterExp.expiration, date: parseDateValue((e as CustomEvent<{ value: string }>).detail.value, filterExp.date) })} />}
             </Section>
             <hr className='divider m-10' />
             <Section>
@@ -240,7 +251,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
                   className='small-text p-0'
                 />
               </RadioGroup>
-              {filterTokenExp.expiration !== "All" && filterTokenExp.expiration !== "None" && <DatePicker defaultValue={dayjs(filterTokenExp.date)} onChange={e => setFilterTokenExp({ expiration: filterTokenExp.expiration, date: e ? e.toDate() : filterTokenExp.date }) } />}
+              {filterTokenExp.expiration !== "All" && filterTokenExp.expiration !== "None" && <KeepInputDate value={dateValue(filterTokenExp.date)} onDateChange={(e: Event) => setFilterTokenExp({ expiration: filterTokenExp.expiration, date: parseDateValue((e as CustomEvent<{ value: string }>).detail.value, filterTokenExp.date) })} />}
             </Section>
             <hr className='divider' />
             <Section>
@@ -265,7 +276,6 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
               <KeepButtonYes onClick={handleClickShowResults} text='Show Results' />
             </ButtonsContainer>
           </div>
-        </LocalizationProvider>
       </DrawerFormContainer>
     </Drawer>
   );

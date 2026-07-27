@@ -12,8 +12,6 @@ import {
   LOGOUT,
   SET_LOGIN_ERROR,
   AUTHENTICATE,
-  SET_TOKEN,
-  RENEW_TOKEN,
   REMOVE_AUTH,
   SET_401_ERROR,
   SET_IDP_LOGIN,
@@ -32,7 +30,6 @@ const initialState: AccountState = {
   error: false,
   error401: false,
   errorMessage: '',
-  token: '',
   idpLogin: false,
   currentIdp: {
     name: '',
@@ -64,7 +61,6 @@ export default function accountReducer(
       return {
         ...state,
         authenticated: false,
-        token: '',
       };
     case AUTHENTICATE:
       return {
@@ -80,7 +76,6 @@ export default function accountReducer(
       return {
         ...state,
         authenticated: false,
-        token: '',
       };
     case SET_LOGIN_ERROR:
       return {
@@ -101,16 +96,6 @@ export default function accountReducer(
       return {
         ...state,
         errorMessage: action.payload,
-      };
-    case SET_TOKEN:
-      return {
-        ...state,
-        token: action.payload,
-      };
-    case RENEW_TOKEN:
-      return {
-        ...state,
-        token: action.payload,
       };
     default:
       return state;

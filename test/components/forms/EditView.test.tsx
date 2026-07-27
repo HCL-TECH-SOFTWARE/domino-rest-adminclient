@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { configureStore } from '@reduxjs/toolkit';
-import { Provider } from 'react-redux';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import EditViewDialog from '../../../src/components/forms/EditView';
 import * as databasesActions from '../../../src/store/databases/action';
 
@@ -93,16 +92,6 @@ vi.mock('../../../src/components/dialogs/UnsavedChangesDialog', () => ({
 
 // ---- Helpers ----
 
-function createMockStore() {
-  return configureStore({
-    reducer: {
-      databases: (state = { folders: [], scopes: [] }) => state,
-      loading: (state = { loading: { status: false } }) => state,
-      styles: (state = { themeMode: 'light' }) => state,
-    },
-  });
-}
-
 function makeSchemaData(viewColumns?: any[]): any {
   const views = [
     {
@@ -141,7 +130,6 @@ function renderEditView(overrides: Partial<React.ComponentProps<typeof EditViewD
   const handleClose = vi.fn();
   const setOpen = vi.fn();
   const setSchemaData = vi.fn();
-  const store = createMockStore();
 
   const props = {
     open: true,
@@ -156,13 +144,9 @@ function renderEditView(overrides: Partial<React.ComponentProps<typeof EditViewD
     ...overrides,
   };
 
-  const utils = render(
-    <Provider store={store}>
-      <EditViewDialog {...props} />
-    </Provider>
-  );
+  const utils = renderWithProviders(<EditViewDialog {...props} />);
 
-  return { ...utils, handleClose, setOpen, setSchemaData, store, props };
+  return { ...utils, handleClose, setOpen, setSchemaData, props };
 }
 
 // ---- Tests ----

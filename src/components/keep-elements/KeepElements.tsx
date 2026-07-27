@@ -13,6 +13,7 @@ import DialogContent from './keep-dialog-content';
 import DialogActions from './keep-dialog-actions';
 import Button from './keep-button';
 import InputText from './keep-input-text';
+import InputDate from './keep-input-date';
 import InputPassword from './keep-input-password';
 import Dropdown from './keep-dropdown';
 import AppStatus from './keep-app-status';
@@ -103,6 +104,13 @@ export const KeepInputText = createComponent({
   tagName: 'keep-input-text',
   elementClass: InputText,
   react: React
+});
+
+export const KeepInputDate = createComponent({
+  tagName: 'keep-input-date',
+  elementClass: InputDate,
+  react: React,
+  events: { onDateChange: 'date-change' },
 });
 
 export const KeepInputPassword = createComponent({

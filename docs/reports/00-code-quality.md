@@ -32,13 +32,23 @@ is now closed.**
 
 ### Two corrections to the previous revision
 
-**P0-2 was not a regression, and there is nothing to fix in this repo.** The previous
-revision called the `'disabledContent-Security-Policy'` key in `vite.config.mts` a
-security regression. That header configures the **Vite dev server only**. The
-**production CSP is served from `config.json`**, outside this repository. Renaming the
-key would change nothing in production and would only re-impose a wide-open policy on
-localhost. The item is withdrawn rather than deferred; report 03's CSP prerequisites are
-re-framed accordingly.
+**P0-2 was not a regression, but the reason given for withdrawing it was half wrong.** The
+previous revision called the `'disabledContent-Security-Policy'` key in `vite.config.mts` a
+security regression. That part of the withdrawal stands: the key configures the **Vite dev
+server only**, so renaming it would change nothing in production and would only re-impose a
+wide-open policy on localhost.
+
+The other half — "the production CSP is served from `config.json`, **outside this
+repository**" — is **false**. `config.json` is **`jar/config/config.json`, tracked in this
+repo**, and `pom.xml` packages the whole `jar/` directory straight into the shipped artifact
+(`<resource><directory>jar</directory></resource>`, commented *"Direct into the JAR"*). Its
+history is full of CSP edits made here — `80c4201 Remove unsafe-inline for script-src`,
+`079175b Update CSP to add worker-src and include blob`, `81c0335 Update CSP for styles`,
+`b06a4f4 Remove unsafe-hashes and sha keyword on style-src-elem`.
+
+So P0-2 stays withdrawn **as originally worded** (no CSP is sent — wrong; one is sent, from
+this repo), but "no repo change is possible" was never true. The production policy is
+editable here, and report 03 §5 is now a work item rather than a memo. See #685.
 
 **P0-9 was worse than described, in an instructive way.** The report said the base path
 was "pinned to a version that is no longer installed". Reading WebAwesome 3.10's source,
@@ -116,7 +126,7 @@ Status legend: 🔴 open & urgent · 🟡 open, partially addressed · ✅ done 
 | <a id="p0-8"></a>P0-8 | ✅ **DONE** | ~~Coverage ratchet breached~~ | `vitest.config.ts` thresholds | `keep-monaco-editor.ts` joined `keep-elements/` untested, dragging the directory to 60.3 % against its 70 % gate. | `keep-monaco-editor.test.ts` added (#668). Directory is now **84.2 %** lines. Thresholds unchanged. See report 01 for the two-suite strategy that emerged here. | — |
 | <a id="p0-9"></a>P0-9 | ✅ **DONE** | ~~WebAwesome base path pinned to an uninstalled version~~ | was `src/index.tsx:19` and `keep-source.ts:341` | Both calls were **inert**: in WA 3.x `getBasePath()` feeds only the autoloader, and this app imports each of the 18 components it uses explicitly. Being inert is how the skew survived a major upgrade. Worse than reported — `index.tsx` passed a *file* where a directory belongs, and `keep-source.ts` mutated the global from a **component constructor**. | Both deleted; nothing left to point at. Guarded by two source scans in `icon-library.test.ts` (no `webawesome@x.y.z` literal, no `setBasePath(` call), verified against a deliberate reintroduction. | — |
 | <a id="p0-10"></a>P0-10 | ✅ **DONE** | ~~Runtime code imports a devDependency~~ | `keep-monaco-editor.ts` | `prettier/standalone` + 2 plugins imported at module scope while `prettier` sat in `devDependencies` — any `npm ci --omit=dev` breaks the build. | Moved to `dependencies` **and** switched to a memoised dynamic `import()`, since it is only reached when `language === 'javascript'`. Entry chunk −614.87 kB (−8.9 %); prettier splits into `babel` 316.53 / `estree` 210.43 / `standalone` 81.05 kB, on demand. | — |
-| P0-2 | ➖ **WITHDRAWN** | ~~CSP is not sent at all~~ | `vite.config.mts:29` | **The finding was wrong.** That header configures the **Vite dev server only**; the **production CSP is served from `config.json`**, outside this repository. Renaming the key would change nothing in production and would re-impose a wide-open policy on localhost. | No repo change. Any CSP tightening belongs in `config.json`; report 03 §5's `style-src-attr` requirement is a note for *that* file, not a blocker here. | — |
+| P0-2 | ➖ **WITHDRAWN** (as worded) | ~~CSP is not sent at all~~ | `vite.config.mts:29`, `jar/config/config.json` | **The finding was wrong:** a CSP *is* sent. The `vite.config.mts` key configures the **Vite dev server only**, so renaming it changes nothing in production. **But the correction was also wrong** to say the production CSP lives outside this repo — it is `jar/config/config.json`, tracked here and packaged into the JAR by `pom.xml`. | CSP tightening is a **real in-repo work item**, tracked as **#685**. The live policy already sets `style-src-attr 'none'` while 22 inline `style="…"` attributes ship in 12 files — resolve that first. | S |
 
 ### P1 — Maintainability
 
@@ -146,7 +156,7 @@ Status legend: 🔴 open & urgent · 🟡 open, partially addressed · ✅ done 
 | P2-8 | 🟡 improved | **Mixed / redundant dependencies** | `package.json` (32 deps, 17 devDeps) | `@mui/lab` **removed** ✅. `@emotion/react` + `@emotion/styled` retained (MUI peer; **0** direct imports, verified). `prettier` is now correctly a `dependency` (P0-10). Worth watching: `typescript@7.0.2`, `immer@11.1.15`, `monaco-editor@0.55.1` as a direct dependency, `@fortawesome/fontawesome-free@7.3.1` + two `@fontsource-variable` fonts. | Keep `@emotion` only as the MUI peer; converge styling on Linaria + WA tokens (report 03). Delete the dead `@monaco-editor/*` pair (P2-9). | M |
 | <a id="p2-9"></a>P2-9 | 🔴 **actionable now** | **Two dead dependencies + an obsolete script** | `package.json`: `@monaco-editor/loader` ^1.7.0, `@monaco-editor/react` ^4.8.0-rc.3, and the `disabledpostinstall` script | The previous revision said to "verify the running editor still resolves its assets" because `FormsContainer.tsx` still used `@monaco-editor/react`. **#669 completed that swap**: both packages now have **zero imports in `src`** (the only textual match is a comment inside `keep-monaco-editor.ts`), and the `postinstall` step that copied `monaco-editor/min/vs` for the AMD loader is definitively obsolete. | Delete both dependencies and the `disabledpostinstall` script. No consumer remains — this is now a clean removal rather than a judgement call. | **S** |
 | <a id="p2-10"></a>P2-10 | 🟡 unchanged | **10 high-severity `npm audit` findings** (0 critical) | `@linaria/react` → `@wyw-in-js/*` → `minimatch` → `brace-expansion` (build-time DoS); `react-router` (RSC-mode CSRF bypass) | Build-time chain is not browser-reachable; the `react-router` advisory is runtime but this app does not use RSC mode. ⚠️ **Do not compare this to the GitHub security tab** — Dependabot scans `main`, which is 80 commits behind, and reports 2 criticals (`happy-dom@10.8.0`) that `new_code` has already resolved to `20.11.1`. | Bump `@wyw-in-js/vite` when a patched `minimatch` lands; track the `react-router` advisory — report 04 removes `react-router-dom` entirely, so a bump may be throwaway. See report 05. | S–M |
-| <a id="p2-11"></a>P2-11 | 🟡 **NEW** | **`npm run build` mutates a tracked source file** | `updateBuildVersion.js`, run via `prebuild`; rewrites `index.html` | It does not merely stamp the timestamp — it collapses the doctype/`<html>`/`<head>` onto one line, strips the self-closing slashes from every void element, and drops the trailing newline. Every build leaves the working tree dirty, which invites an unrelated reformat into the next commit (this happened once during #673 and had to be backed out). | Write the stamped copy to `dist/` instead of rewriting the source, or restrict the script to the single `content=` attribute it actually needs to change. | S |
+| <a id="p2-11"></a>P2-11 | ✅ **DONE** (#676) | ~~**`npm run build` mutates a tracked source file**~~ | `vite.config.mts` (`stampBuildVersion()`); `updateBuildVersion.js` deleted | The JSDOM round-trip that reformatted `index.html` on every build is gone. A `transformIndexHtml` plugin injects the `admin-ui-daily-build-version` meta tag into the *output* instead, in dev and build alike, from the same `REACT_APP_ADMIN_UI_BUILD_VERSION`-or-timestamp source as before. `index.html` is byte-identical after a build (verified by hash) and has been restored to readable formatting. | Neither option originally listed was quite right: writing to `dist/` cannot work, because Vite regenerates `dist/index.html` from the source entry. | S |
 
 ---
 
@@ -217,7 +227,8 @@ methods were not identical across revisions, so treat small deltas as noise.
   outstanding after #669 converted the source tree's.
 - **Report 03** — `CommonStyles.tsx` breakup (P1-4), styling-system convergence (P2-8),
   the icon system, and the new `theme-service` / WA-token-resolution services. Its CSP
-  section is re-framed: the production policy lives in `config.json`, not in this repo.
+  section is re-framed: the production policy lives in `jar/config/config.json` — in this
+  repo, and editable here (#685).
 - **Report 04** — Redux modernization (P1-2), bundle/code-splitting (P2-3, now moving),
   and the completed Monaco swap that makes P2-9 a clean deletion.
 - **Report 05** — Dependabot triage, and the `main`-vs-`new_code` branch skew that makes

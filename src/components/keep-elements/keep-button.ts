@@ -11,6 +11,19 @@ import { FA_LIBRARY } from '../../services/icon-library';
  */
 @customElement('keep-button')
 export default class Button extends KeepElement {
+  /*
+   * No dark-mode override in these styles, deliberately (#682).
+   *
+   * There was one, guarded by `:host([data-theme='dark'])`. That selector requires the
+   * attribute on the keep-button element itself, and nothing has ever set it —
+   * `theme-service.ts` writes `document.body.dataset.theme`, and no consumer passes
+   * `data-theme` down. So the rule never matched: its styling has never rendered once.
+   *
+   * Removed rather than repaired. Switching it to the `:host-context(...)` form the other
+   * themed elements use would turn on never-before-seen styling as a side effect of a bug
+   * fix. Re-add it deliberately, with that selector, if the outlined-button dark treatment
+   * is wanted. Guarded by `test/components/keep-elements/theme-selectors.test.ts`.
+   */
   static styles = [
     css`
       :host {
@@ -19,13 +32,6 @@ export default class Button extends KeepElement {
       }
       wa-button {
         width: var(--keep-button-width, auto);
-      }
-      :host([data-theme='dark']) wa-button[appearance='outlined']::part(base) {
-        --wa-color-brand-50: #f4e9ff;
-        --wa-color-brand-border-loud: #f4e9ff;
-        --wa-color-brand-fill-loud: #f4e9ff;
-        border-color: #f4e9ff !important;
-        color: #f4e9ff !important;
       }
     `,
   ];

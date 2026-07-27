@@ -1,10 +1,38 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import wyw from '@wyw-in-js/vite';
+
+/**
+ * Injects `<meta name="admin-ui-daily-build-version">` into the served/built HTML.
+ *
+ * This replaces the old `prebuild` step (`updateBuildVersion.js`), which rewrote the
+ * *tracked* `index.html` in place by round-tripping it through JSDOM — so every build
+ * reformatted the whole file (collapsed the doctype, stripped every self-closing slash,
+ * dropped the trailing newline) and left the working tree dirty. `transformIndexHtml`
+ * stamps the output instead, and the source file is never touched.
+ *
+ * Runs in dev too, so `Footer.tsx` and `LoginPage.tsx` — the two readers — see a value
+ * either way. Same source of truth as before: the CI-provided run number, falling back
+ * to the build timestamp.
+ */
+function stampBuildVersion(): Plugin {
+  const content = process.env.REACT_APP_ADMIN_UI_BUILD_VERSION || new Date().toISOString();
+  return {
+    name: 'keep-stamp-build-version',
+    transformIndexHtml: () => [
+      {
+        tag: 'meta',
+        attrs: { name: 'admin-ui-daily-build-version', content },
+        injectTo: 'head',
+      },
+    ],
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    stampBuildVersion(),
     wyw({
       include: ['**/*.{ts,tsx}']
     }),
