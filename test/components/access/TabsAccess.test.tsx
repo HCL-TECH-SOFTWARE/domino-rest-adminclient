@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import { configureStore } from '@reduxjs/toolkit';
-import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import TabsAccess from '../../../src/components/access/TabsAccess';
 import * as databasesActions from '../../../src/store/databases/action';
 
@@ -140,16 +138,6 @@ vi.mock('../../../src/store/styles/action', () => ({
 
 // ---- Helpers ----
 
-function createMockStore() {
-  return configureStore({
-    reducer: {
-      databases: (state = { scopes: [], newForm: { enabled: false } }) => state,
-      styles: (state = { themeMode: 'light' }) => state,
-      dialog: (state = { deleteDialogVisible: false }) => state,
-    },
-  });
-}
-
 function makeMode(overrides: any = {}) {
   return {
     modeName: 'default',
@@ -221,32 +209,30 @@ function renderTabsAccess(options: RenderOptions = {}) {
   const saveRef = { current: vi.fn(() => Promise.resolve()) };
   const postSaveActionRef = { current: null as 'add' | 'clone' | null };
 
-  const store = createMockStore();
-
-  const utils = render(
-    <Provider store={store}>
-      <MemoryRouter initialEntries={['/schema/test.nsf/testschema/TestForm']}>
-        <TabsAccess
-          state={state}
-          width={100}
-          modes={modes}
-          top={0}
-          currentModeIndex={currentModeIndex}
-          setPageIndex={setPageIndex}
-          setCurrentModeIndex={setCurrentModeIndex}
-          remove={vi.fn()}
-          update={vi.fn()}
-          addField={vi.fn(() => '')}
-          schemaData={makeSchemaData()}
-          setSchemaData={vi.fn()}
-          fieldIndex={0}
-          setFieldIndex={vi.fn()}
-          setHasUnsavedChanges={setHasUnsavedChanges}
-          saveRef={saveRef}
-          postSaveActionRef={postSaveActionRef}
-        />
-      </MemoryRouter>
-    </Provider>
+  const utils = renderWithProviders(
+    <TabsAccess
+      state={state}
+      width={100}
+      modes={modes}
+      top={0}
+      currentModeIndex={currentModeIndex}
+      setPageIndex={setPageIndex}
+      setCurrentModeIndex={setCurrentModeIndex}
+      remove={vi.fn()}
+      update={vi.fn()}
+      addField={vi.fn(() => '')}
+      schemaData={makeSchemaData()}
+      setSchemaData={vi.fn()}
+      fieldIndex={0}
+      setFieldIndex={vi.fn()}
+      setHasUnsavedChanges={setHasUnsavedChanges}
+      saveRef={saveRef}
+      postSaveActionRef={postSaveActionRef}
+    />,
+    {
+      route: '/schema/test.nsf/testschema/TestForm',
+      preloadedState: { databases: { scopes: [], newForm: { enabled: false } } },
+    },
   );
 
   return {
@@ -256,7 +242,6 @@ function renderTabsAccess(options: RenderOptions = {}) {
     setCurrentModeIndex,
     saveRef,
     postSaveActionRef,
-    store,
   };
 }
 
