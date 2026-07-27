@@ -1895,9 +1895,9 @@ body[data-theme="dark"] .add-import-svg-icon {
 }
 
 .login-castle-bg {
-    width: 40%;
-    flex-basis: 44%;
-    max-width: 40%;
+    /* Width comes from the grid column in LoginPage's LoginLayout. The width/flex-basis/
+       max-width trio this replaces sized a flex child of the old MUI <Grid container>; as a
+       grid item those percentages would resolve against the column, not the viewport. */
     height: 100vh;
     background-color: light-dark(#fafafa, #212121);
     /* Relative, so Vite rewrites it to the emitted asset URL. The absolute
