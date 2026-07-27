@@ -187,20 +187,41 @@ const LoginLayout = styled.div`
 `
 
 /**
+ * Holds the theme toggle in the page corner, outside the grid.
+ *
+ * It has to be its own out-of-flow box. The toggle is wrapped in a `<keep-tooltip>`, which
+ * is a real element and would otherwise be auto-placed into the first grid cell — pushing
+ * the form panel into column 2 and the background image onto a second row. That is exactly
+ * what happened when this layout first landed: under the previous MUI `<Grid container>`
+ * the wrapper was a *flex* item and collapsed to zero width, because its only child is
+ * absolutely positioned, so it was invisible and easy to miss. Grid gives it a cell.
+ *
+ * `position: absolute` here rather than on the button, so the tooltip element goes
+ * out of flow with it.
+ */
+const ThemeToggleSlot = styled.div`
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+`
+
+/**
  * The form column. Was `<Grid component={Paper} elevation={6} square>`.
  *
  * The shadow is MUI's elevation-6 value, kept verbatim so the panel edge still reads the
  * same against the background image. #708 should replace it with a `--wa-shadow-*` token.
  *
- * Dropping `Paper` also settles a cascade race that had been suppressing dark mode here.
- * `theme.ts` sets `MuiPaper.styleOverrides.root.backgroundColor` from
- * `getTheme('default').secondary` — the literal `'white'` — and because Emotion injects at
- * runtime it landed after `styles.css` and won at equal specificity, so
- * `.login-page-grid`'s own `background-color: var(--body-color)` never applied. In light
- * mode the two agree (both `#fff`). In dark mode they do not: `--body-color` is
- * `light-dark(#fff, #181825)` while `theme.ts` deliberately uses the *light* palette for an
- * unauthenticated page (`authenticated ? getTheme(themeMode) : getTheme('default')`), so
- * the panel stayed white with dark text around it. It now follows `--body-color`.
+ * Dropping `Paper` also changes which rule paints the panel. Three used to compete for it:
+ *
+ *   theme.ts       MuiPaper.styleOverrides.root.backgroundColor  'white'   (Emotion, no !important)
+ *   dark-mode.css  .MuiPaper-root { background-color: light-dark(#fff, #252535) !important }
+ *   styles.css     .login-page-grid { background-color: var(--body-color) }
+ *
+ * `!important` wins, so the panel was `#fff` in light mode and `#252535` in dark. Without
+ * the `MuiPaper-root` class only `.login-page-grid` applies, i.e. `--body-color`, which is
+ * `light-dark(#fff, #181825)`. Light mode is therefore unchanged and dark mode is slightly
+ * darker, now following the app's own token instead of an MUI-scoped override.
  */
 const FormPanel = styled.div`
   box-shadow:
@@ -216,11 +237,8 @@ const CastlePanel = styled.div`
   }
 `
 
+/* Positioning lives on ThemeToggleSlot; this is just the round button. */
 const LoginThemeToggle = styled.button`
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
   background: light-dark(rgba(255,255,255,0.7), rgba(30,30,46,0.7));
   border: 1px solid light-dark(#ccc, #555);
   border-radius: 50%;
@@ -593,11 +611,13 @@ const LoginPage = () => {
 
   return (
     <LoginLayout>
-      <KeepTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
-        <LoginThemeToggle onClick={toggleTheme}>
-          {isDark ? <FiMoon className='huge-text' /> : <FiSun className='huge-text' />}
-        </LoginThemeToggle>
-      </KeepTooltip>
+      <ThemeToggleSlot>
+        <KeepTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
+          <LoginThemeToggle onClick={toggleTheme}>
+            {isDark ? <FiMoon className='huge-text' /> : <FiSun className='huge-text' />}
+          </LoginThemeToggle>
+        </KeepTooltip>
+      </ThemeToggleSlot>
       <FormPanel className='login-page-grid'>
         <DivPaper>
           <KeepLogoContainer>

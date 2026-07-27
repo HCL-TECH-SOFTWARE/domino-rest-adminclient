@@ -96,6 +96,37 @@ describe('LoginPage without Material UI (#743)', () => {
     expect(document.querySelector('.login-castle-bg')).not.toBeNull();
   });
 
+  it('never makes the theme toggle a direct child of the grid', async () => {
+    // The regression this exists for. `<keep-tooltip>` — the theme toggle's wrapper — was a
+    // direct child of the layout, so `grid-template-columns: 60% 40%` auto-placed *it* into
+    // cell one, pushing the form panel into column two and the background image onto a
+    // second row. Under the previous MUI `<Grid container>` it was invisible: as a flex item
+    // the wrapper collapsed to zero width, because its only child is absolutely positioned.
+    //
+    // It now sits inside ThemeToggleSlot, which is `position: absolute` and therefore not a
+    // grid item at all. jsdom cannot check that — `css: false`, and no layout engine — so
+    // this asserts the structural precondition instead: a `keep-tooltip` parented directly
+    // by the layout is a bug whatever the CSS says. The rendered result needs a browser.
+    await renderPage();
+    const layout = document.querySelector('.login-page-grid')!.parentElement!;
+    const tooltip = document.querySelector('keep-tooltip');
+
+    expect(tooltip).not.toBeNull();
+    expect(layout.contains(tooltip!)).toBe(true);
+    expect(tooltip!.parentElement).not.toBe(layout);
+  });
+
+  it('orders the form panel before the background panel', async () => {
+    await renderPage();
+    const layout = document.querySelector('.login-page-grid')!.parentElement!;
+    const panels = [...layout.children].filter((el) => /login-(page-grid|castle-bg)/.test(el.className));
+
+    expect(panels.map((el) => el.className.split(' ').find((c) => c.startsWith('login-')))).toEqual([
+      'login-page-grid',
+      'login-castle-bg',
+    ]);
+  });
+
   it('always renders the background panel, leaving the breakpoint to CSS', async () => {
     // It used to be gated on `useMediaQuery('(max-width:768px)')`, so the page re-rendered
     // on resize and the panel left the DOM entirely. It is now hidden by a media query.
