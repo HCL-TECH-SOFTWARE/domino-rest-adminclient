@@ -15,7 +15,7 @@ import appIcons from '../../styles/app-icons';
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { KeepAutocomplete, KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
+import { KeepAutocomplete, KeepButton } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 
 interface AddImportDialogProps {
@@ -395,8 +395,8 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       </div>
       <hr className='divider' />
       <div className='dialog-actions pr-30 pl-30 pb-30'>
-        <KeepButtonNeutral onClick={handleClickBack} text='Back' />
-        <KeepButtonYes onClick={handleClickSaveSchema} text='Save Schema' />
+        <KeepButton variant="neutral" appearance="outlined" onClick={handleClickBack}>Back</KeepButton>
+        <KeepButton onClick={handleClickSaveSchema}>Save Schema</KeepButton>
       </div>
     </>
   )

@@ -27,12 +27,7 @@ import FormsTable from "./FormsTable";
 import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import {
-  KeepButton,
-  KeepButtonNeutral,
-  KeepButtonYes,
-  KeepSwitch
-} from "../keep-elements/KeepElements";
+import { KeepButton, KeepSwitch } from "../keep-elements/KeepElements";
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -337,18 +332,14 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           />
         </Box>
         <ButtonsPanel className='flex justify-start items-center gap-10 p-0 m-0'>
-          <KeepButtonNeutral
+          <KeepButton variant="neutral" appearance="outlined"
             onClick={() => {
               setCreateFormOpen(false)
               setValue("")
               dispatch(addForm(false) as any)
             }}
-            text='Cancel'
-          />
-          <KeepButtonYes
-            onClick={handleClickCreateForm}
-            text='Create'
-          />
+          >Cancel</KeepButton>
+          <KeepButton onClick={handleClickCreateForm}>Create</KeepButton>
         </ButtonsPanel>
       </CreateFormDialogContainer>
       <FormsTable
@@ -380,8 +371,10 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           </text>
         </div>
         <div className='dialog-actions'>
-          <KeepButtonNeutral onClick={() => {setResetAllForms(false)}} text='No' />
-          <KeepButtonYes onClick={handleDeactivateAll} text='Yes' />
+          <KeepButton variant="neutral" appearance="outlined"
+            onClick={() => {setResetAllForms(false)}}
+          >No</KeepButton>
+          <KeepButton onClick={handleDeactivateAll}>Yes</KeepButton>
         </div>
       </dialog>
     </>

@@ -27,7 +27,7 @@ import { Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButtonNeutral, KeepButtonYes, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 
 interface DetailsSectionProps {
   dbName: string;
@@ -666,8 +666,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
           />
         </div>
         <div className='dialog-actions pr-30 pl-30'>
-          <KeepButtonNeutral onClick={handleClickCloseDetails} text='Cancel' />
-          <KeepButtonYes onClick={handleClickSave} text='Save' />
+          <KeepButton variant="neutral" appearance="outlined" onClick={handleClickCloseDetails}>Cancel</KeepButton>
+          <KeepButton onClick={handleClickSave}>Save</KeepButton>
         </div>
       </dialog>
       <dialog ref={discardRef} className='dialog'>
@@ -679,8 +679,10 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
           <text className='dialog-content-text'>Are you sure you want to discard the changes you made?</text>
         </div>
         <div className='dialog-actions'>
-          <KeepButtonNeutral text='No' onClick={() => {setDiscardDialog(false)}} />
-          <KeepButtonYes text='Yes' onClick={clearEdits} />
+          <KeepButton variant="neutral" appearance="outlined"
+            onClick={() => {setDiscardDialog(false)}}
+          >No</KeepButton>
+          <KeepButton onClick={clearEdits}>Yes</KeepButton>
         </div>
       </dialog>
     </div>

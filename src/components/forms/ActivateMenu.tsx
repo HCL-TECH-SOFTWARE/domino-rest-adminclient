@@ -15,7 +15,7 @@ import { Database, FORMS_ERROR } from '../../store/databases/types';
 import { deleteForm } from '../../store/databases/action';
 import { BsThreeDots } from "react-icons/bs";
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
+import { KeepButton } from '../keep-elements/KeepElements';
 
 interface ActivateMenuProps {
   form: any,
@@ -135,8 +135,8 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, schemaData, setSchema
           </text>
         </div>
         <div className='dialog-actions'>
-          <KeepButtonNeutral text='No' onClick={() => {setResetForm(false)}} />
-          <KeepButtonYes text='Yes' onClick={handleConfirmDeactivate} />
+          <KeepButton variant="neutral" appearance="outlined" onClick={() => {setResetForm(false)}}>No</KeepButton>
+          <KeepButton onClick={handleConfirmDeactivate}>Yes</KeepButton>
         </div>
       </dialog>
     </div>

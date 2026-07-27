@@ -5,9 +5,6 @@ import SourceTree from './keep-source';
 import SourceContents from './keep-source-header';
 import TextForm from './keep-textform';
 import TextFormArray from './keep-textform-array';
-import ButtonYes from './keep-button-yes';
-import ButtonNo from './keep-button-no';
-import ButtonNeutral from './keep-button-neutral';
 import DialogHeader from './keep-dialog-header';
 import DialogContent from './keep-dialog-content';
 import DialogActions from './keep-dialog-actions';
@@ -58,23 +55,8 @@ export const KeepTextformArray = createComponent({
   react: React
 });
 
-export const KeepButtonYes = createComponent({
-  tagName: 'keep-button-yes',
-  elementClass: ButtonYes,
-  react: React
-});
 
-export const KeepButtonNo = createComponent({
-  tagName: 'keep-button-no',
-  elementClass: ButtonNo,
-  react: React
-});
 
-export const KeepButtonNeutral = createComponent({
-  tagName: 'keep-button-neutral',
-  elementClass: ButtonNeutral,
-  react: React
-});
 
 export const KeepDialogContent = createComponent({
   tagName: 'keep-dialog-content',

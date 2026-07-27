@@ -15,7 +15,7 @@ import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
 import { toggleAlert } from '../../store/alerts/action';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButtonNeutral, KeepButtonYes, KeepCheckbox, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepButton, KeepCheckbox, KeepTooltip } from '../keep-elements/KeepElements';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -360,8 +360,8 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
           <p className='dialog-content-text'>on this mode?</p>
         </div>
         <div className='dialog-actions'>
-          <KeepButtonNeutral onClick={handleCloseDialog} text='Cancel' />
-          <KeepButtonYes onClick={handleBatchDelete} text='OK' autoFocus />
+          <KeepButton variant="neutral" appearance="outlined" onClick={handleCloseDialog}>Cancel</KeepButton>
+          <KeepButton onClick={handleBatchDelete} autoFocus>OK</KeepButton>
         </div>
       </dialog>
     </div>

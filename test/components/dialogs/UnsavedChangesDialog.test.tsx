@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import UnsavedChangesDialog from '../../../src/components/dialogs/UnsavedChangesDialog';
 
+/**
+ * All three actions are now the same `keep-button` element (#701), told apart by their
+ * label rather than by three different tag names. Selecting on the label is also closer
+ * to what a user actually distinguishes.
+ */
+const button = (label: string) =>
+  [...document.querySelectorAll('keep-button')].find(
+    (b) => b.textContent?.trim() === label,
+  ) as HTMLElement | undefined;
+
 describe('UnsavedChangesDialog', () => {
   const defaultProps = {
     open: true,
@@ -21,9 +31,14 @@ describe('UnsavedChangesDialog', () => {
     expect(
       screen.getByText(/Changes have been made/)
     ).toBeInTheDocument();
-    expect(document.querySelector('keep-button-yes')).toBeInTheDocument();
-    expect(document.querySelector('keep-button-no')).toBeInTheDocument();
-    expect(document.querySelector('keep-button-neutral')).toBeInTheDocument();
+    expect(button('Yes')).toBeInTheDocument();
+    expect(button('No')).toBeInTheDocument();
+    expect(button('Cancel')).toBeInTheDocument();
+    // The variants carry the visual distinction now that the tag is shared. They are
+    // read as properties, not attributes: `variant` is a declared reactive property, so
+    // @lit/react sets it via the property and never reflects it to an attribute.
+    expect((button('No') as unknown as { variant: string }).variant).toBe('danger');
+    expect((button('Cancel') as unknown as { variant: string }).variant).toBe('neutral');
   });
 
   it('does not show the dialog when open is false', () => {
@@ -33,7 +48,7 @@ describe('UnsavedChangesDialog', () => {
 
   it('calls onSave when Yes is clicked', () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
-    fireEvent.click(document.querySelector('keep-button-yes')!);
+    fireEvent.click(button('Yes')!);
     expect(defaultProps.onSave).toHaveBeenCalledTimes(1);
     expect(defaultProps.onDiscard).not.toHaveBeenCalled();
     expect(defaultProps.onCancel).not.toHaveBeenCalled();
@@ -41,7 +56,7 @@ describe('UnsavedChangesDialog', () => {
 
   it('calls onDiscard when No is clicked', () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
-    fireEvent.click(document.querySelector('keep-button-no')!);
+    fireEvent.click(button('No')!);
     expect(defaultProps.onDiscard).toHaveBeenCalledTimes(1);
     expect(defaultProps.onSave).not.toHaveBeenCalled();
     expect(defaultProps.onCancel).not.toHaveBeenCalled();
@@ -49,7 +64,7 @@ describe('UnsavedChangesDialog', () => {
 
   it('calls onCancel when Cancel is clicked', () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
-    fireEvent.click(document.querySelector('keep-button-neutral')!);
+    fireEvent.click(button('Cancel')!);
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
     expect(defaultProps.onSave).not.toHaveBeenCalled();
     expect(defaultProps.onDiscard).not.toHaveBeenCalled();

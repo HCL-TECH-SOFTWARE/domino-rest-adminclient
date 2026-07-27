@@ -30,6 +30,39 @@ describe('keep-button', () => {
     expect(waButton(el).getAttribute('variant')).toBe('danger');
   });
 
+  /*
+   * #701 collapsed keep-button-yes / -no / -neutral into this element. These three
+   * cover the shapes those call sites migrated to, so a regression in the mapping
+   * shows up here rather than as three differently-wrong buttons in the UI.
+   */
+  it('covers the former keep-button-yes as the brand/accent default', async () => {
+    const el = await mountLit<Button>(TAG);
+    expect(waButton(el).getAttribute('variant')).toBe('brand');
+    expect(waButton(el).getAttribute('appearance')).toBe('accent');
+  });
+
+  it('covers the former keep-button-no as variant="danger"', async () => {
+    const el = await mountLit<Button>(TAG, { variant: 'danger' });
+    expect(waButton(el).getAttribute('variant')).toBe('danger');
+    expect(waButton(el).getAttribute('appearance')).toBe('accent');
+  });
+
+  it('covers the former keep-button-neutral as neutral/outlined', async () => {
+    const el = await mountLit<Button>(TAG, { variant: 'neutral', appearance: 'outlined' });
+    expect(waButton(el).getAttribute('variant')).toBe('neutral');
+    expect(waButton(el).getAttribute('appearance')).toBe('outlined');
+  });
+
+  it('re-renders when appearance changes after mount', async () => {
+    // It was a plain class field before #701, so this assertion failed: the initial
+    // value rendered, but a later change never reached the wa-button.
+    const el = await mountLit<Button>(TAG);
+    expect(waButton(el).getAttribute('appearance')).toBe('accent');
+    el.appearance = 'outlined';
+    await el.updateComplete;
+    expect(waButton(el).getAttribute('appearance')).toBe('outlined');
+  });
+
   it('disables the wa-button when disabled is true', async () => {
     const el = await mountLit<Button>(TAG, { disabled: true });
     expect(waButton(el).hasAttribute('disabled')).toBe(true);

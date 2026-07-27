@@ -14,7 +14,7 @@ import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { AGENTS_ERROR, VIEWS_ERROR } from '../../store/databases/types';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButtonNeutral, KeepButtonYes } from '../keep-elements/KeepElements';
+import { KeepButton } from '../keep-elements/KeepElements';
 
 const ToggleContainer = styled.div`
   .toggle-container {
@@ -155,8 +155,8 @@ const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, tog
             </text>
           </div>
           <div className='dialog-actions'>
-            <KeepButtonNeutral onClick={() => {setResetView(false)}} text='No' />
-            <KeepButtonYes onClick={continueResetView} text='Yes' />
+            <KeepButton variant="neutral" appearance="outlined" onClick={() => {setResetView(false)}}>No</KeepButton>
+            <KeepButton onClick={continueResetView}>Yes</KeepButton>
           </div>
         </dialog>
       </div>

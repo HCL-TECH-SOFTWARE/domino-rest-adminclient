@@ -16,7 +16,7 @@ import { DeleteIcon } from '../../styles/CommonStyles';
 import { MdRefresh, MdEdit } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
-import { KeepAppStatus, KeepButtonNeutral, KeepButtonYes, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepAppStatus, KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 
 const StyledTableRow = styled(TableRow)`
   .expand keep-tooltip {
@@ -360,8 +360,10 @@ const AppItem: React.FC<AppItemProps> = ({
                   </text>
                 </div>
                 <div className='dialog-actions'>
-                    <KeepButtonNeutral text='No' onClick = {() => setIsGenerate(false)} />
-                    <KeepButtonYes text='Yes' onClick={regenerateSecret} />
+                    <KeepButton variant="neutral" appearance="outlined"
+                      onClick = {() => setIsGenerate(false)}
+                    >No</KeepButton>
+                    <KeepButton onClick={regenerateSecret}>Yes</KeepButton>
                 </div>
             </dialog>
       </>
