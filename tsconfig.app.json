@@ -1,0 +1,46 @@
+// The production project: what `npm run build` type-checks (`tsc -b tsconfig.app.json`).
+// Deliberately excludes `test/**` so a type error in a test cannot fail a release build.
+// `tsconfig.test.json` extends this file, so options set here apply to the tests too —
+// keep app-only settings out of it.
+//
+// `package.json` is listed because `src/config.dev.ts` imports it (with resolveJsonModule),
+// and a composite project must list every file in its program.
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "composite": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "useDefineForClassFields": false,
+    /* "allowImportingTsExtensions": true, */
+  },
+  "include": [
+    "src",
+    "vite.config.mts",
+    "package.json"
+  ]
+}

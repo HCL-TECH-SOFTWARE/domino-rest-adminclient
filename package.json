@@ -74,11 +74,11 @@
     "coverage": "vitest run --coverage",
     "dev": "vite",
     "prebuild": "node updateBuildVersion.js",
-    "build": "tsc -b && vite build",
-    "build:win": "tsc -b && vite build",
+    "build": "tsc -b tsconfig.app.json && vite build",
+    "build:win": "tsc -b tsconfig.app.json && vite build",
     "lint": "oxlint src test",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b"
   },
   "allowScripts": {
     "@swc/core@1.15.46": true,

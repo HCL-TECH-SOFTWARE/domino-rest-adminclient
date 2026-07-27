@@ -496,7 +496,7 @@ single untested file (which is precisely how the `keep-monaco-editor` gap was ca
 | C5 | Extract `test/test-utils/renderWithProviders.tsx`; stop re-declaring `createMockStore()` | 🟡 TODO | S |
 | C6 | Phase 2 — React component smoke tests, starting with the presentational leaves | 🟡 TODO | M |
 | C12 | Phase 1c — thunk tests for the remaining `store/*/action.ts`, following `store/account/action.test.ts`; `store/databases/action.ts` first | 🟡 TODO | M–L |
-| C8 | Split `tsconfig` so `npm run build` stops type-checking `test/` (`tsconfig.json` still has `"include": ["src", "test", …]`; report 00 P1-9) | 🟡 TODO | S |
+| C8 | Split `tsconfig` so `npm run build` stops type-checking `test/` | ✅ **DONE** (#687) — solution-style root referencing `tsconfig.app.json` (build) and `tsconfig.test.json` (typecheck) | S |
 | C9 | Resolve the dead Sonar reporting (§A4–A9) — wired a scanner into CI: `sonar-project.properties` + PR analysis in `pr_check.yml` + branch analysis in `sonar.yml`, skipping when `SONAR_TOKEN` is absent, gate report-only | ✅ **DONE** (#688) | — |
 | C13 | Delete the duplicated `queryCommandSupported` block in `test/setupTests.ts` (§0.2) | 🟢 nice-to-have | **XS** |
 | C10 | Investigate the 10 s "Vite server won't exit" tail on every run | 🟢 nice-to-have | S |
