@@ -19,7 +19,10 @@ wa-button::part(base) {
 :root {
     color-scheme: inherit;
 }
-wa-input[data-user-invalid]::part(base) {
+/* :state(user-invalid), not the Shoelace-era [data-user-invalid] attribute — WebAwesome
+   3.x publishes validity as CSS custom states and never sets that attribute, so this rule
+   never matched. See src/components/keep-elements/keep-input-text.ts (#742). */
+wa-input:state(user-invalid)::part(base) {
     border-color: var(--wa-color-danger-600);
     box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
 }

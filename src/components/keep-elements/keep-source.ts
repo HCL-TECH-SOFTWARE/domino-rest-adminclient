@@ -135,6 +135,9 @@ export default class SourceTree extends KeepElement {
    *  it must NOT itself trigger a render (matches the original). */
   currentInputValues: JsonRecord = {};
 
+  /* The `.input-validation-pattern` rules below use `:state(user-invalid)` /
+     `:state(user-valid)`, not the Shoelace-era `data-user-*` attributes WebAwesome 3.x
+     never sets — see the note in keep-input-text.ts, including why it is out here (#742). */
   static styles = css`
     :host {
       color-scheme: inherit;
@@ -278,31 +281,31 @@ export default class SourceTree extends KeepElement {
     }
 
     /* user invalid styles */
-    .input-validation-pattern wa-input[data-user-invalid]::part(base) {
+    .input-validation-pattern wa-input:state(user-invalid)::part(base) {
       border-color: var(--wa-color-danger-600);
     }
 
-    .input-validation-pattern [data-user-invalid]::part(form-control-label),
-    .input-validation-pattern [data-user-invalid]::part(form-control-help-text) {
+    .input-validation-pattern :state(user-invalid)::part(form-control-label),
+    .input-validation-pattern :state(user-invalid)::part(form-control-help-text) {
       color: var(--wa-color-danger-700);
     }
 
-    .input-validation-pattern wa-input:focus-within[data-user-invalid]::part(base) {
+    .input-validation-pattern wa-input:focus-within:state(user-invalid)::part(base) {
       border-color: var(--wa-color-danger-600);
       box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
     }
 
     /* User valid styles */
-    .input-validation-pattern wa-input[data-user-valid]::part(base) {
+    .input-validation-pattern wa-input:state(user-valid)::part(base) {
       border-color: var(--wa-color-success-600);
     }
 
-    .input-validation-pattern [data-user-valid]::part(form-control-label),
-    .input-validation-pattern [data-user-valid]::part(form-control-help-text) {
+    .input-validation-pattern :state(user-valid)::part(form-control-label),
+    .input-validation-pattern :state(user-valid)::part(form-control-help-text) {
       color: var(--wa-color-success-700);
     }
 
-    .input-validation-pattern wa-input:focus-within[data-user-valid]::part(base) {
+    .input-validation-pattern wa-input:focus-within:state(user-valid)::part(base) {
       border-color: var(--wa-color-success-600);
       box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-success-300);
     }

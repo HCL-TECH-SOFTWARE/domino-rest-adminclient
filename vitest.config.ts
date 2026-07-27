@@ -8,6 +8,30 @@ import wyw from '@wyw-in-js/vite';
 // `npm run build`/`dev`, but deliberately omits the dev-server CSP header and
 // /api proxy from vite.config.mts, which are irrelevant in a test context.
 export default defineConfig({
+  // Resolve dependencies through their `browser` export condition. Both keys are needed —
+  // they fix two different packages, and each was silently degrading every component test
+  // in this suite. Found while fixing #742.
+  //
+  // 1. `ssr.resolve.conditions` → `lit`. Vitest loads test modules through Vite's SSR
+  //    pipeline, which resolves with Node conditions. `lit` ships a per-condition
+  //    `is-server` module and the Node one hardcodes `isServer = true`, so every
+  //    Lit/WebAwesome component ran in server mode despite jsdom providing `window` and
+  //    `document`. WebAwesome gates real behaviour on that flag:
+  //        static get validators() { return isServer ? [] : [CustomErrorValidator()]; }
+  //    With an empty validator list `updateValidity()` returns early, never reaching
+  //    `setValidity()` — so **no WebAwesome form control could ever be invalid in a test.**
+  //
+  // 2. `resolve.conditions` → `@lit/react`. Its exports map has a `node` branch pointing at
+  //    a build compiled with `NODE_MODE = true`, which omits the `useLayoutEffect` that
+  //    applies props to the underlying custom element. Every `Keep*` wrapper therefore
+  //    rendered with **no props at all**: `<KeepInputText label="Username" required id="x">`
+  //    produced an element whose `label` was `''`, `required` was `false` and `id` was
+  //    unset. Any assertion about a wrapped element's configured state was vacuous.
+  //
+  // Together with the no-op `attachInternals` that `test/setupTests.ts` used to install,
+  // this is how #742's 18 dead `data-user-invalid` selectors survived unnoticed.
+  ssr: { resolve: { conditions: ['browser'] } },
+  resolve: { conditions: ['browser'] },
   plugins: [
     // Keep wyw so Linaria `styled` components resolve to real components.
     wyw({ include: ['**/*.{ts,tsx}'] }),

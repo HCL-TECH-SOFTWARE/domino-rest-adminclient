@@ -16,21 +16,50 @@ if (typeof globalThis.TextDecoder === 'undefined') {
 }
 
 // Custom-element form internals (WebAwesome / Lit). Installed UNCONDITIONALLY:
-// jsdom 29 ships its own attachInternals whose ElementInternals is incompatible
-// with WebAwesome's form-associated elements (e.g. <wa-button> calls
-// `internals.setValidity`, which jsdom's version lacks), throwing during Lit's
-// update cycle. Always provide a complete no-op mock instead.
+// jsdom 29 ships its own attachInternals whose ElementInternals implements none of the
+// form-validity API — no `setValidity`, `validity`, `checkValidity`, `reportValidity`,
+// `willValidate` or `states` — so WebAwesome's form-associated elements throw during
+// Lit's update cycle the moment they call `internals.setValidity`.
+//
+// This replacement is deliberately *faithful*, not a no-op. The version it replaces
+// answered `checkValidity: () => true`, `validity: {}`, and gave `states` a `has()` that
+// always returned `false`. That made every WebAwesome validity state permanently
+// unobservable: no test in this repo could see a field go invalid, which is exactly how
+// the dead `data-user-invalid` selectors in #742 survived unnoticed. `states` is now a
+// real `Set` (WA's `customStates` helper only needs add/delete/has) and `setValidity()`
+// records what it is handed, so validity behaviour is assertable.
+//
+// Not emulated, by design: jsdom does not implement the `:state()` CSS selector, so
+// tests assert that a custom state is *set*, never that a style rule matched it. The
+// mock also does not fire the `invalid` event that a real `reportValidity()` would —
+// WebAwesome sets `hasInteracted` itself inside `reportValidity()`, so nothing depends
+// on it here.
 HTMLElement.prototype.attachInternals = function () {
+  const states = new Set<string>();
+  let validity: Record<string, boolean> = { valid: true };
+  let validationMessage = '';
+
   return {
-    setValidity: () => {},
-    checkValidity: () => true,
-    reportValidity: () => true,
+    setValidity(flags?: ValidityStateFlags, message?: string) {
+      const failed = Object.entries(flags ?? {})
+        .filter(([, isSet]) => isSet)
+        .map(([flag]) => flag);
+      // Per spec an empty (or all-false) flags object means "valid".
+      validity = { valid: failed.length === 0, ...Object.fromEntries(failed.map((f) => [f, true])) };
+      validationMessage = failed.length === 0 ? '' : (message ?? '');
+    },
+    checkValidity: () => validity.valid,
+    reportValidity: () => validity.valid,
+    get validity() {
+      return validity as unknown as ValidityState;
+    },
+    get validationMessage() {
+      return validationMessage;
+    },
     setFormValue: () => {},
-    states: { add: () => {}, delete: () => {}, has: () => false, clear: () => {} },
+    states,
     form: null,
     labels: [],
-    validity: {},
-    validationMessage: '',
     willValidate: true,
     shadowRoot: null,
   } as unknown as ElementInternals;
