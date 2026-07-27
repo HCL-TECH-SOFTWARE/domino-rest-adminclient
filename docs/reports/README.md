@@ -29,10 +29,11 @@ Every P0 that was actionable inside this repository is now closed — see
 - **P0-1 (JWT access + refresh tokens in `localStorage`) is deliberately still open.** It
   needs an API-contract decision, not a code sweep. Note that `refresh_token` cannot simply
   be deleted: `CallbackPage.tsx` writes it and `pkce.js` reads it for silent refresh.
-- **P0-2 (CSP) was withdrawn, not fixed.** The previous revision called the disabled
-  header in `vite.config.mts` a security regression. That was wrong: it configures the
-  **Vite dev server only**, and the **production CSP is served from `config.json`**,
-  outside this repository. Nothing to fix here; the reports have been corrected.
+- **P0-2 (CSP) was withdrawn, not fixed — and the withdrawal was half wrong.** The
+  disabled header in `vite.config.mts` really is **dev-server only**. But the production
+  CSP is **`jar/config/config.json`, tracked in this repo** and packaged into the JAR, not
+  a file owned elsewhere. There *is* something to fix here: the shipped policy sets
+  `style-src-attr 'none'` while 22 inline `style="…"` attributes render. See **#685**.
 
 ## ⚠️ The GitHub security tab overstates the risk
 
@@ -81,8 +82,9 @@ first `keep-*` element went into production use, and the first real bundle win l
 - **636 tests / 63 files, 32.4 % lines** (was 509 / 53, ~26.8 %).
 
 **Corrected in the analysis 📝**
-- ➖ **P0-2 "CSP regressed" was wrong.** The disabled header is **dev-server only**; the
-  production CSP lives in `config.json`, outside this repo. Reports 00 and 03 corrected.
+- ➖ **P0-2 "CSP regressed" was wrong**, and its first correction was too. The disabled
+  header is **dev-server only**, but the production CSP is `jar/config/config.json` — in
+  this repo. Reports 00 and 03 corrected again; work tracked as #685.
 - ➖ **`setBasePath` was inert, not merely stale.** In WebAwesome 3.x the base path feeds
   only the autoloader, and this app imports each of the 18 components it uses explicitly. Both calls
   deleted (#673) rather than re-pointed — there was nothing to point at. Any advice to
@@ -134,11 +136,12 @@ first `keep-*` element went into production use, and the first real bundle win l
 1. ✅ ~~**`<wa-page>` is WebAwesome _Pro_**~~ — **RESOLVED.** `page.js` ships in the free
    npm package at 3.10.0; the Pro set is `wa-combobox`, `wa-file-input`, `wa-toast`,
    `wa-sparkline`, charts and video. **No license decision required.** — *report 03*
-2. ➖ ~~**CSP is not being sent at all**~~ — **WITHDRAWN as a repo issue.** That header is
-   dev-server only; production CSP is served from `config.json`. The *substance* survives
-   as a note for whoever owns that file: `wa-page` needs `style-src-attr` loosened from
-   `'none'`, and Monaco's workers need `worker-src 'self' blob:`. The host/version mismatch
-   half of this risk is gone — `setBasePath` no longer exists. — *reports 00, 03*
+2. ➖ ~~**CSP is not being sent at all**~~ — **withdrawn as worded, but it IS a repo
+   issue.** That header is dev-server only; the production CSP is `jar/config/config.json`,
+   tracked here. The substance is now actionable: `style-src-attr 'none'` ships today
+   against 22 inline `style="…"` attributes, and Monaco's workers need
+   `worker-src 'self' blob:` kept. The host/version half of the risk is gone —
+   `setBasePath` no longer exists. **#685** — *reports 00, 03*
 3. 🔴 **MUI X DataGrid has no WebAwesome equivalent in any tier** (5 files). Biggest
    component risk — the real choice is a third-party web-component grid (AG Grid /
    RevoGrid) vs. a custom Lit table vs. keeping MUI DataGrid on an island longest.
@@ -190,8 +193,9 @@ deltas as noise.
    the Keep API. Report 01's next coverage tranche continues alongside.
 3. **Phase 1 (foundation):** report 03 — consolidate the four brand purples into one WA
    brand scale, decide the `--wa-font-size-scale` question, delete the dead icon assets,
-   then stand up the `wa-page` shell. **No longer coupled to a CSP change in this repo**;
-   flag the `style-src-attr` requirement to whoever maintains `config.json`.
+   then stand up the `wa-page` shell. Not *blocked* by CSP — but the `style-src-attr`
+   requirement is an edit to `jar/config/config.json` in this repo (#685), not a flag to
+   raise with someone else.
 4. **Phase 2 (components):** report 02 — finish Phase 0 (collapse the buttons; decide the
    DataGrid strategy), then leaves/controls → dialogs → cards/trees/lists → data-heavy
    views last. Start with `x-tree-view` → `wa-tree`: 2 files, free target, cheapest MUI X
