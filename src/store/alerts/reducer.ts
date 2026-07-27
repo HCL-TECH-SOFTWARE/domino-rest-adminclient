@@ -14,8 +14,6 @@ import {
 const initialState: AlertState = {
   visible: false,
   message: '',
-  snackbarStatus: false,
-  snackbarMessagE: '',
 };
 
 export default function alertReducer(
@@ -33,7 +31,6 @@ export default function alertReducer(
       return {
         ...state,
         visible: false,
-        snackbarMessagE: '',
       };
     default:
       return state;

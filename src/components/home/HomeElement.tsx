@@ -12,7 +12,10 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Header from '../../components/header/Header';
+// MobileHeader directly, not the former Header wrapper. Header re-tested the same
+// `(max-width:768px)` query its only call site below already gates on, so its desktop
+// branch could never render and it always returned MobileHeader. See #707.
+import MobileHeader from '../header/MobileHeader';
 import CollapseMenuIcon from '@mui/icons-material/ChevronLeftRounded';
 import ExpandMenuIcon from '@mui/icons-material/ChevronRightRounded';
 import { IconButton } from '@mui/material';
@@ -87,16 +90,15 @@ const RightPanel = styled.div<{ open: boolean; theme: any }>`
 
 interface HomeElementProps {
     MainElement: React.ComponentType<any>;
-    mainElementProps?: any;
 }
 
-const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps }) => {
+const HomeElement: React.FC<HomeElementProps> = ({ MainElement }) => {
   const [open, setOpen] = useState(false);
+  /** One query for both the mobile chrome and the footer; `ipadMatches` duplicated it. */
   const matches = useMediaQuery('(max-width:768px)');
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
-  const ipadMatches = useMediaQuery('(max-width:768px)');
   const { authenticated } = useSelector((state: AppState) => state.account);
 
   const toggleMenu = () => {
@@ -124,7 +126,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
     <ThemeProvider theme={currentTheme}>
       <CssBaseline />
       {matches && (
-        <Header
+        <MobileHeader
             toggleMobileMenu={toggleMenu}
             open={open}
         />
@@ -162,9 +164,9 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement, mainElementProps
                 )
             )}
 
-        <MainElement {...mainElementProps} />
+        <MainElement />
         </RightPanel>
-        {!ipadMatches && <Footer />}
+        {!matches && <Footer />}
         </AppContainer>
     </ThemeProvider>
   );

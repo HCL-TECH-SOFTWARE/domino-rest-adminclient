@@ -42,11 +42,7 @@ const ViewContainer = styled.main`
   }
 `;
 
-interface ViewsProps {
-  open: boolean;
-}
-
-const Views: React.FC<ViewsProps> = () => {
+const Views: React.FC = () => {
   const dispatch = useDispatch();
 
   const path = useLocation();
