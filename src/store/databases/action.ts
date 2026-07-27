@@ -71,7 +71,7 @@ import { SETUP_KEEP_API_URL, BASE_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
 import { toggleSettings } from '../dbsettings/action';
-import { convert2FieldType, convertDesignType2Format } from '../../components/access/functions';
+import { convert2FieldType, convertDesignType2Format } from '../../utils/field-types';
 import { AlertManager, fullEncode } from '../../utils/common';
 import appIcons from '../../styles/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
@@ -322,8 +322,11 @@ const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any
         type: SET_VALUE,
         payload: { status: false }
       });
-    } catch {
-      //console.log("Exception:"+e);
+    } catch (e) {
+      // A malformed chunk must not kill the stream: `processText` recurses per chunk, so
+      // throwing here would abandon the rest of the response silently. Log and continue
+      // to the next chunk instead.
+      log.error('failed to decode a chunk of the design stream', { error: e });
     }
 
     return reader.read().then(processText);
@@ -2781,7 +2784,6 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
       }[] = [];
       allFieldsKey.forEach((allFieldKey) => {
         if (mapping.hasOwnProperty(allFieldKey)) {
-          //@ts-ignore
           const fieldValue = allFields[allFieldKey];
           let format = 'string';
           let type = 'string';
