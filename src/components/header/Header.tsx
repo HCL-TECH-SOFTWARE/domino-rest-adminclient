@@ -8,11 +8,11 @@ import React from 'react';
 import { styled } from '@linaria/react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useSelector } from 'react-redux';
-import { IMG_DIR } from '../../config.dev';
 import MobileHeader from './MobileHeader';
 import { AppState } from '../../store';
 import { getTheme } from '../../store/styles/action';
 import SnackbarToaster from '../dialogs/SnackbarToaster';
+import keepLogo from '../../assets/KeepNewIcon.png';
 
 const HeaderContainer = styled.header<{ theme: string }>`
   z-index: 3;
@@ -57,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({
       <AppContainerLogo open={open} theme={themeMode}>
         <img
           className="keep-icon"
-          src={`${IMG_DIR}/KeepNewIcon.png`}
+          src={keepLogo}
           alt="HCL Domino REST API Icon"
         />
       </AppContainerLogo>

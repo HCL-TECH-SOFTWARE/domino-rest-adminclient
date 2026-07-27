@@ -68,7 +68,6 @@
 									<filtering>false</filtering>
 									<excludes>
 										<exclude>assets/**</exclude>
-										<exclude>img/**</exclude>
 									</excludes>
 								</resource>
 							</resources>
@@ -88,23 +87,6 @@
 										${maven.multiModuleProjectDirectory}/dist/assets</directory>
 									<filtering>false</filtering>
 								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-img</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>							
-							<outputDirectory>${project.build.directory}/classes/admin/img</outputDirectory>
-							<resources>
-								<resource>
-									<directory>
-										${maven.multiModuleProjectDirectory}/dist/img</directory>
-									<filtering>false</filtering>
-								</resource>								
 							</resources>
 						</configuration>
 					</execution>

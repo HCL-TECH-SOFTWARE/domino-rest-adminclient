@@ -3,14 +3,17 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { ICONS, FA_LIBRARY } from '../../src/services/icon-library';
 
-const walk = (dir: string): string[] =>
+const walk = (dir: string, match: RegExp): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
-    if (entry.isDirectory()) return walk(path);
-    return /\.tsx?$/.test(entry.name) ? [path] : [];
+    if (entry.isDirectory()) return walk(path, match);
+    return match.test(entry.name) ? [path] : [];
   });
 
-const SOURCES = walk(resolve(process.cwd(), 'src'));
+const SRC = resolve(process.cwd(), 'src');
+const SOURCES = walk(SRC, /\.tsx?$/);
+/** Stylesheets are scanned too: a `url()` is an asset reference the .tsx scans cannot see. */
+const STYLESHEETS = walk(SRC, /\.css$/);
 
 /**
  * File contents with whole-line comments removed, so a doc comment quoting the very
@@ -115,6 +118,56 @@ describe('icon-library', () => {
     // single source of glyphs now, so a reference to that directory is a regression.
     const offenders = SOURCES.filter((file) => /img\/shoelace\//.test(read(file))).map(rel);
     expect(offenders, `public/img/shoelace referenced in: ${offenders.join(', ')}`).toEqual([]);
+  });
+
+  /**
+   * #700 finished the job the icon library started. The `wa-icon` checks above only ever
+   * looked inside `<wa-icon>` tags, but the same silent breakage applied to every other
+   * image: `<img src="/admin/img/KeepNewIcon.png">`, the login page's CSS background and
+   * the home-page block diagram all 404'd to `index.html` outside an `/admin/` mount and
+   * rendered as nothing. Each is now an `import`, so Vite emits it next to the app bundle
+   * and its URL follows the base the bundle itself loaded from.
+   *
+   * These scan the source rather than the DOM: the failure is a URL that resolves to HTML
+   * at runtime, which jsdom will not reproduce and a passing render test cannot see.
+   */
+  describe('app image assets', () => {
+    it('hardcodes no /admin asset path', () => {
+      // Deliberately keyed on a file extension, not on the `/admin/` prefix alone:
+      // `<Router basename="/admin/ui">` is a real mount-point declaration and must not
+      // trip this. It is an asset *URL* baked into the source that is the problem.
+      const ASSET_URL = /\/admin\/[a-z0-9/_-]*\.(?:png|jpe?g|svg|gif|webp|ico|css)\b/gi;
+      const offenders: string[] = [];
+      for (const file of SOURCES) {
+        for (const m of read(file).matchAll(ASSET_URL)) offenders.push(`${rel(file)}: ${m[0]}`);
+      }
+      expect(offenders, `hardcoded /admin/ asset path:\n${offenders.join('\n')}`).toEqual([]);
+    });
+
+    it('finds stylesheets to scan', () => {
+      expect(STYLESHEETS.length).toBeGreaterThan(0);
+    });
+
+    it('uses no root-absolute url() in a stylesheet', () => {
+      // The gap that hid this one: `.login-castle-bg` pointed at `url('/img/castlebg.jpg')`
+      // in styles.css, which the .tsx-only scans never looked at. A leading `/` also opts
+      // out of Vite's asset rewriting, so the URL is frozen against the site root and the
+      // background silently does not paint under the packaged /admin mount.
+      const offenders: string[] = [];
+      for (const file of STYLESHEETS) {
+        for (const m of readFileSync(file, 'utf8').matchAll(/url\(\s*['"]?(\/[^'")\s]+)/g)) {
+          offenders.push(`${rel(file)}: ${m[1]}`);
+        }
+      }
+      expect(offenders, `root-absolute url() in a stylesheet:\n${offenders.join('\n')}`).toEqual([]);
+    });
+
+    it('exports no IMG_DIR from config.dev', async () => {
+      // The constant every one of those paths was built from. Re-adding it is the most
+      // likely way this regresses, and it would not trip the scan above on its own.
+      const config = await import('../../src/config.dev');
+      expect(Object.keys(config)).not.toContain('IMG_DIR');
+    });
   });
 
   /**

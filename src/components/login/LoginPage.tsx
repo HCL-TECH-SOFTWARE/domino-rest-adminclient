@@ -12,10 +12,8 @@ import { useFormik } from 'formik';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import * as Yup from 'yup';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  IMG_DIR,
-  BUILD_VERSION,
-} from '../../config.dev';
+import { BUILD_VERSION } from '../../config.dev';
+import keepLogo from '../../assets/KeepNewIcon.png';
 import { AppState } from '../../store';
 import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError, setToken } from '../../store/account/action';
 import { styled } from '@linaria/react';
@@ -547,7 +545,7 @@ const LoginPage = () => {
       >
         <DivPaper>
           <KeepLogoContainer>
-            <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="Domino REST API logo" />
+            <img src={keepLogo} alt="Domino REST API logo" />
             <h1 className='color-text-primary'>
               HCL Domino REST API
             </h1>

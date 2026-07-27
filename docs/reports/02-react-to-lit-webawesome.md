@@ -47,7 +47,7 @@
 | §5.3 | Test `keep-monaco-editor` | ✅ **DONE** — two suites, deliberately: `keep-monaco-editor.test.ts` drives a **fake** `monaco-editor` (component behaviour), while `.lifecycle.test.ts` runs **real** Monaco under jsdom via `test/test-utils/monaco.ts` (library invariants a fake cannot reach — it caught a dispose-ordering bug the fake suite passed through). `document.queryCommandSupported` polyfilled in `test/setupTests.ts`. See report 01 §A10 | PRs #668, #673 |
 | §5.3 | Move `prettier` to `dependencies` | ✅ **DONE** — and its three modules are now **dynamically** `import()`ed, splitting `babel` 316.53 kB / `estree` 210.43 kB / `standalone` 81.05 kB out of the entry chunk | PR #673 |
 | §5.3 | Make the **Monaco** import dynamic | 🔴 **NOT DONE** — `keep-monaco-editor.ts:11` is still a top-level `import * as monaco from 'monaco-editor'`. Entry chunk is **6,322.51 kB / 1,703.85 kB gzip**; the drop from 6.94 MB was prettier, not Monaco | — |
-| §5.5 | Icons off absolute asset paths | 🟡 **STARTED** — `src/services/icon-library.ts` registers a **self-hosted Font Awesome** library as `library="fa"` (11 glyphs bundled from `@fortawesome/fontawesome-free@7.3.1` via `?url`), replacing `<wa-icon src="${IMG_DIR}/…">` in the source-editor chrome. **38 `IMG_DIR` references and 8 `<wa-icon src=…>` markup sites remain elsewhere** — see §5.5 | PR #669 |
+| §5.5 | Icons off absolute asset paths | ✅ **DONE** — `src/services/icon-library.ts` registers a **self-hosted Font Awesome** library as `library="fa"`, and #700 removed the last `IMG_DIR` reference. Every image is now `import`ed, so Vite emits it beside the app bundle and its URL follows the same base. `IMG_DIR` no longer exists. | PR #669, #725, #700 |
 | §6.5 | Centralise the theme carriers | 🟡 **PARTIAL** — `src/services/theme-service.ts` is now the single writer for the three DOM carriers of appearance: `wa-dark` on `<html>`, `<html>.style.colorScheme`, and `body.dataset.theme`. This is *plumbing*, not tokens — the per-component hardcoded colors are untouched | PR #669 |
 | §2.1 | `setBasePath()` | ✅ **REMOVED** — both calls deleted. In WebAwesome 3.x the base path feeds exactly one consumer (the autoloader); this app imports its **18 distinct** WA components explicitly, so the value was never read. The old call also pointed at a *file* under `webawesome@3.6.0`, a version no longer installed. `src/index.tsx:18-27` documents why it must not return | PR #673 |
 
@@ -274,7 +274,7 @@ formatting helpers), which is the evidence behind §5.1 and §5.2.
 | `Popper` / `Popover` | `wa-popover` or `wa-popup` | Free | `ProfileMenu`, `ProfileMenuDialog`. |
 | `TreeView` / `TreeItem` (`@mui/x-tree-view`) | `wa-tree` + `wa-tree-item` | Free | Good free fit for `FileContentsTree`, `SchemaContentsTree`. Already used raw in 1 file. |
 | `SvgIcon` + `@mui/icons-material` + `react-icons` | `wa-icon library="fa"` | Free | 44 + 18 files. **The approach is now settled:** `src/services/icon-library.ts` registers a self-hosted Font Awesome library (11 glyphs bundled from `@fortawesome/fontawesome-free@7.3.1` via `?url`). Use `<wa-icon library="fa" name="…">` and add the glyph to `ICONS`. See §5.5 and report 03 §6.4. |
-| **legacy** `<wa-icon src="${IMG_DIR}/…">` | `wa-icon library="fa"` | Free | 🔴 **38 `IMG_DIR` references across 17 files; 8 `<wa-icon src=…>` markup sites** (`keep-textform-array` ×4, `keep-nsf-card` ×2, `keep-api-error-dialog`, `keep-button`).** These hardcode `/admin/img/...`, so they only resolve when the app is mounted at `/admin/` — elsewhere the request falls through to `index.html` and the icon renders empty *silently*. §5.5. |
+| **legacy** `<wa-icon src="${IMG_DIR}/…">` | `wa-icon library="fa"` | Free | ✅ **DONE** (#700). No `IMG_DIR` reference remains and the constant is deleted. The two surviving `<wa-icon src=…>` sites in `keep-nsf-card` are `data:` URIs from `app-icons.ts`, which are inline and carry no mount-point dependency. §5.5. |
 | `Box`/`Grid`/`Stack`/`Paper`/`Container` | `wa-grid`/`wa-cluster`/`wa-stack`/`wa-flank` + plain `div` | CSS/util | **Deferred to report 03.** `Box` appears 148×. |
 | `CssBaseline` / `ThemeProvider` / `@mui/material/styles` | `webawesome.css` + WA theme tokens | CSS/util | **Deferred to report 03.** |
 | `useMediaQuery` | native `matchMedia` | n/a | Behaviour, not markup. |
@@ -593,17 +593,26 @@ submission + `yup`. Do **not** port Formik into Lit. `useFormik` appears in 8 fi
   (`ka-f.fontawesome.com`, an external runtime dependency a deployment CSP is likely to
   block) and absolute `/admin/...` paths.
 
-  **Remaining debt, measured at `e17010c`:**
+  **Closed by #700.** `IMG_DIR` is deleted; every image is `import`ed from the module that
+  renders it, so Vite emits it into `admin/assets/` beside the bundle and the URL follows
+  the base the bundle itself loaded from.
 
-  | What | Count | Why it matters |
-  |---|---:|---|
-  | `IMG_DIR` references | **38** across 17 files | Hardcodes `/admin/img/...`; resolves only when the app is mounted at `/admin/` |
-  | `<wa-icon src=…>` occurrences | **9** | 8 live templates (`keep-textform-array` ×4, `keep-nsf-card` ×2, `keep-api-error-dialog` ×1, `keep-button`'s dynamic `src` ×1) plus 1 in a doc comment |
+  The failure mode was the reason to care, and it is worth recording because nothing about
+  it looked like a failure: off `/admin/`, the request fell through to the SPA's
+  `index.html` and the browser received **`200 text/html`** where an image was expected.
+  Measured against a dev server before the fix:
 
-  The failure mode is the reason to care: off `/admin/`, the request falls through to the
-  SPA's `index.html`, `wa-icon` receives HTML instead of SVG, and the icon **silently**
-  disappears — the button keeps its box and its click handler, so nothing looks broken.
-  Convert the remaining call sites to `library="fa"` and add each glyph to `ICONS`.
+  | URL | Status | Content-Type |
+  |---|---|---|
+  | `/admin/img/KeepNewIcon.png` | 200 | `text/html` ← the bug |
+  | `/src/assets/KeepNewIcon.png` | 200 | `image/png` ← after |
+
+  #700 also turned up the inverse of the same bug in CSS: `.login-castle-bg` used
+  `url('/img/castlebg.jpg')`, which resolved under `vite dev` but **not** under the
+  packaged `/admin` mount — so the login background silently did not paint in production,
+  while the `IMG_DIR` constant that would have been right there was dead code with no
+  importer. Both are gone; `test/services/icon-library.test.ts` now scans stylesheets as
+  well as `.tsx`, which is the gap that hid it.
   See report 03 §6.4 for the wider `wa-icon` sweep across React.
 
 ---
@@ -693,9 +702,9 @@ last.**
 - [ ] Loaders/spinners/progress → `wa-spinner`/`wa-progress-bar`/`wa-skeleton`.
 - [ ] Headings/empty states/`Footer`/`Section`/`Tip` → small Lit elements + `wa-card`.
 - [ ] `wa-divider`, `wa-avatar`, `wa-badge`; continue the `wa-icon` sweep (report 03 §6.4).
-- [ ] **Finish the icon library migration** (§5.5): 38 `IMG_DIR` references and 9
-      `<wa-icon src=…>` occurrences → `library="fa"`. Cheap, mechanical, and it removes a
-      class of *silent* rendering failure. **S–M**
+- [x] **Finish the icon library migration** (§5.5) — ✅ #700. `IMG_DIR` deleted; every
+      image is an `import`. The remaining `<wa-icon src=…>` pair is `data:` URIs, which
+      are inline and unaffected. Removed a class of *silent* rendering failure.
 
 ### Phase 2 — Form controls (the reusable core)
 - [ ] Add wrappers for `wa-textarea`, `wa-number-input`, `wa-radio-group`.
