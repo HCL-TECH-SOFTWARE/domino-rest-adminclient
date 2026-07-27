@@ -6,8 +6,6 @@ import {
   AUTHENTICATE,
   NAVITEMS,
   REMOVE_AUTH,
-  SET_TOKEN,
-  RENEW_TOKEN,
   SET_LOGIN_ERROR,
   SET_401_ERROR,
   SET_IDP_LOGIN,
@@ -28,7 +26,6 @@ const initial: AccountState = {
   error: false,
   error401: false,
   errorMessage: '',
-  token: '',
   idpLogin: false,
   currentIdp: {
     name: '',
@@ -54,36 +51,24 @@ describe('accountReducer', () => {
     expect(accountReducer(initial, { type: AUTHENTICATE }).authenticated).toBe(true);
   });
 
-  it('LOGOUT clears authenticated and token', () => {
-    const loggedIn: AccountState = { ...initial, authenticated: true, token: 'abc' };
+  it('LOGOUT clears authenticated', () => {
+    const loggedIn: AccountState = { ...initial, authenticated: true };
     expect(accountReducer(loggedIn, { type: LOGOUT })).toMatchObject({
       authenticated: false,
-      token: '',
-    });
+        });
   });
 
-  it('REMOVE_AUTH clears authenticated and token', () => {
-    const loggedIn: AccountState = { ...initial, authenticated: true, token: 'abc' };
+  it('REMOVE_AUTH clears authenticated', () => {
+    const loggedIn: AccountState = { ...initial, authenticated: true };
     expect(accountReducer(loggedIn, { type: REMOVE_AUTH })).toMatchObject({
       authenticated: false,
-      token: '',
-    });
+        });
   });
 
   it('NAVITEMS replaces navitems from the payload', () => {
     const navitems = { apps: true, databases: true, groups: false, users: true };
     expect(accountReducer(initial, { type: NAVITEMS, payload: navitems }).navitems).toEqual(
       navitems
-    );
-  });
-
-  it('SET_TOKEN stores the token from the payload', () => {
-    expect(accountReducer(initial, { type: SET_TOKEN, payload: 'tok' }).token).toBe('tok');
-  });
-
-  it('RENEW_TOKEN stores the token from the payload', () => {
-    expect(accountReducer(initial, { type: RENEW_TOKEN, payload: 'renewed' }).token).toBe(
-      'renewed'
     );
   });
 
