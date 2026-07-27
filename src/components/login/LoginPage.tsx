@@ -4,12 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import CssBaseline from '@mui/material/CssBaseline';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import { useFormik } from 'formik';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import * as Yup from 'yup';
 import { useSelector, useDispatch } from 'react-redux';
 import { BUILD_VERSION } from '../../config.dev';
@@ -17,8 +12,10 @@ import keepLogo from '../../assets/KeepNewIcon.png';
 import { AppState } from '../../store';
 import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError } from '../../store/account/action';
 import { styled } from '@linaria/react';
-import { FiInfo } from 'react-icons/fi';
-import { Link } from '@mui/material';
+// The theme toggle used @mui/icons-material's LightMode/DarkMode. `react-icons` was already
+// a dependency of this file (FiInfo), so switching to its equivalents drops MUI without
+// introducing a new pattern. Both icon sets are due to be replaced by `<wa-icon>` in #718.
+import { FiInfo, FiMoon, FiSun } from 'react-icons/fi';
 import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
@@ -35,8 +32,6 @@ import {
   KeepTooltip
 } from '../keep-elements/KeepElements';
 import { AlertManager, checkForResponse } from '../../utils/common';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { applyAppearance } from '../../services/theme-service';
 import { getLogger } from '../../services/log-service';
 
@@ -46,6 +41,14 @@ const dailyBuildNum = document.querySelector('meta[name="admin-ui-daily-build-ve
 
 /** Shown on both fields when the server rejects the pair (401), not on either alone. */
 const CREDENTIALS_REJECTED = 'Incorrect username or password';
+
+/**
+ * `toggleAlert` takes a string, but the `.catch((e) => …)` callers below receive `unknown`
+ * (typed `any`, so nothing complained) and passed it straight through — which rendered the
+ * alert as `[object Object]` for anything that was not already a string.
+ */
+const alertMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
 
 type WaFormInput = HTMLElementTagNameMap['wa-input'] | null | undefined;
 
@@ -162,9 +165,55 @@ const LoginForm = styled.form`
   }
 `
 
-const GridRoot = styled(Grid)`
+/**
+ * The two-column login layout. Replaces a MUI `<Grid container>` whose column widths were
+ * switched from JavaScript: a `useMediaQuery('(max-width:768px)')` hook toggled the
+ * `w-60`/`full-width` classes and decided whether to render the background column at all.
+ *
+ * The 60/40 split reproduces the previous widths exactly (`.w-60` was 60%,
+ * `.login-castle-bg` 40%) at the same 768px breakpoint — it is simply expressed in CSS now,
+ * so the page no longer re-renders on every resize.
+ */
+const LoginLayout = styled.div`
+  display: grid;
+  grid-template-columns: 60% 40%;
   height: 100vh;
   position: relative;
+
+  @media (max-width: 768px) {
+    /* CastlePanel is hidden at this width, so the form takes the whole row. */
+    grid-template-columns: 1fr;
+  }
+`
+
+/**
+ * The form column. Was `<Grid component={Paper} elevation={6} square>`.
+ *
+ * The shadow is MUI's elevation-6 value, kept verbatim so the panel edge still reads the
+ * same against the background image. #708 should replace it with a `--wa-shadow-*` token.
+ *
+ * Dropping `Paper` also settles a cascade race that had been suppressing dark mode here.
+ * `theme.ts` sets `MuiPaper.styleOverrides.root.backgroundColor` from
+ * `getTheme('default').secondary` — the literal `'white'` — and because Emotion injects at
+ * runtime it landed after `styles.css` and won at equal specificity, so
+ * `.login-page-grid`'s own `background-color: var(--body-color)` never applied. In light
+ * mode the two agree (both `#fff`). In dark mode they do not: `--body-color` is
+ * `light-dark(#fff, #181825)` while `theme.ts` deliberately uses the *light* palette for an
+ * unauthenticated page (`authenticated ? getTheme(themeMode) : getTheme('default')`), so
+ * the panel stayed white with dark text around it. It now follows `--body-color`.
+ */
+const FormPanel = styled.div`
+  box-shadow:
+    0 3px 5px -1px rgba(0, 0, 0, 0.2),
+    0 6px 10px 0 rgba(0, 0, 0, 0.14),
+    0 1px 18px 0 rgba(0, 0, 0, 0.12);
+`
+
+/** The background-image column. Previously rendered only when `!matches`. */
+const CastlePanel = styled.div`
+  @media (max-width: 768px) {
+    display: none;
+  }
 `
 
 const LoginThemeToggle = styled.button`
@@ -219,7 +268,6 @@ const LoginPage = () => {
   const [idpList, setIdpList] = useState([]);
   const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
   const [authType, setAuthType] = useState('password');
-  const [selectedOidc] = useState('');
 
   const usernameRef = useRef<any>(null)
   const passwordRef = useRef<any>(null)
@@ -263,7 +311,7 @@ const LoginPage = () => {
         dispatch(toggleAlert('WebAuthn registration successful!'));
       })
       .catch((e) => {
-        dispatch(toggleAlert(e));
+        dispatch(toggleAlert(alertMessage(e)));
       })
   };
 
@@ -318,8 +366,6 @@ const LoginPage = () => {
     },
   });
 
-  const matches = useMediaQuery('(max-width:768px)');
-  
   const logIn = () =>
     new Promise((resolve, reject) => {
       fetch('/api/v1/auth', {
@@ -430,10 +476,6 @@ const LoginPage = () => {
     }
   }
 
-  const handleChooseOidc = (_idp: any) => {
-    
-  }
-
   React.useEffect(() => {
     const canDoPasskey = () =>
       new Promise((resolve, reject) => {
@@ -460,7 +502,7 @@ const LoginPage = () => {
           usernameRef.current.shadowRoot.querySelector('wa-input').value = user
         }
       })
-      .catch((e) => dispatch(toggleAlert(e)));
+      .catch((e) => dispatch(toggleAlert(alertMessage(e))));
   }, [dispatch])
 
   useEffect(() => {
@@ -550,19 +592,13 @@ const LoginPage = () => {
   }, [])
 
   return (
-    <GridRoot container>
-      <CssBaseline />
+    <LoginLayout>
       <KeepTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
         <LoginThemeToggle onClick={toggleTheme}>
-          {isDark ? <DarkModeIcon className='huge-text' /> : <LightModeIcon className='huge-text' />}
+          {isDark ? <FiMoon className='huge-text' /> : <FiSun className='huge-text' />}
         </LoginThemeToggle>
       </KeepTooltip>
-      <Grid
-        className={`login-page-grid ${matches ? 'full-width' : 'w-60'}`}
-        component={Paper}
-        elevation={6}
-        square
-      >
+      <FormPanel className='login-page-grid'>
         <DivPaper>
           <KeepLogoContainer>
             <img src={keepLogo} alt="Domino REST API logo" />
@@ -616,13 +652,16 @@ const LoginPage = () => {
                 />
                 {authType === 'oidc' && idpList.length > 0 &&
                   <div className='flex justify-center items-center full-width mt-8'>
+                    {/* No `onChange`/`selected`: keep-dropdown owns its selection —
+                        `firstUpdated()` seeds it from `choices[0]` and `changeSelected()`
+                        updates it on click — and it dispatches no `change` event, so the
+                        handler this replaces could never fire. handleClickLogIn reads the
+                        choice straight off `oidcRef.current.selected`. */}
                     <KeepDropdown
                       id='form-oidc'
                       choices={idpList.map((idp: IdP) => {return idp.name})}
                       ref={oidcRef}
-                      onChange={(e: any) => handleChooseOidc(idpList.find((idp: IdP) => idp.name === e.detail.value))}
                       className='login-page-oidc-dropdown'
-                      selected={selectedOidc}
                     />
                   </div>
                 }
@@ -655,22 +694,22 @@ const LoginPage = () => {
                     >
                       Sign up with Passkey
                     </span>
-                    <Link href="https://passkey.org" target="_blank">
+                    <a href="https://passkey.org" target="_blank" rel="noreferrer">
                       <FiInfo className="passkey-icon" size="1.5em" />
-                    </Link>
+                    </a>
                   </button>
                 )}
               </PasskeySignUpContainer>
             </LoginForm>
-            <Box className='mt-7'>
+            <div className='mt-7'>
               <Copyright />
-            </Box>
+            </div>
             <KeepApiErrorDialog ref={ref} errorMessage='Error initiating authorization request. Check the console or network for more details.' />
           </div>
         </DivPaper>
-      </Grid>
-      {!matches && <Grid className="login-castle-bg" />}
-    </GridRoot>
+      </FormPanel>
+      <CastlePanel className="login-castle-bg" />
+    </LoginLayout>
   );
 };
 
