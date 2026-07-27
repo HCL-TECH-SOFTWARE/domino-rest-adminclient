@@ -23,7 +23,6 @@ import { TokenProps } from './store/account/types';
 import CallbackPage from './components/login/CallbackPage';
 
 const App: React.FC = () => {
-  const [open] = useState(false);
   const [valid, setValid] = useState(false);
   const dispatch = useDispatch();
 
@@ -91,7 +90,7 @@ const App: React.FC = () => {
   return valid ? (
     <Router basename="/admin/ui">
       <Routes>
-        <Route path='*' element={authenticated ? <HomeElement MainElement={Views} mainElementProps={{ open }} /> : <LoginPage />} />
+        <Route path='*' element={authenticated ? <HomeElement MainElement={Views} /> : <LoginPage />} />
         <Route path='/callback' element={<CallbackPage/>}/>
       </Routes>
     </Router>

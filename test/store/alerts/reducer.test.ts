@@ -5,8 +5,6 @@ import { TOGGLE_ALERT, CLOSE_SNACKBAR, AlertState } from '../../../src/store/ale
 const initial: AlertState = {
   visible: false,
   message: '',
-  snackbarStatus: false,
-  snackbarMessagE: '',
 };
 
 describe('alertReducer', () => {
@@ -26,10 +24,24 @@ describe('alertReducer', () => {
     expect(twice.message).toBe('b');
   });
 
-  it('CLOSE_SNACKBAR hides the alert and clears snackbarMessagE', () => {
-    const open: AlertState = { ...initial, visible: true, snackbarMessagE: 'msg' };
-    const next = alertReducer(open, { type: CLOSE_SNACKBAR, payload: '' });
-    expect(next).toMatchObject({ visible: false, snackbarMessagE: '' });
+  it('CLOSE_SNACKBAR hides the alert but keeps the message', () => {
+    // It used to also clear `snackbarMessagE`, a field nothing ever wrote (#707). The
+    // message is deliberately left alone: Notification reads `message` while it animates
+    // out, so clearing it here would blank the text mid-transition.
+    const open: AlertState = { ...initial, visible: true, message: 'msg' };
+    const next = alertReducer(open, { type: CLOSE_SNACKBAR });
+
+    expect(next).toEqual({ visible: false, message: 'msg' });
+  });
+
+  it('carries no snackbar fields', () => {
+    // `snackbarStatus`/`snackbarMessagE` were dead twice over: no reducer case ever wrote
+    // `snackbarStatus`, so SnackbarToaster's <Snackbar open={…}> could never be true, and
+    // the component's only mount site was in an unreachable branch of Header.tsx.
+    expect(Object.keys(alertReducer(undefined, { type: '@@UNKNOWN' } as any)).sort()).toEqual([
+      'message',
+      'visible',
+    ]);
   });
 
   it('does not mutate the input state', () => {
