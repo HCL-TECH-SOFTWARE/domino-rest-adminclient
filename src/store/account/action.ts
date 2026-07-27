@@ -77,18 +77,48 @@ export function setToken(token: string) {
   };
 }
 
+/**
+ * The bearer string to put in an `Authorization` header, for either token shape the
+ * app stores under `user_token`: a Keep native token (`{ bearer }`) or an IdP/PKCE
+ * token (`{ access_token }`). `null` when the value carries neither.
+ */
+export const bearerOf = (token: unknown): string | null => {
+  const candidate = token as { access_token?: string; bearer?: string } | null | undefined;
+  if (candidate?.access_token) {
+    return candidate.access_token;
+  }
+  return candidate?.bearer ?? null;
+};
+
 export const getToken = () => {
   try {
     const raw = localStorage.getItem('user_token');
     if (!raw) return null;
-    const userToken = JSON.parse(raw);
-    if (userToken?.access_token) {
-      return userToken.access_token;
-    }
-    return userToken?.bearer ?? null;
+    return bearerOf(JSON.parse(raw));
   } catch {
     return null;
   }
+};
+
+/**
+ * Publishes the bearer of a token that has just been written to local storage, waking
+ * a `showPages()` that started before there was one to read.
+ *
+ * The bearer is resolved with the same rule `getToken()` uses, because `showPages()`
+ * treats the two as interchangeable — `waitForToken()` stands in for a `getToken()`
+ * that returned `null`, and the result goes straight into `Authorization: Bearer
+ * ${token}`. Handing the emitter the token *object*, as all three call sites below
+ * used to, put `Bearer [object Object]` in that header.
+ */
+const publishToken = (token: unknown) => {
+  const bearer = bearerOf(token);
+  if (!bearer) {
+    // Not fatal: a waiter stays parked rather than sending a malformed credential,
+    // and every other caller reads local storage through `getToken()` anyway.
+    log.warn('Token carries no bearer or access_token; nothing published to waiters');
+    return;
+  }
+  emitTokenEvent(bearer);
 };
 
 export function renewToken() {
@@ -148,14 +178,7 @@ export function renewToken() {
 
     // Apply new token on local storage
     localStorage.setItem('user_token', JSON.stringify(newToken));
-    // `emitTokenEvent` is declared `(token: string)`, but this and the other two call
-    // sites in this file all hand it the token *object* — and its only consumer,
-    // `showPages()`, interpolates what it receives straight into
-    // `Authorization: Bearer ${token}`, yielding `Bearer [object Object]`. That is a
-    // pre-existing bug (it type-checked only because those locals were `any`), not
-    // something P0-4 introduced. Behaviour is preserved here rather than changed
-    // under an unrelated fix; see the follow-ups in the PR description.
-    emitTokenEvent(newToken as unknown as string)
+    publishToken(newToken)
   };
 }
 
@@ -180,7 +203,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
       log.debug('Login successful, setting token and updating state')
       const jwtData = data;
       localStorage.setItem('user_token', JSON.stringify(jwtData));
-      emitTokenEvent(jwtData)
+      publishToken(jwtData)
       dispatch({
         type: LOGIN
       });
@@ -340,7 +363,7 @@ export function loginWithPkce(token: any) {
   return async (dispatch: Dispatch) => {
     dispatch(setPkceToken(token))
     localStorage.setItem('user_token', JSON.stringify(token));
-    emitTokenEvent(token)
+    publishToken(token)
     dispatch(setIdpLogin(true))
     dispatch(authenticate())
     dispatch({
