@@ -34,6 +34,23 @@ export default defineConfig({
     },
     setupFiles: ['./test/setupTests.ts'],
     css: false, // ignore CSS/Linaria virtual modules (replaces __mocks__/styleMock.js)
+    // Every run used to end with "close timed out after 10000ms / something prevents Vite
+    // server from exiting", adding ~10s to each local and CI run (#692).
+    //
+    // It is not a leak in our tests. `--reporter=hanging-process` blames ~2,956 FILEHANDLE
+    // entries with no stack, alongside `napi_rs_threadsafe_function` — a native addon, not
+    // a timer or observer of ours. Bisected to the coverage provider, not to any test:
+    //
+    //   vitest run test/utils/form.test.ts               0.97s, clean
+    //   vitest run test/utils/form.test.ts --coverage    13.28s, "close timed out"
+    //   vitest run <a Monaco/Lit suite>                  1.04s, clean
+    //
+    // So the handles belong to @vitest/coverage-v8 (4.1.10, matching vitest), and there is
+    // nothing in this repo to dispose. Tests have already finished and the exit code is
+    // already 0 by the time this timer starts — it only bounds how long Vitest waits for a
+    // server that will not close. Capping it at 1s takes a full-suite run from ~13s of
+    // teardown to ~1s. Revisit when coverage-v8 stops holding them.
+    teardownTimeout: 1000,
     include: ['test/**/*.{test,spec}.{ts,tsx}'],
     clearMocks: true, // reset mock history between tests (replaces jest.clearAllMocks)
     reporters: process.env.CI
