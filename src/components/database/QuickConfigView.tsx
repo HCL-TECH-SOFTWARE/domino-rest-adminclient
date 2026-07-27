@@ -37,7 +37,6 @@ const QuickConfigView = () => {
     }else{
       dispatch(toggleAlert(`You don't have permission to create schema.`));
     }
-    //TODO
     // eslint-disable-next-line
   }, []);
 

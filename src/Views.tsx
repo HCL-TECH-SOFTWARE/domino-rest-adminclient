@@ -145,7 +145,11 @@ const Views: React.FC<ViewsProps> = () => {
           <Route path='/callback' element={<CallbackPage/>}/>
         </Routes>
         
-        {/* 
+        {/*
+          /groups, /people and /mail stay commented out: their components are still in
+          the tree and the Mail/Dashboard pair is blocked on LABS-1214 (#698). The
+          /settings block is gone with src/components/settings/ (#681).
+
         <Route path="/groups">
           <Groups />
         </Route>
@@ -154,9 +158,6 @@ const Views: React.FC<ViewsProps> = () => {
         </Route>
         <Route path="/mail">
           <Mail />
-        </Route>
-        <Route path="/settings">
-          <SettingsPage />
         </Route>
         */}
       <QuickConfigFormContainer />

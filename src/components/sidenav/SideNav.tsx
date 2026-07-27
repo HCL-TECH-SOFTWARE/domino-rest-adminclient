@@ -372,7 +372,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
 
           <Divider />
 
-          {/* TODO Mail page is deliberately disabled for now, see LABS-1214.
+          {/* Mail is intentionally disabled pending LABS-1214 (see #698).
               The `false &&` is the feature switch; restore it to a real
               condition when the page is re-enabled. */}
           {/* eslint-disable-next-line no-constant-binary-expression */}

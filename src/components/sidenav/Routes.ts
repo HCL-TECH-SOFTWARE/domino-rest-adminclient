@@ -28,7 +28,8 @@ export const appRoutes = [
   },
 ];
 
-/* TODO: Disable Dashboard page for now  LABS-1214
+/* Dashboard is intentionally disabled pending LABS-1214 (see #698). Not a TODO in
+   this repo: re-enabling it is gated on that ticket, not on work here.
   {
     uri: '/dashboard',
     icon: Dashboard,
