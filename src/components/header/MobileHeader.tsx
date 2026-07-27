@@ -9,7 +9,7 @@ import { styled } from '@linaria/react';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseMenuIcon from '@mui/icons-material/ChevronLeft';
 import ProfileMenuDialog from '../sidenav/ProfileMenuDialog';
-import { IMG_DIR } from '../../config.dev';
+import keepLogo from '../../assets/KeepNewIcon.png';
 
 const MobileHeaderContainer = styled.header`
   background: white;
@@ -45,7 +45,7 @@ const MobileHeader: React.FC<MobileHeaderProps> = ({
         <div className='flex-1 flex justify-center'>
           <img
             className="keep-icon"
-            src={`${IMG_DIR}/KeepNewIcon.png`}
+            src={keepLogo}
             alt="HCL Domino REST API Icon"
           />
         </div>

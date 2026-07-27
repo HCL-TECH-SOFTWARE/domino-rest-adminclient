@@ -12,10 +12,10 @@ import database from './appdev.jpg';
 import databaseDev from './databasedev.jpg';
 import apps from './apps.jpg';
 import people from './database.jpg';
+import keepBlockDiagram from './keepblockdiagram.svg';
 import { databases, apps as app, people as users } from '../../sidenav/Routes';
 import { AppState } from '../../../store';
 import { showPages } from '../../../store/account/action';
-import { IMG_DIR } from '../../../config.dev';
 
 const SectionContainer = styled.div`
   padding: 0px 20px;
@@ -65,8 +65,8 @@ const Section = () => {
     <SectionContainer>
       <TipContainer>
         <section className='diagram'>
-          <object type="image/svg+xml" data={`${IMG_DIR}/home/keepblockdiagram.svg`} width="50%">
-            Open the <a href={`${IMG_DIR}/home/keepblockdiagram.svg`}>overview</a>
+          <object type="image/svg+xml" data={keepBlockDiagram} width="50%">
+            Open the <a href={keepBlockDiagram}>overview</a>
           </object>
         </section>
         <FeatureContainer>

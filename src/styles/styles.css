@@ -1900,7 +1900,10 @@ body[data-theme="dark"] .add-import-svg-icon {
     max-width: 40%;
     height: 100vh;
     background-color: light-dark(#fafafa, #212121);
-    background-image: url('/img/castlebg.jpg');
+    /* Relative, so Vite rewrites it to the emitted asset URL. The absolute
+       '/img/castlebg.jpg' this replaces resolved only where the site root served
+       /img — true under `vite dev`, not under the packaged /admin mount. */
+    background-image: url('./castlebg.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;

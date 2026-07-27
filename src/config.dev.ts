@@ -17,7 +17,10 @@ export const ADMIN_KEEP_API_URL = '/api/admin-v1';
 export const IDP_KEEP_API_URL = '/api/keepidp-v1'
 
 // ASSETS DIRECTORY
-export const IMG_DIR = '/admin/img';
+// Images are not listed here: each is `import`ed from the module that renders it, so
+// Vite emits it alongside the app bundle and its URL follows the same base the bundle
+// loaded from. An absolute `/admin/...` constant resolves only when the app happens to
+// be mounted at `/admin/`, and fails silently everywhere else.
 export const MONACO_EDITOR_DIR = '/monaco-editor-core';
 
 // Theming

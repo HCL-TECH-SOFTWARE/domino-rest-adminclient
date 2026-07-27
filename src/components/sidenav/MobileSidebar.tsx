@@ -15,13 +15,14 @@ import ListItemText from '@mui/material/ListItemText';
 import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { appRoutes as routes, apps, groups, people } from './Routes';
-import { IMG_DIR, BUILD_VERSION } from '../../config.dev';
+import { BUILD_VERSION } from '../../config.dev';
 import { getTheme } from '../../store/styles/action';
 import { AppState } from '../../store';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { SideNavContainer } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import keepLogo from '../../assets/KeepNewIcon.png';
 
 const SideContainer = styled.aside`
   background: white;
@@ -128,7 +129,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
         <LinksContainer>
           <SidebarContainer theme={themeMode}>
             <Logo>
-              <img src={`${IMG_DIR}/KeepNewIcon.png`} alt="HCL Domino REST API Icon" />
+              <img src={keepLogo} alt="HCL Domino REST API Icon" />
               <span className="title color-text-primary">
                 HCL Domino REST API
               </span>

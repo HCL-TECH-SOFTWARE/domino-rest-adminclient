@@ -23,11 +23,11 @@ import { fetchKeepDatabases } from '../../store/databases/action';
 import { AppState } from '../../store';
 import { appRoutes as routes, apps, databases, groups, people, settings } from './Routes';
 import ProfileMenu from './ProfileMenu';
-import { IMG_DIR } from '../../config.dev';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { SideNavContainer } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import keepLogo from '../../assets/KeepNewIcon.png';
 
 const SideContainer = styled.aside<{ theme: string }>`
   width: 242px;
@@ -206,7 +206,7 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
             }}>
             <img
               className="keep-icon side-nav-logo-img"
-              src={`${IMG_DIR}/KeepNewIcon.png`}
+              src={keepLogo}
               alt="HCL Domino REST API Icon"
             />
           </Logo>

@@ -63,7 +63,7 @@ still **not used anywhere** in `src/`. The **theming substrate** has moved, thou
 | 5 | **WebAwesome token scaffolding exists and has grown.** `keep-overrides.css` defines the full `--wa-color-brand-{05..95}` ramp, brand aliases, **`--wa-font-size-scale: 0.85`**, and a `@media (prefers-color-scheme: dark)` brand override. | 🟢 improved | The token system is live; the work is *extending* it to the shell + Linaria, not bootstrapping it. |
 | 6 | ~~**CSP is not being sent at all** — a regression that blocks `wa-page`~~ → **the finding was wrong.** `vite.config.mts:29`'s `'disabledContent-Security-Policy'` key configures the **Vite dev server only**; the production CSP comes from **`config.json`, outside this repo**. | ➖ **WITHDRAWN** | Nothing to fix in-repo, and **CSP is not a prerequisite for `wa-page`**. §5 rewritten as a requirements note for whoever owns `config.json`. |
 | 6b | ~~`setBasePath` points at **webawesome@3.6.0** while **3.10.0** is installed~~ | ✅ **RESOLVED** (#673) | Both calls **deleted**. `src/index.tsx` now carries a comment explaining why there is none: in WA 3.x the base path feeds only the autoloader, and this app imports its **18** WA components explicitly. Guarded by source scans in `test/services/icon-library.test.ts`. |
-| 7 | **The icon situation is _four_ systems.** Three legacy: `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** (a 216 KB registry of **86** base64 SVG data URIs, imported by **19** modules), plus **8** `<wa-icon src=…>` markup sites over 13 hand-copied SVGs (a repo-wide grep reports 9 — the ninth is inside `icon-library.ts`'s own header comment). The fourth, **`src/services/icon-library.ts`** (#669), is the intended destination. | 🟡 **improving** | §6.4 rewritten. `icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from `@fortawesome/fontawesome-free` SVGs bundled by Vite (11 glyphs, 11 unit tests) and logs a warning on an unknown name instead of rendering an empty glyph. **That is the template the other three converge on** — the icon plan is no longer speculative. |
+| 7 | **The icon situation is _four_ systems.** Three legacy: `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** (a 216 KB registry of **86** base64 SVG data URIs, imported by **19** modules), plus (until #700) **8** `<wa-icon src=…>` markup sites over 13 hand-copied SVGs. The fourth, **`src/services/icon-library.ts`** (#669), is the intended destination. | 🟡 **improving** | §6.4 rewritten. `icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from `@fortawesome/fontawesome-free` SVGs bundled by Vite (11 glyphs, 11 unit tests) and logs a warning on an unknown name instead of rendering an empty glyph. **That is the template the other three converge on** — the icon plan is no longer speculative. #700 finished the `src=` half: the hand-copied SVGs and `IMG_DIR` are gone, and the only `src=` sites left are the two `data:` URIs `app-icons.ts` feeds `keep-nsf-card`. **`app-icons.ts` itself is untouched** — its 86 entries are user-selectable, multi-element colour illustrations whose `iconName` is persisted server-side, so folding them into `library="fa"` is a UX and data-contract change, not a migration. |
 | 7b | **Dead weight in `src/styles/`:** `icons.json` (144 KB, 36 entries) and `text-manipulation.css` (6 lines) are imported by **nothing**; two `@fontsource-variable` packages (`quicksand`, `crimson-pro`) are declared dependencies that **no source file imports**. | 🔴 open | Pure deletion (P0.5). `@fortawesome/fontawesome-free` is **no longer** in this list — `icon-library.ts` imports it. |
 | 8 | **The WA-token readers are now tested.** `src/services/wa-color.ts` resolves any `--wa-*` color token to concrete sRGB hex (probe element → computed `color` → 1×1 canvas readback); `wa-typography.ts` does the same for font tokens; `editor-theme.ts` maps 16 Monaco color ids onto WA semantic tokens. **29 unit tests** across the three landed in #670. | ✅ **proven** | This is a *working, tested precedent* for "read WA design tokens from JS", not a proposal. Reuse it anywhere JS needs a concrete value (charts, canvas, `<meta name="theme-color">`, third-party widgets) rather than re-reading `getPropertyValue()`, which returns unevaluated `var()`/`color-mix()` chains. §3.6. |
 | 9 | **NEW: `src/services/theme-service.ts` is the single writer for appearance.** One module sets all three DOM carriers — `.wa-dark` on `<html>`, `documentElement.style.colorScheme`, `body.dataset.theme` — and **both** runtime togglers call it (`HomeElement.tsx:120`, `LoginPage.tsx:178`). 10 unit tests. | ✅ **done** | Closes the "make the *runtime* toggle set `.wa-dark` too" item that this report has carried since the original. `.wa-dark` is now safe to treat as the canonical dark-mode hook (§3.5). §3.7. |
@@ -263,14 +263,14 @@ export default function AppShell() {
   return (
     <wa-page mobile-breakpoint="768" view="desktop">
       <header slot="header" className="wa-split">
-        <img className="keep-icon" src="/admin/img/KeepNewIcon.png" alt="HCL Domino REST API" />
+        <img className="keep-icon" src={keepLogo} alt="HCL Domino REST API" />
         <SnackbarToaster />
       </header>
 
       <div slot="subheader"><PageRouters /></div>
 
       <div slot="navigation-header" className="wa-stack wa-align-items-center">
-        <img className="keep-icon side-nav-logo-img" src="/admin/img/KeepNewIcon.png" alt="" />
+        <img className="keep-icon side-nav-logo-img" src={keepLogo} alt="" />
         <span className="wa-heading-s">HCL Domino REST API</span>
       </div>
 
@@ -635,11 +635,11 @@ worker-src 'self' blob:;
    does not have to allow a third-party origin. **Requirement:** the
    `cdn.jsdelivr.net` / `ka-f.*` entries in `style-src-elem`, `font-src` and `script-src`
    can be **dropped** — WA assets are all `'self'`. Confirm no `<wa-icon>` still resolves
-   through WA's default CDN resolver (see §6.4 — 8 `<wa-icon src=…>` markup sites remain,
-   all same-origin or `data:`).
-3. **`connect-src`.** The remaining `<wa-icon src="${IMG_DIR}/shoelace/*.svg">` sites fetch
-   same-origin SVGs; one uses a `data:` URI. `'self' data:` suffices — the `*` in the
-   sketch is far wider than the app needs.
+   through WA's default CDN resolver (see §6.4 — since #700 the only `<wa-icon src=…>`
+   sites left are `data:` URIs).
+3. **`connect-src`.** No `<wa-icon>` fetches an SVG over the network any more: glyphs come
+   from the bundled `library="fa"`, and the two `keep-nsf-card` sites are `data:` URIs.
+   `'self' data:` suffices — the `*` in the sketch is far wider than the app needs.
 4. **`worker-src 'self' blob:` is load-bearing.** `keep-monaco-editor.ts` instantiates
    Monaco's `editor`/`json`/`ts` workers via Vite's `?worker` imports, which produce blob or
    same-origin worker URLs. **Requirement:** keep this directive in production, or Monaco
