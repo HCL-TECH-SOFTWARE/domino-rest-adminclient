@@ -15,6 +15,7 @@
     ],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
+    "allowArbitraryExtensions": true,
     "composite": true,
     "declaration": true,
     "esModuleInterop": true,
