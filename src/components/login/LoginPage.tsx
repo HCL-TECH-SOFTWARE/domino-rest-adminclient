@@ -14,7 +14,7 @@ import { styled } from '@linaria/react';
 // a dependency of this file (FiInfo), so switching to its equivalents drops MUI without
 // introducing a new pattern. Both icon sets are due to be replaced by `<wa-icon>` in #718.
 import { FiInfo, FiMoon, FiSun } from 'react-icons/fi';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
@@ -25,13 +25,19 @@ import {
   KeepApiErrorDialog,
   KeepButton,
   KeepDropdown,
-  KeepInputPassword,
-  KeepInputText,
   KeepTooltip
 } from '../keep-elements/KeepElements';
-import type { KeepInputBase } from '../keep-elements/keep-input-base';
-import type InputText from '../keep-elements/keep-input-text';
-import type InputPassword from '../keep-elements/keep-input-password';
+// WebAwesome's own React binding, as `AppShell.tsx` already does for `wa-page`.
+//
+// The two fields used to be `keep-input-text` / `keep-input-password`: Lit elements whose
+// entire job was to render one `<wa-input>` and re-declare `label`/`hint`/`placeholder`/
+// `required` to pass through to it. That shadow root bought nothing and cost plenty — the
+// value and validity of the real control were one boundary further down, so this page
+// reached through `?.shadowRoot.querySelector('wa-input')` for them, and a base class had
+// to exist to give the two wrappers a public API for what `wa-input` already exposes.
+// `wa-input` is also theme-aware on its own, which retires the `!important` dark-mode
+// overrides those elements carried.
+import WaInput from '@awesome.me/webawesome/dist/react/input/index.js';
 import type Dropdown from '../keep-elements/keep-dropdown';
 import type ApiErrorDialog from '../keep-elements/keep-api-error-dialog';
 import { AlertManager, checkForResponse } from '../../utils/common';
@@ -53,20 +59,13 @@ const CREDENTIALS_REJECTED = 'Incorrect username or password';
 const alertMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-/**
- * Validate one field and return its value, or `null` if the field is missing or invalid.
- *
- * `reportUserValidity()` leaves a failing field in the `user-invalid` custom state that
- * `keep-input-base`'s `:state(user-invalid)` rule styles, so a `null` here has already
- * told the user which field it was (#742). Returning the value in the same step is what
- * lets callers do the whole gate in one expression, without a `!` on the read.
- *
- * This page used to hold that logic itself, reaching through two shadow roots for the
- * `wa-input` and encoding WebAwesome's `hasInteracted` ordering by hand. Both moved onto
- * the element (#743) — the quirks belong where the `wa-input` does.
- */
-const validated = (field: KeepInputBase | null): string | null =>
-  field?.reportUserValidity() ? field.value : null;
+/** Field errors, keyed by field. An absent key means the field is fine. */
+type FieldErrors = { username?: string; password?: string };
+
+const REQUIRED = {
+  username: 'Enter your username',
+  password: 'Enter your password',
+};
 
 const Copyright = () => (
   <span className="small-text text-center">
@@ -271,40 +270,22 @@ const LoginPage = () => {
   const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
   const [authType, setAuthType] = useState('password');
 
-  const usernameRef = useRef<InputText | null>(null)
-  const passwordRef = useRef<InputPassword | null>(null)
   const oidcRef = useRef<Dropdown | null>(null)
   const errorDialogRef = useRef<ApiErrorDialog | null>(null)
 
   /**
-   * The username remembered for the passkey flow, kept outside the element because the
-   * username field is conditionally rendered now: OIDC mode unmounts it.
-   */
-  const passkeyUser = useRef('')
-
-  /**
-   * Show a remembered username, and keep it for the field's next mount.
+   * The two fields are ordinary controlled inputs.
    *
-   * Both callers — the passkey probe on mount and a successful registration — used to
-   * write it straight through two shadow roots, the first of them unguarded. The ref half
-   * is new, and needed: on an OIDC-configured server the page opens in `oidc` mode, so the
-   * field is not mounted when `keep_user` arrives from the probe.
+   * They were uncontrolled custom elements read through their shadow roots, which is what
+   * every awkward thing about this form grew out of: a ref per field, a ref to remember the
+   * passkey username across the unmount that OIDC mode causes, a ref callback to reapply it,
+   * and an effect that had to await the element's first render before it could mark anything.
+   * State makes all of that ordinary React — the prefill is `setUsername(…)` and survives
+   * unmounting because it never lived in the DOM.
    */
-  const showPasskeyUser = (user: string) => {
-    if (!user) return;
-    passkeyUser.current = user;
-    if (usernameRef.current) usernameRef.current.value = user;
-  }
-
-  /**
-   * Ref callback rather than a plain ref object, so a remount can be noticed: coming back
-   * from OIDC mode gives a fresh, empty field, and the remembered name should reappear in
-   * it. `!el.value` so it can never overwrite something already typed.
-   */
-  const attachUsername = useCallback((el: InputText | null) => {
-    usernameRef.current = el;
-    if (el && passkeyUser.current && !el.value) el.value = passkeyUser.current;
-  }, [])
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -312,15 +293,30 @@ const LoginPage = () => {
     loginPath: '/api/webauthn-v1/login'
   });
 
+  /**
+   * Check the fields a mode needs and publish the failures. Returns whether to proceed.
+   *
+   * The whole of validation, now that the values are state. It replaces WebAwesome's
+   * constraint API plus the ordering it required — `hasInteracted` before `checkValidity()`,
+   * because `user-invalid` is computed from both — and `setCustomValidity` for the errors no
+   * constraint could express. `aria-invalid` on the field says the same thing to CSS and to
+   * a screen reader, and this decides when to say it.
+   */
+  const validate = (fields: Array<keyof FieldErrors>): boolean => {
+    const values = { username, password };
+    const found: FieldErrors = {};
+    for (const field of fields) {
+      if (!values[field]) found[field] = REQUIRED[field];
+    }
+    setErrors(found);
+    return Object.keys(found).length === 0;
+  }
+
   /* Setup the login form
    Used for username / password and Webauthn login*/
   const handleSignUpWithPasskey = async (event: any) => {
     event.preventDefault();
-    // Validate both, so each field reflects its own validity, then bail if either failed.
-    // Both are `required`, so a blank one fails on `valueMissing`.
-    const username = validated(usernameRef.current);
-    const password = validated(passwordRef.current);
-    if (username === null || password === null) {
+    if (!validate(['username', 'password'])) {
       return;
     }
     // Login. first
@@ -332,7 +328,7 @@ const LoginPage = () => {
       .then((json) => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
-        showPasskeyUser(json.username);
+        setUsername(json.username);
         dispatch({
           type: LOGIN
         });
@@ -370,15 +366,16 @@ const LoginPage = () => {
   }
 
   /**
-   * Clear the "Error logging in!" alert as soon as the user edits a field.
+   * Editing a field clears both the field errors and the "Error logging in!" alert.
    *
-   * This is all that Formik's `validate` did here. It was declared as
-   * `validate: () => { dispatch(setLoginError(false)) }` — a dispatch hook wearing a
-   * validator's name, returning no errors — and it was the only part of the Formik setup
-   * that had an effect (#743). The password field gets it too now; it only ever ran for
-   * the username because that was the one field wired to `formik.handleChange`.
+   * The alert half is all that Formik's `validate` did here — it was declared as
+   * `validate: () => { dispatch(setLoginError(false)) }`, a dispatch hook wearing a
+   * validator's name, and was the only part of the Formik setup that had an effect (#743).
+   * It only ever ran for the username, the one field wired to `formik.handleChange`.
    */
-  const clearLoginError = () => {
+  const handleFieldInput = (set: (value: string) => void) => (event: React.FormEvent) => {
+    set((event.target as HTMLInputElement).value);
+    setErrors({});
     dispatch(setLoginError(false));
   }
 
@@ -416,7 +413,7 @@ const LoginPage = () => {
    * `SignupSchema` validated a pair of strings the user had never touched. Dispatching the
    * thunk directly is the same call with the detour removed (#743, #717).
    */
-  const logInWithPassword = async (username: string, password: string) => {
+  const logInWithPassword = async () => {
     dispatch(set401Error(false));
     await dispatch(login({ username, password }, () => {
       navigate('/')
@@ -425,31 +422,21 @@ const LoginPage = () => {
   }
 
   const handleClickLogIn = () => {
-    // A new attempt clears the custom error the 401 effect below applies, so a previous
-    // rejection does not leave both fields marked invalid for the rest of the session.
-    usernameRef.current?.setCustomValidity('');
-    passwordRef.current?.setCustomValidity('');
-
     switch (authType) {
-      case 'password': {
-        // Validate both fields, not just the first one that exists: the code this replaces
-        // branched on whether the *element* was present rather than on whether it was
-        // valid, so a blank password flagged the username field instead (#742).
-        const username = validated(usernameRef.current);
-        const password = validated(passwordRef.current);
-        if (username !== null && password !== null) {
-          logInWithPassword(username, password);
+      case 'password':
+        // Both fields, so each reports its own state. The code this replaces branched on
+        // whether the *element* was present rather than on whether it held anything, so a
+        // blank password flagged the username field instead (#742).
+        if (validate(['username', 'password'])) {
+          logInWithPassword();
         }
         break;
-      }
-      case 'passkey': {
+      case 'passkey':
         // Username only; the password field is not rendered in this mode.
-        const username = validated(usernameRef.current);
-        if (username !== null) {
+        if (validate(['username'])) {
           logInWithPasskey(username);
         }
         break;
-      }
       case 'oidc': {
         const selected = oidcRef.current?.selected;
         const idp = idpList.find((entry: IdP) => entry.name === selected);
@@ -525,12 +512,12 @@ const LoginPage = () => {
 
     canDoPasskey()
       .then((result: any) => {
-        if (result === true) {
-          showPasskeyUser(localStorage.getItem('keep_user') ?? '')
+        const remembered = localStorage.getItem('keep_user');
+        if (result === true && remembered) {
+          setUsername(remembered)
         }
       })
       .catch((e) => dispatch(toggleAlert(alertMessage(e))));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
 
   useEffect(() => {
@@ -574,28 +561,18 @@ const LoginPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // A 401 means the server rejected the username/password *pair*; neither field violates
-  // a constraint on its own, so this is a custom error rather than `valueMissing`.
-  // setCustomValidity() is the elements' public API for that, and reportUserValidity()
-  // then engages the :state(user-invalid) styling on both fields. Cleared on the next
-  // attempt in handleClickLogIn.
+  // A 401 means the server rejected the username/password *pair*, so it marks both fields
+  // rather than either alone. Cleared when the user next edits one.
   //
-  // Awaiting `updateComplete` is not belt-and-braces. `error401` can already be true on
-  // this page's first render — `App` dispatches `renewToken()` on mount, and a 401 from
-  // it lands in the same commit — and a Lit element renders its shadow DOM in a
-  // microtask *after* React's effects run. Marking straight away therefore found no
-  // `wa-input` and did nothing, on exactly the path that shows the login page after an
-  // expired session. The previous code had the same gap and swallowed it: it read the
-  // control as `undefined` and called `?.setCustomValidity` on it.
+  // Being state rather than a DOM write is what makes this correct on first render.
+  // `error401` can already be true when the page mounts — `App` dispatches `renewToken()`
+  // and a 401 from it lands in the same commit — and the previous versions both wrote to a
+  // `wa-input` that a Lit element had not rendered yet, so the marking silently did
+  // nothing on exactly the path that shows this page after an expired session.
   useEffect(() => {
-    if (!error401 || idpLogin) return;
-    const fields = [usernameRef.current, passwordRef.current];
-    Promise.all(fields.map((field) => field?.updateComplete)).then(() => {
-      for (const field of fields) {
-        field?.setCustomValidity(CREDENTIALS_REJECTED);
-        field?.reportUserValidity();
-      }
-    });
+    if (error401 && !idpLogin) {
+      setErrors({ username: CREDENTIALS_REJECTED, password: CREDENTIALS_REJECTED });
+    }
   }, [error401, idpLogin])
 
   useEffect(() => {
@@ -658,19 +635,25 @@ const LoginPage = () => {
             {/* Which fields a mode shows. This was a `useEffect` on `authType` adding and
                 removing `.hidden`/`.removed` classes by `document.getElementById`, next to
                 an OIDC dropdown that was already conditionally rendered — two paradigms in
-                one form (#743). Note `value` is deliberately never passed as a prop:
-                @lit/react re-applies element props on *every* render with no dirty check,
-                so a `value` prop would overwrite whatever the user had typed. The passkey
-                prefill goes through `showPasskeyUser` instead. */}
+                one form (#743).
+
+                `aria-invalid` carries the failure, styled by an attribute selector in
+                `keep-overrides.css`. It replaces WebAwesome's `:state(user-invalid)`, which
+                needed `hasInteracted` set before `checkValidity()` to appear at all and said
+                nothing to assistive tech. The message goes in `hint`, which `wa-input`
+                already wires to the inner control's `aria-describedby`, so it is announced
+                rather than merely coloured. */}
             <LoginForm>
               {authType !== 'oidc' &&
                 <section className='full-width'>
-                  <KeepInputText
+                  <WaInput
                     id='form-username'
                     label='Username'
-                    onChange={clearLoginError}
-                    ref={attachUsername}
                     required
+                    value={username}
+                    onInput={handleFieldInput(setUsername)}
+                    aria-invalid={errors.username ? 'true' : undefined}
+                    hint={errors.username}
                   />
                 </section>
               }
@@ -693,13 +676,17 @@ const LoginPage = () => {
               }
               {authType === 'password' &&
                 <section className='full-width'>
-                  <KeepInputPassword
+                  <WaInput
                     id='section-password'
                     className='input'
+                    type='password'
+                    password-toggle
                     label='Password'
-                    onChange={clearLoginError}
-                    ref={passwordRef}
                     required
+                    value={password}
+                    onInput={handleFieldInput(setPassword)}
+                    aria-invalid={errors.password ? 'true' : undefined}
+                    hint={errors.password}
                   />
                 </section>
               }
