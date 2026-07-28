@@ -4,12 +4,17 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css } from 'lit';
+import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { KeepElement } from './keep-element';
-// Import Shoelace components
-import '@awesome.me/webawesome/dist/components/input/input.js';
+import { KeepInputBase } from './keep-input-base';
 
+/**
+ * Password field, with WebAwesome's reveal toggle. Tag: `keep-input-password`.
+ *
+ * The styles and the value/validity API live on {@link KeepInputBase}, shared with
+ * `keep-input-text` — see the notes there, including why `:state(user-invalid)` replaced
+ * the Shoelace-era `data-user-invalid` attribute (#742).
+ */
 @customElement('keep-input-password')
 export default class InputPassword extends KeepElement {
   /* `:state(user-invalid)` below, not the Shoelace-era `data-user-invalid` attribute —
@@ -42,8 +47,6 @@ export default class InputPassword extends KeepElement {
 
   @property({ type: String }) label = '';
   @property({ type: String }) helpText?: string;
-  @property({ type: String }) placeholder = '';
-  @property({ type: Boolean }) required = false;
 
   /** Plain field used by render() (matches original — not the `helpText` property). */
   hint = '';
@@ -58,6 +61,8 @@ export default class InputPassword extends KeepElement {
             placeholder="${this.placeholder}"
             password-toggle
             ?required="${this.required}"
+            .value="${this.value}"
+            @input="${this.handleInput}"
         >
             <slot></slot>
         </wa-input>

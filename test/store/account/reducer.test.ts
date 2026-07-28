@@ -25,8 +25,6 @@ const initial: AccountState = {
   navitems: {
     databases: false,
     apps: false,
-    users: false,
-    groups: false,
   },
   authenticated: false,
   error: false,
@@ -72,7 +70,7 @@ describe('accountReducer', () => {
   });
 
   it('NAVITEMS replaces navitems from the payload', () => {
-    const navitems = { apps: true, databases: true, groups: false, users: true };
+    const navitems = { apps: true, databases: true };
     expect(accountReducer(initial, { type: NAVITEMS, payload: navitems }).navitems).toEqual(
       navitems
     );

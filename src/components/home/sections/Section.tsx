@@ -11,10 +11,9 @@ import Tip from './Tip';
 import database from './appdev.jpg';
 import databaseDev from './databasedev.jpg';
 import apps from './apps.jpg';
-import people from './database.jpg';
 import consents from './consents.jpg';
 import keepBlockDiagram from './keepblockdiagram.svg';
-import { databases, apps as app, people as users } from '../../sidenav/Routes';
+import { databases, apps as app } from '../../sidenav/Routes';
 import { AppState } from '../../../store';
 import { showPages } from '../../../store/account/action';
 
@@ -106,18 +105,6 @@ const Section = () => {
                     description="REVIEW/REVOKE CONSENTS"
                   />
                 )
-              );
-            })}
-          {navitems.users &&
-            users.map((route) => {
-              return (
-                <Tip
-                  key={route.label}
-                  uri={route.uri}
-                  backgroundImage={people}
-                  heading="People Management"
-                  description="Manage Notes users"
-                />
               );
             })}
         </FeatureContainer>

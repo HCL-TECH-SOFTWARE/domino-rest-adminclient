@@ -16,7 +16,7 @@ import Divider from '@mui/material/Divider';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { AppState } from '../../store';
-import { appRoutes as routes, apps, databases, groups, people, settings } from './Routes';
+import { appRoutes as routes, apps, databases, settings } from './Routes';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { KeepTooltip } from '../keep-elements/KeepElements';
@@ -201,53 +201,7 @@ const SideNav: React.FC<SidenavProps> = ({ expanded }) => {
           );
         })}
 
-      {navitems.users &&
-        people.map((route) => {
-          const Icon = route.icon;
-          return (
-            <NavLink
-              key={route.label}
-              className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-              to={route.uri}>
-              <KeepTooltip placement="right" content={route.label}>
-                <ListItemButton className="link-container medium-text" key={route.label}>
-                  <ListItemIcon className='tiny-text'>
-                    <Icon className='color-text-primary' />
-                  </ListItemIcon>
-                  <ListItemText>
-                    <span className="side-nav-text-link">
-                      {route.label}
-                    </span>
-                  </ListItemText>
-                </ListItemButton>
-              </KeepTooltip>
-            </NavLink>
-          );
-        })}
 
-      {navitems.groups &&
-        groups.map((route) => {
-          const Icon = route.icon;
-          return (
-            <NavLink
-              key={route.label}
-              className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-              to={route.uri}>
-              <KeepTooltip placement="right" content={route.label}>
-                <ListItemButton className="link-container medium-text" key={route.label}>
-                  <ListItemIcon className='tiny-text'>
-                    <Icon className='color-text-primary' />
-                  </ListItemIcon>
-                  <ListItemText>
-                    <span className="side-nav-text-link">
-                      {route.label}
-                    </span>
-                  </ListItemText>
-                </ListItemButton>
-              </KeepTooltip>
-            </NavLink>
-          );
-        })}
 
       <Divider />
 

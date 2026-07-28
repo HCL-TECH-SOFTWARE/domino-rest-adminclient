@@ -4,12 +4,17 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css } from 'lit';
+import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { KeepElement } from './keep-element';
-// Import Shoelace components
-import '@awesome.me/webawesome/dist/components/input/input.js';
+import { KeepInputBase } from './keep-input-base';
 
+/**
+ * Single-line text field. Tag: `keep-input-text`.
+ *
+ * The styles and the value/validity API live on {@link KeepInputBase}, shared with
+ * `keep-input-password` — see the notes there, including why `:state(user-invalid)`
+ * replaced the Shoelace-era `data-user-invalid` attribute (#742).
+ */
 @customElement('keep-input-text')
 export default class InputText extends KeepElement {
   /*
@@ -53,8 +58,6 @@ export default class InputText extends KeepElement {
 
   @property({ type: String }) label = '';
   @property({ type: String }) hint = '';
-  @property({ type: String }) placeholder = '';
-  @property({ type: Boolean }) required = false;
 
   render() {
     return html`
@@ -64,6 +67,8 @@ export default class InputText extends KeepElement {
             hint="${this.hint}"
             placeholder="${this.placeholder}"
             ?required="${this.required}"
+            .value="${this.value}"
+            @input="${this.handleInput}"
         >
             <slot></slot>
         </wa-input>

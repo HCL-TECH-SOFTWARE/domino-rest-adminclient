@@ -2,26 +2,30 @@
 
 **Scope:** Map every React component under `src/components/**` (plus top-level `App.tsx`, `Views.tsx`, `Footer.tsx`) to a migration target: an existing hand-written `keep-*` component, a real WebAwesome `wa-*` component, a **new** Lit component to author, or **KEEP** (leave on React/MUI for now).
 
-> **Refreshed 2026-07-27** against branch `new_code` @ `e17010c`. Previously refreshed
-> 2026-07-27 against `7594672`; originally written 2026-07-24, when the Lit layer was
-> 27 untyped `.js` files under `lit-elements/`.
+> **Refreshed 2026-07-28** against branch `new_code` @ `fcab645`. Previous refreshes:
+> `e17010c` and `7594672` (both 2026-07-27); originally written 2026-07-24, when the Lit
+> layer was 27 untyped `.js` files under `lit-elements/`.
 >
-> **Phase 0 (Foundation) is essentially COMPLETE.** All elements are TypeScript with
-> decorators on a shared base class, renamed `lit-*` → `keep-*`, each with a unit test.
-> One Phase-0 item — collapsing the four button components — is **not** done.
+> **Phase 0 (Foundation) is COMPLETE.** All elements are TypeScript with decorators on a
+> shared base class, renamed `lit-*` → `keep-*`, each with a unit test — and the last
+> outstanding Phase-0 item, collapsing the four button components, **landed in #701**.
 >
-> **The first real screen conversion landed (PR #669).** The Source tab of
-> `FormsContainer.tsx` now renders `keep-monaco-editor` through the `@lit/react` bridge
-> instead of `@monaco-editor/react`, gained a **Diff view**, moved its icons onto a
-> self-hosted Font Awesome library, and pushed theme switching into
-> `src/services/theme-service.ts`. §5.3 is now a *done* section with a short tail.
+> **Three MUI subsystems have now been replaced by `keep-*` elements**, not just one:
+> the Monaco editor (#669), the **MUI X tree view** → `keep-tree` (#704/#723), and the
+> **MUI X date picker** → `keep-input-date` (#703/#739). `@mui/x-date-pickers` and
+> `@mui/x-tree-view` are gone from `package.json`; `@mui/x-data-grid` is the only MUI X
+> package left, in 5 files.
 >
-> **Two mapping corrections** (unchanged, re-verified against the installed
-> `@awesome.me/webawesome@3.10.0`):
-> - ✅ **`<wa-page>` is FREE**, not Pro — `dist/components/page/` ships in the npm
->   package. Report 03's biggest go/no-go gate is resolved.
-> - 🔴 **There is no WebAwesome data grid or date picker in _any_ tier.** "Buy WA Pro
->   Data Grid" was never a real option; §5.1 is corrected below.
+> **The `wa-page` shell landed** (#707/#767). `AppShell.tsx` replaces `HomeElement`'s flex
+> scaffolding and `RightPanel`'s `calc()` arithmetic; the duplicated `MobileSidebar` is
+> deleted rather than ported. Report 03 owns the detail.
+>
+> **Two mapping facts** (re-verified against the installed `@awesome.me/webawesome@3.10.0`):
+> - ✅ **`<wa-page>` is FREE**, not Pro — and it is now in production use, which settles
+>   the question empirically as well as by inspection.
+> - 🔴 **There is no WebAwesome data grid in _any_ tier.** The date-picker half of this
+>   gap was closed by authoring `keep-input-date` on `wa-input[type=date]`; the DataGrid
+>   half is the one blocking decision left (§5.1, **#702**).
 >
 > **One standing claim retracted:** §2.1 used to say `src/index.tsx` "sets the asset base
 > path". The two `setBasePath()` calls were **deleted** in PR #673 and must not come back
@@ -38,83 +42,100 @@
 
 ## 0. What changed since 2026-07-24
 
-### 0.1 New this refresh (`7594672` → `e17010c`, PRs #667–#673)
+### 0.1 New this refresh (`e17010c` → `fcab645`, 80 commits)
 
 | §  | Item | Status | Where |
 |----|------|:---:|---|
-| §5.3 | Wire `keep-monaco-editor` into the Source tab | ✅ **DONE** — `FormsContainer.tsx` imports `KeepMonacoEditor` from `KeepElements` and renders it at line 658; **`@monaco-editor/react` has zero imports left in `src`** | PR #669 |
-| §5.3 | **Diff view** (new capability, not in the old plan) | ✅ **DONE** — third option in the view dropdown after Tree/Text. `keep-source-header.ts` exports `TEXTUAL_VIEWS`/`isTextualView()`; Text and Diff share one Monaco buffer, so switching preserves edits. `keep-monaco-editor` gained `diffMode`/`originalValue` and a `createDiffEditor` path | PR #669 |
-| §5.3 | Test `keep-monaco-editor` | ✅ **DONE** — two suites, deliberately: `keep-monaco-editor.test.ts` drives a **fake** `monaco-editor` (component behaviour), while `.lifecycle.test.ts` runs **real** Monaco under jsdom via `test/test-utils/monaco.ts` (library invariants a fake cannot reach — it caught a dispose-ordering bug the fake suite passed through). `document.queryCommandSupported` polyfilled in `test/setupTests.ts`. See report 01 §A10 | PRs #668, #673 |
-| §5.3 | Move `prettier` to `dependencies` | ✅ **DONE** — and its three modules are now **dynamically** `import()`ed, splitting `babel` 316.53 kB / `estree` 210.43 kB / `standalone` 81.05 kB out of the entry chunk | PR #673 |
-| §5.3 | Make the **Monaco** import dynamic | 🔴 **NOT DONE** — `keep-monaco-editor.ts:11` is still a top-level `import * as monaco from 'monaco-editor'`. Entry chunk is **6,322.51 kB / 1,703.85 kB gzip**; the drop from 6.94 MB was prettier, not Monaco | — |
-| §5.5 | Icons off absolute asset paths | ✅ **DONE** — `src/services/icon-library.ts` registers a **self-hosted Font Awesome** library as `library="fa"`, and #700 removed the last `IMG_DIR` reference. Every image is now `import`ed, so Vite emits it beside the app bundle and its URL follows the same base. `IMG_DIR` no longer exists. | PR #669, #725, #700 |
-| §6.5 | Centralise the theme carriers | 🟡 **PARTIAL** — `src/services/theme-service.ts` is now the single writer for the three DOM carriers of appearance: `wa-dark` on `<html>`, `<html>.style.colorScheme`, and `body.dataset.theme`. This is *plumbing*, not tokens — the per-component hardcoded colors are untouched | PR #669 |
-| §2.1 | `setBasePath()` | ✅ **REMOVED** — both calls deleted. In WebAwesome 3.x the base path feeds exactly one consumer (the autoloader); this app imports its **18 distinct** WA components explicitly, so the value was never read. The old call also pointed at a *file* under `webawesome@3.6.0`, a version no longer installed. `src/index.tsx:18-27` documents why it must not return | PR #673 |
+| §6.2 | **Collapse the four `keep-button*` components into one** | ✅ **DONE** — the last open Phase-0 item. `keep-button-yes`/`-no`/`-neutral` were plain `<button>`s with hardcoded hex; they are gone, and `keep-button` gained the variants. −3 test files | #701 |
+| §5.2 | **Date picker** — replace `@mui/x-date-pickers` | ✅ **DONE** — `keep-input-date` on `wa-input[type=date]`. The package **and `dayjs`'s only real consumer** are gone; §5.2 is now a *done* section | #703/#739 |
+| §5.5 | **Tree view** — replace `@mui/x-tree-view` | ✅ **DONE** — `keep-tree` on `<wa-tree selection="leaf">`, 11 tests. This was flagged as "the cheapest MUI X removal in the program" and it was | #704/#723 |
+| §5.3 | Make the **Monaco** import dynamic | ✅ **DONE** — `keep-monaco-editor.ts` now `import()`s `monaco-editor`, its three workers and the editor CSS lazily. Entry chunk **6,322.51 kB → 2,111.11 kB** (−66.6 %); `editor.api2` is a 3,626.93 kB chunk fetched on first use | #693/#729 |
+| §5.5 | Icons off absolute asset paths | ✅ **DONE, verified** — `IMG_DIR` is down to **1** textual match, a doc comment in `icon-library.ts`. Every icon resolves through the self-hosted `library="fa"` | #700, #725, #730 |
+| §6.5 | Move ad-hoc dark-mode overrides to a token layer | ✅ **DONE for the element layer** — #708 replaced 93 `light-dark()` literals across 11 elements with `var(--wa-color-*)`, and deleted the `:host-context` dark overrides that existed because `color-scheme` does not inherit reliably through a shadow boundary (custom properties do). What remains inside `keep-*` is the deliberate editor-palette carve-out. The **Linaria/CSS** side is report 03's | #708, report 03 |
+| §2.5 | Centralise the theme carriers | ✅ **DONE** — `theme-service.ts` remains the single writer for `wa-dark`, `colorScheme` and `body.dataset.theme`, and #708 removed the *reason* components used to care: no component now reads a theme value at all | #669, #708 |
+| — | **App shell on `wa-page`** | ✅ **DONE** — `AppShell.tsx` maps the app's regions onto `wa-page` slots. `HomeElement`'s `AppContainer`, `RightPanel`'s `calc(100% - 241px|50px)` and the duplicated `MobileSidebar` are deleted, not ported | #707/#751/#767 |
+| §5.1 | Decide the DataGrid strategy | 🔴 **STILL OPEN** — now the *only* blocking component decision in this report. 5 files, `@mui/x-data-grid@9.10.1` | **#702** |
 
-### 0.2 Carried forward from the previous refresh
+### 0.2 Where raw `wa-*` markup lives — a claim that got better
+
+The previous refresh reported "17 files with raw `wa-*` markup, exactly one a `.tsx`
+(`scopes/ScopeLists.tsx`, a `<wa-drawer>`)". Re-measured on this commit, **no `.tsx` file
+contains raw `wa-*` markup at all**: all five `.tsx` matches are prose inside comments,
+including the `ScopeLists.tsx` one, which now renders `KeepDrawer`. Every real `wa-*` tag
+in the tree is inside a `keep-*` element template, plus the single `WaPage` React wrapper
+that `AppShell.tsx` imports from `dist/react/page/`.
+
+That is the boundary this report has been arguing for since the first revision, and it now
+holds without exception. It matters for report 04: when the React layer goes, nothing has
+to be un-picked from JSX.
+
+### 0.3 Carried forward from earlier refreshes
 
 | §  | Item | Status | Where |
 |----|------|:---:|---|
-| §6.1 | Author elements in TypeScript with `lit` decorators | ✅ **DONE** — all 26 elements, `@customElement`/`@property`/`@state`/`@query` | PRs #652–#659 |
+| §6.1 | Author elements in TypeScript with `lit` decorators | ✅ **DONE** — all 25 elements, `@customElement`/`@property`/`@state`/`@query` | PRs #652–#659 |
 | §6.7 | Shared base class | ✅ **DONE** — `KeepElement` (`keep-element.ts`) with a typed, composed `emit()` | `88a47bd` |
 | §6.4 | Consistent event contract | ✅ **DONE** — `emit()` dispatches `bubbles: true, composed: true`; `KeepElements.tsx` maps `events` for `KeepCheckbox` and `KeepMonacoEditor` | `88a47bd` |
 | §6.3 | Single global `webawesome.css` import | ✅ **DONE** — exactly one import, in `src/index.tsx`; components import only the `wa-*` element modules they render | PRs #652–#659 |
-| §6.6 | Predictable registration | ✅ **DONE** — one file per tag, self-registering via `@customElement`; 25 of the 26 re-exported through `KeepElements.tsx` (`keep-schema-status` is internal by design) |  |
+| §6.6 | Predictable registration | ✅ **DONE** — one file per tag, self-registering via `@customElement`; 24 of the 25 re-exported through `KeepElements.tsx` (`keep-schema-status` is internal by design) |  |
 | §6.x | Naming | ✅ **DONE** — `lit-elements/` → `keep-elements/`, `lit-*` → `keep-*`, `LitElements.tsx` → `KeepElements.tsx`, `lit-overrides.css` → `keep-overrides.css` | `8ea711b`, PR #666 |
-| — | Test coverage for the element layer | ✅ **DONE** — 28 suites under `test/components/keep-elements/` (26 elements + the base class + a Monaco lifecycle suite), `test/test-utils/lit.ts` (`mountLit`/`cleanupLit`); shadow-DOM assertions work. The directory now sits at **84.2 % line coverage** | report 01 §B2 |
-| §6.2 | Collapse `lit-button*` into one component | 🔴 **NOT DONE** — `keep-button` (wraps `wa-button`) still coexists with `keep-button-yes`/`-no`/`-neutral`, which are plain `<button>`s with hardcoded hex | — |
-| §6.5 | Move ad-hoc dark-mode overrides to a token layer | 🔴 **NOT DONE** — e.g. `keep-button.ts` still carries a `#f4e9ff` `::part` override (which turns out to be **dead code** — §6.5); 100 `light-dark()` literals across `keep-elements/` | report 03 |
-| §7 P0 | Decide the DataGrid + date-picker strategy | 🔴 **NOT DONE** — and the option set has changed (§5.1, §5.2) | — |
+| — | Test coverage for the element layer | ✅ **DONE** — 29 suites under `test/components/keep-elements/` (25 elements + the base class + a Monaco lifecycle suite + two cross-cutting suites), `test/test-utils/lit.ts` (`mountLit`/`cleanupLit`); shadow-DOM assertions work. The directory sits at **84.5 % line coverage** against an **80 %** gate | report 01 §B2 |
+| §6.2 | Collapse `lit-button*` into one component | ✅ **DONE** (#701) — `keep-button-yes`/`-no`/`-neutral` deleted; `keep-button` carries the variants | — |
+| §6.5 | Move ad-hoc dark-mode overrides to a token layer | ✅ **DONE for `keep-*`** (#708) — the `#f4e9ff` `::part` override is gone with the buttons it belonged to; 93 `light-dark()` literals became `var(--wa-color-*)`. The residue outside the element layer is report 03's | report 03 |
+| §7 P0 | Decide the DataGrid + date-picker strategy | 🟡 **half done** — date picker solved by `keep-input-date` (#703). DataGrid still open (**#702**) | §5.1 |
 | — | `copyable-text.js` | ✅ **REMOVED** as dead code (`f14aff6`); `wa-copy-button` is the path if copy UX returns | — |
 | — | `home/About.tsx` | ✅ **REMOVED** (`757e657`) — drop from the inventory | — |
 | — | `src/custom-elements.d.ts` | ✅ **REMOVED** — stale JSX intrinsic tags (`app-status`, `drawer-container`) dropped; typing now comes from each element's `HTMLElementTagNameMap` augmentation | `88a47bd`, `8ea711b` |
 
-**Net progress on the component migration itself: one screen, and it was the hard one.**
-The Source tab is the first React surface to be handed to a `keep-*` element that owns
-real behaviour rather than presentation, and it proved the bridge end-to-end: props in,
-`change` events out, theme observed from the DOM, a new feature (Diff) built in Lit rather
-than React. Everything else is unchanged — 68 `.tsx` files still import `@mui/material`.
-The previous refresh bought *foundation quality*; this one bought *proof*. Phases 1–3 are
-still the right next move.
+**Net progress: the element layer stopped being a demo and started deleting dependencies.**
+The previous refresh could point at one converted screen. This one can point at three MUI
+subsystems removed outright — `@monaco-editor/react`, `@mui/x-tree-view`,
+`@mui/x-date-pickers` — plus the app shell moved onto `wa-page` and the whole styling
+substrate tokenized. What has *not* moved is the bulk: **60 `.tsx` files still import
+`@mui/material`** (was 68), and that number will only fall through Phases 1–5. The
+foundation is finished; the volume work is next.
 
 ---
 
 ## 1. Executive summary
 
-- **130 React `.tsx` files**; **68** import `@mui/material`, **44** import
-  `@mui/icons-material`, **18** use `react-icons`, **19** use Formik, **77** touch
-  `react-redux`. Counted across all of `src`, MUI is imported in **82 files**:
-  **175** `@mui/material` references, **99** `@mui/icons-material`, **5** `@mui/x-data-grid`.
-- **26 TypeScript Lit elements** in `src/components/keep-elements/`, on a shared
-  `KeepElement` base, of which **25** are wrapped for React via `@lit/react`'s
+- **125 React `.tsx` files** (was 130); **60** import `@mui/material`, **41** import
+  `@mui/icons-material`, **18** use `react-icons`, **19** use Formik, **70** touch
+  `react-redux`. Counted across all of `src`, MUI is imported in **75 files**:
+  **149** `@mui/material` references, **87** `@mui/icons-material`, **5** `@mui/x-data-grid`.
+- **25 TypeScript Lit elements** in `src/components/keep-elements/` (26 modules — the
+  extra is the `KeepElement` base), **24** wrapped for React via `@lit/react`'s
   `createComponent` in `KeepElements.tsx`. Most wrap a `wa-*` element internally. Every
-  one has a unit test. (The 26th, `keep-schema-status`, is deliberately internal —
-  `keep-nsf-card` renders it inside its own template, so no React wrapper is needed.)
-- **Raw `wa-*` tags live almost entirely inside the Lit layer, not in React.** Across
-  `src` there are **17 files** with raw `wa-*` markup, and exactly **one is a `.tsx`**
-  (`scopes/ScopeLists.tsx`, a `<wa-drawer>`). Everything else is inside `keep-*` element
-  templates, which is where it belongs. Counts: 28 `<wa-icon>`, 8 `<wa-button>`,
-  7 `<wa-input>`, 5 `<wa-option>`, 5 `<wa-dropdown-item>`, 2 each of `wa-switch`,
-  `wa-dropdown`, `wa-drawer`, `wa-checkbox`, `wa-card`, `wa-callout`, and 1 each of
-  `wa-tree`, `wa-tree-item`, `wa-tooltip`, `wa-select`, `wa-details`. In total the app
-  imports **18 distinct** WebAwesome components.
+  one has a unit test.
+- **No raw `wa-*` markup remains in React.** Every `wa-*` tag in `src` is inside a `keep-*`
+  element template; the only WebAwesome component React touches directly is the `WaPage`
+  wrapper in `AppShell.tsx`, imported from `dist/react/page/`. Tag counts across the Lit
+  layer: 32 `<wa-icon>`, 9 `<wa-input>`, 8 `<wa-button>`, 5 each `<wa-option>` and
+  `<wa-dropdown-item>`, 4 `<wa-tree>`, 3 `<wa-tree-item>`, 2 each `wa-switch`,
+  `wa-dropdown`, `wa-drawer`, `wa-checkbox`, `wa-card`, `wa-callout`, 1 each `wa-tooltip`,
+  `wa-select`, `wa-details`. The app imports **18 distinct** WA components from
+  `dist/components/` plus `page` from `dist/react/` — **19** in total.
 
-  > **Correction:** the previous revision reported these as "raw `wa-*` usage in React …
-  > 26 files total". Both halves were wrong — it is 17 files, and it is not React.
+  > **Correction, second time:** the revision before last said "raw `wa-*` usage in React
+  > … 26 files". The last revision corrected that to "17 files, one a `.tsx`". Both
+  > over-counted: the `.tsx` match was a comment then too. The honest figure has always
+  > been **zero**.
 
 - **The bulk of the UI still maps cleanly to free WebAwesome components** (buttons,
   inputs, checkbox, switch, select, dialog, drawer, tabs, tooltip, card, dropdown/menu,
   alert→callout, spinner, breadcrumb, tree, divider, avatar, badge, radio, textarea,
   **page**).
-- **The hard cases narrowed, and one is now closed.** `<wa-page>` is free (removing
-  report 03's licensing gate), but **WebAwesome ships no data grid and no date picker at
-  any tier** — so those two are custom-or-third-party, full stop. **Monaco is done**: the
-  element is authored, tested, wired into the Source tab, and has already grown a feature
-  (Diff) that the React wrapper never had. Formik (19 files) is unchanged: a state
-  library, not a widget.
-- **Consistency debt is mostly paid.** What remains: the four-way button duplication, the
-  per-component hardcoded colors, and the 38 `IMG_DIR` icon paths — all cheap, and all of
-  which block report 03's token work.
+- **The hard cases are down to one.** `<wa-page>` is free *and now in production use*.
+  **Monaco is done** (authored, tested, wired, dynamically imported, and it grew a Diff
+  view the React wrapper never had). The **date picker** was solved by authoring
+  `keep-input-date` on `wa-input[type=date]` rather than buying or importing anything, and
+  the **tree view** by `keep-tree` on `<wa-tree>`. That leaves **MUI X DataGrid** (5 files)
+  as the single blocking component decision — **#702**. Formik (19 files) is unchanged: a
+  state library, not a widget, and its own issue (**#717**).
+- **Consistency debt is paid.** The four-way button duplication (#701), the per-element
+  hardcoded colours (#708) and the `IMG_DIR` icon paths (#700/#730) are all closed. What
+  is left in this area is not consistency but *volume*: 60 `.tsx` files importing
+  `@mui/material`, and 3 icon systems still to converge (**#718**).
 
 ---
 
@@ -436,15 +457,18 @@ Target key: **[wa]** = replace with a `wa-*` (§3) · **[keep]** = an existing `
 | `wrapper/ErrorWrapper.tsx` | stay | S | Error boundary (React-specific API). |
 | `flex/index.tsx` | css | S | → report 03. |
 
-### Existing Lit inventory (26 elements — reference)
+### Existing Lit inventory (25 elements — reference)
 
 `keep-alert` · `keep-api-error-dialog` · `keep-app-status` · `keep-autocomplete` ·
-`keep-button` · `keep-button-yes` · `keep-button-no` · `keep-button-neutral` ·
-`keep-checkbox` · `keep-default-card` · `keep-dialog-actions` · `keep-dialog-content` ·
-`keep-dialog-header` · `keep-drawer` · `keep-dropdown` · `keep-input-password` ·
-`keep-input-text` · **`keep-monaco-editor`** · `keep-nsf-card` · `keep-schema-status` ·
+`keep-button` · `keep-checkbox` · `keep-default-card` · `keep-dialog-actions` ·
+`keep-dialog-content` · `keep-dialog-header` · `keep-drawer` · `keep-dropdown` ·
+**`keep-input-date`** · `keep-input-password` · `keep-input-text` ·
+**`keep-monaco-editor`** · `keep-nsf-card` · `keep-schema-status` ·
 `keep-source` *(file: `keep-source-header.ts`)* · `keep-source-tree` *(file: `keep-source.ts`)* ·
-`keep-switch` · `keep-textform` · `keep-textform-array` · `keep-tooltip`.
+`keep-switch` · `keep-textform` · `keep-textform-array` · `keep-tooltip` · **`keep-tree`**.
+
+Changed since the last refresh: −`keep-button-yes`/`-no`/`-neutral` (#701),
++`keep-input-date` (#703), +`keep-tree` (#704).
 
 Plus the non-element base class `keep-element.ts` and the bridge `KeepElements.tsx`
 (28 files in `src/components/keep-elements/`).
@@ -484,23 +508,28 @@ sorting, selection, cell rendering, pagination.
   grid decision lands. **Still the recommended interim**, and the reason `@mui/material`
   will outlive most other MUI usage.
 
-**Risk:** this decision gates the people/groups domain and is now the single largest
-blocker to dropping `react`/`react-dom` (report 04). Decide early even though you migrate
-it late — and note that (A) and (B) have very different dependency/CSP implications.
+**Risk:** this decision gates the people/groups domain and is now — with the tree view and
+date picker both solved — **the single largest blocker to dropping `react`/`react-dom`**
+(report 04). It is also the last reason `@mui/x-*` exists in `package.json` at all. Decide
+early even though you migrate it late; (A) and (B) have very different dependency and CSP
+implications. Tracked as **#702**.
 
-### 5.2 MUI X **Date Pickers** (`@mui/x-date-pickers`)
+### 5.2 MUI X **Date Pickers** (`@mui/x-date-pickers`) — ✅ SOLVED
 
-**Files (2, unchanged):** `applications/AppFilterContainer.tsx`,
-`consents/ConsentFilterContainer.tsx` (`LocalizationProvider` + `AdapterDayjs`). The
-project already depends on `dayjs`.
+**This section is closed.** #703/#739 authored `keep-input-date` on
+`wa-input[type="date"]` — the recommendation this report made, implemented as written —
+and `@mui/x-date-pickers` is **gone from `package.json`**. Both consumers
+(`applications/AppFilterContainer.tsx`, `consents/ConsentFilterContainer.tsx`) now use the
+element through the React bridge. Five tests in `keep-input-date.test.ts`.
 
-> **Correction:** WebAwesome has no date picker **in any tier** — not Pro-gated, simply
-> absent. (3.10 adds `wa-time-input` and the `known-date`/`format-date` formatting
-> helpers, but no calendar/date-picker widget.)
+Two notes worth carrying forward:
 
-**Recommendation unchanged and now unambiguous: `wa-input type="date"`** (native browser
-picker) formatted with `dayjs`. For two filter screens that is sufficient. Effort **M**,
-low risk. Reach for a custom Lit date picker only if the native control's UX is rejected.
+- **WebAwesome still has no date picker in any tier** — this was solved by *authoring*, not
+  by finding one. 3.10 ships `wa-time-input` and `known-date`/`format-date` helpers, but no
+  calendar widget. If a richer picker is ever needed, that is a custom Lit build.
+- **`dayjs` is now dead weight.** It existed for `AdapterDayjs`; the only remaining textual
+  match in `src` is a comment in `keep-input-date.ts` explaining what it replaced. See
+  report 00 P2-8.
 
 ### 5.3 **Monaco editor** — ✅ SOLVED (element authored, tested, and wired)
 
@@ -540,21 +569,16 @@ container: `keep-source-header.ts` exports `TEXTUAL_VIEWS` and `isTextualView()`
 
 **Remaining tail (none of it blocking):**
 
-1. 🔴 **Make the Monaco import dynamic.** `keep-monaco-editor.ts:11` is still
-   `import * as monaco from 'monaco-editor'` at module scope. The test problem it used to
-   cause was solved differently — a `vi.mock('monaco-editor')` fake inside
-   `keep-monaco-editor.test.ts`, plus a `document.queryCommandSupported` polyfill in
-   `test/setupTests.ts` — so what is left is purely payload: the entry chunk is
-   **6,322.51 kB / 1,703.85 kB gzip**, and moving the import into `firstUpdated()` is the
-   single largest available reduction. **S.**
-2. 🟡 **Drop the dead dependencies.** `@monaco-editor/react` (^4.8.0-rc.3) and
-   `@monaco-editor/loader` (^1.7.0) are still in `dependencies` with **zero imports in
-   `src`** — the only textual match is a comment inside `keep-monaco-editor.ts`. Delete
-   both, and the already-disabled `disabledpostinstall` copy step with them (report 00
-   P2-9). **S.**
+1. ✅ **Made the Monaco import dynamic** (#693/#729). `keep-monaco-editor.ts` now
+   `import()`s `monaco-editor`, its three workers and the editor CSS lazily. Entry chunk
+   **6,322.51 kB → 2,111.11 kB / 594.20 kB gzip**; `editor.api2` is a 3,626.93 kB chunk
+   fetched on first use. This was flagged as "the single largest available reduction" and
+   it was.
+2. ✅ **Dropped the dead dependencies** (#675) — `@monaco-editor/react`,
+   `@monaco-editor/loader` and the `disabledpostinstall` copy step.
 3. 🟡 `access/ScriptEditor.tsx` — **not** a Monaco migration; see the note in §4. If you
    want syntax highlighting for formulas, that is a new feature, and `keep-monaco-editor`
-   is now the obvious vehicle for it.
+   is now the obvious vehicle for it. **The only item left in this tail.**
 
 ~~Move `prettier` to `dependencies`~~ — ✅ done in PR #673.
 
@@ -621,55 +645,63 @@ submission + `yup`. Do **not** port Formik into Lit. `useFormik` appears in 8 fi
 
 The debt catalogue from the original report, re-scored:
 
-1. ✅ **Types.** All 26 elements are TypeScript with decorators. The SWC config
+1. ✅ **Types.** All 25 elements are TypeScript with decorators. The SWC config
    (`tsDecorators: true` + `useDefineForClassFields: false`) is mirrored in
    `vite.config.mts` and `vitest.config.ts` — **keep these in sync**; divergence
-   reintroduces Lit's class-field-shadowing bug silently.
-2. 🔴 **Button duplication — still open.** `keep-button` wraps `wa-button`, but
-   `keep-button-yes`/`-no`/`-neutral` are plain `<button>`s with hardcoded hex
-   (`#0F5FDC`, `#0B4AAE`, `#96BCF8`). Collapse into a single `keep-button` with
-   `variant`/`appearance`, update `KeepElements.tsx`, and migrate the consumers:
-   **49 usages of the three legacy tags across 21 files** (`<KeepButtonYes>` ×24,
-   `<KeepButtonNeutral>` ×23, `<KeepButtonNo>` ×2), against 19 `<KeepButton>` usages.
-   Note `FormsContainer`'s newly converted Source tab still reaches for
-   `KeepButtonNeutral`/`KeepButtonYes` in its two confirm dialogs — converted screens keep
-   feeding this debt until it is paid. Doing this **before** report 03's tokenization
-   avoids tokenizing three components that should not exist. Effort **M**.
+   reintroduces Lit's class-field-shadowing bug silently. Moving to standard decorators +
+   `accessor`, which removes that coupling, is **#747**.
+2. ✅ **Button duplication — CLOSED (#701).** `keep-button-yes`/`-no`/`-neutral` — plain
+   `<button>`s with hardcoded `#0F5FDC`/`#0B4AAE`/`#96BCF8` — are deleted. Their 49 usages
+   across 21 files were migrated onto `keep-button`'s variants, and three test files went
+   with them. Doing this *before* #708 was the right ordering: three components that should
+   not exist never got tokenized.
 3. ✅ **Repeated CSS imports.** `webawesome.css` is imported exactly once
-   (`src/index.tsx`); components import only the specific `wa-*` element modules they
-   render.
+   (`src/index.tsx`), followed by `keep-theme.css` and `keep-overrides.css` in that order —
+   the order matters, since `keep-theme.css` overrides WA's own brand ramp. Components
+   import only the specific `wa-*` element modules they render.
 4. ✅ **Event contract.** `KeepElement.emit()` gives one composed, bubbling `CustomEvent`
-   pattern. 🟡 Residual: `keep-drawer` still takes a `closeFn` **property**; only 2 of the
-   25 wrappers declare an `events` map in `KeepElements.tsx`.
-5. 🔴 **Ad-hoc dark-mode overrides — still open.** *Delivery* of the theme is now clean
-   (`services/theme-service.ts`, §2.5) and **6** element files pick it up via
-   `:host-context(body[data-theme="dark"])` (`keep-alert`, `keep-source`,
-   `keep-default-card`, `keep-input-text`, `keep-input-password`, `keep-switch`).
-   But the **values** are still hardcoded
-   per component: `keep-button.ts` writes `#f4e9ff` into `--wa-color-brand-50`,
-   `--wa-color-brand-border-loud` and `--wa-color-brand-fill-loud` (plus two
-   `!important`s), and there are **100 `light-dark()` literals** across
-   `src/components/keep-elements/`, **12** of them in `keep-source-header.ts` alone
-   (`#D7EBFD`/`#3a3a5a`, `#1e1e2e`, plus bare `#ED0000`/`#007E0D` for cancel/save).
-   `KeepElement` was built as the hook for a shared token layer and **still nothing uses
-   it**. **This is report 03's landing site** — do it there, not per element.
-   ⚠️ Direction of travel: PR #669 *consolidated* the Source tab's colors — moving them
-   out of inline `style=` attributes into the element's `static styles` — which is the
-   right move, but it also added a new hardcoded pair for the diff hint. Feature work is
-   outrunning the token layer, which is an argument for pulling report 03's P3 forward.
+   pattern. 🟡 Residual, unchanged: `keep-drawer` still takes a `closeFn` **property**; only
+   2 of the 25 wrappers declare an `events` map in `KeepElements.tsx`.
+5. ✅ **Ad-hoc dark-mode overrides — CLOSED for the element layer (#708).** 93
+   `light-dark()` literals across 11 elements became `var(--wa-color-*)` reading the
+   semantic tokens pinned in `keep-theme.css`. The `:host-context(body[data-theme="dark"])`
+   overrides in 6 files were **deleted rather than ported**, and the dead `keep-button`
+   `:host([data-theme='dark'])` block went with the component in #701 — so the bug this
+   section flagged resolved itself.
 
-   > 🐛 **New finding — that `keep-button` override is dead code.** Its selector is
-   > `:host([data-theme='dark']) wa-button[appearance='outlined']::part(base)`, i.e. it
-   > requires `data-theme` on the **`keep-button` element itself**. Nothing sets it —
-   > `theme-service` writes `body.dataset.theme`, and no consumer passes the attribute
-   > down. It is the only `:host([data-theme` selector in the tree; the other 6 elements
-   > correctly use `:host-context(body[data-theme="dark"])`. So the rule never matches:
-   > either fix the selector or delete the block. Confirm which before tokenizing it,
-   > otherwise report 03 will faithfully tokenize a style that has never rendered.
-6. ✅ **Registration.** One tag per file, self-registering; 25 of 26 re-exported through
-   `KeepElements.tsx` (`keep-schema-status` is internal to `keep-nsf-card` by design).
-   🟡 Residual: the `keep-source` / `keep-source-tree` file/tag inversion (§2.1).
-7. ✅ **Shared base class.** `KeepElement` exists. Its theme-wiring role is unused (see 5).
+   Two things are worth carrying forward from how it was done:
+
+   > **The `:host-context` workarounds existed for a real reason, and the fix removed the
+   > reason.** They were there because `color-scheme` does not inherit reliably across a
+   > shadow boundary, so a bare `light-dark()` inside a shadow root could resolve to the
+   > wrong branch. Custom properties *do* inherit, so once the values became `var(--wa-*)`
+   > the workaround had nothing left to do. #708 verified this rather than assuming it:
+   > with the overrides removed, `keep-tree` still computes `#e0e0e0` and
+   > `keep-default-card` `#252535`/`#ffffff` in dark mode — the exact values the deleted
+   > `!important` rules used to force.
+
+   > **A deliberate carve-out remains.** `keep-source.ts`, `keep-source-header.ts` and
+   > `keep-autocomplete.ts` keep 9 `light-dark()` literals on purpose: they are VS Code's
+   > syntax-highlighting palette and two editor-chrome highlights, not UI chrome.
+   > `theme-selectors.test.ts` asserts both halves — no `light-dark()` outside the
+   > carve-out, and the carve-out still present — so neither can drift silently.
+
+   > 🐛 **But an *undeliberate* one survived, and it is a live defect.** Four element files
+   > still read **three-digit Shoelace-era colour steps that WA 3.10 does not define**, with
+   > no fallback: `keep-input-text.ts:31-32`, `keep-input-password.ts:20-21` and six
+   > danger/success rules in `keep-source.ts:279-304` (plus `keep-overrides.css:26-27`).
+   > Because `var(--undefined)` with no fallback is invalid at computed-value time, the
+   > declaration is dropped — so **`wa-input:state(user-invalid)::part(base)`'s red border
+   > never paints**. This is the other half of the bug #744 fixed: that PR corrected the
+   > dead *selector*, and `validity-states.test.ts` can only assert selectors and state
+   > transitions because `css: false` hides colour. Report 03 finding 11b, **#765**.
+6. ✅ **Registration.** One tag per file, self-registering; **24 of the 25** re-exported
+   through `KeepElements.tsx` (`keep-schema-status` is internal to `keep-nsf-card` by
+   design). 🟡 Residual: the `keep-source` / `keep-source-tree` file/tag inversion —
+   `keep-source-header.ts` is the file that registers `keep-source-tree` (§2.1).
+7. ✅ **Shared base class.** `KeepElement` exists, and its theme-wiring role is now moot:
+   after #708 **no element reads a theme value at all** — they read tokens, and the
+   cascade does the rest.
 
 ---
 
@@ -678,25 +710,25 @@ The debt catalogue from the original report, re-scored:
 Principle unchanged: **leaves before containers, controls before forms, data-heavy views
 last.**
 
-### Phase 0 — Foundation — ✅ ~90 % COMPLETE
+### Phase 0 — Foundation — ✅ COMPLETE
 - [x] TS + decorators + shared base class; per-element `HTMLElementTagNameMap` typing.
 - [x] Single global `webawesome.css` import.
 - [x] Standardised event contract (`emit()`).
 - [x] Rename to the `keep-*` namespace.
 - [x] Unit tests for every element.
-- [ ] **Collapse `keep-button*` into one component** (§6.2). — **M**
-- [ ] **Decide the DataGrid strategy** (§5.1) and the **date-picker approach** (§5.2).
-      Now cheaper to decide: §5.2 has one obvious answer, and §5.1 is down to three.
+- [x] **Collapse `keep-button*` into one component** (§6.2) — #701.
+- [x] **Decide the date-picker approach** (§5.2) — #703, authored as `keep-input-date`.
+- [ ] **Decide the DataGrid strategy** (§5.1) — the one item that did not close. **#702**
 
-### Phase 0.5 — Pay off the Monaco commit — ✅ MOSTLY DONE
+### Phase 0.5 — Pay off the Monaco commit — ✅ COMPLETE
 - [x] Polyfill `document.queryCommandSupported` in `test/setupTests.ts` (PR #668).
 - [x] Test `keep-monaco-editor` — a fake-Monaco behaviour suite (PR #668) plus a real-Monaco
       lifecycle suite (PR #673), which caught a diff-editor dispose-ordering bug.
 - [x] Move `prettier` to `dependencies`, and make its import dynamic (PR #673).
-- [ ] **Make the Monaco import dynamic** (§5.3.1) — the only item left, and now purely a
-      bundle-size play: entry chunk **6,322.51 kB / 1,703.85 kB gzip**. **S**
-- [ ] Drop the dead `@monaco-editor/react` + `@monaco-editor/loader` dependencies and the
-      `disabledpostinstall` script (§5.3.2). **S**
+- [x] **Make the Monaco import dynamic** (§5.3.1) — #693/#729. Entry chunk
+      **6,322.51 kB → 2,111.11 kB / 594.20 kB gzip**.
+- [x] Drop the dead `@monaco-editor/react` + `@monaco-editor/loader` dependencies and the
+      `disabledpostinstall` script (§5.3.2) — #675.
 
 ### Phase 1 — Presentational leaves & feedback (low risk, high volume)
 - [ ] Loaders/spinners/progress → `wa-spinner`/`wa-progress-bar`/`wa-skeleton`.
@@ -722,10 +754,11 @@ last.**
 
 ### Phase 4 — Cards, trees, lists
 - [ ] Card views (schemas/scopes displays) onto `keep-default-card`/`keep-nsf-card`.
-- [ ] **Trees → `wa-tree`/`wa-tree-item`** (`FileContentsTree`, `SchemaContentsTree`) —
-      free, good fit, only 2 files. **Promote this: it is the cheapest MUI X removal.**
-- [ ] Author a shared `keep-nav-list` → `SideNav`, `OptionList`, `ListRoles`
-      (`MobileSidebar` disappears with `wa-page` — report 03).
+- [x] **Trees → `wa-tree`/`wa-tree-item`** — ✅ #704/#723. `keep-tree` takes a
+      `KeepTreeNode[]` and emits `item-select` for leaves only; `@mui/x-tree-view` deleted.
+      It was promoted as "the cheapest MUI X removal" and it was: 2 files, 11 tests.
+- [ ] Author a shared `keep-nav-list` → `SideNav`, `OptionList`, `ListRoles`.
+      ✅ `MobileSidebar` has already disappeared with `wa-page` (#707), as predicted.
 
 ### Phase 5 — Forms (containers, after their controls exist)
 - [ ] Convert Formik forms to native form + `yup`: `TestForm`, `PeopleForm`, `AppForm`,
@@ -738,16 +771,32 @@ last.**
 - [x] **Wire `keep-monaco-editor` → `FormsContainer`'s Source tab** (PR #669) — done
       early and out of order, which turned out to be the right call: it validated the
       bridge on the hardest widget in the app before committing to Phases 1–5.
-- [ ] Drop `@monaco-editor/*` (now dead, not blocked). **(§5.3)**
+- [x] Drop `@monaco-editor/*` — ✅ #675.
 - [ ] `FormsContainer`'s remaining MUI: `Tabs`/`Tab` → `wa-tab-group`,
       `CircularProgress` → `wa-spinner`.
-- [ ] Native `wa-input type="date"` → `AppFilterContainer`, `ConsentFilterContainer`. **(§5.2)**
+- [x] Native `wa-input type="date"` → `AppFilterContainer`, `ConsentFilterContainer` —
+      ✅ #703/#739, via `keep-input-date`. **(§5.2)**
 - [ ] DataGrid screens per the chosen strategy → `Groups`, `GroupForm`, `PeopleCRUD`,
-      `GroupMembers`, `PeopleSelector`. **(§5.1)**
-- [ ] App shell, routers, `ThemeProvider`/`CssBaseline` removal — final sequencing in
-      **report 04**.
+      `GroupMembers`, `PeopleSelector`. **(§5.1, #702)**
+- [x] App shell on `wa-page` — ✅ #707/#767 (`AppShell.tsx`).
+- [ ] Routers and the `ThemeProvider`/`CssBaseline` that `AppShell.tsx` still mounts —
+      final sequencing in **report 04** (**#709**, **#716**).
 
 **Dependency notes:** Phase 5 depends on Phase 2 (controls) + Phase 3 (dialogs/drawers).
-Phase 6 is independent of the rest but gated by the Phase 0 strategy decisions. Layout and
-token conversions run in parallel throughout per **report 03** — with one new ordering
-constraint: **do §6.2 (button consolidation) before report 03's P3 tokenization.**
+Phase 6 is independent of the rest but gated by the one remaining Phase 0 decision (#702).
+Layout and token conversions run in parallel throughout per **report 03** — whose token
+work is now largely delivered, so the ordering constraint that governed the last two
+refreshes ("collapse the buttons before tokenizing") has been discharged.
+
+**Where to start now.** Phase 0 is closed except #702, and Phase 0.5 is closed outright.
+The highest-value next moves are, in order:
+
+1. **Decide #702 (DataGrid).** It gates 5 screens, the whole people/groups domain, the last
+   `@mui/x-*` package, and report 04's ability to drop React. Decide it even though the
+   migration lands late.
+2. **Phase 1 + Phase 3** in parallel — both are volume work over presentational leaves and
+   overlays, both low-risk, and both now benefit from a token layer that already resolves
+   correctly inside shadow roots.
+3. **#718 (icons)** — three icon systems (`@mui/icons-material` 40 files, `react-icons` 18,
+   the 216 KB base64 `app-icons.ts`) are still the largest single source of MUI imports.
+   Converging them on `wa-icon` removes a dependency *and* entry-chunk weight.

@@ -31,12 +31,8 @@ export interface IdP {
   }
 }
 export interface AccountState {
-  navitems: {
-	  apps: boolean;
-    databases: boolean;
-    groups: boolean;
-    users: boolean;
-  };
+  /** The same shape `showPages()` publishes; it was duplicated inline until #770. */
+  navitems: PageListObj;
   authenticated: boolean;
   error: boolean;
   error401: boolean;
@@ -45,11 +41,17 @@ export interface AccountState {
   currentIdp: any;
 }
 
- export interface PageListObj {
+ /**
+ * Which optional sections `adminui.json` turns on.
+ *
+ * `users` and `groups` are deliberately absent: the screens they gated went in #770, so
+ * nothing reads them. The server still sends both keys and that is fine — `showPages()`
+ * copies only the keys it knows, and an unknown one is ignored. Re-add them here only
+ * alongside a consumer, or the next reader gets a flag that controls nothing.
+ */
+export interface PageListObj {
   apps: boolean;
   databases: boolean;
-  groups: boolean;
-  users: boolean;
 }
 
 export const LOGIN = 'LOGIN';
