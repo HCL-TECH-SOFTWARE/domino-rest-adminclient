@@ -28,6 +28,10 @@ import Tooltip from './keep-tooltip';
 import Checkbox from './keep-checkbox';
 import MonacoEditor from './keep-monaco-editor';
 import Tree, { type KeepTreeSelectDetail } from './keep-tree';
+import DataTable, {
+  type KeepDataTablePageChangeDetail,
+  type KeepDataTableRowsPerPageChangeDetail
+} from './keep-data-table';
 
 export const KeepAutocomplete = createComponent({
   tagName: 'keep-autocomplete',
@@ -161,6 +165,23 @@ export const KeepTree = createComponent({
   react: React,
   events: {
     onItemSelect: 'item-select' as EventName<CustomEvent<KeepTreeSelectDetail>>
+  }
+});
+
+/**
+ * Pagination here is **controlled**: pass `page` and `rowsPerPage` down, and update them
+ * from `onPageChange` / `onRowsPerPageChange`. The element never writes them back — see
+ * the note in `keep-data-table.ts` for why that matters with this wrapper.
+ */
+export const KeepDataTable = createComponent({
+  tagName: 'keep-data-table',
+  elementClass: DataTable,
+  react: React,
+  events: {
+    onPageChange: 'page-change' as EventName<CustomEvent<KeepDataTablePageChangeDetail>>,
+    onRowsPerPageChange: 'rows-per-page-change' as EventName<
+      CustomEvent<KeepDataTableRowsPerPageChangeDetail>
+    >
   }
 });
 

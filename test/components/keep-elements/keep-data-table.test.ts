@@ -13,6 +13,7 @@ import {
 } from '../../../src/components/keep-elements/keep-data-table.styles';
 import '../../../src/components/keep-elements/keep-data-table';
 import type DataTable from '../../../src/components/keep-elements/keep-data-table';
+import { KeepDataTable } from '../../../src/components/keep-elements/KeepElements';
 
 /** Mount the element with a real table slotted into it. */
 async function mountTable(props: Partial<DataTable> = {}): Promise<DataTable> {
@@ -251,5 +252,12 @@ describe('keep-data-table pagination navigation', () => {
     navButton(el, 'Next Page').click();
     await el.updateComplete;
     expect(el.page).toBe(2);
+  });
+});
+
+describe('KeepDataTable React wrapper', () => {
+  it('is exported and wraps the keep-data-table tag', () => {
+    expect(KeepDataTable).toBeTruthy();
+    expect(customElements.get('keep-data-table')).toBeTruthy();
   });
 });
