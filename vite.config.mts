@@ -60,16 +60,32 @@ export default defineConfig({
   },
   server: {
     headers: {
+      /*
+       * Mirrors the `/admin/ui` policy in `jar/config/config.json`, directive for directive.
+       * That is the whole point of it: a dev policy looser than production reports nothing
+       * and proves nothing.
+       *
+       * It used to send `style-src-attr 'unsafe-inline'` where production sends `'none'`,
+       * which is exactly how #685's inline styles went unnoticed — the one directive the app
+       * was violating was the one dev did not enforce.
+       *
+       * Two caveats when reading the output, both dev-only:
+       *   - Vite's HMR client is an inline script, so `script-src 'self'` reports it. The
+       *     built bundle has no inline script; index.html loads two modules by src.
+       *   - Lit's dev build injects `<style>` elements, so `style-src-elem 'self'` reports
+       *     those too. Production Lit uses adoptedStyleSheets, which CSP does not govern.
+       * Neither appears against `npm run build` output. Anything else that reports here is
+       * real, and will be refused in production.
+       */
       'Content-Security-Policy-Report-Only': `
-        default-src 'self' 'report-sample';
-        connect-src 'self' data: 'report-sample';
+        default-src 'self' data: 'report-sample';
+        script-src 'self' 'report-sample';
+        style-src-attr 'none' 'report-sample';
+        style-src-elem 'self' 'report-sample';
         font-src 'self' data: 'report-sample';
         img-src 'self' data: 'report-sample';
-        script-src 'self' 'report-sample';
-        style-src 'self' 'report-sample';
-        style-src-attr 'unsafe-inline' 'report-sample';
-        style-src-elem 'self' 'unsafe-inline' 'report-sample';
-        worker-src 'self' blob data: 'report-sample';
+        worker-src 'self' blob: 'report-sample';
+        connect-src 'self' data: * 'report-sample';
         report-uri /api/csp-violation-report
       `
         .replace(/\s+/g, ' ')
