@@ -179,3 +179,77 @@ describe('keep-data-table pagination footer', () => {
     expect(el.rowsPerPage).toBe(5);
   });
 });
+
+const navButton = (el: DataTable, label: string) =>
+  el.shadowRoot!.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement;
+
+const NAV_LABELS = ['First Page', 'Previous Page', 'Next Page', 'Last Page'];
+
+/** Click a nav button and return the page it asked for, if any. */
+const pageFrom = (el: DataTable, label: string): number | undefined => {
+  let detail: { page: number } | undefined;
+  el.addEventListener('page-change', (e) => {
+    detail = (e as CustomEvent<{ page: number }>).detail;
+  });
+  navButton(el, label).click();
+  return detail?.page;
+};
+
+describe('keep-data-table pagination navigation', () => {
+  afterEach(cleanupLit);
+
+  it('renders all four navigation buttons', async () => {
+    const el = await mountTable({ paginated: true, count: 42 });
+    for (const label of NAV_LABELS) {
+      expect(navButton(el, label), label).toBeTruthy();
+    }
+  });
+
+  it('disables first and previous on page 0', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 0, rowsPerPage: 5 });
+    expect(navButton(el, 'First Page').disabled).toBe(true);
+    expect(navButton(el, 'Previous Page').disabled).toBe(true);
+    expect(navButton(el, 'Next Page').disabled).toBe(false);
+  });
+
+  it('disables next and last on the final page', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 8, rowsPerPage: 5 });
+    expect(navButton(el, 'Next Page').disabled).toBe(true);
+    expect(navButton(el, 'Last Page').disabled).toBe(true);
+    expect(navButton(el, 'Previous Page').disabled).toBe(false);
+  });
+
+  it('disables everything when all rows fit on one page', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 0, rowsPerPage: -1 });
+    for (const label of NAV_LABELS) {
+      expect(navButton(el, label).disabled, label).toBe(true);
+    }
+  });
+
+  it('emits the next page', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 2, rowsPerPage: 5 });
+    expect(pageFrom(el, 'Next Page')).toBe(3);
+  });
+
+  it('emits the previous page', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 2, rowsPerPage: 5 });
+    expect(pageFrom(el, 'Previous Page')).toBe(1);
+  });
+
+  it('emits page 0 for first', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 5, rowsPerPage: 5 });
+    expect(pageFrom(el, 'First Page')).toBe(0);
+  });
+
+  it('emits the last page for last', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 0, rowsPerPage: 5 });
+    expect(pageFrom(el, 'Last Page')).toBe(8);
+  });
+
+  it('does not mutate page itself', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 2, rowsPerPage: 5 });
+    navButton(el, 'Next Page').click();
+    await el.updateComplete;
+    expect(el.page).toBe(2);
+  });
+});

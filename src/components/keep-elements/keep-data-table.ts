@@ -9,6 +9,11 @@ import { customElement, property } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
 import { adoptTableStyles } from './keep-data-table.styles';
 
+/** `event.detail` of the `page-change` event. */
+export interface KeepDataTablePageChangeDetail {
+  page: number;
+}
+
 /** `event.detail` of the `rows-per-page-change` event. */
 export interface KeepDataTableRowsPerPageChangeDetail {
   rowsPerPage: number;
@@ -39,6 +44,7 @@ export interface KeepDataTableRowsPerPageChangeDetail {
  * React on each render. Being strictly controlled removes that failure mode by
  * construction.
  *
+ * @fires page-change - `CustomEvent<KeepDataTablePageChangeDetail>`
  * @fires rows-per-page-change - `CustomEvent<KeepDataTableRowsPerPageChangeDetail>`
  */
 @customElement('keep-data-table')
@@ -77,6 +83,28 @@ export default class DataTable extends KeepElement {
       border-radius: var(--wa-border-radius-m);
       color: var(--wa-color-text-normal);
       padding: 4px 8px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav button {
+      align-items: center;
+      background: none;
+      border: none;
+      border-radius: var(--wa-border-radius-m);
+      color: var(--wa-color-text-normal);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      padding: 4px;
+    }
+
+    .nav button:disabled {
+      cursor: default;
+      opacity: 0.4;
     }
   `;
 
@@ -131,6 +159,40 @@ export default class DataTable extends KeepElement {
     return `${start}–${end} of ${this.count}`;
   }
 
+  /** Index of the final page. Zero when every row fits on one page. */
+  private get lastPage(): number {
+    if (this.showsAllRows) return 0;
+    return Math.max(0, Math.ceil(this.count / this.rowsPerPage) - 1);
+  }
+
+  private goToPage(page: number): void {
+    const target = Math.min(Math.max(0, page), this.lastPage);
+    if (target === this.page) return;
+    // Deliberately does NOT assign to this.page — see the class docblock.
+    this.emit<KeepDataTablePageChangeDetail>('page-change', { page: target });
+  }
+
+  private renderNav() {
+    const atStart = this.page <= 0;
+    const atEnd = this.page >= this.lastPage;
+    const button = (label: string, disabled: boolean, page: number, path: string) => html`
+      <button aria-label=${label} ?disabled=${disabled} @click=${() => this.goToPage(page)}>
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+          <path d=${path} fill="currentColor"></path>
+        </svg>
+      </button>
+    `;
+
+    return html`
+      <div class="nav">
+        ${button('First Page', atStart, 0, 'M18.41 16.59 13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z')}
+        ${button('Previous Page', atStart, this.page - 1, 'M15.41 16.59 10.83 12l4.58-4.59L14 6l-6 6 6 6z')}
+        ${button('Next Page', atEnd, this.page + 1, 'M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z')}
+        ${button('Last Page', atEnd, this.lastPage, 'M5.59 7.41 10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z')}
+      </div>
+    `;
+  }
+
   private onRowsPerPageChange(event: Event): void {
     const value = Number.parseInt((event.target as HTMLSelectElement).value, 10);
     // Deliberately does NOT assign to this.rowsPerPage — see the class docblock.
@@ -151,6 +213,7 @@ export default class DataTable extends KeepElement {
           </select>
         </label>
         <span class="range">${this.rangeLabel}</span>
+        ${this.renderNav()}
       </div>
     `;
   }
