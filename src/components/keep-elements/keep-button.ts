@@ -55,10 +55,10 @@ export default class Button extends KeepElement {
   ];
 
   /** Font Awesome glyph name — must be registered in `services/icon-library` ICONS. */
-  @property({ type: String }) icon = '';
+  @property({ type: String }) accessor icon = '';
 
   /** Web Awesome colour role: `brand` | `danger` | `neutral` | `success` | `warning`. */
-  @property({ type: String }) variant = 'brand';
+  @property({ type: String }) accessor variant = 'brand';
 
   /**
    * Web Awesome fill style: `accent` (filled) | `outlined` | `plain` | `filled`.
@@ -68,10 +68,10 @@ export default class Button extends KeepElement {
    * the instance, and did so before the first render — so it looked fine on mount but
    * nothing re-rendered if it changed afterwards.
    */
-  @property({ type: String }) appearance = 'accent';
+  @property({ type: String }) accessor appearance = 'accent';
 
-  @property({ type: Boolean }) disabled = false;
-  @property({ type: Boolean }) pill = false;
+  @property({ type: Boolean }) accessor disabled = false;
+  @property({ type: Boolean }) accessor pill = false;
 
   render() {
     return html`

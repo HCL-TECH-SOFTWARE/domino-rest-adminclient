@@ -141,16 +141,16 @@ export default class Autocomplete extends KeepElement {
     }
   `;
 
-  @property({ type: Array }) options: string[] = [];
-  @property({ type: String }) selectedOption = '';
-  @property({ type: Boolean }) error = false;
-  @property({ type: String }) errorMessage = '';
-  @property({ type: String }) initialOption = '';
-  @property({ type: Object }) icons: Record<string, string> = {};
+  @property({ type: Array }) accessor options: string[] = [];
+  @property({ type: String }) accessor selectedOption = '';
+  @property({ type: Boolean }) accessor error = false;
+  @property({ type: String }) accessor errorMessage = '';
+  @property({ type: String }) accessor initialOption = '';
+  @property({ type: Object }) accessor icons: Record<string, string> = {};
 
-  @state() private filteredOptions: string[] = [];
-  @state() private highlightedOptionIndex = -1;
-  @state() private showDropdown = false;
+  @state() private accessor filteredOptions: string[] = [];
+  @state() private accessor highlightedOptionIndex = -1;
+  @state() private accessor showDropdown = false;
 
   /**
    * Cached in `updated()` and read during `render()`. Deliberately NOT reactive
@@ -159,8 +159,8 @@ export default class Autocomplete extends KeepElement {
    */
   private hasIcons = false;
 
-  @query('input') private _input!: HTMLInputElement;
-  @query('.dropdown') private _dropdown!: HTMLElement;
+  @query('input') private accessor _input!: HTMLInputElement;
+  @query('.dropdown') private accessor _dropdown!: HTMLElement;
 
   updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('icons')) {

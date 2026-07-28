@@ -38,7 +38,7 @@ export default class Switch extends KeepElement {
     }
   `;
 
-  @property({ attribute: false }) onToggle: ((e: Event) => void) | null = null;
+  @property({ attribute: false }) accessor onToggle: ((e: Event) => void) | null = null;
 
   render() {
     return html`

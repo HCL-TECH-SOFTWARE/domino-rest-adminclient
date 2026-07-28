@@ -166,14 +166,14 @@ export default class DefaultCard extends KeepElement {
     `,
   ];
 
-  @property({ type: Boolean }) status = false;
-  @property({ type: String }) icon = '';
-  @property({ type: String }) title = '';
-  @property({ type: String }) subtitle = '';
-  @property({ type: String }) acl = '';
-  @property({ type: String }) description = '';
-  @property({ type: Boolean }) delete = false;
-  @property({ attribute: false }) onDelete: () => void = () => {};
+  @property({ type: Boolean }) accessor status = false;
+  @property({ type: String }) accessor icon = '';
+  @property({ type: String }) accessor title = '';
+  @property({ type: String }) accessor subtitle = '';
+  @property({ type: String }) accessor acl = '';
+  @property({ type: String }) accessor description = '';
+  @property({ type: Boolean }) accessor delete = false;
+  @property({ attribute: false }) accessor onDelete: () => void = () => {};
 
   render() {
     return html`

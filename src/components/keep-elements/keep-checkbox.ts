@@ -22,9 +22,9 @@ type WaCheckbox = HTMLElement & { checked: boolean; updateComplete?: Promise<unk
 export default class Checkbox extends KeepElement {
   static styles = css``;
 
-  @property({ type: Boolean }) checked = false;
-  @property({ type: Boolean }) disabled = false;
-  @property({ type: String }) size = 's';
+  @property({ type: Boolean }) accessor checked = false;
+  @property({ type: Boolean }) accessor disabled = false;
+  @property({ type: String }) accessor size = 's';
 
   private waCheckbox: WaCheckbox | null = null;
   private readonly boundOnChange = (e: Event) => this.onInnerChange(e);

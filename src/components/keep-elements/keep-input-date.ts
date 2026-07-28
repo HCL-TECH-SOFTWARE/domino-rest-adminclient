@@ -40,8 +40,8 @@ export default class InputDate extends KeepElement {
   `;
 
   /** ISO `YYYY-MM-DD`. */
-  @property({ type: String }) value = '';
-  @property({ type: String }) label = '';
+  @property({ type: String }) accessor value = '';
+  @property({ type: String }) accessor label = '';
 
   private _onInput(event: Event) {
     const next = (event.target as HTMLInputElement).value;

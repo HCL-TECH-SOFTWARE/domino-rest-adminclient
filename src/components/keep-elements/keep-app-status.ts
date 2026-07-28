@@ -29,7 +29,7 @@ export default class AppStatus extends KeepElement {
     }
   `;
 
-  @property({ type: Boolean }) status = false;
+  @property({ type: Boolean }) accessor status = false;
 
   updated(changedProperties: PropertyValues) {
     if (changedProperties.has('status')) {
