@@ -28,11 +28,11 @@ const StyledTableHead = styled(TableHead)`
 
   .text {
     font-weight: bold;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 
   .search-bar {
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
     border: 1px solid light-dark(grey, #555);
     padding: 3px 10px;
     background-color: light-dark(#fff, #1e1e2e);
@@ -41,14 +41,14 @@ const StyledTableHead = styled(TableHead)`
 `
 
 const StyledTableBody = styled(TableBody)`
-  font-size: 14px;
+  font-size: var(--wa-font-size-m);
   padding-top: 20px;
   padding-bottom: 20px;
   border-bottom: none;
 `
 
 const StyledTableContainer = styled(TableContainer)`
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   box-sizing: border-box;
   border: 1px solid light-dark(#B9B9B9, #3a3a4a);
   background: light-dark(#FFF, #252535);

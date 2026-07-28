@@ -51,9 +51,6 @@ export default class Tree extends KeepElement {
     }
 
     wa-tree {
-      --wa-font-size-small: 12px;
-      --wa-font-size-medium: 14px;
-      --wa-font-size-large: 16px;
       color: var(--wa-color-text-normal);
     }
 
@@ -75,7 +72,7 @@ export default class Tree extends KeepElement {
       align-items: center;
       gap: 8px;
       padding: 4px 0;
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
     }
 
   `;

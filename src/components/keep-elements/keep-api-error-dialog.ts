@@ -19,7 +19,7 @@ export default class ApiErrorDialog extends KeepElement {
       padding: 0 0 10px 0;
       background-color: var(--wa-color-surface-raised);
       color: var(--wa-color-text-normal);
-      border-radius: 10px;
+      border-radius: var(--wa-border-radius-l);
       position: fixed;
       top: 50%;
       left: 50%;

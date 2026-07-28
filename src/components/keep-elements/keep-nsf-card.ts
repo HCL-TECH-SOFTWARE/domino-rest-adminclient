@@ -59,7 +59,7 @@ export default class NsfCard extends KeepElement {
 
     div.list-container {
       border: 1px solid var(--wa-color-surface-border);
-      border-radius: 5px;
+      border-radius: var(--wa-border-radius-m);
       background-color: var(--wa-color-surface-default);
       color: var(--wa-color-text-loud);
       width: 100%;

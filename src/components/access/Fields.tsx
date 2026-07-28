@@ -23,7 +23,7 @@ import { KeepTooltip } from '../keep-elements/KeepElements';
 
 const FieldContainer = styled.div`
   border: 1px solid var(--wa-color-surface-border);
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   background: var(--wa-color-surface-default);
   display: flex;
   flex-direction: column;
@@ -57,7 +57,7 @@ const FieldContainer = styled.div`
 `;
 
 const ListContainer = styled.div`
-  border-radius: 3px;
+  border-radius: var(--wa-border-radius-s);
   flex: 0 0 150px;
   padding-left: 10px;
   font-family: sans-serif;
@@ -76,7 +76,7 @@ const FieldsDropDownHeader = styled.div`
   padding: 10px 0 0 10px;
 
   .mode-header {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     padding: 0;
     width: 100%;
   }
@@ -95,7 +95,7 @@ const FieldsDropDown = styled.div`
 
   .dropdown {
     border: 1px solid #fff;
-    border-radius: 10px;
+    border-radius: var(--wa-border-radius-l);
     width: 100%;
   }
 
@@ -106,7 +106,7 @@ const FieldsDropDown = styled.div`
 
   .search-container {
     background-color: #f9f9f9;
-    border-radius: 10px;
+    border-radius: var(--wa-border-radius-l);
     border: 1px solid #a5afbe;
     width: 100%;
     align-items: center;
@@ -144,7 +144,7 @@ const ListRoot = styled(List)`
   max-width: 360px;
   padding-top: 0px;
   padding-bottom: 0px;
-  font-size: 14px;
+  font-size: var(--wa-font-size-m);
 `;
 
 const ListItemField = styled(ListItem)`

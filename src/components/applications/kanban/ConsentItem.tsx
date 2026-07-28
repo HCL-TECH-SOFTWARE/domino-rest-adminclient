@@ -29,7 +29,7 @@ const StyledTableRow = styled(TableRow)`
   }
 
   .text {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 
   .revoke {
@@ -48,7 +48,7 @@ const UrlContainer = styled(Box)`
 
   .scope-box {
     border: 1px solid #B9B9B9;
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
     padding: 10px;
     display: flex;
     flex-direction: row;

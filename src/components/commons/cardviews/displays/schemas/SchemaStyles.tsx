@@ -14,7 +14,7 @@ export const SchemaCardContainer = styled(Card)<{
   height: 200px;
   min-width: 295px;
   margin: 0 20px 20px 0px;
-  border-radius: 10px !important;
+  border-radius: var(--wa-border-radius-l) !important;
   position: relative;
   display: flex;
   background: var(--wa-color-surface-raised) !important;
@@ -52,7 +52,7 @@ export const SchemaCardContainer = styled(Card)<{
 
   .description {
     margin-top: 1px;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     text-overflow: ellipsis;
     overflow-x: hidden;
     max-height: 65px;
@@ -78,7 +78,7 @@ export const SchemaCardHeader = styled.div`
     margin-left: 10px;
 
     @media only screen and (max-width: 1366px) {
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
     }
   }
 `;

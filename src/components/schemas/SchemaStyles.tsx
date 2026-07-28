@@ -68,7 +68,7 @@ export const NsfCardContainer = styled(Card)<{
   .api-list {
     height: calc(75% - 16px - 25px);
     background-color: #FAFDFF;
-    border-radius: 10px;
+    border-radius: var(--wa-border-radius-l);
     border: 1px solid #D1D1D1;
     padding: 0 16px;
     overflow-y: scroll;

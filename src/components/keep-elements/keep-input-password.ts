@@ -13,7 +13,7 @@ export default class InputPassword extends KeepElement {
       color-scheme: inherit;
     }
     text {
-      font-size: 12px;
+      font-size: var(--wa-font-size-s);
     }
 
     wa-input:state(user-invalid)::part(base) {

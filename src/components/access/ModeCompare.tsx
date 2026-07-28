@@ -80,7 +80,7 @@ const ModeCardsContainer = styled.div`
 
   .total-fields {
     color: #646464;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 
   .fields-number {
@@ -137,7 +137,7 @@ const ModeCardsContainer = styled.div`
 
   .key-text {
     color: #323a3d;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     display: flex;
     flex-direction: row;
     padding-top: 12px;

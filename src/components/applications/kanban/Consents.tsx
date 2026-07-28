@@ -52,7 +52,7 @@ const OptionsBar = styled.div`
     display: flex;
     gap: 5px;
     align-items: center;
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
     padding: 5px 10px 5px 5px;
     background: none;
 

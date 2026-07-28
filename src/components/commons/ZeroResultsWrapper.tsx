@@ -15,7 +15,7 @@ const NoResultFound = styled.div`
   width: 100%;
 
   .no-result {
-    font-size: 22px;
+    font-size: var(--wa-font-size-xl);
   }
 
   .not-found {

@@ -77,7 +77,7 @@ const ButtonsPanel = styled.div`
 
 const CreateFormDialogContainer = styled.dialog`
   border: 1px solid white;
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   width: 30%;
   padding: 30px;
   height: fit-content;

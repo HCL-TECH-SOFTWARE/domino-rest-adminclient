@@ -47,7 +47,7 @@ const TabAccessContainer = styled.div<{ width: number; top: number }>`
   position: absolute;
   top: ${(props) => props.top}%;
   border: 1px solid light-dark(#D1D1D1, #3a3a4a);
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   height: 100%;
   padding: 30px;
   background-color: light-dark(#F9FBFF, #1e1e2e);

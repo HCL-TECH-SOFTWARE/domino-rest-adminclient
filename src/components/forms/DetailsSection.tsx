@@ -63,7 +63,7 @@ const Title = styled.div`
     }
   }
   .api-nsf {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 `;
 
@@ -82,7 +82,7 @@ const Heading = styled.div`
   }
 
   .description {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     padding: 0 0 20px;
   }
 `;
@@ -107,7 +107,7 @@ const Config = styled.div`
   }
 
   svg {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 
   .checkbox {
@@ -142,7 +142,7 @@ const ViewButtons = styled.div`
   margin-bottom: 30px;
 
   .text {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 `;
 

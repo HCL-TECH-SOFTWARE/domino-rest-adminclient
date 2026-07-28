@@ -20,7 +20,7 @@ import { KeepTooltip } from '../keep-elements/KeepElements';
 const ProfileMenuCard = styled(Paper)`
   padding: 30px 30px 30px 30px;
   box-sizing: border-box !important;
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
 `;
 
 const AvatarContainer = styled.div`

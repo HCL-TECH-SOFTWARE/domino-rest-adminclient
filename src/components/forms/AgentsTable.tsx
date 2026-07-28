@@ -27,7 +27,7 @@ const StyledTableCell = styled(TableCell)`
   }
 
   &.${tableCellClasses.body} {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     padding-top: 20px;
     padding-bottom: 20px;
     border-bottom: none;
@@ -46,7 +46,7 @@ const StyledTableRow = styled(TableRow)`
 `
 
 const StyledTableContainer = styled(TableContainer)`
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   box-sizing: border-box;
   border: 1px solid light-dark(#B9B9B9, #3a3a4a);
   background: light-dark(#FFFFFF, #252535);

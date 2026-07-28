@@ -21,7 +21,7 @@ export default class TextForm extends KeepElement {
 
     .key {
       font-weight: bold;
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
       margin-right: 10px;
       width: auto;
       white-space: nowrap;
@@ -36,7 +36,7 @@ export default class TextForm extends KeepElement {
     input[type="text"] {
       padding: 15px 10px;
       border: 1px solid var(--wa-color-surface-border);
-      border-radius: 5px;
+      border-radius: var(--wa-border-radius-m);
       width: 100%;
       box-sizing: border-box;
       font-size: 14;

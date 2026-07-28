@@ -24,7 +24,7 @@ const ToggleContainer = styled.div`
     background-color: light-dark(#e6ebf5, #3a3a5a);
     cursor: pointer;
     user-select: none;
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
     padding: 5px;
     /* margin-top: 20px; */
   }
@@ -37,14 +37,14 @@ const ToggleContainer = styled.div`
     width: 68px;
     height: 24px;
     /* font-weight: bold; */
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     line-height: 16px;
     cursor: pointer;
     color: #fff;
     background-color: #008000;
     box-shadow: 0 2px 4px rgb(0, 0, 0, 0.25);
     padding: 8px 12px;
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
     position: absolute;
     top: 5px;
     transition: all 0.2s ease;
@@ -69,7 +69,7 @@ const ToggleContainer = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     line-height: 16px;
     padding: 8px 12px;
     text-transform: none;

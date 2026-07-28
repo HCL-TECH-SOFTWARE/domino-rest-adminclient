@@ -150,9 +150,6 @@ export default class SourceTree extends KeepElement {
     }
 
     wa-tree {
-      --wa-font-size-small: 12px;
-      --wa-font-size-medium: 14px;
-      --wa-font-size-large: 16px;
       padding: 0;
       margin: 0;
       color: var(--wa-color-text-normal);
@@ -203,7 +200,7 @@ export default class SourceTree extends KeepElement {
     }
     input.dialog {
       border: 1px solid var(--wa-color-border-normal);
-      border-radius: 5px;
+      border-radius: var(--wa-border-radius-m);
       padding: 5px 10px;
       background-color: var(--wa-color-surface-raised);
       color: var(--wa-color-text-normal);
@@ -256,7 +253,7 @@ export default class SourceTree extends KeepElement {
 
     dialog {
       padding: 10px;
-      border-radius: 5px;
+      border-radius: var(--wa-border-radius-m);
       border: 1px solid var(--wa-color-surface-border);
       background-color: var(--wa-color-surface-raised);
       color: var(--wa-color-text-normal);
@@ -265,7 +262,7 @@ export default class SourceTree extends KeepElement {
     }
     .dialog-error {
       color: red;
-      font-size: 12px;
+      font-size: var(--wa-font-size-s);
     }
     .dialog-content {
       display: flex;
@@ -308,21 +305,15 @@ export default class SourceTree extends KeepElement {
     }
 
     wa-select {
-      --wa-font-size-small: 12px;
-      --wa-font-size-medium: 14px;
-      --wa-font-size-large: 16px;
     }
 
     wa-option {
-      --wa-font-size-small: 12px;
-      --wa-font-size-medium: 14px;
-      --wa-font-size-large: 16px;
     }
 
     button {
       background-color: #5E1EBE;
       color: white;
-      border-radius: 3px;
+      border-radius: var(--wa-border-radius-s);
       border: none;
       padding: 6px 16px;
       font-size: 16px;

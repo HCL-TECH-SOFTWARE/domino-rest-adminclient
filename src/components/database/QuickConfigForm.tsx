@@ -53,7 +53,7 @@ const FileStructure = styled.div`
     font-size: 18px;
     padding: 10px;
     height: 70px;
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
   }
 
   .available-databases-label {

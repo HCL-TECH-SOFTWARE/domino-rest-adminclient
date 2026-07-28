@@ -47,7 +47,7 @@ export default class TextFormArray extends KeepElement {
       background: none;
       border: 1px solid var(--wa-color-text-normal);
       padding: 5px;
-      border-radius: 5px;
+      border-radius: var(--wa-border-radius-m);
       gap: 5px;
       color: var(--wa-color-text-normal);
 
@@ -107,7 +107,7 @@ export default class TextFormArray extends KeepElement {
 
     dialog {
         border: none;
-        border-radius: 10px;
+        border-radius: var(--wa-border-radius-l);
         padding: 0;
         background-color: var(--wa-color-surface-raised);
         color: var(--wa-color-text-normal);

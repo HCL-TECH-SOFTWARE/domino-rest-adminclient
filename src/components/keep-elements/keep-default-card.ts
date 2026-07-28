@@ -46,7 +46,7 @@ export default class DefaultCard extends KeepElement {
             color: var(--wa-color-text-loud);
         }
         wa-card {
-            --border-radius: 10px;
+            --border-radius: var(--wa-border-radius-l);
             margin: 0;
             border: none;
             border-radius: 15px;
@@ -112,7 +112,7 @@ export default class DefaultCard extends KeepElement {
             line-height: 1.5;
         }
         text.medium {
-            font-size: 14px;
+            font-size: var(--wa-font-size-m);
             display: block;
         }
 

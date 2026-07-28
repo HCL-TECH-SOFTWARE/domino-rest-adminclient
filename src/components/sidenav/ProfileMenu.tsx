@@ -81,7 +81,7 @@ const ProfileInfo = styled.div`
 const ProfileMenuCard = styled(Paper)`
   padding: 24px;
   box-sizing: border-box !important;
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   min-width: 220px;
 `;
 

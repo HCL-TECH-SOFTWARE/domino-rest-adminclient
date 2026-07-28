@@ -112,7 +112,7 @@ const CoreContainer = styled.div<{ show: boolean }>`
 const Details = styled.div`
   width: 20%;
   height: 100%;
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   border: 1px solid #d1d1d1;
   overflow-x: scroll;
   overflow-y: auto;

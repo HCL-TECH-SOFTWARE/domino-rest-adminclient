@@ -12,13 +12,13 @@ export default class AppStatus extends KeepElement {
     div {
         display: flex;
         gap: 5px;
-        border-radius: 3px;
+        border-radius: var(--wa-border-radius-s);
         color: var(--status-color, #6C7882);
         background-color: var(--status-bg-color, #E6EBF5);
         flex-direction: row;
         align-items: center;
         width: fit-content;
-        font-size: 12px;
+        font-size: var(--wa-font-size-s);
         padding: 0 5px;
     }
   `;

@@ -59,7 +59,7 @@ const PillBox = styled.div`
   display: flex;
   flex-direction: row;
   border: 1px solid grey;
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   padding: 2px 10px 2px 10px;
   margin: 0 2px 1px 0px;
   &:hover {
