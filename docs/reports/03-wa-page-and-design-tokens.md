@@ -2,49 +2,44 @@
 
 **Scope:** Rebase the application shell (header / side navigation / main content / footer / dialogs) on WebAwesome's `wa-page` and drive all color, spacing, typography, radius, shadow, and focus styling from WebAwesome **design tokens**, retiring the MUI `ThemeProvider`/`createTheme`/`CssBaseline` theme, the `getTheme()` JS color object, and the hardcoded hex values in the Linaria stylesheets.
 
-> **Refreshed 2026-07-27** against branch `new_code` @ `e17010c` (previous refresh:
-> `7594672`). Originally written 2026-07-24 against `@awesome.me/webawesome@3.6.0`; the
-> dependency is now **3.10.0**.
+> **Refreshed 2026-07-28** against branch `new_code` @ `fcab645`. Previous refreshes:
+> `e17010c` and `7594672` (both 2026-07-27). Originally written 2026-07-24 against
+> `@awesome.me/webawesome@3.6.0`; the dependency is now **3.10.0**.
 >
-> ### ✅ The blocking gate is gone
-> **`<wa-page>` is a FREE component.** Verified directly:
-> `node_modules/@awesome.me/webawesome/dist/components/page/page.js` ships in the npm
-> package, and the Pro-only set documented in the bundled skill
-> (`dist/skills/webawesome/references/choosing-components.md`, "A note on Pro") is exactly
-> `wa-combobox`, `wa-file-input`, `wa-toast`/`wa-toast-item`, `wa-sparkline`, the chart
-> family and the video family — `wa-page` is not among them.
+> ### ✅ This report is no longer a plan
+> Both of its halves shipped since the last refresh.
 >
-> **Consequence:** the WA Pro licensing go/no-go that gated this whole phase is
-> **resolved — no license needed**, and the free-tier CSS-grid fallback in §2.4 is no
-> longer the recommended path. It is retained only as an escape hatch.
+> **The shell is on `wa-page`** (#707, PRs #751/#767). `src/AppShell.tsx` maps the app's
+> regions onto `wa-page` slots; `HomeElement`'s `AppContainer` flex row, `RightPanel`'s
+> `width: calc(100% - 241px|50px)` arithmetic, `SideNavContainer`'s width animation and the
+> whole duplicated `MobileSidebar` are **deleted, not ported**. Two regions are
+> deliberately unused and §2.2 records why.
 >
-> Standing caveat for the rest of the migration: WebAwesome ships **no data grid and no
-> date picker in any tier** — `dist/components/` (66 entries) contains `format-date` and
-> `known-date` only. `@mui/x-data-grid` (5 references) has no WA replacement to migrate
-> *to*; plan for a non-WA grid or a hand-rolled table, and do not budget that work as
-> part of the token migration.
+> **The tokens landed** (#705/#706, then #708 in five PRs). `src/styles/keep-theme.css` is
+> now the single definition of the brand ramp *and* the semantic surface/text tokens for
+> both modes; the `keep-*` elements and the Linaria layer read `var(--wa-*)` instead of
+> carrying their own hexes; `getTheme()` went from **22 readers to 4**; the `theme` prop
+> plumbing is gone; and `CommonStyles.tsx` was split per feature.
 >
-> ### ✅ The "CSP blocker" was a misreading — withdrawn
-> Earlier revisions of this report (and report 00 P0-2) treated the
-> `'disabledContent-Security-Policy'` key in `vite.config.mts:29` as a shipped regression
-> and made "re-enable CSP" a prerequisite for `wa-page`. **That framing was wrong.** That
-> object configures the **Vite dev server only**, and CSP is *not* a blocker or a
-> prerequisite for adopting `wa-page`. **But the correction went one step too far** and
-> claimed the production CSP lived outside this repository. It does not: it is
-> **`jar/config/config.json`**, tracked here and packaged into the JAR by `pom.xml`. §5 is
-> rewritten again — it is a real in-repo work item (#685), not a memo. Report 00 P0-2 stays
-> withdrawn as worded, with the same caveat.
+> ### ⚠️ …but "the tokens landed" is not "the hexes are gone"
+> Three purples are still live in the tree, not one (§0 finding 3), **229 `light-dark()`
+> literals** remain outside the element layer (§4), and `dark-mode.css` is still 469 lines
+> of hand-written dark overrides. The keystone is in place; the sweep is half done. Read
+> §0 finding 3 and §4 before assuming this phase is finished.
 >
-> ### 🟢 Theming grew a spine (#669, #670)
-> `src/services/theme-service.ts` is **new** and is now the single writer for the three
-> DOM carriers of appearance; both runtime togglers call it (§3.7). The WA-token readers
-> (`wa-color.ts`, `wa-typography.ts`, `editor-theme.ts`) gained **29 unit tests** in #670,
-> making "read WA design tokens from JS" a working, tested precedent rather than a
-> proposal (§3.6).
+> ### 🔴 One real bug found while re-measuring
+> `styles.css:1975-1985` sets **both** `--wa-color-brand: #7e57c2` and
+> `--wa-color-brand-on: #7e57c2` on `body[data-theme='dark'] .login-submit-button` — the
+> fill and the text on that fill are the same colour, so the dark-mode login button's label
+> is invisible against its own background. See §0 finding 3.
+>
+> ### Standing caveats, unchanged
+> WebAwesome ships **no data grid in any tier**; `@mui/x-data-grid` (5 files) has no WA
+> replacement to migrate *to* (report 02 §5.1, **#702**). The date-picker half of that
+> caveat is **retired** — #703 authored `keep-input-date` on `wa-input[type=date]`.
 
-**Status:** Design/plan for the **shell**: no layout code has changed — `<wa-page>` is
-still **not used anywhere** in `src/`. The **theming substrate** has moved, though: see
-§3.6 and §3.7.
+**Status:** **Delivered, with a documented tail.** The shell and the token layer are both
+in production; §4 and §6 are the remaining sweeps.
 
 **Companion reports (cross-reference, do not duplicate):**
 - `reports/02-react-to-lit-webawesome.md` — component-level React→Lit/WebAwesome migration. Non-layout components that read the MUI theme must migrate there **before** the theme provider can be deleted.
@@ -56,127 +51,195 @@ still **not used anywhere** in `src/`. The **theming substrate** has moved, thou
 
 | # | Finding | Status | Impact |
 |---|---------|:---:|--------|
-| 1 | ~~`<wa-page>` is a Web Awesome **Pro** component~~ → **`<wa-page>` is FREE at 3.10.0** | ✅ **RESOLVED** | The §2.3 skeleton is directly usable. Drop the licensing decision from the critical path; treat §2.4 as a fallback only. |
-| 1b | **No `wa-page` in the tree yet.** `<wa-page>` occurrences in `src/`: **0**. | 🔴 open | The shell work in §2 has not started. Everything in §2 is still a plan, not a description. |
-| 2 | **The app shell is _not_ built on MUI `AppBar`/`Toolbar`/`Drawer`.** Header, side nav, right panel and footer are hand-rolled **Linaria `styled` + flexbox** (`HomeElement.tsx`, `Header.tsx`, `SideNav.tsx`, `Views.tsx`, `CommonStyles.tsx`). | 🟢 unchanged | Favorable: the shell can be swapped to `wa-page` without untangling MUI layout primitives. The bulk of MUI in the shell is `ThemeProvider`/`CssBaseline` + icons, not structure. |
-| 3 | **The brand/primary color is still defined in four places with four different purples:** `KEEP_ADMIN_BASE_COLOR = #5F1EBE` (`config.dev.ts:24`), `--wa-color-brand-* = #7e57c2` (`styles.css:1932-1952`), `--wa-color-brand-50 = #7c5fd9` (`keep-overrides.css:251`, full ramp), dark-mode `#8B6CE0` (`dark-mode.css:9`). | 🔴 open | Consolidate to **one** WA brand scale. Unchanged since the original report except that `lit-overrides.css` is now `keep-overrides.css`. |
-| 4 | **`dark-mode.css:9-11` still overrides `--wa-color-brand-600 / -500 / -700`** — Shoelace-era **3-digit** tint names. WebAwesome 3.x uses **2-digit** tints (`--wa-color-brand-05 … -95`). Dead code. | 🔴 open | Delete on migration; fold dark brand into the token theme (§3). |
-| 5 | **WebAwesome token scaffolding exists and has grown.** `keep-overrides.css` defines the full `--wa-color-brand-{05..95}` ramp, brand aliases, **`--wa-font-size-scale: 0.85`**, and a `@media (prefers-color-scheme: dark)` brand override. | 🟢 improved | The token system is live; the work is *extending* it to the shell + Linaria, not bootstrapping it. |
-| 6 | ~~**CSP is not being sent at all** — a regression that blocks `wa-page`~~ → **the finding was wrong**, and so was half its correction. `vite.config.mts:29`'s key is **dev-server only**, but the production CSP is **`jar/config/config.json`, tracked in this repo** and packaged into the JAR. | ➖ **WITHDRAWN**, but §5 is now a **work item** | **CSP is still not a prerequisite for `wa-page`.** It is, separately, editable here — and the live policy sets `style-src-attr 'none'` while 22 inline `style="…"` attributes ship. Tracked as **#685**. |
+| 1 | ~~`<wa-page>` is a Web Awesome **Pro** component~~ → **`<wa-page>` is FREE at 3.10.0** | ✅ **RESOLVED** | Settled empirically as well as by inspection: it is in production. §2.4's CSS-grid fallback is now purely historical. |
+| 1b | ~~**No `wa-page` in the tree yet**~~ → **`AppShell.tsx` is built on it** (#707) | ✅ **DONE** | §2 is now a *description*, not a plan. `MOBILE_BREAKPOINT_PX = 768` feeds `mobile-breakpoint`, and `test/app-shell.test.ts` fails if `styles/app-shell.css`'s two media queries drift from it — a media condition cannot read a custom property, so the number is duplicated on purpose and guarded. |
+| 2 | **The app shell was _not_ built on MUI `AppBar`/`Toolbar`/`Drawer`.** It was hand-rolled Linaria `styled` + flexbox. | ✅ **paid off exactly as predicted** | The swap needed no untangling of MUI layout primitives, which is why #707 could *delete* the old scaffolding rather than port it. What remains of MUI in the shell is `ThemeProvider`/`CssBaseline` + icons — see finding 10. |
+| 3 | **The brand purple is consolidated *in the token layer* but three purples are still live in the tree.** `keep-theme.css` now owns the ramp (`#7c5fd9` light base, `#8b6ce0` dark) — but `KEEP_ADMIN_BASE_COLOR = #5F1EBE` still has **11 interpolations** across `styles/layout.tsx`, `styles/forms.tsx`, `styles/dialog.tsx`, `components/applications/AppForm.tsx` and `store/styles/action.ts` (plus a raw `#5F1EBE` at `styles.css:1337`), and **`#7e57c2` survives in 17 places** in the scoped login-button overrides at `styles.css:1946-1985`. | 🟡 **half done** | #705/#706 built the single source of truth; nothing has yet *deleted* the other two. **This is the single most misleading thing about the current state** — the ramp looks consolidated until you grep for the old hexes. Finish it in **#765**. |
+| 3b | 🐛 **The dark login button paints its label in its own fill colour.** `body[data-theme='dark'] .login-submit-button` (`styles.css:1975-1985`) sets `--wa-color-brand: #7e57c2` **and** `--wa-color-brand-on: #7e57c2`. `-on` is the foreground *on* a brand fill, so the label is invisible against the button in dark mode. | 🔴 **new, open** | One-line fix (`--wa-color-brand-on: #ffffff`, or delete the block with the rest of finding 3). Worth doing ahead of #765 since it is a visible defect, not debt. |
+| 4 | ~~**`dark-mode.css:9-11` overrides `--wa-color-brand-600 / -500 / -700`**~~ — Shoelace-era 3-digit tint names that never applied | ✅ **RESOLVED** (#706) | The three declarations were deleted and their values carried over to the real `05…95` steps in `keep-theme.css`. `dark-mode.css:9-12` now carries a comment recording that they were invalid, which is the right artefact to leave behind. **The class of bug recurred twice more** — see finding 11. |
+| 5 | **The WebAwesome token layer is now a designed thing, not scaffolding.** `keep-theme.css` (183 lines) defines the light and dark brand ramps, the semantic `--wa-color-surface-*` / `--wa-color-text-*` pins, `--wa-font-size-scale: 0.85`, `--wa-border-radius-scale: calc(5 / 6)` and the `--keep-sidenav-*` gradient tokens — each with a comment saying which semantic token it drives and why the value is what it is. Load order (`src/index.tsx`) is `webawesome.css` → `keep-theme.css` → `keep-overrides.css`, and that order matters. | ✅ **done** | The work is now *extending* the token layer's reach (§4, §6), not building it. |
+| 5b | **The pins are on the _semantic_ tokens, not the neutral ramp — deliberately.** #708 planned to re-skin by overriding `--wa-color-neutral-*`, mirroring what #706 did for brand, and measurement killed it: WA's neutral ramp is **shared between light and dark**, and only the semantic tokens switch which step they read. Dark `surface-raised` wants `neutral-10 = #252535` while light `text-normal` wants `neutral-10 = #383838`; one ramp cannot satisfy both. | 📌 **decision, recorded** | Pin `--wa-color-surface-*` / `--wa-color-text-*` instead — which also leaves WA's neutrals intact for component internals tuned against them. Do not "simplify" this back to a ramp override. |
+| 5c | **`test/styles/keep-theme.test.ts` pins the CSS to `getTheme()` as _text_.** `vitest.config.ts` runs with `css: false` and jsdom has no canvas backend, so a runtime assertion on these tokens would be vacuous. The suite parses `keep-theme.css` instead and asserts each pinned token equals the corresponding `getTheme('dark')` value, plus a single-source-of-truth guard that no other stylesheet redefines them. | ✅ **the only automated guard this layer has** | Structural, not behavioural: it cannot catch a layout or contrast regression. **Visual changes still need a browser** — see §7 Cross-cutting risks. |
+| 6 | **CSP: withdrawn as worded, and now _promoted_ as substance.** `vite.config.mts`'s disabled key is dev-server only; the production CSP is **`jar/config/config.json`**, tracked here and packaged into the JAR. What changed this round is *why it matters*: **#684 closed report 00's token-storage P0 on the strength of "CSP tightening" as the compensating control.** | 🔴 **promoted** (**#685**) | Two concrete gaps, both measured on this commit: the two routes that serve the SPA document carry `script-src 'unsafe-inline'` while the asset routes do not; and every profile sets `style-src-attr 'none'` while **20** inline `style="…"` attributes ship (down from 22, and now all inside `keep-*` shadow roots). ✅ **The first is now a config-only fix** — the built `dist/index.html` has no inline `<script>` body at all since #707 moved the boot code into `src/index.ts`. |
 | 6b | ~~`setBasePath` points at **webawesome@3.6.0** while **3.10.0** is installed~~ | ✅ **RESOLVED** (#673) | Both calls **deleted**. `src/index.tsx` now carries a comment explaining why there is none: in WA 3.x the base path feeds only the autoloader, and this app imports its **18** WA components explicitly. Guarded by source scans in `test/services/icon-library.test.ts`. |
-| 7 | **The icon situation is _four_ systems.** Three legacy: `@mui/icons-material` (45 files) + `react-icons` (18 files) + **`src/styles/app-icons.ts`** (a 216 KB registry of **86** base64 SVG data URIs, imported by **19** modules), plus (until #700) **8** `<wa-icon src=…>` markup sites over 13 hand-copied SVGs. The fourth, **`src/services/icon-library.ts`** (#669), is the intended destination. | 🟡 **improving** | §6.4 rewritten. `icon-library.ts` registers a self-hosted `<wa-icon library="fa">` from `@fortawesome/fontawesome-free` SVGs bundled by Vite (11 glyphs, 11 unit tests) and logs a warning on an unknown name instead of rendering an empty glyph. **That is the template the other three converge on** — the icon plan is no longer speculative. #700 finished the `src=` half: the hand-copied SVGs and `IMG_DIR` are gone, and the only `src=` sites left are the two `data:` URIs `app-icons.ts` feeds `keep-nsf-card`. **`app-icons.ts` itself is untouched** — its 86 entries are user-selectable, multi-element colour illustrations whose `iconName` is persisted server-side, so folding them into `library="fa"` is a UX and data-contract change, not a migration. |
-| 7b | **Dead weight in `src/styles/`:** `icons.json` (144 KB, 36 entries) and `text-manipulation.css` (6 lines) are imported by **nothing**; two `@fontsource-variable` packages (`quicksand`, `crimson-pro`) are declared dependencies that **no source file imports**. | 🔴 open | Pure deletion (P0.5). `@fortawesome/fontawesome-free` is **no longer** in this list — `icon-library.ts` imports it. |
-| 8 | **The WA-token readers are now tested.** `src/services/wa-color.ts` resolves any `--wa-*` color token to concrete sRGB hex (probe element → computed `color` → 1×1 canvas readback); `wa-typography.ts` does the same for font tokens; `editor-theme.ts` maps 16 Monaco color ids onto WA semantic tokens. **29 unit tests** across the three landed in #670. | ✅ **proven** | This is a *working, tested precedent* for "read WA design tokens from JS", not a proposal. Reuse it anywhere JS needs a concrete value (charts, canvas, `<meta name="theme-color">`, third-party widgets) rather than re-reading `getPropertyValue()`, which returns unevaluated `var()`/`color-mix()` chains. §3.6. |
-| 9 | **NEW: `src/services/theme-service.ts` is the single writer for appearance.** One module sets all three DOM carriers — `.wa-dark` on `<html>`, `documentElement.style.colorScheme`, `body.dataset.theme` — and **both** runtime togglers call it (`HomeElement.tsx:120`, `LoginPage.tsx:178`). 10 unit tests. | ✅ **done** | Closes the "make the *runtime* toggle set `.wa-dark` too" item that this report has carried since the original. `.wa-dark` is now safe to treat as the canonical dark-mode hook (§3.5). §3.7. |
+| 7 | **The icon situation is _three_ systems now, not four.** `@mui/icons-material` (**41** files, was 45) + `react-icons` (18) + **`src/styles/app-icons.ts`** (216 KB, **86** base64 SVG data URIs, imported by **19** modules). The destination, **`src/services/icon-library.ts`**, is settled. | 🟡 **improving** | The `src=`/`IMG_DIR` half is **closed** (#700/#730): `IMG_DIR` has exactly **1** textual match left, a doc comment. What remains is bulk conversion of the two React icon packages (**#718**) and a decision on `app-icons.ts` (**#731**) — whose 86 entries are user-selectable colour illustrations with `iconName` persisted server-side, so folding them into `library="fa"` is a UX and data-contract change, not a migration. |
+| 7b | ~~**Dead weight in `src/styles/`:** `icons.json`, `text-manipulation.css`, two `@fontsource-variable` packages~~ | ✅ **RESOLVED** (#679) | All four deleted and verified absent on this commit. |
+| 8 | **The WA-token readers are tested.** `src/services/wa-color.ts` resolves any `--wa-*` color token to concrete sRGB hex (probe element → computed `color` → 1×1 canvas readback); `wa-typography.ts` does the same for font tokens; `editor-theme.ts` maps 16 Monaco color ids onto WA semantic tokens. **29 unit tests**, `src/services` at 96.8 %. | ✅ **proven** | A working precedent for "read WA design tokens from JS". Reuse it rather than `getPropertyValue()`, which returns unevaluated `var()`/`color-mix()` chains. §3.6. |
+| 9 | **`src/services/theme-service.ts` is the single writer for appearance** — `.wa-dark` on `<html>`, `documentElement.style.colorScheme`, `body.dataset.theme`. Both runtime togglers call it. 10 unit tests. | ✅ **done, and now barely needed** | #708 removed the *reason* components cared: **no component reads a theme value any more.** The service still owns the three carriers, but nothing downstream branches on them except the CSS cascade. |
+| 10 | **The MUI theme layer moved rather than shrank.** #743/#746 deleted `App.tsx`'s `ThemeProvider` + `CssBaseline` — and `AppShell.tsx` mounts them instead (`AppShell.tsx:136-137`, `:212`). There is now exactly **one** of each, down from two and three. | 🟡 **open by design** | This is #709's job, not this report's — the theme provider cannot go while 60 `.tsx` files still import `@mui/material`. Recorded here so "the ThemeProvider is gone" is not inferred from #746's title. `getTheme()` survives with **4** readers: `App.tsx`, `AppShell.tsx`, `theme.ts`, `store/styles/action.ts`. |
+| 11 | 🐛 **Shoelace-era token names keep reappearing, and they fail silently.** Finding 4 caught `--wa-color-brand-600/500/700`. #708 found two more rounds. **This refresh found 19 more, and 14 of them are worse than dead weight** — see 11b. Verified directly against the installed package: `@awesome.me/webawesome@3.10.0` defines colour steps **`05…95` only** and font sizes `2xs…5xl` + `smaller`/`larger` + `s`/`m`/`l`. `-300`, `-600`, `-700`, `-950`, `-0`, `-small`, `-medium`, `-large` do not exist. | 🔴 **recurring class** | Grep for 3-digit colour steps and `-small/-medium/-large` before believing any token does something. |
+| 11b | 🐛 **…and the WA validity styling does not paint, because of it.** **14 fallback-less reads** of non-existent tokens sit in exactly the rules that colour validation state: `wa-input:state(user-invalid)::part(base) { border-color: var(--wa-color-danger-600); box-shadow: … var(--wa-color-danger-300); }` in `keep-input-text.ts:31-32`, `keep-input-password.ts:20-21`, `keep-overrides.css:26-27`, plus six danger/success rules in `keep-source.ts:279-304`. A `var()` on an undefined custom property **with no fallback** is invalid at computed-value time, so the declaration is dropped — **the red error border never renders**. | 🔴 **new, open** | Rename to the real steps (`--wa-color-danger-50` / `-80`, `--wa-color-success-50` / `-80`) and verify **in a browser**. Note this is the second half of the bug #742/#744 fixed: that PR corrected the *selector* (`:state(user-invalid)`, not `data-user-invalid`) and `validity-states.test.ts` asserts the selector and the state transitions — but with `css: false` it cannot assert a painted colour, which is precisely why the dead *value* survived the fix to the dead *selector*. Fold into **#765**. |
 
-**Rough surface area (re-measured at `e17010c`):** 69 files import `@mui/material`, 45
-import `@mui/icons-material`, 18 import `react-icons`, 69 use `@linaria/react` with
-**198 `styled.` usages**, **22** files read `getTheme()` (down from 31), `Box` appears
-**148×**. Three `CssBaseline` mounts (`App.tsx`, `HomeElement.tsx`, `LoginPage.tsx`) and
-two `ThemeProvider`s (`App.tsx`, `HomeElement.tsx`). On the WebAwesome side: **110**
-`--wa-*` custom-property references in `src/`, `webawesome.css` imported exactly **once**
-(`src/index.tsx:14`), and **0** `<wa-page>`.
+**Rough surface area (re-measured at `fcab645`):** **60** `.tsx` import `@mui/material`
+(75 files import some `@mui/*`), **41** `@mui/icons-material`, **18** `react-icons`, **68**
+use `@linaria/react` with **175 `styled.` usages** (was 198), **4** files read `getTheme()`
+(was 22), `Box` appears **144×**. **One** `CssBaseline` mount and **one** `ThemeProvider`,
+both in `AppShell.tsx` (was three and two). On the WebAwesome side: **382** `--wa-*`
+references across **67** files (was 110), `webawesome.css` imported exactly **once**
+(`src/index.tsx:14`), and `wa-page` **in production**.
+
+**What is _not_ done:** **229 `light-dark()` literals** outside the element layer — 56 in
+21 `.tsx`/`.ts` files, **109 in `dark-mode.css`**, 64 in `styles.css` — and `dark-mode.css`
+is still **469 lines** of hand-written per-selector dark overrides. That file is the
+clearest remaining target: most of it exists to do what `--wa-color-text-normal` and
+`--wa-color-surface-*` now do centrally.
 
 ---
 
 ## 1. Current layout audit
 
-### 1.1 App shell anatomy (as built today — unchanged)
+### 1.1 App shell anatomy — **as rebuilt in #707**
 
 ```
-index.html  ── #root  +  pre-React inline <script> that reads localStorage['theme'],
-   │                       sets documentElement.style.colorScheme, toggles .wa-dark,
-   │                       and sets body[data-theme]        ← already WA-aware
+index.html  ── #root  +  two module <script src=…>            ← no inline script (CSP)
+   │
+   ├─ src/index.ts    appearance boot: reads localStorage['theme'], sets
+   │                  documentElement.style.colorScheme, toggles .wa-dark,
+   │                  sets body[data-theme]                   ← a real module, not inline
    ▼
-index.tsx   ── imports index.css, styles.css, dark-mode.css, webawesome.css (×1),
-   │           keep-overrides.css
+index.tsx   ── imports index.css, styles.css, dark-mode.css,
+   │           webawesome.css (×1) → keep-theme.css → keep-overrides.css   ← order matters
    │           (no setBasePath — deleted in #673; a comment explains why)
    │           <Provider store>  →  <App/>
    ▼
-App.tsx     ── <ThemeProvider theme={createTheme(...)}> <CssBaseline/>
-   │             <Router basename="/admin/ui">  authenticated ? HomeElement : LoginPage
+App.tsx     ── <Router basename="/admin/ui">  authenticated ? AppShell : LoginPage
+   │             (no ThemeProvider/CssBaseline here — deleted in #746)
    ▼
-HomeElement.tsx  ── ***the real shell***  (SECOND, nested ThemeProvider + CssBaseline)
-   ├─ <Header/>            (mobile only; desktop logo bar lives in Header too)
-   └─ <AppContainer>       Linaria styled.main  { display:flex; overflow-x:hidden }
-        ├─ <Notification/>
-        ├─ <SideNav/>       Linaria styled.aside, 242px ↔ 57px, gradient background
-        ├─ <MobileSidebar/> (mobile)
-        ├─ <RightPanel>     Linaria styled.div  width:calc(100% - 241px|50px); padding:0 40px
-        │     ├─ .toggle-button  (absolute, hardcoded #5F1FBF)   ← collapse/expand rail
-        │     └─ <MainElement = Views/>
-        │            └─ <ViewContainer> (Linaria styled.main, height:calc(100vh-23px))
-        │                 ├─ PageRouters (breadcrumb/top nav)
-        │                 ├─ <Routes> … Homepage / Schemas / Apps / Scopes / AccessMode
-        │                 └─ <QuickConfigFormContainer/>  (wa-drawer-based quick config)
-        └─ <Footer/>        copyright + build version
+AppShell.tsx  ── ***the shell***  <ThemeProvider><CssBaseline/>   ← the only pair left
+   └─ <WaPage mobileBreakpoint="768px" class={collapsed && 'nav-collapsed'}>
+        ├─ slot="header"              <MobileHeader/>      ← mobile only; 0px on desktop
+        ├─ slot="navigation-header"   logo, title, theme toggle (in a KeepTooltip)
+        ├─ slot="navigation"          <SideNav expanded/>  ← auto-drawers below 768px
+        ├─ slot="navigation-footer"   <ProfileMenu/>
+        ├─ (default)                  <Views/>
+        │      ├─ PageRouters (breadcrumb/top nav)
+        │      ├─ <Routes> … Homepage / Schemas / Apps / Scopes / AccessMode
+        │      └─ <QuickConfigFormContainer/>  (wa-drawer-based quick config)
+        └─ .nav-collapse-toggle       desktop rail collapse button
+   ├─ <Notification/>   outside the page element (portals to document.body)
+   └─ <Footer/>         outside the page element (fixed overlay) — see below
 ```
 
-> **✅ Note — this risk is now closed.** `index.html` toggles `.wa-dark` on `<html>`
-> alongside `body[data-theme]` and `colorScheme` at first paint, and since #669 the
-> *runtime* toggles do the same through one module: `services/theme-service.ts`
-> (`HomeElement.tsx:120` via `applyTheme(themeMode)`, `LoginPage.tsx:178` via
-> `applyAppearance(...)`). The "reconcile `body[data-theme]` vs. WA's `.wa-dark`"
-> cross-cutting risk is therefore handled at both boot and runtime — see §3.7.
+**Deleted rather than ported** (`test/shell-dead-code.test.ts` asserts they stay deleted):
+`HomeElement`'s `AppContainer` flex row, `RightPanel`'s `width: calc(100% - 241px|50px)`,
+`SideNavContainer`'s width animation, the dead desktop top bar (#751), and the whole
+duplicated `MobileSidebar` — `wa-page` does that last one natively below
+`mobile-breakpoint`.
+
+**Two regions are deliberately _not_ used**, and the reasons are worth keeping:
+
+- **`footer`.** `.footer-container` is `position: fixed; bottom: 0` and 23px tall, which is
+  where the `calc(100vh - 23px)` in ~20 page-level rules comes from. Slotting it would add
+  a grid row and change every one of them. It stays a fixed overlay outside the page
+  element.
+- **`subheader`.** The obvious tenant is `PageRouters`, but it renders inside `Views`'
+  `NavigationGuardProvider` and needs the router context; hoisting it is its own change.
+
+> **One non-obvious constraint, recorded in the source.** The collapse rail is switched by
+> a **class**, not `data-toggle-nav`: `wa-page` hides its own hamburger the moment it finds
+> that attribute anywhere in its light DOM, which would leave mobile with no way to open
+> the drawer. (`data-collapsed` would work too, but `@lit/react` derives props from
+> `React.HTMLAttributes`, which has no `data-*` index signature.)
+
+> **The breakpoint is duplicated on purpose.** `MOBILE_BREAKPOINT_PX = 768` feeds
+> `wa-page`'s `mobile-breakpoint` attribute, and `styles/app-shell.css` repeats the literal
+> in two media queries because a media condition cannot read a custom property.
+> `test/app-shell.test.ts` fails if the three drift apart.
+
+> **✅ The `.wa-dark` reconciliation risk stays closed.** `src/index.ts` sets all three
+> carriers at first paint and `services/theme-service.ts` sets the same three at runtime
+> (§3.7). Note that #707 had to move the boot code out of `index.html` and into a module:
+> an inline `<script>` is exactly what the #685 CSP tightening forbids, and PR #752 was
+> closed over precisely this.
 
 Key regions and where they are styled:
 
 | Region | Component / file | How it is styled today |
 |--------|------------------|------------------------|
-| Top bar / logo | `components/header/Header.tsx` | Linaria `styled.header`; `height:51px`, `background: getTheme(theme).bodyColor`, logo cell `242/57px`. `z-index:3`; `position:fixed` under 768px. |
-| Mobile header | `components/header/MobileHeader.tsx` | Linaria; hardcoded `background:white`, MUI `MenuIcon`/`ChevronLeft`. |
-| Side navigation | `components/sidenav/SideNav.tsx` + `styles/CommonStyles.tsx#SideNavContainer` | Linaria `styled.aside` 242px; `background-image: getTheme().sidenav.background` (purple→blue gradient); MUI `List`/`ListItemButton`/`ListItemIcon`/`ListItemText`/`Divider`; MUI icons; `KeepTooltip`. Collapse via `:has(.close)` width transition to 57px. `drawerWidth = 242` in `sidenav/style.ts`. |
-| Main content | `Views.tsx#ViewContainer` + `HomeElement.tsx#RightPanel` | Linaria; `height:calc(100vh - 23px)`, `overflow-y:auto`, `padding:0 40px`, `background: getTheme().bodyColor`. |
-| Mobile nav drawer | `components/sidenav/MobileSidebar.tsx` | Custom; RightPanel blurs when `open`. |
+| Top bar / logo | ~~`components/header/Header.tsx`~~ | ✅ **Gone.** The desktop bar was dead code (#751); the logo and title moved into `wa-page`'s `navigation-header` slot. An empty `header` part measures 0px, so `--header-height` stays 0 on desktop. |
+| Mobile header | `components/header/MobileHeader.tsx` | Linaria; rendered into `slot="header"` only below 768px. |
+| Side navigation | `components/sidenav/SideNav.tsx` + `styles/sidenav.tsx#SideNavContainer` | In `wa-page`'s `navigation` slot. Width belongs to `--menu-width` and the paint to `::part(menu)`; the gradient comes from `--keep-sidenav-background` in `keep-theme.css` (#708) rather than `getTheme().sidenav.background`. Still MUI `List`/`ListItemButton`/`ListItemIcon`/`ListItemText`/`Divider` + MUI icons inside. |
+| Main content | `Views.tsx#ViewContainer` | Linaria; `height:calc(100vh - 23px)`, `overflow-y:auto`. `RightPanel`'s `calc(100% - 241px\|50px)` is **deleted** — `wa-page` owns the grid. |
+| Mobile nav drawer | ~~`components/sidenav/MobileSidebar.tsx`~~ | ✅ **Deleted** — `wa-page` collapses `navigation` into a drawer natively below `mobile-breakpoint`. |
 | Quick-config drawer | `components/database/QuickConfigFormContainer.tsx` | Already a WebAwesome/Lit drawer (`wa-drawer`, styled in `dark-mode.css` via `::part`). |
-| Dialogs | `components/dialogs/*`, `CommonStyles.tsx` (`CommonDialog` = MUI `Dialog`) + native `<dialog>` | MUI `Dialog`/`Paper` themed via `dark-mode.css` `.MuiDialog-*` `light-dark()` `!important` rules. |
-| Footer | `Footer.tsx` + `styles.css .footer-container` | Plain div. |
-| Notifications/toasts | `components/alerts/Notification.tsx`, `dialogs/SnackbarToaster.tsx` | MUI Snackbar + a Lit toast (`keep-alert`). |
+| Dialogs | `components/dialogs/*`, `styles/dialog.tsx` (`CommonDialog` = MUI `Dialog`) + native `<dialog>` | MUI `Dialog`/`Paper` themed via `dark-mode.css` `.MuiDialog-*` `light-dark()` `!important` rules. **This is the largest surviving `light-dark()` cluster** — see §4. |
+| Footer | `Footer.tsx` + `styles.css .footer-container` | Plain div, fixed overlay outside `wa-page` (see §1.1). |
+| Notifications/toasts | `components/alerts/Notification.tsx`, `dialogs/SnackbarToaster.tsx` | MUI Snackbar + a Lit toast (`keep-alert`); rendered outside the page element because the snackbar portals to `document.body`. |
 
 ### 1.2 Where the theme / colors / spacing come from
 
-1. **MUI theme** — `src/theme.ts` `createTheme({...})`: `palette`, one
+1. **WebAwesome design tokens — now the primary source.** `src/styles/keep-theme.css`
+   (183 lines) is the single definition of the light and dark brand ramps, the semantic
+   `--wa-color-surface-{lowered,default,raised,border}` and `--wa-color-text-{normal,loud}`
+   pins, `--wa-font-size-scale: 0.85`, `--wa-border-radius-scale: calc(5 / 6)` and the
+   `--keep-sidenav-*` tokens. **382** `--wa-*` references across **67** files now read from
+   it. Guarded by `test/styles/keep-theme.test.ts`.
+2. **MUI theme** — `src/theme.ts` `createTheme({...})`: `palette`, one
    `typography.caption` override, and `components.styleOverrides` for `MuiTooltip,
    MuiBadge, MuiDialogTitle, MuiButton, MuiPaper, MuiListItemIcon, MuiCircularProgress,
-   MuiBreadcrumbs, MuiInputBase, MuiTab, MuiFormLabel, MuiSwitch`. Instantiated **twice**
-   (`App.tsx`, `HomeElement.tsx`), each with its own `<CssBaseline/>`; `LoginPage.tsx`
-   mounts a third `CssBaseline`.
-2. **`getTheme()` JS color object** — `src/store/styles/action.ts` returns a nested object
-   for `dark | hcl | default`. Read by **22 files** (was 31), mostly inside Linaria
-   template literals (`background: ${p => getTheme(p.theme).secondary}`).
-3. **Hardcoded hex in Linaria** — `CommonStyles.tsx` (**still 936 LOC**; **44** of the
-   repo's **198** `styled.` blocks, plus 10 `styled(MuiComponent)` wrappers) and the
-   per-component `styled` blocks in the other 68 files bake in
-   `#0F5FDC`, `#F01648`, `#5E1EBE`, `#8B6CE0`, `#3874cb`,
-   `KEEP_ADMIN_BASE_COLOR`, radii (`3px/5px/10px`), spacing (`6px 16px`, `padding:0 40px`),
-   font sizes (`12/14/16/…/26px`), weights (`300/500/700`). **Plus** the `keep-button-yes/
-   no/neutral` elements, which are plain `<button>`s with hardcoded `#0F5FDC`/`#0B4AAE`/
-   `#96BCF8` (report 02 §6.2).
-4. **Global CSS custom properties** — `styles.css` (2,040 lines) `:root` defines app-local
-   tokens with `light-dark()` **and** a stray legacy WA brand override block at
-   L1932–1952 (`--wa-color-brand-80/50 = #7e57c2`, `--wa-color-brand-fill-loud`, …).
-5. **WebAwesome token overrides** — `keep-overrides.css` (274 lines) defines the full
-   `--wa-color-brand-{05..95}` ramp (base `#7c5fd9`), `--wa-color-brand`/`-on` aliases,
-   `--wa-font-size-scale: 0.85`, and a `prefers-color-scheme: dark` brand override.
-   `dark-mode.css` (468 lines, 54 `.Mui*` rules) sets the **invalid**
-   `--wa-color-brand-600/500/700`.
-6. **Dark mode** — CSS `light-dark()` + `body[data-theme="dark"]` + the `.Mui*` override
-   sheet. The flash-prevention script in `index.html` sets all three carriers at boot and
-   **`services/theme-service.ts` sets the same three at runtime** (§3.7). Note the boot
-   script is asymmetric — it writes `body.dataset.theme` only on the dark branch — which is
-   harmless on a fresh load but means `theme-service` is the only place that *clears* it.
-7. **WA design tokens read from JavaScript** — `services/wa-color.ts`,
+   MuiBreadcrumbs, MuiInputBase, MuiTab, MuiFormLabel, MuiSwitch`. Now instantiated
+   **once**, in `AppShell.tsx`, with a single `<CssBaseline/>` (was 2 providers / 3
+   baselines). Removing it is **#709**.
+3. **`getTheme()` JS color object** — `src/store/styles/action.ts`. Down from **22 readers
+   to 4**: `App.tsx`, `AppShell.tsx`, `theme.ts`, and the module that defines it. The
+   Linaria interpolations that made up the other 18 are gone (#708), and with them the
+   `theme` / `themeMode` prop plumbing — 20 pass-downs and 15 `<{ theme: string }>`
+   generics. The unreachable `'hcl'` branch was deleted too.
+
+   > 🐛 **This fixed live bugs, not just style.** `getTheme(props.theme)` silently returned
+   > the **light** palette when no `theme` prop was passed, and `ViewsTable`, `AgentsTable`,
+   > `AppsTable` and `ConsentsTable` never passed one — so those tables rendered light
+   > chrome in dark mode. It is now impossible to reproduce: no component knows the theme.
+
+4. **Hardcoded hex in Linaria — reduced, not eliminated.** `CommonStyles.tsx` is now a
+   20-line re-export barrel over six per-feature modules (`layout`, `search`, `cards`,
+   `dialog`, `sidenav`, `forms`), and the repo is down to **175 `styled.` usages** across
+   68 files (was 198). But **`KEEP_ADMIN_BASE_COLOR` still has 11 interpolations** in
+   `styles/layout.tsx`, `styles/forms.tsx`, `styles/dialog.tsx`, `applications/AppForm.tsx`
+   and `store/styles/action.ts`, and **56 `light-dark()` literals** remain across 21
+   `.tsx`/`.ts` files. §4.
+5. **Global CSS custom properties** — `styles.css` (2,074 lines) `:root` defines app-local
+   tokens with `light-dark()`. `--base-color` is now derived
+   (`light-dark(var(--wa-color-brand-40), var(--wa-color-brand-60))`) with a comment noting
+   it serves two opposite roles — a text colour and a surface — which is why splitting it
+   is on **#765**. The legacy `#7e57c2` block at L1946–1985 is **still live** (§0 finding 3).
+6. **WebAwesome token overrides** — `keep-overrides.css` (242 lines) now holds only
+   component-level `::part` fixes; the ramp moved to `keep-theme.css` in #706.
+   `dark-mode.css` (**469 lines, 109 `light-dark()`**) is the largest remaining
+   un-tokenized surface — mostly `.Mui*` rules that predate the semantic tokens.
+7. **Dark mode** — CSS `light-dark()` + `body[data-theme="dark"]` + `.wa-dark` + the
+   `.Mui*` override sheet. `src/index.ts` sets all three carriers at boot and
+   `services/theme-service.ts` sets the same three at runtime (§3.7). The boot script is
+   still asymmetric — it writes `body.dataset.theme` only on the dark branch — so
+   `theme-service` remains the only place that *clears* it.
+8. **WA design tokens read from JavaScript** — `services/wa-color.ts`,
    `wa-typography.ts` and `editor-theme.ts` resolve `--wa-*` tokens to concrete values for
    Monaco, which cannot consume CSS custom properties. Tested (§3.6).
 
-**Material Design is baked in at:** the two `ThemeProvider`+`CssBaseline` pairs (Roboto,
-MD elevation, MD ripple/typography defaults, MD `Dialog`/`Paper`/`Tab`/`Switch`/
-`Breadcrumbs` chrome), `theme.ts`'s component overrides, `@mui/icons-material` glyphs, and
-the `.Mui*` dark-mode sheet.
+**Material Design is now baked in at exactly one place structurally** — `AppShell.tsx`'s
+single `ThemeProvider` + `CssBaseline` (Roboto, MD elevation, MD ripple/typography
+defaults, MD `Dialog`/`Paper`/`Tab`/`Switch`/`Breadcrumbs` chrome) — plus `theme.ts`'s
+component overrides, `@mui/icons-material` glyphs in 41 files, and the `.Mui*` dark-mode
+sheet. That consolidation is what makes **#709** a tractable single change rather than a
+sweep.
 
 ---
 
-## 2. Target `wa-page` shell
+## 2. The `wa-page` shell — ✅ **built** (#707)
+
+> **Read §1.1 first for what actually shipped.** This section was written as a design and
+> is kept as reference for the slot semantics and the alternatives considered. Where §2.2
+> and §2.3 differ from `src/AppShell.tsx`, **the code is right and this section records the
+> plan.** The three notable divergences:
+>
+> - **`subheader` was not used.** `PageRouters` renders inside `Views`'
+>   `NavigationGuardProvider` and needs router context; hoisting it is its own change.
+> - **`footer` was not used.** `.footer-container` is `position: fixed` and 23px tall, which
+>   is where the `calc(100vh - 23px)` in ~20 page rules comes from. Slotting it would add a
+>   grid row and change all of them.
+> - **The collapse rail is switched by a class, not `data-toggle-nav`.** `wa-page` hides its
+>   own hamburger the moment it finds that attribute anywhere in its light DOM, which would
+>   leave mobile with no way to open the drawer.
 
 ### 2.1 `wa-page` slot anatomy
 
@@ -203,7 +266,7 @@ the host for responsive CSS. Region widths: `--menu-width`, `--main-width`,
 | `PageRouters` breadcrumb / page title | `subheader` | Sticky breadcrumb row — exactly what `subheader` is for. |
 | `SideNav.tsx` (routes list) | `navigation` (`menu`) | Auto-drawer on mobile ⇒ **delete** `MobileSidebar.tsx`, the `open` state, `RightPanel` width math, and the `.toggle-button`. Keep the gradient via `::part(menu)`. |
 | Sidenav logo + "HCL Domino REST API" title | `navigation-header` | Column-stacked by default. |
-| Sidenav theme toggle + `ProfileMenu` | `navigation-footer` | Pinned to the bottom of the nav. The toggle keeps dispatching `switchTheme`; the DOM writes stay in `HomeElement`'s `applyTheme(themeMode)` effect (§3.7) — do not re-implement them in the slot. |
+| Sidenav theme toggle + `ProfileMenu` | `navigation-footer` | ✅ As built, the toggle sits in **`navigation-header`** next to the logo and `ProfileMenu` alone occupies `navigation-footer`. The toggle keeps dispatching `switchTheme`; the DOM writes stay in `applyTheme(themeMode)` (§3.7) — do not re-implement them in the slot. |
 | `Views.tsx` `<Routes>` main content | default slot | React Router `<Routes>` mounts here. |
 | `QuickConfigFormContainer` (`wa-drawer`) | default slot (or `aside`) | Keep as an overlay drawer; or promote to `aside` if it should dock. |
 | `Footer.tsx` | `footer` | Always below the viewport (page becomes scrollable). |
@@ -316,10 +379,10 @@ wa-page[view="desktop"] [data-toggle-nav] { display: none; }
 - **End-state (report 04):** the shell is authored as static HTML/Lit; React (if retained)
   mounts only into the default slot's content router.
 
-### 2.4 Free-tier CSS-grid fallback — ⚠️ no longer needed
+### 2.4 Free-tier CSS-grid fallback — ➖ **not needed, and now moot**
 
-> Retained only as an escape hatch if `wa-page` proves unworkable (e.g. a sticky-behaviour
-> conflict, or a production CSP that cannot relax `style-src-attr` — §5.1 item 1).
+> `wa-page` is free *and shipped* (#707), so this is historical. Retained only because the
+> reasoning about sticky behaviour and `style-src-attr` is still relevant to §5.1 item 1.
 > **`wa-page` is free — prefer §2.3.** Choosing this path means re-implementing sticky
 > logic, the skip link, and the auto height vars by hand for no licensing benefit. Note it
 > does **not** dodge the inline-style question entirely: WA form controls and `::part`
@@ -540,50 +603,76 @@ three writes to avoid a flash.
 `getTheme()`, so components inherit the token system and dark mode "just works" through
 token flips (no per-component `light-dark()`).
 
-Strategy, in order:
+**Status: steps 1–3 and 5 are done (#708). Steps 4, 6 and 7 remain.**
 
-1. **Kill the `getTheme(props.theme)` interpolations first.** **22 files** (down from 31)
-   pass `theme={themeMode}` into Linaria only to look colors up at render. Replace each
-   `${p => getTheme(p.theme).X}` with the corresponding `var(--wa-color-*)`. Because
-   tokens already resolve per color-scheme, the `theme` prop, the `themeMode` Redux read,
-   and most `getTheme()` calls can then be deleted:
+1. ✅ **Kill the `getTheme(props.theme)` interpolations.** **DONE** — 35 interpolations
+   replaced with static `var(--wa-*)`, and the plumbing that fed them deleted: 20
+   `theme=`/`themeMode=` pass-downs and 15 `<{ theme: string }>` generics. `getTheme()` is
+   down to 4 readers. The affected `styled` components are now **fully static**, so Linaria
+   no longer injects a per-instance CSS variable at render:
    ```diff
    - border-right: 1px solid ${(p) => getTheme(p.theme).sidenav.border};
    - background-image: ${(p) => getTheme(p.theme).sidenav.background};
-   + border-inline-end: var(--wa-border-width-s) solid var(--wa-color-surface-border);
-   + background-image: var(--keep-sidenav-gradient);
+   + border-right: 1px solid var(--keep-sidenav-border);
+   + background-image: var(--keep-sidenav-background);
    ```
-2. **Replace literal hex/px in `CommonStyles.tsx`** (still **936 LOC**, 44 `styled.`
-   blocks — the highest fan-out in the repo) per §3.
-   `KEEP_ADMIN_BASE_COLOR` → `var(--wa-color-brand-fill-loud)`; `#0F5FDC` →
-   `var(--wa-color-blue-50)`; `#F01648` → `var(--wa-color-danger-fill-loud)`;
-   `border-radius: 10px` → `var(--wa-border-radius-l)`; `padding: 6px 16px` →
-   `var(--wa-space-2xs) var(--wa-space-m)`.
-3. **Tokenize the `keep-*` elements at the same time.** Report 02 §6.5 left per-component
-   hardcoded colors in place deliberately, waiting for this layer: `keep-button.ts`'s
-   `#f4e9ff` `::part` override, the `light-dark(#1e1e2e, …)` literals in the source
-   elements, and the plain-`<button>` colors in `keep-button-yes/no/neutral`.
-   **Do report 02 §6.2 (collapse the four buttons) *before* this step** so three of those
-   components never need tokenizing.
-4. **Prefer WA layout utilities over bespoke flex.** Replace hand-rolled `display:flex`
-   wrappers with `wa-stack` / `wa-cluster` / `wa-split` / `wa-flank` / `wa-grid` where the
-   Linaria block only did flexbox + gap. This deletes rules outright rather than
-   re-tokenizing them.
-5. **Retire the `styles.css :root` app tokens** in favor of `--wa-*`, or redefine them *as*
-   aliases during transition (`--base-color: var(--wa-color-brand-fill-loud)`), so
-   existing class-based CSS keeps working while call sites migrate.
-6. **Leave `styled(MuiComponent)` blocks** (`CommonDialog = styled(Dialog)`, …) for
-   **report 02** — those disappear when the underlying MUI component is replaced;
-   re-tokenizing them now is throwaway work. There are **10** such wrappers in
-   `CommonStyles.tsx` alone.
-7. **Where a token genuinely has to reach JavaScript**, call `resolveWaColors()` /
+   > The sidenav gradient became `--keep-sidenav-*` rather than a `--wa-*` token because it
+   > is a brand asset with no WA semantic equivalent — a three-stop gradient, an active and
+   > a hover state. Naming it in the `--keep-` namespace keeps `keep-theme.css` as the one
+   > file to edit without pretending it is part of WA's scale.
+2. ✅ **Replace literal hex/px in `CommonStyles.tsx`** — **DONE**, and the file itself was
+   split (see §6). 133 radius/font-size substitutions landed with it, under a **two-part
+   gate**: a token was only substituted where it lands **within 1px** of the literal *and*
+   does not collapse two distinct sizes into one. That is why `16px` and `18px` kept their
+   literals — see the caveat below.
+3. ✅ **Tokenize the `keep-*` elements** — **DONE**, 93 literals (report 02 §6.5).
+   Collapsing the four buttons first (#701) worked exactly as this report advised: three
+   components that should not exist never got tokenized.
+4. 🟡 **Prefer WA layout utilities over bespoke flex.** **NOT STARTED — deferred to #765.**
+   Adoption of `wa-stack`/`wa-cluster`/`wa-split`/`wa-grid` is still **zero**. It was scoped
+   out of #708 deliberately: it is the one item the suite genuinely cannot see (`css:
+   false`) and it carries the most visual risk, so it wants a browser and a human, not a
+   codemod.
+5. ✅ **Retire the `styles.css :root` app tokens** — **partly done via aliasing**, the
+   transition strategy this report recommended. `--base-color` is now
+   `light-dark(var(--wa-color-brand-40), var(--wa-color-brand-60))`, so class-based CSS
+   keeps working. 🔴 The `#7e57c2` login block (§0 finding 3) is the part that was *not*
+   aliased and still needs deleting.
+6. 🟡 **Leave `styled(MuiComponent)` blocks for report 02** — unchanged and still correct.
+   They disappear when the underlying MUI component is replaced (**#709**); re-tokenizing
+   them now is throwaway work.
+7. 🟡 **Where a token genuinely has to reach JavaScript**, call `resolveWaColors()` /
    `resolveWaTypography()` (§3.6) instead of reviving a `getTheme()`-shaped color object.
    The Monaco theme is the proof this works.
 
 Linaria stays as the authoring tool — it just emits `var(--wa-*)` references. No build
-change is required (`@wyw-in-js/vite` extracts to a bundled stylesheet, served from
-`'self'`). **Scale check:** 198 `styled.` blocks across 69 files, currently referencing
-`--wa-*` in only 110 places repo-wide — most of that surface is still literals.
+change was required (`@wyw-in-js/vite` extracts to a bundled stylesheet, served from
+`'self'`).
+
+**Scale check, re-measured:** 175 `styled.` blocks across 68 files, now referencing
+`--wa-*` in **382** places across 67 files (was 110). The remaining literal surface is
+**229 `light-dark()`** calls: 56 in 21 `.tsx`/`.ts` files, **109 in `dark-mode.css`**, 64
+in `styles.css`.
+
+### 4.1 Caveats worth carrying into the next sweep
+
+Three things #708 learned the hard way. They apply to whoever does `dark-mode.css`.
+
+- **Measure the ladders; do not derive them.** `--wa-font-size-*` is a
+  `round(calc(… / 1.125), 1px)` chain on a rem base, so with `--wa-font-size-scale: 0.85`
+  applied it is **not** a clean geometric series. Hand arithmetic is not trustworthy here —
+  assign the token to a real property in a browser and read back the computed longhand.
+  (And note `CSSStyleDeclaration.setProperty` needs the kebab-case CSS name, not the
+  camelCase IDL one, or the probe silently reads the inherited value.)
+- **The radius scale was retuned rather than mapped per site.** `--wa-border-radius-scale:
+  calc(5 / 6)` makes `--wa-border-radius-l` land exactly on the app's dominant 10px card
+  radius. The cost is that WA's own components lose ~17 % corner radius; that was judged
+  acceptable by eye, but it is a global change and should be re-checked if WA components
+  become more prominent.
+- **Substitution changes pixels even when it is "correct".** The gate let `14px →
+  13.6px` through at **50 sites** — sub-pixel, but it is the app's most common size — and
+  converged light-mode borders from six greys onto one token at 15 sites. Neither is a bug;
+  both are visible. Budget a human look, not just a green suite.
 
 ---
 
@@ -643,13 +732,17 @@ Four defects visible in that table before any `wa-page` work begins:
 ### 5.1 Gap analysis against the shipped policy
 
 1. **`style-src-attr 'none'` is already set, and the app already ships inline style
-   attributes.** This is no longer a future `wa-page` requirement — it is a live question.
-   `wa-page` would make it worse (it sets `--header-height`, `--banner-height`,
-   `--subheader-height` and nav-drawer state as inline styles from JS), but **22 static
-   `style="…"` attributes across 12 `.ts`/`.tsx` files render today**, including
-   `keep-nsf-card` (`style="font-size: 32px;"`), `keep-dropdown`, `keep-autocomplete`,
-   `keep-input-text` and three `keep-button*` variants that forward
-   `style="${this.getAttribute('style') || ''}"`.
+   attributes.** This is no longer a future `wa-page` requirement — and `wa-page` is now
+   **live**, so the aggravating factor has arrived: it sets `--header-height`,
+   `--banner-height`, `--subheader-height` and nav-drawer state as inline styles from JS.
+   On top of that, **20 static `style="…"` attributes across 10 files** render today (down
+   from 22/12 — three went with the `keep-button*` collapse). All ten files are now
+   `keep-*` elements: `keep-nsf-card` (`style="font-size: 32px;"`), `keep-dropdown`,
+   `keep-autocomplete`, `keep-input-text`, `keep-input-password`, `keep-input-date`,
+   `keep-default-card`, `keep-drawer`, `keep-button`, `keep-source`.
+
+   > Being inside a shadow root does **not** exempt them: `style-src-attr` applies to the
+   > document, and shadow content is part of it.
 
    Under `style-src-attr 'none'` those attributes should be refused. So exactly one of the
    following is true, and **finding out which is the first task in #685**:
@@ -681,11 +774,20 @@ Four defects visible in that table before any `wa-page` work begins:
    Monaco's `editor`/`json`/`ts` workers via Vite's `?worker` imports, which produce blob or
    same-origin worker URLs. **Requirement:** keep this directive in production, or Monaco
    (Source tab, Diff view) breaks.
-5. **`script-src 'unsafe-inline'` is currently required** by the pre-render theme
-   `<script>` in `index.html` (§2.3, §3.7). Note `80c4201 Remove unsafe-inline for
-   script-src` once removed it and it is back — worth understanding why before removing it
-   again. Dropping it needs a nonce or hash for that script; both the script and the policy
-   are in this repo, so it is a single coordinated change rather than a cross-team one.
+5. ✅ **`script-src 'unsafe-inline'` is no longer required — and this is now the highest-value
+   item in #685.** The pre-render theme `<script>` that needed it has been moved into
+   `src/index.ts` as a real module (#707), and the built `dist/index.html` on this commit
+   contains **no inline `<script>` body at all** — one `<script type="module" crossorigin
+   src=…>` and one stylesheet `<link>`.
+
+   That matters more than it used to. **#684 closed report 00's token-storage P0 on the
+   basis that CSP tightening is the compensating control**, and `'unsafe-inline'` sits on
+   exactly the two profiles that serve the SPA document (`/admin/ui`, `/admin/ui/*`) while
+   the asset routes are already `'self'`. Dropping it from those two entries is now a
+   **config-only edit with a verified precondition**, and it is what turns that decision
+   into an actual control. Note `80c4201 Remove unsafe-inline for script-src` removed it
+   once before and it came back — so verify against a built artifact, not the source
+   `index.html`, and keep `test/shell-dead-code.test.ts`-style guarding in mind.
    `https://ssl.gstatic.com` also sits in `script-src` with no obvious current consumer.
 6. **Linaria/WA bundled stylesheets** are injected as `'self'` `<style>`/`<link>`, covered
    by `style-src-elem 'self'`. No action.
@@ -708,64 +810,63 @@ actually blocking, then narrow.
 
 Ordering matters: the theme provider cannot be deleted until nothing reads the MUI theme.
 
-1. **(Report 02, prerequisite) Migrate non-layout MUI components off the theme.** Every
+1. 🟡 **(Report 02, prerequisite) Migrate non-layout MUI components off the theme.** Every
    component relying on MUI palette/`styleOverrides` (`Dialog`, `Paper`, `Tab`,
    `Breadcrumbs`, `Switch`, `Badge`, `Button` text-variants, inputs) must move to WA
-   equivalents or plain tokenized elements. Track by grepping `@mui/material` imports
-   (**69 files** → 0 in the shell path).
-2. **Stand up the shell** (§2.3): introduce `AppShell` on `wa-page`, route existing
-   subtrees into slots, delete `AppContainer`, `RightPanel`, `SideNavContainer`,
-   `MobileSidebar`, the `MobileHeader` duplication, the `open` collapse state +
-   `.toggle-button` (`HomeElement.tsx:68,149,157`), and `drawerWidth`
-   (`sidenav/style.ts:7`). **This step no longer waits on CSP** — see §5; hand the
-   `style-src-attr` fix to `jar/config/config.json` in parallel (#685).
-3. **Tokenize Linaria + the `keep-*` elements, retire `getTheme()`** (§4), collapsing the
-   four brand definitions into `keep-theme.css` (§3.5) and deleting the invalid
-   `--wa-color-brand-600/500/700`.
-4. **Swap icons** (§6.4).
-5. **Delete the theme layer:** remove both `<ThemeProvider>`s and all **three**
-   `<CssBaseline/>` mounts (`App.tsx`, `HomeElement.tsx`, `LoginPage.tsx`), delete
-   `theme.ts`, and drop the `.Mui*` dark-mode rules as their components disappear.
-6. **Drop MUI dependencies** (`@mui/material`, `@mui/icons-material`, `@mui/x-*`,
-   `@emotion/*`) once imports reach zero. (`@mui/lab` is already gone.)
+   equivalents or plain tokenized elements. Track by grepping `@mui/material` imports —
+   **60 `.tsx` files** (was 69) → 0. This is the long pole and it has barely moved; steps
+   2–3 below were the fast ones.
+2. ✅ **Stand up the shell** — **DONE** (#707/#767). `AppShell.tsx` on `wa-page`;
+   `AppContainer`, `RightPanel`, `SideNavContainer`'s animation, `MobileSidebar`, the dead
+   desktop top bar and `drawerWidth` all deleted. It did not wait on CSP, as this report
+   advised.
+3. ✅ **Tokenize Linaria + the `keep-*` elements, retire `getTheme()`** — **DONE**
+   (#705/#706/#708). `keep-theme.css` is the single brand and semantic-token source; the
+   invalid `--wa-color-brand-600/500/700` are deleted; `getTheme()` is down to 4 readers.
+   🟡 **Tail:** the `#7e57c2` login block and `KEEP_ADMIN_BASE_COLOR`'s 11 interpolations
+   (§0 finding 3), plus the 229 `light-dark()` literals in §4.
+4. 🟡 **Swap icons** (§6.4) — the `src=`/`IMG_DIR` half is done; the two React icon
+   packages (**#718**) and `app-icons.ts` (**#731**) remain.
+5. 🔴 **Delete the theme layer:** remove the **one** remaining `<ThemeProvider>` +
+   `<CssBaseline/>` pair (both now in `AppShell.tsx`), delete `theme.ts`, and drop the
+   `.Mui*` dark-mode rules as their components disappear. Tracked as **#709**. Blocked on
+   step 1.
+6. 🔴 **Drop MUI dependencies** (`@mui/material`, `@mui/icons-material`, `@mui/x-data-grid`,
+   `@emotion/*`) once imports reach zero. `@mui/lab`, `@mui/x-date-pickers` and
+   `@mui/x-tree-view` are already gone; `@mui/x-data-grid` is gated on **#702**.
 
-### 6.4 Icon system — four systems, but one of them is now the answer
+### 6.4 Icon system — down to three, and the answer is in production
 
 The original plan was "replace `@mui/icons-material` (47) and `react-icons` (18) with
-`<wa-icon>`". Since then a **third** system was found, and #669 added a **fourth** — this
-last one deliberately, as the target pattern. Current inventory:
+`<wa-icon>`". A **third** system was then found (`app-icons.ts`), and #669 added a
+**fourth** deliberately, as the target pattern. Since then #700/#725/#730 **closed two of
+the five rows below** — the hand-copied SVGs and the dead style assets are gone.
 
 | System | Size | Consumers | Notes |
 |---|---|---|---|
-| **`src/services/icon-library.ts`** ✅ | 11 glyphs, bundled by Vite | `<wa-icon library="fa" name="…">` | **The target pattern (#669).** `registerIconLibrary('fa', …)` resolving to SVG URLs imported from the `@fortawesome/fontawesome-free` dependency with `?url`. Avoids both hardcoded `/admin/...` paths (which break under any other mount point) and WA's default `ka-f.fontawesome.com` CDN resolver. Unknown names log a warning instead of silently rendering an empty glyph. 11 unit tests. |
-| `@mui/icons-material` | dep | **45 files** | Material Symbols glyphs. |
-| `react-icons` | dep | **18 files** | Mixed icon sets. |
-| **`src/styles/app-icons.ts`** | **216 KB**, **86** icons | **19 modules** (`QuickConfigForm`, `AddImportDialog`, `ScopeForm`, `ScopeFormContainer`, `EditView`, `DetailsSection`, `IconDropdown`, `SlimDatabaseCard`, the four `cardviews` displays, `AppItem`/`AppForm`/`AppCard`, `keep-nsf-card.ts`, `store/databases/action.ts`, …) | A `Record<string, string>` of **base64-encoded SVG data URIs**, keyed by name (`archeology`, `binoculars`, `cocktail`, …). Guarded by `checkIcon()` in `styles/scripts.ts`. |
-| `public/img/shoelace/*.svg` | **13 files** | referenced by URL from the **8** remaining `<wa-icon src=…>` markup sites | Hand-copied Font Awesome Free SVGs (attribution comments intact). Exactly the case `icon-library.ts` was written to replace. |
-| `src/styles/icons.json` | **144 KB**, 36 entries | **0 imports** | Dead file. |
-| `src/styles/text-manipulation.css` | 6 lines | **0 imports** | Dead file. |
-| `@fontsource-variable/quicksand`, `…/crimson-pro` | deps | **0 imports** | Declared but unused (§3.3). |
+| **`src/services/icon-library.ts`** ✅ | 11 glyphs, bundled by Vite | `<wa-icon library="fa" name="…">` | **The target pattern (#669).** `registerIconLibrary('fa', …)` resolving to SVG URLs imported from the `@fortawesome/fontawesome-free` dependency with `?url`. Avoids both hardcoded `/admin/...` paths (which break under any other mount point) and WA's default `ka-f.fontawesome.com` CDN resolver. Unknown names log a warning instead of silently rendering an empty glyph. |
+| `@mui/icons-material` | dep | **41 files** (was 45) | Material Symbols glyphs. **#718** |
+| `react-icons` | dep | **18 files** | Mixed icon sets. **#718** |
+| **`src/styles/app-icons.ts`** | **216 KB**, **86** icons | **19 modules** | A `Record<string, string>` of **base64-encoded SVG data URIs**, keyed by name (`archeology`, `binoculars`, `cocktail`, …). Guarded by `checkIcon()` in `styles/scripts.ts`. `iconName` is persisted server-side, so this is a data contract, not just an asset choice. **#731** |
+| ~~`public/img/shoelace/*.svg`~~ | 13 files | — | ✅ **Retired** (#700/#730). |
+| ~~`src/styles/icons.json`~~, ~~`text-manipulation.css`~~, ~~two `@fontsource-variable` packages~~ | — | — | ✅ **Deleted** (#679). Verified absent on this commit. |
 
-> **Corrected:** `@fortawesome/fontawesome-free@7.3.1` is **no longer** an unused
-> dependency — `icon-library.ts` imports 11 SVGs from it. Earlier revisions of this report
-> listed it as dead weight; that is now false.
+> **Corrected, and still true:** `@fortawesome/fontawesome-free@7.3.1` is **not** an unused
+> dependency — `icon-library.ts` imports 11 SVGs from it.
 
 **Revised approach:**
 
-1. **Delete the dead weight first** — `src/styles/icons.json` (144 KB) and
-   `src/styles/text-manipulation.css`, neither of which has an importer; drop the two
-   `@fontsource-variable` packages unless §3.3 wires them into `--wa-font-family-*`. **S**,
-   zero risk.
-2. **Finish the migration `icon-library.ts` started.** The **8** remaining
-   `<wa-icon src=…>` markup sites — `keep-textform-array.ts` ×4 (L207, 217, 230, 247),
-   `keep-nsf-card.ts` ×2 (L125 is a `data:` URI from `app-icons`, L136 an `IMG_DIR` path),
-   `keep-api-error-dialog.ts` L43, and the `src` passthrough in `keep-button.ts` L50 —
-   carry exactly the bug that module's header documents: `${IMG_DIR}/shoelace/*.svg` only
-   resolves when the app is mounted at `/admin/`. Convert them to `library="fa"` names,
-   adding each glyph to `ICONS`. **S**, mechanical, and it retires
-   `public/img/shoelace/` (13 files).
-3. **Decide `app-icons.ts`'s fate.** 216 KB of base64 in a TS module is inlined into the
-   entry chunk (report 00 P2-3: **6,322.51 kB / 1,703.85 kB gzip**). Two viable ends:
+1. ✅ **Delete the dead weight first** — **DONE** (#679).
+2. ✅ **Finish the migration `icon-library.ts` started** — **DONE** (#700/#730). `IMG_DIR`
+   has one textual match left, a doc comment. The failure mode was worth recording: off
+   `/admin/`, `${IMG_DIR}/shoelace/*.svg` fell through to the SPA's `index.html` and the
+   browser got **`200 text/html`** where an image was expected — a silent rendering
+   failure. `test/services/icon-library.test.ts` now scans stylesheets as well as `.tsx`,
+   which is the gap that had hidden the same bug in `.login-castle-bg`.
+3. 🟡 **Decide `app-icons.ts`'s fate** — **#731, open.** 216 KB of base64 in a TS module is
+   inlined into the entry chunk, which is now **2,111.11 kB / 594.20 kB gzip** — so
+   `app-icons.ts` has gone from ~3 % of the entry chunk to **~10 %**. The Monaco split made
+   this item relatively more valuable, not less. Two viable ends:
    - **(a) Register it as a second WA custom icon library**, alongside `fa`, so the same
      86 glyphs are addressable as `<wa-icon library="keep" name="cocktail">` — the same
      `registerIconLibrary` shape as `icon-library.ts`, with the SVGs moved to static assets
@@ -789,42 +890,49 @@ last one deliberately, as the target pattern. Current inventory:
 
 | Phase | Work | Effort | Status | Primary risks |
 |-------|------|--------|:---:|---------------|
-| **P0. Decisions & spike** | ~~WA Pro vs. free-fallback go/no-go~~ ✅ **resolved — `wa-page` is free**. Remaining: pick the brand base hex; decide the `--wa-font-size-scale` question (§3.3); decide the icon strategy (§6.4); spike `wa-page` with dummy slots. | **S** | 🟡 partly done | Font-scale decision has knock-on effects on every px→token mapping. |
-| **P0.5 Housekeeping** | Delete `src/styles/icons.json` and `src/styles/text-manipulation.css` (0 importers each); drop the two `@fontsource-variable/*` packages or wire them into `--wa-font-family-*`. ~~Resolve `@fortawesome/fontawesome-free`~~ ✅ **done** — `services/icon-library.ts` uses it. | **S** | 🟡 partly done | None — pure removal. |
-| **P1. Token foundation** | Add `keep-theme.css` single-source brand ramp (light + `.wa-dark`); alias legacy `--*` app tokens to `--wa-*`; delete the invalid `--wa-color-brand-600/500/700` (`dark-mode.css:9-11`); consolidate `prefers-color-scheme` (`keep-overrides.css:271`) onto `.wa-dark`. | **S–M** | 🔴 open | Divergent purples change subtly; dark-mode regressions. **De-risked:** `.wa-dark` is now reliably set at boot *and* runtime (§3.7), so it is safe to key on. |
-| **P2. Shell swap** | Build `AppShell` on `wa-page`; map regions to slots; delete `AppContainer`/`RightPanel`/mobile duplication/collapse toggle/`drawerWidth`. **CSP is no longer a blocker for this phase** (§5), but `jar/config/config.json` must have `style-src-attr` loosened before this ships — an edit in this repo (#685), not a request to anyone. | **M** | 🔴 open | 768px breakpoints and sticky behavior; the 57px collapse rail is not native to `wa-page`; QuickConfig drawer placement. |
-| **P3. Linaria + element tokenization** | Replace `getTheme()` interpolations and literals with `var(--wa-*)` across 22 `getTheme` files and the 198 `styled.` blocks in 69 Linaria files; tokenize the `keep-*` elements (report 02 §6.5); adopt `wa-stack/cluster/split/grid`; retire the `theme` prop plumbing. Where a value genuinely must reach JS, call `wa-color.ts`/`wa-typography.ts` (§3.6) rather than reviving a JS color object. | **L** | 🔴 open | Visual drift; missed hardcoded hex; the `--wa-font-size-scale: 0.85` interaction. **Do report 02 §6.2 first.** |
-| **P4. Icon migration** | §6.4 steps 2–4: convert the 8 `<wa-icon src=…>` markup sites to `library="fa"`; `app-icons` (86 glyphs) → a second WA custom library; `<wa-icon>` codemod across the **55** distinct MUI/react-icons files (45 + 18 with **8** overlapping). | **M–L** | 🔴 open | Missing/renamed FA glyphs; icon sizing/color inheritance; bundle impact if `app-icons` stays inline. **De-risked:** `icon-library.ts` is a working, tested template. |
-| **P5. Remove MD** | After report-02 components land: delete both `ThemeProvider`s + all three `CssBaseline` mounts + `theme.ts` + the `.Mui*` sheet; drop MUI + Emotion deps. **`@mui/x-data-grid` has no WA successor** — budget a separate grid decision. | **M** | 🔴 open | Any straggler reading the MUI theme; bundle/test fallout; the data-grid gap. |
+| **P0. Decisions & spike** | WA Pro go/no-go; brand base hex; the `--wa-font-size-scale` question; icon strategy. | **S** | ✅ **DONE** (#705) | — |
+| **P0.5 Housekeeping** | Delete `icons.json`, `text-manipulation.css`, the two `@fontsource-variable/*` packages. | **S** | ✅ **DONE** (#679) | — |
+| **P1. Token foundation** | `keep-theme.css` as the single-source brand ramp (light + `.wa-dark`); alias legacy `--*` app tokens; delete the invalid `--wa-color-brand-600/500/700`. | **S–M** | ✅ **DONE** (#706) | — |
+| **P2. Shell swap** | `AppShell` on `wa-page`; regions → slots; delete `AppContainer`/`RightPanel`/mobile duplication/collapse toggle/`drawerWidth`. | **M** | ✅ **DONE** (#707) | Resolved as expected: the 768px breakpoint is guarded by a test, and the collapse rail went to `--menu-width` + a class rather than the drawer. |
+| **P3. Linaria + element tokenization** | Replace `getTheme()` interpolations and literals with `var(--wa-*)`; tokenize the `keep-*` elements; retire the `theme` prop plumbing; radius + typography mapping; split `CommonStyles.tsx`. | **L** | ✅ **DONE** (#708, 5 PRs) | Landed. Residual risk is visual, not structural — see §4.1. |
+| **P3.5 Token tail** 🆕 | Delete the `#7e57c2` login block (§0 finding 3) and fix the `--wa-color-brand-on` bug (3b); replace `KEEP_ADMIN_BASE_COLOR`'s 11 interpolations; tokenize the **229** remaining `light-dark()` literals, **109 of them in `dark-mode.css`**; split `--base-color` into text and surface tokens; fix `keep-tooltip.ts`'s invalid token names. | **M** | 🔴 **open** (**#765**) | `dark-mode.css` is 469 lines of `.Mui*` rules — sequence its deletion with **#709**, not ahead of it, or you tokenize rules that are about to vanish. |
+| **P3.6 Layout utilities** 🆕 | Adopt `wa-stack` / `wa-cluster` / `wa-split` / `wa-grid` and `wa-gap-*` in place of ad-hoc flex + margins. Adoption today: **zero**. | **M** | 🔴 **open** (**#765**) | The one item the suite genuinely cannot see (`css: false`). Needs a browser and a human, not a codemod. |
+| **P4. Icon migration** | §6.4 step 4: `<wa-icon>` codemod across the **51** distinct MUI/react-icons files (41 + 18, with 8 overlapping); `app-icons` (86 glyphs) → a second WA custom library. | **M–L** | 🟡 **half done** (**#718**, **#731**) | Missing/renamed FA glyphs; icon sizing/colour inheritance. **De-risked:** `icon-library.ts` is a working, tested template. |
+| **P5. Remove MD** | After report-02 components land: delete the one `ThemeProvider` + `CssBaseline` pair + `theme.ts` + the `.Mui*` sheet; drop MUI + Emotion deps. | **M** | 🔴 open (**#709**) | Any straggler reading the MUI theme; bundle/test fallout; `@mui/x-data-grid` still has no WA successor (**#702**). |
 
 ### Cross-cutting risks
 
-- **FOUC / FOUCE.** WA components upgrade after first paint. Use `wa-cloak` on `<html>`
-  (removed once WA is ready) and pre-set `--header-height`/`--menu-width` on `wa-page` to
-  prevent layout shift. Keep the existing pre-render theme `<script>`.
-- **Dark mode.** Today = `light-dark()` + `body[data-theme]` (10 uses in `styles.css`, 26
-  in `dark-mode.css`, 6 `keep-*` elements via `:host-context`) + a 468-line sheet with 54
-  `.Mui*` rules. Target = flip `--wa-color-*` under `.wa-dark`; components re-color
-  automatically. Risk: both systems coexist during transition — sequence so each
-  component's `.Mui*` override is deleted only when that component is replaced.
-  **✅ The "runtime toggle must also set `.wa-dark`" half of this is done** —
-  `services/theme-service.ts` writes all three carriers from one place (§3.7), so the
-  remaining work is deleting `body[data-theme]` *consumers*, not fixing writers.
-- **Responsive breakpoints.** `mobile-breakpoint="768"` must match the hand-written
-  `@media (max-width:768px)` rules; audit for others (`1366px` in `CommonStyles`).
-- **Collapse rail (57px).** An app feature separate from `wa-page`'s mobile drawer;
-  implement via `--menu-width` toggle, not the drawer.
-- ~~**CSP** — the most likely hard blocker.~~ ➖ **Withdrawn as a blocker**, but not as
-  work. The disabled header in `vite.config.mts` is dev-server only; the production policy
-  is `jar/config/config.json`, **in this repo** (§5). The real dependency stands: it must
-  not ship `style-src-attr 'none'` once `wa-page` is live — and it does today, which is
-  #685's first task, not a coordination item with anyone. Validate the app under the
-  intended policy before release.
-- **Bundle.** The entry chunk is 6,322.51 kB / 1,703.85 kB gzip (down from 6.94 MB /
-  1.88 MB — Prettier now lazy-loads). Both `app-icons.ts` (216 KB) and the Monaco import
-  chain contribute; the token work should not add to it. Note `icon-library.ts`'s `?url`
-  imports emit separate asset files rather than inlined base64 — another reason to prefer
-  §6.4 step 3(a).
+- **FOUC / FOUCE.** WA components upgrade after first paint. `wa-cloak` on `<html>` and
+  pre-set `--header-height`/`--menu-width` still apply. ✅ The pre-render theme code
+  survived the shell swap — as `src/index.ts`, a module rather than an inline `<script>`,
+  which is what the #685 CSP tightening requires.
+- **Dark mode.** ✅ The writer side is solved: `services/theme-service.ts` sets all three
+  carriers from one place, and after #708 **no component reads a theme value**. 🔴 The
+  consumer side is not: **229 `light-dark()`** literals remain (109 in `dark-mode.css`, 64
+  in `styles.css`, 56 in `.tsx`/`.ts`), and `dark-mode.css` is still a 469-line `.Mui*`
+  sheet. Sequence its deletion with #709 so each override goes when its component does.
+- **Responsive breakpoints.** ✅ Guarded: `MOBILE_BREAKPOINT_PX` feeds `wa-page` and
+  `test/app-shell.test.ts` fails if `app-shell.css`'s two media queries drift. Still audit
+  for others (`1366px`).
+- **Collapse rail (57px).** ✅ Implemented via `--menu-width` and a `nav-collapsed` class,
+  as recommended — *not* the mobile drawer. Note the source comment explaining why it is a
+  class and not `data-toggle-nav` (§1.1).
+- **CSP** — ➖ never a blocker for `wa-page`, and it did not block it. But it has been
+  **promoted** as work: #684 closed the token-storage P0 on the strength of CSP tightening,
+  and the shipped policy still allows `script-src 'unsafe-inline'` on the two SPA routes
+  and `style-src-attr 'none'` against 20 live inline attributes. #685 is now the top item
+  in report 00.
+- **Bundle.** ✅ The entry chunk is **2,111.11 kB / 594.20 kB gzip**, down 66.6 % — Monaco
+  now lazy-loads (#729). ⚠️ **Side effect:** `app-icons.ts` (216 KB) is now roughly a tenth
+  of the entry chunk rather than a thirtieth, so **#731** is worth more than it was.
+  `icon-library.ts`'s `?url` imports emit separate asset files rather than inlined base64 —
+  another reason to prefer §6.4 step 3(a).
+- 🆕 **The suite cannot see any of this.** `vitest.config.ts` runs with `css: false` and
+  jsdom has no canvas backend, so every guard this layer has is a **source-scanning**
+  test (`keep-theme.test.ts`, `theme-selectors.test.ts`, `shell-dead-code.test.ts`,
+  `app-shell.test.ts`). They pin structure, not appearance. **A green suite is not evidence
+  that a token change looks right** — and most of these screens sit behind login, so plan
+  for a human click-through in both modes on anything that touches §4 or §6.
 
 ---
 
