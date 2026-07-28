@@ -11,13 +11,13 @@
             "/admin/ui/*": {
                 "type": "single",
                 "path": "/admin/index.html",
-                "csp": "default-src 'self' data:; script-src 'self'; style-src-attr 'none'; style-src-elem 'self'; font-src 'self' data:; img-src 'self' data:; worker-src 'self' blob:; connect-src 'self' data: *",
+                "csp": "default-src 'self' data:; script-src 'self'; style-src-attr 'none'; style-src-elem 'self'; font-src 'self' data:; img-src 'self' data:; worker-src 'self' blob:; connect-src 'self' data: *; report-uri /api/csp-violation-report",
                 "Content-Type": "text/html; charset=utf-8"
             },
             "/admin/ui": {
                 "type": "single",
                 "path": "/admin/index.html",
-                "csp": "default-src 'self' data:; script-src 'self'; style-src-attr 'none'; style-src-elem 'self'; font-src 'self' data:; img-src 'self' data:; worker-src 'self' blob:; connect-src 'self' data: *",
+                "csp": "default-src 'self' data:; script-src 'self'; style-src-attr 'none'; style-src-elem 'self'; font-src 'self' data:; img-src 'self' data:; worker-src 'self' blob:; connect-src 'self' data: *; report-uri /api/csp-violation-report",
                 "Content-Type": "text/html; charset=utf-8"
             },
             "/adminui.json": {

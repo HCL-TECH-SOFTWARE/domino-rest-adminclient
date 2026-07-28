@@ -4,9 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Router } from './router/router';
+import { RouterOutlet, RouterProvider, type RouteDef } from './router/react';
 import { useSelector } from 'react-redux';
 import LoginPage from './components/login/LoginPage';
 import AppShell from './AppShell';
@@ -27,6 +28,16 @@ const App: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const { authenticated } = useSelector((state: AppState) => state.account);
+
+  /*
+   * One router for the life of the app (#716). It attaches a `popstate` listener in its
+   * constructor, so rebuilding it on every render would leak one listener per render and
+   * hand `useSyncExternalStore` a new subscription target each time.
+   *
+   * `/admin/ui` is where the UI is served; every route table, `navigate()` and `<Link to>`
+   * below this point is written base-relative and never sees it.
+   */
+  const router = useMemo(() => new Router({ base: '/admin/ui' }), []);
 
   useEffect(() => {
     // Get JWT Token from Browser Local Storage
@@ -87,13 +98,17 @@ const App: React.FC = () => {
    *
    * Report 03 §6 step 5; AppShell's pair is the last one.
    */
+  const routes: RouteDef[] = [
+    // `/callback` is listed first because matching is by declaration order, not by
+    // specificity (see `matchRoutes`) — behind the catch-all it would never be reached.
+    { path: '/callback', element: <CallbackPage /> },
+    { path: '*', element: authenticated ? <AppShell /> : <LoginPage /> },
+  ];
+
   return valid ? (
-    <Router basename="/admin/ui">
-      <Routes>
-        <Route path='*' element={authenticated ? <AppShell /> : <LoginPage />} />
-        <Route path='/callback' element={<CallbackPage/>}/>
-      </Routes>
-    </Router>
+    <RouterProvider router={router}>
+      <RouterOutlet routes={routes} />
+    </RouterProvider>
   ) : (
     <PageLoading message="loading page" />
   );

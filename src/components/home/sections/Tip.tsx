@@ -10,7 +10,7 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import { styled } from '@linaria/react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../../router/react';
 
 const CardContainer = styled(Card)<{ bg: string }>`
   flex: 1;

@@ -15,7 +15,7 @@ import TableRow from "@mui/material/TableRow";
 import { Box, Button, ButtonBase } from "@mui/material";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../router/react';
 import { Database } from "../../store/databases/types";
 import ActivateMenu from "./ActivateMenu";
 import { WarningIcon } from "../../styles/CommonStyles";

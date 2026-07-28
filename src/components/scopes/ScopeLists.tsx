@@ -21,7 +21,7 @@ import ScopeFormContainer from '../database/ScopeFormContainer';
 import APILoadingProgress from '../loading/APILoadingProgress';
 import { WrapperContainer } from '../commons/Wrappers';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from '../../router/react';
 import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiView';
 import { toggleAlert } from '../../store/alerts/action';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';

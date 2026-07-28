@@ -19,7 +19,7 @@ import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../router/react';
 import {
   KeepAlert,
   KeepApiErrorDialog,

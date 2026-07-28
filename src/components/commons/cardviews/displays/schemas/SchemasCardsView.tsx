@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../../../../router/react';
 import { useSelector } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';

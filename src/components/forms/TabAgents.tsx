@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams } from '../../router/react';
 import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import { AppState } from '../../store';

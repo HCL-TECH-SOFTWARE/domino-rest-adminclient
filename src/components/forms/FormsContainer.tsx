@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams } from '../../router/react';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';

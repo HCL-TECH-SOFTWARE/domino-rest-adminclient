@@ -8,7 +8,7 @@ import React from 'react';
 import Card from '@mui/material/Card';
 import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from '../../../router/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { AppState } from '../../../store';
 import { AppIcon } from '../../commons/AppIcon';

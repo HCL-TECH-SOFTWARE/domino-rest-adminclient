@@ -7,7 +7,7 @@
 import React, { useEffect } from 'react';
 import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from '../../../../../router/react';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { AppIcon } from '../../../AppIcon';
 import { Scope } from '../../../../../store/databases/types';

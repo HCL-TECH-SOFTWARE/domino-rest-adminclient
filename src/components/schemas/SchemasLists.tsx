@@ -18,7 +18,7 @@ import { SettingContext } from '../database/settings/SettingContext';
 import DatabaseSearch from '../database/DatabaseSearch';
 import APILoadingProgress from '../loading/APILoadingProgress';
 import { WrapperContainer } from '../commons/Wrappers';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from '../../router/react';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import SchemasMultiView from '../commons/cardviews/displays/schemas/SchemasMultiView';
 import { toggleAlert } from '../../store/alerts/action';

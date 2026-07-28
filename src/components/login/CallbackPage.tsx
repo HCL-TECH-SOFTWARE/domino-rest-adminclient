@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { handleCallback } from './pkce';
 import { loginWithPkce } from '../../store/account/action';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../router/react';
 import { deepEqual } from '../../utils/common';
 import AppShell from '../../AppShell';
 import { useSelector } from 'react-redux';

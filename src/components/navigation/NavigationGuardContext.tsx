@@ -12,7 +12,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../router/react';
 import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
 
 interface NavigationGuardContextType {
@@ -178,7 +178,7 @@ export const NavigationGuardProvider: React.FC<Props> = ({
     (navPath: string | null) => {
       if (!navPath) return;
       if (navPath === '__BACK__') {
-        navigate(-1 as any);
+        navigate(-1);
       } else {
         navigate(navPath);
       }

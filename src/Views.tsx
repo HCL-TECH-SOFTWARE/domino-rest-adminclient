@@ -4,9 +4,9 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { styled } from '@linaria/react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { RouterOutlet, useLocation, type RouteDef } from './router/react';
 import { useSelector } from 'react-redux';
 import AccessMode from './components/access/AccessMode';
 import ApplicationsContainer from './components/applications/Applications';
@@ -21,8 +21,6 @@ import ScopeLists from './components/scopes/ScopeLists';
 import { NavigationGuardProvider } from './components/navigation/NavigationGuardContext';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
 import ConsentsContainer from './components/applications/ConsentsContainer';
-import CallbackPage from './components/login/CallbackPage';
-import { PrivateRoutes } from './components/routers/ProtectedRoute';
 import { useAppDispatch } from './store/hooks';
 
 /**
@@ -67,7 +65,40 @@ const Views: React.FC = () => {
   const url = path.pathname.split('/')[1];
 
   const { scopePull, databasePull } = useSelector((state: AppState) => state.databases);
-  const { idpLogin } = useSelector((state: AppState) => state.account);
+  const { idpLogin, authenticated } = useSelector((state: AppState) => state.account);
+
+  /*
+   * The route table (#716), replacing the `<Routes>`/`<Route>` tree.
+   *
+   * `guard` is what `<Route element={<PrivateRoutes/>}>` used to be: that wrapper existed
+   * only to render an `<Outlet/>` or a `<Navigate to='/'/>`, which is a predicate and a
+   * redirect target written as a component. Both are fields here, and
+   * `components/routers/ProtectedRoute.tsx` is gone with the last `<Outlet/>` in the app.
+   *
+   * It is belt-and-braces either way: `App.tsx` only renders `AppShell` — and so this
+   * component — when authenticated, so the redirect branch is not reachable today.
+   *
+   * `/callback` is deliberately absent. It was declared here as well as in `App.tsx`, but
+   * App's copy always won, and its element is the whole page rather than a main-region
+   * view, so this one could never render.
+   */
+  const routes: RouteDef[] = useMemo(() => {
+    const guard = () => authenticated;
+    return [
+      { path: '/', element: <Homepage />, guard, redirectTo: '/' },
+      { path: '/schema', element: <SchemasLists />, guard, redirectTo: '/' },
+      { path: '/schema/:nsfPath/:dbName', element: <FormsContainer />, guard, redirectTo: '/' },
+      {
+        path: '/schema/:nsfPath/:dbName/:formName/access',
+        element: <AccessMode />,
+        guard,
+        redirectTo: '/',
+      },
+      { path: '/scope', element: <ScopeLists />, guard, redirectTo: '/' },
+      { path: '/apps', element: <ApplicationsContainer />, guard, redirectTo: '/' },
+      { path: '/apps/consents', element: <ConsentsContainer />, guard, redirectTo: '/' },
+    ];
+  }, [authenticated]);
 
   // Use refs for in-flight guards so they don't trigger re-renders
   const scopePullingRef = useRef(false);
@@ -146,19 +177,8 @@ const Views: React.FC = () => {
     <ViewContainer id="main-stack">
       <NavigationGuardProvider basename="/admin/ui">
         <PageRouters />
-        <Routes>
-          <Route element={<PrivateRoutes />}>
-            <Route path='/' element={<Homepage />} />
-            <Route path='/schema' element={<SchemasLists />} />
-            <Route path='/schema/:nsfPath/:dbName' element={<FormsContainer />} />
-            <Route path='/schema/:nsfPath/:dbName/:formName/access' element={<AccessMode />}/>
-            <Route path='/scope' element={<ScopeLists />} />
-            <Route path='/apps' element={<ApplicationsContainer />} />
-            <Route path='/apps/consents' element={<ConsentsContainer />} />
-          </Route>
-          <Route path='/callback' element={<CallbackPage/>}/>
-        </Routes>
-        
+        <RouterOutlet routes={routes} />
+
         {/*
           /mail stays commented out: the Mail/Dashboard pair is blocked on LABS-1214
           (#698). /settings went with src/components/settings/ (#681), and /groups and
