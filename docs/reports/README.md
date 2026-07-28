@@ -99,15 +99,19 @@ rather than a percentage.
   source of truth, but nothing has yet deleted the other two: `KEEP_ADMIN_BASE_COLOR
   = #5F1EBE` still has **11 interpolations**, and **`#7e57c2` survives in 17 places** in the
   scoped login-button overrides at `styles.css:1946-1985`. Report 03 finding 3.
-- 🐛 **Two bugs found while re-measuring.** (1) `body[data-theme='dark']
-  .login-submit-button` sets both `--wa-color-brand` and `--wa-color-brand-on` to `#7e57c2`,
-  so the dark-mode login button paints its label in its own fill colour (report 03 finding
-  3b). (2) **The invalid-input styling never paints:** 14 fallback-less reads of
-  non-existent three-digit WA colour steps sit in the `:state(user-invalid)` rules, and a
-  `var()` on an undefined property with no fallback drops the declaration entirely
-  (report 03 finding 11b). The second is the other half of the bug #744 fixed — that PR
-  corrected the dead *selector*, and `css: false` meant no test could catch the dead
-  *value*.
+- 🐛 **One bug found while re-measuring — and one false alarm.** **The invalid-input
+  styling never paints:** 14 fallback-less reads of non-existent three-digit WA colour
+  steps sit in the `:state(user-invalid)` rules, and a `var()` on an undefined property
+  with no fallback drops the declaration entirely (report 03 finding 11b). Confirmed in a
+  browser: the border computes to `currentColor`, never red. It is the other half of the
+  bug #744 fixed — that PR corrected the dead *selector*, and `css: false` meant no test
+  could catch the dead *value*.
+  ➖ **Retracted:** a first draft of this refresh also reported the dark login button
+  painting its label in its own fill colour, from `--wa-color-brand` and
+  `--wa-color-brand-on` both being `#7e57c2`. Measured while implementing #765: `wa-button`
+  reads `--wa-color-brand-on-loud`/`-normal`/`-quiet` and never the bare
+  `--wa-color-brand-on`, so that declaration was inert and the label was always white. The
+  finding was reasoned from a token name instead of measured. Report 03 finding 3b.
 - ➖ **"No raw `wa-*` markup in React" — the honest figure was always zero.** Two successive
   refreshes reported 26 files, then 17-with-one-`.tsx`; both counted comments. Verified
   against `e17010c` as well: that `.tsx` match was prose then too.
