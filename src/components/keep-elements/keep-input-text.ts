@@ -4,10 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css } from 'lit';
+import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepInputBase } from './keep-input-base';
-import { KeepElement } from './keep-element';
+
 /**
  * Single-line text field. Tag: `keep-input-text`.
  *
