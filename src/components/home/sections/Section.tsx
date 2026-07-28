@@ -102,7 +102,7 @@ const Section = () => {
                     key={route.label}
                     uri={route.uri}
                     backgroundImage={consents}
-                    heading="Consents Management"
+                    heading="Consents Management - OAUTH"
                     description="REVIEW/REVOKE CONSENTS"
                   />
                 )
