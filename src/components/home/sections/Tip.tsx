@@ -20,7 +20,7 @@ const CardContainer = styled(Card)<{ theme: string; bg: string }>`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  background: ${props => getTheme(props.theme).secondary} !important;
+  background: ${(props) => getTheme(props.theme).secondary} !important;
   margin-left: 8px;
   margin-right: 8px;
   border-radius: 8px !important;
@@ -56,38 +56,20 @@ const CardContainer = styled(Card)<{ theme: string; bg: string }>`
 interface TipProps {
   heading: string;
   description: string;
-  backgroungImage: string;
+  backgroundImage: string;
   uri: string;
 }
 
-const Tip: React.FC<TipProps> = ({
-  heading,
-  description,
-  backgroungImage,
-  uri,
-}) => {
+const Tip: React.FC<TipProps> = ({ heading, description, backgroundImage, uri }) => {
   const { themeMode } = useSelector((state: AppState) => state.styles);
   return (
-    <CardContainer
-      className="feature-item"
-      bg={backgroungImage}
-      theme={themeMode}
-    >
+    <CardContainer className="feature-item" bg={backgroundImage} theme={themeMode}>
       <Link className="link" to={uri}>
         <CardActionArea>
-          <CardMedia
-            component="img"
-            image={backgroungImage}
-            title={description}
-            className='tip-card-media'
-          />
-          <CardContent className='flex flex-col'>
-            <span className="huge-text wrap color-text-primary">
-              {heading}
-            </span>
-            <span className="small-text color-text-primary">
-              {description}
-            </span>
+          <CardMedia component="img" image={backgroundImage} title={description} className="tip-card-media" />
+          <CardContent className="flex flex-col">
+            <span className="huge-text wrap color-text-primary">{heading}</span>
+            <span className="small-text color-text-primary">{description}</span>
           </CardContent>
         </CardActionArea>
       </Link>

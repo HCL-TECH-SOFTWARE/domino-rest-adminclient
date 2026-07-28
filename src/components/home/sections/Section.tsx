@@ -12,6 +12,7 @@ import database from './appdev.jpg';
 import databaseDev from './databasedev.jpg';
 import apps from './apps.jpg';
 import people from './database.jpg';
+import consents from './consents.jpg';
 import keepBlockDiagram from './keepblockdiagram.svg';
 import { databases, apps as app, people as users } from '../../sidenav/Routes';
 import { AppState } from '../../../store';
@@ -64,7 +65,7 @@ const Section = () => {
   return (
     <SectionContainer>
       <TipContainer>
-        <section className='diagram'>
+        <section className="diagram">
           <object type="image/svg+xml" data={keepBlockDiagram} width="50%">
             Open the <a href={keepBlockDiagram}>overview</a>
           </object>
@@ -74,35 +75,37 @@ const Section = () => {
             databases.map((route) => {
               const { label, uri } = route;
               const isSchemasPage = label === 'Schemas';
-              const heading = isSchemasPage 
-              ? 'Database Management - REST API'
-              : 'Database Management - Activation';
-              const description = isSchemasPage 
-              ? 'CREATE/UPDATE SCHEMA'
-              : 'CREATE/MANAGE SCOPES';
-              const img = isSchemasPage
-              ? databaseDev
-              : database;
+              const heading = isSchemasPage ? 'Database Management - REST API' : 'Database Management - Activation';
+              const description = isSchemasPage ? 'CREATE/UPDATE SCHEMA' : 'CREATE/MANAGE SCOPES';
+              const img = isSchemasPage ? databaseDev : database;
+              return <Tip key={label} uri={uri} backgroundImage={img} heading={heading} description={description} />;
+            })}
+          {navitems.apps &&
+            app.map((route) => {
               return (
-                <Tip
-                  key={label}
-                  uri={uri}
-                  backgroungImage={img}
-                  heading={heading}
-                  description={description}
-                />
+                route.label === 'Applications' && (
+                  <Tip
+                    key={route.label}
+                    uri={route.uri}
+                    backgroundImage={apps}
+                    heading="Application Management - OAUTH"
+                    description="ADMIN"
+                  />
+                )
               );
             })}
           {navitems.apps &&
             app.map((route) => {
               return (
-                (route.label === "Applications" && <Tip
-                  key={route.label}
-                  uri="/apps"
-                  backgroungImage={apps}
-                  heading="Application Management - OAUTH"
-                  description="ADMIN"
-                />)
+                route.label === 'Consents' && (
+                  <Tip
+                    key={route.label}
+                    uri={route.uri}
+                    backgroundImage={consents}
+                    heading="Consents Management"
+                    description="REVIEW/REVOKE CONSENTS"
+                  />
+                )
               );
             })}
           {navitems.users &&
@@ -110,8 +113,8 @@ const Section = () => {
               return (
                 <Tip
                   key={route.label}
-                  uri="/people"
-                  backgroungImage={people}
+                  uri={route.uri}
+                  backgroundImage={people}
                   heading="People Management"
                   description="Manage Notes users"
                 />
