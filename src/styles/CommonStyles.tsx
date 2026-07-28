@@ -8,7 +8,7 @@ import { styled } from '@linaria/react';
 import Card from '@mui/material/Card';
 import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 import { getTheme } from '../store/styles/action';
-import { Box, Button, Dialog, Radio, RadioProps, Switch } from '@mui/material';
+import { Box, Dialog, Radio, RadioProps, Switch } from '@mui/material';
 
 export const FormContainer = styled.div`
   padding: 0 0px;
@@ -653,52 +653,6 @@ export const Buttons = styled.div`
   }
 `
 
-export const ButtonYes = styled(Button)<{ theme: string }>`
-  padding: 6px 16px;
-  min-width: 93px;
-  height: 31px;
-  text-transform: none;
-  border-radius: 3px;
-  line-height: 19px;
-  background-color: #0F5FDC;
-  color: #FFFFFF;
-
-  &:hover {
-    background-color: #0B4AAE;
-    color: #FFFFFF;
-  }
-
-  &:disabled {
-    background-color: #96BCF8;
-    color: #0C0D0D
-  }
-`
-
-export const ButtonNeutral = styled(Button)`
-  padding: 6px 16px;
-  min-width: 93px;
-  height: 31px;
-  text-transform: none;
-  border-radius: 3px;
-  line-height: 19px;
-  border: 1px solid;
-`
-
-export const ButtonNo = styled(Button)`
-  padding: 6px 16px;
-  min-width: 93px;
-  height: 31px;
-  text-transform: none;
-  border-radius: 3px;
-  line-height: 19px;
-  background-color: #F01648;
-  color: #FFFFFF;
-
-  &:hover {
-    background-color: #F01648;
-    color: #FFFFFF;
-  }
-`
 
 export const SchemaIconStatus = styled.div`
   width: 10px;

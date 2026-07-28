@@ -11,10 +11,7 @@ import {
   SET_MOBILE_VIEWPORT,
   SWITCH_THEME,
 } from './types';
-import {
-  HCL_BASE_COLOR,
-  KEEP_ADMIN_BASE_COLOR,
-} from '../../config.dev';
+import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 
 export function adjustDatabaseStyle(size: number) {
   return {
@@ -93,42 +90,6 @@ export const getTheme = (theme: string) => {
         shimmerGradient:
           'linear-gradient(to right,#272726 4%,#3c3c3c 25%,#272726 36%)',
         loading: '#8B6CE0',
-      };
-    }
-    // HCL Skin Theme
-    case 'hcl': {
-      return {
-        primary: HCL_BASE_COLOR,
-        secondary: '#065a99',
-        textColorPrimary: '#f1f1f4',
-        textColorSecondary: '#f1f1f4',
-        button: HCL_BASE_COLOR,
-        borderColor: '#0d5284',
-        bodyColor: '#065a99',
-        dialog: {
-          header: 'white',
-        },
-        badgeColor: {
-          background: 'white',
-          color: HCL_BASE_COLOR,
-        },
-        sidenav: {
-          border: 'white',
-          background: '#07436fc4',
-          active: '#07436fc4',
-          hover: '#07436fc4',
-          textColor: '#f1f1f4',
-          iconColor:'#000',
-          activeTextColor: '#f1f1f4',
-          activeIconColor: '#000',
-        },
-        breadcrumb: {
-          background: 'white',
-          lastActiveColor: 'black',
-        },
-        activeIcon: HCL_BASE_COLOR,
-        shimmerGradient:
-          'linear-gradient(to right,#272726 4%,#3c3c3c 25%,#272726 36%)',
       };
     }
     // Keep Skin Theme (Default)

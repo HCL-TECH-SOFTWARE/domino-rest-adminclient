@@ -17,6 +17,10 @@
  * Custom properties resolve at computed-value time, so an alias may reference a
  * token defined in a later sheet — `styles.css` relies on that.
  *
+ * The same applies to the dark surface/text palette pinned below (#708): Keep's
+ * values, not WA's, so that the Linaria layer and the keep-* elements can point
+ * at a token instead of each repeating the hex.
+ *
  * Decisions recorded in #705; consolidation tracked by #706. Replacing the
  * remaining hardcoded literals across the Linaria layer is #708.
  * ========================================================================== */
@@ -80,4 +84,46 @@
     --wa-color-brand-30: #63489f;
 
     --wa-color-brand-on: #ffffff;
+
+    /*
+     * Dark surface / text palette (#708).
+     *
+     * These values are Keep's, not Web Awesome's. They were previously written
+     * down three times and drifted independently:
+     *
+     *   getTheme('dark')                  in store/styles/action.ts  (JS object)
+     *   light-dark(#fff, #1e1e2e) & co.   in the keep-* elements     (~100 literals)
+     *   raw hex                           in styles.css / dark-mode.css
+     *
+     * Pinning them here makes this file the only place they exist, so the
+     * Linaria layer and the keep-* elements can both point at a token instead of
+     * repeating a hex.
+     *
+     * Pinned at the *semantic* level rather than by overriding --wa-color-neutral-*,
+     * because that ramp is shared between light and dark: only the semantic tokens
+     * switch which step they read. Dark surface-raised wants neutral-10 = #252535
+     * while light text-normal wants neutral-10 = #383838 — one ramp cannot satisfy
+     * both. Pinning semantics also leaves WA's own neutral ramp intact for the
+     * component internals that are tuned against it.
+     *
+     * Only the dark side is pinned. WA's light values already match what Keep
+     * renders (both surfaces are white); the remaining light-mode text nuances
+     * (#383838 vs #000 vs `inherit`) are per-site judgements, settled where those
+     * sites are converted rather than guessed at globally here.
+     *
+     * The three surfaces nest the way WA intends — lowered (page) sits behind
+     * default, which sits behind raised (cards) — so Keep's existing three-value
+     * stack maps onto them one-for-one.
+     *
+     * surface-lowered is pinned rather than left to derive. WA computes it as
+     * surface-default mixed with 20% black, which from #1e1e2e gives #13131f;
+     * Keep's page background is #181825, a little lighter. Pinning keeps the page
+     * background where it is instead of darkening it as a side effect.
+     */
+    --wa-color-surface-lowered: #181825; /* getTheme('dark').bodyColor */
+    --wa-color-surface-default: #1e1e2e; /* getTheme('dark').primary   */
+    --wa-color-surface-raised: #252535; /* getTheme('dark').secondary */
+    --wa-color-surface-border: #3a3a4a; /* getTheme('dark').borderColor */
+    --wa-color-text-normal: #e0e0e0; /* getTheme('dark').textColorPrimary */
+    --wa-color-text-loud: #ffffff;
 }
