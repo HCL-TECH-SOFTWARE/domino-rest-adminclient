@@ -1,0 +1,317 @@
+{
+  "sessionId": "23ed05be-45ca-481e-b6ec-4588d057a497",
+  "projectName": "domino-rest-adminclient",
+  "projectType": "react-vite-typescript",
+  "framework": "React 19 + Vite + TypeScript",
+  "description": "Runtime validation plan for React 19 + TypeScript + Vite application with Jest testing",
+  "validationLayers": {
+    "layer1": {
+      "name": "Server Startup & Health Check",
+      "description": "Verify Vite dev server starts and responds to HTTP requests",
+      "steps": [
+        {
+          "id": "startup-001",
+          "name": "Start Vite Development Server",
+          "type": "server-start",
+          "command": "npm run dev",
+          "timeout": 60000,
+          "description": "Start the Vite development server on port 5173",
+          "expectedOutput": "Local:.*http://localhost:5173"
+        },
+        {
+          "id": "health-001",
+          "name": "Check Server Health",
+          "type": "http-check",
+          "method": "GET",
+          "url": "http://localhost:5173",
+          "timeout": 10000,
+          "maxRetries": 5,
+          "retryDelay": 2000,
+          "expectedStatus": [200, 304],
+          "description": "Verify server responds to HTTP requests"
+        },
+        {
+          "id": "health-002",
+          "name": "Verify Index HTML is Served",
+          "type": "http-check",
+          "method": "GET",
+          "url": "http://localhost:5173/",
+          "timeout": 10000,
+          "expectedStatus": 200,
+          "expectedContentType": "text/html",
+          "description": "Verify index.html is properly served"
+        },
+        {
+          "id": "health-003",
+          "name": "Check Content Security Policy Headers",
+          "type": "http-check",
+          "method": "HEAD",
+          "url": "http://localhost:5173/",
+          "timeout": 5000,
+          "validateHeaders": {
+            "content-security-policy": "exists"
+          },
+          "description": "Verify CSP headers are present in server configuration"
+        }
+      ]
+    },
+    "layer2": {
+      "name": "Browser-Based Smoke Tests",
+      "description": "Validate application UI loads and basic interactions work",
+      "steps": [
+        {
+          "id": "smoke-001",
+          "name": "Page Load Test",
+          "type": "browser-test",
+          "browser": "chromium",
+          "url": "http://localhost:5173/",
+          "timeout": 15000,
+          "navigateTimeout": 10000,
+          "waitForSelector": "#root",
+          "description": "Wait for React app root element to render"
+        },
+        {
+          "id": "smoke-002",
+          "name": "Verify React App Renders",
+          "type": "browser-test",
+          "browser": "chromium",
+          "url": "http://localhost:5173/",
+          "timeout": 15000,
+          "checks": [
+            {
+              "type": "elementExists",
+              "selector": "[data-testid='app-container'], .App, #root > div",
+              "description": "Verify main App component is rendered"
+            },
+            {
+              "type": "elementVisible",
+              "selector": "body",
+              "description": "Verify page body is visible"
+            }
+          ]
+        },
+        {
+          "id": "smoke-003",
+          "name": "Check for Console Errors",
+          "type": "browser-test",
+          "browser": "chromium",
+          "url": "http://localhost:5173/",
+          "timeout": 15000,
+          "validateConsole": {
+            "errorThreshold": 0,
+            "warnThreshold": -1,
+            "excludePatterns": [
+              "Lit is in dev mode",
+              "ResizeObserver loop",
+              "Non-Error promise rejection detected"
+            ]
+          },
+          "description": "Verify no critical console errors during app load"
+        },
+        {
+          "id": "smoke-004",
+          "name": "Validate Component Hydration",
+          "type": "browser-test",
+          "browser": "chromium",
+          "url": "http://localhost:5173/",
+          "timeout": 15000,
+          "waitForFunction": "document.querySelectorAll('[data-reactroot]').length > 0 || document.querySelector('#root').children.length > 0",
+          "description": "Ensure React components are hydrated and interactive"
+        }
+      ]
+    },
+    "layer3": {
+      "name": "API Integration & Proxy Tests",
+      "description": "Validate API endpoints and proxy configurations",
+      "steps": [
+        {
+          "id": "api-001",
+          "name": "Check API Proxy Configuration",
+          "type": "http-check",
+          "method": "OPTIONS",
+          "url": "http://localhost:5173/api/",
+          "timeout": 5000,
+          "expectedStatus": [200, 404, 405],
+          "description": "Verify /api proxy is configured (404 is acceptable if no endpoint exists)"
+        },
+        {
+          "id": "api-002",
+          "name": "Test Admin UI Configuration Endpoint",
+          "type": "http-check",
+          "method": "GET",
+          "url": "http://localhost:5173/adminui.json",
+          "timeout": 5000,
+          "expectedStatus": [200, 404],
+          "description": "Check if adminui.json endpoint is accessible via proxy"
+        },
+        {
+          "id": "api-003",
+          "name": "Validate No Mixed Content Errors",
+          "type": "browser-test",
+          "browser": "chromium",
+          "url": "http://localhost:5173/",
+          "timeout": 15000,
+          "validateConsole": {
+            "errorPatterns": [
+              "Mixed Content",
+              "blocked by CORS policy"
+            ],
+            "expectMatch": false
+          },
+          "description": "Ensure no mixed content or CORS blocking errors"
+        }
+      ]
+    },
+    "layer4": {
+      "name": "Unit & Integration Tests",
+      "description": "Run Jest test suite to validate application logic",
+      "steps": [
+        {
+          "id": "test-001",
+          "name": "Run Jest Test Suite",
+          "type": "test-runner",
+          "command": "npm test -- --coverage --watchAll=false",
+          "timeout": 120000,
+          "expectedExitCode": 0,
+          "description": "Execute all Jest tests with coverage",
+          "collectCoverage": true,
+          "coverageThresholds": {
+            "statements": 60,
+            "branches": 50,
+            "functions": 60,
+            "lines": 60
+          }
+        },
+        {
+          "id": "test-002",
+          "name": "Verify Test Results Format",
+          "type": "file-check",
+          "pattern": "coverage/coverage-final.json",
+          "timeout": 5000,
+          "expectExists": true,
+          "description": "Verify coverage report is generated"
+        },
+        {
+          "id": "test-003",
+          "name": "Run Critical Component Tests Only",
+          "type": "test-runner",
+          "command": "npm test -- --testPathPattern='(App|Views)\\.test\\.tsx' --watchAll=false",
+          "timeout": 60000,
+          "expectedExitCode": 0,
+          "optional": true,
+          "description": "Quick validation of main App and Views components"
+        }
+      ]
+    }
+  },
+  "executionOrder": [
+    "layer1",
+    "layer2",
+    "layer3",
+    "layer4"
+  ],
+  "environment": {
+    "nodeVersion": "18.x or higher",
+    "npmVersion": "9.x or higher",
+    "port": 5173,
+    "testEnvironment": "jest-environment-jsdom",
+    "variables": {
+      "VITE_PORT": "5173",
+      "JEST_ENVIRONMENT": "jsdom",
+      "CI": "true"
+    }
+  },
+  "preflightChecks": [
+    {
+      "id": "preflight-001",
+      "name": "Check Node.js Version",
+      "type": "command",
+      "command": "node --version",
+      "expectedOutput": "v1[89]|v2[0-9]",
+      "description": "Verify Node.js 18+ is installed"
+    },
+    {
+      "id": "preflight-002",
+      "name": "Check npm Packages Installed",
+      "type": "file-check",
+      "pattern": "node_modules/.bin/vite",
+      "expectExists": true,
+      "description": "Verify dependencies are installed"
+    },
+    {
+      "id": "preflight-003",
+      "name": "Verify Required Files",
+      "type": "file-check",
+      "patterns": [
+        "package.json",
+        "vite.config.mts",
+        "jest.config.ts",
+        "tsconfig.json",
+        "public/index.html",
+        "src/index.tsx"
+      ],
+      "expectAllExist": true,
+      "description": "Ensure all critical project files are present"
+    }
+  ],
+  "cleanupSteps": [
+    {
+      "id": "cleanup-001",
+      "name": "Stop Development Server",
+      "type": "server-stop",
+      "timeout": 5000,
+      "description": "Gracefully terminate the Vite dev server"
+    },
+    {
+      "id": "cleanup-002",
+      "name": "Close Browser Resources",
+      "type": "cleanup",
+      "description": "Close any browser instances and clean up resources"
+    }
+  ],
+  "reporting": {
+    "format": "json",
+    "includeTimings": true,
+    "includeConsoleOutput": true,
+    "includeCoverage": true,
+    "screenshots": {
+      "enabled": true,
+      "captureOnFailure": true,
+      "directory": ".tsupgrader/runtime-validation/screenshots"
+    },
+    "artifacts": {
+      "logs": ".tsupgrader/runtime-validation/logs",
+      "coverage": "coverage",
+      "testResults": "test-results.json"
+    }
+  },
+  "successCriteria": {
+    "layer1": {
+      "required": true,
+      "description": "All server health checks must pass"
+    },
+    "layer2": {
+      "required": true,
+      "description": "App must render without critical console errors"
+    },
+    "layer3": {
+      "required": false,
+      "description": "API checks are informational; backend availability is not required"
+    },
+    "layer4": {
+      "required": true,
+      "description": "Jest test suite must pass"
+    }
+  },
+  "notes": {
+    "general": "This plan validates React 19 + Vite + TypeScript application at runtime",
+    "dependencies": "Requires npm packages to be installed: npm install",
+    "buildDependencies": "No build step required for dev validation; Vite handles compilation on-the-fly",
+    "networkRequirements": "Backend server at https://frascati.projectkeep.io is optional for /api and /adminui.json proxies",
+    "timeEstimate": "5-10 minutes for complete validation cycle",
+    "knownIssues": [
+      "First build/run may be slower due to TypeScript compilation",
+      "Some test files may have dependencies on backend services"
+    ]
+  }
+}
