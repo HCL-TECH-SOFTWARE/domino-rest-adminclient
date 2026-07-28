@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getTheme } from '../../src/store/styles/action';
 
@@ -83,6 +83,70 @@ describe('keep-theme.css — pinned dark semantic tokens (#708)', () => {
         ).toBe(false);
       }
     }
+  });
+});
+
+describe('Web Awesome token names (#765)', () => {
+  /*
+   * Shoelace-era names have now been found three times: #706 (--wa-color-brand-600/
+   * 500/700), #708 (--wa-color-neutral-700/-1000/-0/-950 and --wa-font-size-small/
+   * -medium/-large) and #765 (--wa-color-danger-600/300/700, success ditto).
+   *
+   * They fail *silently*, in two different ways, which is why they keep surviving
+   * review:
+   *
+   *   var(--wa-color-danger-600, red)  the fallback always wins, so the code looks
+   *                                    token-driven while being hardcoded
+   *   var(--wa-color-danger-600)       no fallback, so the declaration is invalid at
+   *                                    computed-value time and is dropped entirely —
+   *                                    the style simply never renders
+   *
+   * The second is what made the `:state(user-invalid)` border invisible even after
+   * #744 fixed the selector it hangs off. `css: false` means no runtime test can see
+   * a painted colour, so scan the source instead.
+   *
+   * Web Awesome 3.x scales: colour steps are 05…95, font sizes are 2xs…5xl plus
+   * `smaller`/`larger` and s/m/l. Anything else does not exist.
+   */
+  const SRC = join(__dirname, '../../src');
+
+  /** Every `var(--wa-…)` read across src, with the file it came from. */
+  const reads = (() => {
+    const out: { file: string; token: string }[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/\.(ts|tsx|css)$/.test(entry.name)) {
+          const text = readFileSync(full, 'utf8');
+          for (const m of text.matchAll(/var\(\s*(--wa-[a-z0-9-]+)/g)) {
+            out.push({ file: relative(SRC, full), token: m[1] });
+          }
+        }
+      }
+    };
+    walk(SRC);
+    return out;
+  })();
+
+  it('finds token reads to scan', () => {
+    expect(reads.length).toBeGreaterThan(100);
+  });
+
+  it('never reads a colour step outside WA\'s 05…95 scale', () => {
+    const bad = reads.filter(({ token }) => /^--wa-color-[a-z]+-(0|\d{3,4})$/.test(token));
+    expect(
+      bad.map((b) => `${b.file}: ${b.token}`),
+      'Shoelace-era 3-digit colour steps do not exist in WA 3.x',
+    ).toEqual([]);
+  });
+
+  it('never reads a font size outside WA\'s scale', () => {
+    const bad = reads.filter(({ token }) => /^--wa-font-size-(small|medium|large)$/.test(token));
+    expect(
+      bad.map((b) => `${b.file}: ${b.token}`),
+      'WA has --wa-font-size-{2xs…5xl,smaller,larger,s,m,l} — not small/medium/large',
+    ).toEqual([]);
   });
 });
 

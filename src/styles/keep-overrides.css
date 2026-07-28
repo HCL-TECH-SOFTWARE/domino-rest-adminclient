@@ -29,8 +29,8 @@ wa-button::part(base) {
    3.x publishes validity as CSS custom states and never sets that attribute, so this rule
    never matched. See src/components/keep-elements/keep-input-text.ts (#742). */
 wa-input:state(user-invalid)::part(base) {
-    border-color: var(--wa-color-danger-600);
-    box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
+    border-color: var(--wa-color-danger-fill-loud);
+    box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-fill-quiet);
 }
 text {
     font-size: 12px;

@@ -120,6 +120,46 @@
     --keep-sidenav-active: #002c70;
     --keep-sidenav-hover: #0a3e8f;
     --keep-sidenav-on: #ffffff;
+
+    /*
+     * Validation text (#765).
+     *
+     * Web Awesome has no "danger text" / "success text" token — its danger and
+     * success aliases are all fill/border/on-fill roles. Validation *labels* and
+     * *help text* need one, and unlike a border they have to clear the 4.5:1 AA
+     * bar for normal text, which no single step does in both modes.
+     *
+     * Measured in Chrome against the app's own surfaces:
+     *
+     *   step        hex       on #ffffff   on #1e1e2e
+     *   danger-50   #dc3146      4.59         3.57
+     *   danger-60   #f3676c      3.01         5.44
+     *   success-50  #00883c      4.58         3.58
+     *   success-60  #00ac49      3.00         5.47
+     *
+     * So light mode takes -50 and dark takes -60, and both ends clear AA. The
+     * colour ramps themselves are mode-invariant — only which step you read
+     * changes — which is why this needs a token rather than a `light-dark()`.
+     *
+     * Borders do not need their own token: --wa-color-danger-fill-loud resolves to
+     * #dc3146 in both modes (4.59 / 3.57), and both clear the 3:1 WCAG bar for
+     * non-text. WA's --wa-color-danger-border-loud does not — it reads danger-60 in
+     * light (3.01, borderline) and danger-40 in dark (2.33, fails).
+     */
+    --keep-color-danger-text: var(--wa-color-danger-50);
+    --keep-color-success-text: var(--wa-color-success-50);
+
+    /*
+     * Tooltip chrome (#765).
+     *
+     * Inverted surface, so it does not follow --wa-color-surface-*: the tooltip is
+     * dark-on-light in light mode and stays dark (a lighter grey) in dark mode.
+     * These are the values keep-tooltip.ts already rendered — it branched on
+     * `document.body.dataset.theme` in JS to pick them. Moving them here lets that
+     * branch go, so no component reads the theme any more.
+     */
+    --keep-tooltip-surface: #18191b;
+    --keep-tooltip-on: #ffffff;
 }
 
 /*
@@ -186,4 +226,12 @@
     --wa-color-surface-border: #3a3a4a; /* getTheme('dark').borderColor */
     --wa-color-text-normal: #e0e0e0; /* getTheme('dark').textColorPrimary */
     --wa-color-text-loud: #ffffff;
+
+    /* Validation text: the lighter step, so it clears AA on a dark surface. See
+       the light block above for the measured contrast table. */
+    --keep-color-danger-text: var(--wa-color-danger-60);
+    --keep-color-success-text: var(--wa-color-success-60);
+
+    /* #4a4a4a is what keep-tooltip.ts's `isDark` branch already used. */
+    --keep-tooltip-surface: #4a4a4a;
 }

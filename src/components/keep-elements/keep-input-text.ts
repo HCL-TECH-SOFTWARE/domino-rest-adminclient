@@ -34,8 +34,8 @@ export default class InputText extends KeepElement {
     }
 
     wa-input:state(user-invalid)::part(base) {
-      border-color: var(--wa-color-danger-600);
-      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
+      border-color: var(--wa-color-danger-fill-loud);
+      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-fill-quiet);
     }
 
     /* Dark mode: white label and brand-tinted input text so a
