@@ -106,9 +106,12 @@ describe('WebAwesome validity states (#742)', () => {
     // The inverse guard: deleting the styling altogether would satisfy the scans above
     // while losing the feature. Every file that carried a dead selector must now carry a
     // working one.
+    //
+    // `keep-input-base.ts` stands in for keep-input-text/-password, which were identical
+    // and now share one stylesheet (#743). The two behavioural cases below drive both
+    // subclasses, so the rule is still checked where it is used, not only where it lives.
     const expected = [
-      'src/components/keep-elements/keep-input-text.ts',
-      'src/components/keep-elements/keep-input-password.ts',
+      'src/components/keep-elements/keep-input-base.ts',
       'src/components/keep-elements/keep-source.ts',
       'src/styles/keep-overrides.css',
     ];

@@ -57,6 +57,18 @@ export default class ApiErrorDialog extends KeepElement {
     `;
   }
 
+  /**
+   * Open the dialog modally — with the top layer and backdrop that `showDialog`/`open`
+   * alone does not give it.
+   *
+   * Public because the alternative was the consumer reaching for the same element through
+   * the shadow root (#743): `ref.current?.shadowRoot.querySelector('dialog').showModal()`.
+   * That is this element's private structure, and an unguarded read of it besides.
+   */
+  showModal(): void {
+    this.shadowRoot?.querySelector('dialog')?.showModal();
+  }
+
   private handleCancel(e: Event) {
     const dialog = (e.target as HTMLElement).closest('dialog');
     dialog?.close();

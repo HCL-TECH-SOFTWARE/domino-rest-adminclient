@@ -44,6 +44,21 @@ describe('keep-api-error-dialog', () => {
     expect(ok!.textContent?.trim()).toBe('OK');
   });
 
+  it('opens the dialog modally through showModal()', async () => {
+    // #743: the consumer used to do this itself, via
+    // `ref.current?.shadowRoot.querySelector('dialog').showModal()`. jsdom has no
+    // `showModal`, so setupTests installs a spy-able stub.
+    const showModal = vi.spyOn(HTMLDialogElement.prototype, 'showModal');
+    const el = await mountLit<ApiErrorDialog>(TAG);
+    el.showModal();
+    expect(showModal).toHaveBeenCalledOnce();
+  });
+
+  it('does not throw when showModal() runs before the dialog renders', async () => {
+    const el = document.createElement(TAG) as ApiErrorDialog;
+    expect(() => el.showModal()).not.toThrow();
+  });
+
   it('closes the dialog when the close button is clicked', async () => {
     const closeSpy = vi.spyOn(HTMLDialogElement.prototype, 'close');
     const el = await mountLit<ApiErrorDialog>(TAG, { showDialog: true });
