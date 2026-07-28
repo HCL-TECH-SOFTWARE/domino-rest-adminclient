@@ -5,15 +5,14 @@
  * ========================================================================== */
 
 import { styled } from '@linaria/react';
-import { getTheme } from '../../../store/styles/action';
 
-export const MultiCardViewContainer = styled('div')<{ theme: string }>`
+export const MultiCardViewContainer = styled('div')`
   display: flex;
   height: 35px;
   justify-content: center;
   border-radius: 10px !important;
-  border: 1px solid ${(props) => getTheme(props.theme).borderColor} !important;
-  background: ${(props) => getTheme(props.theme).secondary} !important;
+  border: 1px solid var(--wa-color-surface-border) !important;
+  background: var(--wa-color-surface-raised) !important;
   margin-left: 15px;
   font-size: 14px;
   .search-icon {
@@ -21,7 +20,7 @@ export const MultiCardViewContainer = styled('div')<{ theme: string }>`
   }
 `;
 
-export const CarViewContainer = styled.div<{ theme: string }>`
+export const CarViewContainer = styled.div`
   display: flex;
   justify-content: flex-end;
 
@@ -54,7 +53,7 @@ export const CarViewContainer = styled.div<{ theme: string }>`
   }
 
   .view-active {
-    color: ${(props) => getTheme(props.theme).activeIcon} !important;
+    color: var(--wa-color-brand-50) !important;
     .option-button {
       font-size: 18px;
     }

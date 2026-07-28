@@ -14,7 +14,6 @@ import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
-import { getTheme } from '../../store/styles/action';
 import { TokenProps } from '../../store/account/types';
 import { KeepTooltip } from '../keep-elements/KeepElements';
 
@@ -24,10 +23,10 @@ const ProfileMenuCard = styled(Paper)`
   border-radius: 10px;
 `;
 
-const AvatarContainer = styled.div<{ theme: string }>`
+const AvatarContainer = styled.div`
   display: flex;
   margin-bottom: 60px;
-  background: ${(props) => getTheme(props.theme).secondary};
+  background: var(--wa-color-surface-raised);
 `;
 
 const ProfileInfo = styled.div`
@@ -39,7 +38,6 @@ const ProfileInfo = styled.div`
 
 const ProfileMenu = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const [open, setOpen] = useState(false);
   const { idpLogin } = useSelector((state: AppState) => state.account);
 
@@ -92,7 +90,7 @@ const ProfileMenu = () => {
           <ClickAwayListener onClickAway={handleClose}>
             <Fade {...TransitionProps} timeout={550}>
               <ProfileMenuCard>
-                <AvatarContainer theme={themeMode}>
+                <AvatarContainer>
                   <ProfileInfo>
                     <span className="color-text-primary weight-700 medium-text">
                       {user}
@@ -102,7 +100,7 @@ const ProfileMenu = () => {
                     </span>
                   </ProfileInfo>
                 </AvatarContainer>
-                <OptionList toggleMenu={setOpen} theme={themeMode} />
+                <OptionList toggleMenu={setOpen} />
               </ProfileMenuCard>
             </Fade>
           </ClickAwayListener>

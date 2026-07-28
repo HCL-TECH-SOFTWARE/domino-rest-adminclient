@@ -15,7 +15,6 @@ import ClickAwayListener from '@mui/material/ClickAwayListener';
 import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
-import { getTheme } from '../../store/styles/action';
 import { TokenProps } from '../../store/account/types';
 import { KeepTooltip } from '../keep-elements/KeepElements';
 
@@ -86,10 +85,10 @@ const ProfileMenuCard = styled(Paper)`
   min-width: 220px;
 `;
 
-const PopperAvatarContainer = styled.div<{ theme: string }>`
+const PopperAvatarContainer = styled.div`
   display: flex;
   margin-bottom: 24px;
-  background: ${(props) => getTheme(props.theme).secondary};
+  background: var(--wa-color-surface-raised);
 `;
 
 interface ProfileMenuProps {
@@ -97,7 +96,6 @@ interface ProfileMenuProps {
 }
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { idpLogin } = useSelector((state: AppState) => state.account);
 
   // Popper state - used only when the sidenav is collapsed. Clicking
@@ -197,7 +195,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
       >
         <Fade in={open} timeout={open ? OPEN_TRANSITION_MS : CLOSE_TRANSITION_MS}>
           <div className='flex justify-center'>
-            <OptionList toggleMenu={() => undefined} theme={themeMode} />
+            <OptionList toggleMenu={() => undefined} />
           </div>
         </Fade>
       </Collapse>
@@ -216,7 +214,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
           <ClickAwayListener onClickAway={handlePopperClose}>
             <Fade {...TransitionProps} timeout={250}>
               <ProfileMenuCard>
-                <PopperAvatarContainer theme={themeMode}>
+                <PopperAvatarContainer>
                   <ProfileInfo className='ml-0'>
                     <span className="color-text-primary weight-700 medium-text nowrap">
                       {user}
@@ -226,7 +224,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
                     </span>
                   </ProfileInfo>
                 </PopperAvatarContainer>
-                <OptionList toggleMenu={setPopperOpen} theme={themeMode} />
+                <OptionList toggleMenu={setPopperOpen} />
               </ProfileMenuCard>
             </Fade>
           </ClickAwayListener>

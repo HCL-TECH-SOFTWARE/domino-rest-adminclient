@@ -19,13 +19,11 @@ interface ViewSearchProps {
 }
 
 const ViewSearch: React.FC<ViewSearchProps> = ({ handleSearchView }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { scopePull } = useSelector((state: AppState) => state.databases);
 
   return (
     <FormSearchContainer
       className={`${scopePull ? 'pointer-auto' : 'pointer-none'}`}
-      theme={themeMode}
     >
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />

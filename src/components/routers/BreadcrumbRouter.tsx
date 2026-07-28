@@ -10,15 +10,12 @@ import { styled } from '@linaria/react';
 import { useLocation } from 'react-router-dom';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import Home from '@mui/icons-material/Home';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../store';
-import { getTheme } from '../../store/styles/action';
 import { ActionHeader, PageTitle, TopBanner } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
 
-const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
+const BreadcrumbRouterContainer = styled.div`
   .home-icon {
-    color: ${(props) => getTheme(props.theme).textColorPrimary} !important;
+    color: var(--wa-color-text-normal) !important;
     font-size: 18px !important;
     margin-right: 5px;
     display: 'flex';
@@ -50,7 +47,6 @@ const BreadcrumbRouterContainer = styled.div<{ theme: string }>`
 
 const BreadcrumbRouter: React.FC = () => {
   const location = useLocation();
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { guardedNavigate } = useNavigationGuard();
   const { pathname } = location;
 
@@ -72,7 +68,7 @@ const BreadcrumbRouter: React.FC = () => {
   };
 
   return (
-    <BreadcrumbRouterContainer theme={themeMode}>
+    <BreadcrumbRouterContainer>
       <ActionHeader>
         <PageTitle>
           <TopBanner>

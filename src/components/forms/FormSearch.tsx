@@ -20,13 +20,11 @@ interface DatabaseSearchProps {
 const FormSearch: React.FC<DatabaseSearchProps> = ({
   handleSearchDatabase,
 }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { databasePull } = useSelector((state: AppState) => state.databases);
 
   return (
     <FormSearchContainer
       className={`${databasePull ? 'pointer-auto' : 'pointer-none'}`}
-      theme={themeMode}
     >
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />

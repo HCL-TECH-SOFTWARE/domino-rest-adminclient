@@ -6,8 +6,6 @@
 
 import React from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { useSelector } from 'react-redux';
-import { AppState } from '../../store';
 import {
   FormSearchContainer,
   SearchContainer,
@@ -19,10 +17,9 @@ interface AppsSearchProps {
 }
 
 const AppSearch: React.FC<AppsSearchProps> = ({ handleSearchApp }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
 
   return (
-    <FormSearchContainer theme={themeMode}>
+    <FormSearchContainer>
       <SearchContainer>
         <SearchIcon color="primary" className="search-icon" />
         <SearchInput

@@ -11,7 +11,6 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import DBIcon from '@mui/icons-material/Storage';
 import { AppState } from '../../../store';
-import { getTheme } from '../../../store/styles/action';
 import appIcons from '../../../styles/app-icons';
 import { checkIcon } from '../../../styles/scripts';
 import { DeleteIcon } from '../../../styles/CommonStyles';
@@ -21,7 +20,6 @@ import { toggleAlert } from '../../../store/alerts/action';
 import { KeepTooltip } from '../../keep-elements/KeepElements';
 
 const CardContainer = styled(Card)<{
-  theme: string;
   state: { selected: string; open: boolean; apiName: string };
 }>`
   width: 336px;
@@ -31,7 +29,7 @@ const CardContainer = styled(Card)<{
   padding: 17px 16px;
   border: 1px solid #C8D2DD;
   border-radius: 10px !important;
-  background: ${(props) => getTheme(props.theme).secondary} !important;
+  background: var(--wa-color-surface-raised) !important;
   display: flex;
   align-items: center;
 
@@ -139,7 +137,6 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
   setSelectedDB,
   setSelectedNsf,
 }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { permissions } = useSelector((state: AppState) => state.databases);
   const location = useLocation();
   const { pathname } = location;
@@ -173,7 +170,6 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
     <CardContainer
       state={{ selected, open, apiName: database.apiName }}
       onContextMenu={onContextMenu}
-      theme={themeMode}
       variant="outlined"
     >
       <CardHeader onClick={() => openDatabase(database)} tabIndex={1} onKeyDown={handleKeyPress}>

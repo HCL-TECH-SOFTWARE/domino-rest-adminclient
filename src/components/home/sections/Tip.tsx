@@ -10,17 +10,14 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import { styled } from '@linaria/react';
-import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { getTheme } from '../../../store/styles/action';
-import { AppState } from '../../../store';
 
-const CardContainer = styled(Card)<{ theme: string; bg: string }>`
+const CardContainer = styled(Card)<{ bg: string }>`
   flex: 1;
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  background: ${(props) => getTheme(props.theme).secondary} !important;
+  background: var(--wa-color-surface-raised) !important;
   margin-left: 8px;
   margin-right: 8px;
   border-radius: 8px !important;
