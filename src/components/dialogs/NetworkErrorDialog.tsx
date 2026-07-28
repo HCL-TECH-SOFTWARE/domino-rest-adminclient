@@ -31,21 +31,18 @@ const NetworkErrorDialog: React.FC = () => {
         ref.current?.close();
       }
     }
-  }, [errorDialogOpen])
+  }, [errorDialogOpen]);
 
   return (
     <dialog ref={ref}>
-      <FormDialogHeader
-        title="Error"
-        onClose={() => dispatch(toggleErrorDialog(errorDialogMessage))}
-      />
-      <div className='dialog-content'>
-        <text className='dialog-content-text'>
-          {errorDialogMessage}
-        </text>
+      <FormDialogHeader title="Error" onClose={() => dispatch(toggleErrorDialog(errorDialogMessage))} />
+      <div className="dialog-content">
+        <p className="dialog-content-text">{errorDialogMessage}</p>
       </div>
-      <div className='dialog-actions'>
-        <KeepButton onClick={() => dispatch(toggleErrorDialog(errorDialogMessage))} autoFocus>OK</KeepButton>
+      <div className="dialog-actions">
+        <KeepButton onClick={() => dispatch(toggleErrorDialog(errorDialogMessage))} autoFocus>
+          OK
+        </KeepButton>
       </div>
     </dialog>
   );
