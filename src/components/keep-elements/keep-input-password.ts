@@ -22,10 +22,19 @@ export default class InputPassword extends KeepInputBase {
   /** Plain field used by render() (matches original — not the `helpText` property). */
   hint = '';
 
+/*
+ * No `style` passthrough to the inner Web Awesome control.
+ *
+ * It read the host's own `style` attribute and re-emitted it here, which the production CSP
+ * blocks: `style-src-attr 'none'` stops Lit's AttributePart from applying an interpolated
+ * `style=`, so the attribute landed in the DOM and did nothing. No caller passed one either
+ * — measured across `src`, zero call sites. Size these from `:host` rules or a custom
+ * property instead. #685.
+ */
+
   render() {
     return html`
         <wa-input
-            style="${this.getAttribute('style') || ''}"
             type="password"
             label="${this.label}"
             hint="${this.hint}"

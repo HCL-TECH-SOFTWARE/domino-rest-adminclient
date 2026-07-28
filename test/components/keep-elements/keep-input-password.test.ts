@@ -58,11 +58,13 @@ describe('keep-input-password', () => {
     expect(el.shadowRoot!.querySelector('slot')).toBeTruthy();
   });
 
-  it('passes the host style attribute through to wa-input', async () => {
+  it('forwards no style attribute to wa-input', async () => {
+    // The passthrough is gone (#685). It re-emitted the host's style attribute, which the
+    // production CSP blocks on an interpolated attribute — and no call site ever set one.
     const el = document.createElement(TAG) as InputPassword;
-    el.setAttribute('style', 'margin: 4px;');
+    el.setAttribute('style', 'width: 300px;');
     document.body.appendChild(el);
     await el.updateComplete;
-    expect(waInput(el).getAttribute('style')).toBe(el.getAttribute('style'));
+    expect(waInput(el).hasAttribute('style')).toBe(false);
   });
 });

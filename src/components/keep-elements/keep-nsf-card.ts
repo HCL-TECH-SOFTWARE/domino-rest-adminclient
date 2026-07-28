@@ -87,6 +87,15 @@ export default class NsfCard extends KeepElement {
       font-size: 17px;
       font-weight: 600;
     }
+
+    /* Both were style attributes until #685; see the note in keep-element.ts. */
+    .card-icon {
+      font-size: 32px;
+    }
+
+    .search {
+      width: 100%;
+    }
   `;
 
   @property({ type: Object }) database: Database = {};
@@ -119,7 +128,7 @@ export default class NsfCard extends KeepElement {
     return html`
       <section>
         <div class="card-title">
-            <div style="font-size: 32px;">
+            <div class="card-icon">
                 ${this.iconName && ICONS[this.iconName]
                   ? html`
                     <wa-icon
@@ -134,8 +143,8 @@ export default class NsfCard extends KeepElement {
             <text class="nsf-filename">${this.database.fileName}</text>
         </div>
         <wa-input
+            class="search"
             placeholder="Search Schema"
-            style="width: 100%;"
             .value=${this.searchItem}
             @wa-input=${this._handleSearchInput}
         >
