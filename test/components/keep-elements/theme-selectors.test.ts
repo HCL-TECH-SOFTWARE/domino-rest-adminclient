@@ -43,11 +43,50 @@ describe('keep-element theme selectors', () => {
     ).toEqual([]);
   });
 
-  it('still has the working :host-context form on the elements that theme themselves', () => {
+  it('still gives the elements that theme themselves a working dark mode', () => {
     // Guards the inverse: a bulk edit that "fixed" the above by deleting dark support
     // everywhere would otherwise pass the previous assertion silently.
-    const themed = sources.filter(({ text }) => /:host-context\(\s*body\[data-theme/.test(code(text)));
-    expect(themed.length).toBeGreaterThanOrEqual(6);
+    //
+    // This used to count :host-context(body[data-theme=…]) blocks alone, and required at
+    // least six. #708 inverted that: dark mode now comes from --wa-color-* tokens, which
+    // resolve at :root/.wa-dark and inherit through the shadow boundary, so a *falling*
+    // :host-context count is progress rather than regression. What must not fall is the
+    // number of elements that theme themselves by one route or the other.
+    const themed = sources.filter(
+      ({ text }) =>
+        /:host-context\(\s*body\[data-theme/.test(code(text)) ||
+        /var\(--wa-color-(surface|text|border)/.test(code(text)),
+    );
+    expect(themed.length).toBeGreaterThanOrEqual(12);
+  });
+
+  /*
+   * #708: the elements' chrome colours are --wa-color-* tokens, not light-dark()
+   * literals. The exception is the JSON viewer's syntax palette — VS Code's editor
+   * colours, which are not UI chrome and have no WA semantic token to point at.
+   *
+   * Worth guarding because a light-dark() literal is invisible in review: it looks
+   * theme-aware, so a new one reads as correct while quietly reintroducing a fourth
+   * place the palette is written down.
+   */
+  const EDITOR_PALETTE_FILES = ['keep-source.ts', 'keep-source-header.ts', 'keep-autocomplete.ts'];
+
+  it('uses tokens rather than light-dark() literals outside the editor palette', () => {
+    const offenders = sources
+      .filter(({ name }) => !EDITOR_PALETTE_FILES.includes(name))
+      .filter(({ text }) => /light-dark\(\s*[^)\s]/.test(code(text)))
+      .map(({ name }) => name);
+    expect(
+      offenders,
+      `these still hardcode a light/dark colour pair instead of a --wa-color-* token: ${offenders.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('keeps the editor palette as literals on purpose', () => {
+    // The inverse guard: if someone tokenizes these, the JSON viewer's syntax
+    // highlighting silently becomes UI-grey and this test says why it should not.
+    const source = sources.find(({ name }) => name === 'keep-source.ts')!;
+    expect(code(source.text)).toMatch(/light-dark\(#0451A5, #9CDCFE\)/);
   });
 
   it('keep-button carries no dark-mode override', () => {

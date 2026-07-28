@@ -60,6 +60,23 @@
      * or converted sizes render ~15% smaller than the literals they replace.
      */
     --wa-font-size-scale: 0.85;
+
+    /*
+     * Light text (#708 PR 1 deferred these; PR 2 needs them).
+     *
+     * #383838 is getTheme('default').textColorPrimary — the colour Keep's body
+     * text already renders. Pinning it here means the ~25 keep-* element rules
+     * that said `light-dark(inherit, #e0e0e0)` resolve to the *same* colour they
+     * were inheriting, so converting them to a token does not move light mode.
+     *
+     * #000 is what those elements use for emphasised text, so text-loud is pinned
+     * to it: the `light-dark(#000, #ffffff)` rules then convert exactly, both ends.
+     *
+     * Contrast on white: #383838 gives 11.7:1, #000 gives 21:1 — both far past AA.
+     * Surfaces are not pinned in light mode because WA already renders white.
+     */
+    --wa-color-text-normal: #383838; /* getTheme('default').textColorPrimary */
+    --wa-color-text-loud: #000000;
 }
 
 /*

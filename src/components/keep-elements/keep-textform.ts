@@ -26,7 +26,7 @@ export default class TextForm extends KeepElement {
       width: auto;
       white-space: nowrap;
       flex: 1;
-      color: light-dark(#000, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     .value {
@@ -35,13 +35,13 @@ export default class TextForm extends KeepElement {
 
     input[type="text"] {
       padding: 15px 10px;
-      border: 1px solid light-dark(#ccc, #3a3a4a);
+      border: 1px solid var(--wa-color-surface-border);
       border-radius: 5px;
       width: 100%;
       box-sizing: border-box;
       font-size: 14;
-      background-color: light-dark(#fff, #1e1e2e);
-      color: light-dark(#000, #e0e0e0);
+      background-color: var(--wa-color-surface-default);
+      color: var(--wa-color-text-normal);
     }
 
     keep-autocomplete {

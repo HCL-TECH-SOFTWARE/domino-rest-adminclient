@@ -11,45 +11,39 @@ import { KeepElement } from './keep-element';
 export default class DefaultCard extends KeepElement {
   static styles = [
     css`
-        /* Inherit color-scheme from the host's ancestor (documentElement
-           toggles it via inline style in HomeElement / LoginPage) so
-           light-dark() resolves correctly inside this shadow root. */
+        /* Inherit color-scheme from the host's ancestor (documentElement toggles
+           it via inline style). The colours here no longer depend on it — they
+           are --wa-color-* tokens, which inherit through the shadow boundary on
+           their own — but it still drives how native controls and scrollbars
+           inside this root are painted, so it stays. */
         :host {
             color-scheme: inherit;
-            color: light-dark(#000, #ffffff);
+            color: var(--wa-color-text-loud);
         }
         wa-card {
-            --wa-panel-background-color: light-dark(#fff, #252535);
-            --wa-panel-border-color: light-dark(#e0e0e0, #3a3a4a);
-            --wa-color-neutral-0: light-dark(#fff, #252535);
-            --wa-color-neutral-50: light-dark(#fff, #252535);
-            color: light-dark(#000, #ffffff);
-            background: light-dark(#fff, #252535);
+            --wa-panel-background-color: var(--wa-color-surface-raised);
+            --wa-panel-border-color: var(--wa-color-surface-border);
+            color: var(--wa-color-text-loud);
+            background: var(--wa-color-surface-raised);
         }
         wa-card::part(base) {
-            background: light-dark(#fff, #252535);
-            border-color: light-dark(#e0e0e0, #3a3a4a);
-            color: light-dark(#000, #ffffff);
+            background: var(--wa-color-surface-raised);
+            border-color: var(--wa-color-surface-border);
+            color: var(--wa-color-text-loud);
         }
         wa-card::part(body) {
-            background: light-dark(#fff, #252535);
-            color: light-dark(#000, #ffffff);
+            background: var(--wa-color-surface-raised);
+            color: var(--wa-color-text-loud);
         }
-        /* Fallback for browsers/cases where color-scheme inheritance
-           through the shadow boundary doesn't propagate cleanly:
-           explicitly force the dark-mode background when the document
-           body is in dark mode (matches the search bar background
-           used in <SchemasLists>, getTheme('dark').secondary = #252535). */
-        :host-context(body[data-theme="dark"]) wa-card,
-        :host-context(body[data-theme="dark"]) wa-card::part(base),
-        :host-context(body[data-theme="dark"]) wa-card::part(body) {
-            background: #252535 !important;
-            border-color: #3a3a4a !important;
-            color: #ffffff !important;
-        }
+        /*
+         * The dark-mode force-override that used to sit here is gone (#708). It
+         * set #252535 / #3a3a4a / #ffffff !important — exactly what the tokens
+         * above now resolve to in dark mode — so it was both redundant and, being
+         * !important, capable of hiding a mistake in the tokens it duplicated.
+         */
         text,
         strong {
-            color: light-dark(#000, #ffffff);
+            color: var(--wa-color-text-loud);
         }
         wa-card {
             --border-radius: 10px;

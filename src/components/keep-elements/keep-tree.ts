@@ -46,7 +46,7 @@ export default class Tree extends KeepElement {
   static styles = css`
     :host {
       color-scheme: inherit;
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
       display: block;
     }
 
@@ -54,7 +54,7 @@ export default class Tree extends KeepElement {
       --wa-font-size-small: 12px;
       --wa-font-size-medium: 14px;
       --wa-font-size-large: 16px;
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     /* Disable the expand/collapse rotation: the slotted icons already swap. */
@@ -63,13 +63,11 @@ export default class Tree extends KeepElement {
     }
 
     wa-tree-item {
-      color: light-dark(inherit, #e0e0e0);
-      --wa-color-neutral-700: light-dark(#424242, #e0e0e0);
-      --wa-color-neutral-1000: light-dark(#000, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     wa-tree-item::part(label) {
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     .node-label {
@@ -80,13 +78,6 @@ export default class Tree extends KeepElement {
       font-size: 14px;
     }
 
-    /* Explicit dark-mode override — light-dark() inside a Lit shadow root does
-       not reliably resolve to the dark value, because color-scheme inheritance
-       through the shadow boundary is unreliable (same fix as keep-source). */
-    :host-context(body[data-theme='dark']) wa-tree-item,
-    :host-context(body[data-theme='dark']) wa-tree-item::part(label) {
-      color: #e0e0e0 !important;
-    }
   `;
 
   /** The nodes to render. Top level of the tree. */
