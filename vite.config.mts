@@ -40,18 +40,38 @@ export default defineConfig({
   plugins: [
     stampBuildVersion(),
     wyw({
-      include: ['**/*.{ts,tsx}']
+      include: ['**/*.{ts,tsx}'],
+      // The Lit elements are excluded because they contain no Linaria at all — their
+      // `css` comes from `lit`, not `@linaria/core`. Running them through wyw was always
+      // wasted work; since #747 it is also broken. wyw strips types with oxc-transform
+      // (0.131), which mis-desugars the `accessor` keyword and emits a reference to a
+      // private field it never declares:
+      //     Private field '#___private_isSchema_3' must be declared in an enclosing class
+      // Only `keep-elements/*.ts` is excluded. `KeepElements.tsx` stays in scope, as do
+      // `access/styles.ts` and `database/settings/sections/styles.ts` — the two non-.tsx
+      // files that really do declare Linaria `styled` components.
+      exclude: ['**/components/keep-elements/*.ts']
     }),
-    // tsDecorators + useDefineForClassFields:false let SWC transpile the Lit
-    // elements' TypeScript experimental decorators (@customElement/@property/
-    // @state/@query) with legacy semantics, so decorated class fields don't
-    // shadow Lit's reactive accessors (see lit.dev/msg/class-field-shadowing).
+    // The Lit elements use standard (TC39) decorators with `accessor` (#747).
+    //
+    // `tsDecorators` is a misleading name: in @vitejs/plugin-react-swc it only sets SWC's
+    // *parser* flag. It must stay `true` or SWC refuses to parse `@` at all — it is not a
+    // choice of decorator semantics.
+    //
+    // The semantics are `decoratorVersion`, which SWC defaults to legacy ('2021-12'). Under
+    // that default it silently emits `accessor` members untransformed, so the hook below is
+    // required and cannot be dropped. SWC does not read tsconfig.json (esbuild does), so
+    // this copy — not tsconfig.app.json — is what governs the build.
+    //
+    // Getting it wrong is loud, not silent: Lit's standard decorators reject a plain field
+    // with "Unsupported decorator location: field" at module load, in dev and production
+    // alike. That is the point of the migration.
     react({
       tsDecorators: true,
       useAtYourOwnRisk_mutateSwcOptions(options) {
         options.jsc ??= {};
         options.jsc.transform ??= {};
-        options.jsc.transform.useDefineForClassFields = false;
+        options.jsc.transform.decoratorVersion = '2022-03';
       }
     })
   ],
@@ -60,16 +80,32 @@ export default defineConfig({
   },
   server: {
     headers: {
+      /*
+       * Mirrors the `/admin/ui` policy in `jar/config/config.json`, directive for directive.
+       * That is the whole point of it: a dev policy looser than production reports nothing
+       * and proves nothing.
+       *
+       * It used to send `style-src-attr 'unsafe-inline'` where production sends `'none'`,
+       * which is exactly how #685's inline styles went unnoticed — the one directive the app
+       * was violating was the one dev did not enforce.
+       *
+       * Two caveats when reading the output, both dev-only:
+       *   - Vite's HMR client is an inline script, so `script-src 'self'` reports it. The
+       *     built bundle has no inline script; index.html loads two modules by src.
+       *   - Lit's dev build injects `<style>` elements, so `style-src-elem 'self'` reports
+       *     those too. Production Lit uses adoptedStyleSheets, which CSP does not govern.
+       * Neither appears against `npm run build` output. Anything else that reports here is
+       * real, and will be refused in production.
+       */
       'Content-Security-Policy-Report-Only': `
-        default-src 'self' 'report-sample';
-        connect-src 'self' data: 'report-sample';
+        default-src 'self' data: 'report-sample';
+        script-src 'self' 'report-sample';
+        style-src-attr 'none' 'report-sample';
+        style-src-elem 'self' 'report-sample';
         font-src 'self' data: 'report-sample';
         img-src 'self' data: 'report-sample';
-        script-src 'self' 'report-sample';
-        style-src 'self' 'report-sample';
-        style-src-attr 'unsafe-inline' 'report-sample';
-        style-src-elem 'self' 'unsafe-inline' 'report-sample';
-        worker-src 'self' blob data: 'report-sample';
+        worker-src 'self' blob: 'report-sample';
+        connect-src 'self' data: * 'report-sample';
         report-uri /api/csp-violation-report
       `
         .replace(/\s+/g, ' ')

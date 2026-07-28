@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { fetchMyApps } from '../../store/applications/action';
 import { styled } from '@linaria/react';
@@ -14,6 +14,7 @@ import Consents from './kanban/Consents';
 import { useNavigate } from 'react-router-dom';
 import { fetchUsers } from '../../store/access/action';
 import { getConsents } from '../../store/consents/action';
+import { useAppDispatch } from '../../store/hooks';
 
 const ConsentsBox = styled(Box)`
     display: flex;
@@ -21,14 +22,14 @@ const ConsentsBox = styled(Box)`
 `
 
 const ConsentsContainer: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { appPull } = useSelector((state: AppState) => state.apps);
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!appPull) dispatch(fetchMyApps() as any)
-    dispatch(fetchUsers() as any)
-    dispatch(getConsents() as any)
+    if (!appPull) dispatch(fetchMyApps())
+    dispatch(fetchUsers())
+    dispatch(getConsents())
   }, [appPull, dispatch]);
 
   return (

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { styled } from '@linaria/react';
 import { Box, Collapse, TableCell, TableRow } from '@mui/material';
 import { AppState } from '../../../store';
@@ -14,6 +14,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import { Consent } from '../../../store/consents/types';
 import { KeepTooltip } from '../../keep-elements/KeepElements';
+import { useAppDispatch } from '../../../store/hooks';
 
 const StyledTableRow = styled(TableRow)`
   .exp-content {
@@ -74,7 +75,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const { apps } = useSelector((state: AppState) => state.apps)
   const { users } = useSelector((state: AppState) => state.users)
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
   // Show delete consent dialog when clicking the Revoke
   

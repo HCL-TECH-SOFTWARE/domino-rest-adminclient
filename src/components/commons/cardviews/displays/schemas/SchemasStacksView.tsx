@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
 import { AppState } from '../../../../../store';
 import SlimDatabaseCard from '../../../../database/views/SlimDatabaseCard';
@@ -16,6 +16,7 @@ import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { SchemasMainContainer, StackHeader } from './SchemaStyles';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { ExtraFlex } from '../../../../flex';
+import { useAppDispatch } from '../../../../../store/hooks';
 
 type SchemasStacksViewProps = {
   databases: Array<any>;
@@ -30,7 +31,7 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
   const navigate = useNavigate();
   const setOption = useState({})[1];
   const [selected, setselected] = useState('');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [selectedDB, setSelectedDB] = useState('');
   const [selectedNsf, setSelectedNsf] = useState('');

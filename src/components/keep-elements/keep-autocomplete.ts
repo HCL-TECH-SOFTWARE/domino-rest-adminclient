@@ -139,20 +139,53 @@ export default class Autocomplete extends KeepElement {
         font-size: var(--wa-font-size-s);
       }
     }
+
+    /*
+     * The caret used to carry width/height and its rotation in a style attribute. The
+     * rotation was interpolated, and the production CSP sends style-src-attr 'none', which
+     * blocks Lit from applying an interpolated style — so the caret never turned. #685.
+     */
+    .caret {
+      width: 12px;
+      height: 12px;
+      transform: rotate(180deg);
+    }
+
+    .caret.open {
+      transform: rotate(0deg);
+    }
+
+    /* Option and selection icons; these were inline sizes on the <img> elements. */
+    .option-icon {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    .clear-icon {
+      width: 15px;
+      height: 15px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+    }
   `;
 
   // `readonly` because callers pass shared constants (`APP_ICON_NAMES`) — this element
   // only ever filters and reads, never mutates, the list it is given.
-  @property({ type: Array }) options: readonly string[] = [];
-  @property({ type: String }) selectedOption = '';
-  @property({ type: Boolean }) error = false;
-  @property({ type: String }) errorMessage = '';
-  @property({ type: String }) initialOption = '';
-  @property({ type: Object }) icons: Record<string, string> = {};
+  @property({ type: Array }) accessor options: readonly string[] = [];
+  @property({ type: String }) accessor selectedOption = '';
+  @property({ type: Boolean }) accessor error = false;
+  @property({ type: String }) accessor errorMessage = '';
+  @property({ type: String }) accessor initialOption = '';
+  @property({ type: Object }) accessor icons: Record<string, string> = {};
 
-  @state() private filteredOptions: readonly string[] = [];
-  @state() private highlightedOptionIndex = -1;
-  @state() private showDropdown = false;
+  @state() private accessor filteredOptions: readonly string[] = [];
+  @state() private accessor highlightedOptionIndex = -1;
+  @state() private accessor showDropdown = false;
 
   /**
    * Cached in `updated()` and read during `render()`. Deliberately NOT reactive
@@ -161,8 +194,8 @@ export default class Autocomplete extends KeepElement {
    */
   private hasIcons = false;
 
-  @query('input') private _input!: HTMLInputElement;
-  @query('.dropdown') private _dropdown!: HTMLElement;
+  @query('input') private accessor _input!: HTMLInputElement;
+  @query('.dropdown') private accessor _dropdown!: HTMLElement;
 
   updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('icons')) {
@@ -177,9 +210,9 @@ export default class Autocomplete extends KeepElement {
           <section class="input-container ${this.error ? 'error' : ''}">
             ${this.hasIcons && this.selectedOption && this.icons[this.selectedOption] ? html`
               <img
+                class="option-icon"
                 src="data:image/svg+xml;base64,${this.icons[this.selectedOption]}"
                 alt=""
-                style="width:24px; height:24px; vertical-align: middle; margin-right: 8px;"
               >
             ` : ''}
             <input
@@ -192,7 +225,7 @@ export default class Autocomplete extends KeepElement {
             <section class="button-container">
               ${this.selectedOption !== '' ? html`
                 <button @click="${this._handleClearInput}">
-                  <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="width: 15px; height: 15px">
+                  <svg class="clear-icon" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
                     <line x1="10" y1="10" x2="40" y2="40" stroke="#808283" stroke-width="5" />
                     <line x1="10" y1="40" x2="40" y2="10" stroke="#808283" stroke-width="5" />
                   </svg>
@@ -202,9 +235,9 @@ export default class Autocomplete extends KeepElement {
             <section class="button-container">
               <button @click="${this._toggleDropdown}">
                 <svg
+                  class="caret ${this.showDropdown ? 'open' : ''}"
                   viewBox="0 0 50 50"
                   xmlns="http://www.w3.org/2000/svg"
-                  style="width: 12px; height: 12px; transform: ${this.showDropdown ? 'rotate(0deg)' : 'rotate(180deg)'}"
                 >
                   <polygon points="25,10 45,40 5,40" fill="#808283" />
                 </svg>
@@ -216,15 +249,14 @@ export default class Autocomplete extends KeepElement {
               ${this.filteredOptions.map((option, index) => html`
                 <li
                   id="option-${index}"
-                  class="${index === this.highlightedOptionIndex ? 'highlighted' : ''}"
+                  class="option-row ${index === this.highlightedOptionIndex ? 'highlighted' : ''}"
                   @mousedown="${() => this._handleOptionClick(option)}"
-                  style="display: flex; align-items: center;"
                 >
                   ${this.hasIcons ?
                     html`<img
+                      class="option-icon"
                       src="data:image/svg+xml;base64,${this.icons[option]}"
                       alt=""
-                      style="width:24px; height:24px; vertical-align: middle; margin-right: 8px;"
                     >`
                     :
                     ''} ${option}

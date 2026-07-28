@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { AppState } from '../../store';
@@ -18,6 +18,7 @@ import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
 import { KeepButton, KeepSwitch } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { useAppDispatch } from '../../store/hooks';
 
 const TabViewsContainer = styled.div`
   display: flex;
@@ -83,7 +84,7 @@ interface TabViewsProps {
 const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, schemaData, setSchemaData }) => {
   const { views, folders } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [searchKey, setSearchKey] = useState('');
   const [resetAllViews, setResetAllViews] = useState(false);
 
@@ -188,19 +189,19 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
   }, [showActive]);
 
   const toggleActive = async (view: any) => {
-    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, true, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, true, setSchemaData, folders.map((folder) => {return folder.viewName})));
   }
 
   const toggleInactive = async (view: any) => {
-    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, false, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
+    dispatch(handleDatabaseViews([view], activeViews, dbName, schemaData, false, setSchemaData, folders.map((folder) => {return folder.viewName})));
   }
 
   const handleActivateAll = () => {
-    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, true, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, true, setSchemaData, folders.map((folder) => {return folder.viewName})));
   }
 
   const handleDeactivateAll = () => {
-    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, false, setSchemaData, folders.map((folder) => {return folder.viewName})) as any);
+    dispatch(handleDatabaseViews(views, activeViews, dbName, schemaData, false, setSchemaData, folders.map((folder) => {return folder.viewName})));
     setResetAllViews(false);
   }
 

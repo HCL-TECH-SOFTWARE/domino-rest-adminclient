@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { styled } from '@linaria/react';
 import Check from '@mui/icons-material/CheckCircle';
 import False from '@mui/icons-material/Block';
@@ -29,6 +29,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 interface DetailsSectionProps {
   dbName: string;
@@ -236,7 +237,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
   // (the backend persists `iconName`; `icon` is a cache of the same choice).
   const appIcons = useAppIcons();
   const displayIcon = appIconPayload(displayIconName, appIcons) || icon;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [editOpen, setEditOpen] = useState(false);
   const [discardDialog, setDiscardDialog] = useState(false);
   const [viewMore, setViewMore] = useState(false);
@@ -325,7 +326,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
       forms: formData,
       prohibitRefresh: prohibitRefreshValue,
     };
-    dispatch(updateSchema(updatedSchema, setSchemaData) as any);
+    dispatch(updateSchema(updatedSchema, setSchemaData));
   };
 
   useEffect(() => {

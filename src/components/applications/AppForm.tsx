@@ -10,7 +10,7 @@ import { styled } from '@linaria/react';
 import { FormikProps } from 'formik';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Alert, AlertTitle } from '@mui/material';
 import ApplicationIcon from '@mui/icons-material/Apps';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
@@ -24,6 +24,7 @@ import {
 } from '../../styles/CommonStyles';
 import { KeepAutocomplete, KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
 import { APP_ICON_NAMES, useAppIcons } from '../../services/app-icons';
+import { useAppDispatch } from '../../store/hooks';
 
 interface AppFormProps {
   formik: FormikProps<any>;
@@ -68,7 +69,7 @@ const PillBox = styled.div`
 `
 
 const AppForm: React.FC<AppFormProps> = ({ formik }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [formContext] = useContext(AppFormContext) as any;
   const { appError } = useSelector((state: AppState) => state.apps);
   const { appErrorMessage } = useSelector((state: AppState) => state.apps);

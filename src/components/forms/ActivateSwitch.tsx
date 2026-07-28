@@ -7,7 +7,6 @@
 import { Button } from '@mui/material';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { styled } from '@linaria/react';
 import { AppState } from '../../store';
@@ -15,6 +14,7 @@ import { toggleAlert } from '../../store/alerts/action';
 import { AGENTS_ERROR, VIEWS_ERROR } from '../../store/databases/types';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { KeepButton } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const ToggleContainer = styled.div`
   .toggle-container {
@@ -92,7 +92,7 @@ const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, tog
   const [resetView, setResetView] = useState(false);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { updateViewError, updateAgentError } = useSelector((state: AppState) => state.databases);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const ref = useRef<HTMLDialogElement>(null);
 

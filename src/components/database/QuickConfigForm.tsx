@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import { styled } from '@linaria/react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import ClearIcon from '@mui/icons-material/Clear';
 import { IconButton } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
@@ -33,6 +33,7 @@ import {
   KeepCheckbox,
   KeepTooltip,
 } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const Forms = styled.form`
   display: flex;
@@ -100,7 +101,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   );
   const [schemas, setSchemas] = useState([]) as any;
   const [hideClearIcon, setHideClearIcon] = useState(true);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [schemaNameError, setSchemaNameError] = useState('');
   const [scopeNameError, setScopeNameError] = useState('');

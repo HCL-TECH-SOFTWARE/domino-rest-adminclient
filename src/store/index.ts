@@ -5,6 +5,7 @@
  * ========================================================================== */
 
 import { combineReducers } from 'redux';
+import type { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 import databaseReducer from './databases/reducer';
 import historyReducer from './history/reducer';
 import drawerReducer from './drawer/reducer';
@@ -38,3 +39,16 @@ export const rootReducer = combineReducers({
 });
 
 export type AppState = ReturnType<typeof rootReducer>;
+
+/**
+ * The store's dispatch, including the thunk overload.
+ *
+ * `configureStore` installs redux-thunk by default, but the plain `Dispatch` that
+ * `useDispatch()` returns only knows about action *objects* — so every thunk dispatch
+ * needed a `as any` to compile. This is that missing type (#694).
+ *
+ * Kept framework-agnostic on purpose: the React binding lives in `./hooks`, so when
+ * #715 replaces react-redux with a StoreController it is `hooks.ts` that goes away,
+ * not this barrel.
+ */
+export type AppDispatch = ThunkDispatch<AppState, unknown, UnknownAction>;

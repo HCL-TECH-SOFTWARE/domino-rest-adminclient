@@ -118,12 +118,12 @@ export default class SourceContents extends KeepElement {
     }
   `;
 
-  @property({ type: String }) selectedOption = '';
-  @property({ type: Object }) content: Record<string, unknown> = {};
-  @property({ attribute: false }) onSave: () => void = () => {};
-  @property({ attribute: false }) onCancel: () => void = () => {};
-  @property({ attribute: false }) onDropdownChange: (newOption: string) => void = () => {};
-  @property({ attribute: false }) getExternalContent: () => string = () => '';
+  @property({ type: String }) accessor selectedOption = '';
+  @property({ type: Object }) accessor content: Record<string, unknown> = {};
+  @property({ attribute: false }) accessor onSave: () => void = () => {};
+  @property({ attribute: false }) accessor onCancel: () => void = () => {};
+  @property({ attribute: false }) accessor onDropdownChange: (newOption: string) => void = () => {};
+  @property({ attribute: false }) accessor getExternalContent: () => string = () => '';
 
   handleDropdownChange(event: Event) {
     const target = event.target as HTMLSelectElement;

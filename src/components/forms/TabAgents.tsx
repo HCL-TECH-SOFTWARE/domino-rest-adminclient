@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -19,6 +19,7 @@ import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
 import { KeepButton, KeepSwitch } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { useAppDispatch } from '../../store/hooks';
 
 /**
  * Database Agents Component
@@ -70,7 +71,7 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   const { loading } = useSelector((state: AppState) => state.dialog);
   const [filtered, setFiltered] = useState([...agents]);
   const { dbName } = useParams() as { dbName: string, nsfPath: string };
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [searchKey, setSearchKey] = useState('');
   const [resetAllAgents, setResetAllAgents] = useState(false);
   const [lists, setLists] = useState(agents)
@@ -104,19 +105,19 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
     }, [showActive]);
 
   const toggleActive = async (agent: any) => {
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, true, agents) as any);
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, true, agents));
   }
 
   const toggleInactive = async (agent: any) => {
-    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, false, agents) as any);
+    dispatch(handleDatabaseAgents([agent], activeAgents, dbName, schemaData, false, agents));
   }
 
   const handleActivateAll = () => {
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, true, agents) as any);
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, true, agents));
   }
 
   const handleDeactivateAll = () => {
-    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, false, agents) as any);
+    dispatch(handleDatabaseAgents(agents, activeAgents, dbName, schemaData, false, agents));
     setResetAllAgents(false);
   }
 

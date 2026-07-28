@@ -136,16 +136,16 @@ export default class Alert extends KeepElement {
     }
   `;
 
-  @property({ type: String }) message = '';
-  @property({ type: String }) variant = 'neutral'; // brand | success | warning | danger | neutral
-  @property({ type: String }) heading = 'Network error!';
+  @property({ type: String }) accessor message = '';
+  @property({ type: String }) accessor variant = 'neutral'; // brand | success | warning | danger | neutral
+  @property({ type: String }) accessor heading = 'Network error!';
 
-  @state() private _visible = false;
+  @state() private accessor _visible = false;
 
   private _timer: ReturnType<typeof setTimeout> | null = null;
   private _movedToBody = false;
 
-  @query('.toast-wrapper') private _wrapper?: HTMLElement | null;
+  @query('.toast-wrapper') private accessor _wrapper!: HTMLElement | null;
 
   connectedCallback() {
     super.connectedCallback();

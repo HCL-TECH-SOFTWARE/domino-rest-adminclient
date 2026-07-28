@@ -55,7 +55,7 @@ export default class TextForm extends KeepElement {
     }
   `;
 
-  @property({ type: Object }) data: FormData = {};
+  @property({ type: Object }) accessor data: FormData = {};
 
   private conversion: Record<string, string> = {
     formulaType: 'Formula Type',

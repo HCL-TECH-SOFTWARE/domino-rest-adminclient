@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
@@ -16,6 +16,7 @@ import { KeepDefaultCard } from '../../../../keep-elements/KeepElements';
 import { appIconUri, useAppIcons } from '../../../../../services/app-icons';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
+import { useAppDispatch } from '../../../../../store/hooks';
 
 type SchemasCardsViewProps = {
   databases: Array<any>;
@@ -33,7 +34,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
 
   const [selectedDB, setSelectedDB] = useState('');
   const [selectedNsf, setSelectedNsf] = useState('');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   // Re-renders once the lazy icon chunk lands (#772); until then the cards show their
   // own skeleton, because `KeepDefaultCard.icon` is a plain string prop.
   const appIcons = useAppIcons();

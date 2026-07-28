@@ -8,7 +8,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { TextField } from '@mui/material';
-import { useDispatch } from 'react-redux';
 import { addSchema } from '../../store/databases/action';
 import { Autocomplete } from '@mui/material';
 import { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
@@ -17,6 +16,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { KeepAutocomplete, KeepButton } from '../keep-elements/KeepElements';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { useAppDispatch } from '../../store/hooks';
 
 interface AddImportDialogProps {
   open: boolean;
@@ -48,7 +48,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   
   const engineOptions = ['domino'];
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const autocompleteRef = useRef<any>(null)
   const ref = useRef<HTMLDialogElement>(null)
@@ -121,7 +121,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         iconName: iconName,
         icon: appIconPayload(iconName, appIcons),
       };
-      dispatch(addSchema(newSchema, resetForm) as any);
+      dispatch(addSchema(newSchema, resetForm));
       setIconName('beach');
       setNsfPath('');
       setImportDialogOpen(false);

@@ -4,11 +4,12 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Snackbar from '@mui/material/Snackbar';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import { AppState } from '../../store';
 import { closeSnackbar } from '../../store/alerts/action';
+import { useAppDispatch } from '../../store/hooks';
 
 function TransitionDown(props: SlideProps) {
   const { children, ...rest } = props;
@@ -23,7 +24,7 @@ function TransitionDown(props: SlideProps) {
 
 const Notification = () => {
   const { message, visible } = useSelector((state: AppState) => state.alert);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleClose = () => {
     dispatch(closeSnackbar());

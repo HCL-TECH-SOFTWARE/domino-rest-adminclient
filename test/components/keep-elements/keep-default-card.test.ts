@@ -63,13 +63,20 @@ describe('keep-default-card', () => {
     const el = await mountLit<DefaultCard>(TAG);
     const status = shadow(el).querySelector('div.status') as HTMLElement;
     expect(status).toBeTruthy();
-    expect(status.getAttribute('style')).toContain('#F44336');
+    // A class, not an inline colour: the production CSP sends style-src-attr 'none', which
+    // blocks an interpolated style attribute, so the dot rendered colourless (#685). This
+    // suite asserted the attribute — which jsdom always applies — so it confirmed the bug
+    // instead of catching it.
+    expect(status.classList.contains('inactive')).toBe(true);
+    expect(status.classList.contains('active')).toBe(false);
+    expect(status.hasAttribute('style')).toBe(false);
   });
 
   it('renders the status dot in the "on" colour when status is true', async () => {
     const el = await mountLit<DefaultCard>(TAG, { status: true });
     const status = shadow(el).querySelector('div.status') as HTMLElement;
-    expect(status.getAttribute('style')).toContain('#4CAF50');
+    expect(status.classList.contains('active')).toBe(true);
+    expect(status.classList.contains('inactive')).toBe(false);
   });
 
   it('reflects the title into the heading and image alt text', async () => {
@@ -111,14 +118,15 @@ describe('keep-default-card', () => {
     expect(strongs.length).toBe(2);
     const aclText = strongs[1].querySelector('text')!;
     expect(aclText.textContent!.trim()).toBe('*Manager');
-    // Non-editor ACL is coloured green.
-    expect(aclText.getAttribute('style')).toContain('green');
+    // Non-editor ACL is coloured green, via a class — see the note on the status dot.
+    expect(aclText.classList.contains('acl-other')).toBe(true);
+    expect(aclText.hasAttribute('style')).toBe(false);
   });
 
   it('colours an *Editor acl badge orange', async () => {
     const el = await mountLit<DefaultCard>(TAG, { acl: '*Editor' });
     const aclText = shadow(el).querySelectorAll('section.titles strong')[1].querySelector('text')!;
-    expect(aclText.getAttribute('style')).toContain('orange');
+    expect(aclText.classList.contains('acl-editor')).toBe(true);
   });
 
   it('renders no delete affordance by default', async () => {

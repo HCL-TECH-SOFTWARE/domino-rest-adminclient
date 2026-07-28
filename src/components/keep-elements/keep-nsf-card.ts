@@ -89,6 +89,15 @@ export default class NsfCard extends KeepElement {
       font-weight: 600;
     }
 
+    /* Both were style attributes until #685; see the note in keep-element.ts. */
+    .card-icon {
+      font-size: 32px;
+    }
+
+    .search {
+      width: 100%;
+    }
+
     /* Matches the 32px font-size the wa-icon is rendered at, so the title row keeps
        its height while the payload chunk is in flight. */
     .app-icon-skeleton {
@@ -98,18 +107,18 @@ export default class NsfCard extends KeepElement {
   `,
   ];
 
-  @property({ type: Object }) database: Database = {};
-  @property({ type: Array }) items: DatabaseEntry[] = [];
-  @property({ type: Array }) schemasWithScopes: string[] = [];
-  @property({ type: String }) iconName = 'beach';
-  @property({ attribute: false }) deleteFn: (data: DatabaseEntry) => void = () => {};
-  @property({ attribute: false }) open: (schema: DatabaseEntry) => void = () => {};
+  @property({ type: Object }) accessor database: Database = {};
+  @property({ type: Array }) accessor items: DatabaseEntry[] = [];
+  @property({ type: Array }) accessor schemasWithScopes: string[] = [];
+  @property({ type: String }) accessor iconName = 'beach';
+  @property({ attribute: false }) accessor deleteFn: (data: DatabaseEntry) => void = () => {};
+  @property({ attribute: false }) accessor open: (schema: DatabaseEntry) => void = () => {};
 
   private isSchema = window.location.pathname.endsWith('/schema');
   private searchItem = '';
 
   /** Set once the lazy icon payloads (#772) land, so `render` swaps skeleton for icon. */
-  @state() private iconsReady = false;
+  @state() private accessor iconsReady = false;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -157,14 +166,14 @@ export default class NsfCard extends KeepElement {
     return html`
       <section>
         <div class="card-title">
-            <div style="font-size: 32px;">
+            <div class="card-icon">
                 ${this.renderIcon()}
             </div>
             <text class="nsf-filename">${this.database.fileName}</text>
         </div>
         <wa-input
+            class="search"
             placeholder="Search Schema"
-            style="width: 100%;"
             .value=${this.searchItem}
             @wa-input=${this._handleSearchInput}
         >

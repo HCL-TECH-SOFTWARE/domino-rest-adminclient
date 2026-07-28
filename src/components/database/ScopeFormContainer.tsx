@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import ScopeForm from './ScopeForm';
@@ -20,6 +20,7 @@ import {
 } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
 import { KeepDrawer } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 type ScopeFormContainerProps = {
   database?: any;
@@ -50,7 +51,7 @@ const ScopeFormSchema = Yup.object().shape({
 const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit, permissions}) => {
   const { visible } = useSelector((state: AppState) => state.drawer);
   const { deleteDialog } = useSelector((state: AppState) => state.dialog);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const descriptionElementRef = React.useRef<HTMLElement>(null);
   const [nsfPath, setNsfPath] = useState('');
   const [schemaName, setSchemaName] = useState('');
@@ -112,7 +113,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
         }
       // Submit the form
       setIsDisabled(true);
-      dispatch(changeScope(formData, isEdit) as any);
+      dispatch(changeScope(formData, isEdit));
     },
   });
   const handleDelete = () => {

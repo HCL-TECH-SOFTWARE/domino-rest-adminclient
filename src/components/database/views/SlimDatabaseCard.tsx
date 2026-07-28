@@ -13,10 +13,10 @@ import DBIcon from '@mui/icons-material/Storage';
 import { AppState } from '../../../store';
 import { AppIcon } from '../../commons/AppIcon';
 import { DeleteIcon } from '../../../styles/CommonStyles';
-import { useDispatch } from 'react-redux';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { toggleAlert } from '../../../store/alerts/action';
 import { KeepTooltip } from '../../keep-elements/KeepElements';
+import { useAppDispatch } from '../../../store/hooks';
 
 const CardContainer = styled(Card)<{
   state: { selected: string; open: boolean; apiName: string };
@@ -140,7 +140,7 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
   const location = useLocation();
   const { pathname } = location;
   const isSchema = pathname === '/schema';
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleClickDelete = () => {
     if(permissions.deleteDbMapping){

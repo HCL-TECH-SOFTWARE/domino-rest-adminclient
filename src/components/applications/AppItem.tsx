@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { styled } from '@linaria/react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
@@ -17,6 +16,7 @@ import { MdRefresh, MdEdit } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { KeepAppStatus, KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const StyledTableRow = styled(TableRow)`
   .expand keep-tooltip {
@@ -116,7 +116,7 @@ const AppItem: React.FC<AppItemProps> = ({
   deleteApplication,
   formik,
 }) => {
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
   const [, setGenerating] = useState(false)
   const [appSecret, setAppSecret] = useState('')
@@ -133,7 +133,7 @@ const AppItem: React.FC<AppItemProps> = ({
 
   const handleClickGenerate = (newSecret: boolean) => {
     if (newSecret) {
-      dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret) as any)
+      dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret))
     } else {
       setIsGenerate(true);
     }
@@ -151,7 +151,7 @@ const AppItem: React.FC<AppItemProps> = ({
     }, [isGenerate])
 
   const regenerateSecret = () => {
-    dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret) as any)
+    dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret))
     setIsGenerate(false);
   }
 

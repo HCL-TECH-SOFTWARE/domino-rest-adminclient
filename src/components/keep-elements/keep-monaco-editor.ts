@@ -106,14 +106,16 @@ export default class MonacoEditor extends LitElement {
     }
   `;
 
-  @property({ type: String }) value = '';
-  @property({ type: String }) language = 'javascript';
-  @property({ type: Boolean }) readOnly = false;
-  @property({ type: Boolean }) diffMode = false;
-  @property({ type: String }) originalValue = '';
-  @property({ attribute: false }) completionProvider?: Monaco.languages.CompletionItemProvider;
+  @property({ type: String }) accessor value = '';
+  @property({ type: String }) accessor language = 'javascript';
+  @property({ type: Boolean }) accessor readOnly = false;
+  @property({ type: Boolean }) accessor diffMode = false;
+  @property({ type: String }) accessor originalValue = '';
+  @property({ attribute: false }) accessor completionProvider:
+    | Monaco.languages.CompletionItemProvider
+    | undefined;
   /** Monaco's stylesheet, empty until the dynamic import lands. See `render()`. */
-  @state() private _monacoStyles = '';
+  @state() private accessor _monacoStyles = '';
   private _themeObserver?: MutationObserver;
   /**
    * Cache key from the last `_applyTheme()` call that did real work — see

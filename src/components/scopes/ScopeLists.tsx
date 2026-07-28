@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { toggleDrawer } from '../../store/drawer/action';
 import { clearDBError,
@@ -26,6 +26,7 @@ import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiVie
 import { toggleAlert } from '../../store/alerts/action';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import { KeepButton } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const ScopeLists = () => {
   const { databasePull, scopePull, scopes, permissions } = useSelector(
@@ -34,7 +35,7 @@ const ScopeLists = () => {
   const permissionCreate = permissions.createDbMapping;
   const [results, setResults] = useState([]) as any;
   const [searchKey, setSearchKey] = useState('');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,7 +52,7 @@ const ScopeLists = () => {
   
   const openScope = (database: any) => {
     if (!databasePull) {
-      dispatch(fetchKeepDatabases() as any);
+      dispatch(fetchKeepDatabases());
     }
     setSelectedScope(database);
     setIsEdit(true);
@@ -81,7 +82,7 @@ const ScopeLists = () => {
     if(permissionCreate){
       setIsEdit(false);
       if (!databasePull) {
-        dispatch(fetchKeepDatabases() as any);
+        dispatch(fetchKeepDatabases());
       }
       dispatch(clearDBError());
       dispatch(toggleDrawer());
@@ -93,7 +94,7 @@ const ScopeLists = () => {
   const handleRefresh = () => {
     dispatch(setPullDatabase(false));
     dispatch(setPullScope(false));
-    dispatch(fetchKeepDatabases() as any)
+    dispatch(fetchKeepDatabases())
     dispatch({
       type: FETCH_AVAILABLE_DATABASES,
       payload: []

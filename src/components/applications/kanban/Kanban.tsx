@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState, useContext } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Dialog } from '@mui/material';
@@ -30,6 +30,7 @@ import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
 import { KeepButton } from '../../keep-elements/KeepElements';
+import { useAppDispatch } from '../../../store/hooks';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -74,7 +75,7 @@ const Kanban: React.FC = () => {
   );
   const permissionCreate = permissions.createDbMapping;
   const [selected, setSelected] = useState('');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [formContext, setFormContext] = useContext(AppFormContext) as any;
   const icon = useState('beach')[0];
   const deleteAppTitle: string = 'Delete Application';
@@ -91,14 +92,14 @@ const Kanban: React.FC = () => {
   };
 
   const handleOpenConsents = () => {
-    if (!appPull) dispatch(fetchMyApps() as any)
-    dispatch(fetchUsers() as any)
-    dispatch(getConsents() as any)
+    if (!appPull) dispatch(fetchMyApps())
+    dispatch(fetchUsers())
+    dispatch(getConsents())
     setConsentDialogOpen(true)
   }
 
   const deleteApp = () => {
-    dispatch(deleteApplication(selected) as any);
+    dispatch(deleteApplication(selected));
   };
 
   // Submit Form
@@ -139,9 +140,9 @@ const Kanban: React.FC = () => {
       };
 
       if (formContext === 'Edit') {
-        dispatch(updateApp({...apiPayload, client_id: values.appId}) as any);
+        dispatch(updateApp({...apiPayload, client_id: values.appId}));
       } else {
-        dispatch(addApplication(apiPayload) as any);
+        dispatch(addApplication(apiPayload));
       }
     },
   });

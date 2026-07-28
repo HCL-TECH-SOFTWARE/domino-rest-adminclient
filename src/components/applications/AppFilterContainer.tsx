@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
 import { DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
@@ -13,6 +13,7 @@ import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import { styled } from '@linaria/react';
 import { fetchMyApps } from '../../store/applications/action';
 import { KeepButton, KeepDrawer } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const FilterContainer = styled(Box)`
   display: flex;
@@ -80,7 +81,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   setAppSecret,
 }) => {
   const { appFilterDrawer } = useSelector((state: AppState) => state.drawer)
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const descriptionElementRef = React.useRef<HTMLElement>(null);
 
   const [filterStatus, setFilterStatus] = useState(status)
@@ -96,7 +97,7 @@ const AppFilterContainer: React.FC<AppFilterContainerProps> = ({
   }, [appFilterDrawer]);
 
   const handleClickShowResults = () => {
-    dispatch(fetchMyApps() as any)
+    dispatch(fetchMyApps())
     setStatus(filterStatus)
     setAppSecret(filterAppSecret)
     dispatch(toggleAppFilterDrawer())
