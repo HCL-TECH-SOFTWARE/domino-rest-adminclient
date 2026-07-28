@@ -87,8 +87,8 @@ const CoreContainer = styled.div<{ show: boolean }>`
   .textarea {
     height: 60vh;
     width: 100%;
-    background-color: light-dark(white, #1e1e2e);
-    color: light-dark(inherit, #e0e0e0);
+    background-color: var(--wa-color-surface-default);
+    color: var(--wa-color-text-normal);
     resize: none;
   }
 

@@ -118,7 +118,7 @@ const ModeCardsContainer = styled.div`
   }
 
   .field-name {
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
     font-size: 16px;
     font-style: normal;
     font-weight: 700;

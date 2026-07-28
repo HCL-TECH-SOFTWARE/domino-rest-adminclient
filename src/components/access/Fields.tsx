@@ -118,7 +118,7 @@ const IconButton = styled.button`
   background: none;
   user-select: none;
   cursor: pointer;
-  color: light-dark(#000, #e0e0e0);
+  color: var(--wa-color-text-normal);
 
   .add {
     margin-top: 15px;

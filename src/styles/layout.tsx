@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { styled } from '@linaria/react';
-import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 
 export const FormContainer = styled.div`
   padding: 0 0px;
@@ -15,7 +14,7 @@ export const FormContainer = styled.div`
 
   .button-create {
     margin: 10px 0;
-    background-color: ${KEEP_ADMIN_BASE_COLOR};
+    background-color: var(--wa-color-brand-50);
     float: right;
     color: white;
   }
@@ -50,7 +49,7 @@ export const PanelInfo = styled.div`
   font-size: 18px;
   padding: 0px 10px;
   min-height: 48px;
-  border: 2px solid ${KEEP_ADMIN_BASE_COLOR};
+  border: 2px solid var(--wa-color-brand-50);
   border-radius: var(--wa-border-radius-l);
   display: flex;
   cursor: pointer;
@@ -152,7 +151,7 @@ export const Header = styled.div`
   width: 100%;
 
   .appIcon {
-    background: ${KEEP_ADMIN_BASE_COLOR};
+    background: var(--wa-color-brand-50);
     border-radius: 50%;
     width: 30px;
     height: 30px;
@@ -217,7 +216,7 @@ export const Action = styled.div`
 
 export const ActionButtonBar = styled.div`
   margin-top: 0px;
-  border-top: 2px solid ${KEEP_ADMIN_BASE_COLOR};
+  border-top: 2px solid var(--wa-color-brand-50);
   padding-top: 15px;
   padding-bottom: 15px;
   display: flex;
@@ -234,7 +233,7 @@ export const TopContainer = styled.div`
   justify-content: space-between;
 
   .button-create {
-    background-color: ${KEEP_ADMIN_BASE_COLOR};
+    background-color: var(--wa-color-brand-50);
     color: white;
   }
   .top-nav {

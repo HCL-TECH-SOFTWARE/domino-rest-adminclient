@@ -39,6 +39,21 @@
      * #7c5fd9 was chosen (#705) because it is what the app already renders:
      * this ramp previously lived in keep-overrides.css, which is imported last
      * and so already won over the #7e57c2 values in styles.css.
+     *
+     * Those #7e57c2 values are gone as of #765 — they survived as a scoped block
+     * that re-pinned the ramp for the login buttons alone, so the login screen was
+     * the one place still rendering the old purple. Deleting it puts that screen on
+     * the ramp like everything else; verified in a browser as no visible change,
+     * because the block was already losing to keep-theme.css almost everywhere.
+     *
+     * One of its declarations set --wa-color-brand and --wa-color-brand-on to the
+     * *same* colour, which looks like an invisible-label bug and is not: wa-button
+     * reads --wa-color-brand-on-loud/-normal/-quiet, never the bare
+     * --wa-color-brand-on. It was inert, the same as the Shoelace-era names #706
+     * removed.
+     *
+     * KEEP_ADMIN_BASE_COLOR in src/config.dev.ts must equal --wa-color-brand-50: it
+     * is the JS copy MUI needs, and test/styles/keep-theme.test.ts pins the two.
      */
     --wa-color-brand-95: #f1edfa; /* lightest tint */
     --wa-color-brand-90: #e0d7f5;
@@ -101,6 +116,88 @@
      */
     --wa-color-text-normal: #383838; /* getTheme('default').textColorPrimary */
     --wa-color-text-loud: #000000;
+
+    /*
+     * Light page surface (#765).
+     *
+     * The dark block below says light mode needs no surface pins "because WA already
+     * renders white". That is true of surface-default and surface-raised and **false**
+     * of surface-lowered, which WA renders as #f1f2f3 — a light grey page behind white
+     * cards. Keep's page is white (`--body-color: light-dark(#fff, #181825)`).
+     *
+     * Caught by screenshotting the login screen before and after, not by the suite:
+     * converting `light-dark(#fff, #181825)` to the token turned the page grey, which
+     * is exactly the kind of change `css: false` cannot see. Pinning it restores white
+     * and makes the conversion the no-op it was supposed to be.
+     *
+     * The cost is that light mode now has no surface hierarchy — lowered, default and
+     * raised are all white. That is what Keep already rendered; if a raised card ever
+     * needs to lift off the page, this is the token to give it.
+     */
+    --wa-color-surface-lowered: #ffffff;
+
+    /*
+     * Light borders (#765).
+     *
+     * The dark side of this token has been pinned since #708; the light side was
+     * left to Web Awesome, which renders #e4e5e9. Keep's own borders cluster an
+     * order of magnitude darker — across the Linaria layer they were written as
+     * #b8b8b8, #b9b9b9, #bfbfbf, #bdbdbd, #b4b4b4, #a5afbe, #d1d1d1, #ccc, #848484
+     * and the keyword `grey`, ten spellings of one intent.
+     *
+     * Pinning the light side too makes the token symmetric and makes converting
+     * those sites a no-op rather than a 40 %-lighter border. #b9b9b9 is the mode of
+     * the distribution (6 of 16 sites are #b9b9b9 or #b8b8b8).
+     *
+     * Knock-on: WA's own component borders darken in light mode, from #e4e5e9 to
+     * #b9b9b9. That is deliberate — it pulls WA's chrome onto the app's border
+     * weight instead of leaving two border languages side by side, the same trade
+     * #705 made for type and #708 for radius.
+     *
+     * Neither value clears the 3:1 WCAG bar for UI-component boundaries (#e4e5e9 is
+     * 1.26:1 on white, #b9b9b9 is 1.98:1). That is pre-existing and not addressed
+     * here; raising it is a design decision, not a tokenization one.
+     */
+    --wa-color-surface-border: #b9b9b9;
+
+    /*
+     * Tinted surfaces (#765).
+     *
+     * Not every background in the app is one of the three semantic surfaces. Two
+     * tints are used repeatedly and had started to drift, which is the specific
+     * problem a token fixes:
+     *
+     *   accent     table headers and tab strips — #f8fbff in four places and
+     *              #f9fbff in two, one unit apart in green and indistinguishable
+     *   highlight  selected / active rows — #e6ebf5, three places
+     *
+     * Single-use tints (`#f0f4f7` in ConsentsTable, the two translucent whites on
+     * the login glass panel) are left as literals: they are not duplicated, so a
+     * token would add indirection without removing drift.
+     */
+    --keep-surface-accent: #f8fbff;
+    --keep-surface-highlight: #e6ebf5;
+
+    /*
+     * The two halves of --base-color (#765).
+     *
+     * `styles.css` used one token for two opposite roles: a *text* colour
+     * (`.color-base`) and a *surface* fill that carries 24px white text
+     * (`.background-keep-base`, `.app-form-header`, `.scope-form-header`). A single
+     * value cannot be tuned for both — darker helps the text role and hurts the
+     * white-on-brand role — which is why the old comment there said no step was ideal.
+     *
+     * Both start at exactly what --base-color already resolved to, so this split is a
+     * no-op today. The point is that they can now move independently:
+     *
+     *   role                         light           dark            contrast
+     *   text on surface              brand-40        brand-60        6.36 / 5.11
+     *   white text on the fill       brand-40        brand-60        6.36 / 3.21
+     *
+     * (White-on-fill only has to clear 3.0 — it is 24px, WCAG "large text".)
+     */
+    --keep-text-brand: var(--wa-color-brand-40);
+    --keep-surface-brand: var(--wa-color-brand-40);
 
     /*
      * Sidenav (#708 PR 3).
@@ -231,6 +328,17 @@
        the light block above for the measured contrast table. */
     --keep-color-danger-text: var(--wa-color-danger-60);
     --keep-color-success-text: var(--wa-color-success-60);
+
+    /* The dark halves of the tints the light block introduces. `accent` collapses
+       onto surface-default because that is what all six sites already used in dark
+       mode — the tint only ever existed in light. */
+    --keep-surface-accent: #1e1e2e;
+    --keep-surface-highlight: #3a3a5a;
+
+    /* Both halves of the former --base-color read -60 in dark, which is what it
+       already resolved to. See the light block for the contrast table. */
+    --keep-text-brand: var(--wa-color-brand-60);
+    --keep-surface-brand: var(--wa-color-brand-60);
 
     /* #4a4a4a is what keep-tooltip.ts's `isDark` branch already used. */
     --keep-tooltip-surface: #4a4a4a;

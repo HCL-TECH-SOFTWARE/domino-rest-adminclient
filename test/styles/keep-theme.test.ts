@@ -7,6 +7,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { KEEP_ADMIN_BASE_COLOR } from '../../src/config.dev';
 import { getTheme } from '../../src/store/styles/action';
 
 /*
@@ -23,7 +24,16 @@ import { getTheme } from '../../src/store/styles/action';
  * pairing below, which no browser check would catch.
  */
 
-const CSS = readFileSync(join(__dirname, '../../src/styles/keep-theme.css'), 'utf8');
+/*
+ * Comments are stripped first. This file is heavily commented and the comments name
+ * the tokens they explain, so `--wa-color-brand-50: …` inside prose would otherwise
+ * be matched as a declaration — which is exactly what happened while #765 was being
+ * written.
+ */
+const CSS = readFileSync(join(__dirname, '../../src/styles/keep-theme.css'), 'utf8').replace(
+  /\/\*[\s\S]*?\*\//g,
+  '',
+);
 
 /** The declarations inside `:root.wa-dark { … }`. */
 const darkBlock = (() => {
@@ -75,6 +85,40 @@ describe('keep-theme.css — pinned dark semantic tokens (#708)', () => {
       '--wa-color-text-loud',
     ];
     for (const file of others) {
+      const css = readFileSync(join(__dirname, '../../src/styles', file), 'utf8');
+      for (const token of tokens) {
+        expect(
+          new RegExp(`${token}\\s*:`).test(css),
+          `${file} must not define ${token} — keep-theme.css owns it`,
+        ).toBe(false);
+      }
+    }
+  });
+});
+
+describe('keep-theme.css — the brand ramp is the only purple (#765)', () => {
+  /*
+   * The CSS side of the app reads var(--wa-color-brand-50). MUI cannot: getTheme()
+   * hands createTheme() plain strings, so KEEP_ADMIN_BASE_COLOR has to repeat the
+   * value as JS. Repeating it is how the app ended up with four purples in the first
+   * place, so pin the copy to the original.
+   */
+  const lightBlock = CSS.slice(CSS.indexOf(':root'), CSS.indexOf(':root.wa-dark'));
+
+  it('KEEP_ADMIN_BASE_COLOR equals --wa-color-brand-50', () => {
+    expect(KEEP_ADMIN_BASE_COLOR.toLowerCase()).toBe(declared(lightBlock, '--wa-color-brand-50'));
+  });
+
+  it('is the only stylesheet defining the brand ramp or the new keep-* tokens', () => {
+    const tokens = [
+      '--wa-color-brand-50',
+      '--wa-color-brand-on',
+      '--keep-surface-accent',
+      '--keep-surface-highlight',
+      '--keep-color-danger-text',
+      '--keep-tooltip-surface',
+    ];
+    for (const file of ['keep-overrides.css', 'dark-mode.css', 'styles.css']) {
       const css = readFileSync(join(__dirname, '../../src/styles', file), 'utf8');
       for (const token of tokens) {
         expect(

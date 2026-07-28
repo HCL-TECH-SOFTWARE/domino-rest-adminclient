@@ -5,13 +5,12 @@
  * ========================================================================== */
 
 import { styled } from '@linaria/react';
-import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 import { Radio, RadioProps, Switch } from '@mui/material';
 
 export const InputContainer = styled.div`
   padding: 5px 0;
   .launch {
-    background-color: ${KEEP_ADMIN_BASE_COLOR};
+    background-color: var(--wa-color-brand-50);
     color: white;
     font-size: var(--wa-font-size-2xs);
   }
