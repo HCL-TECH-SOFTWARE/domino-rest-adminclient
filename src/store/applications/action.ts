@@ -394,39 +394,51 @@ export const generateSecret = (
     setGenerating(true)
 
     try {
-      const { response, data } = await apiRequestWithRetry(() =>
+      const { response, data, error } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${getToken()}`,
             'Content-Type': 'application/json',
           },
-          // force=true overwrites any existing secret, breaking integrations still
-          // using it. Confirming with the user first is tracked in #740.
+          // force=true overwrites any existing secret unconditionally. Callers must
+          // confirm with the user before dispatching this (#740).
           body: JSON.stringify({ status: appStatus })
         })
       )
-      
+
+      // apiRequestWithRetry does not rethrow a failed request — it returns a null
+      // response. Reading `.ok` off that threw a TypeError, which then hit the catch
+      // below and broke it in turn, so a dropped connection produced no alert at all.
+      if (!response) {
+        throw new Error(JSON.stringify({ message: error ?? 'the request did not complete' }))
+      }
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }
       setGenerating(false);
       setAppSecret(data.client_secret);
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-      if (err) {
-        dispatch(
-          toggleAlert(
-            `Error Generating App Secret: ${error.message}`
-          )
-        );
-        log.error('Error generating app secret', { error: err })
+      // Always clear the spinner. Without this the caller is left rendering
+      // "Generating New Secret …" forever on any failure.
+      setGenerating(false);
+
+      // `e.message` rather than the old `toString().replace('Error: ', '')`, which cut
+      // the substring wherever it appeared: a TypeError surfaced as "Typeel.show is not
+      // a function".
+      const err = e?.message ?? String(e);
+      // Only the `!response.ok` throw above carries a JSON body. A network failure or a
+      // non-JSON error page reaches here as plain text, and parsing it unguarded threw
+      // *inside* the catch — so the user saw no alert at all, exactly when one was needed.
+      let message = err;
+      try {
+        message = JSON.parse(err).message ?? err;
+      } catch {
+        // Not JSON; the raw text is the best message available.
       }
-      // Otherwise use the generic error
-      else {
-        dispatch(toggleAlert(`Error Generating App Secret: ${error.message}`));
-      }
+
+      dispatch(toggleAlert(`Error Generating App Secret: ${message}`));
+      log.error('Error generating app secret', { error: err })
     }
   }
 }

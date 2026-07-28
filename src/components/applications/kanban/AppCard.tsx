@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import ApplicationIcon from '@mui/icons-material/Apps';
 import GenerateIcon from '@mui/icons-material/RotateLeft';
@@ -16,10 +16,9 @@ import Button from '@mui/material/Button';
 import { AppProp, AppFormProp } from '../../../store/applications/types';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
 import appIcons from '../../../styles/app-icons';
-import { getToken } from '../../../store/account/action';
+import { generateSecret } from '../../../store/applications/action';
 import { AppFormContext } from '../ApplicationContext';
 import { toggleAlert } from '../../../store/alerts/action';
-import { SETUP_KEEP_API_URL } from '../../../config.dev';
 import {
   Action,
   CardContainer,
@@ -28,8 +27,7 @@ import {
   InputContainer
 } from '../../../styles/CommonStyles';
 import { checkIcon } from '../../../styles/scripts';
-import { apiRequestWithRetry } from '../../../utils/api-retry';
-import { KeepTooltip } from '../../keep-elements/KeepElements';
+import { KeepButton, KeepTooltip } from '../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../store/hooks';
 
 const AppImage = styled.img`
@@ -58,9 +56,11 @@ const AppCard: React.FC<AppCardProps> = ({
   const dispatch = useAppDispatch();
   const [, setFormContext] = useContext(AppFormContext) as any;
   const [generating, setGenerating] = useState(false);
-  const [appSecret, setAppSecret] = useState(null);
+  const [appSecret, setAppSecret] = useState<string | null>(null);
   const appSecretTextRef = useRef(null) as any;
   const [showActions, setShowActions] = useState(false);
+  const [confirmRegenerate, setConfirmRegenerate] = useState(false);
+  const confirmRef = useRef<HTMLDialogElement>(null);
 
   // Data for the Update App form
   let formData: AppFormProp = {
@@ -117,36 +117,36 @@ const AppCard: React.FC<AppCardProps> = ({
     window.open(item.appStartPage);
   };
 
-  const generate = async (appId: string, status: string) => {
-    setGenerating(true);
-    
-    try {
-      const { data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${getToken()}`
-          },
-          body: JSON.stringify({ status: status })
-        })
-      )
+  const generate = () => {
+    dispatch(generateSecret(item.appId, item.appStatus, setGenerating, setAppSecret));
+  };
 
-      setGenerating(false);
-      setAppSecret(data.client_secret);
-    } catch (err: any) {
-      if (err.response && err.response.statusText) {
-        dispatch(
-          toggleAlert(
-            `Error Generating App Secret: ${err.response.statusText}`
-          )
-        );
-      }
-      // Otherwise use the generic error
-      else {
-        dispatch(toggleAlert(`Error Generating App Secret: ${err.message}`));
-      }
+  /**
+   * The API is called with `force=true`, which overwrites any existing secret
+   * unconditionally — every integration still holding the old one breaks at its next
+   * call, and the previous value is not recoverable. So confirm first, but only when
+   * there is something to destroy (#740).
+   */
+  const handleGenerate = () => {
+    if (item.appHasSecret) {
+      setConfirmRegenerate(true);
+    } else {
+      generate();
     }
   };
+
+  const confirmAndGenerate = () => {
+    setConfirmRegenerate(false);
+    generate();
+  };
+
+  useEffect(() => {
+    if (confirmRegenerate) {
+      confirmRef.current?.showModal();
+    } else {
+      confirmRef.current?.close?.();
+    }
+  }, [confirmRegenerate]);
 
   const handleKeyPress = (e: any, callback: any, focus?: boolean) => {
     if (e.key === "Enter") {
@@ -195,12 +195,12 @@ const AppCard: React.FC<AppCardProps> = ({
           >
             <EditIcon onClick={viewEdit} />
           </KeepTooltip>
-          <KeepTooltip 
-            content="Generate Application Secret" 
-            onKeyDown={(e) => {handleKeyPress(e, () => {generate(item.appId, item.appStatus)})}} 
+          <KeepTooltip
+            content={item.appHasSecret ? 'Regenerate Application Secret' : 'Generate Application Secret'}
+            onKeyDown={(e) => {handleKeyPress(e, handleGenerate)}}
           >
             <GenerateIcon
-              onClick={() => generate(item.appId, item.appStatus)}
+              onClick={handleGenerate}
               className="generate"
             />
           </KeepTooltip>
@@ -288,6 +288,28 @@ const AppCard: React.FC<AppCardProps> = ({
           )}
         </InputContainer>
       </CardContainer>
+      <dialog
+        ref={confirmRef}
+        onClose={() => setConfirmRegenerate(false)}
+        className='regen-app-secret-dialog'
+      >
+        {/* <span>, not the <text> AppItem uses — that is an SVG tag, and React warns
+            on it. Both rules key off the class, so this renders identically. */}
+        <div className="dialog-title">
+          <span className='dialog-title-text'>Regenerate App Secret?</span>
+        </div>
+        <div className='dialog-content'>
+          <span className='dialog-content-text'>
+            WARNING: You are attempting to regenerate the App Secret, doing so may break existing applications.  Are you sure you want to proceed?
+          </span>
+        </div>
+        <div className='dialog-actions'>
+          <KeepButton variant="neutral" appearance="outlined"
+            onClick={() => setConfirmRegenerate(false)}
+          >No</KeepButton>
+          <KeepButton onClick={confirmAndGenerate}>Yes</KeepButton>
+        </div>
+      </dialog>
     </>
   );
 };
