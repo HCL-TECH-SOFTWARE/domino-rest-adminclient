@@ -1879,43 +1879,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     color: light-dark(#0f52ba, #008000);
 }
 
-/* GroupForm.tsx */
-.group-add-member-button {
-    width: 125px;
-    float: right;
-    margin-right: 6px;
-}
-
-.group-form-button-style {
-    height: 10%;
-    width: 25%;
-    background-color: var(--badge-color-background);
-    float: right;
-    color: white;
-    margin-left: 20px;
-}
-
-.group-form-button-small {
-    font-size: 12px;
-    height: 9%;
-    margin: 15px 3px 5px 3px;
-    background-color: var(--badge-color-background);
-    color: white;
-}
-
-.group-remove-member-button {
-    width: 150px;
-    float: left;
-}
-
-/* Groups.tsx */
-.groups-click-row-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 60px;
-    cursor: pointer;
-}
-
 /* LoginPage.tsx */
 .login-page-grid {
     padding: 90px;
@@ -1971,30 +1934,6 @@ body[data-theme="dark"] .add-import-svg-icon {
 .login-page-oidc-dropdown {
     --keep-dropdown-display: inline-block;
     --keep-dropdown-width: auto;
-}
-
-/* PeopleCRUD.tsx */
-
-.people-crud-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 60px;
-    cursor: pointer;
-}
-
-/* GroupMembers.tsx */
-.group-members-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 20px;
-}
-
-/* PeopleSelector.tsx */
-.people-selector-div {
-    height: 350px;
-    width: 98%;
-    margin-top: 20px;
-    border-width: 5px;
 }
 
 /* OptionList.tsx */
