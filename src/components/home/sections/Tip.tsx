@@ -58,9 +58,8 @@ interface TipProps {
 }
 
 const Tip: React.FC<TipProps> = ({ heading, description, backgroundImage, uri }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   return (
-    <CardContainer className="feature-item" bg={backgroundImage} theme={themeMode}>
+    <CardContainer className="feature-item" bg={backgroundImage}>
       <Link className="link" to={uri}>
         <CardActionArea>
           <CardMedia component="img" image={backgroundImage} title={description} className="tip-card-media" />
