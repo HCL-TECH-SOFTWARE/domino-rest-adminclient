@@ -332,6 +332,19 @@ export default class SourceTree extends KeepElement {
       background: none;
       color: var(--wa-color-text-normal);
     }
+
+    /* All five were style attributes until #685; see the note in keep-element.ts. */
+    .json-key {
+      color: light-dark(#0451a5, #9cdcfe);
+    }
+
+    .json-value {
+      color: light-dark(#c7621d, #ce9178);
+    }
+
+    .hidden {
+      display: none;
+    }
   `;
 
   updated(changedProperties: PropertyValues) {
@@ -378,12 +391,11 @@ export default class SourceTree extends KeepElement {
               ${isObjectOrArray ? html`
                 ${`${label} ${Array.isArray(value) ? `[${value.length}]` : `{${Object.keys(value).length}}`}`}
               ` : html`
-                <span style="color: light-dark(#0451A5, #9CDCFE)">${label}:</span>
+                <span class="json-key">${label}:</span>
                 <input
                   id="input-${fullPath}"
                   data-id="input-${fullPath}"
-                  class="tree"
-                  style="color: light-dark(#C7621D, #CE9178)"
+                  class="tree json-value"
                   @input=${(e: Event) => {
                     this.currentInputValues = {
                       ...this.currentInputValues,
@@ -423,7 +435,7 @@ export default class SourceTree extends KeepElement {
                   <section class="dialog-input">
                     ${type === 'array' ?
                       html`<wa-input label="Key" disabled title="Key is not required when adding to an array"></wa-input>
-                      <wa-input disabled id="new-key" value="${value.length}" style="display: none;"></wa-input>`
+                      <wa-input disabled id="new-key" value="${value.length}" class="hidden"></wa-input>`
                       :
                       html`<wa-input label="Key" required id="new-key" @wa-invalid="${this.handleInvalid}"></wa-input>`}
                     <div id="key-error" class="dialog-error" aria-live="polite" hidden></div>
@@ -446,8 +458,8 @@ export default class SourceTree extends KeepElement {
                   </section>
                 </section>
                 <section class="dialog-content buttons">
-                  <button id="dialog-insert" style="display:none;" @click="${(e: Event) => this.handleInsertButtonClick(e, fullPath)}">Insert</button>
-                  <button id="dialog-edit" style="display:none;" @click="${(e: Event) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
+                  <button id="dialog-insert" class="hidden" @click="${(e: Event) => this.handleInsertButtonClick(e, fullPath)}">Insert</button>
+                  <button id="dialog-edit" class="hidden" @click="${(e: Event) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
                   <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
               </form>
@@ -472,8 +484,11 @@ export default class SourceTree extends KeepElement {
     const dialog = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')!
     const insertButton = dialog.querySelector('#dialog-insert')!
     const editButton = dialog.querySelector('#dialog-edit')!
-    insertButton.setAttribute('style', 'display:block')
-    editButton.setAttribute('style', 'display:none')
+    // classList, not setAttribute('style', …): the production CSP sends
+    // style-src-attr 'none', which blocks the latter outright. With the template's static
+    // display:none applying and the un-hide blocked, these two buttons never appeared. #685.
+    insertButton.classList.remove('hidden')
+    editButton.classList.add('hidden')
     if (dialog) {
       dialog.showModal();
     }
@@ -483,8 +498,8 @@ export default class SourceTree extends KeepElement {
     const dialog = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('dialog')
     const insertButton = dialog!.querySelector('#dialog-insert')!
     const editButton = dialog!.querySelector('#dialog-edit')!
-    insertButton.setAttribute('style', 'display:none')
-    editButton.setAttribute('style', 'display:block')
+    insertButton.classList.add('hidden')
+    editButton.classList.remove('hidden')
     if (dialog) {
       (dialog.querySelector('#new-key') as WithValue).value = key
       ;(dialog.querySelector('#new-value') as WithValue).value = value

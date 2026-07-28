@@ -73,12 +73,21 @@ export default class Button extends KeepElement {
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) pill = false;
 
+/*
+ * No `style` passthrough to the inner Web Awesome control.
+ *
+ * It read the host's own `style` attribute and re-emitted it here, which the production CSP
+ * blocks: `style-src-attr 'none'` stops Lit's AttributePart from applying an interpolated
+ * `style=`, so the attribute landed in the DOM and did nothing. No caller passed one either
+ * — measured across `src`, zero call sites. Size these from `:host` rules or a custom
+ * property instead. #685.
+ */
+
   render() {
     return html`
       <wa-button
         variant="${this.variant}"
         ?disabled="${this.disabled}"
-        style="${this.getAttribute('style') || ''}"
         appearance="${this.appearance}"
         ?pill="${this.pill}"
       >

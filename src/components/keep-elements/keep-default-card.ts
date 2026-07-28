@@ -163,6 +163,29 @@ export default class DefaultCard extends KeepElement {
             top: 20px;
             border-radius: 50%;
         }
+
+        /*
+         * The colours were interpolated into a style attribute until #685. The production
+         * CSP sends style-src-attr 'none', which blocks a Lit AttributePart from applying
+         * one — so the dot rendered with no background at all and the ACL label with no
+         * colour, silently, for as long as that policy has shipped. Static template
+         * attributes survive (they are cloned, not set); interpolated ones do not.
+         */
+        div.status.active {
+            background-color: var(--wa-color-success-fill-loud, #4caf50);
+        }
+
+        div.status.inactive {
+            background-color: var(--wa-color-danger-fill-loud, #f44336);
+        }
+
+        text.acl-editor {
+            color: var(--wa-color-warning-on-quiet, orange);
+        }
+
+        text.acl-other {
+            color: var(--wa-color-success-on-quiet, green);
+        }
     `,
   ];
 
@@ -179,7 +202,7 @@ export default class DefaultCard extends KeepElement {
     return html`
         <wa-card>
             <section class="delete">
-                <div class="status" style="background-color: ${this.status ? '#4CAF50' : '#F44336'}"></div>
+                <div class="status ${this.status ? 'active' : 'inactive'}"></div>
             </section>
             <div class="main">
                 <div class="icon">
@@ -191,9 +214,7 @@ export default class DefaultCard extends KeepElement {
                     ${this.acl ?
                         html`
                             <strong>
-                                <text
-                                    style="color: ${this.acl === '*Editor' ? 'orange' : 'green'};"
-                                >
+                                <text class="${this.acl === '*Editor' ? 'acl-editor' : 'acl-other'}">
                                     ${this.acl}
                                 </text>
                             </strong>
