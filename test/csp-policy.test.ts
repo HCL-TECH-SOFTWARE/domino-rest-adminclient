@@ -126,6 +126,25 @@ describe('the shipped CSP (#685)', () => {
     expect(source).not.toMatch(/^export const MONACO_EDITOR_DIR/m);
   });
 
+  it('reports violations, so a refusal in production is not silent', () => {
+    /*
+     * The failure mode this whole issue was about: a blocked style attribute sits in the
+     * DOM, inspects correctly in devtools, and simply has no effect. Nothing surfaces to
+     * the user, and nothing surfaces to us either — #685's defects went unnoticed for as
+     * long as the policy had shipped.
+     *
+     * `report-uri` is the only option here. `report-to` needs a `Reporting-Endpoints`
+     * response header, and these entries can set only `csp` and `Content-Type`.
+     *
+     * Only the two SPA entries. `/admin/*` serves subresources of the SPA document, so the
+     * SPA's policy governs them and its own header applies only if an asset URL is
+     * navigated to directly; `/adminui.json` is a JSON body that can violate nothing.
+     */
+    for (const key of SPA) {
+      expect(directives(csp(key)).get('report-uri')).toEqual(['/api/csp-violation-report']);
+    }
+  });
+
   it('is mirrored by the dev server, so dev can catch what production refuses', () => {
     // A dev policy looser than production reports nothing and proves nothing — which is
     // precisely what happened: dev sent style-src-attr 'unsafe-inline' while production
