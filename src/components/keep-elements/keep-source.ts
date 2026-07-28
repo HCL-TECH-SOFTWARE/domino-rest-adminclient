@@ -141,12 +141,12 @@ export default class SourceTree extends KeepElement {
   static styles = css`
     :host {
       color-scheme: inherit;
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     main {
-      border: 1px solid light-dark(#D2D2D2, #3a3a4a);
-      background-color: light-dark(#fff, #1e1e2e);
+      border: 1px solid var(--wa-color-surface-border);
+      background-color: var(--wa-color-surface-default);
     }
 
     wa-tree {
@@ -155,7 +155,7 @@ export default class SourceTree extends KeepElement {
       --wa-font-size-large: 16px;
       padding: 0;
       margin: 0;
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
     .custom-icons wa-tree-item::part(expand-button) {
       /* Disable the expand/collapse animation */
@@ -163,30 +163,27 @@ export default class SourceTree extends KeepElement {
     }
 
     wa-tree-item {
-      color: light-dark(inherit, #e0e0e0);
-      --wa-color-neutral-700: light-dark(#424242, #e0e0e0);
-      --wa-color-neutral-1000: light-dark(#000, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     wa-tree-item::part(label) {
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     .key-value-container span {
       color: light-dark(#0451A5, #9CDCFE) !important;
     }
 
-    /* Explicit dark-mode overrides — light-dark() inside lit shadow
-       DOM doesn't always resolve to the dark value because
-       color-scheme inheritance through the boundary is unreliable.
-       Force the dark-mode token colors when the document is in dark mode. */
-    :host-context(body[data-theme="dark"]) {
-      color: #e0e0e0;
-    }
-    :host-context(body[data-theme="dark"]) wa-tree-item,
-    :host-context(body[data-theme="dark"]) wa-tree-item::part(label) {
-      color: #e0e0e0 !important;
-    }
+    /*
+     * The neutral-text overrides that used to sit here are gone (#708): the rules
+     * above now use --wa-color-text-normal, and a custom property inherits through
+     * a shadow boundary reliably, which is precisely what color-scheme -- and so
+     * bare light-dark() -- did not.
+     *
+     * What remains covers the editor palette below, which is deliberately still
+     * written as light-dark() literals — those are VS Code's syntax colours, not
+     * UI chrome, and have no WA semantic token to point at.
+     */
     :host-context(body[data-theme="dark"]) .object-array-container,
     :host-context(body[data-theme="dark"]) .object-array-container * {
       color: #9CDCFE !important;
@@ -205,14 +202,14 @@ export default class SourceTree extends KeepElement {
       color: light-dark(#C7621D, #CE9178) !important;
     }
     input.dialog {
-      border: 1px solid light-dark(#B8B8B8, #555);
+      border: 1px solid var(--wa-color-border-normal);
       border-radius: 5px;
       padding: 5px 10px;
-      background-color: light-dark(#fff, #252535);
-      color: light-dark(inherit, #e0e0e0);
+      background-color: var(--wa-color-surface-raised);
+      color: var(--wa-color-text-normal);
     }
     input:focus {
-      border: 1px solid light-dark(#B8B8B8, #555);
+      border: 1px solid var(--wa-color-border-normal);
     }
 
     section.dialog-input {
@@ -260,9 +257,9 @@ export default class SourceTree extends KeepElement {
     dialog {
       padding: 10px;
       border-radius: 5px;
-      border: 1px solid light-dark(#D2D2D2, #3a3a4a);
-      background-color: light-dark(#fff, #252535);
-      color: light-dark(inherit, #e0e0e0);
+      border: 1px solid var(--wa-color-surface-border);
+      background-color: var(--wa-color-surface-raised);
+      color: var(--wa-color-text-normal);
       flex-direction: row;
       cursor: default;
     }
@@ -336,7 +333,7 @@ export default class SourceTree extends KeepElement {
     }
     button.cancel {
       background: none;
-      color: light-dark(black, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
   `;
 

@@ -23,28 +23,28 @@ type Database = { fileName?: string; databases?: DatabaseEntry[] };
 @customElement('keep-nsf-card')
 export default class NsfCard extends KeepElement {
   static styles = css`
-    /* Opt the shadow DOM into both color schemes so light-dark()
-       resolves correctly in here regardless of host inheritance.
-       Note: inherit is NOT a valid argument inside light-dark(),
-       so we use explicit black/white instead. */
+    /* Opt the shadow DOM into the host's colour scheme. The colours here are
+       --wa-color-* tokens now (#708) rather than light-dark(), so this no longer
+       affects them, but it still governs native control and scrollbar painting
+       inside this root. */
     :host {
       color-scheme: inherit;
-      color: light-dark(#000, #ffffff);
+      color: var(--wa-color-text-loud);
     }
     text,
     text.nsf-filename {
-      color: light-dark(#000, #ffffff);
+      color: var(--wa-color-text-loud);
     }
     wa-input::part(base) {
-      background-color: light-dark(#fff, #1e1e2e);
-      color: light-dark(#000, #ffffff);
-      border-color: light-dark(#ccc, #3a3a4a);
+      background-color: var(--wa-color-surface-default);
+      color: var(--wa-color-text-loud);
+      border-color: var(--wa-color-surface-border);
     }
     wa-input::part(input) {
-      color: light-dark(#000, #ffffff);
+      color: var(--wa-color-text-loud);
     }
     section {
-      border: 1px solid light-dark(#ccc, #3a3a4a);
+      border: 1px solid var(--wa-color-surface-border);
       padding: 16px;
       border-radius: 8px;
       box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
@@ -53,15 +53,15 @@ export default class NsfCard extends KeepElement {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      background: light-dark(#fff, #252535);
-      color: light-dark(#000, #ffffff);
+      background: var(--wa-color-surface-raised);
+      color: var(--wa-color-text-loud);
     }
 
     div.list-container {
-      border: 1px solid light-dark(#eee, #3a3a4a);
+      border: 1px solid var(--wa-color-surface-border);
       border-radius: 5px;
-      background-color: light-dark(#FAFDFF, #1e1e2e);
-      color: light-dark(#000, #ffffff);
+      background-color: var(--wa-color-surface-default);
+      color: var(--wa-color-text-loud);
       width: 100%;
       height: 100%;
       overflow-y: auto;

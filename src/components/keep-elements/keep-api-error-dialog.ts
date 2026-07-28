@@ -17,8 +17,8 @@ export default class ApiErrorDialog extends KeepElement {
   static styles = css`
     dialog {
       padding: 0 0 10px 0;
-      background-color: light-dark(#fff, #252535);
-      color: light-dark(inherit, #e0e0e0);
+      background-color: var(--wa-color-surface-raised);
+      color: var(--wa-color-text-normal);
       border-radius: 10px;
       position: fixed;
       top: 50%;

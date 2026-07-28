@@ -9,24 +9,24 @@ import { KeepElement } from './keep-element';
 export default class Drawer extends KeepElement {
   static styles = css`
         wa-drawer::part(panel) {
-            background: light-dark(#fff, #1e1e2e);
-            color: light-dark(inherit, #e0e0e0);
+            background: var(--wa-color-surface-default);
+            color: var(--wa-color-text-normal);
         }
         wa-drawer::part(header) {
-            background: light-dark(#fff, #1e1e2e);
-            color: light-dark(inherit, #e0e0e0);
+            background: var(--wa-color-surface-default);
+            color: var(--wa-color-text-normal);
         }
         wa-drawer::part(title) {
-            background: light-dark(#fff, #1e1e2e);
-            color: light-dark(inherit, #e0e0e0);
+            background: var(--wa-color-surface-default);
+            color: var(--wa-color-text-normal);
         }
         wa-drawer::part(header-actions) {
-            background: light-dark(#fff, #1e1e2e);
-            color: light-dark(inherit, #e0e0e0);
+            background: var(--wa-color-surface-default);
+            color: var(--wa-color-text-normal);
         }
         wa-drawer::part(body) {
-            background: light-dark(#fff, #1e1e2e);
-            color: light-dark(inherit, #e0e0e0);
+            background: var(--wa-color-surface-default);
+            color: var(--wa-color-text-normal);
             /* Prevent the drawer body itself from scrolling — inner regions handle their own scroll. */
             overflow: hidden;
             display: flex;

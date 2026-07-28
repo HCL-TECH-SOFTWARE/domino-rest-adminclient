@@ -45,11 +45,11 @@ export default class TextFormArray extends KeepElement {
       flex-direction: row;
       justify-content: center;
       background: none;
-      border: 1px solid light-dark(#000, #e0e0e0);
+      border: 1px solid var(--wa-color-text-normal);
       padding: 5px;
       border-radius: 5px;
       gap: 5px;
-      color: light-dark(#000, #e0e0e0);
+      color: var(--wa-color-text-normal);
 
       &:hover {
           cursor: pointer;
@@ -57,7 +57,7 @@ export default class TextFormArray extends KeepElement {
 
       &.add {
         &:hover {
-          background-color: light-dark(#F0F0F0, #3a3a4a);
+          background-color: var(--wa-color-surface-border);
         }
       }
 
@@ -82,35 +82,35 @@ export default class TextFormArray extends KeepElement {
     }
 
     wa-details {
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     wa-details::part(base) {
-      background: light-dark(#fff, #252535);
-      color: light-dark(inherit, #e0e0e0);
-      border-color: light-dark(#e0e0e0, #3a3a4a);
+      background: var(--wa-color-surface-raised);
+      color: var(--wa-color-text-normal);
+      border-color: var(--wa-color-surface-border);
     }
 
     wa-details::part(header) {
-      color: light-dark(inherit, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     wa-details::part(content) {
-      background: light-dark(#fff, #252535);
-      color: light-dark(inherit, #e0e0e0);
+      background: var(--wa-color-surface-raised);
+      color: var(--wa-color-text-normal);
     }
 
     h3 {
       font-weight: 400;
-      color: light-dark(#000, #e0e0e0);
+      color: var(--wa-color-text-normal);
     }
 
     dialog {
         border: none;
         border-radius: 10px;
         padding: 0;
-        background-color: light-dark(#fff, #252535);
-        color: light-dark(#000, #e0e0e0);
+        background-color: var(--wa-color-surface-raised);
+        color: var(--wa-color-text-normal);
     }
 
     dialog#add {

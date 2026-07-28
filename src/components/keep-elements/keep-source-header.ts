@@ -30,7 +30,7 @@ export default class SourceContents extends KeepElement {
     select {
         border: none;
         background-color: light-dark(#D7EBFD, #3a3a5a);
-        color: light-dark(inherit, #e0e0e0);
+        color: var(--wa-color-text-normal);
         padding: 5px;
         font-size: 15px;
 
@@ -42,17 +42,17 @@ export default class SourceContents extends KeepElement {
     textarea {
         width: 100%;
         height: 60vh;
-        background-color: light-dark(white, #1e1e2e);
-        color: light-dark(inherit, #e0e0e0);
+        background-color: var(--wa-color-surface-default);
+        color: var(--wa-color-text-normal);
         resize: none;
     }
 
     header {
         background-color: light-dark(#D7EBFD, #3a3a5a);
-        border-top: 1px solid light-dark(#D2D2D2, #3a3a4a);
-        border-left: 1px solid light-dark(#D2D2D2, #3a3a4a);
-        border-right: 1px solid light-dark(#D2D2D2, #3a3a4a);
-        color: light-dark(inherit, #e0e0e0);
+        border-top: 1px solid var(--wa-color-surface-border);
+        border-left: 1px solid var(--wa-color-surface-border);
+        border-right: 1px solid var(--wa-color-surface-border);
+        color: var(--wa-color-text-normal);
         padding: 5px 15px 5px 10px;
         display: flex;
         flex-direction: row;
@@ -95,14 +95,14 @@ export default class SourceContents extends KeepElement {
         align-items: center;
         gap: 6px;
         font-size: 13px;
-        color: light-dark(#4a4a4a, #b8b8b8);
+        color: var(--wa-color-text-quiet);
     }
 
     /* Plain wa-buttons acting as icon buttons: keep the icon's own colour and drop
        the default text-button padding so the header keeps its original density. */
     wa-button {
         --wa-form-control-padding-inline: 0.4em;
-        color: light-dark(#000, #e0e0e0);
+        color: var(--wa-color-text-normal);
     }
     wa-button.cancel {
         color: #ED0000;
