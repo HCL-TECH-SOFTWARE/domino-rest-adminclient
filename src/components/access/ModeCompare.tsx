@@ -8,7 +8,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { BlueSwitch, DeleteIcon, SearchInput } from '../../styles/CommonStyles';
 import { styled } from '@linaria/react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from '../../router/react';
 import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import { Database, Field } from '../../store/databases/types';

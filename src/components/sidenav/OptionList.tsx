@@ -8,7 +8,7 @@ import React from 'react';
 import LogoutIcon from '@mui/icons-material/ExitToApp';
 import { logout } from '../../store/account/action';
 import { styled } from '@linaria/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../router/react';
 import { useAppDispatch } from '../../store/hooks';
 
 const OptionListContainer = styled.div`

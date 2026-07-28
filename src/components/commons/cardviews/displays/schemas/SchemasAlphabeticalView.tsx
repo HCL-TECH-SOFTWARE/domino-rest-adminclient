@@ -7,7 +7,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from '../../../../../router/react';
 import { checkIcon } from '../../../../../styles/scripts';
 import appIcons from '../../../../../styles/app-icons';
 import { Scope } from '../../../../../store/databases/types';

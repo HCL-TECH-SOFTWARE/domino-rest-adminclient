@@ -6,7 +6,7 @@
 
 import React, { useEffect } from 'react';
 import { styled } from '@linaria/react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from '../../router/react';
 import { useSelector } from 'react-redux';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';

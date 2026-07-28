@@ -11,7 +11,7 @@ import { fetchMyApps } from '../../store/applications/action';
 import { styled } from '@linaria/react';
 import { Box } from '@mui/material';
 import Consents from './kanban/Consents';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../router/react';
 import { fetchUsers } from '../../store/access/action';
 import { getConsents } from '../../store/consents/action';
 import { useAppDispatch } from '../../store/hooks';

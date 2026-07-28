@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../../../../../router/react';
 import { ExtraFlex } from '../../../../flex';
 import { mapSchemas } from '../../../../../utils/mapper';
 import { SchemasMainContainer } from './SchemaStyles';

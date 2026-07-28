@@ -8,7 +8,8 @@ import React from 'react';
 import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
 import { configureStore, type Store } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router-dom';
+import { Router, memoryHistory } from '../../src/router/router';
+import { RouterProvider } from '../../src/router/react';
 
 /**
  * Shared render helper for React component tests — the counterpart to `lit.ts`'s
@@ -44,14 +45,17 @@ export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper
    */
   preloadedState?: Record<string, unknown>;
   /**
-   * Wrap in a `MemoryRouter` at this entry. Omit for components that never touch the
-   * router — an unnecessary router changes what `useLocation`-style hooks see.
+   * Wrap in a memory-backed router at this entry. Omit for components that never touch
+   * the router — an unnecessary router changes what `useLocation`-style hooks see, and
+   * the hooks throw without one, which is how a suite finds out it needed this.
    */
   route?: string;
 }
 
 export interface RenderWithProvidersResult extends RenderResult {
   store: Store;
+  /** The memory router, when `route` was given — so a test can assert where it went. */
+  router?: Router;
 }
 
 export function renderWithProviders(
@@ -61,11 +65,14 @@ export function renderWithProviders(
   const state = { ...DEFAULT_STATE, ...preloadedState };
   const store = configureStore({ reducer: staticReducers(state) });
 
+  // No basename: tests address routes the way the app's own tables do, base-relative.
+  const router = route === undefined ? undefined : new Router({ history: memoryHistory([route]) });
+
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <Provider store={store}>
-      {route === undefined ? children : <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>}
+      {router ? <RouterProvider router={router}>{children}</RouterProvider> : children}
     </Provider>
   );
 
-  return { ...render(ui, { wrapper: Wrapper, ...renderOptions }), store };
+  return { ...render(ui, { wrapper: Wrapper, ...renderOptions }), store, router };
 }
