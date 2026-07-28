@@ -18,7 +18,7 @@ const ColumnBarContainer = styled.div`
   background: light-dark(#FFFFFF, #252535);
   
   border: 1px solid light-dark(#A5AFBE, #3a3a4a);
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
 `
 
 const AllColumnsList = styled.div`
@@ -38,7 +38,7 @@ const AllColumnsList = styled.div`
     white-space: pre-wrap;
 
     font-weight: 400;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     line-height: 17px;
 
     color: light-dark(#636363, #999);

@@ -33,7 +33,7 @@ const ViewPanel = styled.div`
 
   background: #FFFFFF;
   border: 1px solid #B9B9B9;
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
 `;
 
 const ButtonsPanel = styled.div`

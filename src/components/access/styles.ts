@@ -10,7 +10,7 @@ export const TextEditorContainer = styled.div`
   display: flex;
   flex-direction: column;
   overflow-y: scroll;
-  border-radius: 5px;
+  border-radius: var(--wa-border-radius-m);
   border: 1px solid light-dark(#BFBFBF, #3a3a4a);
   padding: 5px 20px;
   gap: 16px;
@@ -25,7 +25,7 @@ export const TextEditorContainer = styled.div`
   }
 
   .settings-text {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     font-weight: 700;
     padding: 0;
   }

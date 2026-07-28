@@ -53,7 +53,7 @@ export const PanelInfo = styled.div`
   padding: 0px 10px;
   min-height: 48px;
   border: 2px solid ${KEEP_ADMIN_BASE_COLOR};
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   display: flex;
   cursor: pointer;
   align-items: center;
@@ -107,7 +107,7 @@ export const PageTitle = styled.div`
 
   .title {
     margin-left: 5px;
-    font-size: 22px;
+    font-size: var(--wa-font-size-xl);
     font-weight: 500;
   }
 `;
@@ -131,7 +131,7 @@ export const FormSearchContainer = styled('div')`
   height: 43px;
   justify-content: center;
   border: 1px solid var(--wa-color-surface-border);
-  border-radius: 10px !important;
+  border-radius: var(--wa-border-radius-l) !important;
   background: var(--wa-color-surface-raised) !important;
 
   .search-icon {
@@ -238,7 +238,7 @@ export const FormContentContainer = styled.div`
     font-size: 24px;
     padding: 20px;
     height: 70x;
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
   }
 
   .button-style {
@@ -257,7 +257,7 @@ export const FormContentContainer = styled.div`
     background-color: ${KEEP_ADMIN_BASE_COLOR};
     color: white;
     padding: 0;
-    border-radius: 2px;
+    border-radius: var(--wa-border-radius-s);
   }
 
   .button-disabled {
@@ -265,7 +265,7 @@ export const FormContentContainer = styled.div`
   }
 
   .button-small {
-    font-size: 12px;
+    font-size: var(--wa-font-size-s);
     height: 9%;
     margin: 15px 3px 5px 3px;
     background-color: ${KEEP_ADMIN_BASE_COLOR};
@@ -286,7 +286,7 @@ export const FormContentContainer = styled.div`
     font-weight: 500;
   }
   .icon-heading {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
   .icon-image {
     width: 35px;
@@ -300,11 +300,11 @@ export const CardContainer = styled(Card)<{}>`
   height: 185px;
   padding: 4px 16px;
   margin: 10px 15px 15px 0px;
-  border-radius: 10px !important;
+  border-radius: var(--wa-border-radius-l) !important;
   position: relative;
 
   .generating {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 
   .actions {
@@ -327,7 +327,7 @@ export const CardContainer = styled(Card)<{}>`
 
   .appDescription {
     flex: 1;
-    font-size: 12px;
+    font-size: var(--wa-font-size-s);
     overflow-x: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -417,7 +417,7 @@ export const TopContainer = styled.div`
     padding: 11px 24px;
     right: 0;
     gap: 10px;
-    border-radius: 10px;
+    border-radius: var(--wa-border-radius-l);
     background-color: #5E1EBE;
     text-transform: none;
     top: 8px;
@@ -435,7 +435,7 @@ export const Container = styled(Card)<ContainerProps>`
   width: 30%;
   height: 120px;
   margin: 0 15px 15px 0px;
-  border-radius: 10px !important;
+  border-radius: var(--wa-border-radius-l) !important;
   box-shadow: 2px 2px 5px
     ${(props) => (props.$active ? '#1966b3' : 'lightgray')};
   color: ${(props) => (props.$active ? '#1966b3' : '#383838')};
@@ -464,12 +464,12 @@ export const InputContainer = styled.div`
   .launch {
     background-color: ${KEEP_ADMIN_BASE_COLOR};
     color: white;
-    font-size: 10px;
+    font-size: var(--wa-font-size-2xs);
   }
   .launchdisabled {
     background-color: lightgray;
     color: white;
-    font-size: 10px;
+    font-size: var(--wa-font-size-2xs);
   }
 `;
 
@@ -490,12 +490,12 @@ export const Footer = styled.div`
 
   .heading {
     font-weight: 300;
-    font-size: 13px;
+    font-size: var(--wa-font-size-m);
     margin-right: 5px;
   }
 
   .app-secret {
-    font-size: 13px;
+    font-size: var(--wa-font-size-m);
     cursor: pointer;
   }
 `;
@@ -546,7 +546,7 @@ export const DrawerContainer = styled.div`
     margin: 30px 0 10px 0;
     font-size: 20px;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: var(--wa-border-radius-m);
   }
 `;
 
@@ -609,7 +609,7 @@ export const MenuOptionsContainer = styled.div`
   }
 
   .MuiTypography-body1 {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 `;
 
@@ -627,7 +627,7 @@ export const Buttons = styled.div`
     height: 31px;
     text-transform: none;
 
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
   }
 
@@ -637,7 +637,7 @@ export const Buttons = styled.div`
 
   .save {
     text-transform: none;
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
     background-color: #0F5FDC;
     color: #FFFFFF;
@@ -646,7 +646,7 @@ export const Buttons = styled.div`
   .cancel {
     text-transform: none;
     border: 1px solid;
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
   }
 `
@@ -713,13 +713,13 @@ export const CommonDialog = styled(Dialog)`
     height: 31px;
     text-transform: none;
 
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
   }
 
   .save {
     text-transform: none;
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
     background-color: #0F5FDC;
     color: #FFFFFF;
@@ -728,7 +728,7 @@ export const CommonDialog = styled(Dialog)`
   .cancel {
     text-transform: none;
     border: 1px solid;
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
   }
 `
@@ -766,7 +766,7 @@ export const DialogContainer = styled(Box)`
     height: 31px;
     text-transform: none;
 
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
   }
 
@@ -780,7 +780,7 @@ export const DialogContainer = styled(Box)`
 
   .save {
     text-transform: none;
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
     background-color: #0F5FDC;
     color: #FFFFFF;
@@ -789,7 +789,7 @@ export const DialogContainer = styled(Box)`
   .cancel {
     text-transform: none;
     border: 1px solid;
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     line-height: 19px;
   }
 
@@ -870,13 +870,13 @@ export const StyledRadio = styled(Radio)<RadioProps>`
   }
   .MuiRadio-label {
     padding: 0;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 `;
 
 export const EncryptSignOptions = styled.section`
   width: 45%;
-  font-size: 14px;
+  font-size: var(--wa-font-size-m);
 
   .main-row {
     display: flex;
@@ -884,6 +884,6 @@ export const EncryptSignOptions = styled.section`
 
   .warning-text {
     color: #616161;
-    font-size: 12px;
+    font-size: var(--wa-font-size-s);
   }
 `

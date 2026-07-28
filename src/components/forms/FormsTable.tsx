@@ -36,7 +36,7 @@ const StyledTableCell = styled(TableCell)`
   }
 
   &.${tableCellClasses.body} {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     padding-top: 20px;
     padding-bottom: 20px;
     border-bottom: none;
@@ -54,7 +54,7 @@ const StyledTableRow = styled(TableRow)`
 `;
 
 const StyledTableContainer = styled(TableContainer)`
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   box-sizing: border-box;
   border: 1px solid var(--wa-color-surface-border);
   background: var(--wa-color-surface-raised);
@@ -96,14 +96,14 @@ const ViewNameDisplay = styled.div`
   }
 
   .custom-form {
-    font-size: 12px;
+    font-size: var(--wa-font-size-s);
     color: #475155;
   }
 `;
 
 const ActivateDialogContainer = styled.dialog`
   border: 1px solid white;
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   width: 40%;
   padding: 30px;
   height: fit-content;
@@ -129,7 +129,7 @@ const ActivateDialogContainer = styled.dialog`
   }
 
   .title {
-    font-size: 22px;
+    font-size: var(--wa-font-size-xl);
     color: light-dark(#000, #e0e0e0);
     font-weight: 700;
   }
@@ -145,8 +145,8 @@ const ActivateDialogContainer = styled.dialog`
     background-color: #0F5FDC;
     color: #FFFFFF;
     font-weight: 700;
-    font-size: 14px;
-    border-radius: 10px;
+    font-size: var(--wa-font-size-m);
+    border-radius: var(--wa-border-radius-l);
     padding: 11px 24px;
 
     &:hover {
@@ -158,8 +158,8 @@ const ActivateDialogContainer = styled.dialog`
   .button-cancel {
     color: light-dark(#000, #e0e0e0);
     font-weight: 700;
-    font-size: 14px;
-    border-radius: 10px;
+    font-size: var(--wa-font-size-m);
+    border-radius: var(--wa-border-radius-l);
     border: 1px solid #323A3D;
     padding: 11px 24px;
   }

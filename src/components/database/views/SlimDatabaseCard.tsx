@@ -28,7 +28,7 @@ const CardContainer = styled(Card)<{
   margin: 0 15px 15px 0px;
   padding: 17px 16px;
   border: 1px solid #C8D2DD;
-  border-radius: 10px !important;
+  border-radius: var(--wa-border-radius-l) !important;
   background: var(--wa-color-surface-raised) !important;
   display: flex;
   align-items: center;
@@ -74,7 +74,7 @@ const CardHeader = styled.div`
     line-height: 1.2em;
 
     @media only screen and (max-width: 1366px) {
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
     }
   }
 
@@ -88,7 +88,7 @@ const CardHeader = styled.div`
     line-height: 1.2em;
 
     @media only screen and (max-width: 1366px) {
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
     }
   }
 

@@ -94,7 +94,7 @@ export default class SourceContents extends KeepElement {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        font-size: 13px;
+        font-size: var(--wa-font-size-m);
         color: var(--wa-color-text-quiet);
     }
 

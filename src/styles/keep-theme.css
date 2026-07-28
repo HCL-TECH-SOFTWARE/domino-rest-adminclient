@@ -62,6 +62,24 @@
     --wa-font-size-scale: 0.85;
 
     /*
+     * Corner radius, scaled for the same reason --wa-font-size-scale is (#708).
+     *
+     * WA's stock ladder is s=3px, m=6px, l=12px. The app's own radii are 10px
+     * (34 uses), 5px (18) and 3px (13), so at scale 1 only 3px has a home and the
+     * dominant 10px is 2px away from --wa-border-radius-l.
+     *
+     * 5/6 shifts the ladder to s=2.5px, m=5px, l=10px, which lands the two most
+     * common literals *exactly* on steps and 3px within half a pixel. Written as
+     * a fraction rather than 0.8333 so the intent stays legible.
+     *
+     * The trade is that WA's own components lose ~17% of their corner radius --
+     * a wa-button goes 6px -> 5px. That is the same trade #705 already made for
+     * type, and it pulls WA's corners onto the app's rather than leaving two
+     * radius languages side by side.
+     */
+    --wa-border-radius-scale: calc(5 / 6);
+
+    /*
      * Light text (#708 PR 1 deferred these; PR 2 needs them).
      *
      * #383838 is getTheme('default').textColorPrimary — the colour Keep's body

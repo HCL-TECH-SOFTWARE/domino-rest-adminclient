@@ -31,7 +31,7 @@ export default class Autocomplete extends KeepElement {
       visibility: hidden;
       background-color: var(--wa-color-surface-default);
       border: 1px solid var(--wa-color-surface-border);
-      border-radius: 5px;
+      border-radius: var(--wa-border-radius-m);
       width: 100%;
       z-index: 9999;
       max-height: 30vh;
@@ -48,9 +48,9 @@ export default class Autocomplete extends KeepElement {
     .input-container {
       width: 97%;
       border: 1px solid var(--wa-color-surface-border);
-      border-radius: 5px;
+      border-radius: var(--wa-border-radius-m);
       padding: 15px 10px;
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -97,7 +97,7 @@ export default class Autocomplete extends KeepElement {
 
     p {
       margin: 8px 0 0 2px;
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
       color: red;
     }
 
@@ -130,7 +130,7 @@ export default class Autocomplete extends KeepElement {
       }
 
       p {
-        font-size: 12px;
+        font-size: var(--wa-font-size-s);
       }
     }
   `;

@@ -35,7 +35,7 @@ const StyledTableRow = styled(TableRow)`
   }
 
   .text {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
   }
 
   .revoke {
@@ -63,13 +63,13 @@ const AppNameContainer = styled(Box)`
   .status-container {
     display: flex;
     gap: 5px;
-    border-radius: 3px;
+    border-radius: var(--wa-border-radius-s);
     background: #A1E596;
     font-color: #000;
     flex-direction: row;
     align-items: center;
     width: fit-content;
-    font-size: 10px;
+    font-size: var(--wa-font-size-2xs);
     padding: 0 5px;
   }
 

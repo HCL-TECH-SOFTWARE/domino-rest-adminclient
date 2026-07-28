@@ -25,7 +25,7 @@ export const SettingsDescription = styled.div`
   }
 
   .description {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     font-weight: 300;
   }
 `;

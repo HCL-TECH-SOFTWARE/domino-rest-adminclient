@@ -35,7 +35,7 @@ const ColumnDetailsContainer = styled.div`
   
   background: light-dark(#FFF, #252535);
   border: 1px solid light-dark(#B4B4B4, #3a3a4a);
-  border-radius: 10px;
+  border-radius: var(--wa-border-radius-l);
   left: 23%;
   margin-right: 2%;
   padding: 0;

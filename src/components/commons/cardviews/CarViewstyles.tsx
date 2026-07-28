@@ -10,11 +10,11 @@ export const MultiCardViewContainer = styled('div')`
   display: flex;
   height: 35px;
   justify-content: center;
-  border-radius: 10px !important;
+  border-radius: var(--wa-border-radius-l) !important;
   border: 1px solid var(--wa-color-surface-border) !important;
   background: var(--wa-color-surface-raised) !important;
   margin-left: 15px;
-  font-size: 14px;
+  font-size: var(--wa-font-size-m);
   .search-icon {
     font-size: 19px;
   }
@@ -30,11 +30,11 @@ export const CarViewContainer = styled.div`
     border-top-right-radius: 0px;
     border-top: 0;
     border-bottom: 0;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     text-transform: capitalize;
 
     .chevron-down {
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
       margin-left: 7px;
     }
   }
@@ -42,12 +42,12 @@ export const CarViewContainer = styled.div`
   .split,
   .collage,
   .stack {
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     text-transform: capitalize;
     border: 0;
 
     .option-button {
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
       margin-left: 7px;
     }
   }
@@ -63,14 +63,14 @@ export const CarViewContainer = styled.div`
     border-radius: 20px;
     border-bottom-left-radius: 0px;
     border-top-left-radius: 0px;
-    font-size: 14px;
+    font-size: var(--wa-font-size-m);
     border-top: 0;
     border-bottom: 0;
     border-left: 0;
     text-transform: capitalize;
 
     .chevron-down {
-      font-size: 14px;
+      font-size: var(--wa-font-size-m);
       margin-left: 7px;
     }
   }
