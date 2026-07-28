@@ -4,9 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepInputBase } from './keep-input-base';
+import { KeepElement } from './keep-element';
 
 /**
  * Password field, with WebAwesome's reveal toggle. Tag: `keep-input-password`.
@@ -34,11 +35,11 @@ export default class InputPassword extends KeepElement {
 
     /* Dark mode: white label and brand-tinted input text so a
        pre-filled value isn't pure white on the dark background. */
-    :host-context(body[data-theme="dark"]) wa-input::part(form-control-label),
-    :host-context(body[data-theme="dark"]) wa-input::part(label) {
+    :host-context(body[data-theme='dark']) wa-input::part(form-control-label),
+    :host-context(body[data-theme='dark']) wa-input::part(label) {
       color: #ffffff !important;
     }
-    :host-context(body[data-theme="dark"]) wa-input::part(input) {
+    :host-context(body[data-theme='dark']) wa-input::part(input) {
       color: var(--wa-color-brand-50) !important;
       -webkit-text-fill-color: var(--wa-color-brand-50) !important;
       caret-color: var(--wa-color-brand-50);
@@ -53,19 +54,18 @@ export default class InputPassword extends KeepElement {
 
   render() {
     return html`
-        <wa-input
-            style="${this.getAttribute('style') || ''}"
-            type="password"
-            label="${this.label}"
-            hint="${this.hint}"
-            placeholder="${this.placeholder}"
-            password-toggle
-            ?required="${this.required}"
-            .value="${this.value}"
-            @input="${this.handleInput}"
-        >
-            <slot></slot>
-        </wa-input>
+      <wa-input
+        style="${this.getAttribute('style') || ''}"
+        type="password"
+        label="${this.label}"
+        hint="${this.hint}"
+        placeholder="${this.placeholder}"
+        password-toggle
+        ?required="${this.required}"
+        .value="${this.value}"
+        @input="${this.handleInput}">
+        <slot></slot>
+      </wa-input>
     `;
   }
 }
