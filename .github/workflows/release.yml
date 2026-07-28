@@ -1,0 +1,76 @@
+name: Release Build and Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: 'Release branch (e.g., v1.1.7.5)'
+        required: true
+        default: 'v1.1.7.5'
+      release_version:
+        description: 'Release version (e.g., 1.43.5)'
+        required: true
+
+jobs:
+  release:
+    name: Release Build to ghcr.io
+    runs-on: ubuntu-latest
+    env:
+      REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.release_branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: 8
+          distribution: 'temurin'
+
+      - name: Clean Maven
+        run: mvn --no-transfer-progress clean
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build React app
+        run: npm run build
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Set release product name
+        run: echo "PRODUCT_NAME=HCL Labs Project KEEP ${{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+
+      - name: Check environment variables
+        run: echo version = ${{ github.event.inputs.release_version }}, product = $PRODUCT_NAME
+
+      - name: Set Mend Product name
+        run: echo "WS_PRODUCTNAME=${{ env.PRODUCT_NAME }}" >> $GITHUB_ENV
+
+      - name: Run Mend Scan (Release)
+        uses: TheAxZim/Whitesource-Scan-Action@v1.0.0
+        with:
+          wssURL: https://saas.whitesourcesoftware.com/agent
+          apiKey: ${{ secrets.WSS_API_KEY }}
+          configFile: 'admin-wss.config'
+
+      - name: Build Maven package
+        run: mvn --no-transfer-progress package -DskipTests
+
+      - name: Publish release to GitHub Packages
+        run: mvn --no-transfer-progress deploy -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
