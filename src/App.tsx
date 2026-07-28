@@ -9,8 +9,7 @@ import './App.css';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import LoginPage from './components/login/LoginPage';
-import Views from './Views';
-import HomeElement from './components/home/HomeElement';
+import AppShell from './AppShell';
 import { AppState } from './store';
 import {
   authenticate,
@@ -68,9 +67,9 @@ const App: React.FC = () => {
    * No <ThemeProvider>/<CssBaseline> here, deliberately (#743).
    *
    * They used to wrap this whole tree, but they were redundant everywhere except the login
-   * page: HomeElement mounts its own pair from the same `theme(authenticated, getTheme,
+   * page: AppShell mounts its own pair from the same `theme(authenticated, getTheme,
    * themeMode)` expression, and every authenticated route — including /callback, which
-   * renders through HomeElement — sits under that one. PageLoading is pure Linaria. Once
+   * renders through AppShell — sits under that one. PageLoading is pure Linaria. Once
    * LoginPage stopped importing MUI, this pair had no consumer left.
    *
    * The document baseline they provided is not lost: WebAwesome's `native.css` (imported
@@ -83,14 +82,14 @@ const App: React.FC = () => {
    * control on the page was already using) and `strong`/`b` 700 -> 600.
    *
    * This also drops App's `state.styles` subscription, so it no longer re-renders on a
-   * theme switch. HomeElement still has its own and still calls `applyTheme(themeMode)`.
+   * theme switch. AppShell still has its own and still calls `applyTheme(themeMode)`.
    *
-   * Report 03 §6 step 5; HomeElement's pair is the last one.
+   * Report 03 §6 step 5; AppShell's pair is the last one.
    */
   return valid ? (
     <Router basename="/admin/ui">
       <Routes>
-        <Route path='*' element={authenticated ? <HomeElement MainElement={Views} /> : <LoginPage />} />
+        <Route path='*' element={authenticated ? <AppShell /> : <LoginPage />} />
         <Route path='/callback' element={<CallbackPage/>}/>
       </Routes>
     </Router>

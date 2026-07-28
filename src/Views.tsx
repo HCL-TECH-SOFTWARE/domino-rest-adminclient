@@ -32,13 +32,30 @@ import { PrivateRoutes } from './components/routers/ProtectedRoute';
  *
  */
 
+/*
+ * The main region of `<wa-page>` (#707).
+ *
+ * The horizontal padding used to belong to the deleted `RightPanel`; it moves here because
+ * this is now the element that occupies the main column. Declaring it also overrides
+ * `wa-page`'s own `slot:not([name])::slotted(main) { padding: var(--wa-space-3xl) }`, which
+ * is 48px on every side and would push the page content down by that much.
+ *
+ * The height stays viewport-relative rather than `100%` because both bars it subtracts sit
+ * outside `wa-page`'s own grid rows: the 23px `.footer-container` is a fixed overlay, and
+ * `--header-height` is what `wa-page` measures its header region to be. Reading that
+ * variable replaces the hardcoded `56px` this rule used to guess — get it wrong by a pixel
+ * and the document gains a second scrollbar on top of this element's own.
+ */
 const ViewContainer = styled.main`
   position: relative;
-  height: calc(100vh - 23px);
+  height: calc(100vh - var(--header-height, 0px) - 23px);
   overflow-y: auto;
+  padding: 0 40px;
 
-  @media only screen and (max-width: 768px) {
-    height: calc(100vh - 56px);
+  @media only screen and (width < 768px) {
+    /* No footer overlay below the breakpoint — see .footer-container in styles.css. */
+    height: calc(100vh - var(--header-height, 0px));
+    padding: 0;
   }
 `;
 
