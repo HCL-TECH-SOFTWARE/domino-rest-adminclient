@@ -4,10 +4,15 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { css, html } from 'lit';
+import { css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
 import { adoptTableStyles } from './keep-data-table.styles';
+
+/** `event.detail` of the `rows-per-page-change` event. */
+export interface KeepDataTableRowsPerPageChangeDetail {
+  rowsPerPage: number;
+}
 
 /**
  * Chrome for a data table. Tag: `keep-data-table`.
@@ -26,6 +31,15 @@ import { adoptTableStyles } from './keep-data-table.styles';
  *
  * Row and cell styling lives in `keep-data-table.styles.ts`, not in `static styles` here.
  * See that file for why the shadow root cannot reach slotted descendants.
+ *
+ * Pagination is **controlled**. The element emits `page-change` and `rows-per-page-change`
+ * and never assigns to `page` or `rowsPerPage`. `@lit/react` re-applies every prop on every
+ * render with no dirty check — the same behaviour that makes passing `value` to a `Keep*`
+ * input clobber what the user typed — so an element that also wrote those props would fight
+ * React on each render. Being strictly controlled removes that failure mode by
+ * construction.
+ *
+ * @fires rows-per-page-change - `CustomEvent<KeepDataTableRowsPerPageChangeDetail>`
  */
 @customElement('keep-data-table')
 export default class DataTable extends KeepElement {
@@ -42,6 +56,27 @@ export default class DataTable extends KeepElement {
       border-radius: var(--wa-border-radius-l);
       box-sizing: border-box;
       overflow-x: auto;
+    }
+
+    .pagination {
+      align-items: center;
+      border-top: 1px solid var(--wa-color-surface-border);
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+      padding: 8px 16px;
+    }
+
+    .range {
+      font-size: var(--wa-font-size-s);
+    }
+
+    select {
+      background: var(--wa-color-surface-default);
+      border: 1px solid var(--wa-color-surface-border);
+      border-radius: var(--wa-border-radius-m);
+      color: var(--wa-color-text-normal);
+      padding: 4px 8px;
     }
   `;
 
@@ -61,15 +96,70 @@ export default class DataTable extends KeepElement {
    */
   @property({ type: Boolean, reflect: true, attribute: 'header-band' }) accessor headerBand = false;
 
+  /** Render the pagination footer. */
+  @property({ type: Boolean }) accessor paginated = false;
+
+  /** Total number of rows, across all pages. */
+  @property({ type: Number }) accessor count = 0;
+
+  /** Zero-based current page. Controlled — the element only ever emits `page-change`. */
+  @property({ type: Number }) accessor page = 0;
+
+  /** Rows per page; `-1` means "All". Controlled, as above. */
+  @property({ type: Number }) accessor rowsPerPage = 5;
+
+  /** Choices offered by the footer's select. `-1` renders as "All", matching MUI. */
+  @property({ type: Array }) accessor rowsPerPageOptions: number[] = [5, 10, 25, -1];
+
   connectedCallback(): void {
     super.connectedCallback();
     adoptTableStyles(this.ownerDocument);
+  }
+
+  /** `true` when every row is on one page. */
+  private get showsAllRows(): boolean {
+    return this.rowsPerPage <= 0;
+  }
+
+  /** Human range for the footer, matching MUI's "1–5 of 42". */
+  private get rangeLabel(): string {
+    if (this.count <= 0) return '0 of 0';
+    const start = this.showsAllRows ? 1 : this.page * this.rowsPerPage + 1;
+    const end = this.showsAllRows
+      ? this.count
+      : Math.min(this.count, start + this.rowsPerPage - 1);
+    return `${start}–${end} of ${this.count}`;
+  }
+
+  private onRowsPerPageChange(event: Event): void {
+    const value = Number.parseInt((event.target as HTMLSelectElement).value, 10);
+    // Deliberately does NOT assign to this.rowsPerPage — see the class docblock.
+    this.emit<KeepDataTableRowsPerPageChangeDetail>('rows-per-page-change', {
+      rowsPerPage: value,
+    });
+  }
+
+  private renderPagination() {
+    return html`
+      <div class="pagination">
+        <label>
+          Rows per page:
+          <select .value=${String(this.rowsPerPage)} @change=${this.onRowsPerPageChange}>
+            ${this.rowsPerPageOptions.map(
+              (option) => html`<option value=${option}>${option === -1 ? 'All' : option}</option>`,
+            )}
+          </select>
+        </label>
+        <span class="range">${this.rangeLabel}</span>
+      </div>
+    `;
   }
 
   render() {
     return html`
       <div class="container">
         <slot></slot>
+        ${this.paginated ? this.renderPagination() : nothing}
       </div>
     `;
   }

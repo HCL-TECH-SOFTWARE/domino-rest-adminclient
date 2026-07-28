@@ -114,3 +114,68 @@ describe('keep-data-table chrome', () => {
     expect(el.shadowRoot!.querySelector('.pagination')).toBeNull();
   });
 });
+
+const footer = (el: DataTable) => el.shadowRoot!.querySelector('.pagination')!;
+const rangeText = (el: DataTable) => el.shadowRoot!.querySelector('.range')!.textContent!.trim();
+const select = (el: DataTable) => el.shadowRoot!.querySelector('select') as HTMLSelectElement;
+
+describe('keep-data-table pagination footer', () => {
+  afterEach(cleanupLit);
+
+  it('renders the footer when paginated', async () => {
+    const el = await mountTable({ paginated: true, count: 42 });
+    expect(footer(el)).toBeTruthy();
+  });
+
+  it('shows the current range', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 0, rowsPerPage: 5 });
+    expect(rangeText(el)).toBe('1–5 of 42');
+  });
+
+  it('shows the range for a later page', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 2, rowsPerPage: 5 });
+    expect(rangeText(el)).toBe('11–15 of 42');
+  });
+
+  it('clamps the range end to the count on the last page', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 8, rowsPerPage: 5 });
+    expect(rangeText(el)).toBe('41–42 of 42');
+  });
+
+  it('shows the whole set when rowsPerPage is -1 (All)', async () => {
+    const el = await mountTable({ paginated: true, count: 42, page: 0, rowsPerPage: -1 });
+    expect(rangeText(el)).toBe('1–42 of 42');
+  });
+
+  it('reads 0 of 0 when there are no rows', async () => {
+    const el = await mountTable({ paginated: true, count: 0, rowsPerPage: 5 });
+    expect(rangeText(el)).toBe('0 of 0');
+  });
+
+  it('renders an option per rowsPerPageOptions entry, labelling -1 as All', async () => {
+    const el = await mountTable({ paginated: true, count: 42 });
+    const labels = Array.from(select(el).options).map((o) => o.textContent!.trim());
+    expect(labels).toEqual(['5', '10', '25', 'All']);
+  });
+
+  it('emits rows-per-page-change on selection', async () => {
+    const el = await mountTable({ paginated: true, count: 42, rowsPerPage: 5 });
+    let detail: { rowsPerPage: number } | undefined;
+    el.addEventListener('rows-per-page-change', (e) => {
+      detail = (e as CustomEvent<{ rowsPerPage: number }>).detail;
+    });
+    const control = select(el);
+    control.value = '25';
+    control.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(detail).toEqual({ rowsPerPage: 25 });
+  });
+
+  it('does not mutate rowsPerPage itself', async () => {
+    const el = await mountTable({ paginated: true, count: 42, rowsPerPage: 5 });
+    const control = select(el);
+    control.value = '25';
+    control.dispatchEvent(new Event('change', { bubbles: true }));
+    await el.updateComplete;
+    expect(el.rowsPerPage).toBe(5);
+  });
+});
