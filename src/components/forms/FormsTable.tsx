@@ -45,7 +45,7 @@ const StyledTableCell = styled(TableCell)`
 
 const StyledTableRow = styled(TableRow)`
   &:nth-of-type(odd) {
-    background-color: light-dark(#f8fbff, #1e1e2e);
+    background-color: var(--keep-surface-accent);
   }
 
   &:last-child th, &:last-child td {
@@ -130,7 +130,7 @@ const ActivateDialogContainer = styled.dialog`
 
   .title {
     font-size: var(--wa-font-size-xl);
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
     font-weight: 700;
   }
 
@@ -156,7 +156,7 @@ const ActivateDialogContainer = styled.dialog`
   }
 
   .button-cancel {
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
     font-weight: 700;
     font-size: var(--wa-font-size-m);
     border-radius: var(--wa-border-radius-l);

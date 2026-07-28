@@ -15,9 +15,9 @@ const ColumnBarContainer = styled.div`
   height: 901px;
   margin: 38px;
   
-  background: light-dark(#FFFFFF, #252535);
+  background: var(--wa-color-surface-raised);
   
-  border: 1px solid light-dark(#A5AFBE, #3a3a4a);
+  border: 1px solid var(--wa-color-surface-border);
   border-radius: var(--wa-border-radius-l);
 `
 
@@ -41,7 +41,7 @@ const AllColumnsList = styled.div`
     font-size: var(--wa-font-size-m);
     line-height: 17px;
 
-    color: light-dark(#636363, #999);
+    color: var(--wa-color-text-quiet);
   }
 `
 

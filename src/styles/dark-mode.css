@@ -157,25 +157,6 @@ body[data-theme="dark"] .option-container img {
   color: light-dark(inherit, #9e9e9e) !important;
 }
 
-/* ===== Shoelace Drawer ===== */
-wa-drawer::part(base),
-wa-drawer::part(panel),
-wa-drawer::part(body) {
-  background: light-dark(#fff, #1e1e2e);
-  color: light-dark(inherit, #e0e0e0);
-}
-
-wa-drawer::part(header),
-wa-drawer::part(title) {
-  background: light-dark(#fff, #1e1e2e);
-  color: light-dark(inherit, #e0e0e0);
-}
-
-wa-drawer::part(header-actions) {
-  background: light-dark(#fff, #1e1e2e);
-  color: light-dark(inherit, #e0e0e0);
-}
-
 /* ===== Inputs and Form Controls ===== */
 .MuiInputBase-root {
   color: light-dark(inherit, #e0e0e0) !important;
@@ -293,31 +274,6 @@ body[data-theme="dark"] .MuiSelect-icon path {
   color: light-dark(inherit, #e0e0e0) !important;
 }
 
-/* ===== Shoelace inputs ===== */
-wa-input::part(base) {
-  background-color: light-dark(#fff, #1e1e2e);
-  color: light-dark(inherit, #e0e0e0);
-  border-color: light-dark(#ccc, #3a3a4a);
-}
-
-wa-input::part(input) {
-  color: light-dark(inherit, #e0e0e0);
-}
-
-wa-select::part(combobox) {
-  background-color: light-dark(#fff, #1e1e2e);
-  color: light-dark(inherit, #e0e0e0);
-  border-color: light-dark(#ccc, #3a3a4a);
-}
-
-wa-tree {
-  color: light-dark(inherit, #e0e0e0);
-}
-
-wa-tree-item::part(base) {
-  color: light-dark(inherit, #e0e0e0);
-}
-
 /* ===== Scrollbar ===== */
 body[data-theme="dark"] ::-webkit-scrollbar-track {
   background: #1e1e2e;
@@ -344,40 +300,6 @@ button[style*="border: none"] {
 
 .text {
   color: light-dark(inherit, #e0e0e0) !important;
-}
-
-/* ===== Shoelace Cards ===== */
-wa-card::part(base) {
-  background: light-dark(#fff, #252535);
-  color: light-dark(inherit, #e0e0e0);
-  border-color: light-dark(#e0e0e0, #3a3a4a);
-}
-
-wa-card::part(body) {
-  background: light-dark(#fff, #252535);
-  color: light-dark(inherit, #e0e0e0);
-}
-
-keep-default-card {
-  color: light-dark(inherit, #e0e0e0);
-}
-
-/* ===== NSF Card ===== */
-keep-nsf-card {
-  color: light-dark(inherit, #e0e0e0);
-}
-
-/* ===== Source tab ===== */
-keep-source-header {
-  color: light-dark(inherit, #e0e0e0);
-}
-
-keep-source {
-  color: light-dark(inherit, #e0e0e0);
-}
-
-keep-schema-status {
-  color: light-dark(inherit, #e0e0e0);
 }
 
 /* ===== Access Mode Page ===== */

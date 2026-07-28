@@ -17,36 +17,35 @@
      favour of var(--wa-*) at the call site is #708. Custom properties resolve at
      computed-value time, so referencing a token defined in a later-imported
      sheet is fine. */
-  --text-color-primary: light-dark(#000, #e0e0e0);
+  --text-color-primary: var(--wa-color-text-normal);
   --text-color-secondary: #e0e0e0;
-  --text-color-danger: light-dark(#dc1434, #ff6b6b);
+  --text-color-danger: var(--keep-color-danger-text);
   --text-color-disabled: light-dark(#6c6c6c, #8d8d8d);
   --text-secondary: #e0e0e0;
   --border-color: light-dark(#3a3a4a, #6c7882);
   --button-primary-color: var(--wa-color-brand-60);
   --button-secondary-color: #9e9e9e;
-  --body-color: light-dark(#fff, #181825);
+  --body-color: var(--wa-color-surface-lowered);
   --hover-color: var(--wa-color-brand-60);
   --button-hover-color: var(--wa-color-brand-50);
   --dialog-header-color: light-dark(var(--wa-color-brand-20), var(--wa-color-brand-60));
   --dialog-title-color: #e0e0e0;
   --badge-color-background: light-dark(var(--wa-color-brand-20), var(--wa-color-brand-60));
-  /* --base-color serves two opposite roles: a text colour (.color-base) and a
-     surface colour (.background-keep-base / .app-form-header, which put #fff on
-     it at 24px — WCAG "large text", so the 3.0 threshold applies). The two roles
-     pull in opposite directions, which is why no single step is ideal; splitting
-     it into a text token and a surface token is #708.
-     Dark uses -60 rather than the lighter -70 because -70 measures 2.22:1 against
-     white and -60 measures 3.21:1 — the previous literal #b38df9 was 2.59:1, i.e.
-     already failing AA-large, so -60 fixes a pre-existing contrast bug rather than
-     introducing one. Light: #5f1ebe 8.69:1 -> -40 6.36:1, comfortably AA. */
-  --base-color: light-dark(var(--wa-color-brand-40), var(--wa-color-brand-60));
+  /* --base-color served two opposite roles at once — a text colour (.color-base)
+     and a surface fill carrying 24px white text (.background-keep-base and the
+     three *-header rules). #765 split them into --keep-text-brand and
+     --keep-surface-brand in keep-theme.css, which is where the contrast table now
+     lives. Both resolve to what --base-color already did, so nothing moved; they
+     can simply be tuned apart now.
+     This alias stays so any stylesheet or markup still saying --base-color keeps
+     working, and points at the surface half — every remaining consumer is a fill. */
+  --base-color: var(--keep-surface-brand);
   --badge-color: #fff;
-  --icon-color: light-dark(#000, #fff);
+  --icon-color: var(--wa-color-text-loud);
   --hint-text-color: light-dark(#808080, #a9a9a9);
   --active-indicator-color: light-dark(#0fa068, #52c999);
   --inactive-indicator-color: light-dark(#8291a0, #707e8a);
-  --copyright-color: light-dark(#666, #999);
+  --copyright-color: var(--wa-color-text-quiet);
 }
 
 /* Generic */
@@ -140,7 +139,7 @@
 }
 
 .color-base {
-    color: var(--base-color);
+    color: var(--keep-text-brand);
 }
 
 .color-copyright {
@@ -168,7 +167,7 @@
 }
 
 .background-keep-base {
-    background: var(--base-color);
+    background: var(--keep-surface-brand);
 }
 
 body[data-theme="dark"] .color-text-primary {
@@ -196,8 +195,8 @@ body[data-theme="dark"] .color-text-disabled {
     border-radius: 10px;
     width: 30%;
     height: fit-content;
-    background: light-dark(#FFF, #252535);
-    color: light-dark(#000, #e0e0e0);
+    background: var(--wa-color-surface-raised);
+    color: var(--wa-color-text-normal);
     flex-direction: column;
     gap: 30px;
 }
@@ -695,7 +694,7 @@ body[data-theme="dark"] .color-text-disabled {
 }
 
 .search-input {
-    background: light-dark(#fff, #252535);
+    background: var(--wa-color-surface-raised);
 }
 
 .header-text {
@@ -729,7 +728,7 @@ body[data-theme="dark"] .color-text-disabled {
 .short-vertical {
     height: 31px;
     width: 1px;
-    background-color: light-dark(#000, #fff);
+    background-color: var(--wa-color-text-loud);
 }
 
 .hidden {
@@ -742,7 +741,7 @@ body[data-theme="dark"] .color-text-disabled {
 
 .icon-select {
     text-transform: capitalize;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
 }
 
 .rounded-16 {
@@ -787,8 +786,8 @@ body[data-theme="dark"] .color-text-disabled {
 /* FieldContainer.tsx */
 .config-field-container {
     border-radius: 5px;
-    border: 1px solid light-dark(#bfbfbf, #3a3a4a);
-    background: light-dark(#FFF, #1e1e2e);
+    border: 1px solid var(--wa-color-surface-border);
+    background: var(--wa-color-surface-default);
     padding: 0 0 15px 0;
     width: 100%;
 }
@@ -808,13 +807,13 @@ body[data-theme="dark"] .color-text-disabled {
 .field-item-name {
     font-size: 16px;
     font-weight: 500;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
 }
 
 .field-setting-text {
     font-size: 14px;
     font-weight: 700;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
     width: 100%;
     padding: 0 20px;
 }
@@ -862,7 +861,7 @@ body[data-theme="dark"] .color-text-disabled {
 .batch-delete-cancel-button {
     text-transform: none;
     font-weight: 400;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
     text-overflow: ellipsis;
 }
 
@@ -877,8 +876,8 @@ body[data-theme="dark"] .color-text-disabled {
 
 .selected-fields-container {
     border-radius: 5px;
-    border: 1px solid light-dark(#A5AFBE, #3a3a4a);
-    background: light-dark(#FFF, #1e1e2e);
+    border: 1px solid var(--wa-color-surface-border);
+    background: var(--wa-color-surface-default);
 }
 
 .field-batch-delete-container {
@@ -898,7 +897,7 @@ body[data-theme="dark"] .color-text-disabled {
 .please-add-fields-text {
     font-weight: 400;
     padding: 20px;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
 }
 
 body[data-theme="dark"] .field-batch-delete-text {
@@ -930,7 +929,7 @@ body[data-theme="dark"] .field-batch-delete-text {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
 }
 
 .field-list-field-metadata {
@@ -941,15 +940,15 @@ body[data-theme="dark"] .field-batch-delete-text {
 
 .field-config-field-container {
     border-radius: 5px;
-    border: 1px solid light-dark(#bfbfbf, #3a3a4a);
-    background: light-dark(#fff, #1e1e2e);
+    border: 1px solid var(--wa-color-surface-border);
+    background: var(--wa-color-surface-default);
     height: 45%;
 }
 
 .field-config-field-setting {
     font-size: 16px;
     font-weight: 700;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
     width: 100%;
     padding: 10px 20px 0 20px;
     height: 15%;
@@ -972,7 +971,7 @@ body[data-theme="dark"] .field-batch-delete-text {
     background: none;
     user-select: none;
     cursor: pointer;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
 }
 
 /* Fields.tsx */
@@ -1091,7 +1090,7 @@ body[data-theme="dark"] .field-batch-delete-text {
     border-radius: 10px;
     width: 50%;
     margin-left: 25%;
-    background: light-dark(#fff, #252535);
+    background: var(--wa-color-surface-raised);
 }
 
 /* AddModeDialog.tsx */
@@ -1100,8 +1099,8 @@ body[data-theme="dark"] .field-batch-delete-text {
     border-radius: 10px;
     width: 30%;
     height: fit-content;
-    background: light-dark(#FFF, #252535);
-    color: light-dark(#000, #e0e0e0);
+    background: var(--wa-color-surface-raised);
+    color: var(--wa-color-text-normal);
     flex-direction: column;
     gap: 30px;
 }
@@ -1196,7 +1195,7 @@ body[data-theme="dark"] .field-batch-delete-text {
     padding: 0 35px;
     flex-direction: column;
     gap: 30px;
-    background: light-dark(#FFF, #252535);
+    background: var(--wa-color-surface-raised);
 }
 
 .add-import-dialog-container[open] {
@@ -1210,7 +1209,7 @@ body[data-theme="dark"] .field-batch-delete-text {
     display: flex;
     gap: 23px;
     align-items: center;
-    background-color: light-dark(#FFF, #1e1e2e);
+    background-color: var(--wa-color-surface-default);
     margin-bottom: 30px;
 
     &:hover {
@@ -1242,7 +1241,7 @@ body[data-theme="dark"] .field-batch-delete-text {
 }
 
 .add-import-svg-icon {
-    color: light-dark(#000, #fff);
+    color: var(--wa-color-text-loud);
     width: 39px;
     height: 39px;
     background-color: light-dark(white, transparent);
@@ -1269,7 +1268,7 @@ body[data-theme="dark"] .add-import-svg-icon {
 
 .add-import-back-button {
     font-size: 14px;
-    background: light-dark(#FFF, #252535);
+    background: var(--wa-color-surface-raised);
     justify-content: flex-start;
     gap: 5px;
     color: var(--text-color-primary);
@@ -1508,7 +1507,7 @@ body[data-theme="dark"] .add-import-svg-icon {
 }
 
 .edit-view-reset {
-    background: light-dark(#fff, #252535);
+    background: var(--wa-color-surface-raised);
 
     &:hover {
         background: light-dark(#f5f5f5, #353548);
@@ -1543,7 +1542,7 @@ body[data-theme="dark"] .add-import-svg-icon {
     overflow-y: auto;
     overflow-x: auto;
     background: transparent;
-    border: 1px solid light-dark(#a5afbe, #3a3a4a);
+    border: 1px solid var(--wa-color-surface-border);
     border-radius: 10px;
 }
 
@@ -1555,7 +1554,7 @@ body[data-theme="dark"] .add-import-svg-icon {
     padding-left: 6%;
     line-height: 6;
     vertical-align: middle;
-    color: light-dark(#5e1ebe, #8b6ce0);
+    color: var(--keep-text-brand);
     cursor: pointer;
     justify-content: flex-end;
 }
@@ -1567,7 +1566,7 @@ body[data-theme="dark"] .add-import-svg-icon {
 }
 
 .add-all-text {
-    color: light-dark(#5e1ebe, #8b6ce0);
+    color: var(--keep-text-brand);
 }
 
 .all-columns-list {
@@ -1601,7 +1600,7 @@ body[data-theme="dark"] .add-import-svg-icon {
     display: block;
     white-space: pre-wrap;
     line-height: 17px;
-    color: light-dark(#636363, #999);
+    color: var(--wa-color-text-quiet);
 }
 
 .all-columns-icon {
@@ -1656,10 +1655,10 @@ body[data-theme="dark"] .add-import-svg-icon {
     flex-direction: column;
     overflow-y: auto;
     border-radius: 5px;
-    border: 1px solid light-dark(#BFBFBF, #3a3a4a);
+    border: 1px solid var(--wa-color-surface-border);
     padding: 5px 20px;
     gap: 16px;
-    background-color: light-dark(#FFF, #1e1e2e);
+    background-color: var(--wa-color-surface-default);
 }
 
 .script-editor-settings-header {
@@ -1688,14 +1687,14 @@ body[data-theme="dark"] .add-import-svg-icon {
 }
 
 .script-editor-access-container {
-    border: 1px solid light-dark(#a5afbe, #3a3a4a);
+    border: 1px solid var(--wa-color-surface-border);
     border-radius: 10px;
     width: 45%;
 }
 
 .script-editor-edit-dialog {
     border-radius: 10px;
-    background: light-dark(#FFF, #252535);
+    background: var(--wa-color-surface-raised);
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
     border: none;
     width: 50%;
@@ -1758,7 +1757,7 @@ body[data-theme="dark"] .add-import-svg-icon {
     font-size: 18px;
     padding: 10px;
     border-radius: 5px;
-    background: var(--base-color);
+    background: var(--keep-surface-brand);
 }
 
 .scope-form-header {
@@ -1766,7 +1765,7 @@ body[data-theme="dark"] .add-import-svg-icon {
     font-size: 24px;
     padding: 20px;
     border-radius: 5px;
-    background: var(--base-color);
+    background: var(--keep-surface-brand);
     width: 100%;
 }
 
@@ -1823,7 +1822,7 @@ body[data-theme="dark"] .add-import-svg-icon {
 .icon-dropdown-span {
     text-transform: capitalize;
     padding-left: 11px;
-    color: light-dark(#000, #e0e0e0);
+    color: var(--wa-color-text-normal);
 }
 
 .icon-dropdown-image {
@@ -1947,45 +1946,15 @@ body[data-theme="dark"] .add-import-svg-icon {
     z-index: 9999;
 }
 
-body[data-theme='dark'] wa-button[appearance="outlined"]::part(label),
-body[data-theme='dark'] keep-button[appearance="outlined"]::part(label) {
-    color: #7e57c2 !important;
-}
-
-body[data-theme='dark'] wa-button[appearance="accent"]::part(label),
-body[data-theme='dark'] keep-button[appearance="accent"]::part(label) {
-    color: #7e57c2 !important;
-}
-
 .login-keep-button {
     --keep-button-display: block;
     --keep-button-width: 100%;
-}
-
-body[data-theme='dark'] .login-keep-button {
-    --wa-color-brand-80: #7e57c2;
-    --wa-color-brand-50: #7e57c2;
-    --wa-color-brand-border-loud: #7e57c2;
-    --wa-color-brand-fill-loud: #7e57c2;
-    color: #7e57c2;
-    border-color: #7e57c2;
 }
 
 .login-submit-button {
     --keep-button-display: block;
     --keep-button-width: 100%;
     margin-top: 30px;
-}
-
-body[data-theme='dark'] .login-submit-button {
-    --wa-color-brand-80: #7e57c2;
-    --wa-color-brand-50: #7e57c2;
-    --wa-color-brand-border-loud: #7e57c2;
-    --wa-color-brand-fill-loud: #7e57c2;
-    --wa-color-brand: #7e57c2;
-    --wa-color-brand-on: #7e57c2;
-    color: #7e57c2;
-    border-color: #7e57c2;
 }
 
 .login-page-signup-text {

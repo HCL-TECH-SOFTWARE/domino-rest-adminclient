@@ -282,32 +282,32 @@ export default class SourceTree extends KeepElement {
 
     /* user invalid styles */
     .input-validation-pattern wa-input:state(user-invalid)::part(base) {
-      border-color: var(--wa-color-danger-600);
+      border-color: var(--wa-color-danger-fill-loud);
     }
 
     .input-validation-pattern :state(user-invalid)::part(form-control-label),
     .input-validation-pattern :state(user-invalid)::part(form-control-help-text) {
-      color: var(--wa-color-danger-700);
+      color: var(--keep-color-danger-text);
     }
 
     .input-validation-pattern wa-input:focus-within:state(user-invalid)::part(base) {
-      border-color: var(--wa-color-danger-600);
-      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
+      border-color: var(--wa-color-danger-fill-loud);
+      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-fill-quiet);
     }
 
     /* User valid styles */
     .input-validation-pattern wa-input:state(user-valid)::part(base) {
-      border-color: var(--wa-color-success-600);
+      border-color: var(--wa-color-success-fill-loud);
     }
 
     .input-validation-pattern :state(user-valid)::part(form-control-label),
     .input-validation-pattern :state(user-valid)::part(form-control-help-text) {
-      color: var(--wa-color-success-700);
+      color: var(--keep-color-success-text);
     }
 
     .input-validation-pattern wa-input:focus-within:state(user-valid)::part(base) {
-      border-color: var(--wa-color-success-600);
-      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-success-300);
+      border-color: var(--wa-color-success-fill-loud);
+      box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-success-fill-quiet);
     }
 
     wa-select {

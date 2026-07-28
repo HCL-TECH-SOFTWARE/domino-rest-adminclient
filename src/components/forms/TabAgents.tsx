@@ -52,7 +52,7 @@ import FormDialogHeader from '../dialogs/FormDialogHeader';
   }
 
   .disabled {
-    color: light-dark(#5d6160, #6c6c80);
+    color: var(--wa-color-text-quiet);
   }
 
   .vertical {

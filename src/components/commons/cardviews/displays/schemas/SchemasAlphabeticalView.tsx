@@ -41,7 +41,7 @@ const AlphabeticalViewContainer = styled.div`
   .each-letter {
     padding: 0 10px;
     font-size: 20px;
-    color: light-dark(#000000, #e0e0e0);
+    color: var(--wa-color-text-normal);
     cursor: pointer;
   }
 
@@ -83,8 +83,8 @@ const BlockContainer = styled.div`
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background-color: light-dark(#E6EBF5, #3a3a5a);
-    color: light-dark(#000, #e0e0e0);
+    background-color: var(--keep-surface-highlight);
+    color: var(--wa-color-text-normal);
   }
 
   .schemas {

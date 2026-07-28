@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { styled } from '@linaria/react';
-import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
 import { Box, Dialog } from '@mui/material';
 
 export const CommonDialog = styled(Dialog)`
@@ -63,8 +62,8 @@ export const DialogContainer = styled(Box)`
   vertical-align: middle;
   width: 100%;
   height: 100%;
-  background-color: light-dark(#FFF, #252535);
-  color: light-dark(inherit, #e0e0e0);
+  background-color: var(--wa-color-surface-raised);
+  color: var(--wa-color-text-normal);
 
   .title {
     display: flex;
@@ -151,7 +150,7 @@ export const FormContentContainer = styled.div`
   .button-style {
     height: 10%;
     width: 25%;
-    background-color: ${KEEP_ADMIN_BASE_COLOR};
+    background-color: var(--wa-color-brand-50);
     float: right;
     color: white;
     margin-left: 20px;
@@ -161,7 +160,7 @@ export const FormContentContainer = styled.div`
     height: auto;
     width: 20px !important;
     max-width: 20px !important;
-    background-color: ${KEEP_ADMIN_BASE_COLOR};
+    background-color: var(--wa-color-brand-50);
     color: white;
     padding: 0;
     border-radius: var(--wa-border-radius-s);
@@ -175,7 +174,7 @@ export const FormContentContainer = styled.div`
     font-size: var(--wa-font-size-s);
     height: 9%;
     margin: 15px 3px 5px 3px;
-    background-color: ${KEEP_ADMIN_BASE_COLOR};
+    background-color: var(--wa-color-brand-50);
     color: white;
   }
   .bold-text {
@@ -213,7 +212,7 @@ export const DrawerContainer = styled.div`
   }
 
   .header-title {
-    background-color: ${KEEP_ADMIN_BASE_COLOR};
+    background-color: var(--wa-color-brand-50);
     margin: 30px 0 10px 0;
     font-size: 20px;
     padding: 10px;

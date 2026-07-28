@@ -21,7 +21,7 @@ const ToggleContainer = styled.div`
     position: relative;
     width: 137px;
     height: 34px;
-    background-color: light-dark(#e6ebf5, #3a3a5a);
+    background-color: var(--keep-surface-highlight);
     cursor: pointer;
     user-select: none;
     border-radius: var(--wa-border-radius-m);
@@ -65,7 +65,7 @@ const ToggleContainer = styled.div`
     left: 70px;
     top: 5px;
     position: absolute;
-    color: light-dark(#6c7882, #999);
+    color: var(--wa-color-text-quiet);
     display: flex;
     justify-content: center;
     align-items: center;

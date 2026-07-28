@@ -119,7 +119,7 @@ const PasskeySignUpContainer = styled.div`
     padding-left: 5px;
     transform: translateY(18%);
     cursor: pointer;
-    color: light-dark(inherit, #999);
+    color: var(--wa-color-text-quiet);
   }
 
   .passkey-icon:hover {
@@ -199,12 +199,12 @@ const ThemeToggleSlot = styled.div`
  * Dropping `Paper` also changes which rule paints the panel. Three used to compete for it:
  *
  *   theme.ts       MuiPaper.styleOverrides.root.backgroundColor  'white'   (Emotion, no !important)
- *   dark-mode.css  .MuiPaper-root { background-color: light-dark(#fff, #252535) !important }
+ *   dark-mode.css  .MuiPaper-root { background-color: var(--wa-color-surface-raised) !important }
  *   styles.css     .login-page-grid { background-color: var(--body-color) }
  *
  * `!important` wins, so the panel was `#fff` in light mode and `#252535` in dark. Without
  * the `MuiPaper-root` class only `.login-page-grid` applies, i.e. `--body-color`, which is
- * `light-dark(#fff, #181825)`. Light mode is therefore unchanged and dark mode is slightly
+ * `var(--wa-color-surface-lowered)`. Light mode is therefore unchanged and dark mode is slightly
  * darker, now following the app's own token instead of an MUI-scoped override.
  */
 const FormPanel = styled.div`
@@ -224,7 +224,7 @@ const CastlePanel = styled.div`
 /* Positioning lives on ThemeToggleSlot; this is just the round button. */
 const LoginThemeToggle = styled.button`
   background: light-dark(rgba(255,255,255,0.7), rgba(30,30,46,0.7));
-  border: 1px solid light-dark(#ccc, #555);
+  border: 1px solid var(--wa-color-surface-border);
   border-radius: 50%;
   width: 37px;
   height: 37px;
@@ -233,7 +233,7 @@ const LoginThemeToggle = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--wa-color-text-normal);
   
   &:hover {
     background: light-dark(rgba(255,255,255,0.9), rgba(50,50,70,0.9));
