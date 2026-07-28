@@ -240,9 +240,7 @@ export function logout() {
 // Admin UI pages initially on
 const pageList: PageListObj = {
   apps: true,
-  databases: true,
-  groups: true,
-  users: true
+  databases: true
 };
 
 /**
@@ -274,12 +272,6 @@ export function showPages() {
       }
       if (data.databases != null) {
         pageList.databases = data.databases;
-      }
-      if (data.groups != null) {
-        pageList.groups = data.groups;
-      }
-      if (data.users != null) {
-        pageList.users = data.users;
       }
 
       // Save page state
