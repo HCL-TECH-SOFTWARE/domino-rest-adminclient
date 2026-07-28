@@ -15,9 +15,7 @@ import DialogHeader from './keep-dialog-header';
 import DialogContent from './keep-dialog-content';
 import DialogActions from './keep-dialog-actions';
 import Button from './keep-button';
-import InputText from './keep-input-text';
 import InputDate from './keep-input-date';
-import InputPassword from './keep-input-password';
 import Dropdown from './keep-dropdown';
 import AppStatus from './keep-app-status';
 import ApiErrorDialog from './keep-api-error-dialog';
@@ -63,7 +61,6 @@ export const KeepTextformArray = createComponent({
 
 
 
-
 export const KeepDialogContent = createComponent({
   tagName: 'keep-dialog-content',
   elementClass: DialogContent,
@@ -88,23 +85,11 @@ export const KeepButton = createComponent({
   react: React
 });
 
-export const KeepInputText = createComponent({
-  tagName: 'keep-input-text',
-  elementClass: InputText,
-  react: React
-});
-
 export const KeepInputDate = createComponent({
   tagName: 'keep-input-date',
   elementClass: InputDate,
   react: React,
   events: { onDateChange: 'date-change' },
-});
-
-export const KeepInputPassword = createComponent({
-  tagName: 'keep-input-password',
-  elementClass: InputPassword,
-  react: React
 });
 
 export const KeepDropdown = createComponent({

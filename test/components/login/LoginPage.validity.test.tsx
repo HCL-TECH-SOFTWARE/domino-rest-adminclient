@@ -23,9 +23,8 @@ import { renderWithProviders } from '../../test-utils/renderWithProviders';
  * `setAttribute('data-user-invalid', username.length === 0)`, which put the attribute on
  * the element whatever the value — `"false"` included — because `[attr]` matches presence.
  *
- * These tests drive the real elements and assert WebAwesome's own custom states, which is
- * what the `:state(user-invalid)` styling keys on. jsdom does not implement the `:state()`
- * selector, so they check the state is set, not that a rule matched.
+ * The marking is now `aria-invalid`, set from the page's own state (#743). These assert
+ * the attribute rather than a rule matching: jsdom has no layout or cascade to check.
  */
 
 // `getIdpList` / `getKeepIdpActive` fetch on mount. Stub them so the page settles into
@@ -38,19 +37,36 @@ vi.mock('../../../src/store/account/action', async (importOriginal) => ({
 
 const ACCOUNT = { error: false, error401: false, idpLogin: false, errorMessage: '' };
 
-/** The inner `wa-input` of a `keep-input-*` wrapper, found by the id the page gives it. */
+/**
+ * The `wa-input` the page gives this id.
+ *
+ * It used to be one shadow root further down, inside a `keep-input-text` wrapper whose
+ * only job was to render it. The wrapper is gone (#743) and the page renders `wa-input`
+ * directly, so the id is on the control itself.
+ */
 const waInput = (id: string) => {
-  const host = document.getElementById(id);
-  expect(host, `no keep-input element with id="${id}"`).not.toBeNull();
-  return host!.shadowRoot!.querySelector('wa-input')!;
+  const host = document.getElementById(id) as HTMLElementTagNameMap['wa-input'] | null;
+  expect(host, `no wa-input with id="${id}"`).not.toBeNull();
+  return host!;
 };
 
-/** Type into a field the way a user does, so WebAwesome updates its own value. */
-const type = (id: string, value: string) => {
-  const input = waInput(id);
-  const native = input.shadowRoot!.querySelector('input')!;
-  native.value = value;
-  native.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+/** Whether the page has marked this field as failing. */
+const isInvalid = (id: string) => waInput(id).getAttribute('aria-invalid') === 'true';
+
+/**
+ * Type the way a user does, so WebAwesome updates its value and React sees the input.
+ *
+ * `act` because the fields are controlled now: the input event sets React state, and the
+ * click handler asserted against afterwards closes over it. Without flushing, the handler
+ * still holds the values from the render before this call.
+ */
+const type = async (id: string, value: string) => {
+  await act(async () => {
+    const native = waInput(id).shadowRoot!.querySelector('input')!;
+    native.value = value;
+    native.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    native.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+  });
 };
 
 /**
@@ -95,22 +111,22 @@ describe('LoginPage validity marking (#742)', () => {
 
   it('marks the password field — not the username — when only the password is blank', async () => {
     await renderPage();
-    type('form-username', 'someone');
+    await type('form-username', 'someone');
 
     await clickLogIn();
 
-    expect(waInput('section-password').customStates.has('user-invalid')).toBe(true);
-    expect(waInput('form-username').customStates.has('user-invalid')).toBe(false);
+    expect(isInvalid('section-password')).toBe(true);
+    expect(isInvalid('form-username')).toBe(false);
   });
 
   it('marks the username field when only the username is blank', async () => {
     await renderPage();
-    type('section-password', 'a-password');
+    await type('section-password', 'a-password');
 
     await clickLogIn();
 
-    expect(waInput('form-username').customStates.has('user-invalid')).toBe(true);
-    expect(waInput('section-password').customStates.has('user-invalid')).toBe(false);
+    expect(isInvalid('form-username')).toBe(true);
+    expect(isInvalid('section-password')).toBe(false);
   });
 
   it('marks both fields when both are blank', async () => {
@@ -118,21 +134,21 @@ describe('LoginPage validity marking (#742)', () => {
 
     await clickLogIn();
 
-    expect(waInput('form-username').customStates.has('user-invalid')).toBe(true);
-    expect(waInput('section-password').customStates.has('user-invalid')).toBe(true);
+    expect(isInvalid('form-username')).toBe(true);
+    expect(isInvalid('section-password')).toBe(true);
   });
 
   it('marks neither field when both are filled', async () => {
     // The false-positive half of the bug: `setAttribute(name, false)` still added the
     // attribute, so a valid field rendered as invalid.
     await renderPage();
-    type('form-username', 'someone');
-    type('section-password', 'a-password');
+    await type('form-username', 'someone');
+    await type('section-password', 'a-password');
 
     await clickLogIn();
 
-    expect(waInput('form-username').customStates.has('user-invalid')).toBe(false);
-    expect(waInput('section-password').customStates.has('user-invalid')).toBe(false);
+    expect(isInvalid('form-username')).toBe(false);
+    expect(isInvalid('section-password')).toBe(false);
   });
 
   it('sets no data-user-invalid attribute on either field', async () => {

@@ -70,21 +70,36 @@ const IDP = {
   adminui_config: { client_id: 'admin-ui' },
 };
 
-/** The `keep-input-*` wrapper the page gives this id, or `null` when the mode hides it. */
-const field = (id: string) => document.getElementById(id) as (HTMLElement & {
-  value: string;
-  reportUserValidity(): boolean;
-}) | null;
+/**
+ * The `wa-input` the page gives this id, or `null` when the mode does not render it.
+ *
+ * It used to be a `keep-input-text` / `keep-input-password` wrapper with the control one
+ * shadow root further down. Those elements existed only to render a `wa-input` and pass
+ * four properties through to it, so they are gone and the page uses `wa-input` directly
+ * (#743).
+ */
+const field = (id: string) => document.getElementById(id) as HTMLElementTagNameMap['wa-input'] | null;
 
-/** The inner control. Only for driving input and reading WebAwesome's own state. */
-const waInput = (id: string) => field(id)!.shadowRoot!.querySelector('wa-input')!;
+/** Alias kept for the assertions that read the control itself. */
+const waInput = (id: string) => field(id)!;
 
-/** Type the way a user does, so WebAwesome updates its value and the element syncs. */
-const type = (id: string, value: string) => {
-  const native = waInput(id).shadowRoot!.querySelector('input')!;
-  native.value = value;
-  native.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-  native.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+/** Whether the page has marked this field as failing. */
+const isInvalid = (id: string) => field(id)?.getAttribute('aria-invalid') === 'true';
+
+/**
+ * Type the way a user does, so WebAwesome updates its value and React sees the input.
+ *
+ * `act` because the fields are controlled now: the input event sets React state, and the
+ * click handler asserted against afterwards closes over it. Without flushing, the handler
+ * still holds the values from the render before this call.
+ */
+const type = async (id: string, value: string) => {
+  await act(async () => {
+    const native = waInput(id).shadowRoot!.querySelector('input')!;
+    native.value = value;
+    native.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    native.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+  });
 };
 
 const click = async (text: string) => {
@@ -196,8 +211,8 @@ describe('LoginPage form (#743 part 2)', () => {
   describe('password login', () => {
     it('dispatches login with what the user typed', async () => {
       await renderPage();
-      type('form-username', 'someone');
-      type('section-password', 'a-password');
+      await type('form-username', 'someone');
+      await type('section-password', 'a-password');
 
       await click('LOG IN');
 
@@ -211,8 +226,8 @@ describe('LoginPage form (#743 part 2)', () => {
       // The success callback the thunk invokes. It also navigates, which MemoryRouter
       // absorbs.
       await renderPage();
-      type('form-username', 'someone');
-      type('section-password', 'a-password');
+      await type('form-username', 'someone');
+      await type('section-password', 'a-password');
       await click('LOG IN');
 
       const onSuccess = vi.mocked(login).mock.calls[0][1];
@@ -223,7 +238,7 @@ describe('LoginPage form (#743 part 2)', () => {
 
     it('does not dispatch login when the password is blank', async () => {
       await renderPage();
-      type('form-username', 'someone');
+      await type('form-username', 'someone');
 
       await click('LOG IN');
 
@@ -241,7 +256,7 @@ describe('LoginPage form (#743 part 2)', () => {
     it('authenticates with the username alone', async () => {
       const { restore } = await secureRender();
       try {
-        type('form-username', 'someone');
+        await type('form-username', 'someone');
         await click('LOG IN WITH PASSKEY');
         await click('LOG IN');
 
@@ -270,7 +285,7 @@ describe('LoginPage form (#743 part 2)', () => {
       // goes through the element's property instead.
       const { restore } = await secureRender();
       try {
-        type('form-username', 'someone');
+        await type('form-username', 'someone');
         await click('LOG IN WITH PASSKEY');
         expect(field('form-username')!.value).toBe('someone');
       } finally {
@@ -343,46 +358,51 @@ describe('LoginPage form (#743 part 2)', () => {
 
   describe('rejected credentials', () => {
     /**
-     * `error401` is true on the *first* render here, which is the case that used to be
-     * dropped silently: `App` dispatches `renewToken()` on mount and a 401 from it lands
-     * in the same commit, but a Lit element renders its shadow DOM in a microtask after
-     * React's effects. Marking now awaits the elements' `updateComplete`, so these flush
-     * one more turn before asserting.
+     * `error401` is true on the *first* render here, which is the case both previous
+     * versions dropped silently: `App` dispatches `renewToken()` on mount and a 401 from it
+     * lands in the same commit, but each wrote to a `wa-input` that the wrapper element had
+     * not rendered yet. The marking is state now, so there is nothing to wait for — which
+     * is the point of this being the mount case.
      */
-    const renderRejected = async (state: Record<string, unknown> = {}) => {
-      const result = await renderPage({ error401: true, ...state });
-      await act(async () => {});
-      return result;
-    };
+    const renderRejected = (state: Record<string, unknown> = {}) =>
+      renderPage({ error401: true, ...state });
 
     it('marks both fields when the server returns 401', async () => {
-      // Neither field breaks a constraint on its own — the server rejected the pair — so
-      // this runs through setCustomValidity rather than `required`.
+      // Neither field is empty-invalid — the server rejected the *pair* — so this is the
+      // page's own error, not a `required` violation.
       await renderRejected();
-      type('form-username', 'someone');
-      type('section-password', 'wrong');
 
-      expect(waInput('form-username').customStates.has('user-invalid')).toBe(true);
-      expect(waInput('section-password').customStates.has('user-invalid')).toBe(true);
-      expect(waInput('form-username').validationMessage).toBe('Incorrect username or password');
-      expect(waInput('section-password').validationMessage).toBe('Incorrect username or password');
+      expect(isInvalid('form-username')).toBe(true);
+      expect(isInvalid('section-password')).toBe(true);
+      // The message rides in `hint`, which wa-input points aria-describedby at, so it is
+      // announced rather than only coloured.
+      expect(waInput('form-username').hint).toBe('Incorrect username or password');
+      expect(waInput('section-password').hint).toBe('Incorrect username or password');
+    });
+
+    it('clears the rejection as soon as a field is edited', async () => {
+      await renderRejected();
+      await type('form-username', 'someone');
+
+      expect(isInvalid('form-username')).toBe(false);
+      expect(isInvalid('section-password')).toBe(false);
     });
 
     it('leaves the fields alone when the 401 came from an IdP login', async () => {
       await renderRejected({ idpLogin: true });
-      expect(waInput('form-username').customStates.has('user-invalid')).toBe(false);
+      expect(isInvalid('form-username')).toBe(false);
     });
 
     it('clears the rejection on the next attempt', async () => {
       // Otherwise one bad password leaves both fields red for the rest of the session.
       await renderRejected();
-      type('form-username', 'someone');
-      type('section-password', 'right-this-time');
+      await type('form-username', 'someone');
+      await type('section-password', 'right-this-time');
 
       await click('LOG IN');
 
-      expect(waInput('form-username').customStates.has('user-invalid')).toBe(false);
-      expect(waInput('section-password').customStates.has('user-invalid')).toBe(false);
+      expect(isInvalid('form-username')).toBe(false);
+      expect(isInvalid('section-password')).toBe(false);
       expect(login).toHaveBeenCalledOnce();
     });
   });
@@ -415,7 +435,7 @@ describe('LoginPage form (#743 part 2)', () => {
       await renderPage({ error: true, errorMessage: 'nope' });
       vi.mocked(setLoginError).mockClear();
 
-      type('section-password', 'a-password');
+      await type('section-password', 'a-password');
 
       expect(setLoginError).toHaveBeenCalledWith(false);
     });
@@ -424,7 +444,7 @@ describe('LoginPage form (#743 part 2)', () => {
       await renderPage({ error: true, errorMessage: 'nope' });
       vi.mocked(setLoginError).mockClear();
 
-      type('form-username', 'someone');
+      await type('form-username', 'someone');
 
       expect(setLoginError).toHaveBeenCalledWith(false);
     });
@@ -493,8 +513,18 @@ describe('LoginPage keeps its dependencies out (#743)', () => {
     const offenders = SOURCES.filter(({ text }) => /shadowRoot/.test(code(text))).map(({ file }) => file);
     expect(
       offenders,
-      `keep-input-* and keep-api-error-dialog expose what these need: ${offenders.join(', ')}`,
+      `wa-input and keep-api-error-dialog expose what these need: ${offenders.join(', ')}`,
     ).toEqual([]);
+  });
+
+  it('uses wa-input directly rather than a wrapper element', () => {
+    // `keep-input-text` / `keep-input-password` existed only to render one `<wa-input>` and
+    // forward four properties to it, which put the value and validity of the real control a
+    // shadow boundary out of reach. They are deleted; reintroducing one would quietly
+    // restore the whole problem (#743).
+    const offenders = SOURCES.filter(({ text }) => /KeepInput(Text|Password)/.test(code(text)))
+      .map(({ file }) => file);
+    expect(offenders, `use wa-input: ${offenders.join(', ')}`).toEqual([]);
   });
 
   it('imports neither Formik nor Yup', () => {
@@ -507,11 +537,11 @@ describe('LoginPage keeps its dependencies out (#743)', () => {
     expect(offenders, `render conditionally instead: ${offenders.join(', ')}`).toEqual([]);
   });
 
-  it('passes no `value` prop to a keep-input element', () => {
-    // @lit/react applies element props on every render with no dirty check, so a `value`
-    // prop would overwrite what the user has typed. Assign the property instead.
-    const offenders = SOURCES.filter(({ text }) => /<KeepInput(Text|Password)[^>]*\svalue=/.test(code(text)))
-      .map(({ file }) => file);
-    expect(offenders, `set .value on the element via a ref instead: ${offenders.join(', ')}`).toEqual([]);
+  it('marks invalid fields with aria-invalid', () => {
+    // Not WebAwesome's `:state(user-invalid)`, which needs `hasInteracted` set by hand
+    // before `checkValidity()` to appear at all, and is invisible to assistive tech.
+    const page = SOURCES.find(({ file }) => file === 'src/components/login/LoginPage.tsx')!;
+    expect(code(page.text)).toMatch(/aria-invalid=/);
+    expect(code(page.text)).not.toMatch(/setCustomValidity|hasInteracted|reportUserValidity/);
   });
 });

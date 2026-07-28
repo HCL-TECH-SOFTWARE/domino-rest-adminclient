@@ -25,10 +25,15 @@ wa-button::part(base) {
 :root {
     color-scheme: inherit;
 }
-/* :state(user-invalid), not the Shoelace-era [data-user-invalid] attribute — WebAwesome
-   3.x publishes validity as CSS custom states and never sets that attribute, so this rule
-   never matched. See src/components/keep-elements/keep-input-text.ts (#742). */
-wa-input:state(user-invalid)::part(base) {
+/* Invalid fields are marked with aria-invalid, set by whoever owns the form's state.
+
+   This replaced :state(user-invalid), WebAwesome's own custom state (#742, #743). That
+   state is derived from `!valid && hasInteracted`, so engaging it meant setting
+   `hasInteracted` by hand before calling checkValidity() — WebAwesome's own
+   reportValidity() sets the flag afterwards, so a single call never produced it. It also
+   told assistive tech nothing. aria-invalid is a plain attribute the form sets when it
+   decides a field has failed, it is announced, and it needs no JavaScript to style. */
+wa-input[aria-invalid='true']::part(base) {
     border-color: var(--wa-color-danger-fill-loud);
     box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-fill-quiet);
 }
