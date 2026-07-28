@@ -34,7 +34,6 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
 }) => {
   const [hideClearIcon, setHideClearIcon] = React.useState(true);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { scopePull } = useSelector((state: AppState) => state.databases);
   const { pathname } = useLocation();
   const searchName = pathname.indexOf("schema") > 0 ? "SCHEMA NAME" : "SCOPE NAME";
@@ -74,7 +73,6 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
   return (
     <FormSearchContainer
       className={`${scopePull ? 'pointer-auto' : 'pointer-none'}`}
-      theme={themeMode}
     >
       <SearchContainer>
         <Button

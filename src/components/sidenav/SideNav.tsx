@@ -17,7 +17,6 @@ import Divider from '@mui/material/Divider';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
-import { getTheme } from '../../store/styles/action';
 import { switchTheme } from '../../store/styles/action';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { AppState } from '../../store';
@@ -29,14 +28,14 @@ import { SideNavContainer } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
 import keepLogo from '../../assets/KeepNewIcon.png';
 
-const SideContainer = styled.aside<{ theme: string }>`
+const SideContainer = styled.aside`
   width: 242px;
   flex-shrink: 0;
   white-space: nowrap;
 
   height: calc(100vh - 23px);
-  border-right: 1px solid ${(props) => getTheme(props.theme).sidenav.border};
-  background-image: ${(props) => getTheme(props.theme).sidenav.background};
+  border-right: 1px solid var(--keep-sidenav-border);
+  background-image: var(--keep-sidenav-background);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -57,7 +56,7 @@ const SideContainer = styled.aside<{ theme: string }>`
   }
 `;
 
-const SidebarContainer = styled(List)<{ theme: string }>`
+const SidebarContainer = styled(List)`
   padding-top: 10px !important;
   flex: 1;
   display: flex;
@@ -81,24 +80,24 @@ const SidebarContainer = styled(List)<{ theme: string }>`
     display: block;
     text-decoration: none !important;
     .MuiTypography-colorTextPrimary {
-      color: ${(props) => getTheme(props.theme).sidenav.textColor} !important;
+      color: var(--keep-sidenav-on) !important;
     }
     svg {
-      color: ${(props) => getTheme(props.theme).sidenav.iconColor} !important;
+      color: var(--keep-sidenav-on) !important;
     }
     .MuiListItem-button:hover {
-      background: ${(props) => getTheme(props.theme).sidenav.hover} !important;
+      background: var(--keep-sidenav-hover) !important;
     }
   }
   .active {
     .link-container,
     .quick-config,
     .consent-list {
-      border-left: 3px solid ${(props) => getTheme(props.theme).sidenav.border};
-      background: ${(props) => getTheme(props.theme).sidenav.active};
+      border-left: 3px solid var(--keep-sidenav-border);
+      background: var(--keep-sidenav-active);
       svg {
         margin-left: -4px;
-        color: ${(props) => getTheme(props.theme).sidenav.activeIconColor} !important;
+        color: var(--keep-sidenav-on) !important;
 
         cursor: pointer;
         font-weight: 800;
@@ -197,9 +196,8 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
           open: open,
           close: !open
         })}
-        // className={`drawer ${open ? 'open' : 'close'}`}
-        theme={themeMode}>
-        <SidebarContainer theme={themeMode}>
+      >
+        <SidebarContainer>
           <Logo
             onClick={() => {
               window.location.href = window.location.origin;

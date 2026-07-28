@@ -47,7 +47,7 @@ const AppContainer = styled.main`
   }
   `;
   
-const RightPanel = styled.div<{ open: boolean; theme: any }>`
+const RightPanel = styled.div<{ open: boolean }>`
   position: relative;
   height: 100%;
   width: calc( 100% - ${(props) => (props.open ? '241px' : '50px')});
@@ -59,10 +59,10 @@ const RightPanel = styled.div<{ open: boolean; theme: any }>`
      the sidenav throughout the animation. */
   transition: width ${(props) => (props.open ? '225ms' : '195ms')} ease-in;
   padding: 0 40px;
-  background: ${(props) => props.theme.bodyColor || '#f5f5f5'};
+  background: var(--wa-color-surface-lowered);
 
   @media only screen and (max-width: 768px) {
-    background: ${(props) => props.theme.bodyColor || 'white'};
+    background: var(--wa-color-surface-lowered);
     width: 100%;
     filter: blur(${(props) => (props.open ? '10px' : 0)});
     pointer-events: ${(props) => (props.open ? 'none' : 'initial')};
@@ -143,7 +143,7 @@ const HomeElement: React.FC<HomeElementProps> = ({ MainElement }) => {
             open={open}
             />
         )}
-        <RightPanel theme={getTheme(themeMode)} open={open}>
+        <RightPanel open={open}>
             {!matches && (
                 open ? (
                 <IconButton 

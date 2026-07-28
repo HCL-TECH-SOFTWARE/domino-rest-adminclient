@@ -6,10 +6,8 @@
 
 import { Card } from '@mui/material';
 import { styled } from '@linaria/react';
-import { getTheme } from '../../../../../store/styles/action';
 
 export const SchemaCardContainer = styled(Card)<{
-  theme: string;
   state: { selected: string; open: boolean; apiName: string };
 }>`
   width: 18%;
@@ -19,7 +17,7 @@ export const SchemaCardContainer = styled(Card)<{
   border-radius: 10px !important;
   position: relative;
   display: flex;
-  background: ${(props) => getTheme(props.theme).secondary} !important;
+  background: var(--wa-color-surface-raised) !important;
 
   .MuiCardContent-root {
     padding: 10px 16px;

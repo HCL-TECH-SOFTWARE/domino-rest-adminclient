@@ -7,7 +7,6 @@
 import { styled } from '@linaria/react';
 import Card from '@mui/material/Card';
 import { KEEP_ADMIN_BASE_COLOR } from '../config.dev';
-import { getTheme } from '../store/styles/action';
 import { Box, Dialog, Radio, RadioProps, Switch } from '@mui/material';
 
 export const FormContainer = styled.div`
@@ -126,14 +125,14 @@ export const AutoContainer = styled.div`
   margin: 20px 0;
 `;
 
-export const FormSearchContainer = styled('div')<{ theme: string }>`
+export const FormSearchContainer = styled('div')`
   display: flex;
   flex: 1;
   height: 43px;
   justify-content: center;
-  border: 1px solid ${(props) => getTheme(props.theme).borderColor};
+  border: 1px solid var(--wa-color-surface-border);
   border-radius: 10px !important;
-  background: ${(props) => getTheme(props.theme).secondary} !important;
+  background: var(--wa-color-surface-raised) !important;
 
   .search-icon {
     margin-left: 10px;
@@ -160,13 +159,13 @@ export const SearchInput = styled.input`
   font-size: 16px;
 `;
 
-export const TopBanner = styled.div<{ theme?: string }>`
+export const TopBanner = styled.div`
   width: 100%;
   height: 100px;
   padding: 20px 20px 0px 0px;
   vertical-align: middle;
   font-size: 16px;
-  color: ${(props) => props.theme ? getTheme(props.theme).textColorPrimary : 'black'};
+  color: var(--wa-color-text-normal);
 `;
 
 export const ErrorContainer = styled.div`
@@ -429,7 +428,6 @@ export const TopContainer = styled.div`
 
 `;
 interface ContainerProps {
-  theme: string;
   $active: boolean;
 }
 
@@ -441,12 +439,12 @@ export const Container = styled(Card)<ContainerProps>`
   box-shadow: 2px 2px 5px
     ${(props) => (props.$active ? '#1966b3' : 'lightgray')};
   color: ${(props) => (props.$active ? '#1966b3' : '#383838')};
-  background: ${(props) => getTheme(props.theme).secondary} !important;
+  background: var(--wa-color-surface-raised) !important;
   cursor: pointer;
   user-select: none;
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'};
+    border: 1px solid var(--wa-color-brand-50);
   }
 `;
 
@@ -576,7 +574,7 @@ export const OptionList = styled.div`
   }
 `;
 
-export const MenuOptionsContainer = styled.div<{ theme: string }>`
+export const MenuOptionsContainer = styled.div`
   padding: 10px 0px 0px 0px;
 
   .left-icon {
@@ -601,11 +599,11 @@ export const MenuOptionsContainer = styled.div<{ theme: string }>`
     padding: 6px 5px !important;
     cursor: pointer;
     &:hover {
-      background: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'};
-      color: ${(props) => getTheme(props.theme).primary || '#000000'};
+      background: var(--wa-color-brand-50);
+      color: var(--wa-color-surface-default);
 
       .right-icon {
-        color: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'} !important;
+        color: var(--wa-color-brand-50) !important;
       }
     }
   }

@@ -15,17 +15,16 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import SingleFieldContainer from './SingleFieldContainer';
 import { AppState } from '../../store';
-import { getTheme } from '../../store/styles/action';
 import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
 
-const FieldContainer = styled.div<{ theme: string }>`
-  border: 1px solid ${(props) => getTheme(props.theme).borderColor};
+const FieldContainer = styled.div`
+  border: 1px solid var(--wa-color-surface-border);
   border-radius: 10px;
-  background: ${(props) => getTheme(props.theme).primary};
+  background: var(--wa-color-surface-default);
   display: flex;
   flex-direction: column;
 
@@ -171,7 +170,6 @@ interface FieldsProps {
 }
 
 const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, setTabValue }) => {
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const dispatch = useDispatch();
 
   // Sort forms liat before display
@@ -332,7 +330,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
   }, [searchFieldKey, activeFields, currentFormValue]);
 
   return (
-    <FieldContainer theme={themeMode} className="field-container">
+    <FieldContainer className="field-container">
       <div className='fields-dropdown-div'>
         <FieldsDropDownHeader className="fields-dropdown-header">
           <p className="small-text p-0 full-width m-0">Show fields from:</p>
@@ -380,7 +378,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
           </Select>
         </FieldsDropDown>
         <FieldsDropDown>
-          <FormSearchContainer theme={themeMode} className="main-search-container">
+          <FormSearchContainer className="main-search-container">
             <SearchContainer className="search-container">
               <SearchIcon color="primary" className="search-icon" />
               <SearchInput placeholder="Search Field" onChange={handleSearchField} />

@@ -6,10 +6,8 @@
 
 import { Card } from '@mui/material';
 import { styled } from '@linaria/react';
-import { getTheme } from '../../store/styles/action';
 
 export const NsfCardContainer = styled(Card)<{
-  theme: string;
   state: { open: boolean; apiName: string };
 }>`
   width: 456px;
@@ -38,7 +36,7 @@ export const NsfCardContainer = styled(Card)<{
   user-select: none;
 
   &:hover {
-    border: 1px solid ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'};
+    border: 1px solid var(--wa-color-brand-50);
     .more {
       visibility: visible;
     }

@@ -16,7 +16,6 @@ import clsx from 'clsx';
 import { useSelector, useDispatch } from 'react-redux';
 import { appRoutes as routes, apps, groups, people } from './Routes';
 import { BUILD_VERSION } from '../../config.dev';
-import { getTheme } from '../../store/styles/action';
 import { AppState } from '../../store';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
@@ -33,7 +32,7 @@ const SideContainer = styled.aside`
 
 const QuickConfigButton = styled.div``;
 
-const SidebarContainer = styled(List)<{ theme: string }>`
+const SidebarContainer = styled(List)`
   a {
     display: block;
     text-decoration: none !important;
@@ -48,7 +47,7 @@ const SidebarContainer = styled(List)<{ theme: string }>`
 
       .text-link {
         margin-left: -4px;
-        color: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'} !important;
+        color: var(--wa-color-brand-50) !important;
         font-size: 20px;
       }
       .keep-icon {
@@ -57,7 +56,7 @@ const SidebarContainer = styled(List)<{ theme: string }>`
 
       svg {
         margin-left: -4px;
-        color: ${(props) => getTheme(props.theme).hoverColor || '#C5C5C5'} !important;
+        color: var(--wa-color-brand-50) !important;
         font-size: 20px;
         cursor: pointer;
         font-weight: 800;
@@ -108,7 +107,6 @@ interface SidenavProps {
 
 const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
   const location = useLocation();
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const { databasePull } = useSelector((state: AppState) => state.databases);
   const dispatch = useDispatch();
   const { navitems } = useSelector((state: AppState) => state.account);
@@ -127,7 +125,7 @@ const MobileSidebar: React.FC<SidenavProps> = ({ open, toggleMenu }) => {
           close: !open
         })}>
         <LinksContainer>
-          <SidebarContainer theme={themeMode}>
+          <SidebarContainer>
             <Logo>
               <img src={keepLogo} alt="HCL Domino REST API Icon" />
               <span className="title color-text-primary">

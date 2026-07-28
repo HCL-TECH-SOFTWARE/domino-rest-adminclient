@@ -13,7 +13,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { Box, Button, ButtonBase } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useNavigate } from 'react-router-dom';
@@ -23,8 +23,6 @@ import { WarningIcon } from "../../styles/CommonStyles";
 import { IoMdClose } from "react-icons/io";
 import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
-import { getTheme } from "../../store/styles/action";
-import { AppState } from "../../store";
 import { KeepButton, KeepTooltip } from "../keep-elements/KeepElements";
 
 const StyledTableCell = styled(TableCell)`
@@ -55,11 +53,11 @@ const StyledTableRow = styled(TableRow)`
   }
 `;
 
-const StyledTableContainer = styled(TableContainer)<{ themeMode?: string }>`
+const StyledTableContainer = styled(TableContainer)`
   border-radius: 10px;
   box-sizing: border-box;
-  border: 1px solid ${(props) => props.themeMode ? getTheme(props.themeMode).borderColor : '#B9B9B9'};
-  background: ${(props) => props.themeMode ? getTheme(props.themeMode).secondary : '#FFF'};
+  border: 1px solid var(--wa-color-surface-border);
+  background: var(--wa-color-surface-raised);
 `
 
 const StatusHeader = styled.div`
@@ -185,7 +183,6 @@ const FormsTable: React.FC<FormsTableProps> = ({
   formList,
 }) => {
   const dispatch = useDispatch();
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   const ref = React.useRef<HTMLDialogElement>(null)
   const [activateFormName, setActivateFormName] = React.useState("")
   
@@ -268,7 +265,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
 
   return (
     <>
-      <StyledTableContainer themeMode={themeMode}>
+      <StyledTableContainer>
         <Table className="p-30" aria-label="views and agents table">
           <TableHead>
             <TableRow>

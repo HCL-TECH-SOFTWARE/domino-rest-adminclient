@@ -35,7 +35,6 @@ import {
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
-import { getTheme } from '../../store/styles/action';
 import { Database } from '../../store/databases/types';
 import { KeepTooltip } from '../keep-elements/KeepElements';
 import { getLogger } from '../../services/log-service';
@@ -135,7 +134,6 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   postSaveActionRef
 }) => {
   const dispatch = useDispatch();
-  const { themeMode } = useSelector((state: AppState) => state.styles);
 
   const { scopes, newForm } = useSelector(
     (state: AppState) => state.databases
@@ -965,10 +963,9 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               >
                 <FiSave
                   className='tabs-access-action-icon'
-                  color={!newForm.enabled ?
-                    getTheme(themeMode).textColorPrimary
-                    :
-                    saveEnabled ? getTheme(themeMode).textColorPrimary : "#A7A8A9"}
+                  color={!newForm.enabled || saveEnabled
+                    ? 'var(--wa-color-text-normal)'
+                    : '#A7A8A9'}
                   size='0.9em'
                 />
                 <span className={`small-text weight-400 ${!newForm.enabled ? 'color-text-primary' : saveEnabled ? 'color-text-primary' : 'color-text-disabled'}`}>

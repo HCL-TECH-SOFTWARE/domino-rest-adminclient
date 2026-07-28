@@ -20,7 +20,6 @@ const OptionListContainerRoot = styled(OptionListContainer)`
 `;
 
 interface OptionListProps {
-  theme: string;
   toggleMenu: (open: boolean) => void;
 }
 

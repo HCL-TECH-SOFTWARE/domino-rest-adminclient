@@ -77,6 +77,25 @@
      */
     --wa-color-text-normal: #383838; /* getTheme('default').textColorPrimary */
     --wa-color-text-loud: #000000;
+
+    /*
+     * Sidenav (#708 PR 3).
+     *
+     * Keep-namespaced rather than --wa-*, because none of this is a Web Awesome
+     * concept: the sidenav has its own gradient identity that is not the brand
+     * ramp and has no semantic token to point at.
+     *
+     * These carry no light/dark variants because they never had any — getTheme()
+     * defined byte-identical `sidenav` blocks in both its branches, so the eight
+     * call sites were paying for a theme lookup that could not change the answer.
+     * Whether dark mode *should* restyle the sidenav is a design question this
+     * does not attempt to settle; it preserves today's behaviour exactly.
+     */
+    --keep-sidenav-background: linear-gradient(180deg, #5e1ebe 10.94%, #3b91ff 57.29%, #8cc7f9 100%);
+    --keep-sidenav-border: #cfcfcf;
+    --keep-sidenav-active: #002c70;
+    --keep-sidenav-hover: #0a3e8f;
+    --keep-sidenav-on: #ffffff;
 }
 
 /*
