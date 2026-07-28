@@ -132,6 +132,11 @@ export default defineConfig({
         'src/store/access/action.ts': { lines: 95, statements: 95, functions: 95, branches: 78 },
         'src/store/consents/action.ts': { lines: 95, statements: 95, functions: 95, branches: 65 },
         'src/store/applications/action.ts': { lines: 87, statements: 87, functions: 87, branches: 65 },
+        // The React-removal primitives (#715). Measured at 100/100/100/100 — they are
+        // small, and every element converted in #719 depends on them being right, so
+        // they are gated close to the measurement rather than a few points below.
+        'src/store/StoreController.ts': { lines: 95, statements: 95, functions: 95, branches: 90 },
+        'src/store/store.ts': { lines: 95, statements: 95, functions: 95, branches: 90 },
         'src/utils/**': { lines: 85, statements: 85, functions: 55, branches: 60 },
         // The 26 converted Lit elements. Raised from 70/70/60/50 once the element
         // suites and the Monaco tests landed.
