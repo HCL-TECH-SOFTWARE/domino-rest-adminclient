@@ -174,14 +174,16 @@ export default class Autocomplete extends KeepElement {
     }
   `;
 
-  @property({ type: Array }) accessor options: string[] = [];
+  // `readonly` because callers pass shared constants (`APP_ICON_NAMES`) — this element
+  // only ever filters and reads, never mutates, the list it is given.
+  @property({ type: Array }) accessor options: readonly string[] = [];
   @property({ type: String }) accessor selectedOption = '';
   @property({ type: Boolean }) accessor error = false;
   @property({ type: String }) accessor errorMessage = '';
   @property({ type: String }) accessor initialOption = '';
   @property({ type: Object }) accessor icons: Record<string, string> = {};
 
-  @state() private accessor filteredOptions: string[] = [];
+  @state() private accessor filteredOptions: readonly string[] = [];
   @state() private accessor highlightedOptionIndex = -1;
   @state() private accessor showDropdown = false;
 

@@ -19,8 +19,16 @@ import '../src/styles/keep-overrides.css';
 // provider. `<Provider>` stays until the last useSelector is gone — both bindings read
 // this same instance, which is what lets components convert one at a time.
 import { store } from './store/store';
+import { loadAppIcons } from './services/app-icons';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as Element);
+
+// Warm the lazy icon chunk (#772) alongside the first render instead of waiting for a card
+// to mount. It is off the critical path either way, but starting here means it downloads
+// while the app is still authenticating and fetching schemas, so the skeleton state the
+// card views can show is in practice never reached. Failures are the loader's problem —
+// it clears its cache so the next consumer retries.
+void loadAppIcons().catch(() => {});
 
 root.render(
   <Provider store={store}>

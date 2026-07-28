@@ -5,7 +5,8 @@
  * ========================================================================== */
 
 import { Button, Menu, MenuItem } from '@mui/material';
-import appIcons from '../../styles/app-icons';
+import { APP_ICON_NAMES } from '../../services/app-icons';
+import { AppIcon } from './AppIcon';
 import { InputContainer } from '../../styles/CommonStyles';
 import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import React from 'react';
@@ -36,9 +37,9 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                 onClick={handleSelectIcon}
                 className="icon-select"
             >
-                <img
+                <AppIcon
+                    name={displayIconName}
                     className="icon-dropdown-image"
-                    src={`data:image/svg+xml;base64, ${appIcons[displayIconName]}`}
                     alt="db-icon"
                 />
                 <span className='icon-dropdown-span'>
@@ -54,16 +55,16 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                 onClose={handleClose}
                 disablePortal
             >
-                {Object.keys(appIcons).map((iconName, index) => (
+                {APP_ICON_NAMES.map((iconName, index) => (
                     <MenuItem
                         key={iconName}
                         selected={index === selectedIndex}
                         onClick={(event) => handleMenuItemClick(event, index)}
                     >
                         <>
-                            <img
+                            <AppIcon
+                                name={iconName}
                                 className="icon-dropdown-image"
-                                src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                                 alt="db-icon"
                             />
                             {iconName}

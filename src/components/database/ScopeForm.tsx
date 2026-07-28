@@ -18,7 +18,8 @@ import { Alert, AlertTitle } from '@mui/material';
 import { FormikProps } from 'formik';
 import SchemaContentsTree from './SchemaContentsTree';
 import { AppState } from '../../store';
-import appIcons from '../../styles/app-icons';
+import { APP_ICON_NAMES } from '../../services/app-icons';
+import { AppIcon } from '../commons/AppIcon';
 import { checkIcon } from '../../styles/scripts';
 import { toggleDrawer } from '../../store/drawer/action';
 import {
@@ -125,7 +126,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
   ) => {
     setSelectedIndex(index);
     setAnchorEl(null);
-    setIcon(Object.keys(appIcons)[index]);
+    setIcon(APP_ICON_NAMES[index]);
     setUpdateButtonDisabled(false);
   };
 
@@ -380,17 +381,12 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             onClick={handleSelectIcon}
             className="icon-select color-text-primary p-0 w-fit flex gap-5"
           >
-            {
-              checkIcon(icon) ? (
-                <img
-                  className="quick-config-icon-image"
-                  src={`data:image/svg+xml;base64, ${appIcons[icon]}`}
-                  alt="db-icon"
-                />
-              ) : (
-                <StorageIcon className='w-35px mr-15' />
-              )
-            }
+            <AppIcon
+              name={icon}
+              className="quick-config-icon-image"
+              alt="db-icon"
+              fallback={<StorageIcon className='w-35px mr-15' />}
+            />
             {checkIcon(icon) ? icon : ''}
             <ChevronDown className='big-text' />
           </Button>
@@ -402,7 +398,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             onClose={handleClose}
             disablePortal={true}
           >
-            {Object.keys(appIcons).map((iconName, index) => (
+            {APP_ICON_NAMES.map((iconName, index) => (
               <MenuItem
                 key={iconName}
                 selected={index === selectedIndex}
@@ -410,9 +406,9 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
                 className='flex gap-5'
               >
                 <>
-                  <img
+                  <AppIcon
+                    name={iconName}
                     className="quick-config-icon-image"
-                    src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                     alt="db-icon"
                   />
                   {iconName}

@@ -10,7 +10,7 @@ import { AppState } from '../../store';
 import { TextField } from '@mui/material';
 import { addSchema } from '../../store/databases/action';
 import { Autocomplete } from '@mui/material';
-import appIcons from '../../styles/app-icons';
+import { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -41,6 +41,10 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   
   const [importFlag, setImportFlag] = useState(false)
   const [schemaName, setSchemaName] = useState('')
+  // The POST body carries `icon` (the base64) next to `iconName`, so the payload must be
+  // resolvable at submit time even though it now lives in a lazily loaded chunk (#772).
+  // `index.tsx` warms it at boot, so it is present long before this dialog can be filled in.
+  const appIcons = useAppIcons();
   
   const engineOptions = ['domino'];
 
@@ -87,7 +91,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       description: '',
       nsfPath: '',
       formulaEngine: 'domino',
-      icon: appIcons['beach'],
+      icon: appIconPayload(DEFAULT_APP_ICON_NAME, appIcons),
       iconName: 'beach',
       apiName: '',
       isActive: true,
@@ -115,7 +119,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         apiName: schemaName,
         nsfPath: nsfPath,
         iconName: iconName,
-        icon: appIcons[iconName],
+        icon: appIconPayload(iconName, appIcons),
       };
       dispatch(addSchema(newSchema, resetForm));
       setIconName('beach');
@@ -152,7 +156,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
       description: '',
       nsfPath: '',
       formulaEngine: 'domino',
-      icon: appIcons['beach'],
+      icon: appIconPayload(DEFAULT_APP_ICON_NAME, appIcons),
       iconName: 'beach',
       apiName: '',
       isActive: true,
@@ -227,7 +231,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   ) => {
     setSelectedIndex(index);
     setAnchorEl(null);
-    setIconName(Object.keys(appIcons)[index]);
+    setIconName(APP_ICON_NAMES[index]);
   };
 
   const handleSchemaNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

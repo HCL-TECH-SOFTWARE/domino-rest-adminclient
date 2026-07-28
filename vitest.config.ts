@@ -111,18 +111,27 @@ export default defineConfig({
       // measured, so a routine refactor does not fail CI but a real regression does.
       // Raise these as coverage grows — a gate far below reality protects nothing.
       //
-      // Measured on `new_code` when these numbers were last set:
-      //   global          lines 32.4  stmts 32.8  funcs 28.9  branches 29.6
-      //   keep-elements   lines 84.2  stmts 83.7  funcs 78.0  branches 68.6
-      //   services        lines 96.8  stmts 96.9  funcs 96.7  branches 95.2
-      //   store reducers  lines 100   stmts 100   funcs 100   branches 96.3
-      //   utils           lines 99.1  stmts 99.1  funcs 96.2  branches 90.6
+      // Measured on `new_code` when these numbers were last set (#690):
+      //   global               lines 44.1  stmts 44.2  funcs 41.9  branches 38.0
+      //   keep-elements        lines 84.2  stmts 83.7  funcs 78.0  branches 68.6
+      //   services             lines 96.8  stmts 96.9  funcs 96.7  branches 95.2
+      //   store reducers       lines 100   stmts 100   funcs 100   branches 96.3
+      //   utils                lines 99.1  stmts 99.1  funcs 96.2  branches 90.6
+      //   access/action.ts     lines 100   stmts 100   funcs 100   branches 83.3
+      //   consents/action.ts   lines 100   stmts 100   funcs 100   branches 70.0
+      //   applications/action  lines 91.6  stmts 91.6  funcs 91.7  branches 69.6
       thresholds: {
-        lines: 30,
-        statements: 30,
-        functions: 27,
-        branches: 28,
+        lines: 40,
+        statements: 40,
+        functions: 38,
+        branches: 35,
         'src/store/**/reducer.ts': { lines: 95, statements: 95, functions: 90, branches: 88 },
+        // Thunk suites, per slice (#690). Gated individually rather than through one
+        // `**/action.ts` glob: databases/action.ts is still at 15 %, so a shared floor
+        // would have to sit there and would gate nothing for the slices that are done.
+        'src/store/access/action.ts': { lines: 95, statements: 95, functions: 95, branches: 78 },
+        'src/store/consents/action.ts': { lines: 95, statements: 95, functions: 95, branches: 65 },
+        'src/store/applications/action.ts': { lines: 87, statements: 87, functions: 87, branches: 65 },
         // The React-removal primitives (#715). Measured at 100/100/100/100 — they are
         // small, and every element converted in #719 depends on them being right, so
         // they are gated close to the measurement rather than a few points below.

@@ -14,7 +14,7 @@ import DeleteDialog from '../dialogs/DeleteDialog';
 import { toggleDrawer } from '../../store/drawer/action';
 import { changeScope, clearDBError } from '../../store/databases/action';
 import { toggleDeleteDialog } from '../../store/dialog/action';
-import appIcons from '../../styles/app-icons';
+import { DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
 import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
@@ -58,6 +58,11 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
   const [icon, setIcon] = useState(isEdit && database.iconName ? database.iconName : 'beach');
   const [isDisabled, setIsDisabled] = useState(false);
 
+  // The POST body carries `icon` (the base64) next to `iconName`, so the payload must be
+  // resolvable at submit time even though it now lives in a lazily loaded chunk (#772).
+  // `index.tsx` warms it at boot, so it is present long before a drawer can be filled in.
+  const appIcons = useAppIcons();
+
   const accessLevels = [
     'NoAccess',
     'Depositor',
@@ -87,7 +92,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
       nsfPath : nsfPath,
       schemaName : schemaName,
       isActive: true,
-      icon: appIcons[icon],
+      icon: appIconPayload(icon, appIcons),
       iconName: icon,
       maximumAccessLevel: 'Editor',
     },
@@ -100,7 +105,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
       const formData = { // Form data for scope(api) submit
           ...parseData,
           server: server ? server.trim() : '',
-          icon: appIcons[icon],
+          icon: appIconPayload(icon, appIcons),
           iconName: icon,
           maximumAccessLevel: maximumAccessLevel,
           nsfPath,
@@ -166,7 +171,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
         nsfPath : database?.nsfPath || '',
         schemaName : database?.schemaName || '',
         isActive: database?.isActive ?? true,
-        icon: database ? appIcons[database.iconName] : appIcons[icon],
+        icon: appIconPayload(database ? database.iconName : icon, appIcons),
         iconName: database?.iconName || icon,
         maximumAccessLevel: database?.maximumAccessLevel ? database.maximumAccessLevel : 'Editor',
       })
@@ -178,7 +183,7 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
         nsfPath : '',
         schemaName : '',
         isActive: true,
-        icon: appIcons['beach'],
+        icon: appIconPayload(DEFAULT_APP_ICON_NAME, appIcons),
         iconName: 'beach',
         maximumAccessLevel: 'Editor',
       })

@@ -30,11 +30,33 @@ describe('keep-default-card', () => {
     expect(shadow(el).querySelector('section.titles')).toBeTruthy();
     expect(shadow(el).querySelector('section.description')).toBeTruthy();
 
-    // Empty defaults for the text-bearing slots.
-    const img = shadow(el).querySelector('div.icon img')!;
-    expect(img.getAttribute('src')).toBe('');
-    expect(img.getAttribute('alt')).toBe('');
+    // No icon yet, so the slot holds a placeholder rather than an `img` with an empty
+    // `src` — see the skeleton test below.
+    expect(shadow(el).querySelector('div.icon img')).toBeNull();
     expect(shadow(el).querySelector('section.titles strong text')!.textContent!.trim()).toBe('');
+  });
+
+  /**
+   * #772 moved the icon payloads into a lazily loaded chunk, so a card can mount with a
+   * name it cannot yet resolve. Callers signal that by passing an empty `icon`, and the
+   * card must not render `<img src="">` — that paints a broken-image glyph, then swaps,
+   * which is precisely the flash the issue set out to avoid.
+   */
+  it('renders a skeleton, not an empty image, while the icon is unresolved', async () => {
+    const el = await mountLit<DefaultCard>(TAG, { icon: '' });
+    expect(shadow(el).querySelector('div.icon img')).toBeNull();
+    expect(shadow(el).querySelector('div.icon .app-icon-skeleton')).toBeTruthy();
+  });
+
+  it('drops the skeleton once an icon arrives', async () => {
+    const el = await mountLit<DefaultCard>(TAG, { icon: '' });
+    expect(shadow(el).querySelector('div.icon .app-icon-skeleton')).toBeTruthy();
+
+    el.icon = '/icons/db.svg';
+    await el.updateComplete;
+
+    expect(shadow(el).querySelector('div.icon .app-icon-skeleton')).toBeNull();
+    expect(shadow(el).querySelector('div.icon img')!.getAttribute('src')).toBe('/icons/db.svg');
   });
 
   it('defaults the status dot to the "off" colour', async () => {
@@ -58,7 +80,7 @@ describe('keep-default-card', () => {
   });
 
   it('reflects the title into the heading and image alt text', async () => {
-    const el = await mountLit<DefaultCard>(TAG, { title: 'My Schema' });
+    const el = await mountLit<DefaultCard>(TAG, { title: 'My Schema', icon: '/icons/db.svg' });
     expect(shadow(el).querySelector('section.titles strong text')!.textContent!.trim()).toBe(
       'My Schema',
     );
