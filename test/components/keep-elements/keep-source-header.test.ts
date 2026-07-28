@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanupLit, mountLit } from '../../test-utils/lit';
 import '../../../src/components/keep-elements/keep-source-header';

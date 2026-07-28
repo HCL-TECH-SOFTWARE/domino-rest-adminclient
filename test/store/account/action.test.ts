@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Dispatch } from 'redux';
 import {

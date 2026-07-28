@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { captureMonacoErrors, ignoreMonacoCancellations, installMonacoDomStubs } from '../../test-utils/monaco';
 import { cleanupLit, mountLit } from '../../test-utils/lit';

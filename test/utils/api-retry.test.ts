@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { apiRequestWithRetry } from '../../src/utils/api-retry';
 import { refreshToken } from '../../src/components/login/pkce';

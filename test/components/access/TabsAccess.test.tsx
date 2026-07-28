@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';

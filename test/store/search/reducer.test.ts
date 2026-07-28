@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { describe, it, expect } from 'vitest';
 import searchReducer from '../../../src/store/search/reducer';
 import { TOGGLE_SEARCH, CLOSE_SEARCH, SearchState } from '../../../src/store/search/types';

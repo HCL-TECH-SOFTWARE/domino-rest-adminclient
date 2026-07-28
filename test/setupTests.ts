@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 // Global Vitest setup — wired in via vitest.config.ts `test.setupFiles`.
 // (Under the old Jest config this file existed but was never loaded, so the
 // stubs below were copy-pasted into individual test files. They now live here.)

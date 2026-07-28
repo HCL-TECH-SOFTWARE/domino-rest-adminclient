@@ -1,5 +1,8 @@
-// Copyright (C) 2026 HCL America Inc.
-// Licensed under the Apache 2.0 License (https://www.apache.org/licenses/LICENSE-2.0.txt)
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
 
 // Type-only: this module must stay free of Monaco at runtime so it can be unit-tested
 // under happy-dom, where importing Monaco crashes on canvas pixel-ratio.

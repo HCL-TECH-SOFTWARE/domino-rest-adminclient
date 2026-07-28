@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { describe, it, expect } from 'vitest';
 import usersReducer from '../../../src/store/access/reducer';
 import { SET_USERS, INIT_STATE, UserState } from '../../../src/store/access/types';

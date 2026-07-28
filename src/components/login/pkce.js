@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2024, 2026 HCL America Inc.                                  *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 // PKCE Implementation in JavaScript
 
 import { AlertManager } from "../../utils/common";

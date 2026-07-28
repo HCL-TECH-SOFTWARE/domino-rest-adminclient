@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import React from 'react';
 import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
 import { configureStore, type Store } from '@reduxjs/toolkit';

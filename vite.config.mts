@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2024, 2026 HCL America Inc.                                  *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import wyw from '@wyw-in-js/vite';

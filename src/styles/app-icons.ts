@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2023 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 export default {
   archeology:
     'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgNDggNDgiPgogICAgPHBhdGggZmlsbD0iI0ZGOEE2NSIgZD0iTTEwLDI2YzAsMy4yLDEsNi4yLDMsOC42YzIsMi42LDMsNiwzLDkuNGwwLDBoMTZjMCwwLDEtNi44LDMtOS42YzEuOC0yLjQsMy01LjQsMy04LjYgYzAtNS40LTMuMi0xMC42LTgtMTIuOFY2SDE4djdDMTgsMTMsMTAsMTYuMiwxMCwyNnoiLz4KICAgIDxnIGZpbGw9IiNGRkFCOTEiPgogICAgICAgIDxwYXRoIGQ9Ik0zNiwyNmMwLTIuMiwwLjYtMy45LDEuMy00LjZjLTAuMi0wLjctMC41LTEuMy0wLjgtMS45QzM1LDIwLjUsMzQsMjIuOSwzNCwyNmMwLDIuOSwwLjksNS4zLDIuMyw2LjQgYzAuMy0wLjYsMC42LTEuMywwLjktMS45QzM2LjYsMjkuNiwzNiwyOC4xLDM2LDI2eiIvPgogICAgICAgIDxwYXRoIGQ9Ik0yNCwxOWMtMy45LDAtNywzLjEtNyw3czMuMSw3LDcsN3M3LTMuMSw3LTdTMjcuOSwxOSwyNCwxOXogTTI0LDMxYy0yLjgsMC01LTIuMi01LTVzMi4yLTUsNS01czUsMi4yLDUsNSBTMjYuOCwzMSwyNCwzMXoiLz4KICAgICAgICA8cGF0aCBkPSJNMTEuNCwxOS40Yy0wLjMsMC42LTAuNiwxLjItMC44LDEuOWMwLjcsMC43LDEuMywyLjQsMS4zLDQuNmMwLDIuMi0wLjYsMy44LTEuMyw0LjUgYzAuMiwwLjcsMC41LDEuMywwLjgsMS45QzEzLDMxLjQsMTQsMjksMTQsMjZDMTQsMjIuOSwxMywyMC40LDExLjQsMTkuNHoiLz4KICAgICAgICA8cmVjdCB4PSIxOCIgeT0iMTEiIHdpZHRoPSIxMiIgaGVpZ2h0PSIyIi8+CiAgICA8L2c+CiAgICA8cGF0aCBmaWxsPSIjRkY3MDQzIiBkPSJNMTYsNkwxNiw2YzAsMS4xLDAuOSwyLDIsMmgxMmMxLjEsMCwyLTAuOSwyLTJ2MGMwLTEuMS0wLjktMi0yLTJIMThDMTYuOSw0LDE2LDQuOSwxNiw2eiIvPgogICAgPHBhdGggZmlsbD0iIzhDMkEwQiIgZD0iTTIyLjcsMjkuOWwxLjUsNy4zbC0wLjItOGwtMy0yLjRsMy42LTZoLTguOGwtMi42LTMuOWMtMC43LDAuOC0xLjMsMS43LTEuOSwyLjlsMi42LDIuOWw4LjctMC43bC00LjIsNS42IEwyMi43LDI5Ljl6Ii8+Cjwvc3ZnPgo=',
