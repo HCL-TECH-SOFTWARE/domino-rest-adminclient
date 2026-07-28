@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2025, 2026 HCL America Inc.                                  *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { refreshToken } from "../components/login/pkce";
 import { checkForResponse } from "./common";
 import { getLogger } from "../services/log-service";

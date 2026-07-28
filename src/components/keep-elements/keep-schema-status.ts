@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { css, html, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';

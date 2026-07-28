@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { test, expect, vi } from 'vitest';
 import { render, screen, waitFor } from "@testing-library/react";
 import App from "../src/App";

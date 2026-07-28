@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { html, css } from 'lit';
 import type { PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';

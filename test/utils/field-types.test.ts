@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { describe, it, expect } from 'vitest';
 import { convert2FieldType, convertDesignType2Format } from '../../src/utils/field-types';
 

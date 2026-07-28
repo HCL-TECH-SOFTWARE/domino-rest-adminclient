@@ -1,8 +1,9 @@
 /* ========================================================================== *
- * Copyright (C) 2019, 2022 HCL America Inc.                                  *
+ * Copyright (C) 2019, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
+
 import React from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';

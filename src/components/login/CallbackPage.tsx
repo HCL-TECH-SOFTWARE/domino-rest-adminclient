@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2024, 2026 HCL America Inc.                                  *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import React, { useEffect, useState } from 'react';
 import { handleCallback } from './pkce';
 import { loginWithPkce } from '../../store/account/action';

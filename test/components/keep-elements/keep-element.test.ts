@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { afterEach, describe, expect, it } from 'vitest';
 import { html } from 'lit';
 import { customElement } from 'lit/decorators.js';

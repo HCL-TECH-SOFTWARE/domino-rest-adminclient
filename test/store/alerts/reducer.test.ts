@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import { describe, it, expect } from 'vitest';
 import alertReducer from '../../../src/store/alerts/reducer';
 import { TOGGLE_ALERT, CLOSE_SNACKBAR, AlertState } from '../../../src/store/alerts/types';

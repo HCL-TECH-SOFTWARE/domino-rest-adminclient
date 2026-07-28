@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2025, 2026 HCL America Inc.                                  *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 import EventEmitter from "events";
 
 class TokenEmitter extends EventEmitter {}

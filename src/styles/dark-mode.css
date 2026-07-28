@@ -1,3 +1,9 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 ﻿/* ==========================================================================
  * Theme support using CSS light-dark() function.
  * The browser picks the correct value based on the inherited color-scheme
