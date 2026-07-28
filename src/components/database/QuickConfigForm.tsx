@@ -20,7 +20,8 @@ import { Alert, AlertTitle } from '@mui/material';
 import { FormikProps } from 'formik';
 import FileContentsTree from './FileContentsTree';
 import { AppState } from '../../store';
-import appIcons from '../../styles/app-icons';
+import { APP_ICON_NAMES } from '../../services/app-icons';
+import { AppIcon } from '../commons/AppIcon';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import {
   FormContentContainer,
@@ -126,7 +127,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   ) => {
     setSelectedIndex(index);
     setAnchorEl(null);
-    setIcon(Object.keys(appIcons)[index]);
+    setIcon(APP_ICON_NAMES[index]);
   };
 
   const handleClose = () => {
@@ -332,9 +333,9 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             onClick={handleSelectIcon}
             className="icon-select flex gap-5 small-text w-fit"
           >
-            <img
+            <AppIcon
+              name={icon}
               className="quick-config-icon-image"
-              src={`data:image/svg+xml;base64, ${appIcons[icon]}`}
               alt="db-icon"
             />
             <span>{icon}</span>
@@ -348,16 +349,16 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             onClose={handleClose}
             disablePortal={true}
           >
-            {Object.keys(appIcons).map((iconName, index) => (
+            {APP_ICON_NAMES.map((iconName, index) => (
               <MenuItem
                 key={iconName}
                 selected={index === selectedIndex}
                 onClick={(event) => handleMenuItemClick(event, index)}
               >
                 <div className='flex items-center gap-5'>
-                  <img
+                  <AppIcon
+                    name={iconName}
                     className="quick-config-icon-image"
-                    src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                     alt="db-icon"
                   />
                   {iconName}

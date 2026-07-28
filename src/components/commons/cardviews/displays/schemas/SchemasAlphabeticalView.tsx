@@ -8,8 +8,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { checkIcon } from '../../../../../styles/scripts';
-import appIcons from '../../../../../styles/app-icons';
+import { AppIcon } from '../../../AppIcon';
 import { Scope } from '../../../../../store/databases/types';
 import { Box } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
@@ -307,17 +306,12 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
                         <KeepTooltip content={schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? 'Used by Scopes' : 'Not used by Scopes'}>
                           <Box className={`api-status ${schemasWithScopes?.includes(data.nsfPath + ":" + data.schemaName) ? '' : 'unused'}`} />
                         </KeepTooltip>
-                        {checkIcon(data.iconName) ? (
-                          <img
-                            className='h-44px'
-                            src={`data:image/svg+xml;base64, ${
-                              appIcons[data.iconName]
-                            }`}
-                            alt="database-icon"
-                          />
-                        ) : (
-                          <DBIcon />
-                        )}
+                        <AppIcon
+                          name={data.iconName}
+                          className='h-44px'
+                          alt="database-icon"
+                          fallback={<DBIcon />}
+                        />
                         <Box onClick={() => openDatabase(data)} className='text-container' tabIndex={1} onKeyDown={(e) => {handleKeyPress(e, data)}}>
                           <KeepTooltip onClick={() => openDatabase(data)} content={`${data.schemaName}(${data.nsfPath})`}>
                             <span

@@ -14,7 +14,7 @@ import { quickConfig } from '../../store/databases/action';
 import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
-import appIcons from '../../styles/app-icons';
+import { appIconPayload, useAppIcons } from '../../services/app-icons';
 import { KeepAlert, KeepDrawer } from '../keep-elements/KeepElements';
 
 const QuickConfigFormSchema = Yup.object().shape({
@@ -68,6 +68,11 @@ export default function QuickConfigFormContainer() {
   const [icon, setIcon] = useState('beach');
   const [isDisabled, setIsDisabled] = useState(true);
 
+  // The POST body carries `icon` (the base64) next to `iconName`, so the payload must be
+  // resolvable at submit time even though it now lives in a lazily loaded chunk (#772).
+  // `index.tsx` warms it at boot, so it is present long before a drawer can be filled in.
+  const appIcons = useAppIcons();
+
   const formik = useFormik({
     initialValues: {
       scopeName: '',
@@ -75,7 +80,7 @@ export default function QuickConfigFormContainer() {
       nsfPath,
       schemaName,
       isActive: true,
-      icon: appIcons[icon],
+      icon: appIconPayload(icon, appIcons),
       iconName: icon,
       additionalModes: {
         odata: false,
@@ -94,7 +99,7 @@ export default function QuickConfigFormContainer() {
           scopeName: `${parseData.scopeName}`,
           server: '',
           nsfPath,
-          icon: appIcons[icon],
+          icon: appIconPayload(icon, appIcons),
           iconName: icon,
           agents: [],
           views: [],

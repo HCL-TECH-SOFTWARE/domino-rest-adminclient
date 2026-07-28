@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux';
 import { styled } from '@linaria/react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
-import appIcons from '../../styles/app-icons';
+import { AppIcon } from '../commons/AppIcon';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
 import { DeleteIcon } from '../../styles/CommonStyles';
@@ -236,10 +236,11 @@ const AppItem: React.FC<AppItemProps> = ({
                 </TableCell>
                 <TableCell className='app-name'>
                   <AppNameContainer>
-                    <AppImage
-                        src={`data:image/svg+xml;base64, ${appIcons[app.appIcon]}`}
+                    <AppIcon
+                        name={app.appIcon}
                         alt="db-icon"
                         className='color-hover'
+                        as={AppImage}
                     />
                     <div className='flex flex-col gap-2'>
                         <span className='small-text'>{app.appName}</span>
