@@ -362,17 +362,27 @@ declare global {
 }
 ```
 
-- [ ] **Step 4: Add the token**
+- [ ] **Step 4: Keep the header tint a literal — no token, no theme change**
 
-In `src/styles/keep-theme.css`, next to each `--keep-surface-accent` declaration (there are two — a light block near line 178 and a dark block near line 335), add the matching header tint. These values come from `ConsentsTable`'s current `light-dark(#F0F4F7, #252535)`, so the migration stays 1:1:
+**Superseded.** This step originally added `--keep-surface-header` to `keep-theme.css`.
+Do not. `keep-theme.css:174` records a deliberate decision that covers this exact colour:
+
+> Single-use tints (`#f0f4f7` in ConsentsTable, the two translucent whites on the login
+> glass panel) are left as literals: they are not duplicated, so a token would add
+> indirection without removing drift.
+
+The tint is still single-use after the move — only `ConsentsTable` bands its head — so the
+rationale still holds and `keep-theme.css` is not touched. The sheet uses the same
+`light-dark()` pair `ConsentsTable` uses today:
 
 ```css
-/* in the light block, beside --keep-surface-accent: #f8fbff; */
---keep-surface-header: #f0f4f7;
-
-/* in the dark block, beside --keep-surface-accent: #1e1e2e; */
---keep-surface-header: #252535;
+keep-data-table[header-band] thead {
+  background-color: light-dark(#f0f4f7, #252535);
+}
 ```
+
+Revisit only if a second screen wants the band; that is when a token would start removing
+drift rather than adding indirection.
 
 - [ ] **Step 5: Run test to verify it passes**
 

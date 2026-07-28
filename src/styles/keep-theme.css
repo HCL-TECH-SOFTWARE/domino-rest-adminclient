@@ -170,13 +170,22 @@
      *   accent     table headers and tab strips — #f8fbff in four places and
      *              #f9fbff in two, one unit apart in green and indistinguishable
      *   highlight  selected / active rows — #e6ebf5, three places
+     *   header     the banded <thead> — #f0f4f7, previously a single-use literal
+     *              in ConsentsTable
      *
-     * Single-use tints (`#f0f4f7` in ConsentsTable, the two translucent whites on
-     * the login glass panel) are left as literals: they are not duplicated, so a
-     * token would add indirection without removing drift.
+     * `header` was on the single-use list below until #771 moved that band into
+     * `keep-data-table`. Inside `src/components/keep-elements/**` the #708 rule
+     * applies — chrome colours are tokens, not `light-dark()` literals, because a
+     * literal looks theme-aware and so reads as correct in review. Enforced by
+     * `test/components/keep-elements/theme-selectors.test.ts`.
+     *
+     * Genuinely single-use tints (the two translucent whites on the login glass
+     * panel) are still left as literals: they are not duplicated, so a token would
+     * add indirection without removing drift.
      */
     --keep-surface-accent: #f8fbff;
     --keep-surface-highlight: #e6ebf5;
+    --keep-surface-header: #f0f4f7;
 
     /*
      * The two halves of --base-color (#765).
@@ -331,9 +340,12 @@
 
     /* The dark halves of the tints the light block introduces. `accent` collapses
        onto surface-default because that is what all six sites already used in dark
-       mode — the tint only ever existed in light. */
+       mode — the tint only ever existed in light. `header` keeps a distinct dark
+       value: ConsentsTable's band was `light-dark(#F0F4F7, #252535)`, so both halves
+       already existed and carrying them over keeps #771's migration 1:1. */
     --keep-surface-accent: #1e1e2e;
     --keep-surface-highlight: #3a3a5a;
+    --keep-surface-header: #252535;
 
     /* Both halves of the former --base-color read -60 in dark, which is what it
        already resolved to. See the light block for the contrast table. */

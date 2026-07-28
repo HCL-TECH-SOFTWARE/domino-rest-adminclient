@@ -171,7 +171,7 @@ Sourced from the existing duplicated blocks, so the migration is visually 1:1.
 - Container: `border-radius: var(--wa-border-radius-l)`, `1px solid var(--wa-color-surface-border)`, `background: var(--wa-color-surface-raised)`
 - Cells: `padding: 20px 30px`; header `font-weight: bold`, `padding-top: 30px`, bottom border `var(--wa-color-surface-border)`
 - Zebra: odd rows `var(--keep-surface-accent)` (already defined in `keep-theme.css`, light and dark)
-- Header band: `ConsentsTable` hardcodes `light-dark(#F0F4F7, #252535)`. **Replace with a token**, not the literal — that hardcoded pair is exactly the kind of thing the WA token work exists to remove. Add `--keep-surface-header` to `keep-theme.css` alongside `--keep-surface-accent`.
+- Header band: `ConsentsTable` uses `light-dark(#F0F4F7, #252535)`. **Keep it a literal.** An earlier draft of this spec called for a `--keep-surface-header` token; `keep-theme.css:174` already records the opposite decision and names this exact colour — single-use tints stay literals because "a token would add indirection without removing drift". It is still single-use after the move, so `keep-theme.css` is not touched. Revisit if a second screen wants the band.
 - `FormsTable` hardcodes `border-bottom: 1px solid #b8b8b8` where the others use `var(--wa-color-surface-border)`. Treat as a bug; use the token.
 
 **No `style=` attributes and no interpolated `style="${…}"`.** Production CSP sends
