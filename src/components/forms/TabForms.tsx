@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -28,6 +28,7 @@ import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
 import { KeepButton, KeepSwitch } from "../keep-elements/KeepElements";
+import { useAppDispatch } from '../../store/hooks';
 
 const ButtonsPanel = styled.div`
   margin: auto;
@@ -115,7 +116,7 @@ interface TabFormProps {
 const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, formList }) => {
   const { forms } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [searchKey, setSearchKey] = useState("");
   const [filtered, setFiltered] = useState(
     forms && forms.length > 0 ? [...forms] : []
@@ -168,15 +169,15 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   };
   function handleActivateAll() {
     const successMsg = "Successfully activated all forms."
-    dispatch(handleDatabaseForms(schemaData, dbName, forms, setSchemaData, successMsg) as any);
-    dispatch(pullForms(nsfPath, dbName, setData) as any);
+    dispatch(handleDatabaseForms(schemaData, dbName, forms, setSchemaData, successMsg));
+    dispatch(pullForms(nsfPath, dbName, setData));
   }
 
   async function handleDeactivateAll() {
     const customForms = forms.filter((form) => !formList.includes(form.formName))
     const successMsg = "Successfully deactivated all designer forms."
-    dispatch(handleDatabaseForms(schemaData, dbName, customForms, setSchemaData, successMsg) as any);
-    dispatch(pullForms(nsfPath, dbName, setData) as any);
+    dispatch(handleDatabaseForms(schemaData, dbName, customForms, setSchemaData, successMsg));
+    dispatch(pullForms(nsfPath, dbName, setData));
     setResetAllForms(false);
   }
 
@@ -258,7 +259,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         formName: value,
         formValue: value,
       }
-      await dispatch(addForm(true, newForm) as any)
+      await dispatch(addForm(true, newForm))
       navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${encodeURIComponent(value)}/access`)
     } else {
       dispatch(toggleAlert(`Please enter a valid form schema name!`))
@@ -336,7 +337,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
             onClick={() => {
               setCreateFormOpen(false)
               setValue("")
-              dispatch(addForm(false) as any)
+              dispatch(addForm(false))
             }}
           >Cancel</KeepButton>
           <KeepButton onClick={handleClickCreateForm}>Create</KeepButton>

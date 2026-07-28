@@ -10,7 +10,6 @@ import ApplicationIcon from '@mui/icons-material/Apps';
 import GenerateIcon from '@mui/icons-material/RotateLeft';
 import RemoveIcon from '@mui/icons-material/Delete';
 import SecurityIcon from '@mui/icons-material/Security';
-import { useDispatch } from 'react-redux';
 import { FormikProps } from 'formik';
 import { styled } from '@linaria/react';
 import Button from '@mui/material/Button';
@@ -31,6 +30,7 @@ import {
 import { checkIcon } from '../../../styles/scripts';
 import { apiRequestWithRetry } from '../../../utils/api-retry';
 import { KeepTooltip } from '../../keep-elements/KeepElements';
+import { useAppDispatch } from '../../../store/hooks';
 
 const AppImage = styled.img`
   margin-top: 8px;
@@ -55,7 +55,7 @@ const AppCard: React.FC<AppCardProps> = ({
   deleteApplication,
   formik
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [, setFormContext] = useContext(AppFormContext) as any;
   const [generating, setGenerating] = useState(false);
   const [appSecret, setAppSecret] = useState(null);

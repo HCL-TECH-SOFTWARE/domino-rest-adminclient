@@ -6,7 +6,7 @@
 
 import { useEffect } from 'react';
 import { styled } from '@linaria/react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Tip from './Tip';
 import database from './appdev.jpg';
 import databaseDev from './databasedev.jpg';
@@ -16,6 +16,7 @@ import keepBlockDiagram from './keepblockdiagram.svg';
 import { databases, apps as app } from '../../sidenav/Routes';
 import { AppState } from '../../../store';
 import { showPages } from '../../../store/account/action';
+import { useAppDispatch } from '../../../store/hooks';
 
 const SectionContainer = styled.div`
   padding: 0px 20px;
@@ -57,9 +58,9 @@ const FeatureContainer = styled.div`
 
 const Section = () => {
   const { navitems } = useSelector((state: AppState) => state.account);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(showPages() as any);
+    dispatch(showPages());
   }, [dispatch]);
   return (
     <SectionContainer>

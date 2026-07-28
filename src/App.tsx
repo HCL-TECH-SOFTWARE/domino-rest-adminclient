@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import LoginPage from './components/login/LoginPage';
 import AppShell from './AppShell';
 import { AppState } from './store';
@@ -20,10 +20,11 @@ import {
 import PageLoading from './components/loaders/PageLoading';
 import { TokenProps } from './store/account/types';
 import CallbackPage from './components/login/CallbackPage';
+import { useAppDispatch } from './store/hooks';
 
 const App: React.FC = () => {
   const [valid, setValid] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const { authenticated } = useSelector((state: AppState) => state.account);
 
@@ -49,7 +50,7 @@ const App: React.FC = () => {
 
         dispatch(authenticate());
         if ((today < storageTokenTime) && !idpLogin) {
-          dispatch(renewToken() as any);
+          dispatch(renewToken());
         } else {
           if (!idpLogin) {
             dispatch(removeAuth());

@@ -7,7 +7,7 @@
 import React, { useEffect } from 'react';
 import { styled } from '@linaria/react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -20,6 +20,7 @@ import { appRoutes as routes, apps, databases, settings } from './Routes';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 /**
  * The route list for `wa-page`'s `navigation` slot (#707).
@@ -98,14 +99,14 @@ const SideNav: React.FC<SidenavProps> = ({ expanded }) => {
   const location = useLocation();
   const { navitems } = useSelector((state: AppState) => state.account);
   const { databasePull } = useSelector((state: AppState) => state.databases);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(showPages() as any);
+    dispatch(showPages());
   }, [dispatch]);
 
   const handleQuickConfig = () => {
     if (!databasePull) {
-      dispatch(fetchKeepDatabases() as any);
+      dispatch(fetchKeepDatabases());
     }
     dispatch(toggleQuickConfigDrawer());
   };

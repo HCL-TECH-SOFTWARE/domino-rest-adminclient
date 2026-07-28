@@ -5,11 +5,12 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { KeepButton } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 interface DeleteApplicationDialogProps {
   dialogTitle: string;
@@ -43,7 +44,7 @@ const DeleteApplicationDialog: React.FC<DeleteApplicationDialogProps> = ({
     }
   }, [deleteDialogOpen])
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   return (
     <dialog ref={ref} className='dialog'>
       <FormDialogHeader

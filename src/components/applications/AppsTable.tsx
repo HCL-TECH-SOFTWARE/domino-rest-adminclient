@@ -22,8 +22,8 @@ import AppItem from './AppItem';
 import { FormikProps } from 'formik';
 import AppFilterContainer from './AppFilterContainer';
 import { fetchMyApps } from '../../store/applications/action';
-import { useDispatch } from 'react-redux';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
+import { useAppDispatch } from '../../store/hooks';
 
 const StyledTableHead = styled(TableHead)`
   border-bottom: 1px solid var(--wa-color-surface-border);
@@ -108,14 +108,14 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
   const [status, setStatus] = React.useState("All")
   const [appSecret, setAppSecret] = React.useState("All")
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
   const handleChangePage = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number,
   ) => {
     setPage(newPage);
-    dispatch(fetchMyApps() as any)
+    dispatch(fetchMyApps())
   };
 
   const handleChangeRowsPerPage = (

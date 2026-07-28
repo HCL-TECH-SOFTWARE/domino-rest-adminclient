@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { BUILD_VERSION } from '../../config.dev';
 import keepLogo from '../../assets/KeepNewIcon.png';
 import { AppState } from '../../store';
@@ -43,6 +43,7 @@ import type ApiErrorDialog from '../keep-elements/keep-api-error-dialog';
 import { AlertManager, checkForResponse } from '../../utils/common';
 import { applyAppearance } from '../../services/theme-service';
 import { getLogger } from '../../services/log-service';
+import { useAppDispatch } from '../../store/hooks';
 
 const log = getLogger('components/login/LoginPage');
 
@@ -248,7 +249,7 @@ const DivPaper = styled.div`
 
 const LoginPage = () => {
   const { error, error401, idpLogin, errorMessage } = useSelector((state: AppState) => state.account);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate()
   const protocol = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '')
 
@@ -462,7 +463,7 @@ const LoginPage = () => {
   }
 
   const logInUsingIdp = async (idp: any) => {
-    await dispatch(setCurrentIdp(idp) as any)
+    await dispatch(setCurrentIdp(idp))
     localStorage.setItem('oidc_config_url', idp.wellKnown)
     localStorage.setItem('client_id', idp.adminui_config.client_id)
     const redirectUri = window.location.href.replace(/admin\/ui.*/, 'admin/ui/callback')

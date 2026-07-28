@@ -13,7 +13,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { Box, Button, ButtonBase } from "@mui/material";
-import { useDispatch, } from "react-redux";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +23,7 @@ import { IoMdClose } from "react-icons/io";
 import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
 import { KeepButton, KeepTooltip } from "../keep-elements/KeepElements";
+import { useAppDispatch } from '../../store/hooks';
 
 const StyledTableCell = styled(TableCell)`
   padding-left: 30px;
@@ -182,14 +182,14 @@ const FormsTable: React.FC<FormsTableProps> = ({
   setSchemaData,
   formList,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const ref = React.useRef<HTMLDialogElement>(null)
   const [activateFormName, setActivateFormName] = React.useState("")
   
   const navigate = useNavigate();
   const openForm = (formName: string, modeLength: number) => {
     if (modeLength > 0) {
-      dispatch(addForm(false) as any)
+      dispatch(addForm(false))
       navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${fullEncode(formName)}/access`);
     } else {
       setActivateFormName(formName)

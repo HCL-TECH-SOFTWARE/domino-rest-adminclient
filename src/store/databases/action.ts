@@ -62,7 +62,7 @@ import {
 } from './types';
 import { setLoading } from '../loading/action';
 import { toggleDrawer, toggleQuickConfigDrawer } from '../drawer/action';
-import { AppState } from '..';
+import { AppState, AppDispatch } from '..';
 import { getFormIndex, getFormModeIndex } from './scripts';
 import { TOGGLE_DRAWER } from '../drawer/types';
 import { SET_VALUE, TOGGLE_DETAILS_LOADING } from '../loading/types';
@@ -617,7 +617,7 @@ export const addActiveFields = (formName: string, fields: Array<any>) => {
  * @param formName the unencoded name of the form
  */
 export const fetchFields = (schemaName: string, nsfPath: string, formName: string, externalName: string, designType: string) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: AppDispatch) => {
     try {
       // Encode the form name
       const encodedFormName = fullEncode(formName);
@@ -683,10 +683,10 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
       });
 
       // Save active form and fields for left panel
-      dispatch<any>(setActiveForm(schemaName, formName));
-      dispatch<any>(addActiveFields(externalName, draggableFields));
-      dispatch<any>(setLoadedForm(schemaName, formName));
-      dispatch<any>(setLoadedFields(externalName, draggableFields) as any);
+      dispatch(setActiveForm(schemaName, formName));
+      dispatch(addActiveFields(externalName, draggableFields));
+      dispatch(setLoadedForm(schemaName, formName));
+      dispatch(setLoadedFields(externalName, draggableFields));
 
       dispatch({
         type: SET_VALUE,
@@ -1142,7 +1142,7 @@ export const handleDatabaseForms = (
   successMsg: string,
   successCallback?: () => void
 ) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: AppDispatch) => {
     // Send the new views to the server
     const formModeData = {
       modeName: 'default',
@@ -1176,7 +1176,7 @@ export const handleDatabaseForms = (
         formToUpdate.push(newFormData);
       }
     });
-    dispatch(updateForms(schemaData, dbName, formToUpdate, setSchemaData, successMsg, successCallback) as any);
+    dispatch(updateForms(schemaData, dbName, formToUpdate, setSchemaData, successMsg, successCallback));
   };
 };
 
@@ -1331,7 +1331,7 @@ export const handleDatabaseViews = (
   setSchemaData: (data: any) => void,
   folderNames: Array<string>
 ) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: AppDispatch) => {
     // Build redux data
     const viewsData = viewsArray.map((view: any) => {
       return buildReduxViewData(view, active);
@@ -1339,7 +1339,7 @@ export const handleDatabaseViews = (
 
     // Update panels
     viewsData.forEach((view: any) => {
-      dispatch(updatePanels(dbName, view) as any);
+      dispatch(updatePanels(dbName, view));
     });
 
     // Save views
@@ -1378,7 +1378,7 @@ export const handleDatabaseViews = (
     const finalViews = await Promise.all(viewsList);
 
     // Send the new views to the server
-    dispatch(updateViews(schemaData, finalViews, setSchemaData) as any);
+    dispatch(updateViews(schemaData, finalViews, setSchemaData));
   };
 };
 
@@ -1574,7 +1574,7 @@ export const handleDatabaseAgents = (
   active: boolean,
   currentAgents: Array<any>,
 ) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: AppDispatch) => {
     // Build redux data
     const agentsData = agentsArray.map((agent: any) => {
       return buildReduxAgentData(agent, active);
@@ -1582,7 +1582,7 @@ export const handleDatabaseAgents = (
 
     // Update panels
     agentsData.forEach((agent: any) => {
-      dispatch(updateActiveAgents(dbName, agent) as any);
+      dispatch(updateActiveAgents(dbName, agent));
     });
 
     // Save agents
@@ -1614,7 +1614,7 @@ export const handleDatabaseAgents = (
     }
 
     // Send the new agents to the server
-    dispatch(updateAgents(schemaData, agentsList, dbName, currentAgents) as any);
+    dispatch(updateAgents(schemaData, agentsList, dbName, currentAgents));
   };
 };
 
@@ -1683,7 +1683,7 @@ function saveAgentDetails(currentAgent: any) {
  * update agents to server
  */
 export const updateAgents = (schemaData: Database, agentsData: any, dbName: string, currentAgents: Array<any>) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: AppDispatch) => {
     let filteredForms = schemaData.forms
       .filter((form) => form.formModes.length > 0)
       .map((form) => {
@@ -1723,13 +1723,13 @@ export const updateAgents = (schemaData: Database, agentsData: any, dbName: stri
         const error = JSON.parse(err)
 
         dispatch(setApiLoading(false));
-        dispatch(setAgents(dbName, currentAgents) as any)
+        dispatch(setAgents(dbName, currentAgents))
         dispatch(toggleAlert(`Update agents failed! ${error.message}`));
       }
       dispatch(clearDBError());
     } catch (err: any) {
       dispatch(setApiLoading(false));
-      dispatch(setAgents(dbName, currentAgents) as any)
+      dispatch(setAgents(dbName, currentAgents))
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
         dispatch(setDBError(err.response.statusText));
@@ -2749,7 +2749,7 @@ export function setOnlyShowSchemasWithScopes(onlyShowSchemasWithScopes: boolean)
  * get all fields from nsf path
  */
 export const getAllFieldsByNsf = (nsfPath: any) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: AppDispatch) => {
     try {
       const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
@@ -2836,7 +2836,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
         finalFields.push(symbolFileField);
       }
   
-      dispatch<any>(addActiveFields('keep_internal_form_for_allFields', finalFields));
+      dispatch(addActiveFields('keep_internal_form_for_allFields', finalFields));
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)

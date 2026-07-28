@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import {
         fetchKeepDatabases,
@@ -15,13 +15,14 @@ import { SettingContext } from '../database/settings/SettingContext';
 import QuickConfigFormContainer from '../database/QuickConfigFormContainer';
 import { WrapperContainer } from '../commons/Wrappers';
 import { toggleAlert } from '../../store/alerts/action';
+import { useAppDispatch } from '../../store/hooks';
 
 const QuickConfigView = () => {
   const { databasePull, scopePull, permissions } = useSelector(
     (state: AppState) => state.databases
   );
   const permissionCreate = permissions.createDbMapping;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [context, setContext] = useState({}) as any;
 
   useEffect(() => {
@@ -31,7 +32,7 @@ const QuickConfigView = () => {
     }
     if(permissionCreate){
       if (!databasePull) {
-        dispatch(fetchKeepDatabases() as any);
+        dispatch(fetchKeepDatabases());
       }
       dispatch(toggleDrawer());
     }else{

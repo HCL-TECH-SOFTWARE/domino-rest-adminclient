@@ -5,11 +5,12 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
 import { toggleErrorDialog } from '../../store/dialog/action';
 import { KeepButton } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 /**
  * This component displays a Delete confirmation dialog
@@ -19,7 +20,7 @@ import { KeepButton } from '../keep-elements/KeepElements';
  */
 const NetworkErrorDialog: React.FC = () => {
   const { errorDialogOpen, errorDialogMessage } = useSelector((state: AppState) => state.dialog);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const ref = useRef<HTMLDialogElement>(null);
 

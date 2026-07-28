@@ -6,10 +6,10 @@
 
 import React from 'react';
 import LogoutIcon from '@mui/icons-material/ExitToApp';
-import { useDispatch } from 'react-redux';
 import { logout } from '../../store/account/action';
 import { styled } from '@linaria/react';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../../store/hooks';
 
 const OptionListContainer = styled.div`
 `;
@@ -24,12 +24,12 @@ interface OptionListProps {
 }
 
 const OptionList: React.FC<OptionListProps> = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate()
   
 
   const logoutUser = () => {
-    dispatch(logout() as any);
+    dispatch(logout());
     navigate('/')
   };
 

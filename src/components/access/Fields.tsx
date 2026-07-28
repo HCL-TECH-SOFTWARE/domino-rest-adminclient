@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { styled } from '@linaria/react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { MenuItem, CircularProgress, Select } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
@@ -20,6 +20,7 @@ import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const FieldContainer = styled.div`
   border: 1px solid var(--wa-color-surface-border);
@@ -170,7 +171,7 @@ interface FieldsProps {
 }
 
 const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, setTabValue }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // Sort forms liat before display
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
@@ -219,12 +220,12 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
     ];
 
     if (!designFormNames.includes(formName)) {
-      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)));
       dispatch(setLoading({ status: false }));
     } else if (formsInDb.length > 0 && !!formName && !newForm.enabled) {
-      dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
+      dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms'));
     } else if (!newForm.enabled) {
-      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
+      dispatch(getAllFieldsByNsf(fullEncode(nsfPath)));
     }
   }, [schemaName, nsfPath, formName, formsInDb, subformsInDb, newForm, dispatch]);
 
@@ -248,16 +249,16 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
   const onAddExistForm = async (schemaName: string, nsfPath: any, formName: string, externalName: string, designType: string) => {
     dispatch(setLoading({ status: true }));
     if (formName === 'keep_internal_form_for_allFields') {
-      await dispatch(getAllFieldsByNsf(fullEncode(nsfPath)) as any);
+      await dispatch(getAllFieldsByNsf(fullEncode(nsfPath)));
     } else {
-      await dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, externalName, designType) as any);
+      await dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, externalName, designType));
     }
     dispatch(setLoading({ status: false }));
   };
 
   const handleRefreshFields = async () => {
     dispatch(setLoading({ status: true }));
-    await dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms') as any);
+    await dispatch(fetchFields(schemaName, fullEncode(nsfPath), formName, formName, 'forms'));
     dispatch(setLoading({ status: false }));
   };
 

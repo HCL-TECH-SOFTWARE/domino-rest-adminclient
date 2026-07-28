@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import { styled } from '@linaria/react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
@@ -26,6 +26,7 @@ import {
   InputContainer,
 } from '../../styles/CommonStyles';
 import { KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const Forms = styled.form`
   display: flex;
@@ -95,7 +96,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
   const { dbError, dbErrorMessage } = useSelector(
     (state: AppState) => state.databases
   );
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [searchValue, setSearchValue] = useState('');
   const [filtered, setFiltered] = useState([...availableDatabases]);

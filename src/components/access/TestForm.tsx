@@ -12,7 +12,7 @@ import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@linaria/react';
 import { FormikProps } from 'formik';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppState } from '../../store';
 import { clearFormulaResults } from '../../store/databases/action';
@@ -25,6 +25,7 @@ import {
   AutoContainer,
 } from '../../styles/CommonStyles';
 import { KeepCheckbox } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const TestsPanel = styled.div`
   padding-left: 35px;
@@ -83,7 +84,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
   const saveFormulaResults = useSelector(
     (state: AppState) => state.databases.saveFormulaResults
   );
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   return (
     <FormContentContainer role="presentation" className='full-width'>

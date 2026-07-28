@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useLocation } from 'react-router-dom';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Fields from './Fields';
 import { AccessModeContainer } from './styles';
 import TabsAccess from './TabsAccess';
@@ -28,10 +28,11 @@ import GenericLoading from '../loading/GenericLoading';
 import ModeCompare from './ModeCompare';
 import { KeepButton } from '../keep-elements/KeepElements';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
+import { useAppDispatch } from '../../store/hooks';
 
 const AccessMode: React.FC = () => {
   const [state, setstate] = useState({ [uuid()]: [] }) as any;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [modes, setModes] = useState<Array<Mode>>([]);
 
   // Refs so setPageIndex always reads the latest values, even when
@@ -101,7 +102,7 @@ const AccessMode: React.FC = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchSchema(nsfPath, dbName, setSchemaData) as any)
+    dispatch(fetchSchema(nsfPath, dbName, setSchemaData))
   }, [dispatch, nsfPath, dbName])
 
   useEffect(() => {
@@ -186,9 +187,9 @@ const AccessMode: React.FC = () => {
       })
     }
     if (fetchFieldsArray.length === 0) {
-      dispatch(setLoadedFields(formName, []) as any);
-      dispatch(addActiveFields(formName, []) as any);
-      dispatch(cacheFormFields(dbName, formName, []) as any);
+      dispatch(setLoadedFields(formName, []));
+      dispatch(addActiveFields(formName, []));
+      dispatch(cacheFormFields(dbName, formName, []));
     }
     if (allModes.length > 0) {
       fetchSchemaFields();

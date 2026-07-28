@@ -6,7 +6,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ColumnDetails from './ColumnDetails';
-import { useDispatch } from 'react-redux';
 import { fetchViews, updateSchema } from '../../store/databases/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../../store/account/action';
@@ -26,6 +25,7 @@ import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { KeepButton } from '../keep-elements/KeepElements';
 import { getLogger } from '../../services/log-service';
+import { useAppDispatch } from '../../store/hooks';
 
 const log = getLogger('components/forms/EditView');
 
@@ -63,7 +63,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
   const editRef = useRef<HTMLDialogElement>(null);
   const resetRef = useRef<HTMLDialogElement>(null);
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
 
   const { folders } = useSelector((state: AppState) => state.databases)
 
@@ -240,7 +240,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         forms,
       };
 
-      dispatch(updateSchema(updatedSchema, setSchemaData) as any);
+      dispatch(updateSchema(updatedSchema, setSchemaData));
       setActiveViews(dbName, viewsBuffer);
       setOpen(false);
     }
@@ -320,7 +320,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         owners,
         forms,
       };
-      dispatch(updateSchema(updatedSchema, setSchemaData) as any);
+      dispatch(updateSchema(updatedSchema, setSchemaData));
       handleClose();
       
       setActiveViews(dbName, viewsBuffer);
@@ -486,7 +486,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
       });
     });
     // Save Active Views \ Agents Data (Right Panel)
-    dispatch(fetchViews(dbName, nsfPath) as any);
+    dispatch(fetchViews(dbName, nsfPath));
     dispatch({
       type: SET_ACTIVEVIEWS,
       payload: {

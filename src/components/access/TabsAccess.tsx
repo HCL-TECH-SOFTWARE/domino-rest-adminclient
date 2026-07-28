@@ -7,7 +7,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Button from '@mui/material/Button';
 import { styled } from '@linaria/react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -38,6 +38,7 @@ import { FiSave } from "react-icons/fi";
 import { Database } from '../../store/databases/types';
 import { KeepTooltip } from '../keep-elements/KeepElements';
 import { getLogger } from '../../services/log-service';
+import { useAppDispatch } from '../../store/hooks';
 
 const log = getLogger('components/access/TabsAccess');
 
@@ -133,7 +134,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
   saveRef,
   postSaveActionRef
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const { scopes, newForm } = useSelector(
     (state: AppState) => state.databases
@@ -473,7 +474,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           }
         ]
       }
-      dispatch(updateSchema(newSchema, setSchemaData) as any)
+      dispatch(updateSchema(newSchema, setSchemaData))
       setHasUnsavedChanges(false);
       navigate(`/schema/${encodeURIComponent(nsfPath)}/${db}`);
     } else {
@@ -495,7 +496,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         (mode: any) => currentModeValue === mode.modeName
       );
       setCurrentModeIndex(oriCardIndex);
-      await dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode, setSchemaData) as any);
+      await dispatch(updateFormMode(currentSchema, form, [], formData, -1, cloneMode, setSchemaData));
       // After Saved the tab all data will be fetch from latest state again to ensure accuracy
       setCurrentModeValue(formModes[oriCardIndex].modeName);
       setHasUnsavedChanges(false);

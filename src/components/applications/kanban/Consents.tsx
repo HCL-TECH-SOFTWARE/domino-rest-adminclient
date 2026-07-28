@@ -13,12 +13,12 @@ import { RxDividerVertical } from 'react-icons/rx';
 import ConsentsTable from './ConsentsTable';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
-import { useDispatch } from 'react-redux';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
 import { KeepButton } from '../../keep-elements/KeepElements';
 import ZeroResultsWrapper from '../../commons/ZeroResultsWrapper';
 import FormDialogHeader from '../../dialogs/FormDialogHeader';
+import { useAppDispatch } from '../../../store/hooks';
 const ConsentsContainer = styled.div`
   display: flex;
   gap: 16px;
@@ -81,7 +81,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
 
   const ref = useRef<HTMLDialogElement>(null);
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleCloseDialog = () => {
     dispatch(toggleDeleteConsent('', '', '', ''));
@@ -89,7 +89,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
 
   // Handle deleting/revoking consent
   const confirmDeleteConsent = () => {
-    dispatch(deleteConsent(deleteUnid, handleCloseDialog) as any);
+    dispatch(deleteConsent(deleteUnid, handleCloseDialog));
   };
 
   const handleClickReset = () => {

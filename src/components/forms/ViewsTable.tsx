@@ -16,12 +16,12 @@ import ActivateSwitch from './ActivateSwitch';
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
-import { useDispatch } from 'react-redux';
 import { toggleAlert } from '../../store/alerts/action';
 import { FiEdit2 } from 'react-icons/fi';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaRegFolderOpen } from "react-icons/fa";
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const StyledTableCell = styled(TableCell)`
   padding-left: 30px;
@@ -110,7 +110,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { folders } = useSelector((state: AppState) => state.databases);
   const folderNames = folders.map((folder) => {return folder.viewName});
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleClickViewName = (viewName: string, viewActive: boolean) => {
     if (!viewActive) {
