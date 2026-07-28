@@ -130,6 +130,44 @@ describe('keep-theme.css — the brand ramp is the only purple (#765)', () => {
   });
 });
 
+describe('dark-mode.css — element styling belongs in the element (#765)', () => {
+  /*
+   * dark-mode.css used to restate, from the document, what 15 element rules
+   * already say inside their own shadow roots. #708 tokenized the elements; these
+   * became dead weight, and worse than dead weight: a `light-dark()` in a `::part`
+   * rule is evaluated in the *shadow tree's* color-scheme context, which is the
+   * inheritance gap #708 documented — so the global copy could resolve to the wrong
+   * branch while the element's own rule resolved correctly.
+   *
+   * Deleting them was verified to change nothing: every wa-* part and keep-* host
+   * computes the same colour before and after, measured in Chrome through the
+   * keep-* wrappers the app actually renders. (Probing a *bare* <wa-drawer> or
+   * <wa-card> shows a difference, but the app never mounts one — they only exist
+   * inside keep-drawer and keep-default-card, which style their own parts.)
+   *
+   * The rule this encodes: style an element inside the element. The document sheet
+   * is for MUI, which has no shadow root and cannot style itself.
+   */
+  const DARK = readFileSync(join(__dirname, '../../src/styles/dark-mode.css'), 'utf8').replace(
+    /\/\*[\s\S]*?\*\//g,
+    '',
+  );
+
+  it('has no rule whose selectors are all wa-* or keep-* elements', () => {
+    const offenders: string[] = [];
+    for (const [, selector] of DARK.matchAll(/([^{}]+)\{[^{}]*\}/g)) {
+      const parts = selector
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (parts.length && parts.every((p) => /^(wa|keep)-[a-z-]+(::part\([a-z-]+\))?$/.test(p))) {
+        offenders.push(parts.join(', '));
+      }
+    }
+    expect(offenders, 'move these into the element that owns them').toEqual([]);
+  });
+});
+
 describe('Web Awesome token names (#765)', () => {
   /*
    * Shoelace-era names have now been found three times: #706 (--wa-color-brand-600/
