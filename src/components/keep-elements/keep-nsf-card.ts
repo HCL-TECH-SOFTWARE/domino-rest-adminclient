@@ -5,14 +5,13 @@
  * ========================================================================== */
 
 import { css, html, PropertyValues } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import './keep-schema-status';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import { FA_LIBRARY } from '../../services/icon-library';
-import appIcons from '../../styles/app-icons';
+import { appIconUri, DEFAULT_APP_ICON_NAME, loadAppIcons } from '../../services/app-icons';
+import { appIconSkeleton, appIconSkeletonStyles } from './app-icon-skeleton';
 import { KeepElement } from './keep-element';
-
-const ICONS = appIcons as Record<string, string>;
 
 type DatabaseEntry = {
   schemaName?: string;
@@ -28,7 +27,9 @@ type Database = { fileName?: string; databases?: DatabaseEntry[] };
  */
 @customElement('keep-nsf-card')
 export default class NsfCard extends KeepElement {
-  static styles = css`
+  static styles = [
+    appIconSkeletonStyles,
+    css`
     /* Opt the shadow DOM into the host's colour scheme. The colours here are
        --wa-color-* tokens now (#708) rather than light-dark(), so this no longer
        affects them, but it still governs native control and scrollbar painting
@@ -96,7 +97,15 @@ export default class NsfCard extends KeepElement {
     .search {
       width: 100%;
     }
-  `;
+
+    /* Matches the 32px font-size the wa-icon is rendered at, so the title row keeps
+       its height while the payload chunk is in flight. */
+    .app-icon-skeleton {
+      height: 32px;
+      width: 32px;
+    }
+  `,
+  ];
 
   @property({ type: Object }) accessor database: Database = {};
   @property({ type: Array }) accessor items: DatabaseEntry[] = [];
@@ -107,6 +116,24 @@ export default class NsfCard extends KeepElement {
 
   private isSchema = window.location.pathname.endsWith('/schema');
   private searchItem = '';
+
+  /** Set once the lazy icon payloads (#772) land, so `render` swaps skeleton for icon. */
+  @state() private accessor iconsReady = false;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    // Not a reactive property on its own — this element resolves its icon from the shared
+    // loader, which is normally already warm from `index.tsx`. `requestUpdate` is what
+    // turns the resolved payload into a re-render, since Lit cannot observe module state.
+    void loadAppIcons().then(
+      () => {
+        this.iconsReady = true;
+      },
+      () => {
+        /* leave the skeleton up; nothing here can retry usefully */
+      }
+    );
+  }
 
   protected updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('database')) {
@@ -124,21 +151,23 @@ export default class NsfCard extends KeepElement {
       : list.filter((item) => item.apiName?.toLowerCase().includes(needle));
   }
 
+  /**
+   * The card's icon: the entry's own if `iconName` resolves, the default otherwise, and a
+   * skeleton while the payload chunk is still in flight — an unresolved name and an
+   * unloaded chunk look identical from here, so the skeleton covers both until it lands.
+   */
+  private renderIcon() {
+    if (!this.iconsReady) return appIconSkeleton();
+    const src = appIconUri(this.iconName) || appIconUri(DEFAULT_APP_ICON_NAME);
+    return html`<wa-icon src=${src} label=${this.iconName}></wa-icon>`;
+  }
+
   render() {
     return html`
       <section>
         <div class="card-title">
             <div class="card-icon">
-                ${this.iconName && ICONS[this.iconName]
-                  ? html`
-                    <wa-icon
-                        src=${`data:image/svg+xml;base64,${ICONS[this.iconName]}`}
-                        label=${this.iconName}
-                    ></wa-icon>
-                `
-                  : html`
-                    <wa-icon src=${`data:image/svg+xml;base64,${ICONS['beach']}`}></wa-icon>
-                `}
+                ${this.renderIcon()}
             </div>
             <text class="nsf-filename">${this.database.fileName}</text>
         </div>

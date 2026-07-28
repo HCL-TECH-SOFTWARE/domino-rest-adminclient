@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { Database, SET_ACTIVEVIEWS } from '../../store/databases/types';
 import { checkIcon } from '../../styles/scripts';
-import appIcons from '../../styles/app-icons';
+import { DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
 import { setLoading } from '../../store/loading/action';
 import APILoadingProgress from '../loading/APILoadingProgress';
 import { FiSave, FiPlusSquare, FiRefreshCcw, FiPlus } from 'react-icons/fi';
@@ -108,8 +108,12 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     forms
   }), [apiName, description, nsfPath, iconName, dqlAccess, openAccess, allowCode, allowDecryption, formulaEngine, dqlFormula, requireRevisionToUpdate, icon, isActive, forms]);
 
-  const displayIconName = checkIcon(iconName) ? iconName : 'beach'
-  const displayIcon = checkIcon(iconName) ? icon : appIcons['beach']
+  const displayIconName = checkIcon(iconName) ? iconName : DEFAULT_APP_ICON_NAME
+  // Derived from the name, which is the value the backend persists. Falls back to the
+  // stored payload if the lazy icon chunk (#772) has somehow not landed by save time, so
+  // a save can never blank out an `icon` that was already there.
+  const appIcons = useAppIcons()
+  const displayIcon = appIconPayload(displayIconName, appIcons) || icon
   const dbContext = selectedDB
 
   const { loading } = useSelector( (state: AppState) => state.loading );

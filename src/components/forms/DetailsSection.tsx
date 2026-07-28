@@ -16,7 +16,8 @@ import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { AppState } from '../../store';
-import appIcons from '../../styles/app-icons';
+import { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
+import { AppIcon } from '../commons/AppIcon';
 import { checkIcon } from '../../styles/scripts';
 import { Database } from '../../store/databases/types';
 import Button from '@mui/material/Button';
@@ -230,8 +231,12 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
   const [dbContext, setDbContext] = useState(selectedDB);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(1);
-  const [displayIconName, setDisplayIconName] = useState(checkIcon(iconName) ? iconName : 'beach');
-  const [displayIcon, setDisplayIcon] = useState(checkIcon(iconName) ? icon : appIcons['beach']);
+  const [displayIconName, setDisplayIconName] = useState(checkIcon(iconName) ? iconName : DEFAULT_APP_ICON_NAME);
+  // The payload is derived from the name rather than tracked alongside it: the two used to
+  // be separate state that had to be set in lockstep, and only the name is authoritative
+  // (the backend persists `iconName`; `icon` is a cache of the same choice).
+  const appIcons = useAppIcons();
+  const displayIcon = appIconPayload(displayIconName, appIcons) || icon;
   const dispatch = useAppDispatch();
   const [editOpen, setEditOpen] = useState(false);
   const [discardDialog, setDiscardDialog] = useState(false);
@@ -354,29 +359,27 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
   const handleMenuItemClick = (_event: React.MouseEvent<HTMLElement>, index: number) => {
     setSelectedIndex(index);
     setAnchorEl(null);
-    const _iconName = Object.keys(appIcons)[index];
-    setDisplayIconName(_iconName);
-    setDisplayIcon(appIcons[_iconName]);
+    setDisplayIconName(APP_ICON_NAMES[index]);
   };
 
 
   const IconDropDown = (
     <InputContainer>
       <Button aria-controls="icons-menu" aria-haspopup="true" onClick={handleSelectIcon} className="icon-select">
-        <img
+        <AppIcon
+          name={displayIconName}
           className="details-section-icon-dropdown"
-          src={`data:image/svg+xml;base64, ${appIcons[displayIconName]}`}
           alt="db-icon"
         />
         <ChevronDown className='big-text color-text-primary' />
       </Button>
       <Menu id="lock-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose} disablePortal>
-        {Object.keys(appIcons).map((iconName, index) => (
+        {APP_ICON_NAMES.map((iconName, index) => (
           <MenuItem key={iconName} selected={index === selectedIndex} onClick={(event) => handleMenuItemClick(event, index)}>
             <div className='flex gap-5 items-center'>
-              <img
+              <AppIcon
+                name={iconName}
                 className="quick-config-icon-image"
-                src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
                 alt="db-icon"
               />
               {iconName}
@@ -388,9 +391,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
   );
 
   const SchemaIcon = (
-    <img
+    <AppIcon
+      name={iconName}
       className="details-section-icon-dropdown"
-      src={`data:image/svg+xml;base64, ${appIcons[iconName]}`}
       alt="db-icon"
     />
   );

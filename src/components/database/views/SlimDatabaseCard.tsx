@@ -11,8 +11,7 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import DBIcon from '@mui/icons-material/Storage';
 import { AppState } from '../../../store';
-import appIcons from '../../../styles/app-icons';
-import { checkIcon } from '../../../styles/scripts';
+import { AppIcon } from '../../commons/AppIcon';
 import { DeleteIcon } from '../../../styles/CommonStyles';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { toggleAlert } from '../../../store/alerts/action';
@@ -174,19 +173,13 @@ const SlimDatabaseCard: React.FC<DatabaseCardProps> = ({
     >
       <CardHeader onClick={() => openDatabase(database)} tabIndex={1} onKeyDown={handleKeyPress}>
         <ModeLogo>
-          {checkIcon(database.iconName) ? (
-            <DBImage
-              src={`data:image/svg+xml;base64, ${
-                appIcons[database.iconName]
-              }`}
-              alt="db-icon"
-              className='color-hover'
-            />
-          ) : (
-            <DBIcon
-              className='color-hover'
-            />
-          )}
+          <AppIcon
+            name={database.iconName}
+            alt="db-icon"
+            className='color-hover'
+            as={DBImage}
+            fallback={<DBIcon className='color-hover' />}
+          />
         </ModeLogo>
         <div className='text-content'>
           <KeepTooltip content={isSchema ? database.schemaName + '(' + database.nsfPath + ')' : database.apiName} without-arrow placement='bottom'>
