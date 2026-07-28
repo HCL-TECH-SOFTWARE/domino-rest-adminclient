@@ -45,10 +45,10 @@ export default class Drawer extends KeepElement {
     }
   `;
 
-  @property({ type: String }) label = 'Drawer Label';
-  @property({ type: Boolean }) open = false;
-  @property({ attribute: false }) closeFn: (...args: unknown[]) => void = () => {};
-  @property({ type: Array }) buttons: unknown[] = [];
+  @property({ type: String }) accessor label = 'Drawer Label';
+  @property({ type: Boolean }) accessor open = false;
+  @property({ attribute: false }) accessor closeFn: (...args: unknown[]) => void = () => {};
+  @property({ type: Array }) accessor buttons: unknown[] = [];
 
   render() {
     return html`

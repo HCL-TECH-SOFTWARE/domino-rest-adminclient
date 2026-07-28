@@ -130,7 +130,7 @@ function getLabelName(arrayName: string, key: string): string {
 }
 @customElement('keep-source-tree')
 export default class SourceTree extends KeepElement {
-  @property({ type: Object }) content: JsonRecord = {};
+  @property({ type: Object }) accessor content: JsonRecord = {};
 
   /** Working copy of `content`; read externally by `keep-source-header`. Plain
    *  (non-reactive) field: reassignments drive renders via explicit

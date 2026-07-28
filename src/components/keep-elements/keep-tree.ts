@@ -84,7 +84,7 @@ export default class Tree extends KeepElement {
   `;
 
   /** The nodes to render. Top level of the tree. */
-  @property({ type: Array }) nodes: KeepTreeNode[] = [];
+  @property({ type: Array }) accessor nodes: KeepTreeNode[] = [];
 
   render() {
     return html`

@@ -24,9 +24,9 @@ export default class Tooltip extends KeepElement {
     }
   `;
 
-  @property({ type: String }) content = '';
-  @property({ type: String }) placement = 'top';
-  @property({ attribute: 'without-arrow', type: Boolean }) withoutArrow = false;
+  @property({ type: String }) accessor content = '';
+  @property({ type: String }) accessor placement = 'top';
+  @property({ attribute: 'without-arrow', type: Boolean }) accessor withoutArrow = false;
 
   private _popup: HTMLDivElement | null = null;
   private _arrow: HTMLDivElement | null = null;

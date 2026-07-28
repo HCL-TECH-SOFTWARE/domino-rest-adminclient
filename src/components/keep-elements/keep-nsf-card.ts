@@ -98,12 +98,12 @@ export default class NsfCard extends KeepElement {
     }
   `;
 
-  @property({ type: Object }) database: Database = {};
-  @property({ type: Array }) items: DatabaseEntry[] = [];
-  @property({ type: Array }) schemasWithScopes: string[] = [];
-  @property({ type: String }) iconName = 'beach';
-  @property({ attribute: false }) deleteFn: (data: DatabaseEntry) => void = () => {};
-  @property({ attribute: false }) open: (schema: DatabaseEntry) => void = () => {};
+  @property({ type: Object }) accessor database: Database = {};
+  @property({ type: Array }) accessor items: DatabaseEntry[] = [];
+  @property({ type: Array }) accessor schemasWithScopes: string[] = [];
+  @property({ type: String }) accessor iconName = 'beach';
+  @property({ attribute: false }) accessor deleteFn: (data: DatabaseEntry) => void = () => {};
+  @property({ attribute: false }) accessor open: (schema: DatabaseEntry) => void = () => {};
 
   private isSchema = window.location.pathname.endsWith('/schema');
   private searchItem = '';

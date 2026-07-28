@@ -131,14 +131,14 @@ export default class TextFormArray extends KeepElement {
     }
   `;
 
-  @property({ type: Array }) data: Rule[] = [];
-  @property({ type: String }) title = '';
+  @property({ type: Array }) accessor data: Rule[] = [];
+  @property({ type: String }) accessor title = '';
   // Loose parameter type so consumer callbacks with a more specific row shape
   // (e.g. ScriptEditor's setValidationRules) remain assignable under
   // contravariant function-parameter checking.
-  @property({ attribute: false }) setData: (data: any[]) => void = () => {};
+  @property({ attribute: false }) accessor setData: (data: any[]) => void = () => {};
 
-  @state() private deleteRule = '';
+  @state() private accessor deleteRule = '';
   private index = 0;
 
   handleDataChanged(index: number, event: Event) {

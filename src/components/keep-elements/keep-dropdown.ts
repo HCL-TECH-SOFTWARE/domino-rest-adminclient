@@ -34,11 +34,11 @@ export default class Dropdown extends KeepElement {
     }
   `;
 
-  @property({ type: Array }) choices: string[] = [];
+  @property({ type: Array }) accessor choices: string[] = [];
 
   // Public reactive property: consumers (e.g. LoginPage) pass `selected` in,
   // and it is also updated internally when a dropdown-item is chosen.
-  @property({ type: String }) selected?: string;
+  @property({ type: String }) accessor selected: string | undefined;
 
 /*
  * No `style` passthrough to the inner Web Awesome control.

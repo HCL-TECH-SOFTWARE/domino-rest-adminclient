@@ -93,18 +93,18 @@ export default class SchemaStatus extends KeepElement {
     }
   `;
 
-  @property({ type: Object }) item: SchemaItem = {};
-  @property({ type: Array }) schemasWithScopes?: string[];
-  @property({ type: Boolean }) isSchema = window.location.pathname.endsWith('/schema');
-  @property({ type: String }) name = '';
-  @property({ type: String }) status = this.schemasWithScopes?.includes(
-    this.item.nsfPath + ':' + this.item.schemaName,
-  )
-    ? 'Used by Scopes'
-    : 'Not used by Scopes';
-  @property({ type: Boolean }) usedByScopes = false;
-  @property({ attribute: false }) onDelete: (e: Event) => void = () => {};
-  @property({ attribute: false }) onClickOpen: (e: Event) => void = () => {};
+  @property({ type: Object }) accessor item: SchemaItem = {};
+  @property({ type: Array }) accessor schemasWithScopes: string[] | undefined;
+  @property({ type: Boolean }) accessor isSchema = window.location.pathname.endsWith('/schema');
+  @property({ type: String }) accessor name = '';
+  // Constant on purpose. This used to be computed from `schemasWithScopes` and `item`, but
+  // a field initializer runs during construction — both are still at their defaults there
+  // (`undefined` and `{}`), so the expression could only ever produce this one string.
+  // `updated()` below is what actually derives it, as soon as `item` arrives.
+  @property({ type: String }) accessor status = 'Not used by Scopes';
+  @property({ type: Boolean }) accessor usedByScopes = false;
+  @property({ attribute: false }) accessor onDelete: (e: Event) => void = () => {};
+  @property({ attribute: false }) accessor onClickOpen: (e: Event) => void = () => {};
 
   protected updated(changedProperties: PropertyValues): void {
     if (changedProperties.has('item')) {

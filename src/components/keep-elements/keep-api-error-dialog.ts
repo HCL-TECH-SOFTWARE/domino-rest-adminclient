@@ -35,8 +35,8 @@ export default class ApiErrorDialog extends KeepElement {
     }
   `;
 
-  @property({ type: String }) errorMessage = '';
-  @property({ type: Boolean }) showDialog = false;
+  @property({ type: String }) accessor errorMessage = '';
+  @property({ type: Boolean }) accessor showDialog = false;
 
   render() {
     return html`

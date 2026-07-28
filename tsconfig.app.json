@@ -5,6 +5,16 @@
 //
 // `package.json` is listed because `src/config.dev.ts` imports it (with resolveJsonModule),
 // and a composite project must list every file in its program.
+//
+// ## Decorators
+//
+// The Lit elements use standard (TC39) decorators with the `accessor` keyword, so
+// `experimentalDecorators` is off and `useDefineForClassFields` keeps its `target: ES2022`
+// default of `true`. Neither needs an override here any more — see #747.
+//
+// This file is `noEmit: true`, so it only ever type-checks. The runtime-authoritative
+// decorator setting lives in the bundler configs (`vite.config.mts`, `vitest.config.ts`),
+// which must select SWC's `decoratorVersion: '2022-03'`; SWC does not read tsconfig.json.
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -19,7 +29,6 @@
     "composite": true,
     "declaration": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -36,7 +45,6 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "useDefineForClassFields": false,
     /* "allowImportingTsExtensions": true, */
   },
   "include": [

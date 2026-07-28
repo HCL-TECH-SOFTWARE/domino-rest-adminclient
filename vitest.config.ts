@@ -40,19 +40,25 @@ export default defineConfig({
   resolve: { conditions: ['browser'] },
   plugins: [
     // Keep wyw so Linaria `styled` components resolve to real components.
-    wyw({ include: ['**/*.{ts,tsx}'] }),
-    // tsDecorators enables SWC transpilation of TypeScript experimental
-    // decorators (tsconfig `experimentalDecorators`), which the Lit elements
-    // use (@customElement/@property/@state/@query). useDefineForClassFields
-    // must be false so decorated class fields compile to constructor
-    // assignments instead of `defineProperty`, which would otherwise shadow
-    // Lit's reactive accessors (see lit.dev/msg/class-field-shadowing).
+    // `exclude` mirrors vite.config.mts — the Lit elements use `css` from `lit`, never
+    // Linaria, and wyw's oxc type-stripper mis-desugars the `accessor` keyword. See the
+    // longer note there.
+    wyw({
+      include: ['**/*.{ts,tsx}'],
+      exclude: ['**/components/keep-elements/*.ts'],
+    }),
+    // Must mirror vite.config.mts exactly — see the longer note there.
+    //
+    // `tsDecorators` is SWC's *parser* flag, not a semantics choice: false makes SWC
+    // reject `@` outright. `decoratorVersion: '2022-03'` selects standard (TC39)
+    // decorators, which the Lit elements need for `accessor` (#747); SWC's default is
+    // legacy, and under it `accessor` members are emitted untransformed.
     react({
       tsDecorators: true,
       useAtYourOwnRisk_mutateSwcOptions(options) {
         options.jsc ??= {};
         options.jsc.transform ??= {};
-        options.jsc.transform.useDefineForClassFields = false;
+        options.jsc.transform.decoratorVersion = '2022-03';
       },
     }),
   ],
