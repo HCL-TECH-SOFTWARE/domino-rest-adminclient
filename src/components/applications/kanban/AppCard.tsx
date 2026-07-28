@@ -15,7 +15,7 @@ import { styled } from '@linaria/react';
 import Button from '@mui/material/Button';
 import { AppProp, AppFormProp } from '../../../store/applications/types';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
-import appIcons from '../../../styles/app-icons';
+import { AppIcon } from '../../commons/AppIcon';
 import { generateSecret } from '../../../store/applications/action';
 import { AppFormContext } from '../ApplicationContext';
 import { toggleAlert } from '../../../store/alerts/action';
@@ -26,7 +26,6 @@ import {
   Header,
   InputContainer
 } from '../../../styles/CommonStyles';
-import { checkIcon } from '../../../styles/scripts';
 import { KeepButton, KeepTooltip } from '../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../store/hooks';
 
@@ -207,15 +206,13 @@ const AppCard: React.FC<AppCardProps> = ({
         </Action>
         <Header>
           <Icon>
-            {checkIcon(item.appIcon) ? (
-              <AppImage
-                src={`data:image/svg+xml;base64, ${appIcons[item.appIcon]}`}
-                alt="db-icon"
-                className='color-hover'
-              />
-            ) : (
-              <ApplicationIcon className='app-card-app-icon' />
-            )}
+            <AppIcon
+              name={item.appIcon}
+              alt="db-icon"
+              className='color-hover'
+              as={AppImage}
+              fallback={<ApplicationIcon className='app-card-app-icon' />}
+            />
           </Icon>
           <KeepTooltip content={item.appName}>
             <span className="appName" color="textPrimary">

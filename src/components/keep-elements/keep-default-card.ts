@@ -8,6 +8,7 @@ import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import { KeepElement } from './keep-element';
+import { appIconSkeleton, appIconSkeletonStyles } from './app-icon-skeleton';
 
 /**
  * Card summarising a single Keep entity (schema/scope/…) built on `<wa-card>`.
@@ -16,6 +17,7 @@ import { KeepElement } from './keep-element';
 @customElement('keep-default-card')
 export default class DefaultCard extends KeepElement {
   static styles = [
+    appIconSkeletonStyles,
     css`
         /* Inherit color-scheme from the host's ancestor (documentElement toggles
            it via inline style). The colours here no longer depend on it — they
@@ -131,6 +133,13 @@ export default class DefaultCard extends KeepElement {
             display: block;
         }
 
+        /* Same 55px box as the img above (plus its 10px padding), so swapping the
+           skeleton for the real icon does not move the card's text. */
+        .app-icon-skeleton {
+            height: 75px;
+            width: 75px;
+        }
+
         div.main {
             display: flex;
             flex-direction: row;
@@ -206,7 +215,9 @@ export default class DefaultCard extends KeepElement {
             </section>
             <div class="main">
                 <div class="icon">
-                    <img src="${this.icon}" alt="${this.title}" />
+                    ${this.icon
+                      ? html`<img src="${this.icon}" alt="${this.title}" />`
+                      : appIconSkeleton()}
                 </div>
                 <section class="titles">
                     <strong><text>${this.title}</text></strong>

@@ -73,7 +73,7 @@ import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/
 import { toggleSettings } from '../dbsettings/action';
 import { convert2FieldType, convertDesignType2Format } from '../../utils/field-types';
 import { AlertManager, fullEncode } from '../../utils/common';
-import appIcons from '../../styles/app-icons';
+import { getAppIcons, loadAppIcons } from '../../services/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
@@ -192,6 +192,11 @@ export function deleteSchema(dbData: any) {
         dispatch(toggleDeleteDialog());
         dispatch(toggleAlert(`Delete schema failed!`));
       }
+    } else {
+      // The flag is set before these are validated, so returning early without clearing
+      // it stranded the screen on a call that never went out.
+      dispatch(setApiLoading(false));
+      log.error('Delete schema called without an nsfPath or schemaName', { dbData });
     }
   };
 }
@@ -259,7 +264,7 @@ export const fetchScope = async (scopeData: any) => {
 export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: (schemaData: any) => void) => {
   return async (dispatch: Dispatch) => {
     try {
-      const { response, data } = await apiRequestWithRetry(() =>
+      const { response, data, error } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -268,6 +273,10 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
         })
       )
 
+      // apiRequestWithRetry returns a null response for a request that never completed.
+      if (!response) {
+        throw new Error(error ?? 'the request did not complete')
+      }
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }
@@ -278,15 +287,23 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
         payload: false
       });
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-
-      log.error('Error fetching schema', { error });
+      // The old JSON.parse over the stringified error threw for anything that was not a
+      // JSON body, so this handler failed and the rejection escaped the thunk.
+      log.error('Error fetching schema', { error: e?.message ?? String(e) });
     }
   };
 };
 
-const processResponse = (response: any, dispatch: Dispatch, scopeList: Array<any>) => {
+const processResponse = async (response: any, dispatch: Dispatch, scopeList: Array<any>) => {
+  // `displayResult` puts the base64 payload in the store next to `iconName`, and it runs
+  // synchronously per streamed chunk. Resolving the lazy icon chunk (#772) once, here,
+  // lets everything downstream keep reading it synchronously without threading a promise
+  // through `processText` → `processBuffer` → `processPart`. By this point the warm-up in
+  // `index.tsx` has almost always finished, so this awaits an already-settled promise; if
+  // the chunk failed to load the stream still processes, just with empty `icon` fields —
+  // every render path resolves its own icon from `iconName` anyway.
+  await loadAppIcons().catch(() => {});
+
   const reader = response.body.getReader();
   const td = new TextDecoder('utf-8');
   let buffer = '';
@@ -356,6 +373,8 @@ const processPart = (part: string, dispatch: Dispatch, callback: any, scopeList:
 
 const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
   if (!!json.configurations && json.configurations.length > 0) {
+    // Already resolved: `processResponse` awaited the icon chunk before opening the stream.
+    const appIcons = getAppIcons();
     const { configurations } = json;
     let schemasWithScopes: Array<{
       schemaName: string;
@@ -1003,7 +1022,7 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const { response, data } = await apiRequestWithRetry(() =>
+      const { response, data, error: requestError } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, {
           method: 'POST',
           headers: {
@@ -1014,6 +1033,10 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
         })
       )
 
+      // apiRequestWithRetry returns a null response for a request that never completed.
+      if (!response) {
+        throw new Error(requestError ?? 'the request did not complete')
+      }
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }
@@ -1044,16 +1067,20 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
       dispatch(setApiLoading(false));
       dispatch(clearDBError());
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      // `setApiLoading(true)` is dispatched on entry and was only cleared on the success
+      // path, so a failed create left the eight screens reading `dialog.loading` stuck.
+      dispatch(setApiLoading(false));
 
-      // Use the response error if it's available
-      if (error) {
-        log.error('Error adding schema', { error })
-        dispatch(setDBError(error.message));
-      } else {
-        dispatch(setDBError(error));
+      const raw = e?.message ?? String(e);
+      let message = raw;
+      try {
+        message = JSON.parse(raw).message ?? raw;
+      } catch {
+        // Not a JSON body — the raw text is the best message available.
       }
+
+      log.error('Error adding schema', { error: message })
+      dispatch(setDBError(message));
 
       dispatch({
         type: CLEAR_SCHEMA_FORM,
@@ -1076,7 +1103,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         payload: false
       });
       try {
-        const { response, data } = await apiRequestWithRetry(() =>
+        const { response, data, error: requestError } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1087,6 +1114,10 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
           })
         )
 
+        // apiRequestWithRetry returns a null response for a request that never completed.
+        if (!response) {
+          throw new Error(requestError ?? 'the request did not complete')
+        }
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
         }
@@ -1104,16 +1135,26 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(`Schema has been successfully updated.`));
       } catch (e: any) {
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
-        
-        dispatch(toggleAlert(`Update schema failed! ${error.message}`));
+        // Cleared here as well as on the success path above; without it a failed update
+        // left `dialog.loading` on for good.
+        dispatch(setApiLoading(false));
+
+        const raw = e?.message ?? String(e);
+        let message = raw;
+        try {
+          message = JSON.parse(raw).message ?? raw;
+        } catch {
+          // Not a JSON body — the raw text is the best message available.
+        }
+
+        dispatch(toggleAlert(`Update schema failed! ${message}`));
         dispatch({
           type: UPDATE_ERROR,
           payload: true
         });
       }
     } catch (err: any) {
+      dispatch(setApiLoading(false));
       // Use the response error if it's available
       if (err.response && err.response.statusText) {
         dispatch(setDBError(err.response.statusText));

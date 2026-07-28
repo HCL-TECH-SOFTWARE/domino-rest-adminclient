@@ -13,7 +13,7 @@ import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { Database } from '../../../../../store/databases/types';
 import { SchemasMainContainer } from './SchemaStyles';
 import { KeepDefaultCard } from '../../../../keep-elements/KeepElements';
-import appIcons from '../../../../../styles/app-icons';
+import { appIconUri, useAppIcons } from '../../../../../services/app-icons';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
 import { useAppDispatch } from '../../../../../store/hooks';
@@ -35,6 +35,9 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
   const [selectedDB, setSelectedDB] = useState('');
   const [selectedNsf, setSelectedNsf] = useState('');
   const dispatch = useAppDispatch();
+  // Re-renders once the lazy icon chunk lands (#772); until then the cards show their
+  // own skeleton, because `KeepDefaultCard.icon` is a plain string prop.
+  const appIcons = useAppIcons();
 
 
   useEffect(() => {
@@ -76,9 +79,7 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
                 delete={true}
                 status={schemasWithScopes?.includes(database.nsfPath + ":" + database.schemaName)}
                 onClick={() => openSchema(database)}
-                icon={`data:image/svg+xml;base64, ${
-                  appIcons[database.iconName]
-                }`}
+                icon={appIconUri(database.iconName, appIcons)}
                 onDelete={() => onDeleteClick(database)}
               />
             );

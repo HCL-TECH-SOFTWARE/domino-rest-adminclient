@@ -9,8 +9,7 @@ import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useLocation } from '../../../../../router/react';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
-import { checkIcon } from '../../../../../styles/scripts';
-import appIcons from '../../../../../styles/app-icons';
+import { AppIcon } from '../../../AppIcon';
 import { Scope } from '../../../../../store/databases/types';
 import { KeepTooltip } from '../../../../keep-elements/KeepElements';
 
@@ -124,17 +123,12 @@ const ScopesAlphabeticalView: React.FC<ScopesAlphabeticalSchemaViewProps> = ({
                     tabIndex={1}
                     onKeyDown={(e) => {handleKeyPress(e, data)}}
                   >
-                    {checkIcon(data.iconName) ? (
-                      <img
-                        className='h-30px'
-                        src={`data:image/svg+xml;base64, ${
-                          appIcons[data.iconName]
-                        }`}
-                        alt="database-icon"
-                      />
-                    ) : (
-                      <DBIcon />
-                    )}
+                    <AppIcon
+                      name={data.iconName}
+                      className='h-30px'
+                      alt="database-icon"
+                      fallback={<DBIcon />}
+                    />
                     <KeepTooltip content={data.apiName} without-arrow>
                       <span
                         key={data.apiName}

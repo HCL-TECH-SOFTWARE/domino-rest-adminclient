@@ -23,7 +23,7 @@ import {
   PanelContent,
 } from '../../styles/CommonStyles';
 import { KeepAutocomplete, KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
-import appIcons from '../../styles/app-icons';
+import { APP_ICON_NAMES, useAppIcons } from '../../services/app-icons';
 import { useAppDispatch } from '../../store/hooks';
 
 interface AppFormProps {
@@ -77,6 +77,10 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   const scopeValueArr = formik.values.appScope.length > 0 && formik.values.appScope.split(',');
   const [scopeValues, setScopeValues] = useState<Array<string>>(formContext === 'Edit' ? scopeValueArr : []);
   const [selectedIcon, setSelectedIcon] = useState('beach');
+  // `KeepAutocomplete.icons` is a Lit property, so it takes the whole payload map rather
+  // than resolving names itself. `{}` until the lazy chunk (#772) lands, which the element
+  // already handles — it hides the icon column while the map is empty.
+  const appIcons = useAppIcons();
 
   const scopeAutocompleteRef = useRef<any>(null)
   const iconAutocompleteRef = useRef<any>(null)
@@ -289,7 +293,7 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
         <small>App Icons</small>
         <KeepAutocomplete
           ref={iconAutocompleteRef}
-          options={Object.keys(appIcons)}
+          options={APP_ICON_NAMES}
           icons={appIcons}
           className='half-width'
           selectedOption={selectedIcon}

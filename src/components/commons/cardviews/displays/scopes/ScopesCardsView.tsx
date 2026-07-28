@@ -9,7 +9,7 @@ import { ExtraFlex } from '../../../../flex';
 import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { SchemasMainContainer } from './ScopeStyles';
 import { KeepDefaultCard } from '../../../../keep-elements/KeepElements';
-import appIcons from '../../../../../styles/app-icons';
+import { appIconUri, useAppIcons } from '../../../../../services/app-icons';
 
 type ScopesCardsViewProps = {
   databases: Array<any>;
@@ -20,6 +20,9 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
   databases,
   openScope
 }) => {
+  // Re-renders once the lazy icon chunk lands (#772); until then the cards show their
+  // own skeleton, because `KeepDefaultCard.icon` is a plain string prop.
+  const appIcons = useAppIcons();
 
   return (
     <SchemasMainContainer>
@@ -33,9 +36,7 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
               <KeepDefaultCard
                 key={database.apiName + database.schemaName + index}
                 status={database.isActive}
-                icon={`data:image/svg+xml;base64, ${
-                  appIcons[database.iconName]
-                }`}
+                icon={appIconUri(database.iconName, appIcons)}
                 title={database.apiName}
                 subtitle={`${database.schemaName} (${database.nsfPath})`}
                 acl={`${database.maximumAccessLevel ? database.maximumAccessLevel : '*Editor'}`}
