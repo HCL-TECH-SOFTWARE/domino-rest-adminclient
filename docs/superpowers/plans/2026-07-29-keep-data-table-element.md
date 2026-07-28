@@ -362,27 +362,31 @@ declare global {
 }
 ```
 
-- [ ] **Step 4: Keep the header tint a literal — no token, no theme change**
+- [ ] **Step 4: Add the `--keep-surface-header` token**
 
-**Superseded.** This step originally added `--keep-surface-header` to `keep-theme.css`.
-Do not. `keep-theme.css:174` records a deliberate decision that covers this exact colour:
+`keep-theme.css` appears to say the opposite — it lists `#f0f4f7` among single-use tints
+"left as literals". It is outranked here. `test/components/keep-elements/theme-selectors.test.ts`
+enforces the #708 rule for `src/components/keep-elements/**`: chrome colours are tokens,
+never `light-dark()` literals, the exception being three enumerated editor-palette files.
+A literal in the sheet fails that test, and the reason it exists is exactly this case — a
+`light-dark()` pair looks theme-aware, so a new one reads as correct in review.
 
-> Single-use tints (`#f0f4f7` in ConsentsTable, the two translucent whites on the login
-> glass panel) are left as literals: they are not duplicated, so a token would add
-> indirection without removing drift.
-
-The tint is still single-use after the move — only `ConsentsTable` bands its head — so the
-rationale still holds and `keep-theme.css` is not touched. The sheet uses the same
-`light-dark()` pair `ConsentsTable` uses today:
+In the **light** block, beside `--keep-surface-accent: #f8fbff;`:
 
 ```css
-keep-data-table[header-band] thead {
-  background-color: light-dark(#f0f4f7, #252535);
-}
+    --keep-surface-header: #f0f4f7;
 ```
 
-Revisit only if a second screen wants the band; that is when a token would start removing
-drift rather than adding indirection.
+In the **dark** block, beside `--keep-surface-accent: #1e1e2e;`:
+
+```css
+    --keep-surface-header: #252535;
+```
+
+Both halves come from `ConsentsTable`'s current `light-dark(#F0F4F7, #252535)`, so the
+migration stays 1:1. Also update the light block's comment: move `header` into the list of
+tokenised tints and drop `#f0f4f7` from the single-use-literal list, or the file keeps
+contradicting the test.
 
 - [ ] **Step 5: Run test to verify it passes**
 

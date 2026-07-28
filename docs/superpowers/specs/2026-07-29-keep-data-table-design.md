@@ -171,7 +171,16 @@ Sourced from the existing duplicated blocks, so the migration is visually 1:1.
 - Container: `border-radius: var(--wa-border-radius-l)`, `1px solid var(--wa-color-surface-border)`, `background: var(--wa-color-surface-raised)`
 - Cells: `padding: 20px 30px`; header `font-weight: bold`, `padding-top: 30px`, bottom border `var(--wa-color-surface-border)`
 - Zebra: odd rows `var(--keep-surface-accent)` (already defined in `keep-theme.css`, light and dark)
-- Header band: `ConsentsTable` uses `light-dark(#F0F4F7, #252535)`. **Keep it a literal.** An earlier draft of this spec called for a `--keep-surface-header` token; `keep-theme.css:174` already records the opposite decision and names this exact colour — single-use tints stay literals because "a token would add indirection without removing drift". It is still single-use after the move, so `keep-theme.css` is not touched. Revisit if a second screen wants the band.
+- Header band: `ConsentsTable` uses `light-dark(#F0F4F7, #252535)`. **Replace with a `--keep-surface-header` token** carrying both halves, added beside `--keep-surface-accent` in each theme block.
+
+  There is an apparent conflict here, worth recording because it will come up again.
+  `keep-theme.css` lists this colour among single-use tints "left as literals … a token
+  would add indirection without removing drift". But `theme-selectors.test.ts` enforces the
+  #708 rule for `src/components/keep-elements/**`: chrome colours are tokens, never
+  `light-dark()` literals, because a literal *looks* theme-aware and so reads as correct in
+  review. The band is moving into `keep-data-table`, so the #708 rule is the one that
+  applies and the tint stops being single-use-in-a-component. Update the `keep-theme.css`
+  comment when adding the token so the two stop disagreeing.
 - `FormsTable` hardcodes `border-bottom: 1px solid #b8b8b8` where the others use `var(--wa-color-surface-border)`. Treat as a bug; use the token.
 
 **No `style=` attributes and no interpolated `style="${…}"`.** Production CSP sends
