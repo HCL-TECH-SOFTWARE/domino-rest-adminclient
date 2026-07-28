@@ -21,7 +21,10 @@ export const IDP_KEEP_API_URL = '/api/keepidp-v1'
 // Vite emits it alongside the app bundle and its URL follows the same base the bundle
 // loaded from. An absolute `/admin/...` constant resolves only when the app happens to
 // be mounted at `/admin/`, and fails silently everywhere else.
-export const MONACO_EDITOR_DIR = '/monaco-editor-core';
+//
+// MONACO_EDITOR_DIR = '/monaco-editor-core' lived here and had no reader. Monaco is a
+// bundled ESM import now, so nothing requests that path; the matching webjar entry and
+// its CSP went with it in #685.
 
 // Theming
 //

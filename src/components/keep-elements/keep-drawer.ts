@@ -38,7 +38,12 @@ export default class Drawer extends KeepElement {
             display: flex;
             flex-direction: column;
         }
-    `;
+  
+    /* Was a style attribute on wa-drawer until #685; see the note in keep-element.ts. */
+    wa-drawer {
+      --size: 40vw;
+    }
+  `;
 
   @property({ type: String }) label = 'Drawer Label';
   @property({ type: Boolean }) open = false;
@@ -50,7 +55,6 @@ export default class Drawer extends KeepElement {
       <wa-drawer
         label="${this.label}"
         ?open="${this.open}"
-        style="--size: 40vw;"
         @wa-after-hide="${this.closeFn}"
       >
         <slot></slot>

@@ -134,8 +134,13 @@ describe('keep-source-tree (SourceTree)', () => {
 
     el.handleClickAdd({ target: dialog } as unknown as Event);
 
-    expect(insertButton.getAttribute('style')).toBe('display:block');
-    expect(editButton.getAttribute('style')).toBe('display:none');
+    // Toggled by class. These used to be `setAttribute('style', 'display:block')`, which the
+    // production CSP blocks outright — so with the template's static `display: none` still
+    // applying, neither button ever appeared. jsdom has no CSP, so this assertion passed
+    // while the feature was dead in the browser (#685).
+    expect(insertButton.classList.contains('hidden')).toBe(false);
+    expect(editButton.classList.contains('hidden')).toBe(true);
+    expect(insertButton.hasAttribute('style')).toBe(false);
     expect(showModal).toHaveBeenCalledTimes(1);
   });
 
