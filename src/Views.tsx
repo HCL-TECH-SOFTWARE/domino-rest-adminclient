@@ -7,7 +7,7 @@
 import React, { useEffect, useRef } from 'react';
 import { styled } from '@linaria/react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import AccessMode from './components/access/AccessMode';
 import ApplicationsContainer from './components/applications/Applications';
 import FormsContainer from './components/forms/FormsContainer';
@@ -23,6 +23,7 @@ import QuickConfigFormContainer from './components/database/QuickConfigFormConta
 import ConsentsContainer from './components/applications/ConsentsContainer';
 import CallbackPage from './components/login/CallbackPage';
 import { PrivateRoutes } from './components/routers/ProtectedRoute';
+import { useAppDispatch } from './store/hooks';
 
 /**
  * Views.tsx provides routes to each of the main pages in the Admin UI.
@@ -60,7 +61,7 @@ const ViewContainer = styled.main`
 `;
 
 const Views: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const path = useLocation();
   const url = path.pathname.split('/')[1];
@@ -94,7 +95,7 @@ const Views: React.FC = () => {
   useEffect(() => {
     if (!permissionFetchedRef.current) {
       permissionFetchedRef.current = true;
-      dispatch(fetchKeepPermissions() as any);
+      dispatch(fetchKeepPermissions());
     }
   }, [dispatch]);
 
@@ -115,7 +116,7 @@ const Views: React.FC = () => {
 
     if (needsScopes && !scopePullingRef.current) {
       scopePullingRef.current = true;
-      dispatch(fetchScopes() as any);
+      dispatch(fetchScopes());
     }
   }, [scopePull, url, dispatch]);
 
@@ -136,8 +137,8 @@ const Views: React.FC = () => {
   // Effect 5: Fetch scopes and permissions on IDP login
   useEffect(() => {
     if (idpLogin) {
-      dispatch(fetchScopes() as any);
-      dispatch(fetchKeepPermissions() as any);
+      dispatch(fetchScopes());
+      dispatch(fetchKeepPermissions());
     }
   }, [idpLogin, dispatch]);
 

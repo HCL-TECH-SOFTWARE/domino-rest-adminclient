@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import QuickConfigForm from './QuickConfigForm';
@@ -16,6 +16,7 @@ import {
 } from '../../styles/CommonStyles';
 import appIcons from '../../styles/app-icons';
 import { KeepAlert, KeepDrawer } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 const QuickConfigFormSchema = Yup.object().shape({
   schemaName: Yup.string()
@@ -50,7 +51,7 @@ const QuickConfigFormSchema = Yup.object().shape({
 export default function QuickConfigFormContainer() {
   const { quickConfigDrawer } = useSelector((state: AppState) => state.drawer);
   const { dbError, dbErrorMessage } = useSelector((state: AppState) => state.databases);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const descriptionElementRef = React.useRef<HTMLElement>(null);
   React.useEffect(() => {
     if (quickConfigDrawer) {
@@ -113,7 +114,7 @@ export default function QuickConfigFormContainer() {
         }
       // Submit the form
       setIsDisabled(true);
-      dispatch(quickConfig(formData) as any);
+      dispatch(quickConfig(formData));
     },
   });
 

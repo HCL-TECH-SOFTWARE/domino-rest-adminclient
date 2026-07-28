@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { styled } from '@linaria/react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
@@ -47,6 +47,7 @@ import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { getLogger } from '../../services/log-service';
+import { useAppDispatch } from '../../store/hooks';
 
 const log = getLogger('components/forms/FormsContainer');
 
@@ -159,7 +160,7 @@ const FormsContainer = () => {
     statusText: ''
   });
   
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const setData = useState<Array<string>>([])[1];
   const { visible } = useSelector((state: AppState) => state.dbSetting);
   const { themeMode } = useSelector((state: AppState) => state.styles);
@@ -355,11 +356,11 @@ const FormsContainer = () => {
 
   const handleSaveChanges = async () => {
     setSaveChangesDialog(false)
-    dispatch(updateSchema(editedContent, setSchemaData) as any)
+    dispatch(updateSchema(editedContent, setSchemaData))
     pullForms()
     pullSubForms()
-    dispatch(fetchViews(dbName, nsfPath) as any)
-    dispatch(fetchAgents(dbName, nsfPath) as any)
+    dispatch(fetchViews(dbName, nsfPath))
+    dispatch(fetchAgents(dbName, nsfPath))
   }
 
   const handleClickCancel = () => {
@@ -547,14 +548,14 @@ const FormsContainer = () => {
     setValue(newValue);
     if (newValue === 1) {
       if (!isFetchedViews) {
-        dispatch(setViews(dbName, []) as any);
-        dispatch(fetchViews(dbName, nsfPath) as any);
+        dispatch(setViews(dbName, []));
+        dispatch(fetchViews(dbName, nsfPath));
         setIsFetchedViews(true);
       }
     } else if (newValue === 2) {
       if (!isFetchedAgents) {
-        dispatch(setAgents(dbName, []) as any);
-        dispatch(fetchAgents(dbName, nsfPath) as any);
+        dispatch(setAgents(dbName, []));
+        dispatch(fetchAgents(dbName, nsfPath));
         setIsFetchedAgents(true);
       }
     }
@@ -562,7 +563,7 @@ const FormsContainer = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchFolders(dbName, nsfPath) as any)
+    dispatch(fetchFolders(dbName, nsfPath))
   }, [dbName, dispatch, nsfPath])
 
   useEffect(() => {

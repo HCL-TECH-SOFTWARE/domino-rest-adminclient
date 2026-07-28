@@ -10,11 +10,12 @@ import { ExtraFlex } from '../../../../flex';
 import { mapSchemas } from '../../../../../utils/mapper';
 import { SchemasMainContainer } from './SchemaStyles';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { shallowEqual, useSelector } from 'react-redux';
 import { AppState } from '../../../../../store';
 import { KeepNsfCard } from '../../../../keep-elements/KeepElements';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
+import { useAppDispatch } from '../../../../../store/hooks';
 
 type SchemasDefaultViewProps = {
   databases: Array<any>;
@@ -30,7 +31,7 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
   const { scopes, permissions } = useSelector((state: AppState) => state.databases, shallowEqual);
   
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const prevScopesRef = useRef<any[]>([]);
 

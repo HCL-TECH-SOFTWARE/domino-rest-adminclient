@@ -12,13 +12,14 @@ import { checkIcon } from '../../../../../styles/scripts';
 import appIcons from '../../../../../styles/app-icons';
 import { Scope } from '../../../../../store/databases/types';
 import { Box } from '@mui/material';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppState } from '../../../../../store';
 import { DeleteIcon } from '../../../../../styles/CommonStyles';
 import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
 import { KeepTooltip } from '../../../../keep-elements/KeepElements';
+import { useAppDispatch } from '../../../../../store/hooks';
 
 const AlphabeticalViewContainer = styled.div`
   display: flex;
@@ -205,7 +206,7 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
 
   const { scopes, permissions } = useSelector((state: AppState) => state.databases);
   const { deleteDialog } = useSelector((state: AppState) => state.dialog);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
   const [selectedNsf, setSelectedNsf] = useState('');
   const [selectedDB, setSelectedDB] = useState('');

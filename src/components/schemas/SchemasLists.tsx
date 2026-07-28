@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import {
   fetchKeepDatabases,
@@ -28,6 +28,7 @@ import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
 import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
+import { useAppDispatch } from '../../store/hooks';
 
 const SchemasLists = () => {
   const { scopes, scopePull, onlyShowSchemasWithScopes, permissions, databasesOverview, databasePull } = useSelector(
@@ -64,7 +65,7 @@ const SchemasLists = () => {
 
   const [view, setView] = useState(initView);
   const [searchType, setSearchType] = useState("SCHEMA NAME");
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [context, setContext] = useState({}) as any;
   const handleSearchDatabase = (str: string) => {
     const key = str.trim();
@@ -90,7 +91,7 @@ const SchemasLists = () => {
     dispatch(setLoading({ status: true }))
     dispatch(setPullDatabase(false));
     dispatch(setPullScope(false));
-    dispatch(fetchKeepDatabases() as any);
+    dispatch(fetchKeepDatabases());
   };
 
   const changeView = (view: string) => {
@@ -125,7 +126,7 @@ const SchemasLists = () => {
 
   useEffect(() => {
     if (!databasePull && databasesOverview.length === 0) {
-      dispatch(fetchKeepDatabases() as any)
+      dispatch(fetchKeepDatabases())
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, databasePull])

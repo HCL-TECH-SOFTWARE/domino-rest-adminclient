@@ -7,20 +7,20 @@
 import React, { useEffect, useState } from 'react';
 import { handleCallback } from './pkce';
 import { loginWithPkce } from '../../store/account/action';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { deepEqual } from '../../utils/common';
 import AppShell from '../../AppShell';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { getLogger } from '../../services/log-service';
+import { useAppDispatch } from '../../store/hooks';
 
 const log = getLogger('components/login/CallbackPage');
 
 const CallbackPage: React.FC = () => {
   const [tokenResponse, setTokenResponse] = useState<any>({})
   const { authenticated } = useSelector((state: AppState) => state.account);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate()
   const [displayText, setDisplayText] = useState(authenticated ? "Already successfully authenticated." : "Waiting to be authenticated...")
   
@@ -43,7 +43,7 @@ const CallbackPage: React.FC = () => {
         } else {
           localStorage.setItem('user_token', JSON.stringify(userToken))
           localStorage.setItem('refresh_token', JSON.stringify(refreshToken))
-          await dispatch(loginWithPkce(userToken) as any)
+          await dispatch(loginWithPkce(userToken))
           setTokenResponse(userToken)
           setDisplayText("Successfully authenticated! You can now access Admin UI.")
         }

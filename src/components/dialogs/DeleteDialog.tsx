@@ -5,13 +5,14 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import CircularProgress from '@mui/material/CircularProgress';
 import { AppState } from '../../store';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { deleteSchema, deleteScope } from '../../store/databases/action';
 import FormDialogHeader from './FormDialogHeader';
 import { KeepButton } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -21,7 +22,7 @@ interface DeleteDialogProps {
 const DeleteDialog: React.FC<DeleteDialogProps> = ({ open, selected }) => {
   const { loading } = useSelector((state: AppState) => state.dialog);
   const { isDeleteSchema, nsfPath, schemaName, apiName } = selected;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -31,9 +32,9 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({ open, selected }) => {
 
   const onDelete = () => {
     if (isDeleteSchema) {
-      dispatch(deleteSchema({ nsfPath, schemaName }) as any);
+      dispatch(deleteSchema({ nsfPath, schemaName }));
     } else {
-      dispatch(deleteScope(apiName) as any);
+      dispatch(deleteScope(apiName));
     }
   };
 

@@ -7,7 +7,6 @@
 import { Menu, MenuItem } from '@mui/material';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
@@ -16,6 +15,7 @@ import { deleteForm } from '../../store/databases/action';
 import { BsThreeDots } from "react-icons/bs";
 import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { KeepButton } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 interface ActivateMenuProps {
   form: any,
@@ -40,7 +40,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, schemaData, setSchema
 
   const ref = useRef<HTMLDialogElement>(null);
   
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const handleClickActivate = () => {
     if (loading) {
@@ -71,9 +71,9 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, schemaData, setSchema
 
   const toggleDeactivate = async () => {
     if (formList.includes(form.formName)) {
-      dispatch(deleteForm(schemaData, form.formName, setSchemaData) as any)
+      dispatch(deleteForm(schemaData, form.formName, setSchemaData))
     } else {
-      dispatch(deleteForm(schemaData, form.formName, setSchemaData, true) as any)
+      dispatch(deleteForm(schemaData, form.formName, setSchemaData, true))
     }
     handleCloseMenu()
   };

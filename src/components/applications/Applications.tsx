@@ -5,21 +5,22 @@
  * ========================================================================== */
 
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { fetchMyApps } from '../../store/applications/action';
 import PageLoading from '../loaders/PageLoading';
 import Kanban from './kanban/Kanban';
 import { AppFormContext } from './ApplicationContext';
+import { useAppDispatch } from '../../store/hooks';
 
 const Applications: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { scopePull } = useSelector((state: AppState) => state.databases);
   const { appPull } = useSelector((state: AppState) => state.apps);
   const [formContext, setformContext] = useState('');
 
   useEffect(() => {
-    if (!appPull) dispatch(fetchMyApps() as any);
+    if (!appPull) dispatch(fetchMyApps());
   }, [appPull, dispatch]);
 
   return (

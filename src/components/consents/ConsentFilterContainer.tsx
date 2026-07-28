@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Drawer from '@mui/material/Drawer';
 import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
@@ -14,6 +14,7 @@ import { Box, FormControlLabel, RadioGroup } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@linaria/react';
 import { KeepButton, KeepCheckbox, KeepInputDate, KeepTooltip } from '../keep-elements/KeepElements';
+import { useAppDispatch } from '../../store/hooks';
 
 /**
  * `<input type="date">` speaks ISO `YYYY-MM-DD` in *local* time, but `new Date('...')`
@@ -95,7 +96,7 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
 }) => {
   const { consentsDrawer } = useSelector((state: AppState) => state.drawer)
   const { consents } = useSelector((state: AppState) => state.consents)
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const descriptionElementRef = React.useRef<HTMLElement>(null);
 
   const [filterStatus, setFilterStatus] = useState("All")

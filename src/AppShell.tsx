@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import React, { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import WaPage from '@awesome.me/webawesome/dist/react/page/index.js';
@@ -27,6 +27,7 @@ import { applyTheme } from './services/theme-service';
 import { AppState } from './store';
 import { getTheme, switchTheme } from './store/styles/action';
 import keepLogo from './assets/KeepNewIcon.png';
+import { useAppDispatch } from './store/hooks';
 
 /**
  * The application shell for an authenticated session, built on `<wa-page>` (#707).
@@ -96,7 +97,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   // Collapsed is the initial state, as it was when this was `HomeElement`'s `open` flag.
   const [collapsed, setCollapsed] = React.useState(true);
   const isMobile = useMobileView();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const { authenticated } = useSelector((state: AppState) => state.account);
