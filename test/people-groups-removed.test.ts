@@ -113,6 +113,25 @@ describe('People and Groups stay removed (#770)', () => {
     expect(code(read('src/store/account/action.ts'))).not.toMatch(/pageList\.(users|groups)/);
   });
 
+  it('keeps no stylesheet rules for the removed screens', () => {
+    // The components went in #774; their rules in styles.css did not, and CSS has no
+    // compiler to notice. Dead selectors read as live ones to the next person styling a
+    // screen — `.group-members-div` looks like something worth matching.
+    const css = read('src/styles/styles.css');
+    for (const selector of [
+      'group-add-member-button',
+      'group-form-button-style',
+      'group-form-button-small',
+      'group-remove-member-button',
+      'groups-click-row-div',
+      'people-crud-div',
+      'group-members-div',
+      'people-selector-div',
+    ]) {
+      expect(css, `styles.css still carries .${selector}`).not.toContain(selector);
+    }
+  });
+
   it('leaves /mail commented out, and says why', () => {
     // /mail was disabled by the same commit but is blocked on LABS-1214 (#698), not on
     // #770 — so it stays, and the note has to keep saying so.

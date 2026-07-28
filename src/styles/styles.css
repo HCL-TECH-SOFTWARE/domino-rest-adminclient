@@ -74,16 +74,8 @@
     font-size: 20px;
 }
 
-.very-large-text {
-    font-size: 22px;
-}
-
 .huge-text {
     font-size: 24px;
-}
-
-.very-huge-text {
-    font-size: 30px;
 }
 
 .giant-text {
@@ -128,10 +120,6 @@
 
 .color-text-hint {
     color: var(--hint-text-color);
-}
-
-.color-text-white {
-    color: #fff;
 }
 
 .color-hover {
@@ -301,10 +289,6 @@ body[data-theme="dark"] .color-text-disabled {
     min-width: 85px;
 }
 
-.w-24 {
-    width: 24px;
-}
-
 .w-30px {
     width: 30px;
 }
@@ -313,20 +297,12 @@ body[data-theme="dark"] .color-text-disabled {
     width:35px;
 }
 
-.w-44px {
-    width: 44px;
-}
-
 .w-35vw {
     width: 35vw;
 }
 
 .w-50vw {
     width: 50vw;
-}
-
-.w-55vw {
-    width: 55vw;
 }
 
 .w-40 {
@@ -343,10 +319,6 @@ body[data-theme="dark"] .color-text-disabled {
 
 .w-90 {
     width: 90%;
-}
-
-.w-80 {
-    width: 80%;
 }
 
 .w-fit {
@@ -367,10 +339,6 @@ body[data-theme="dark"] .color-text-disabled {
 
 .h-10vh {
     height: 10vh;
-}
-
-.h-fit {
-    height: fit-content;
 }
 
 .flex {
@@ -429,14 +397,6 @@ body[data-theme="dark"] .color-text-disabled {
     padding-right: 0;
 }
 
-.pr-10 {
-    padding-right: 10px;
-}
-
-.pr-20 {
-    padding-right: 20px;
-}
-
 .pr-30 {
     padding-right: 30px;
 }
@@ -447,10 +407,6 @@ body[data-theme="dark"] .color-text-disabled {
 
 .pl-10 {
     padding-left: 10px;
-}
-
-.pl-15 {
-    padding-left: 15px;
 }
 
 .pl-20 {
@@ -501,10 +457,6 @@ body[data-theme="dark"] .color-text-disabled {
     padding-bottom: 10px;
 }
 
-.pb-20 {
-    padding-bottom: 20px;
-}
-
 .pb-30 {
     padding-bottom: 30px;
 }
@@ -549,10 +501,6 @@ body[data-theme="dark"] .color-text-disabled {
     margin-top: 20px;
 }
 
-.mt-30 {
-    margin-top: 30px;
-}
-
 .mb-0 {
     margin-bottom: 0;
 }
@@ -577,16 +525,8 @@ body[data-theme="dark"] .color-text-disabled {
     margin-left: 10px;
 }
 
-.ml-15 {
-    margin-left: 15px;
-}
-
 .mr-5 {
     margin-right: 5px;
-}
-
-.mr-8 {
-    margin-right: 8px;
 }
 
 .mr-15 {
@@ -629,10 +569,6 @@ body[data-theme="dark"] .color-text-disabled {
     z-index: 2;
 }
 
-.z-100 {
-    z-index: 100;
-}
-
 .z-1300 {
     z-index: 1300;
 }
@@ -655,10 +591,6 @@ body[data-theme="dark"] .color-text-disabled {
 
 .items-center {
     align-items: center;
-}
-
-.content-center {
-    align-content: center;
 }
 
 .text-center {
@@ -744,10 +676,6 @@ body[data-theme="dark"] .color-text-disabled {
     color: var(--wa-color-text-normal);
 }
 
-.rounded-16 {
-    border-radius: 16px;
-}
-
 .float-left {
     float: left;
 }
@@ -758,19 +686,6 @@ body[data-theme="dark"] .color-text-disabled {
 }
 
 /* AccessMode.tsx */
-.tabs-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    align-items: center;
-    padding-top: 50 * var(--modes-length);
-}
-
-.top-container {
-    margin-top: 15px;
-}
-
 .access-container {
     flex: 1;
     display: flex;
@@ -868,10 +783,6 @@ body[data-theme="dark"] .color-text-disabled {
 /* FieldDndContainer.tsx */
 .add-icon {
     margin: 0 5px;
-}
-
-.yes-button-field-dnd {
-    color: #fff;
 }
 
 .selected-fields-container {
@@ -1123,13 +1034,6 @@ body[data-theme="dark"] .field-batch-delete-text {
     padding: 0;
     margin: 0;
     color: var(--hint-text-color);
-}
-
-.add-mode-dialog-buttons {
-    padding: 0 30px 30px 30px;
-    display: flex;
-    flex-direction: row-reverse;
-    width: 100%;
 }
 
 /* TabsAccess.tsx */
@@ -1642,13 +1546,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     font-size: 14px;
 }
 
-.footer-build-version {
-    color: #fafafa;
-    /* font-weight: 500; */
-    font-size: 14px;
-    margin: 0;
-}
-
 /* ScriptEditor.tsx */
 .script-editor-container {
     display: flex;
@@ -1692,15 +1589,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     width: 45%;
 }
 
-.script-editor-edit-dialog {
-    border-radius: 10px;
-    background: var(--wa-color-surface-raised);
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    border: none;
-    width: 50%;
-    padding: 30px 0;
-}
-
 .script-editor-formula-line {
     padding: 5px 0;
 }
@@ -1726,29 +1614,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     white-space: nowrap;
     max-width: 25vw;
     line-height: 1.2em;
-}
-
-/* SchemaCardV2.tsx */
-.schema-card-schema-name {
-    font-weight: 600;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    white-space: nowrap;
-}
-
-.schema-card-nsf-name {
-    font-size: 14px;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-}
-
-/* ScopeCardV2.tsx */
-.scope-card-acl-edited {
-    color: green;
-}
-
-.scope-card-acl-unedited {
-    color: orange;
 }
 
 /* QuickConfigForm */
@@ -1879,43 +1744,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     color: light-dark(#0f52ba, #008000);
 }
 
-/* GroupForm.tsx */
-.group-add-member-button {
-    width: 125px;
-    float: right;
-    margin-right: 6px;
-}
-
-.group-form-button-style {
-    height: 10%;
-    width: 25%;
-    background-color: var(--badge-color-background);
-    float: right;
-    color: white;
-    margin-left: 20px;
-}
-
-.group-form-button-small {
-    font-size: 12px;
-    height: 9%;
-    margin: 15px 3px 5px 3px;
-    background-color: var(--badge-color-background);
-    color: white;
-}
-
-.group-remove-member-button {
-    width: 150px;
-    float: left;
-}
-
-/* Groups.tsx */
-.groups-click-row-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 60px;
-    cursor: pointer;
-}
-
 /* LoginPage.tsx */
 .login-page-grid {
     padding: 90px;
@@ -1971,30 +1799,6 @@ body[data-theme="dark"] .add-import-svg-icon {
 .login-page-oidc-dropdown {
     --keep-dropdown-display: inline-block;
     --keep-dropdown-width: auto;
-}
-
-/* PeopleCRUD.tsx */
-
-.people-crud-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 60px;
-    cursor: pointer;
-}
-
-/* GroupMembers.tsx */
-.group-members-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 20px;
-}
-
-/* PeopleSelector.tsx */
-.people-selector-div {
-    height: 350px;
-    width: 98%;
-    margin-top: 20px;
-    border-width: 5px;
 }
 
 /* OptionList.tsx */
