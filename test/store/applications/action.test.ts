@@ -6,7 +6,20 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import type { Dispatch } from 'redux';
-import { generateSecret } from '../../../src/store/applications/action';
+import {
+  addApplication,
+  deleteApplication,
+  fetchMyApps,
+  generateSecret,
+  getSingleApp,
+  updateApp,
+} from '../../../src/store/applications/action';
+import {
+  ADD_APP,
+  DELETE_APP,
+  GET_APPS,
+  UPDATE_APP,
+} from '../../../src/store/applications/types';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry's own error path calls notify(), which mounts a <keep-alert>.
@@ -140,5 +153,225 @@ describe('generateSecret', () => {
     await run();
 
     expect(setAppSecret).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The other five thunks in this slice (#690).
+ *
+ * They share one shape, and one defect with it: `apiRequestWithRetry` returns
+ * `{ response: null }` for a request that never completed, so `!response.ok` threw a
+ * TypeError before any of them reached their own error handling. The alert still fired —
+ * these thunks catch broadly — but it read
+ *
+ *     Error Fetching Apps: TypeError: Cannot read properties of null (reading 'ok')
+ *
+ * which tells the user nothing and hides the fact that the network, not the app, failed.
+ * The assertions below pin the message as much as the dispatch sequence.
+ */
+
+/** `toggleAlert` carries the message as the payload itself, not an object. */
+const alertsOf = (dispatch: { mock: { calls: unknown[][] } }) =>
+  dispatch.mock.calls
+    .map((call) => call[0] as { type?: string; payload?: string })
+    .filter((action) => action?.type === TOGGLE_ALERT)
+    .map((action) => action.payload as string);
+
+describe('the remaining applications thunks', () => {
+  let dispatch: Dispatch & { mock: { calls: unknown[][] } };
+  let previousLevel: number;
+
+  const types = () => dispatch.mock.calls.map((call) => (call[0] as { type: string }).type);
+
+  const app = {
+    client_id: 'app-1',
+    client_name: 'Test App',
+    description: 'a description',
+    redirect_uris: [],
+    contacts: [],
+    logo_uri: 'app',
+    scope: '',
+    hasSecret: true,
+    client_secret: 'sh-1',
+    client_uri: 'https://example.invalid',
+    status: 'isActive',
+    token_endpoint_auth_method: 'client_secret_basic',
+  };
+
+  beforeAll(() => {
+    previousLevel = Logger.getLevel();
+    Logger.setLevel(Level.OFF);
+  });
+
+  afterAll(() => Logger.setLevel(previousLevel));
+
+  beforeEach(() => {
+    dispatch = vi.fn() as unknown as typeof dispatch;
+    localStorage.setItem('user_token', JSON.stringify({ bearer: 'a-bearer' }));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  const offline = () => vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+  const refuses = (body: unknown = { message: 'nope' }) =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: false, status: 403, body })));
+  const returns = (body: unknown) =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true, body })));
+
+  /** The shared regression: a dropped connection must not surface as a null-deref. */
+  const isReadable = (message: string) => {
+    expect(message).not.toMatch(/Cannot read propert/i);
+    expect(message).not.toMatch(/undefined is not an object/i);
+  };
+
+  describe('fetchMyApps', () => {
+    it('maps the API shape into the store', async () => {
+      returns([app]);
+
+      await fetchMyApps()(dispatch);
+
+      const action = dispatch.mock.calls.map((c) => c[0] as any).find((a) => a.type === GET_APPS);
+      expect(action.payload).toHaveLength(1);
+      expect(action.payload[0]).toMatchObject({
+        appId: 'app-1',
+        appName: 'Test App',
+        appHasSecret: true,
+        usePkce: false,
+      });
+    });
+
+    it('reads usePkce off the auth method', async () => {
+      returns([{ ...app, token_endpoint_auth_method: 'none' }]);
+
+      await fetchMyApps()(dispatch);
+
+      const action = dispatch.mock.calls.map((c) => c[0] as any).find((a) => a.type === GET_APPS);
+      expect(action.payload[0].usePkce).toBe(true);
+    });
+
+    it('stores nothing and explains itself when the request never completes', async () => {
+      offline();
+
+      await fetchMyApps()(dispatch);
+
+      expect(types()).not.toContain(GET_APPS);
+      expect(alertsOf(dispatch)).toHaveLength(1);
+      isReadable(alertsOf(dispatch)[0]);
+    });
+
+    it('stores nothing when the API refuses', async () => {
+      refuses();
+
+      await fetchMyApps()(dispatch);
+
+      expect(types()).not.toContain(GET_APPS);
+    });
+  });
+
+  describe('updateApp', () => {
+    it('sends a PUT and closes the drawer on success', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: app }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await updateApp({ ...app, status: true })(dispatch);
+
+      expect(fetchMock.mock.calls[0][1].method).toBe('PUT');
+      expect(String(fetchMock.mock.calls[0][0])).toContain('/admin/application/app-1');
+      expect(types()).toContain(UPDATE_APP);
+      expect(alertsOf(dispatch).join()).toMatch(/has been updated/i);
+    });
+
+    it('does not update the store when the request never completes', async () => {
+      offline();
+
+      await updateApp(app)(dispatch);
+
+      expect(types()).not.toContain(UPDATE_APP);
+      isReadable(alertsOf(dispatch)[0]);
+    });
+  });
+
+  describe('getSingleApp', () => {
+    it('puts the fetched app into the store', async () => {
+      returns(app);
+
+      await getSingleApp('app-1')(dispatch);
+
+      expect(types()).toContain(UPDATE_APP);
+    });
+
+    it('does not update the store when the request never completes', async () => {
+      offline();
+
+      await getSingleApp('app-1')(dispatch);
+
+      expect(types()).not.toContain(UPDATE_APP);
+      isReadable(alertsOf(dispatch)[0]);
+    });
+  });
+
+  describe('deleteApplication', () => {
+    it('deletes and closes the confirmation dialog', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: {} }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await deleteApplication('app-1')(dispatch);
+
+      expect(fetchMock.mock.calls[0][1].method).toBe('DELETE');
+      expect(types()).toContain(DELETE_APP);
+      expect(alertsOf(dispatch).join()).toMatch(/deleted/i);
+    });
+
+    it('closes the dialog and does not delete when the API refuses', async () => {
+      refuses();
+
+      await deleteApplication('app-1')(dispatch);
+
+      // The dialog must close either way, or the user is stuck behind a modal.
+      expect(types()).not.toContain(DELETE_APP);
+      expect(alertsOf(dispatch).join()).toMatch(/error deleting/i);
+    });
+
+    it('does not delete when the request never completes', async () => {
+      offline();
+
+      await deleteApplication('app-1')(dispatch);
+
+      expect(types()).not.toContain(DELETE_APP);
+      isReadable(alertsOf(dispatch)[0]);
+    });
+  });
+
+  describe('addApplication', () => {
+    it('posts the new app and closes the drawer', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: app }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await addApplication({ client_name: 'Test App' })(dispatch);
+
+      expect(fetchMock.mock.calls[0][1].method).toBe('POST');
+      expect(types()).toContain(ADD_APP);
+      expect(alertsOf(dispatch).join()).toMatch(/new application added/i);
+    });
+
+    it('adds nothing when the API refuses', async () => {
+      refuses();
+
+      await addApplication({ client_name: 'Test App' })(dispatch);
+
+      expect(types()).not.toContain(ADD_APP);
+    });
+
+    it('adds nothing and explains itself when the request never completes', async () => {
+      offline();
+
+      await addApplication({ client_name: 'Test App' })(dispatch);
+
+      expect(types()).not.toContain(ADD_APP);
+      isReadable(alertsOf(dispatch)[0]);
+    });
   });
 });
