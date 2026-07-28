@@ -9,8 +9,6 @@ import { useSelector } from 'react-redux';
 import { FormikProps } from 'formik';
 import { AppState } from '../../store';
 import AppForm from './AppForm';
-import GroupForm from '../groups/GroupForm';
-import PeopleForm from '../people/PeopleForm';
 import TestForm from '../access/TestForm';
 import {
   DrawerFormContainer,
@@ -46,23 +44,7 @@ const FormDrawer: React.FC<FormDrawerProps> = ({ formName, formik }) => {
               </DrawerFormContainer>
             )
 
-          // Group form
-          case 'GroupForm':
-            return (
-              <div className='w-55vw'>
-                <GroupForm formik={formik} />
-              </div>
-            )
-
-          // People form
-          case 'PeopleForm':
-            return (
-              <div className='w-50vw'>
-                <PeopleForm formik={formik} />
-              </div>
-            )
-
-             // Test form
+          // Test form
           case 'TestForm':
             return (
               <div className='w-50vw'>

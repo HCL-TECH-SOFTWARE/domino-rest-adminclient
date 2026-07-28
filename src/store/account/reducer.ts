@@ -23,8 +23,6 @@ const initialState: AccountState = {
   navitems: {
     databases: false,
     apps: false,
-    users: false,
-    groups: false,
   },
   authenticated: false,
   error: false,

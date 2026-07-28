@@ -9,8 +9,6 @@ import ScopeIcon from '@mui/icons-material/Album';
 import Mail from '@mui/icons-material/Email';
 import Home from '@mui/icons-material/Home';
 import Apps from '@mui/icons-material/Apps';
-import Groups from '@mui/icons-material/Group';
-import People from '@mui/icons-material/Person';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 /**
  * Route.ts provides menu entries for each of the main pages in the Admin UI.
@@ -62,20 +60,12 @@ export const apps = [
     label: 'Consents',
   },
 ];
-export const people = [
-  {
-    uri: '/people',
-    icon: People,
-    label: 'People',
-  },
-];
-export const groups = [
-  {
-    uri: '/groups',
-    icon: Groups,
-    label: 'Groups',
-  },
-];
+/*
+ * `people` and `groups` are gone with the screens behind them (#770). They were routed in
+ * react-router v5 and dropped — not converted — during the v6 upgrade in 9324783
+ * (2024-04-25), so for fifteen months these entries rendered links to a blank page on any
+ * deployment whose adminui.json set `users` or `groups` true.
+ */
 
 export const settings = [
   {

@@ -159,16 +159,12 @@ const Views: React.FC = () => {
         </Routes>
         
         {/*
-          /groups, /people and /mail stay commented out: their components are still in
-          the tree and the Mail/Dashboard pair is blocked on LABS-1214 (#698). The
-          /settings block is gone with src/components/settings/ (#681).
+          /mail stays commented out: the Mail/Dashboard pair is blocked on LABS-1214
+          (#698). /settings went with src/components/settings/ (#681), and /groups and
+          /people went with their screens in #770 — the v6 router upgrade (9324783,
+          2024-04-25) commented all four out instead of converting them, and nobody
+          noticed for fifteen months.
 
-        <Route path="/groups">
-          <Groups />
-        </Route>
-        <Route path="/people">
-          <People />
-        </Route>
         <Route path="/mail">
           <Mail />
         </Route>
