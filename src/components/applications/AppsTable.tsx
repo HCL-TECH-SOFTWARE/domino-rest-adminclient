@@ -26,7 +26,7 @@ import { useDispatch } from 'react-redux';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 
 const StyledTableHead = styled(TableHead)`
-  border-bottom: 1px solid light-dark(#B8B8B8, #3a3a4a);
+  border-bottom: 1px solid var(--wa-color-surface-border);
 
   .text {
     font-weight: bold;
@@ -35,10 +35,10 @@ const StyledTableHead = styled(TableHead)`
 
   .search-bar {
     border-radius: var(--wa-border-radius-m);
-    border: 1px solid light-dark(grey, #555);
+    border: 1px solid var(--wa-color-surface-border);
     padding: 3px 10px;
-    background-color: light-dark(#fff, #1e1e2e);
-    color: light-dark(inherit, #e0e0e0);
+    background-color: var(--wa-color-surface-default);
+    color: var(--wa-color-text-normal);
   }
 `
 
@@ -52,8 +52,8 @@ const StyledTableBody = styled(TableBody)`
 const StyledTableContainer = styled(TableContainer)`
   border-radius: var(--wa-border-radius-l);
   box-sizing: border-box;
-  border: 1px solid light-dark(#B9B9B9, #3a3a4a);
-  background: light-dark(#FFF, #252535);
+  border: 1px solid var(--wa-color-surface-border);
+  background: var(--wa-color-surface-raised);
   padding: 0;
 
   .launch {

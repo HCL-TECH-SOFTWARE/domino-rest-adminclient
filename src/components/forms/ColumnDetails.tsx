@@ -17,13 +17,13 @@ const StyledTableCell = styled(TableCell)`
   &.${tableCellClasses.head} {
     font-weight: bold;
     padding-top: 30px;
-    border-bottom: 1px solid light-dark(#848484, #3a3a4a);
+    border-bottom: 1px solid var(--wa-color-surface-border);
   }
 
   &.${tableCellClasses.body} {
     padding-top: 20px;
     padding-bottom: 20px;
-    border-bottom: 1px solid light-dark(#bdbdbd, #3a3a4a);
+    border-bottom: 1px solid var(--wa-color-surface-border);
   }
 `
 
@@ -33,8 +33,8 @@ const ColumnDetailsContainer = styled.div`
   width: 75%;
   height: 100%;
   
-  background: light-dark(#FFF, #252535);
-  border: 1px solid light-dark(#B4B4B4, #3a3a4a);
+  background: var(--wa-color-surface-raised);
+  border: 1px solid var(--wa-color-surface-border);
   border-radius: var(--wa-border-radius-l);
   left: 23%;
   margin-right: 2%;

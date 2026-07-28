@@ -31,7 +31,7 @@ const StyledTableCell = styled(TableCell)`
 const StyledTableHead = styled(TableHead)`
   font-weight: bold;
   padding-top: 30px;
-  border-bottom: 1px solid light-dark(#B8B8B8, #3a3a4a);
+  border-bottom: 1px solid var(--wa-color-surface-border);
 `
 
 const StyledTableBody = styled(TableBody)`
@@ -43,7 +43,7 @@ const StyledTableBody = styled(TableBody)`
 
 const StyledTableRow = styled(TableRow)`
   &:nth-of-type(odd) {
-    background-color: light-dark(#f8fbff, #1e1e2e);
+    background-color: var(--keep-surface-accent);
     border-bottom: none;
   }
 
@@ -56,8 +56,8 @@ const StyledTableRow = styled(TableRow)`
 const StyledTableContainer = styled(TableContainer)`
   border-radius: var(--wa-border-radius-l);
   box-sizing: border-box;
-  border: 1px solid light-dark(#B9B9B9, #3a3a4a);
-  background: light-dark(#FFF, #252535);
+  border: 1px solid var(--wa-color-surface-border);
+  background: var(--wa-color-surface-raised);
 `
 
 const StatusHeader = styled.div`

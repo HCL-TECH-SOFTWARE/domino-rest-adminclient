@@ -31,7 +31,6 @@ export default class Tooltip extends KeepElement {
   private _popup: HTMLDivElement | null = null;
   private _arrow: HTMLDivElement | null = null;
   private _visible = false;
-  private _arrowBg?: string;
   private readonly _showBound = this._showPopup.bind(this);
   private readonly _hideBound = this._hidePopup.bind(this);
 
@@ -56,11 +55,11 @@ export default class Tooltip extends KeepElement {
     Object.assign(this._popup.style, {
       position: 'fixed',
       zIndex: '9999',
-      background: 'var(--wa-color-neutral-950, #18191b)',
-      color: 'var(--wa-color-neutral-0, #ffffff)',
+      background: 'var(--keep-tooltip-surface)',
+      color: 'var(--keep-tooltip-on)',
       padding: '4px 8px',
       borderRadius: '4px',
-      fontSize: 'var(--wa-font-size-small, 12px)',
+      fontSize: 'var(--wa-font-size-s)',
       fontFamily: 'var(--wa-font-sans, inherit)',
       lineHeight: '1.4',
       boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
@@ -121,12 +120,11 @@ export default class Tooltip extends KeepElement {
     this._visible = true;
     this._popup.textContent = this.content;
 
-    // Adapt background to current theme
-    const isDark = document.body.getAttribute('data-theme') === 'dark';
-    const bg = isDark ? '#4a4a4a' : 'var(--wa-color-neutral-950, #18191b)';
-    this._popup.style.background = bg;
-    if (this._arrow) this._arrowBg = bg;
-
+    // No theme branch here: --keep-tooltip-surface flips under .wa-dark, and the
+    // popup is appended to the document (or the enclosing <dialog>), so it inherits
+    // the custom property from :root either way. connectedCallback() already set the
+    // background to that var; re-asserting it per show would only undo a caller's
+    // override for no benefit.
     this._popup.style.display = 'block';
     if (!this.withoutArrow && this._arrow) this._arrow.style.display = 'block';
     this._position();
@@ -156,7 +154,7 @@ export default class Tooltip extends KeepElement {
     const ph = pop.offsetHeight;
     pop.style.visibility = '';
 
-    const bg = this._arrowBg || 'var(--wa-color-neutral-950, #18191b)';
+    const bg = 'var(--keep-tooltip-surface)';
     let popTop, popLeft, arrowTop, arrowLeft, arrowBorder;
 
     switch (this.placement) {

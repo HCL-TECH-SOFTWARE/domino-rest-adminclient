@@ -4,8 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { useSelector, useDispatch } from 'react-redux';
 import { BUILD_VERSION } from '../../config.dev';
 import keepLogo from '../../assets/KeepNewIcon.png';
@@ -16,7 +14,7 @@ import { styled } from '@linaria/react';
 // a dependency of this file (FiInfo), so switching to its equivalents drops MUI without
 // introducing a new pattern. Both icon sets are due to be replaced by `<wa-icon>` in #718.
 import { FiInfo, FiMoon, FiSun } from 'react-icons/fi';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
 import { IdP, LOGIN } from '../../store/account/types';
@@ -31,6 +29,11 @@ import {
   KeepInputText,
   KeepTooltip
 } from '../keep-elements/KeepElements';
+import type { KeepInputBase } from '../keep-elements/keep-input-base';
+import type InputText from '../keep-elements/keep-input-text';
+import type InputPassword from '../keep-elements/keep-input-password';
+import type Dropdown from '../keep-elements/keep-dropdown';
+import type ApiErrorDialog from '../keep-elements/keep-api-error-dialog';
 import { AlertManager, checkForResponse } from '../../utils/common';
 import { applyAppearance } from '../../services/theme-service';
 import { getLogger } from '../../services/log-service';
@@ -50,40 +53,20 @@ const CREDENTIALS_REJECTED = 'Incorrect username or password';
 const alertMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-type WaFormInput = HTMLElementTagNameMap['wa-input'] | null | undefined;
-
 /**
- * Run WebAwesome's constraint validation on one field and leave it in the `user-invalid`
- * custom state if it fails, which is what the `:state(user-invalid)` rules in
- * `keep-input-text` / `keep-input-password` style. Returns whether the field is valid.
+ * Validate one field and return its value, or `null` if the field is missing or invalid.
  *
- * Two details of WebAwesome's API drive the implementation (#742):
+ * `reportUserValidity()` leaves a failing field in the `user-invalid` custom state that
+ * `keep-input-base`'s `:state(user-invalid)` rule styles, so a `null` here has already
+ * told the user which field it was (#742). Returning the value in the same step is what
+ * lets callers do the whole gate in one expression, without a `!` on the read.
  *
- * 1. `hasInteracted` is set first because `setCustomStates()` computes
- *    `user-invalid = !valid && hasInteracted`. WebAwesome's own `reportValidity()` sets
- *    that flag *after* it runs validation, so a single call leaves a field `invalid` but
- *    never `user-invalid`.
- * 2. `checkValidity()` rather than `reportValidity()`: it walks the same
- *    `updateValidity() → setValidity() → setCustomStates()` path without moving focus or
- *    opening a validation bubble, so it is safe to call on every field in a form.
- *
- * A missing control is reported and treated as invalid. It should not happen once the
- * element has rendered, and blocking is the safe reading — the previous code read
- * `.length` off the undefined value and threw instead.
+ * This page used to hold that logic itself, reaching through two shadow roots for the
+ * `wa-input` and encoding WebAwesome's `hasInteracted` ordering by hand. Both moved onto
+ * the element (#743) — the quirks belong where the `wa-input` does.
  */
-const markValidity = (input: WaFormInput, field: string): boolean => {
-  if (!input) {
-    log.error('cannot validate the login form: control not found', { field });
-    return false;
-  }
-  input.hasInteracted = true;
-  return input.checkValidity();
-};
-
-const SignupSchema = Yup.object().shape({
-  username: Yup.string().required('Required'),
-  password: Yup.string().required('Required'),
-});
+const validated = (field: KeepInputBase | null): string | null =>
+  field?.reportUserValidity() ? field.value : null;
 
 const Copyright = () => (
   <span className="small-text text-center">
@@ -136,7 +119,7 @@ const PasskeySignUpContainer = styled.div`
     padding-left: 5px;
     transform: translateY(18%);
     cursor: pointer;
-    color: light-dark(inherit, #999);
+    color: var(--wa-color-text-quiet);
   }
 
   .passkey-icon:hover {
@@ -148,6 +131,15 @@ const PasskeySignUpContainer = styled.div`
   }
 `;
 
+/**
+ * The form column's fields.
+ *
+ * The `.hidden` (`visibility: hidden`) and `.removed` (`display: none`) classes are gone
+ * with the `useEffect` that toggled them by `document.getElementById(…).classList` — the
+ * fields are conditionally rendered now (#743). One consequence is visible: a field that
+ * is not shown no longer reserves its space, so in passkey and OIDC mode the LOG IN button
+ * sits where the password field used to leave a gap.
+ */
 const LoginForm = styled.form`
   display: flex;
   flex-direction: column;
@@ -155,14 +147,6 @@ const LoginForm = styled.form`
   gap: 10px;
   margin: 40px 10px 0 10px;
   width: 100%;
-
-  .hidden {
-    visibility: hidden;
-  }
-
-  .removed {
-    display: none;
-  }
 `
 
 /**
@@ -215,12 +199,12 @@ const ThemeToggleSlot = styled.div`
  * Dropping `Paper` also changes which rule paints the panel. Three used to compete for it:
  *
  *   theme.ts       MuiPaper.styleOverrides.root.backgroundColor  'white'   (Emotion, no !important)
- *   dark-mode.css  .MuiPaper-root { background-color: light-dark(#fff, #252535) !important }
+ *   dark-mode.css  .MuiPaper-root { background-color: var(--wa-color-surface-raised) !important }
  *   styles.css     .login-page-grid { background-color: var(--body-color) }
  *
  * `!important` wins, so the panel was `#fff` in light mode and `#252535` in dark. Without
  * the `MuiPaper-root` class only `.login-page-grid` applies, i.e. `--body-color`, which is
- * `light-dark(#fff, #181825)`. Light mode is therefore unchanged and dark mode is slightly
+ * `var(--wa-color-surface-lowered)`. Light mode is therefore unchanged and dark mode is slightly
  * darker, now following the app's own token instead of an MUI-scoped override.
  */
 const FormPanel = styled.div`
@@ -240,7 +224,7 @@ const CastlePanel = styled.div`
 /* Positioning lives on ThemeToggleSlot; this is just the round button. */
 const LoginThemeToggle = styled.button`
   background: light-dark(rgba(255,255,255,0.7), rgba(30,30,46,0.7));
-  border: 1px solid light-dark(#ccc, #555);
+  border: 1px solid var(--wa-color-surface-border);
   border-radius: 50%;
   width: 37px;
   height: 37px;
@@ -249,7 +233,7 @@ const LoginThemeToggle = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--wa-color-text-normal);
   
   &:hover {
     background: light-dark(rgba(255,255,255,0.9), rgba(50,50,70,0.9));
@@ -287,10 +271,40 @@ const LoginPage = () => {
   const [displayKeepIdp, setDisplayKeepIdp] = useState(true);
   const [authType, setAuthType] = useState('password');
 
-  const usernameRef = useRef<any>(null)
-  const passwordRef = useRef<any>(null)
-  const oidcRef = useRef<any>(null)
-  const ref = useRef<any>(null)
+  const usernameRef = useRef<InputText | null>(null)
+  const passwordRef = useRef<InputPassword | null>(null)
+  const oidcRef = useRef<Dropdown | null>(null)
+  const errorDialogRef = useRef<ApiErrorDialog | null>(null)
+
+  /**
+   * The username remembered for the passkey flow, kept outside the element because the
+   * username field is conditionally rendered now: OIDC mode unmounts it.
+   */
+  const passkeyUser = useRef('')
+
+  /**
+   * Show a remembered username, and keep it for the field's next mount.
+   *
+   * Both callers — the passkey probe on mount and a successful registration — used to
+   * write it straight through two shadow roots, the first of them unguarded. The ref half
+   * is new, and needed: on an OIDC-configured server the page opens in `oidc` mode, so the
+   * field is not mounted when `keep_user` arrives from the probe.
+   */
+  const showPasskeyUser = (user: string) => {
+    if (!user) return;
+    passkeyUser.current = user;
+    if (usernameRef.current) usernameRef.current.value = user;
+  }
+
+  /**
+   * Ref callback rather than a plain ref object, so a remount can be noticed: coming back
+   * from OIDC mode gives a fresh, empty field, and the remembered name should reappear in
+   * it. `!el.value` so it can never overwrite something already typed.
+   */
+  const attachUsername = useCallback((el: InputText | null) => {
+    usernameRef.current = el;
+    if (el && passkeyUser.current && !el.value) el.value = passkeyUser.current;
+  }, [])
 
   const keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
@@ -302,18 +316,15 @@ const LoginPage = () => {
    Used for username / password and Webauthn login*/
   const handleSignUpWithPasskey = async (event: any) => {
     event.preventDefault();
-    const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
-    const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
-
     // Validate both, so each field reflects its own validity, then bail if either failed.
     // Both are `required`, so a blank one fails on `valueMissing`.
-    const usernameValid = markValidity(usernameInput, 'username');
-    const passwordValid = markValidity(passwordInput, 'password');
-    if (!usernameValid || !passwordValid) {
+    const username = validated(usernameRef.current);
+    const password = validated(passwordRef.current);
+    if (username === null || password === null) {
       return;
     }
     // Login. first
-    await logIn()
+    await logIn(username, password)
       .then((token: any) => {
         return keepAuthenticator.register(token);
       })
@@ -321,8 +332,7 @@ const LoginPage = () => {
       .then((json) => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
-        // formik.values.username = json.username;
-        usernameRef.current.shadowRoot.querySelector('wa-input').value = json.username;
+        showPasskeyUser(json.username);
         dispatch({
           type: LOGIN
         });
@@ -359,42 +369,27 @@ const LoginPage = () => {
       })
   }
 
-  const handleUsernameChange = (event: any) => {
-    formik.handleChange(event);
+  /**
+   * Clear the "Error logging in!" alert as soon as the user edits a field.
+   *
+   * This is all that Formik's `validate` did here. It was declared as
+   * `validate: () => { dispatch(setLoginError(false)) }` — a dispatch hook wearing a
+   * validator's name, returning no errors — and it was the only part of the Formik setup
+   * that had an effect (#743). The password field gets it too now; it only ever ran for
+   * the username because that was the one field wired to `formik.handleChange`.
+   */
+  const clearLoginError = () => {
+    dispatch(setLoginError(false));
   }
 
-  const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-    },
-    validate: () => {
-      dispatch(setLoginError(false));
-    },
-    validationSchema: SignupSchema,
-
-    onSubmit: async (values) => {
-      dispatch(set401Error(false));
-      const data = JSON.stringify(values, null, 2);
-      const parseData = JSON.parse(data);
-      await dispatch(login(parseData, () => {
-        navigate('/')
-        localStorage.setItem('login_type', "password");
-      }) as any);
-    },
-  });
-
-  const logIn = () =>
+  const logIn = (username: string, password: string) =>
     new Promise((resolve, reject) => {
       fetch('/api/v1/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          username: usernameRef.current?.shadowRoot.querySelector('wa-input')?.value,
-          password: passwordRef.current?.shadowRoot.querySelector('wa-input')?.value,
-        })
+        body: JSON.stringify({ username, password })
       })
         .then((res) => checkForResponse(res))
         .then((data) => {
@@ -414,42 +409,60 @@ const LoginPage = () => {
     setAuthType('password')
   }
 
-  const logInWithPassword = (username: string, password: string) => {
-    formik.values.username = username
-    formik.values.password = password
-    formik.handleSubmit();
+  /**
+   * Was Formik's `onSubmit`, reached by mutating `formik.values` and calling
+   * `handleSubmit()`. The values never came from Formik — the inputs are custom elements
+   * it cannot read — so `onSubmit` received whatever had just been assigned to them, and
+   * `SignupSchema` validated a pair of strings the user had never touched. Dispatching the
+   * thunk directly is the same call with the detour removed (#743, #717).
+   */
+  const logInWithPassword = async (username: string, password: string) => {
+    dispatch(set401Error(false));
+    await dispatch(login({ username, password }, () => {
+      navigate('/')
+      localStorage.setItem('login_type', "password");
+    }) as any);
   }
 
   const handleClickLogIn = () => {
-    const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
-    const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
-    const username = usernameInput?.value ?? '';
-    const password = passwordInput?.value ?? '';
-
-    // A new attempt clears the 401 error the effect below applies, so a previous
+    // A new attempt clears the custom error the 401 effect below applies, so a previous
     // rejection does not leave both fields marked invalid for the rest of the session.
-    usernameInput?.setCustomValidity('');
-    passwordInput?.setCustomValidity('');
+    usernameRef.current?.setCustomValidity('');
+    passwordRef.current?.setCustomValidity('');
 
-    if (authType === 'password') {
-      // Password Login. Validate both fields, not just the first one that exists: the
-      // code this replaces branched on whether the *element* was present rather than on
-      // whether it was valid, so a blank password flagged the username field instead.
-      const usernameValid = markValidity(usernameInput, 'username');
-      const passwordValid = markValidity(passwordInput, 'password');
-      if (usernameValid && passwordValid) {
-        logInWithPassword(username, password);
+    switch (authType) {
+      case 'password': {
+        // Validate both fields, not just the first one that exists: the code this replaces
+        // branched on whether the *element* was present rather than on whether it was
+        // valid, so a blank password flagged the username field instead (#742).
+        const username = validated(usernameRef.current);
+        const password = validated(passwordRef.current);
+        if (username !== null && password !== null) {
+          logInWithPassword(username, password);
+        }
+        break;
       }
-    } else if (authType === 'passkey') {
-      // Passkey Login — username only; the password field is hidden in this mode.
-      if (markValidity(usernameInput, 'username')) {
-        logInWithPasskey(username)
+      case 'passkey': {
+        // Username only; the password field is not rendered in this mode.
+        const username = validated(usernameRef.current);
+        if (username !== null) {
+          logInWithPasskey(username);
+        }
+        break;
       }
-    } else if (authType === 'oidc') {
-      // OIDC Login
-      const oidc = oidcRef.current.selected
-      const idp = idpList.find((idp: IdP) => idp.name === oidc)
-      logInUsingIdp(idp)
+      case 'oidc': {
+        const selected = oidcRef.current?.selected;
+        const idp = idpList.find((entry: IdP) => entry.name === selected);
+        // `keep-dropdown` seeds its own selection from `choices[0]`, so this should always
+        // match. Guarded because the alternative is a TypeError on `idp.wellKnown` two
+        // frames down, which tells the user nothing at all.
+        if (idp) {
+          logInUsingIdp(idp);
+        } else {
+          log.error('no configured IdP matches the selected name', { selected });
+        }
+        break;
+      }
     }
   }
 
@@ -458,10 +471,7 @@ const LoginPage = () => {
   }
 
   const openErrorDialog = () => {
-    const dialogElement = ref.current?.shadowRoot.querySelector('dialog')
-    if (dialogElement) {
-      dialogElement.showModal();
-    }
+    errorDialogRef.current?.showModal()
   }
 
   const logInUsingIdp = async (idp: any) => {
@@ -516,11 +526,11 @@ const LoginPage = () => {
     canDoPasskey()
       .then((result: any) => {
         if (result === true) {
-          const user = localStorage.getItem('keep_user')
-          usernameRef.current.shadowRoot.querySelector('wa-input').value = user
+          showPasskeyUser(localStorage.getItem('keep_user') ?? '')
         }
       })
       .catch((e) => dispatch(toggleAlert(alertMessage(e))));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch])
 
   useEffect(() => {
@@ -564,44 +574,28 @@ const LoginPage = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    switch (authType) {
-      case 'oidc':
-        document.getElementById('form-username')?.classList.add('removed');
-        document.getElementById('section-password')?.classList.add('hidden');
-        document.getElementById('form-oidc')?.classList.remove('removed');
-        document.getElementById('passkey-signup')?.classList.add('hidden');
-        break;
-      case 'passkey':
-        document.getElementById('form-username')?.classList.remove('removed');
-        document.getElementById('section-password')?.classList.add('hidden');
-        document.getElementById('form-oidc')?.classList.add('removed');
-        document.getElementById('passkey-signup')?.classList.add('hidden');
-        break;
-      case 'password':
-        document.getElementById('form-username')?.classList.remove('removed');
-        document.getElementById('section-password')?.classList.remove('hidden');
-        document.getElementById('form-oidc')?.classList.add('removed');
-        document.getElementById('passkey-signup')?.classList.remove('hidden');
-        break;
-    }
-  }, [authType])
-
   // A 401 means the server rejected the username/password *pair*; neither field violates
   // a constraint on its own, so this is a custom error rather than `valueMissing`.
-  // setCustomValidity() is WebAwesome's public API for that, and markValidity() then
-  // engages the :state(user-invalid) styling on both fields. Cleared on the next attempt
-  // in handleClickLogIn.
+  // setCustomValidity() is the elements' public API for that, and reportUserValidity()
+  // then engages the :state(user-invalid) styling on both fields. Cleared on the next
+  // attempt in handleClickLogIn.
+  //
+  // Awaiting `updateComplete` is not belt-and-braces. `error401` can already be true on
+  // this page's first render — `App` dispatches `renewToken()` on mount, and a 401 from
+  // it lands in the same commit — and a Lit element renders its shadow DOM in a
+  // microtask *after* React's effects run. Marking straight away therefore found no
+  // `wa-input` and did nothing, on exactly the path that shows the login page after an
+  // expired session. The previous code had the same gap and swallowed it: it read the
+  // control as `undefined` and called `?.setCustomValidity` on it.
   useEffect(() => {
-    if (error401 && !idpLogin) {
-      const usernameInput = usernameRef.current?.shadowRoot.querySelector('wa-input');
-      const passwordInput = passwordRef.current?.shadowRoot.querySelector('wa-input');
-
-      usernameInput?.setCustomValidity(CREDENTIALS_REJECTED);
-      passwordInput?.setCustomValidity(CREDENTIALS_REJECTED);
-      markValidity(usernameInput, 'username');
-      markValidity(passwordInput, 'password');
-    }
+    if (!error401 || idpLogin) return;
+    const fields = [usernameRef.current, passwordRef.current];
+    Promise.all(fields.map((field) => field?.updateComplete)).then(() => {
+      for (const field of fields) {
+        field?.setCustomValidity(CREDENTIALS_REJECTED);
+        field?.reportUserValidity();
+      }
+    });
   }, [error401, idpLogin])
 
   useEffect(() => {
@@ -661,16 +655,27 @@ const LoginPage = () => {
                 </KeepButton>
               }
             </section>
+            {/* Which fields a mode shows. This was a `useEffect` on `authType` adding and
+                removing `.hidden`/`.removed` classes by `document.getElementById`, next to
+                an OIDC dropdown that was already conditionally rendered — two paradigms in
+                one form (#743). Note `value` is deliberately never passed as a prop:
+                @lit/react re-applies element props on *every* render with no dirty check,
+                so a `value` prop would overwrite whatever the user had typed. The passkey
+                prefill goes through `showPasskeyUser` instead. */}
             <LoginForm>
-              <section className='full-width'>
-                <KeepInputText
-                  id='form-username'
-                  label='Username'
-                  onChange={handleUsernameChange}
-                  ref={usernameRef}
-                  required
-                />
-                {authType === 'oidc' && idpList.length > 0 &&
+              {authType !== 'oidc' &&
+                <section className='full-width'>
+                  <KeepInputText
+                    id='form-username'
+                    label='Username'
+                    onChange={clearLoginError}
+                    ref={attachUsername}
+                    required
+                  />
+                </section>
+              }
+              {authType === 'oidc' && idpList.length > 0 &&
+                <section className='full-width'>
                   <div className='flex justify-center items-center full-width mt-8'>
                     {/* No `onChange`/`selected`: keep-dropdown owns its selection —
                         `firstUpdated()` seeds it from `choices[0]` and `changeSelected()`
@@ -684,17 +689,20 @@ const LoginPage = () => {
                       className='login-page-oidc-dropdown'
                     />
                   </div>
-                }
-              </section>
-              <section className='full-width'>
-                <KeepInputPassword
-                  id='section-password'
-                  className='input'
-                  label='Password'
-                  ref={passwordRef}
-                  required
-                />
-              </section>
+                </section>
+              }
+              {authType === 'password' &&
+                <section className='full-width'>
+                  <KeepInputPassword
+                    id='section-password'
+                    className='input'
+                    label='Password'
+                    onChange={clearLoginError}
+                    ref={passwordRef}
+                    required
+                  />
+                </section>
+              }
               <KeepButton
                 className="login-submit-button"
                 onClick={handleClickLogIn}
@@ -702,8 +710,8 @@ const LoginPage = () => {
               >
                 LOG IN
               </KeepButton>
-              <PasskeySignUpContainer id='passkey-signup'>
-                {isHttps && (
+              {authType === 'password' && isHttps &&
+                <PasskeySignUpContainer id='passkey-signup'>
                   <button
                     className="no-background color-text-primary"
                     disabled={!displayKeepIdp}
@@ -718,13 +726,13 @@ const LoginPage = () => {
                       <FiInfo className="passkey-icon" size="1.5em" />
                     </a>
                   </button>
-                )}
-              </PasskeySignUpContainer>
+                </PasskeySignUpContainer>
+              }
             </LoginForm>
             <div className='mt-7'>
               <Copyright />
             </div>
-            <KeepApiErrorDialog ref={ref} errorMessage='Error initiating authorization request. Check the console or network for more details.' />
+            <KeepApiErrorDialog ref={errorDialogRef} errorMessage='Error initiating authorization request. Check the console or network for more details.' />
           </div>
         </DivPaper>
       </FormPanel>

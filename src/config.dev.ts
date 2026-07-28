@@ -24,7 +24,19 @@ export const IDP_KEEP_API_URL = '/api/keepidp-v1'
 export const MONACO_EDITOR_DIR = '/monaco-editor-core';
 
 // Theming
-export const KEEP_ADMIN_BASE_COLOR = '#5F1EBE';
+//
+// Must equal --wa-color-brand-50 in src/styles/keep-theme.css, which is the single
+// source of truth for the brand ramp. This constant exists only because getTheme()
+// hands JS colour strings to MUI's createTheme(), and MUI cannot read a CSS custom
+// property — every *CSS* use went to var(--wa-color-brand-50) in #765.
+//
+// It was #5F1EBE, a fourth purple that predated the ramp; #705 chose #7c5fd9 because
+// it is what the app already rendered (keep-overrides.css was imported last and won).
+// Leaving this at #5F1EBE after the CSS moved would have recreated the split #706 fixed,
+// with MUI on one purple and everything else on another.
+//
+// test/styles/keep-theme.test.ts fails if the two drift. It goes away with MUI (#709).
+export const KEEP_ADMIN_BASE_COLOR = '#7c5fd9';
 export const HCL_BASE_COLOR = '#3C91FF';
 
 // Theme Switching

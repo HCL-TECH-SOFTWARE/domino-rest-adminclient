@@ -4,10 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepInputBase } from './keep-input-base';
-
+import { KeepElement } from './keep-element';
 /**
  * Single-line text field. Tag: `keep-input-text`.
  *
@@ -31,16 +31,16 @@ export default class InputText extends KeepInputBase {
 
   render() {
     return html`
-        <wa-input
-            label="${this.label}"
-            hint="${this.hint}"
-            placeholder="${this.placeholder}"
-            ?required="${this.required}"
-            .value="${this.value}"
-            @input="${this.handleInput}"
-        >
-            <slot></slot>
-        </wa-input>
+      <wa-input
+        label="${this.label}"
+        style="${this.getAttribute('style') || ''}"
+        hint="${this.hint}"
+        placeholder="${this.placeholder}"
+        ?required="${this.required}"
+        .value="${this.value}"
+        @input="${this.handleInput}">
+        <slot></slot>
+      </wa-input>
     `;
   }
 }

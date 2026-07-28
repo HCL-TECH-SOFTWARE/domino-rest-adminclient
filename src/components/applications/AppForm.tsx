@@ -13,7 +13,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
 import { Alert, AlertTitle } from '@mui/material';
 import ApplicationIcon from '@mui/icons-material/Apps';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from './ApplicationContext';
 import { AppState } from '../../store';
@@ -63,7 +62,7 @@ const PillBox = styled.div`
   padding: 2px 10px 2px 10px;
   margin: 0 2px 1px 0px;
   &:hover {
-    background: ${KEEP_ADMIN_BASE_COLOR};
+    background: var(--wa-color-brand-50);
     color: white;
   }
 `

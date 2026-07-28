@@ -11,10 +11,10 @@ export const TextEditorContainer = styled.div`
   flex-direction: column;
   overflow-y: scroll;
   border-radius: var(--wa-border-radius-m);
-  border: 1px solid light-dark(#BFBFBF, #3a3a4a);
+  border: 1px solid var(--wa-color-surface-border);
   padding: 5px 20px;
   gap: 16px;
-  background-color: light-dark(#FFF, #1e1e2e);
+  background-color: var(--wa-color-surface-default);
 
   .settings-header {
     width: 100%;
