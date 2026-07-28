@@ -1620,6 +1620,16 @@ body[data-theme="dark"] .add-import-svg-icon {
     background: #212121;
 }
 
+/* Hidden below wa-page's mobile breakpoint, where the header bar takes the vertical budget
+   this 23px overlay would otherwise claim. It used to be gated in JSX; it is CSS now so the
+   shell does not have to thread a breakpoint into a fixed-position overlay. Keep the query
+   in step with MOBILE_BREAKPOINT_PX in src/AppShell.tsx. */
+@media screen and (width < 768px) {
+    .footer-container {
+        display: none;
+    }
+}
+
 .footer-copyright-text {
     margin: 0;
     margin-right: 20px;
@@ -2030,16 +2040,22 @@ body[data-theme='dark'] .login-submit-button {
 
 /* ProfileMenuDialog.tsx */
 .profile-menu-dialog-user {
-    margin: 0 0 115px 8px;
+    /* Was `0 0 115px 8px`. That 115px bottom margin made the 24px icon a 139px-tall box, and
+       it is why the mobile header used to be ~168px of mostly empty white rather than the
+       56px it looked like it should be — the old `calc(100vh - 56px)` under-subtracted by
+       over 100px and the document gained a second scrollbar. Nothing positions against it:
+       the profile popover is a MUI Popper anchored to this element's own rect. #707. */
+    margin-left: 8px;
 }
 
-/* SideNav.tsx */
+/* AppShell.tsx — the logo in wa-page's navigation-header */
 .side-nav-logo-img {
     width: 37px;
     height: 37px;
     object-fit: contain;
     display: block;
-    margin-top: 30px;
+    /* No margin-top: the 30px this used to carry is now .nav-header's padding, which the
+       57px rail and the mobile drawer both need to share. */
 }
 
 .side-nav-text-link {

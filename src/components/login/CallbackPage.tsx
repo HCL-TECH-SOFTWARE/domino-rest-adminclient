@@ -4,7 +4,7 @@ import { loginWithPkce } from '../../store/account/action';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { deepEqual } from '../../utils/common';
-import HomeElement from '../home/HomeElement';
+import AppShell from '../../AppShell';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { getLogger } from '../../services/log-service';
@@ -59,19 +59,15 @@ const CallbackPage: React.FC = () => {
     }
   }, [tokenResponse, navigate])
 
-  const CallbackElement: React.FC = () => {
-    return (
+  // Inlined rather than a nested component: declaring one inside the render remounts the
+  // subtree on every state change, which reset the message mid-exchange.
+  return (
+    <AppShell>
       <section className='flex flex-col p-0 pt-40 pb-40 gap-10'>
         <span className='float-left huge-text color-text-primary'>HCL Domino REST API Administrator</span>
         <h1>{displayText}</h1>
       </section>
-    )
-  }
-
-  return (
-    <>
-      <HomeElement MainElement={CallbackElement} />
-    </>
+    </AppShell>
   );
 };
 

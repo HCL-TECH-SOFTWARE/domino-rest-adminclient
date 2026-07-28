@@ -1,0 +1,224 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+/*
+ * The `<wa-page>` application shell (#707).
+ *
+ * Plain CSS rather than Linaria because almost every rule here reaches into `wa-page`'s
+ * shadow DOM through `::part()`, which a `styled` component cannot express — the parts
+ * belong to an element this app does not author.
+ *
+ * The breakpoint is written out as `768px` in the media queries below instead of a custom
+ * property, because a custom property cannot be used in a media condition. It must stay
+ * equal to `MOBILE_BREAKPOINT_PX` in `src/AppShell.tsx`, which feeds `mobile-breakpoint`;
+ * `test/app-shell.test.ts` fails if the two drift.
+ */
+
+wa-page {
+  /*
+   * The sidenav's two widths. `.nav-collapsed` is an app concept: `wa-page` models a
+   * mobile drawer, not a desktop rail, so the rail is driven from here rather than from
+   * `navOpen`. 242px/57px are the two widths the deleted `SideNavContainer` animated
+   * between.
+   */
+  --menu-width: 242px;
+}
+
+wa-page.nav-collapsed {
+  --menu-width: 57px;
+}
+
+/*
+ * Below the breakpoint `wa-page` hides `part(navigation)` but keeps `part(menu)`, so the
+ * menu still occupies a `minmax(0, var(--menu-width))` grid column. Left at 242px that is
+ * a gradient-filled hole down the side of every mobile page. This query is a copy of the
+ * one `wa-page` compiles into its shadow root from `mobile-breakpoint` (`page.mobile
+ * .styles.ts`: `@media screen and (width < ${breakpoint})`) — same form, so the two
+ * cannot disagree at the boundary pixel.
+ */
+@media screen and (width < 768px) {
+  /*
+   * `.nav-collapsed` has to be repeated here. A media query adds no specificity, so a bare
+   * `wa-page` rule loses to `wa-page.nav-collapsed` above and the rail stays 57px wide on
+   * mobile.
+   */
+  wa-page,
+  wa-page.nav-collapsed {
+    --menu-width: 0px;
+
+    /*
+     * A starting value for the height wa-page measures its header region to be, which
+     * `Views`' `ViewContainer` subtracts from the viewport. wa-page writes the real number
+     * as an inline style — which always wins over this — but only after a ResizeObserver
+     * has fired a frame or two into the load. Without a sensible default the main region
+     * is short by a header for that first frame and the page visibly settles.
+     *
+     * 56px is MobileHeader's stated bar height, with the region's block padding zeroed
+     * below so the two match. See MobileHeader.tsx.
+     */
+    --header-height: 56px;
+  }
+
+  /* Zero-width, but the trailing border still paints a hairline of the gradient. */
+  wa-page::part(menu) {
+    border-inline-end: 0;
+    background-image: none;
+  }
+}
+
+/*
+ * Slide the main content in step with the rail, the way the old flex layout did.
+ *
+ * The transition is on `grid-template-columns` and not on `--menu-width`: custom
+ * properties interpolate discretely unless registered with `@property`, and registering
+ * `--menu-width` globally would invalidate `wa-page`'s own `auto` default. The two
+ * durations are the ones `SideNavContainer` used.
+ */
+wa-page::part(body) {
+  transition: grid-template-columns 225ms ease-in;
+}
+
+wa-page.nav-collapsed::part(body) {
+  transition-duration: 195ms;
+}
+
+wa-page::part(menu) {
+  background-image: var(--keep-sidenav-background);
+  border-inline-end: 1px solid var(--keep-sidenav-border);
+  /* Clip the route labels while the width animates, so they never peek through the rail. */
+  overflow-x: hidden;
+}
+
+/*
+ * `wa-page` paints every slotted region `var(--wa-color-surface-default)`
+ * (`slot[name]:not(…)::slotted(*)`), which would cover `part(menu)`'s gradient, and pads
+ * the nav slots by `--wa-space-m`, which the 57px rail has no room for. Rules in the outer
+ * tree beat `::slotted()` regardless of specificity, so plain declarations are enough.
+ */
+wa-page > [slot^='navigation'] {
+  background: none;
+}
+
+wa-page > [slot='navigation'],
+wa-page > [slot='navigation-footer'] {
+  padding: 0;
+  gap: 0;
+}
+
+/*
+ * On mobile the same nav content is re-projected into `wa-page`'s internal `<wa-drawer>`,
+ * whose dialog is `--wa-color-surface-default`. The sidenav is white-on-gradient
+ * (`--keep-sidenav-on: #fff`), so on a white panel its links would be invisible. Give the
+ * drawer the same gradient the desktop rail has.
+ */
+wa-page::part(drawer__dialog) {
+  background-image: var(--keep-sidenav-background);
+  background-color: transparent;
+}
+
+wa-page::part(drawer__header),
+wa-page::part(drawer__body),
+wa-page::part(drawer__footer) {
+  background: none;
+}
+
+wa-page::part(drawer__close-button) {
+  color: var(--keep-sidenav-on);
+}
+
+/*
+ * The header region holds one fixed-height bar (`MobileHeader`, 56px). wa-page's own
+ * `::slotted([slot='header'])` padding is `--wa-space-m` on all four sides, which would make
+ * the region 88px and desynchronise it from the value pre-seeded above; keep the inline
+ * padding, drop the block padding.
+ */
+wa-page > [slot='header'] {
+  padding-block: 0;
+}
+
+/*
+ * The navigation-header region: logo, wordmark and the appearance toggle. Column-stacked
+ * and centred so that the logo and the toggle stay put when the wordmark is dropped for the
+ * 57px rail — the same arrangement the old `SideNav` had at the top of its list.
+ */
+wa-page > .nav-header {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 0 10px;
+}
+
+.nav-header .nav-title {
+  /* No wrapping to two lines mid-transition while the rail is still wide enough to show
+     part of the wordmark. */
+  white-space: nowrap;
+}
+
+.nav-logo,
+.nav-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.nav-logo {
+  border: 0;
+  background: none;
+}
+
+.nav-theme-toggle {
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 15%);
+  color: var(--keep-sidenav-on);
+  transition: background 0.2s;
+}
+
+.nav-theme-toggle:hover {
+  background: rgb(255 255 255 / 25%);
+}
+
+.nav-theme-toggle svg {
+  font-size: 20px;
+}
+
+/*
+ * The collapse rail's toggle — a tab glued to the sidenav's trailing edge.
+ *
+ * `position: fixed` rather than a grid cell: it has to straddle the boundary between the
+ * menu and main columns, and `part(menu)` clips its own overflow. `--menu-width` is set on
+ * the `wa-page` element itself, so it inherits down to this light-DOM child and the tab
+ * tracks the rail for free, including through the transition above.
+ */
+.nav-collapse-toggle {
+  position: fixed;
+  top: 10%;
+  left: calc(var(--menu-width) - 1px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 37px;
+  padding: 0;
+  border: 1px solid var(--keep-sidenav-border);
+  border-left: 0;
+  border-radius: 0 10px 10px 0;
+  background-color: var(--wa-color-brand-50);
+  color: var(--keep-sidenav-on);
+  cursor: pointer;
+  transition: left 225ms ease-in;
+}
+
+wa-page.nav-collapsed .nav-collapse-toggle {
+  transition-duration: 195ms;
+}
+
+.nav-collapse-toggle svg {
+  font-size: 19px;
+}

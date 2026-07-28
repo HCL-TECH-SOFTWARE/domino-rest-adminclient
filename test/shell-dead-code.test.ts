@@ -12,14 +12,14 @@ import { join, resolve } from 'node:path';
  *    `useMediaQuery('(max-width:768px)')` — and `Header` re-tested the *identical* query,
  *    returning `<MobileHeader/>` when true. So whenever it was mounted the query was true
  *    and the desktop branch never rendered. There has been no desktop header. The whole
- *    file went; `HomeElement` renders `MobileHeader` directly.
+ *    file went; the shell renders `MobileHeader` directly.
  * 2. **`SnackbarToaster`.** Dead twice over: its only mount site was that branch, and its
  *    `open` came from `state.alert.snackbarStatus`, which the reducer initialised to `false`
  *    and **no case ever wrote**. `components/alerts/Notification.tsx` is the live path.
  * 3. **The `open` prop chain.** `App.tsx` held `const [open] = useState(false)` — no setter,
  *    permanently false — and threaded it through `mainElementProps` to `Views`, which
- *    declared `ViewsProps.open` and never destructured it. (`HomeElement` has its own real
- *    `open` state; that one stays.)
+ *    declared `ViewsProps.open` and never destructured it. (The shell has its own real
+ *    collapse state; that one stays.)
  * 4. **`ipadMatches`**, a second `useMediaQuery('(max-width:768px)')` in `HomeElement`
  *    identical to `matches`.
  *
@@ -27,6 +27,9 @@ import { join, resolve } from 'node:path';
  * nothing to render, and report 03 §2.2 maps the header slot to exactly this content — so
  * without a guard, PR 3 could reintroduce a desktop header and a toaster nobody has seen as
  * a side effect of the shell swap. They should come back only by deliberate design.
+ *
+ * PR 3 landed and the guards held: `AppShell.tsx` fills the header slot on mobile only, with
+ * `MobileHeader` and nothing else. See `app-shell.test.ts` for the shell's own invariants.
  */
 
 const SRC = resolve(process.cwd(), 'src');
@@ -82,12 +85,16 @@ describe('shell dead code stays removed (#707)', () => {
     expect(found, `the duplicate media query is back in: ${found.join(', ')}`).toEqual([]);
   });
 
-  it('gives HomeElement a single media query', () => {
-    // Two identical `useMediaQuery('(max-width:768px)')` calls were the symptom that hid the
-    // duplication. `wa-page`'s `mobile-breakpoint` replaces this entirely in PR 3.
-    const home = SOURCES.find(({ file }) => file === 'src/components/home/HomeElement.tsx')!;
-    expect(home).toBeDefined();
-    expect(code(home.text).match(/useMediaQuery\(/g) ?? []).toHaveLength(1);
+  it('leaves the shell with no MUI media query at all', () => {
+    // Two identical `useMediaQuery('(max-width:768px)')` calls in `HomeElement` were the
+    // symptom that hid the duplication; PR 1 collapsed them to one. PR 3 removed the last:
+    // `AppShell` derives its breakpoint from the same expression `wa-page` compiles into its
+    // shadow root, so React and the component cannot disagree at 768px — which MUI's
+    // `(max-width:768px)` did, calling it mobile where `wa-page` says desktop.
+    const shell = SOURCES.find(({ file }) => file === 'src/AppShell.tsx');
+    expect(shell, 'the shell moved again — repoint this guard').toBeDefined();
+    expect(code(shell!.text)).not.toMatch(/useMediaQuery/);
+    expect(existsSync(resolve(SRC, 'components/home/HomeElement.tsx'))).toBe(false);
   });
 
   it('leaves Views without a props interface', () => {

@@ -7,74 +7,43 @@
 import React, { useEffect } from 'react';
 import { styled } from '@linaria/react';
 import { NavLink, useLocation } from 'react-router-dom';
-import clsx from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
-import { switchTheme } from '../../store/styles/action';
 import { fetchKeepDatabases } from '../../store/databases/action';
 import { AppState } from '../../store';
 import { appRoutes as routes, apps, databases, groups, people, settings } from './Routes';
-import ProfileMenu from './ProfileMenu';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
-import { SideNavContainer } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
-import keepLogo from '../../assets/KeepNewIcon.png';
 
-const SideContainer = styled.aside`
-  width: 242px;
-  flex-shrink: 0;
-  white-space: nowrap;
-
-  height: calc(100vh - 23px);
-  border-right: 1px solid var(--keep-sidenav-border);
-  background-image: var(--keep-sidenav-background);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  /* Clip horizontal overflow at all times so route labels and the
-     profile section never peek through the rail while the width is
-     animating between open (242px) and closed (57px). */
-  overflow-x: hidden;
-  @media only screen and (max-width: 768px) {
-    display: none;
-  }
-
-  .expandSeparator {
-    margin-top: 26px;
-  }
-
-  .collapseSeparator {
-    margin-top: 50px;
-  }
-`;
-
-const SidebarContainer = styled(List)`
+/**
+ * The route list for `wa-page`'s `navigation` slot (#707).
+ *
+ * Everything that used to make this a *panel* is gone: the 242px/57px width, the gradient,
+ * the trailing border, `calc(100vh - 23px)` and the `.drawer/.open/.close` classes. The rail
+ * width now belongs to `--menu-width` on `<wa-page>` and the paint to `::part(menu)`, both
+ * in `styles/app-shell.css`; the mobile copy of this list (`MobileSidebar`) is deleted,
+ * because `wa-page` re-projects these same nodes into its drawer below the breakpoint.
+ *
+ * `expanded` no longer drives any width. It survives only so the profile block and the
+ * separator spacing can differ between the rail and the open menu; the labels themselves are
+ * clipped by `::part(menu)`'s `overflow-x: hidden`, exactly as they were before.
+ */
+const NavList = styled(List)`
   padding-top: 10px !important;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  /* MUI v9 reduced the default ListItemIcon min-width from 56px to
-     36px (theme.spacing(4.5)). Combined with the 16px ListItemButton
-     padding, route labels would start at ~52px and peek through the
-     57px collapsed rail. Force the v5 spacing back so labels stay
-     well outside the visible area when collapsed. */
+  /* Route labels must sit well outside the 57px rail so no glyph peeks through while the
+     width animates. MUI v9 dropped the default ListItemIcon min-width from 56px to 36px,
+     which with the 16px ListItemButton padding would start them at ~52px; force the v5
+     spacing back. */
   .MuiListItemIcon-root {
     min-width: 56px;
-  }
-  .keep-icon {
-    width: 37px;
-    margin-top: 30px;
-  }
-  .toggle-sidebar {
-    margin-bottom: 10px;
   }
   a {
     display: block;
@@ -108,76 +77,28 @@ const SidebarContainer = styled(List)`
   .MuiDivider-root {
     height: 0;
   }
-`;
 
-const ContentWrapper = styled.div`
-  flex-grow: 1;
-`;
-
-const Logo = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px;
-  cursor: pointer;
-`;
-
-const Profile = styled.div`
-  height: 187px;
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: center;
-`;
-
-const KeepAdmin = styled.div`
-  display: flex;
-  justify-content: center;
-  .title {
-    font-size: 16px;
-    font-weight: 700;
-  }
-`;
-
-const ThemeSelectorWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  padding: 8px 16px 0;
-`;
-
-const ThemeToggleButton = styled.button`
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  transition: background 0.2s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.25);
+  .expandSeparator {
+    margin-top: 26px;
   }
 
-  svg {
-    font-size: 20px;
+  .collapseSeparator {
+    margin-top: 50px;
   }
 `;
 
 const QuickConfigButton = styled.div``;
 
 interface SidenavProps {
-  open: boolean;
-  toggleMenu: () => void;
+  /** True when the menu shows its labels; false for the 57px rail. */
+  expanded: boolean;
 }
 
-const SideNav: React.FC<SidenavProps> = ({ open }) => {
+const SideNav: React.FC<SidenavProps> = ({ expanded }) => {
   const location = useLocation();
   const { navitems } = useSelector((state: AppState) => state.account);
   const { databasePull } = useSelector((state: AppState) => state.databases);
   const dispatch = useDispatch();
-  const { themeMode } = useSelector((state: AppState) => state.styles);
   useEffect(() => {
     dispatch(showPages() as any);
   }, [dispatch]);
@@ -190,220 +111,174 @@ const SideNav: React.FC<SidenavProps> = ({ open }) => {
   };
 
   return (
-    <SideNavContainer>
-      <SideContainer
-        className={clsx('drawer', {
-          open: open,
-          close: !open
-        })}
-      >
-        <SidebarContainer>
-          <Logo
-            onClick={() => {
-              window.location.href = window.location.origin;
-            }}>
-            <img
-              className="keep-icon side-nav-logo-img"
-              src={keepLogo}
-              alt="HCL Domino REST API Icon"
-            />
-          </Logo>
-          {open && (
-            <KeepAdmin>
-              <span className="medium-text color-text-primary text-bold">
-                HCL Domino REST API
-              </span>
-            </KeepAdmin>
-          )}
+    <NavList>
+      <ListItemButton className={expanded ? 'expandSeparator' : 'collapseSeparator'} />
 
-          <ThemeSelectorWrapper>
-            <KeepTooltip content={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
-              <ThemeToggleButton
-                onClick={() => {
-                  const newTheme = themeMode === 'dark' ? 'default' : 'dark';
-                  localStorage.setItem('theme', newTheme);
-                  dispatch(switchTheme(newTheme));
-                }}
-              >
-                {themeMode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
-              </ThemeToggleButton>
-            </KeepTooltip>
-          </ThemeSelectorWrapper>
-
-          <ContentWrapper>
-          <ListItemButton className={open ? 'expandSeparator' : 'collapseSeparator'}></ListItemButton>
-
-          {/* Overview */}
-          {routes.map((route) => {
-            const Icon = route.icon;
-            return (
-              <NavLink
-                key={route.label}
-                className={`full-width /${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-                to={route.uri}>
-                <KeepTooltip placement="right" content={route.label} className='full-width'>
-                  <ListItemButton className="link-container medium-text" key={route.label}>
-                    <ListItemIcon className='tiny-text'>
-                      <Icon className='color-text-primary' />
-                    </ListItemIcon>
-                    <ListItemText>
-                      <span className="side-nav-text-link color-text-primary">
-                        {route.label}
-                      </span>
-                    </ListItemText>
-                  </ListItemButton>
-                </KeepTooltip>
-              </NavLink>
-            );
-          })}
-
-          {navitems.databases &&
-            databases.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  key={route.label}
-                  className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-                  to={route.uri}>
-                  <KeepTooltip placement="right" content={route.label} className='full-width' id={`here ${route.label}`}>
-                    <ListItemButton className="link-container medium-text" key={route.label}>
-                      <ListItemIcon className='tiny-text'>
-                        <Icon className='color-text-primary' />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <span className="color-text-primary">
-                          {route.label}
-                        </span>
-                      </ListItemText>
-                    </ListItemButton>
-                  </KeepTooltip>
-                </NavLink>
-              );
-            })}
-
-          <QuickConfigButton className="quick-config full-width">
-            <KeepTooltip placement="right" content="Quick Config" className='full-width'>
-              <ListItemButton className="link-container medium-text" key="Quick Config" onClick={handleQuickConfig}>
+      {/* Overview */}
+      {routes.map((route) => {
+        const Icon = route.icon;
+        return (
+          <NavLink
+            key={route.label}
+            className={`full-width /${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+            to={route.uri}>
+            <KeepTooltip placement="right" content={route.label} className='full-width'>
+              <ListItemButton className="link-container medium-text" key={route.label}>
                 <ListItemIcon className='tiny-text'>
-                  <FlashOnIcon className='color-text-primary' />
+                  <Icon className='color-text-primary' />
                 </ListItemIcon>
                 <ListItemText>
-                <span className="side-nav-text-link">
-                  Quick Config
-                </span>
+                  <span className="side-nav-text-link color-text-primary">
+                    {route.label}
+                  </span>
                 </ListItemText>
               </ListItemButton>
             </KeepTooltip>
-          </QuickConfigButton>
+          </NavLink>
+        );
+      })}
 
-          {navitems.apps &&
-            apps.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  key={route.label}
-                  className={`/${location.pathname}` === `${route.uri}` ? 'route-active' : ''}
-                  to={route.uri}>
-                  <KeepTooltip placement="right" content={route.label} className='full-width'>
-                    <ListItemButton className={location.pathname === route.uri ? 'link-container medium-text' : 'medium-text'} key={route.label}>
-                      <ListItemIcon className='tiny-text'>
-                        <Icon className='color-text-primary' />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <span className="side-nav-text-link">
-                          {route.label}
-                        </span>
-                      </ListItemText>
-                    </ListItemButton>
-                  </KeepTooltip>
-                </NavLink>
-              );
-            })}
+      {navitems.databases &&
+        databases.map((route) => {
+          const Icon = route.icon;
+          return (
+            <NavLink
+              key={route.label}
+              className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+              to={route.uri}>
+              <KeepTooltip placement="right" content={route.label} className='full-width' id={`here ${route.label}`}>
+                <ListItemButton className="link-container medium-text" key={route.label}>
+                  <ListItemIcon className='tiny-text'>
+                    <Icon className='color-text-primary' />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <span className="color-text-primary">
+                      {route.label}
+                    </span>
+                  </ListItemText>
+                </ListItemButton>
+              </KeepTooltip>
+            </NavLink>
+          );
+        })}
 
-          {navitems.users &&
-            people.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  key={route.label}
-                  className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-                  to={route.uri}>
-                  <KeepTooltip placement="right" content={route.label}>
-                    <ListItemButton className="link-container medium-text" key={route.label}>
-                      <ListItemIcon className='tiny-text'>
-                        <Icon className='color-text-primary' />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <span className="side-nav-text-link">
-                          {route.label}
-                        </span>
-                      </ListItemText>
-                    </ListItemButton>
-                  </KeepTooltip>
-                </NavLink>
-              );
-            })}
+      <QuickConfigButton className="quick-config full-width">
+        <KeepTooltip placement="right" content="Quick Config" className='full-width'>
+          <ListItemButton className="link-container medium-text" key="Quick Config" onClick={handleQuickConfig}>
+            <ListItemIcon className='tiny-text'>
+              <FlashOnIcon className='color-text-primary' />
+            </ListItemIcon>
+            <ListItemText>
+            <span className="side-nav-text-link">
+              Quick Config
+            </span>
+            </ListItemText>
+          </ListItemButton>
+        </KeepTooltip>
+      </QuickConfigButton>
 
-          {navitems.groups &&
-            groups.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  key={route.label}
-                  className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-                  to={route.uri}>
-                  <KeepTooltip placement="right" content={route.label}>
-                    <ListItemButton className="link-container medium-text" key={route.label}>
-                      <ListItemIcon className='tiny-text'>
-                        <Icon className='color-text-primary' />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <span className="side-nav-text-link">
-                          {route.label}
-                        </span>
-                      </ListItemText>
-                    </ListItemButton>
-                  </KeepTooltip>
-                </NavLink>
-              );
-            })}
+      {navitems.apps &&
+        apps.map((route) => {
+          const Icon = route.icon;
+          return (
+            <NavLink
+              key={route.label}
+              className={`/${location.pathname}` === `${route.uri}` ? 'route-active' : ''}
+              to={route.uri}>
+              <KeepTooltip placement="right" content={route.label} className='full-width'>
+                <ListItemButton className={location.pathname === route.uri ? 'link-container medium-text' : 'medium-text'} key={route.label}>
+                  <ListItemIcon className='tiny-text'>
+                    <Icon className='color-text-primary' />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <span className="side-nav-text-link">
+                      {route.label}
+                    </span>
+                  </ListItemText>
+                </ListItemButton>
+              </KeepTooltip>
+            </NavLink>
+          );
+        })}
 
-          <Divider />
+      {navitems.users &&
+        people.map((route) => {
+          const Icon = route.icon;
+          return (
+            <NavLink
+              key={route.label}
+              className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+              to={route.uri}>
+              <KeepTooltip placement="right" content={route.label}>
+                <ListItemButton className="link-container medium-text" key={route.label}>
+                  <ListItemIcon className='tiny-text'>
+                    <Icon className='color-text-primary' />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <span className="side-nav-text-link">
+                      {route.label}
+                    </span>
+                  </ListItemText>
+                </ListItemButton>
+              </KeepTooltip>
+            </NavLink>
+          );
+        })}
 
-          {/* Mail is intentionally disabled pending LABS-1214 (see #698).
-              The `false &&` is the feature switch; restore it to a real
-              condition when the page is re-enabled. */}
-          {/* eslint-disable-next-line no-constant-binary-expression */}
-          {false &&
-            settings.map((route) => {
-              const Icon = route.icon;
-              return (
-                <NavLink
-                  key={route.label}
-                  className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
-                  to={route.uri}>
-                  <KeepTooltip placement="right" content={route.label}>
-                    <ListItemButton className="link-container medium-text" key={route.label}>
-                      <ListItemIcon className='tiny-text'>
-                        <Icon className='color-text-primary' />
-                      </ListItemIcon>
-                      <ListItemText>
-                        <span className="side-nav-text-link">
-                          {route.label}
-                        </span>
-                      </ListItemText>
-                    </ListItemButton>
-                  </KeepTooltip>
-                </NavLink>
-              );
-            })}
-            </ContentWrapper>
-        </SidebarContainer>
-        <Profile>
-          <ProfileMenu open={open} />
-        </Profile>
-      </SideContainer>
-    </SideNavContainer>
+      {navitems.groups &&
+        groups.map((route) => {
+          const Icon = route.icon;
+          return (
+            <NavLink
+              key={route.label}
+              className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+              to={route.uri}>
+              <KeepTooltip placement="right" content={route.label}>
+                <ListItemButton className="link-container medium-text" key={route.label}>
+                  <ListItemIcon className='tiny-text'>
+                    <Icon className='color-text-primary' />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <span className="side-nav-text-link">
+                      {route.label}
+                    </span>
+                  </ListItemText>
+                </ListItemButton>
+              </KeepTooltip>
+            </NavLink>
+          );
+        })}
+
+      <Divider />
+
+      {/* Mail is intentionally disabled pending LABS-1214 (see #698).
+          The `false &&` is the feature switch; restore it to a real
+          condition when the page is re-enabled. */}
+      {/* eslint-disable-next-line no-constant-binary-expression */}
+      {false &&
+        settings.map((route) => {
+          const Icon = route.icon;
+          return (
+            <NavLink
+              key={route.label}
+              className={`/${location.pathname.split('/')[1]}` === `${route.uri}` ? 'route-active' : ''}
+              to={route.uri}>
+              <KeepTooltip placement="right" content={route.label}>
+                <ListItemButton className="link-container medium-text" key={route.label}>
+                  <ListItemIcon className='tiny-text'>
+                    <Icon className='color-text-primary' />
+                  </ListItemIcon>
+                  <ListItemText>
+                    <span className="side-nav-text-link">
+                      {route.label}
+                    </span>
+                  </ListItemText>
+                </ListItemButton>
+              </KeepTooltip>
+            </NavLink>
+          );
+        })}
+    </NavList>
   );
 };
 

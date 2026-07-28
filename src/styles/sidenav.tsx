@@ -6,54 +6,6 @@
 
 import { styled } from '@linaria/react';
 
-export const SideNavContainer = styled.div`
-  /* Outer wrapper must shrink with the inner drawer, otherwise the
-     flex layout keeps the next sibling (RightPanel) pinned at 242px
-     and the sidenav-edge toggle button appears fixed in place. */
-  width: 242px;
-  flex-shrink: 0;
-  white-space: nowrap;
-  /* Animate width so RightPanel slides in lock-step with the sidenav
-     opening/closing. The slightly slower 'open' timing matches the
-     inner .open transition below. */
-  transition: width 225ms ease-in;
-
-  &:has(.close) {
-    width: 57px;
-    transition: width 195ms ease-in;
-
-    @media only screen and (min-width: 0px) and (max-width: 768px) {
-      width: 0;
-    }
-  }
-
-  .drawer {
-    width: 242px;
-    flex-shrink: 0;
-    white-space: nowrap;
-    /* Always clip horizontal overflow so labels/buttons never peek
-       through the narrow rail during the width transition. */
-    overflow-x: hidden;
-  }
-
-  .open {
-    transition: width 225ms ease-in;
-
-    @media only screen and (min-width: 0px) and (max-width: 768px) {
-      width: 80%;
-    }
-  }
-
-  .close {
-    transition: width 195ms ease-in;
-    width: 57px;
-
-    @media only screen and (min-width: 0px) and (max-width: 768px) {
-      width: 0;
-    }
-  }
-`
-
 export const OptionsIcon = styled.div`
   display: flex;
   justify-content: center;

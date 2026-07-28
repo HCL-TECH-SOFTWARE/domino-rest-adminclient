@@ -78,7 +78,7 @@ describe('LoginPage without Material UI (#743)', () => {
       .filter(({ text }) => /<CssBaseline\s*\/>/.test(code(text)))
       .map(({ file }) => file)
       .sort();
-    expect(mounts).toEqual(['src/components/home/HomeElement.tsx']);
+    expect(mounts).toEqual(['src/AppShell.tsx']);
   });
 
   it('leaves theme.ts with a single importer', () => {
@@ -87,7 +87,7 @@ describe('LoginPage without Material UI (#743)', () => {
     const importers = sources('.')
       .filter(({ file, text }) => file !== 'src/theme.ts' && /from\s+'\.{1,2}(\/\.\.)*\/theme'/.test(code(text)))
       .map(({ file }) => file);
-    expect(importers).toEqual(['src/components/home/HomeElement.tsx']);
+    expect(importers).toEqual(['src/AppShell.tsx']);
   });
 
   it('renders the form panel and the background panel', async () => {
