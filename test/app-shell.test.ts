@@ -122,6 +122,9 @@ describe('AppShell on wa-page (#707)', () => {
       expect(code(sidenav) + code(shell), `${gone} is back`).not.toContain(gone);
     }
     expect(read('src/styles/sidenav.tsx')).not.toContain('SideNavContainer');
+    // `sidenav/style.ts` held one export, `drawerWidth = 242`, which nothing read once
+    // `--menu-width` took over the two rail widths.
+    expect(existsSync(resolve(ROOT, 'src/components/sidenav/style.ts'))).toBe(false);
   });
 
   it('does not paint over the menu gradient', () => {
