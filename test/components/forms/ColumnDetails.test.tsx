@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import { bodyRows, cellTexts, headerLabels } from '../../test-utils/tables';
 import ColumnDetails from '../../../src/components/forms/ColumnDetails';
