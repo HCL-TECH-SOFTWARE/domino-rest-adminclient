@@ -23,8 +23,7 @@
  *    block), so the glyphs are bundled from the `@fortawesome/fontawesome-free`
  *    dependency instead.
  *
- * Registered under the explicit name `fa` rather than overriding `default`, so nothing
- * here can affect how Web Awesome's own components resolve their internal icons.
+ * Registered under the explicit name `fa`, and **also** as `default` — see below.
  *
  * To add an icon: import its URL and add it to {@link ICONS}. Only what is listed here
  * is bundled.
@@ -34,44 +33,106 @@ import { registerIconLibrary } from '@awesome.me/webawesome/dist/components/icon
 import { getLogger } from './log-service.js';
 
 import arrowsRotate from '@fortawesome/fontawesome-free/svgs/solid/arrows-rotate.svg?url';
+import ban from '@fortawesome/fontawesome-free/svgs/solid/ban.svg?url';
+import bars from '@fortawesome/fontawesome-free/svgs/solid/bars.svg?url';
+import bolt from '@fortawesome/fontawesome-free/svgs/solid/bolt.svg?url';
+import caretDown from '@fortawesome/fontawesome-free/svgs/solid/caret-down.svg?url';
+import chevronDown from '@fortawesome/fontawesome-free/svgs/solid/chevron-down.svg?url';
+import chevronLeft from '@fortawesome/fontawesome-free/svgs/solid/chevron-left.svg?url';
+import chevronRight from '@fortawesome/fontawesome-free/svgs/solid/chevron-right.svg?url';
+import chevronUp from '@fortawesome/fontawesome-free/svgs/solid/chevron-up.svg?url';
+import circleCheck from '@fortawesome/fontawesome-free/svgs/solid/circle-check.svg?url';
+import circleDot from '@fortawesome/fontawesome-free/svgs/solid/circle-dot.svg?url';
+import circleInfo from '@fortawesome/fontawesome-free/svgs/solid/circle-info.svg?url';
 import circlePlus from '@fortawesome/fontawesome-free/svgs/solid/circle-plus.svg?url';
+import circleQuestion from '@fortawesome/fontawesome-free/svgs/solid/circle-question.svg?url';
+import circleUser from '@fortawesome/fontawesome-free/svgs/solid/circle-user.svg?url';
 import codeCompare from '@fortawesome/fontawesome-free/svgs/solid/code-compare.svg?url';
 import copy from '@fortawesome/fontawesome-free/svgs/solid/copy.svg?url';
 import database from '@fortawesome/fontawesome-free/svgs/solid/database.svg?url';
 import download from '@fortawesome/fontawesome-free/svgs/solid/download.svg?url';
+import ellipsis from '@fortawesome/fontawesome-free/svgs/solid/ellipsis.svg?url';
+import envelope from '@fortawesome/fontawesome-free/svgs/solid/envelope.svg?url';
 import file from '@fortawesome/fontawesome-free/svgs/solid/file.svg?url';
 import folder from '@fortawesome/fontawesome-free/svgs/solid/folder.svg?url';
-import house from '@fortawesome/fontawesome-free/svgs/solid/house.svg?url';
+import folderOpen from '@fortawesome/fontawesome-free/svgs/solid/folder-open.svg?url';
 import floppyDisk from '@fortawesome/fontawesome-free/svgs/solid/floppy-disk.svg?url';
+import house from '@fortawesome/fontawesome-free/svgs/solid/house.svg?url';
+import listUl from '@fortawesome/fontawesome-free/svgs/solid/list-ul.svg?url';
 import magnifyingGlass from '@fortawesome/fontawesome-free/svgs/solid/magnifying-glass.svg?url';
+import moon from '@fortawesome/fontawesome-free/svgs/solid/moon.svg?url';
 import pencil from '@fortawesome/fontawesome-free/svgs/solid/pencil.svg?url';
+import penToSquare from '@fortawesome/fontawesome-free/svgs/solid/pen-to-square.svg?url';
+import play from '@fortawesome/fontawesome-free/svgs/solid/play.svg?url';
 import plus from '@fortawesome/fontawesome-free/svgs/solid/plus.svg?url';
+import rightFromBracket from '@fortawesome/fontawesome-free/svgs/solid/right-from-bracket.svg?url';
+import rotateLeft from '@fortawesome/fontawesome-free/svgs/solid/rotate-left.svg?url';
+import shieldHalved from '@fortawesome/fontawesome-free/svgs/solid/shield-halved.svg?url';
+import sort from '@fortawesome/fontawesome-free/svgs/solid/sort.svg?url';
 import squareCaretDown from '@fortawesome/fontawesome-free/svgs/solid/square-caret-down.svg?url';
 import squareMinus from '@fortawesome/fontawesome-free/svgs/solid/square-minus.svg?url';
 import squarePlus from '@fortawesome/fontawesome-free/svgs/solid/square-plus.svg?url';
+import sun from '@fortawesome/fontawesome-free/svgs/solid/sun.svg?url';
+import tableCellsLarge from '@fortawesome/fontawesome-free/svgs/solid/table-cells-large.svg?url';
 import trash from '@fortawesome/fontawesome-free/svgs/solid/trash.svg?url';
 import xmark from '@fortawesome/fontawesome-free/svgs/solid/xmark.svg?url';
 
 const log = getLogger('services/icon-library');
 
-/** Font Awesome name → bundled URL. Keys are the canonical Font Awesome 7 names. */
+/**
+ * Font Awesome name → bundled URL. Keys are the canonical Font Awesome 7 names.
+ *
+ * **One weight per name — everything here is `solid`,** which is what the original 17
+ * entries were and what the app renders today. The map is flat, so a name cannot hold both
+ * a solid and a regular URL; a genuine need for both would have to key them apart
+ * (`circle-question-regular`) rather than pick per call site. Several icons this replaced
+ * were outline-weight in their old set (`AccountCircleOutlined`, `InfoOutlined`, and
+ * everything from Feather) and are solid now. That is deliberate: one coherent weight
+ * beats a per-glyph match to four inconsistent legacy sets.
+ */
 export const ICONS: Record<string, string> = {
   'arrows-rotate': arrowsRotate,
+  ban,
+  bars,
+  bolt,
+  'caret-down': caretDown,
+  'chevron-down': chevronDown,
+  'chevron-left': chevronLeft,
+  'chevron-right': chevronRight,
+  'chevron-up': chevronUp,
+  'circle-check': circleCheck,
+  'circle-dot': circleDot,
+  'circle-info': circleInfo,
   'circle-plus': circlePlus,
+  'circle-question': circleQuestion,
+  'circle-user': circleUser,
   'code-compare': codeCompare,
   copy,
   database,
   download,
+  ellipsis,
+  envelope,
   file,
   folder,
-  house,
+  'folder-open': folderOpen,
   'floppy-disk': floppyDisk,
+  house,
+  'list-ul': listUl,
   'magnifying-glass': magnifyingGlass,
+  moon,
   pencil,
+  'pen-to-square': penToSquare,
+  play,
   plus,
+  'right-from-bracket': rightFromBracket,
+  'rotate-left': rotateLeft,
+  'shield-halved': shieldHalved,
+  sort,
   'square-caret-down': squareCaretDown,
   'square-minus': squareMinus,
   'square-plus': squarePlus,
+  sun,
+  'table-cells-large': tableCellsLarge,
   trash,
   xmark
 };
@@ -79,15 +140,45 @@ export const ICONS: Record<string, string> = {
 /** The library name to pass as `<wa-icon library="...">`. */
 export const FA_LIBRARY = 'fa';
 
-registerIconLibrary(FA_LIBRARY, {
-  resolver: (name: string) => {
-    const url = ICONS[name];
-    if (!url) {
-      // Returning '' renders an empty glyph, which is exactly the failure mode this
-      // module exists to eliminate — so say so rather than fail silently.
-      log.warn(`No bundled Font Awesome icon named "${name}"; add it to ICONS in icon-library.ts`);
-      return '';
-    }
-    return url;
+const resolver = (name: string): string => {
+  const url = ICONS[name];
+  if (!url) {
+    // Returning '' renders an empty glyph, which is exactly the failure mode this
+    // module exists to eliminate — so say so rather than fail silently.
+    log.warn(`No bundled Font Awesome icon named "${name}"; add it to ICONS in icon-library.ts`);
+    return '';
   }
-});
+  return url;
+};
+
+registerIconLibrary(FA_LIBRARY, { resolver });
+
+/**
+ * The same resolver, also registered over Web Awesome's `default` library.
+ *
+ * An earlier revision of this module deliberately did *not* do this, reasoning that
+ * overriding `default` could disturb how Web Awesome's own components resolve their
+ * internal icons. Measured, that reasoning was backwards. Of the 41 `<wa-icon>` tags in
+ * WebAwesome 3.10's own templates, 37 pass `library="system"` and resolve from glyphs
+ * bundled inside the package — untouched by anything here. The remaining four pass no
+ * library at all and therefore fall to `default`, whose stock resolver fetches from
+ * `ka-f.fontawesome.com` at runtime.
+ *
+ * One of those four is `<wa-page>`'s navigation toggle, which this app mounts on every
+ * authenticated screen (`AppShell.tsx`). So the old arrangement did not protect Web
+ * Awesome's internals; it left them on the CDN. Confirmed in a browser against the
+ * production build: `https://ka-f.fontawesome.com/releases/v7.3.0/svgs/solid/bars.svg`,
+ * HTTP 200, and the SVG that came back is stamped `Font Awesome Pro 7.3.0` while every
+ * glyph bundled here is `Free 7.0.0` — so it was served from the network, not from `dist`.
+ *
+ * `connect-src` carries a wildcard for OIDC, so nothing blocks or reports this; the icon
+ * renders and the dependency is invisible. Overriding `default` removes it. A name that is
+ * not bundled now warns and renders empty instead of silently reaching the network, which
+ * is the failure mode this module exists to make loud.
+ *
+ * `setIconPath()` is Web Awesome's own supported alternative, but it wants a directory
+ * laid out like the Font Awesome download — which means emitting a copy of the icon tree
+ * as static assets and resolving names that were never bundled. Reusing {@link ICONS}
+ * keeps one registry, one failure mode, and no second copy of Font Awesome.
+ */
+registerIconLibrary('default', { resolver });

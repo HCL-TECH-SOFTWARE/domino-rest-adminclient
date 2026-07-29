@@ -55,11 +55,32 @@ describe('icon-library', () => {
     expect(SOURCES.length).toBeGreaterThan(100);
   });
 
-  it('is registered under an explicit library name, not "default"', () => {
-    // Overriding "default" would change how Web Awesome's own components resolve
-    // their internal icons.
+  it('exposes an explicit library name for markup to ask for', () => {
     expect(FA_LIBRARY).toBe('fa');
     expect(FA_LIBRARY).not.toBe('default');
+  });
+
+  it('also registers over the default library, so no icon can reach the CDN', async () => {
+    // `FA_LIBRARY` stays "fa" for markup to name explicitly, but the same resolver is
+    // registered over "default" as well. Four of WebAwesome 3.10's own `<wa-icon>` tags
+    // pass no library — one of them is `<wa-page>`'s navigation toggle, which this app
+    // mounts on every authenticated screen. Left on the stock resolver those fetch from
+    // ka-f.fontawesome.com, which `connect-src *` permits, so the dependency is silent.
+    const { getIconLibrary } = await import(
+      '@awesome.me/webawesome/dist/components/icon/library.js'
+    );
+    await import('../../src/services/icon-library');
+
+    const fallback = getIconLibrary('default');
+    expect(fallback, 'the default icon library is not registered').toBeTruthy();
+    expect(fallback!.resolver('bars')).toBe(ICONS.bars);
+  });
+
+  it('bundles the glyph WebAwesome asks for by itself', () => {
+    // `<wa-page>`'s navigation toggle renders `<wa-icon name="bars">` from inside
+    // node_modules. No scan of `src/` can see it, so it is pinned by name here — the
+    // whole point of overriding the default library is defeated if it resolves to ''.
+    expect(ICONS.bars).toBeTruthy();
   });
 
   it('maps every icon to a non-empty bundled URL', () => {
@@ -92,6 +113,21 @@ describe('icon-library', () => {
       }
     }
     expect(missing, `keep-button icon names absent from ICONS:\n${missing.join('\n')}`).toEqual([]);
+  });
+
+  it('bundles every icon name passed to KeepIcon', () => {
+    // `<KeepIcon name='…'>` is the .tsx spelling of `<wa-icon library="fa" name="…">`
+    // (#718). It renders the glyph as a *property*, so the `<wa-icon …>` tag scans above
+    // cannot see it — without this, ~115 converted call sites would be exempt from the
+    // one check that catches an unregistered name. Both quote styles: JSX here is single.
+    const missing: string[] = [];
+    for (const file of SOURCES.filter((f) => f.endsWith('.tsx'))) {
+      for (const tag of read(file).matchAll(/<KeepIcon\b[^>]*>/g)) {
+        const name = tag[0].match(/\bname=['"]([a-z0-9-]+)['"]/)?.[1];
+        if (name && !ICONS[name]) missing.push(`${rel(file)}: ${name}`);
+      }
+    }
+    expect(missing, `KeepIcon glyph names absent from ICONS:\n${missing.join('\n')}`).toEqual([]);
   });
 
   it('routes every named icon through this library rather than the Font Awesome CDN', () => {

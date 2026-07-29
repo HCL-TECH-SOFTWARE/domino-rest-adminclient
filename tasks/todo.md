@@ -1,108 +1,105 @@
-# #747 — keep-elements: standard decorators + `accessor`
+# #718 — consolidate the icon systems onto `wa-icon`
 
-Branch: `chore/747-standard-decorators` off `new_code`.
+Branch `feat/718-wa-icon-codemod`, based on `origin/new_code` @ `d4db66b`.
 
-## Gate result (done before any source change, per the issue)
+## Why this is being run as a sweep
 
-SWC 1.15.46 standard-decorator output is **correct**, verified behaviourally in dev *and*
-production, with a negative control proving the harness can fail.
+The issue's own text and every earlier revision of `docs/reports/06-waves.md` say **not** to
+run this as a standalone codemod, because `track:icons` overlaps `track:views` and a sweep
+would fight the per-file component pass for the same files.
 
-| Check | Result |
-|---|---|
-| SWC emits real TC39 helper (`_apply_decs_2203_r`) | pass |
-| Dev build, 10 runtime assertions (reactivity, converters, `@query`, changedProperties) | pass |
-| Production build, 9 runtime assertions (Lit prod build, no dev guard) | pass |
-| `tsc` with `experimentalDecorators: false`, `useDefineForClassFields: true` | pass |
-| Negative control: plain fields under standard decorators | throws, as required |
+That objection was raised and the user chose the sweep anyway. It has since largely expired:
+`d4db66b` restructured the programme to **single-lane** — "lanes A, B and C are empty of open
+work", so there is no concurrent instance to collide with, and #718 is listed as one of the
+issues that "close *inside* #806". The remaining cost is that a file converted here will be
+converted again when #806 reaches it; the icon line of #806's per-file recipe simply becomes
+a no-op.
 
-### Three corrections to the issue
+## Baseline on `d4db66b` (measured, not assumed)
 
-1. **`tsDecorators: false` is wrong.** In `@vitejs/plugin-react-swc` it is the *parser*
-   flag (`index.js:202` → `parser.decorators`). Setting it false makes SWC reject `@`
-   outright: `Expression expected`. It must stay `true`.
-2. **The `useAtYourOwnRisk_mutateSwcOptions` hook cannot be removed.** SWC defaults to
-   legacy decorators and *silently passes `accessor` members through untransformed*. The
-   hook stays; its payload changes from `useDefineForClassFields: false` to
-   `decoratorVersion: '2022-03'`. Acceptance criteria #3/#4 are amended accordingly.
-3. **`@query` does need `accessor`.** Without it: `field decorators must return a
-   function or void 0` — Lit returns a getter descriptor, legal only for an `accessor`
-   decorator. The issue states the opposite.
+```
+npm run lint          exit 0
+npm run build         exit 0
+npm run test          exit 0    121 files / 1523 tests, coverage 65.09 %
+npm run bundle:budget exit 0    868.6 kB raw / 238.9 kB gzip
+                                budget 892.5 / 245.9 — under by 23.9 kB raw / 7.0 kB gzip
+```
 
-### Why it is still worth doing
+The eager closure contains `createSvgIcon-*.js` at **84.8 kB raw / 28.4 kB gzip** — MUI's icon
+factory. This codemod should *shrink* the bundle rather than threaten the 2 % headroom.
 
-The config dependency moves rather than disappears — but it stops being silent. A missing
-`accessor` throws `Unsupported decorator location: field` at module load in **dev and
-production**. The issue's actual fear was a silent production regression; that is what
-goes away.
+## Scope
 
-### Corrected scope
+| System | Files | Action |
+|---|--:|---|
+| `@mui/icons-material` | 33 | convert to `wa-icon` |
+| `react-icons` | 18 | convert to `wa-icon` |
+| overlap | 8 | — |
+| **distinct** | **43** | |
 
-81 fields across 23 files (not 89/25 — People/Groups removal shrank it):
-72 `@property` + 6 `@state` + 3 `@query`. 23 `@customElement` need no change.
-All 81 are single-line declarations. Decorators are confined to `keep-elements/`.
+Out of scope, deliberately: `src/styles/app-icons.ts` (issue **#731** — 15 of its 19 render
+sites are `<img>`, not `wa-icon`, so its conversion is not separable from the component pass)
+and the `.Mui*` half of `dark-mode.css` (issue **#709**).
+
+## Constraints that gate this work
+
+- `npm run lint` / `build` / `test` / `bundle:budget` all pass — CI runs all four.
+- Coverage is enforced per directory: `components/keep-elements/**` and `services` at 90 %.
+- **No `style=` attributes** — production CSP sends `style-src-attr 'none'`;
+  `test/csp-inline-styles.test.ts` holds the count at zero.
+- `test/services/icon-library.test.ts` fails on any glyph name not registered in `ICONS`.
+  It scans for literal `<wa-icon>` tags and `icon="…"` props — **a new React wrapper is
+  invisible to it**, so the guard must be extended in the same task that introduces the
+  wrapper, not later.
+- Whole-line comments are stripped before those scans, but *trailing* comments are not, and
+  the per-file gates elsewhere are greps — so naming a removed package in prose keeps it
+  looking present.
 
 ## Tasks
 
-- [x] Add `accessor` to 72 `@property` fields
-- [x] Add `accessor` to 6 `@state` fields
-- [x] Add `accessor` to 3 `@query` fields
-- [x] `tsconfig.app.json`: drop `experimentalDecorators` and `useDefineForClassFields`
-- [x] `vite.config.mts`: hook payload → `decoratorVersion: '2022-03'`, rewrite comment
-- [x] `vitest.config.ts`: same, rewrite comment
-- [x] Full suite green + coverage thresholds met
-- [x] `tsc` clean, lint clean
-- [x] Production build + runtime smoke test (checkbox toggle, tree re-render)
-- [x] Remove scratch dirs
-- [x] PR against `new_code` with "closes #747" — [#790](https://github.com/HCL-TECH-SOFTWARE/domino-rest-adminclient/pull/790)
+- [ ] **1. The primitive.** A React `KeepIcon` that renders `wa-icon` with `library="fa"`
+      baked in, so the CDN fallback is structurally unreachable from a call site. Extend
+      `icon-library.test.ts` to scan `<KeepIcon name="…">` in the same commit.
+- [ ] **2. Register the glyphs.** Extend `ICONS` in `src/services/icon-library.ts` from 17 to
+      cover every name the mapping needs. Every name verified present in
+      `@fortawesome/fontawesome-free` before it is written down.
+- [ ] **3–N. Convert, in batches**, grouped by directory so each batch is independently
+      reviewable and testable. Batch boundaries set from the inventories.
+- [ ] **N+1. Drop the dependencies.** Remove `@mui/icons-material` and `react-icons` from
+      `package.json` once both greps return 0. Add a guard so they cannot come back.
+- [ ] **N+2. Verify.** All four gates, plus a browser pass — the suite runs with `css: false`
+      and cannot see an icon that renders at the wrong size, in the wrong colour, or not at all.
+
+## What the inventories changed
+
+**`react-icons`: 38 sites, 21 identifiers** (not the 16 a grep suggested — `MdRefresh`,
+`MdEdit`, `FaSort`, `BsThreeDots` and `FaRegFolderOpen` sit on import lines the first grep
+did not decompose). Zero `styled(Icon)` wrappers and zero icons passed as values: every one
+is inline JSX, so the conversion is mechanical and the hard cases are **props and CSS**, not
+indirection.
+
+- **`RxDividerVertical` is not an icon and gets no glyph.** Rendered, it is a 1×11 rounded
+  rect in a 15×15 box — a ~1.5 px rule. `AppItem.tsx:360` already draws that exact separator
+  as `<div className='short-vertical'/>` (`styles.css:618`, token-aware). Reusing it removes
+  5 sites and the whole `rx` pack without registering anything.
+- **Size cannot become an inline style.** 13 sites pass `size` in `em` and one passes
+  `size={20}`. `style=` is forbidden — production CSP sends `style-src-attr 'none'` and
+  `test/csp-inline-styles.test.ts` pins the count at zero — so every size lands as a class,
+  Linaria at the call site, never an attribute.
+- `color` is not an attribute on `wa-icon` (4 sites, one passing a `var()`) — it inherits
+  `currentColor`, so those become a colour rule on the class.
+- Three sites carry a duplicated `transform: translateY(29%)` alignment hack tuned to the old
+  glyphs' bounding boxes. Re-measure against `wa-icon`; do not copy.
+- `ColumnDetails.tsx:70` puts `onClick` on a bare icon with no button. That is a pre-existing
+  a11y defect owned by **#713** — preserve the behaviour here, do not silently fix or worsen it.
+- `ICONS` is a flat name→URL map, so one weight per name. No name currently needs both solid
+  and regular, but that is a property of today's mapping, not a guarantee.
+
+## Open questions resolved before starting
+
+`Album`, `Apps` and `Storage` have no obvious one-to-one Font Awesome equivalent. Each is
+resolved against its call-site context from the inventory, not guessed.
 
 ## Review
 
-Final state: 69 test files / 763 tests pass, coverage thresholds met, `tsc` (app + test),
-lint and `npm run build` all clean.
-
-### Three things the issue did not anticipate
-
-1. **`tsDecorators` is a parser flag, not a semantics flag.** The issue's plan to set it
-   `false` would have broken the build immediately (`Expression expected`). The hook stays;
-   only its payload changes. Acceptance criteria #3/#4 amended — agreed with you up front.
-2. **`@query` needs `accessor`.** Without it Lit throws `field decorators must return a
-   function or void 0`, because it returns a getter descriptor.
-3. **wyw-in-js could not handle `accessor` at all.** `npm run build` failed with
-   `Private field '#___private_isSchema_3' must be declared in an enclosing class` —
-   wyw strips types with oxc-transform 0.131, which mis-desugars the keyword. The Lit
-   elements contain no Linaria (their `css` is `lit`'s), so they are now excluded from
-   wyw in both configs. Two `.ts` files outside the elements *do* declare Linaria
-   `styled` components, so a blanket `**/*.tsx`-only include would have been wrong.
-
-Only the build caught #3 — the whole suite was green at that point. Worth remembering that
-`vitest` passing is not evidence the bundle builds.
-
-### Two incidental fixes, both forced by the compiler
-
-- Four fields were `foo?: T`; `accessor` cannot be optional (TS1276). Now `T | undefined`.
-  No effect on React consumers — `@lit/react` types props as
-  `Partial<Omit<I, keyof HTMLElement>>`, so they were never required.
-- `keep-schema-status`'s `status` initializer read `schemasWithScopes` and `item` (TS2729).
-  It ran during construction when both were still at their defaults, so it could only ever
-  produce `'Not used by Scopes'`, and `updated()` overwrites it as soon as `item` arrives.
-  Replaced with that literal plus a comment. No behaviour change.
-
-### Verification that the migration is safe
-
-Before touching source: SWC's standard-decorator output was checked behaviourally in a
-dev build (10 assertions) and a production build (9 assertions), plus a negative control
-proving the harness could fail. After the migration, the same smoke test was re-run
-against **real** `keep-checkbox` and `keep-tree` built through the production pipeline —
-9/9, including "toggle actually re-renders" and "assigning nodes re-renders".
-
-`test/decorator-config.test.ts` now guards the invariant in CI: every decorated field has
-`accessor`, both bundler configs agree on `decoratorVersion`, tsconfig stays off
-experimental decorators, and the elements stay out of wyw. Confirmed it fails when an
-`accessor` is removed.
-
-### Net effect
-
-The config dependency did not disappear, but it stopped being silent. A missing `accessor`
-now throws `Unsupported decorator location: field` at module load in dev *and* production,
-and CI fails before that. The silent-production-regression risk the issue was written
-about is gone.
+_Pending._
