@@ -76,7 +76,22 @@ export default defineConfig({
     })
   ],
   build: {
-    assetsDir: 'admin/assets'
+    assetsDir: 'admin/assets',
+    /*
+     * Emits `dist/.vite/manifest.json`, which `scripts/bundle-budget.mjs` reads to walk the
+     * entry's transitive closure — the chunks a browser must have before it can paint.
+     *
+     * The build log cannot answer that question. It lists all 104 chunks by size with no
+     * indication of which are eager, so "the bundle is 15.4 MB" and "the bundle is 1.6 MB"
+     * are both defensible readings of the same output. The manifest records each chunk's
+     * `imports` (static) and `dynamicImports` (lazy), which is the distinction the budget
+     * gate needs and the only place Vite writes it down.
+     *
+     * Note this ships `dist/.vite/manifest.json` with the app if the server serves `dist`
+     * verbatim. It leaks nothing the asset filenames do not already, and the alternative —
+     * a second throwaway build just to produce it — doubles CI build time.
+     */
+    manifest: true
   },
   server: {
     headers: {

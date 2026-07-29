@@ -29,6 +29,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+      # Ratcheting gate on the *eager* closure — the bytes needed before first paint —
+      # read from dist/.vite/manifest.json. Runs straight after the build because it needs
+      # dist, and before the tests so a bundle regression is not buried under test output.
+      # Blocking on purpose: the failure it catches (a barrel dragging a subtree onto the
+      # critical path) is invisible in a green build. See #813.
+      - run: npm run bundle:budget
       - run: npm run test
       - name: Publish test coverage summary
         if: always()
