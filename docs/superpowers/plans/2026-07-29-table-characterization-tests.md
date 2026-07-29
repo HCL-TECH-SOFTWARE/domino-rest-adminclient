@@ -24,6 +24,15 @@
 - The suite runs with `css: false`. **No test may assert on a computed style, a colour, or a layout property** — Linaria class names are not even resolved. Colour and layout are verified in a browser, in PR 4/5.
 - Base branch: `new_code`. PR body must contain `closes #771`.
 - Vitest config sets `clearMocks: true`; mock call history resets between tests automatically.
+- **Every task must pass the CI gates before committing, not just vitest:**
+  ```bash
+  npm run lint        # oxlint src test — `no-unused-vars` is an error
+  npm run typecheck   # tsc -b
+  ```
+  Vitest transforms with SWC, which neither type-checks nor lints, so a green suite is
+  **not** evidence the file passes CI. An unused import is a lint *error* here, not a
+  warning. (Task 2 shipped one and the reviewer caught it; both gate commands failed on a
+  file whose 10 tests all passed.)
 
 ---
 
@@ -384,7 +393,7 @@ do not delete them from `src/`.
  * ========================================================================== */
 
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import { bodyRows, cellTexts, headerLabels } from '../../test-utils/tables';
 import ColumnDetails from '../../../src/components/forms/ColumnDetails';
@@ -1212,7 +1221,7 @@ into a pagination test.
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
-import { bodyRows, headerLabels, nav, rangeText, setRowsPerPage } from '../../test-utils/tables';
+import { headerLabels, nav, rangeText, setRowsPerPage } from '../../test-utils/tables';
 import AppsTable from '../../../src/components/applications/AppsTable';
 
 vi.mock('../../../src/components/applications/AppItem', () => ({
