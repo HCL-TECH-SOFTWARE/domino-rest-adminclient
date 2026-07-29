@@ -5,8 +5,30 @@
  * ========================================================================== */
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteForm, deleteFormMode, saveNewForm } from '../../../src/store/databases/action';
-import { RESET_FORM, UNCONFIG_FORM } from '../../../src/store/databases/types';
+import {
+  addForm,
+  cacheFormFields,
+  deleteForm,
+  deleteFormMode,
+  handleDatabaseForms,
+  pullForms,
+  saveNewForm,
+  setCurrentForms,
+  setFormName,
+  setForms,
+  updateFormMode,
+} from '../../../src/store/databases/action';
+import {
+  ADD_FORM,
+  ADD_NSF_DESIGN,
+  CACHE_FORM_FIELDS,
+  RESET_FORM,
+  SET_CURRENTFORMS,
+  SET_DB_ERROR,
+  SET_FORM_NAME,
+  SET_FORMS,
+  UNCONFIG_FORM,
+} from '../../../src/store/databases/types';
 import { SET_API_LOADING, TOGGLE_DELETE_DIALOG } from '../../../src/store/dialog/types';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
@@ -313,6 +335,241 @@ describe('databases — forms (destructive)', () => {
       refusesWithProse();
 
       await expect(saveNewForm(form, 'db.nsf')(dispatch)).resolves.not.toThrow();
+    });
+  });
+});
+
+/**
+ * #802 part 2 — the remaining forms thunks. Kept in this file rather than a new one
+ * because #711 splits `databases/action.ts` into one module per concern, and all of
+ * these land in `forms.ts` together.
+ *
+ * Two stranded loading flags found here, both fixed:
+ *
+ * - `pullForms` dispatches `setApiLoading(true)` and never clears it on **any** path,
+ *   success included. Every other instance of this defect so far stranded only on
+ *   failure.
+ * - `updateForms`, which `handleDatabaseForms` delegates to, clears the flag on its
+ *   success path only.
+ */
+
+describe('databases — forms', () => {
+  let dispatch: ReturnType<typeof makeDispatch>;
+  let previousLevel: number;
+
+  const actions = () => dispatch.recorded.filter((a: any) => typeof a !== 'function');
+  const types = () => actions().map((a: any) => a?.type);
+  const alerts = () =>
+    actions().filter((a: any) => a?.type === TOGGLE_ALERT).map((a: any) => a.payload as string);
+  const loadingSequence = () =>
+    actions().filter((a: any) => a?.type === SET_API_LOADING).map((a: any) => a.payload);
+
+  const expectLoadingCleared = () => {
+    const seq = loadingSequence();
+    expect(seq.length, 'no SET_API_LOADING dispatched at all').toBeGreaterThan(0);
+    expect(seq[seq.length - 1], `loading left as ${seq[seq.length - 1]}`).toBe(false);
+  };
+
+  const schemaData = {
+    nsfPath: 'db.nsf',
+    schemaName: 'demo',
+    forms: [
+      { formName: 'Order', alias: ['O'], formModes: [{ modeName: 'default' }] },
+      { formName: 'Unconfigured', alias: [], formModes: [] },
+    ],
+  } as any;
+
+  beforeAll(() => {
+    previousLevel = Logger.getLevel();
+    Logger.setLevel(Level.OFF);
+  });
+
+  afterAll(() => Logger.setLevel(previousLevel));
+
+  beforeEach(() => {
+    dispatch = makeDispatch();
+    localStorage.setItem('user_token', JSON.stringify({ bearer: 'a-bearer' }));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  const offline = () =>
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+  const refuses = (body: unknown = { message: 'nope' }) =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: false, status: 400, body })));
+  const returns = (body: unknown = {}) =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true, body })));
+
+  describe('plain dispatchers', () => {
+    it('setForms carries the database and its forms', async () => {
+      await setForms('demo', [{ formName: 'Order' }])(dispatch);
+      expect(actions()[0]).toEqual({
+        type: SET_FORMS,
+        payload: { db: 'demo', forms: [{ formName: 'Order' }] },
+      });
+    });
+
+    it('setCurrentForms carries the database and its forms', async () => {
+      await setCurrentForms('demo', [{ formName: 'Order' }])(dispatch);
+      expect(actions()[0].type).toBe(SET_CURRENTFORMS);
+    });
+
+    it('setFormName carries the name', async () => {
+      await setFormName('Order')(dispatch);
+      expect(actions()[0]).toEqual({ type: SET_FORM_NAME, payload: 'Order' });
+    });
+
+    it('cacheFormFields carries the database, form and fields', async () => {
+      await cacheFormFields('demo', 'Order', [{ name: 'a' }])(dispatch);
+      expect(actions()[0]).toEqual({
+        type: CACHE_FORM_FIELDS,
+        payload: { db: 'demo', formName: 'Order', fields: [{ name: 'a' }] },
+      });
+    });
+
+    it('addForm carries the form when enabling, and drops it when disabling', async () => {
+      const form = { dbName: 'demo', formName: 'New', alias: [], formModes: [], formAccessModes: [] };
+      await addForm(true, form)(dispatch);
+      expect(actions()[0]).toEqual({ type: ADD_FORM, payload: { enabled: true, form } });
+
+      dispatch = makeDispatch();
+      await addForm(false, form)(dispatch);
+      // The form is deliberately omitted on the disabling branch.
+      expect(actions()[0]).toEqual({ type: ADD_FORM, payload: { enabled: false } });
+    });
+  });
+
+  describe('pullForms', () => {
+    it('stores the design list and clears the loading flag', async () => {
+      returns({ forms: [{ '@name': 'Order' }] });
+
+      await pullForms('db.nsf', 'demo', vi.fn())(dispatch);
+
+      expect(types()).toContain(ADD_NSF_DESIGN);
+      // setApiLoading(true) went out on entry and nothing ever cleared it — on any
+      // path, success included. Eight screens read state.dialog.loading.
+      expectLoadingCleared();
+    });
+
+    it('reports the failure and clears the loading flag', async () => {
+      refuses({ message: 'no such database' });
+
+      await pullForms('db.nsf', 'demo', vi.fn())(dispatch);
+
+      expect(types()).toContain(SET_DB_ERROR);
+      expect(types()).not.toContain(ADD_NSF_DESIGN);
+      expectLoadingCleared();
+    });
+
+    it('clears the loading flag when the request never completes', async () => {
+      offline();
+
+      await expect(pullForms('db.nsf', 'demo', vi.fn())(dispatch)).resolves.not.toThrow();
+      expectLoadingCleared();
+    });
+  });
+
+  describe('handleDatabaseForms', () => {
+    it('gives an unconfigured form a default mode before saving', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: schemaData }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await handleDatabaseForms(schemaData, 'demo', schemaData.forms, vi.fn(), 'Saved!')(dispatch);
+      await dispatch.settled();
+
+      const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
+      const added = sent.forms.find((f: any) => f.formName === 'Unconfigured');
+      expect(added.formModes).toHaveLength(1);
+      expect(added.formModes[0].modeName).toBe('default');
+      expect(added.formModes[0].readAccessFormula).toEqual({ formulaType: 'domino', formula: '@True' });
+      expect(added.formModes[0].deleteAccessFormula.formula).toBe('@False');
+    });
+
+    it('leaves an already-configured form alone', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: schemaData }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await handleDatabaseForms(schemaData, 'demo', schemaData.forms, vi.fn(), 'Saved!')(dispatch);
+      await dispatch.settled();
+
+      const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(sent.forms.find((f: any) => f.formName === 'Order').formModes).toEqual([
+        { modeName: 'default' },
+      ]);
+    });
+
+    it('reports the caller-supplied success message and runs the callback', async () => {
+      const successCallback = vi.fn();
+      returns(schemaData);
+
+      await handleDatabaseForms(
+        schemaData, 'demo', schemaData.forms, vi.fn(), 'Forms saved!', successCallback,
+      )(dispatch);
+      await dispatch.settled();
+
+      expect(alerts()).toContain('Forms saved!');
+      expect(successCallback).toHaveBeenCalled();
+      expectLoadingCleared();
+    });
+
+    it('does not report success, and clears the flag, when the save is refused', async () => {
+      refuses({ message: 'schema locked' });
+
+      await handleDatabaseForms(schemaData, 'demo', schemaData.forms, vi.fn(), 'Forms saved!')(dispatch);
+      await dispatch.settled();
+
+      expect(alerts()).not.toContain('Forms saved!');
+      expect(alerts().join()).toMatch(/update forms failed/i);
+      // setApiLoading(false) sat on the success path only.
+      expectLoadingCleared();
+    });
+
+    it('clears the flag when the request never completes', async () => {
+      offline();
+
+      await handleDatabaseForms(schemaData, 'demo', schemaData.forms, vi.fn(), 'Forms saved!')(dispatch);
+      await dispatch.settled();
+
+      expect(alerts()).not.toContain('Forms saved!');
+      expectLoadingCleared();
+    });
+  });
+
+  describe('updateFormMode', () => {
+    const mode = { modeName: 'admin', fields: [], computeWithForm: false };
+
+    it('adds the mode to the form and reports it', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: schemaData }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await updateFormMode(schemaData, 'Order', ['O'], mode, 0, false, vi.fn())(dispatch);
+
+      const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
+      const order = sent.forms.find((f: any) => f.formName === 'Order');
+      expect(order.formModes.map((m: any) => m.modeName)).toContain('admin');
+      expect(alerts().join()).toMatch(/successfully/i);
+      expectLoadingCleared();
+    });
+
+    it('does not report success when the save is refused', async () => {
+      refuses({ message: 'schema locked' });
+
+      await updateFormMode(schemaData, 'Order', ['O'], mode, 0, false, vi.fn())(dispatch);
+
+      expect(alerts().join()).not.toMatch(/successfully/i);
+      expectLoadingCleared();
+    });
+
+    it('does not throw out of the thunk when the request never completes', async () => {
+      offline();
+
+      await expect(
+        updateFormMode(schemaData, 'Order', ['O'], mode, 0, false, vi.fn())(dispatch),
+      ).resolves.not.toThrow();
+      expectLoadingCleared();
     });
   });
 });
