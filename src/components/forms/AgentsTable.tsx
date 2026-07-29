@@ -39,6 +39,9 @@ const AgentNameDisplay = styled.div`
   margin-left: 20px;
 `
 
+/** `width` is valid on <th> but absent from React's ThHTMLAttributes, which types it only on <td>. */
+const colWidth = (width: string) => ({ width });
+
 interface AgentsTableProps {
   agents: Array<{
     agentActive: boolean;
@@ -53,10 +56,10 @@ interface AgentsTableProps {
 const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleInactive }) => {
   return (
     <KeepDataTable zebra>
-      <table aria-label="views and agents table">
+      <table className="p-30" aria-label="views and agents table">
         <thead>
           <tr>
-            <th {...{ width: '550px' }}><AgentNameHeader>Agent Name</AgentNameHeader></th>
+            <th {...colWidth('550px')}><AgentNameHeader>Agent Name</AgentNameHeader></th>
             <th>
               <StatusHeader>
                 <div>
