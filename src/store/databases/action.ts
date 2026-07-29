@@ -1232,6 +1232,10 @@ export const pullForms = (nsfPath: string, _dbName: string, _setData: React.Disp
       } else {
         dispatch(setDBError(error));
       }
+    } finally {
+      // A finally, not a line on each path: this flag was stranded on *every*
+      // exit including success, so there is no path that may skip clearing it.
+      dispatch(setApiLoading(false));
     }
   };
 };
@@ -1322,6 +1326,9 @@ const updateForms = (
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(successMsg));
       } catch (e: any) {
+        // Before the parse below, which throws on any non-JSON error and would
+        // take the rest of this handler with it.
+        dispatch(setApiLoading(false));
         const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
         const error = JSON.parse(err)
 
