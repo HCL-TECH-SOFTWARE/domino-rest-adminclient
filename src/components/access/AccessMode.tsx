@@ -12,7 +12,6 @@ import { useSelector } from 'react-redux';
 import Fields from './Fields';
 import { AccessModeContainer } from './styles';
 import TabsAccess from './TabsAccess';
-import PageLoading from '../loaders/PageLoading';
 import { Mode } from '../../store/databases/types';
 import {
   cacheFormFields,
@@ -26,7 +25,7 @@ import { AppState } from '../../store';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import GenericLoading from '../loading/GenericLoading';
 import ModeCompare from './ModeCompare';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepPageLoading } from '../keep-elements/KeepElements';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -405,7 +404,7 @@ const AccessMode: React.FC = () => {
           </AccessModeContainer>
         </div>
       ) : (
-        <PageLoading message={`Loading ${formName} Form Access Data`} />
+        <KeepPageLoading message={`Loading ${formName} Form Access Data`} />
       )}
       <NetworkErrorDialog />
       {!newForm.enabled && allModes.length > 0 && <ModeCompare 

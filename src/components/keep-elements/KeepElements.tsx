@@ -29,6 +29,7 @@ import Checkbox from './keep-checkbox';
 import MonacoEditor from './keep-monaco-editor';
 import Tree, { type KeepTreeSelectDetail } from './keep-tree';
 import Footer from './keep-footer';
+import PageLoading from './keep-page-loading';
 import DataTable, {
   type KeepDataTablePageChangeDetail,
   type KeepDataTableRowsPerPageChangeDetail
@@ -198,5 +199,11 @@ export const KeepMonacoEditor = createComponent({
 export const KeepFooter = createComponent({
   tagName: 'keep-footer',
   elementClass: Footer,
+  react: React
+});
+
+export const KeepPageLoading = createComponent({
+  tagName: 'keep-page-loading',
+  elementClass: PageLoading,
   react: React
 });

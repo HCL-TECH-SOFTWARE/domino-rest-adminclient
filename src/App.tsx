@@ -18,9 +18,9 @@ import {
   removeAuth,
   setIdpLogin,
 } from './store/account/action';
-import PageLoading from './components/loaders/PageLoading';
 import { TokenProps } from './store/account/types';
 import CallbackPage from './components/login/CallbackPage';
+import { KeepPageLoading } from './components/keep-elements/KeepElements';
 import { useAppDispatch } from './store/hooks';
 
 const App: React.FC = () => {
@@ -81,7 +81,7 @@ const App: React.FC = () => {
    * They used to wrap this whole tree, but they were redundant everywhere except the login
    * page: AppShell mounts its own pair from the same `theme(authenticated, getTheme,
    * themeMode)` expression, and every authenticated route — including /callback, which
-   * renders through AppShell — sits under that one. PageLoading is pure Linaria. Once
+   * renders through AppShell — sits under that one. keep-page-loading carries its own styles. Once
    * LoginPage stopped importing MUI, this pair had no consumer left.
    *
    * The document baseline they provided is not lost: WebAwesome's `native.css` (imported
@@ -110,7 +110,7 @@ const App: React.FC = () => {
       <RouterOutlet routes={routes} />
     </RouterProvider>
   ) : (
-    <PageLoading message="loading page" />
+    <KeepPageLoading message="loading page" />
   );
 };
 
