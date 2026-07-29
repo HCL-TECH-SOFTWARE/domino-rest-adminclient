@@ -36,6 +36,8 @@ import FormDialogHeader, {
 } from './keep-form-dialog-header';
 import ErrorWrapper from './keep-error-wrapper';
 import Homepage from './keep-homepage';
+import ScopesCardsView from './keep-scopes-cards-view';
+import ScopesDefaultView, { type KeepScopeOpenDetail } from './keep-scopes-default-view';
 import MobileHeader from './keep-mobile-header';
 import PageRouters from './keep-page-routers';
 import UnsavedChangesDialog, {
@@ -223,6 +225,24 @@ export const KeepZeroResults = createComponent({
   tagName: 'keep-zero-results',
   elementClass: ZeroResults,
   react: React
+});
+
+export const KeepScopesDefaultView = createComponent({
+  tagName: 'keep-scopes-default-view',
+  elementClass: ScopesDefaultView,
+  react: React,
+  events: {
+    onScopeOpen: 'scope-open' as EventName<CustomEvent<KeepScopeOpenDetail>>
+  }
+});
+
+export const KeepScopesCardsView = createComponent({
+  tagName: 'keep-scopes-cards-view',
+  elementClass: ScopesCardsView,
+  react: React,
+  events: {
+    onScopeOpen: 'scope-open' as EventName<CustomEvent<KeepScopeOpenDetail>>
+  }
 });
 
 export const KeepHomepage = createComponent({
