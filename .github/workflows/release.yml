@@ -12,6 +12,7 @@ jobs:
     env:
       REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
       WS_USERKEY: ${{ secrets.WSS_USER_KEY }}
+      WS_PRODUCTTOKEN: '1afdb2c3d3714ed1bd8080fa6da7a4504160062768fc427197787b8ca1efd059'
     permissions:
       contents: read
       packages: write
