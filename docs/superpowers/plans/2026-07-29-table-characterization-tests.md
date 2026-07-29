@@ -803,10 +803,15 @@ describe('ViewsTable — folders', () => {
 ```bash
 npx vitest run test/components/forms/ViewsTable.test.tsx
 ```
-Expected: all pass. Known risk, same as Task 3: the folder marker's copy is a `KeepTooltip`
-`content` **attribute**, so `getByText` may not see it. If so, assert on the attribute:
+Expected: all pass. Known risk, same as Task 3: the folder marker's copy is `KeepTooltip`'s
+`content`, which `getByText` cannot see because it is not a text node.
+
+**Task 3 established what it actually is, and it is not an attribute.** `keep-tooltip.ts`
+declares `content` **without `reflect: true`**, so `getAttribute('content')` is always
+`null`; `@lit/react` sets it as the live `.content` JS *property*. Read the property:
+
 ```ts
-const tips = deepQueryAll('keep-tooltip').map((t) => t.getAttribute('content'));
+const tips = deepQueryAll('keep-tooltip').map((t) => (t as unknown as { content?: string }).content);
 expect(tips).toContain('ActiveView is a folder.');
 ```
 and for the negative case `expect(tips.join(' ')).not.toContain('is a folder')`.
