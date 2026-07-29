@@ -70,6 +70,28 @@ For every test in this plan:
    - **Fails** → *your belief was wrong, and the test just told you the truth about the code.* **Change the test to match what the code actually does.** Do not change `src/`. If what the code does looks like a bug, write the test that pins the buggy behaviour, add a `// BUG:` comment naming it, and move on — fixing it here would mean PR 4/5 could no longer tell "migration broke it" from "we fixed it".
 3. **Negative control.** Temporarily break the thing under test (change an expected string, delete a prop, comment out a handler), re-run, confirm the test *fails*, then undo. A characterization test that cannot fail is decoration. Do this at least once per task — the step says which assertion to target.
 
+### Fixtures must discriminate
+
+A negative control proves a test can fail *at all*. It does not prove the test pins the
+behaviour it claims to. The gap between those two is where this suite is most likely to
+ship something worthless, so check every fixture against this question:
+
+> **Would this assertion still pass if the component did the neighbouring wrong thing?**
+
+The Task 4 review caught two live examples, both from fixtures too small to tell two
+behaviours apart:
+
+- `viewAlias: ['av']` with `expect(getByText('av'))`. `viewAlias[0]` and
+  `viewAlias.join(', ')` are both `'av'` for a one-element array — so "renders the first
+  alias" and "renders all aliases" are indistinguishable. **Two elements, and assert the
+  second is absent.**
+- "renders nothing when the alias list is empty", asserted as "the *other* row's alias
+  string is not in this row". Always true, whatever the component does. **Assert on the
+  cell's own content.**
+
+The same shape recurs anywhere a count, an index, or a "first of" is pinned. Prefer
+fixtures where every quantity is distinct and greater than one.
+
 ---
 
 ## File Structure
@@ -887,8 +909,12 @@ vi.mock('../../../src/components/forms/ActivateMenu', () => ({
   default: () => <span data-testid="activate-menu" />,
 }));
 
+// Contact carries *two* modes on purpose. With one, `getByText('1')` cannot tell
+// `formModes.length` apart from a hardcoded 1 — the same vacuous-fixture trap the Task 4
+// review caught in the alias column, where a one-element array could not distinguish
+// "renders the first" from "renders all".
 const forms = [
-  { formName: 'Contact', alias: 'ct', formModes: [{ modeName: 'default' }] },
+  { formName: 'Contact', alias: 'ct', formModes: [{ modeName: 'default' }, { modeName: 'edit' }] },
   { formName: 'Invoice', alias: '', formModes: [] },
 ];
 
@@ -925,7 +951,12 @@ describe('FormsTable — structure', () => {
     const row = within(bodyRows()[0]);
     expect(row.getByText('Contact')).toBeInTheDocument();
     expect(row.getByText('ct')).toBeInTheDocument();
-    expect(row.getByText('1')).toBeInTheDocument();
+    expect(row.getByText('2')).toBeInTheDocument();
+  });
+
+  it('counts each form’s own modes', () => {
+    renderFormsTable();
+    expect(within(bodyRows()[1]).getByText('0')).toBeInTheDocument();
   });
 
   it('renders the activate menu per row', () => {
