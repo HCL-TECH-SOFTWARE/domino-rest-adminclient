@@ -995,9 +995,9 @@ git commit -m "Characterize FormsTable before the keep-data-table migration (#77
 - Reads: `src/components/applications/AppItem.tsx`
 
 **Interfaces:**
-- Consumes: `cellTexts` from `test/test-utils/tables`.
-- Produces: `makeApp(overrides)` — **copy it into Task 7's file rather than importing it.**
-  Sharing a fixture factory across two suites couples them; each should be readable alone.
+- Consumes: nothing from `tables.ts` (this is a row, not a table).
+- Produces: nothing. Task 7 mocks `AppItem` away and builds its own 12-app fixture, so
+  `makeApp` here is local to this file. Do not export it.
 
 **Pinned:** the five cells; the launch button for an active app and its absence when
 disabled; App ID display and copy-to-clipboard; the PKCE branch; the three app-secret
@@ -1414,7 +1414,8 @@ git commit -m "Characterize AppsTable pagination, filtering and sorting (#771)"
 
 **Interfaces:**
 - Consumes: nothing from `tables.ts` (this is a row, not a table).
-- Produces: `makeConsent(overrides)` — copy into Task 9 rather than importing.
+- Produces: nothing. Task 9 mocks `ConsentItem` away and builds its own 12-consent fixture,
+  so `makeConsent` here is local to this file. Do not export it.
 
 **Pinned:** the two rows per consent; the username resolved from `state.users` with fallback;
 the app name resolved from `state.apps` with `-` fallback; expand/collapse; the `expand` prop
