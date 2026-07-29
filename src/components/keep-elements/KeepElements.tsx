@@ -58,3 +58,6 @@ export { KeepFormDialogHeader } from './react/KeepFormDialogHeader';
 export { KeepNetworkErrorDialog } from './react/KeepNetworkErrorDialog';
 export { KeepDeleteDialog } from './react/KeepDeleteDialog';
 export { KeepSlimDatabaseCard } from './react/KeepSlimDatabaseCard';
+export { KeepScopesAlphabeticalView } from './react/KeepScopesAlphabeticalView';
+export { KeepScopesStacksView } from './react/KeepScopesStacksView';
+export { KeepScopesMultiView } from './react/KeepScopesMultiView';
