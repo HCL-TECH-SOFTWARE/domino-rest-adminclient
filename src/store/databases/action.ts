@@ -8,18 +8,11 @@ import { Dispatch } from 'redux';
 import { v4 as uuid } from 'uuid';
 import {
   Database,
-  ADD_SCHEMA,
   ADD_SCOPE,
-  ADD_NEW_SCHEMA_TO_STATE,
-  SET_PULLED_DATABASE,
   SET_PULLED_SCOPE,
   FETCH_KEEP_DATABASES,
-  ADD_AVAILABLE_DATABASE,
-  DELETE_SCHEMA,
   DELETE_SCOPE,
-  FETCH_DB_CONFIG,
   UPDATE_SCOPE,
-  UPDATE_SCHEMA,
   SET_FORMS,
   ADD_FORM,
   SET_CURRENTFORMS,
@@ -30,77 +23,49 @@ import {
   SET_VIEWS,
   UPDATE_VIEW,
   SET_ACTIVEVIEWS,
-  SET_AGENTS,
   UPDATE_AGENT,
   SET_ACTIVEAGENTS,
   CACHE_FORM_FIELDS,
-  SET_RETRY_COUNT,
   CLEAR_FORMS,
-  SET_DB_INDEX,
   APPEND_CONFIGURED_FORM,
   RESET_FORM,
   ViewObj,
   AgentObj,
   UNCONFIG_FORM,
   FETCH_KEEP_SCOPES,
-  ADD_NSF_DESIGN,
-  SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES,
-  FETCH_KEEP_PERMISSIONS,
-  INIT_STATE,
-  CLEAR_SCHEMA_FORM,
   ADD_ACTIVEVIEW,
   DELETE_ACTIVEVIEW,
   VIEWS_ERROR,
-  ADD_ACTIVEAGENT,
-  DELETE_ACTIVEAGENT,
-  UPDATE_ERROR,
   SET_FORM_NAME
 } from './types';
-import { setLoading } from '../loading/action';
-import { toggleDrawer, toggleQuickConfigDrawer } from '../drawer/action';
+import { toggleDrawer } from '../drawer/action';
 import { AppState, AppDispatch } from '..';
 import { getFormIndex, getFormModeIndex } from './scripts';
 import { TOGGLE_DRAWER } from '../drawer/types';
-import { SET_VALUE, TOGGLE_DETAILS_LOADING } from '../loading/types';
+import { SET_VALUE } from '../loading/types';
 import { toggleAlert, closeSnackbar } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
 import { toggleSettings } from '../dbsettings/action';
 import { convert2FieldType, convertDesignType2Format } from '../../utils/field-types';
-import { AlertManager, fullEncode } from '../../utils/common';
-import { getAppIcons, loadAppIcons } from '../../services/app-icons';
-import { SET_API_LOADING } from '../dialog/types';
+import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
+// Consumed by the concerns still in this file — fetchScopes, pullForms and
+// processViewsAgents respectively. They follow in the next cut.
+import { sortAndRemoveDupSchemas } from './schemas';
+import { addNsfDesign } from './databases';
+import { isActiveAgent } from './agents';
 
 // Re-exported so every existing `from '../store/databases/action'` import keeps
 // working unchanged: this file is the barrel while #711 moves the concerns out.
 export * from './shared';
 export * from './formulas';
 export * from './folders';
-
-/**
- * action.ts provides the action methods for the Database page
- *
- * @author Michael Angelo Silva
- * @author Neil Schultz
- *
- */
-
-export function addSchemas(database: Database) {
-  return {
-    type: ADD_SCHEMA,
-    payload: database
-  };
-}
-
-export function setDbIndex(index: number) {
-  return {
-    type: SET_DB_INDEX,
-    payload: index
-  };
-}
+export * from './databases';
+export * from './schemas';
+export * from './agents';
 
 export function deleteScope(apiName: string) {
   return async (dispatch: Dispatch) => {
@@ -137,66 +102,6 @@ export function deleteScope(apiName: string) {
     }
   };
 }
-
-export function deleteSchema(dbData: any) {
-  return async (dispatch: Dispatch) => {
-    dispatch(setApiLoading(true));
-    // NEED UPDATE DEL
-    const { nsfPath, schemaName } = dbData;
-    if (nsfPath && schemaName) {
-      try {
-        try {
-          const { response, data } = await apiRequestWithRetry(() =>
-            fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
-              method: 'DELETE',
-              headers: {
-                Authorization: `Bearer ${getToken()}`,
-                'Content-Type': 'application/json',
-              },
-            }), { notifyOnError: false })
-
-          if (!response.ok) {
-            throw new Error(JSON.stringify(data))
-          }
-
-          dispatch({
-            type: DELETE_SCHEMA,
-            payload: {
-              schemaName: dbData.schemaName,
-              nsfPath: dbData.nsfPath
-            }
-          });
-          dispatch(toggleDeleteDialog());
-          dispatch(setApiLoading(false));
-          dispatch(toggleAlert(`${dbData.schemaName} has been successfully deleted.`));
-        } catch (e: any) {
-          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-          const error = JSON.parse(err)
-          
-          dispatch(setApiLoading(false));
-          dispatch(toggleDeleteDialog());
-          dispatch(toggleAlert(`Delete schema failed! ${error.message}`));
-        }
-      } catch {
-        dispatch(setApiLoading(false));
-        dispatch(toggleDeleteDialog());
-        dispatch(toggleAlert(`Delete schema failed!`));
-      }
-    } else {
-      // The flag is set before these are validated, so returning early without clearing
-      // it stranded the screen on a call that never went out.
-      dispatch(setApiLoading(false));
-      log.error('Delete schema called without an nsfPath or schemaName', { dbData });
-    }
-  };
-}
-
-export const setPullDatabase = (databasePull: boolean) => {
-  return {
-    type: SET_PULLED_DATABASE,
-    payload: databasePull
-  };
-};
 
 export const setPullScope = (scopePull: boolean) => {
   return {
@@ -240,255 +145,6 @@ export const fetchScope = async (scopeData: any) => {
     const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
     const error = JSON.parse(err)
     log.error(`Error fetching scope ${apiName}`, { error });
-  }
-};
-
-/**
- * Retrieves views for a particular database and
- * passes them to Redux.
- *
- * @param nsfPath             the name of the database
- * @param schemaName          the name of the schema
- * @param setSchemaCallback   callback to set the schema state
- */
-export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: (schemaData: any) => void) => {
-  return async (dispatch: Dispatch) => {
-    try {
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json',
-          },
-        })
-      )
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data))
-      }
-
-      setSchemaData(data);
-      dispatch({
-        type: SET_API_LOADING,
-        payload: false
-      });
-    } catch (e: any) {
-      // The old JSON.parse over the stringified error threw for anything that was not a
-      // JSON body, so this handler failed and the rejection escaped the thunk.
-      log.error('Error fetching schema', { error: e?.message ?? String(e) });
-    }
-  };
-};
-
-const processResponse = async (response: any, dispatch: Dispatch, scopeList: Array<any>) => {
-  // `displayResult` puts the base64 payload in the store next to `iconName`, and it runs
-  // synchronously per streamed chunk. Resolving the lazy icon chunk (#772) once, here,
-  // lets everything downstream keep reading it synchronously without threading a promise
-  // through `processText` → `processBuffer` → `processPart`. By this point the warm-up in
-  // `index.tsx` has almost always finished, so this awaits an already-settled promise; if
-  // the chunk failed to load the stream still processes, just with empty `icon` fields —
-  // every render path resolves its own icon from `iconName` anyway.
-  await loadAppIcons().catch(() => {});
-
-  const reader = response.body.getReader();
-  const td = new TextDecoder('utf-8');
-  let buffer = '';
-
-  reader.read().then(async function processText({ done, value, schemasWithoutScopes }: any) {
-    schemasWithoutScopes = [];
-    if (done) {
-      schemasWithoutScopes = [...schemasWithoutScopes, processBuffer(buffer, dispatch, scopeList, schemasWithoutScopes, true)];
-      // remove undefined nsfPaths and schemaNames
-      schemasWithoutScopes = schemasWithoutScopes[0].filter((db: any) => !!db.nsfPath && !!db.schemaName);
-
-      const chunkSize = 20;
-      for (let i = 0; i < schemasWithoutScopes.length; i += chunkSize) {
-        const chunk = schemasWithoutScopes.slice(i, i + chunkSize);
-        const stringChunk = chunk.map((c: any) => JSON.stringify(c));
-        const uniqueChunk = [...new Set(stringChunk)].map((c: any) => JSON.parse(c));
-        setTimeout(() => {
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: uniqueChunk
-          });
-        });
-      }
-
-      dispatch(setPullDatabase(true));
-      return;
-    }
-
-    try {
-      let decoded = td.decode(value);
-      buffer += decoded;
-      dispatch({
-        type: SET_VALUE,
-        payload: { status: false }
-      });
-    } catch (e) {
-      // A malformed chunk must not kill the stream: `processText` recurses per chunk, so
-      // throwing here would abandon the rest of the response silently. Log and continue
-      // to the next chunk instead.
-      log.error('failed to decode a chunk of the design stream', { error: e });
-    }
-
-    return reader.read().then(processText);
-  });
-};
-
-const processBuffer = (
-  buffer: string,
-  dispatch: Dispatch,
-  scopeList: Array<any>,
-  schemasWithoutScopes: Array<any>,
-  lastLine: boolean
-) => {
-  let newArray = lastLine ? buffer.split('\n') : buffer.split('\n').slice(0, -1);
-  newArray.forEach((part) => {
-    let processedPart = processPart(part, dispatch, displayResult, scopeList, schemasWithoutScopes);
-    if (processedPart) schemasWithoutScopes = [...schemasWithoutScopes, processedPart];
-  });
-  buffer = newArray[newArray.length - 1];
-  return schemasWithoutScopes;
-};
-
-const processPart = (part: string, dispatch: Dispatch, callback: any, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
-  if (part.endsWith(',')) return callback(JSON.parse(part.slice(0, -1)), dispatch, scopeList, schemasWithoutScopes);
-  else if (part.endsWith('}')) return callback(JSON.parse(part), dispatch, scopeList, schemasWithoutScopes);
-};
-
-const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
-  if (!!json.configurations && json.configurations.length > 0) {
-    // Already resolved: `processResponse` awaited the icon chunk before opening the stream.
-    const appIcons = getAppIcons();
-    const { configurations } = json;
-    let schemasWithScopes: Array<{
-      schemaName: string;
-      description: string;
-      iconName: string;
-      icon: string;
-      nsfPath: string;
-    }> = [];
-    configurations.forEach((config: any) => {
-      let schema = typeof config === 'string' ? config : config.name;
-      if (!!json.path && !!schema) {
-        if (scopeList.includes(json.path + ':' + schema)) {
-          const new_config = {
-            schemaName: config.name,
-            description: config.description,
-            iconName: config.iconName,
-            icon: appIcons[config.iconName],
-            nsfPath: json.path
-          };
-          schemasWithScopes.push(new_config);
-        } else {
-          schemasWithoutScopes.push({
-            nsfPath: json.path,
-            schemaName: schema,
-            description: config.description,
-            iconName: config.iconName,
-            icon: appIcons[config.iconName]
-          });
-        }
-      }
-    });
-
-    const chunkSize = 20;
-    for (let i = 0; i < schemasWithScopes.length; i += chunkSize) {
-      const chunk = schemasWithScopes.slice(i, i + chunkSize);
-      const stringChunk = chunk.map((c) => JSON.stringify(c));
-      const uniqueChunk = [...new Set(stringChunk)].map((c) => JSON.parse(c));
-
-      setTimeout(() => {
-        dispatch({
-          type: UPDATE_SCHEMA,
-          payload: uniqueChunk
-        });
-      });
-    }
-  }
-
-  let availableDatabases = {
-    title: json.path,
-    nsfpath: json.path,
-    apinames: json.configurations ? json.configurations : []
-  };
-  let { apinames } = availableDatabases;
-  availableDatabases.apinames = apinames.map((apiName: any) => {
-    if (typeof apiName === 'string') return apiName;
-    else return apiName.name;
-  });
-  dispatch({
-    type: ADD_AVAILABLE_DATABASE,
-    payload: availableDatabases
-  });
-
-  return schemasWithoutScopes;
-};
-
-export const fetchKeepDatabases = () => {
-  return async (dispatch: Dispatch, getState: () => AppState) => {
-    dispatch(setLoading({ status: true }));
-
-    const payload = {
-      checkAllNsf: true,
-      onlyConfigured: false
-    };
-
-    const { scopes } = getState().databases;
-
-    const scopeList = scopes.map((scope) => {
-      return scope.nsfPath + ':' + scope.schemaName;
-    });
-
-    try {
-      const response = await fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
-
-      if(response.status === 401) {
-        localStorage.removeItem('user_token')
-        AlertManager.showAlert("Invalid credentials. Going back to the login page.");
-        window.location.reload();
-        return
-      }
-
-      processResponse(response, dispatch, scopeList);
-    } catch {
-        const response = await fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        })
-        processResponse(response, dispatch, scopeList);
-    }
-  };
-};
-
-const sortAndRemoveDupSchemas = (origSchemas: Array<any>) => {
-  origSchemas.sort((schemaA, schemaB) => {
-    if (schemaA.schemaName !== schemaB.schemaName) {
-      return schemaA.schemaName ? schemaA.schemaName.localeCompare(schemaB.schemaName) : -1;
-    } else if (schemaA.nsfPath !== schemaB.nsfPath) {
-      return schemaA.nsfPath ? schemaA.nsfPath.localeCompare(schemaB.nsfPath) : -1;
-    } else {
-      return 0;
-    }
-  });
-  for (var index = origSchemas.length - 1; index >= 1; index--) {
-    if (
-      origSchemas[index].nsfPath === origSchemas[index - 1].nsfPath &&
-      origSchemas[index].schemaName === origSchemas[index - 1].schemaName
-    )
-      origSchemas.splice(index, 1);
   }
 };
 
@@ -756,338 +412,6 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
       log.error('Error fetching views', { error });
-    }
-  };
-};
-
-/**
- * Retrieves agents for a particular database and
- * passes them to Redux.
- *
- * @param dbName the name of the database
- * @param nsfPath the name of the database
- */
-export const fetchAgents = (dbName: string, nsfPath: string) => {
-  return async (dispatch: Dispatch) => {
-    try {
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${nsfPath}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json',
-          },
-        })
-      )
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data))
-      }
-
-      dispatch(
-        setAgents(
-          dbName,
-          data.agents.map((agent: any) => {
-            let aliasArray: Array<any> = [];
-            if (agent['@alias'] != null && agent['@alias'].length > 0) {
-              if (Array.isArray(agent['@alias'])) {
-                aliasArray = agent['@alias'];
-              } else {
-                aliasArray.push(agent['@alias']);
-              }
-            }
-            return {
-              agentName: agent['@name'],
-              agentAlias: aliasArray,
-              agentUnid: agent['@unid']
-            };
-          })
-        ) as any
-      );
-    } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-      log.error('Error fetching agents', { error });
-    }
-  };
-};
-
-/**
- * Add Database and check for errors
- */
-export const quickConfig = (dbData: any) => {
-  return async (dispatch: Dispatch) => {
-    try {
-      dispatch(setApiLoading(true));
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/admin/quickconfig`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(dbData),
-        })
-      )
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data))
-      }
-
-      const propertiesToOmit = [
-        '@noteid',
-        '@created',
-        '@lastmodified',
-        '@revision',
-        '@lastaccessed',
-        '@size',
-        '@unread',
-        '@etag',
-        '$UpdatedBy'
-      ];
-
-      const keepData = Object.keys(data).reduce((acc, key) => {
-        if (!propertiesToOmit.includes(key)) {
-          acc[key] = data[key];
-        }
-        return acc;
-      }, {} as { [key: string]: any });
-
-      const {
-        unid,
-        agents,
-        allowCode,
-        allowDecryption,
-        description,
-        dqlAccess,
-        dalFormula,
-        forms,
-        formulaEngine,
-        icon,
-        iconName,
-        isActive,
-        nsfPath,
-        openAccess,
-        owners,
-        requireRevisionToUpdate,
-        schemaName,
-        views,
-        Form,
-        Type,
-        apiName,
-        server
-      } = keepData;
-      const meta = keepData['@meta'];
-      const schemaData = {
-        unid,
-        agents,
-        allowCode,
-        allowDecryption,
-        description,
-        dqlAccess,
-        dalFormula,
-        forms,
-        formulaEngine,
-        icon,
-        iconName,
-        isActive,
-        nsfPath,
-        openAccess,
-        owners,
-        requireRevisionToUpdate,
-        schemaName,
-        views
-      };
-      const scopeData = {
-        '@meta': meta,
-        Form,
-        Type,
-        apiName,
-        description,
-        icon,
-        iconName,
-        isActive,
-        nsfPath,
-        schemaName,
-        server
-      };
-
-      dispatch({
-        type: ADD_SCHEMA,
-        payload: schemaData
-      });
-
-      dispatch({
-        type: ADD_SCOPE,
-        payload: scopeData
-      });
-
-      dispatch(toggleQuickConfigDrawer());
-
-      if (response.status === 200) {
-        dispatch({
-          type: ADD_NEW_SCHEMA_TO_STATE,
-          payload: {
-            schemaName: schemaName,
-            nsfPath: nsfPath
-          }
-        });
-      }
-
-      dispatch(toggleAlert(`${schemaName} and ${dbData.scopeName} have been successfully created.`));
-
-      dispatch(setApiLoading(false));
-      dispatch(clearDBError());
-    } catch (e: any) {
-      // Before the parse, which throws on any non-JSON error and would take the
-      // rest of this handler with it.
-      dispatch(setApiLoading(false));
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-
-      // Use the response error if it's available
-      if (err) {
-        dispatch(setDBError(error.message));
-      }
-    }
-  };
-};
-
-/**
- * Add Database and check for errors
- */
-export const addSchema = (dbData: any, resetCallback?: () => void) => {
-  return async (dispatch: Dispatch) => {
-    try {
-      dispatch(setApiLoading(true));
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(dbData),
-        }), { notifyOnError: false })
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data))
-      }
-
-      dispatch({
-        type: ADD_SCHEMA,
-        payload: data
-      });
-
-      if (response.status === 200) {
-        dispatch({
-          type: ADD_NEW_SCHEMA_TO_STATE,
-          payload: {
-            schemaName: data.schemaName,
-            nsfPath: data.nsfPath
-          }
-        });
-        dispatch({
-          type: CLEAR_SCHEMA_FORM,
-          payload: true
-        });
-        if (resetCallback) {
-          resetCallback();
-        }
-      }
-      dispatch(toggleAlert(`${dbData.schemaName} has been successfully created.`));
-
-      dispatch(setApiLoading(false));
-      dispatch(clearDBError());
-    } catch (e: any) {
-      // `setApiLoading(true)` is dispatched on entry and was only cleared on the success
-      // path, so a failed create left the eight screens reading `dialog.loading` stuck.
-      dispatch(setApiLoading(false));
-
-      const raw = e?.message ?? String(e);
-      let message = raw;
-      try {
-        message = JSON.parse(raw).message ?? raw;
-      } catch {
-        // Not a JSON body — the raw text is the best message available.
-      }
-
-      log.error('Error adding schema', { error: message })
-      dispatch(setDBError(message));
-
-      dispatch({
-        type: CLEAR_SCHEMA_FORM,
-        payload: false,
-      });
-      dispatch(toggleAlert(`Unable to create schema ${dbData.schemaName}!`))
-    }
-  };
-};
-
-/**
- * Update schema to server and check for errors
- */
-export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => void) => {
-  return async (dispatch: Dispatch) => {
-    try {
-      dispatch(setApiLoading(true));
-      dispatch({
-        type: UPDATE_ERROR,
-        payload: false
-      });
-      try {
-        const { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(schemaData),
-          }), { notifyOnError: false })
-
-        if (!response.ok) {
-          throw new Error(JSON.stringify(data))
-        }
-
-        if (setSchemaData) {
-          setSchemaData(data);
-        }
-        dispatch({
-          type: ADD_NEW_SCHEMA_TO_STATE,
-          payload: {
-            schemaName: data.schemaName,
-            nsfPath: data.nsfPath
-          }
-        });
-        dispatch(setApiLoading(false));
-        dispatch(toggleAlert(`Schema has been successfully updated.`));
-      } catch (e: any) {
-        // Cleared here as well as on the success path above; without it a failed update
-        // left `dialog.loading` on for good.
-        dispatch(setApiLoading(false));
-
-        const raw = e?.message ?? String(e);
-        let message = raw;
-        try {
-          message = JSON.parse(raw).message ?? raw;
-        } catch {
-          // Not a JSON body — the raw text is the best message available.
-        }
-
-        dispatch(toggleAlert(`Update schema failed! ${message}`));
-        dispatch({
-          type: UPDATE_ERROR,
-          payload: true
-        });
-      }
-    } catch (err: any) {
-      dispatch(setApiLoading(false));
-      // Use the response error if it's available
-      if (err.response && err.response.statusText) {
-        dispatch(setDBError(err.response.statusText));
-      } else {
-        dispatch(setDBError(err.message));
-      }
     }
   };
 };
@@ -1537,181 +861,6 @@ function updatePanels(dbName: string, viewData: ViewObj) {
   };
 }
 
-export const handleDatabaseAgents = (
-  agentsArray: Array<any>,
-  activeAgents: Array<any>,
-  dbName: string,
-  schemaData: Database,
-  active: boolean,
-  currentAgents: Array<any>,
-) => {
-  return async (dispatch: AppDispatch) => {
-    // Build redux data
-    const agentsData = agentsArray.map((agent: any) => {
-      return buildReduxAgentData(agent, active);
-    });
-
-    // Update panels
-    agentsData.forEach((agent: any) => {
-      dispatch(updateActiveAgents(dbName, agent));
-    });
-
-    // Save agents
-    //  Build the array of new agents
-    const agentsList: Array<any> = [];
-    if (agentsArray.length === 1) {
-      activeAgents.forEach((agent: any) => {
-        if (agent.agentName !== agentsData[0].agentName) {
-          agentsList.push(saveAgentDetails(agent));
-        }
-      });
-      if (active) {
-        // add to active agents
-        agentsList.push(saveAgentDetails(agentsArray[0]));
-      }
-    } else if (active) {
-      const activeAgentNames = activeAgents.map((agent: any) => {
-        return agent.agentName;
-      });
-      agentsArray.forEach((agent: any) => {
-        // if agent was already active, don't add it again to the active views list
-        if (!activeAgentNames.includes(agent.agentName)) {
-          agentsList.push(saveAgentDetails(agent));
-        }
-      });
-      activeAgents.forEach((agent: any) => {
-        agentsList.push(saveAgentDetails(agent));
-      });
-    }
-
-    // Send the new agents to the server
-    dispatch(updateAgents(schemaData, agentsList, dbName, currentAgents));
-  };
-};
-
-function buildReduxAgentData(currentAgent: any, agentActive: boolean) {
-  return {
-    agentName: currentAgent.agentName,
-    agentAlias: currentAgent.agentAlias,
-    agentUnid: currentAgent.agentUnid,
-    agentActive: agentActive,
-    agentUpdated: currentAgent.agentUpdated
-  };
-}
-
-function updateActiveAgents(dbName: string, agentData: AgentObj) {
-  return async (dispatch: Dispatch) => {
-    // Update All Panel
-    dispatch({
-      type: UPDATE_AGENT,
-      payload: {
-        db: dbName,
-        agent: agentData
-      }
-    });
-
-    // Update Active Panel
-    if (agentData.agentActive) {
-      dispatch({
-        type: ADD_ACTIVEAGENT,
-        payload: {
-          db: dbName,
-          activeAgent: agentData
-        }
-      });
-    } else {
-      dispatch({
-        type: DELETE_ACTIVEAGENT,
-        payload: {
-          db: dbName,
-          activeAgent: agentData.agentUnid
-        }
-      });
-    }
-  };
-}
-
-function saveAgentDetails(currentAgent: any) {
-  let aliasArray: Array<any> = [];
-  if (currentAgent.agentAlias != null && currentAgent.agentAlias.length > 0) {
-    if (Array.isArray(currentAgent.agentAlias)) {
-      aliasArray = currentAgent.agentAlias;
-    } else {
-      aliasArray.push(currentAgent.agentAlias);
-    }
-  }
-
-  return {
-    name: currentAgent.agentName,
-    alias: aliasArray,
-    unid: currentAgent.agentUnid,
-    columns: currentAgent.agentColumns,
-    agentUpdated: currentAgent.agentUpdated
-  };
-}
-
-/**
- * update agents to server
- */
-export const updateAgents = (schemaData: Database, agentsData: any, dbName: string, currentAgents: Array<any>) => {
-  return async (dispatch: AppDispatch) => {
-    let filteredForms = schemaData.forms
-      .filter((form) => form.formModes.length > 0)
-      .map((form) => {
-        return {
-          formName: form.formName,
-          formModes: form.formModes,
-          alias: form.alias
-        };
-      });
-    const newSchemaData: any = {
-      ...schemaData,
-      forms: filteredForms,
-      agents: agentsData
-    };
-    try {
-      dispatch(setApiLoading(true));
-      try {
-        const { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newSchemaData),
-          }), { notifyOnError: false })
-
-        if (!response.ok) {
-          throw new Error(JSON.stringify(data))
-        }
-
-        dispatch(setApiLoading(false));
-        dispatch(toggleAlert(`Agents have been successfully saved.`));
-      } catch (e: any) {
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
-
-        dispatch(setApiLoading(false));
-        dispatch(setAgents(dbName, currentAgents))
-        dispatch(toggleAlert(`Update agents failed! ${error.message}`));
-      }
-      dispatch(clearDBError());
-    } catch (err: any) {
-      dispatch(setApiLoading(false));
-      dispatch(setAgents(dbName, currentAgents))
-      // Use the response error if it's available
-      if (err.response && err.response.statusText) {
-        dispatch(setDBError(err.response.statusText));
-        dispatch(toggleAlert(`Update agents failed! ${err.response.statusText}`));
-      } else {
-        dispatch(setDBError(err.message));
-        dispatch(toggleAlert(`Update agents failed! ${err.message}`));
-      }
-    }
-  };
-};
-
 /**
  * Add/update form mode to server
  */
@@ -2042,42 +1191,6 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
   };
 };
 
-export const fetchDBConfig = (config: string) => {
-  return async (dispatch: Dispatch) => {
-    dispatch(setApiLoading(true));
-    try {
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/scope?dataSource=${config}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json',
-          },
-        })
-      )
-      const dbConfig = data
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(dbConfig))
-      }
-
-      dispatch({
-        type: FETCH_DB_CONFIG,
-        payload: dbConfig
-      });
-      dispatch(setApiLoading(false));
-      dispatch({ type: TOGGLE_DETAILS_LOADING });
-    } catch (e: any) {
-      // Before the parse, which throws on any non-JSON error and would take the
-      // rest of this handler with it.
-      dispatch(setApiLoading(false));
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-
-      log.error('Error fetching database configuration', { error });
-    }
-  };
-};
-
 export const updateScope = (active: boolean, data?: any) => {
   return async (dispatch: Dispatch, getState: () => AppState) => {
     dispatch(closeSnackbar());
@@ -2352,23 +1465,6 @@ export const isActiveView = (unid: string, activeList: Array<ViewObj>) => {
 };
 
 /**
- * isActiveAgent determines if a particular Agent has been
- * activated.
- *
- * @param unid the id of the view to check
- * @param activeList the list of activated Views
- *
- */
-export const isActiveAgent = (unid: string, activeList: Array<AgentObj>) => {
-  for (let ii = 0; ii < activeList.length; ii++) {
-    if (unid === activeList[ii].agentUnid) {
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
  * Save a list of forms for a particular database
  *
  * @param dbname the database containing the forms
@@ -2520,42 +1616,6 @@ export const setActiveViews = (dbName: string, activeViews: Array<any>) => {
   };
 };
 
-/**
- * Save a list of agents for a particular database
- *
- * @param dbname the database containing the agents
- * @param agents the array of agents
- */
-export const setAgents = (dbName: string, agents: Array<any>) => {
-  return async (dispatch: any) => {
-    await dispatch({
-      type: SET_AGENTS,
-      payload: {
-        db: dbName,
-        agents
-      }
-    });
-  };
-};
-
-/*
- * Save a list of agents for a particular database
- *
- * @param dbname the database containing the agents
- * @param agents the array of agents
- */
-export const setActiveAgents = (dbName: string, activeAgents: Array<any>) => {
-  return async (dispatch: any) => {
-    await dispatch({
-      type: SET_ACTIVEAGENTS,
-      payload: {
-        db: dbName,
-        activeAgents
-      }
-    });
-  };
-};
-
 export const cacheFormFields = (dbName: string, formName: string, fields: Array<any>) => {
   return async (dispatch: any) => {
     await dispatch({
@@ -2566,13 +1626,6 @@ export const cacheFormFields = (dbName: string, formName: string, fields: Array<
         fields
       }
     });
-  };
-};
-
-export const retry = (count: number) => {
-  return {
-    type: SET_RETRY_COUNT,
-    payload: count
   };
 };
 
@@ -2603,29 +1656,6 @@ export const unConfigForm = (schemaName: string, formName: string) => {
 export function clearForms() {
   return {
     type: CLEAR_FORMS
-  };
-}
-
-/**
- * Add Nsf design
- */
-export function addNsfDesign(nsfPath: string, nsfDesign: any) {
-  return {
-    type: ADD_NSF_DESIGN,
-    payload: {
-      nsfPath,
-      nsfDesign
-    }
-  };
-}
-
-/**
- * Set only show schemas configured with scopes
- */
-export function setOnlyShowSchemasWithScopes(onlyShowSchemasWithScopes: boolean) {
-  return {
-    type: SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES,
-    payload: onlyShowSchemasWithScopes
   };
 }
 
@@ -2727,43 +1757,5 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
 
       log.error('Error fetching all fields', { error })
     }
-  };
-};
-
-export const fetchKeepPermissions = () => {
-  return async (dispatch: Dispatch) => {
-    try {
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/admin/access`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json',
-          },
-        })
-      )
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data))
-      }
-
-      dispatch({
-        type: FETCH_KEEP_PERMISSIONS,
-        payload: {
-          createDbMapping: data.CreateDbMapping,
-          deleteDbMapping: data.DeleteDbMapping
-        }
-      });
-    } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-
-      log.error('Error fetching Keep permissions', { error })
-    }
-  };
-};
-
-export const initState = () => {
-  return {
-    type: INIT_STATE
   };
 };
