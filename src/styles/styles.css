@@ -342,10 +342,6 @@ body[data-theme="dark"] .color-text-disabled {
     flex: 1;
 }
 
-.shrink-0 {
-    flex-shrink: 0;
-}
-
 .p-0 {
     padding: 0;
 }
