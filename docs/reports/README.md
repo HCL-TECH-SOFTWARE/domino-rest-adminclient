@@ -2,7 +2,13 @@
 
 Six analysis reports covering the state of `@hcl-software/domino-rest-adminclient` and a
 staged program to modernize it: Jest→Vitest, React→Lit/WebAwesome, a WebAwesome design-token
-layout, and full React removal.
+layout, and full React removal — plus **[06 — Wave execution plan](./06-waves.md)**, the
+operational companion that turns them into assignable work.
+
+> 👉 **If you have been handed a wave to implement, go straight to
+> [06-waves.md](./06-waves.md).** Reports 00–05 say what is wrong and why; 06 says who picks
+> up what, in which order, and how they know they are done. It is measured against
+> `new_code` @ `7ec97b1` and supersedes any earlier wave table.
 
 **Originally generated 2026-07-24. Refreshed 2026-07-28** against branch `new_code` @
 `fcab645` (previous refreshes: `e17010c`, `7594672`) — every metric re-measured, every
@@ -55,7 +61,8 @@ ones — which is the concrete cost of the skew. Details in [report 05](./05-dep
 | 02 | [React → Lit / WebAwesome](./02-react-to-lit-webawesome.md) | Component inventory → `wa-*` / `keep-*` / new Lit / keep; the hard cases | ✅ **Phase 0 COMPLETE**; three MUI subsystems retired; one decision left (#702) |
 | 03 | [wa-page & design tokens](./03-wa-page-and-design-tokens.md) | App shell on `wa-page` + WA tokens, Linaria tokenization, stripping Material Design | ✅ **DELIVERED** — shell and token layer both shipped; a documented tail remains |
 | 04 | [Remove React](./04-remove-react.md) | Capstone: routing, `react-redux`→Lit controllers, Formik, entry point, sequencing | 🟡 React surface untouched (on plan); 3 React-coupled deps deleted; bundle −66.6 % |
-| 05 | [Dependency triage](./05-dependabot-triage.md) | Dependabot alerts, `npm audit` re-audit, and the `main`-vs-`new_code` branch skew | ✅ 0 critical, **0 browser-reachable**; 🟡 10 high from 2 root advisories |
+| 05 | [Dependency triage](./05-dependabot-triage.md) | Dependabot alerts, `npm audit` re-audit, and the `main`-vs-`new_code` branch skew | ✅ **`npm audit` clean** — 0 vulnerabilities as of `7ec97b1` (#793, #797) |
+| 06 | [**Wave execution plan**](./06-waves.md) | Lanes, waves, dependency graph, per-issue entry points, house rules, traps | 🟢 **Live** — the pickup document. Wave 0 is four independent starts |
 
 ## What changed since the last refresh (`e17010c` → `fcab645`)
 
@@ -225,6 +232,13 @@ deltas as noise.
 
 ## Suggested execution order
 
+**Superseded by [06 — Wave execution plan](./06-waves.md).** Items 2, 3 and most of 5 below
+have since landed (#788/#795 CSP, #774 DataGrid, #797 router, #798 StoreController); item 1
+is now PR #786 and is tracked as a Wave 3 gate. Go to report 06 for the current ordering.
+
+<details>
+<summary>The 2026-07-28 ordering, kept for the record</summary>
+
 1. **Merge `new_code` to `main`.** It is the highest-leverage item in the program right now
    and it is not a code change: 160 commits of skew is hiding the one genuinely live
    dependency finding behind fifteen stale alerts (report 05).
@@ -243,3 +257,5 @@ deltas as noise.
 5. **Capstone:** report 04 — router (#716), `react-redux`→`StoreController` (#715),
    Formik→native+Yup (#717), swap the entry point, then drop `react`/`react-dom`/`@mui/*`
    and verify the grep-based Definition of Done.
+
+</details>
