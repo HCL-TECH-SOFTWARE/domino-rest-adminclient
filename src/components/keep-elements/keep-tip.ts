@@ -62,10 +62,35 @@ export default class Tip extends KeepElement {
       color-scheme: inherit;
     }
 
+    /*
+     * NO BACKTICKS ANYWHERE IN THIS BLOCK. It sits inside a css tagged-template literal, so
+     * a backtick ends the template and the file stops parsing. Cost me a dev-server crash.
+     *
+     * The tile has to read as a raised surface in LIGHT mode, where WebAwesome gives it
+     * almost nothing to work with:
+     *
+     * - --wa-color-surface-raised and --wa-color-surface-default are BOTH white. The MUI
+     *   original set background: var(--wa-color-surface-raised) and so was white on white;
+     *   only MUI's own elevation shadow separated it from the page.
+     * - --wa-color-surface-border is --wa-color-neutral-90, and the neutral ramp is
+     *   mode-invariant, so in light mode that is a near-white line on a white page.
+     * - wa-card's own box-shadow: var(--wa-shadow-s) resolves to about 0 2px 2px -1px:
+     *   real, but not enough to lift a near-white card off white.
+     *
+     * So: --wa-shadow-m for elevation you can actually see, and the NEUTRAL border ramp
+     * rather than the surface one, which is two steps darker. Both stay sensible in dark
+     * mode, where the surfaces already differ (#1e1e2e against #252535, from keep-theme.css).
+     *
+     * Nothing here sets --wa-panel-background-color, --wa-panel-border-color or
+     * --border-radius: wa-card reads none of the three. It reads --wa-color-surface-*,
+     * --wa-panel-border-radius and --wa-shadow-s. Setting the others looks like theming and
+     * does nothing at all -- they were copied from keep-default-card, where they are equally
+     * inert.
+     */
     wa-card {
-      --wa-panel-background-color: var(--wa-color-surface-raised);
-      --wa-panel-border-color: var(--wa-color-surface-border);
-      --border-radius: var(--wa-border-radius-l);
+      --wa-panel-border-radius: var(--wa-border-radius-l);
+      border-color: var(--wa-color-neutral-border-quiet);
+      box-shadow: var(--wa-shadow-m);
       display: flex;
       flex: 1;
       overflow: hidden;
