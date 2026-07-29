@@ -108,10 +108,15 @@ describe('AppItem — layout', () => {
 describe('AppItem — launching', () => {
   it('opens the start page for an active app', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
-    renderAppItem();
-    fireEvent.click(tooltipButton('Launch Timesheets'));
-    expect(open).toHaveBeenCalledWith('https://example.test/start');
-    open.mockRestore();
+    try {
+      renderAppItem();
+      fireEvent.click(tooltipButton('Launch Timesheets'));
+      expect(open).toHaveBeenCalledWith('https://example.test/start');
+    } finally {
+      // try/finally so a failed assertion above still restores window.open instead of
+      // leaking a stub into every later test in this file.
+      open.mockRestore();
+    }
   });
 
   it('offers no launch button for a disabled app', () => {
