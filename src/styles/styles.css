@@ -302,10 +302,6 @@ body[data-theme="dark"] .color-text-disabled {
     height: 30px;
 }
 
-.h-44px {
-    height: 44px;
-}
-
 .h-10vh {
     height: 10vh;
 }
@@ -1529,15 +1525,6 @@ body[data-theme="dark"] .add-import-svg-icon {
 }
 
 /* SchemasAlphabeticalView.tsx */
-.schemas-alphabetical-schema-name {
-    font-size: 16px;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 25vw;
-    line-height: 1.2em;
-}
-
 /* QuickConfigForm */
 .drawer-available-databases-text {
     color: #fff;

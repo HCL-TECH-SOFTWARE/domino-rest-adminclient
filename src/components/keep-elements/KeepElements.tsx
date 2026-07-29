@@ -64,3 +64,5 @@ export { KeepScopesMultiView } from './react/KeepScopesMultiView';
 export { KeepSchemasCardsView } from './react/KeepSchemasCardsView';
 export { KeepSchemasDefaultView } from './react/KeepSchemasDefaultView';
 export { KeepSchemasStacksView } from './react/KeepSchemasStacksView';
+export { KeepSchemasAlphabeticalView } from './react/KeepSchemasAlphabeticalView';
+export { KeepSchemasMultiView } from './react/KeepSchemasMultiView';

@@ -20,11 +20,10 @@ import APILoadingProgress from '../loading/APILoadingProgress';
 import { WrapperContainer } from '../commons/Wrappers';
 import { useLocation, useNavigate } from '../../router/react';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
-import SchemasMultiView from '../commons/cardviews/displays/schemas/SchemasMultiView';
 import { toggleAlert } from '../../store/alerts/action';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
-import { KeepButton, KeepNetworkErrorDialog, KeepTooltip, KeepZeroResults } from '../keep-elements/KeepElements';
+import { KeepButton, KeepNetworkErrorDialog, KeepSchemasMultiView, KeepTooltip, KeepZeroResults } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -33,10 +32,20 @@ const SchemasLists = () => {
     (state: AppState) => state.databases
   );
   const { loading } = useSelector( (state: AppState) => state.loading );
+
   const permissionCreate = permissions.createDbMapping;
   const navigate = useNavigate();
   const location = useLocation();
   const { pathname, search } = location;
+
+  /**
+   * The four schema views are Lit elements now and emit `schema-open` instead of navigating:
+   * the router is handed out through React context with no module-level instance, so an element
+   * cannot reach it. This is the last React component in the chain, so navigation lands here.
+   */
+  const openSchema = (database: any) => {
+    navigate(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);
+  };
 
   const [results, setResults] = useState(() => {
     if (databasesOverview.length === 0) {
@@ -202,7 +211,13 @@ const SchemasLists = () => {
                 />
               </KeepTooltip>
             </FilterContainer>
-            {results.length !== 0 && !loading.status && <SchemasMultiView databases={results} view={view} />}
+            {results.length !== 0 && !loading.status && (
+              <KeepSchemasMultiView
+                databases={results}
+                view={view}
+                onSchemaOpen={(e) => openSchema(e.detail.database)}
+              />
+            )}
             {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <KeepZeroResults mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
             <KeepNetworkErrorDialog />
             <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
