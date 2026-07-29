@@ -7,7 +7,15 @@
 import { Dispatch } from 'redux';
 import { BASE_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
-import { DELETE_CONSENT, INIT_STATE, SET_CONSENTS, TOGGLE_DELETE_CONSENT } from './types';
+import { INIT_STATE } from './types';
+// Both aliased: this module already exports a `deleteConsent` thunk and a
+// four-argument `toggleDeleteConsent`, and the slice generates creators of the
+// same names. The thunks keep the names their callers use.
+import {
+  deleteConsent as deleteConsentAction,
+  setConsents,
+  toggleDeleteConsent as toggleDeleteConsentAction,
+} from './reducer';
 import { toggleAlert } from '../alerts/action';
 import { toggleConsentsLoading } from '../loading/action';
 import { getLogger } from '../../services/log-service';
@@ -30,10 +38,7 @@ export function getConsents() {
       }
       const data = await response.json()
 
-      dispatch({
-        type: SET_CONSENTS,
-        payload: data,
-      });
+      dispatch(setConsents(data));
     } catch (e: any) {
       // Without a status check the error body was dispatched as the consent list, and
       // without a catch a non-JSON body rejected out of the thunk — either way the
@@ -65,10 +70,7 @@ export function deleteConsent (unid: string, successCallback: () => void) {
         throw new Error(`revoke failed with ${response.status}`)
       }
       const data = await response.json()
-      dispatch({
-        type: DELETE_CONSENT,
-        payload: data,
-      });
+      dispatch(deleteConsentAction(data));
       successCallback()
       dispatch(toggleAlert(`Successfully deleted consent for client ID ${unid}`));
     } catch (e: any) {
@@ -78,16 +80,13 @@ export function deleteConsent (unid: string, successCallback: () => void) {
   }
 }
 
+/**
+ * Kept as a four-argument wrapper rather than re-exporting the generated creator:
+ * every caller passes four positional arguments, and createSlice creators take a
+ * single payload. Changing the signature is a separate call from #710.
+ */
 export function toggleDeleteConsent (unid:string, appName:string, username:string, scope:string) {
-  return {
-    type: TOGGLE_DELETE_CONSENT,
-    payload: {
-      unid: unid,
-      appName: appName,
-      username: username,
-      scope: scope,
-    }
-  }
+  return toggleDeleteConsentAction({ unid, appName, username, scope });
 }
 
 export const initApplicationState = () => {

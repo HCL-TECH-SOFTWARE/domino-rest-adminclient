@@ -15,7 +15,7 @@ import {
   SET_PULLED_SCOPE,
   UPDATE_SCOPE,
 } from '../../../src/store/databases/types';
-import { SET_API_LOADING, TOGGLE_DELETE_DIALOG, TOGGLE_ERROR_DIALOG } from '../../../src/store/dialog/types';
+import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../../../src/store/dialog/action';
 import { toggleDrawer } from '../../../src/store/drawer/action';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
@@ -60,14 +60,14 @@ describe('databases — scopes', () => {
   const alerts = () =>
     actions().filter((a) => a?.type === TOGGLE_ALERT).map((a) => a.payload as string);
 
-  /** Every SET_API_LOADING payload, in order — the flag's whole life in one thunk run. */
+  /** Every setApiLoading.type payload, in order — the flag's whole life in one thunk run. */
   const loadingSequence = () =>
-    actions().filter((a) => a?.type === SET_API_LOADING).map((a) => a.payload);
+    actions().filter((a) => a?.type === setApiLoading.type).map((a) => a.payload);
 
   /** The flag must not be left on. */
   const expectLoadingCleared = () => {
     const seq = loadingSequence();
-    expect(seq.length, 'no SET_API_LOADING dispatched at all').toBeGreaterThan(0);
+    expect(seq.length, 'no setApiLoading.type dispatched at all').toBeGreaterThan(0);
     expect(seq[seq.length - 1], `loading left as ${seq[seq.length - 1]}`).toBe(false);
   };
 
@@ -122,7 +122,7 @@ describe('databases — scopes', () => {
 
       expect(types()).toContain(DELETE_SCOPE);
       expect(actions().find((a) => a?.type === DELETE_SCOPE).payload).toBe('demo');
-      expect(types()).toContain(TOGGLE_DELETE_DIALOG);
+      expect(types()).toContain(toggleDeleteDialog.type);
       expect(types()).toContain(toggleDrawer.type);
       expect(alerts().join()).toMatch(/successfully deleted/i);
       expectLoadingCleared();
@@ -199,14 +199,14 @@ describe('databases — scopes', () => {
       refuses({ statusCode: 400, message: 'nope' });
 
       await expect(fetchScopes()(dispatch)).rejects.toBeDefined();
-      expect(types()).not.toContain(TOGGLE_ERROR_DIALOG);
+      expect(types()).not.toContain(toggleErrorDialog.type);
     });
 
     it('rejects when the request never completes', async () => {
       offline();
 
       await expect(fetchScopes()(dispatch)).rejects.toBeDefined();
-      expect(types()).not.toContain(TOGGLE_ERROR_DIALOG);
+      expect(types()).not.toContain(toggleErrorDialog.type);
     });
   });
 

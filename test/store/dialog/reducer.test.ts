@@ -5,15 +5,8 @@
  * ========================================================================== */
 
 import { describe, it, expect } from 'vitest';
-import dialogReducer from '../../../src/store/dialog/reducer';
-import {
-  SET_API_LOADING,
-  TOGGLE_DELETE_DIALOG,
-  TOGGLE_ERROR_DIALOG,
-  TOGGLE_RESET_VIEW_DIALOG,
-  INIT_STATE,
-  DialogStates,
-} from '../../../src/store/dialog/types';
+import dialogReducer, { setApiLoading, toggleDeleteDialog, toggleErrorDialog, toggleResetViewDialog } from '../../../src/store/dialog/reducer';
+import { INIT_STATE, DialogStates } from '../../../src/store/dialog/types';
 
 const initial: DialogStates = {
   deleteDialog: false,
@@ -28,26 +21,26 @@ describe('dialogReducer', () => {
     expect(dialogReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('SET_API_LOADING sets loading from the payload', () => {
-    expect(dialogReducer(initial, { type: SET_API_LOADING, payload: true })).toMatchObject({
+  it('setApiLoading sets loading from the payload', () => {
+    expect(dialogReducer(initial, setApiLoading(true))).toMatchObject({
       loading: true,
     });
   });
 
-  it('TOGGLE_DELETE_DIALOG flips deleteDialog on each dispatch', () => {
-    const once = dialogReducer(initial, { type: TOGGLE_DELETE_DIALOG });
+  it('toggleDeleteDialog flips deleteDialog on each dispatch', () => {
+    const once = dialogReducer(initial, toggleDeleteDialog());
     expect(once.deleteDialog).toBe(true);
-    expect(dialogReducer(once, { type: TOGGLE_DELETE_DIALOG }).deleteDialog).toBe(false);
+    expect(dialogReducer(once, toggleDeleteDialog()).deleteDialog).toBe(false);
   });
 
-  it('TOGGLE_ERROR_DIALOG toggles the dialog open and sets the message', () => {
-    const next = dialogReducer(initial, { type: TOGGLE_ERROR_DIALOG, payload: 'boom' });
+  it('toggleErrorDialog toggles the dialog open and sets the message', () => {
+    const next = dialogReducer(initial, toggleErrorDialog('boom'));
     expect(next).toMatchObject({ errorDialogOpen: true, errorDialogMessage: 'boom' });
   });
 
-  it('TOGGLE_RESET_VIEW_DIALOG sets resetViewDialog from the payload', () => {
+  it('toggleResetViewDialog sets resetViewDialog from the payload', () => {
     expect(
-      dialogReducer(initial, { type: TOGGLE_RESET_VIEW_DIALOG, payload: true }).resetViewDialog,
+      dialogReducer(initial, toggleResetViewDialog(true)).resetViewDialog,
     ).toBe(true);
   });
 
@@ -63,6 +56,6 @@ describe('dialogReducer', () => {
 
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
-    expect(() => dialogReducer(frozen, { type: TOGGLE_DELETE_DIALOG })).not.toThrow();
+    expect(() => dialogReducer(frozen, toggleDeleteDialog())).not.toThrow();
   });
 });

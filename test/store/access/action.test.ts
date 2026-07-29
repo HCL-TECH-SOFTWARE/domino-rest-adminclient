@@ -8,7 +8,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import type { Dispatch } from 'redux';
 import { fetchUsers } from '../../../src/store/access/action';
 import { setUsers } from '../../../src/store/access/reducer';
-import { TOGGLE_USERS_LOADING } from '../../../src/store/loading/types';
+import { toggleUsersLoading } from '../../../src/store/loading/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths; without the
 // element registered `el.show` is undefined and a clean 4xx surfaces as a TypeError.
@@ -38,7 +38,7 @@ describe('fetchUsers', () => {
   let previousLevel: number;
 
   const types = () => dispatch.mock.calls.map((call) => (call[0] as { type: string }).type);
-  const loadingToggles = () => types().filter((type) => type === TOGGLE_USERS_LOADING).length;
+  const loadingToggles = () => types().filter((type) => type === toggleUsersLoading.type).length;
 
   beforeAll(() => {
     previousLevel = Logger.getLevel();

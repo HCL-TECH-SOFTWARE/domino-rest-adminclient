@@ -1,34 +1,18 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { TOGGLE_DELETE_DIALOG, SET_API_LOADING, TOGGLE_ERROR_DIALOG, TOGGLE_RESET_VIEW_DIALOG } from './types';
-
-export function toggleDeleteDialog() {
-  return {
-    type: TOGGLE_DELETE_DIALOG,
-  };
-}
-
-export function toggleErrorDialog(errorMessage: string) {
-  return {
-    type: TOGGLE_ERROR_DIALOG,
-    payload: errorMessage,
-  };
-}
-
-export function setApiLoading(value: boolean) {
-  return {
-    type: SET_API_LOADING,
-    payload: value,
-  };
-}
-
-export function toggleResetViewDialog(value: boolean) {
-  return {
-    type: TOGGLE_RESET_VIEW_DIALOG,
-    payload: value
-  }
-}
+/**
+ * `createSlice` generates these action creators now (#710). The module stays so
+ * its callers keep the import path and the names they already use — and there are
+ * a lot of them: `setApiLoading` alone is dispatched from most of the databases
+ * thunks.
+ */
+export {
+  setApiLoading,
+  toggleDeleteDialog,
+  toggleErrorDialog,
+  toggleResetViewDialog,
+} from './reducer';

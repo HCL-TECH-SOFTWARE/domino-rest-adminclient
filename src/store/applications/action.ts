@@ -20,17 +20,19 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleAlert } from '../alerts/action';
 import { toggleApplicationDrawer } from '../drawer/action';
-import { TOGGLE_DELETE_DIALOG } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
+import { toggleDeleteDialog } from '../dialog/action';
 
 const log = getLogger('store/applications');
 
-export function toggleDeleteDialog() {
-  return {
-    type: TOGGLE_DELETE_DIALOG
-  };
-}
+/**
+ * A second creator for the dialog slice's own action, kept because callers import
+ * it from here. It re-exports rather than rebuilding the action: once the reducer
+ * answers to `dialog/toggleDeleteDialog`, hand-rolling the raw type here would be
+ * a silent no-op.
+ */
+export { toggleDeleteDialog };
 
 /**
  * Retrieves the arrays of Applications and

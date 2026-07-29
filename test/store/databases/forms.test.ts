@@ -29,7 +29,7 @@ import {
   SET_FORMS,
   UNCONFIG_FORM,
 } from '../../../src/store/databases/types';
-import { SET_API_LOADING, TOGGLE_DELETE_DIALOG } from '../../../src/store/dialog/types';
+import { setApiLoading, toggleDeleteDialog } from '../../../src/store/dialog/action';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
@@ -86,11 +86,11 @@ describe('databases — forms (destructive)', () => {
   const alerts = () =>
     actions().filter((a: any) => a?.type === TOGGLE_ALERT).map((a: any) => a.payload as string);
   const loadingSequence = () =>
-    actions().filter((a: any) => a?.type === SET_API_LOADING).map((a: any) => a.payload);
+    actions().filter((a: any) => a?.type === setApiLoading.type).map((a: any) => a.payload);
 
   const expectLoadingCleared = () => {
     const seq = loadingSequence();
-    expect(seq.length, 'no SET_API_LOADING dispatched at all').toBeGreaterThan(0);
+    expect(seq.length, 'no setApiLoading.type dispatched at all').toBeGreaterThan(0);
     expect(seq[seq.length - 1], `loading left as ${seq[seq.length - 1]}`).toBe(false);
   };
 
@@ -153,7 +153,7 @@ describe('databases — forms (destructive)', () => {
       const order = sent.forms.find((f: any) => f.formName === 'Order');
       expect(order.formModes.map((m: any) => m.modeName)).toEqual(['default']);
       expect(alerts().join()).toMatch(/admin mode has been deleted/i);
-      expect(types()).toContain(TOGGLE_DELETE_DIALOG);
+      expect(types()).toContain(toggleDeleteDialog.type);
       expectLoadingCleared();
     });
 
@@ -362,11 +362,11 @@ describe('databases — forms', () => {
   const alerts = () =>
     actions().filter((a: any) => a?.type === TOGGLE_ALERT).map((a: any) => a.payload as string);
   const loadingSequence = () =>
-    actions().filter((a: any) => a?.type === SET_API_LOADING).map((a: any) => a.payload);
+    actions().filter((a: any) => a?.type === setApiLoading.type).map((a: any) => a.payload);
 
   const expectLoadingCleared = () => {
     const seq = loadingSequence();
-    expect(seq.length, 'no SET_API_LOADING dispatched at all').toBeGreaterThan(0);
+    expect(seq.length, 'no setApiLoading.type dispatched at all').toBeGreaterThan(0);
     expect(seq[seq.length - 1], `loading left as ${seq[seq.length - 1]}`).toBe(false);
   };
 

@@ -19,7 +19,7 @@ import {
   DELETE_SCHEMA,
   UPDATE_ERROR,
 } from '../../../src/store/databases/types';
-import { SET_API_LOADING } from '../../../src/store/dialog/types';
+import { setApiLoading } from '../../../src/store/dialog/action';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
@@ -58,14 +58,14 @@ describe('databases — schemas', () => {
   const alerts = () =>
     actions().filter((a) => a?.type === TOGGLE_ALERT).map((a) => a.payload as string);
 
-  /** Every SET_API_LOADING payload, in order — the flag's whole life in one thunk run. */
+  /** Every setApiLoading.type payload, in order — the flag's whole life in one thunk run. */
   const loadingSequence = () =>
-    actions().filter((a) => a?.type === SET_API_LOADING).map((a) => a.payload);
+    actions().filter((a) => a?.type === setApiLoading.type).map((a) => a.payload);
 
   /** The flag must not be left on. */
   const expectLoadingCleared = () => {
     const seq = loadingSequence();
-    expect(seq.length, 'no SET_API_LOADING dispatched at all').toBeGreaterThan(0);
+    expect(seq.length, 'no setApiLoading.type dispatched at all').toBeGreaterThan(0);
     expect(seq[seq.length - 1], `loading left as ${seq[seq.length - 1]}`).toBe(false);
   };
 

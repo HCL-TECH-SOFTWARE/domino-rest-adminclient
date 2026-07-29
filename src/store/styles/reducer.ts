@@ -1,17 +1,11 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import {
-  StylesState,
-  StylesActionTypes,
-  ADJUST_DATABASE_STYLE,
-  TOGGLE_FULLSCREEN,
-  SET_MOBILE_VIEWPORT,
-  SWITCH_THEME,
-} from './types';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { StylesState } from './types';
 
 const theme = localStorage.getItem('theme') || 'default';
 
@@ -22,32 +16,28 @@ const initialState: StylesState = {
   themeMode: theme,
 };
 
-export default function stylesReducer(
-  state = initialState,
-  action: StylesActionTypes
-): StylesState {
-  switch (action.type) {
-    case ADJUST_DATABASE_STYLE:
-      return {
-        ...state,
-        databaseSize: action.payload,
-      };
-    case TOGGLE_FULLSCREEN:
-      return {
-        ...state,
-        accessModeFullscreen: !state.accessModeFullscreen,
-      };
-    case SET_MOBILE_VIEWPORT:
-      return {
-        ...state,
-        isMobile: true,
-      };
-    case SWITCH_THEME:
-      return {
-        ...state,
-        themeMode: action.payload,
-      };
-    default:
-      return state;
-  }
-}
+export const stylesSlice = createSlice({
+  name: 'styles',
+  initialState,
+  reducers: {
+    adjustDatabaseStyle(state, action: PayloadAction<number>) {
+      state.databaseSize = action.payload;
+    },
+    toggleFullscreen(state) {
+      state.accessModeFullscreen = !state.accessModeFullscreen;
+    },
+    // Sets rather than toggles, and there is nothing that clears it: the viewport
+    // is read once at startup. Preserved as-is; changing it is not this issue's job.
+    setViewport(state) {
+      state.isMobile = true;
+    },
+    switchTheme(state, action: PayloadAction<string>) {
+      state.themeMode = action.payload;
+    },
+  },
+});
+
+export const { adjustDatabaseStyle, toggleFullscreen, setViewport, switchTheme } =
+  stylesSlice.actions;
+
+export default stylesSlice.reducer;

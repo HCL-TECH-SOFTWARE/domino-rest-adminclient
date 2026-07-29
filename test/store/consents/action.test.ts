@@ -12,13 +12,13 @@ import {
   initApplicationState,
   toggleDeleteConsent,
 } from '../../../src/store/consents/action';
+import { INIT_STATE } from '../../../src/store/consents/types';
 import {
-  DELETE_CONSENT,
-  INIT_STATE,
-  SET_CONSENTS,
-  TOGGLE_DELETE_CONSENT,
-} from '../../../src/store/consents/types';
-import { TOGGLE_CONSENTS_LOADING } from '../../../src/store/loading/types';
+  setConsents as setConsentsAction,
+  deleteConsent as deleteConsentAction,
+  toggleDeleteConsent as toggleDeleteConsentAction,
+} from '../../../src/store/consents/reducer';
+import { toggleConsentsLoading } from '../../../src/store/loading/action';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
 
@@ -56,7 +56,7 @@ describe('consents thunks', () => {
   let previousLevel: number;
 
   const types = () => dispatch.mock.calls.map((call) => (call[0] as { type: string }).type);
-  const loadingToggles = () => types().filter((t) => t === TOGGLE_CONSENTS_LOADING).length;
+  const loadingToggles = () => types().filter((t) => t === toggleConsentsLoading.type).length;
   const alerts = () =>
     dispatch.mock.calls
       .map((call) => call[0] as { type?: string; payload?: string })
@@ -88,7 +88,7 @@ describe('consents thunks', () => {
       await getConsents()(dispatch);
 
       expect(dispatch.mock.calls.map((c) => c[0])).toContainEqual({
-        type: SET_CONSENTS,
+        type: setConsentsAction.type,
         payload: consents,
       });
       expect(loadingToggles()).toBe(2);
@@ -102,7 +102,7 @@ describe('consents thunks', () => {
 
       await getConsents()(dispatch);
 
-      expect(types()).not.toContain(SET_CONSENTS);
+      expect(types()).not.toContain(setConsentsAction.type);
       expect(loadingToggles()).toBe(2);
     });
 
@@ -128,7 +128,7 @@ describe('consents thunks', () => {
 
       await deleteConsent('c1', onSuccess)(dispatch);
 
-      expect(types()).toContain(DELETE_CONSENT);
+      expect(types()).toContain(deleteConsentAction.type);
       expect(onSuccess).toHaveBeenCalledTimes(1);
       expect(alerts().join()).toMatch(/successfully deleted/i);
     });
@@ -152,7 +152,7 @@ describe('consents thunks', () => {
 
       await deleteConsent('c1', onSuccess)(dispatch);
 
-      expect(types()).not.toContain(DELETE_CONSENT);
+      expect(types()).not.toContain(deleteConsentAction.type);
       expect(onSuccess).not.toHaveBeenCalled();
       expect(alerts().join()).not.toMatch(/successfully deleted/i);
       expect(alerts()).toHaveLength(1);
@@ -172,7 +172,7 @@ describe('consents thunks', () => {
   describe('plain action creators', () => {
     it('toggleDeleteConsent carries the consent identity', () => {
       expect(toggleDeleteConsent('c1', 'App', 'ada', 'scope')).toEqual({
-        type: TOGGLE_DELETE_CONSENT,
+        type: toggleDeleteConsentAction.type,
         payload: { unid: 'c1', appName: 'App', username: 'ada', scope: 'scope' },
       });
     });

@@ -4,47 +4,28 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import {
-  ADJUST_DATABASE_STYLE,
-  RESET_DATABASE_STYLE,
-  TOGGLE_FULLSCREEN,
-  SET_MOBILE_VIEWPORT,
-  SWITCH_THEME,
-} from './types';
-import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
+import { RESET_DATABASE_STYLE } from './types';
 
-export function adjustDatabaseStyle(size: number) {
-  return {
-    type: ADJUST_DATABASE_STYLE,
-    payload: size,
-  };
-}
+/**
+ * `createSlice` generates these action creators now (#710). Re-exported so callers
+ * keep the import path and the names they already use.
+ */
+export { adjustDatabaseStyle, toggleFullscreen, setViewport, switchTheme } from './reducer';
 
+/**
+ * Dead before this change and dead after it: no reducer has ever had a case for
+ * RESET_DATABASE_STYLE. Left dispatching the raw type rather than folded into the
+ * slice, so that converting the reducer does not quietly give it an effect it has
+ * never had. Deleting it is a separate call.
+ */
 export function resetDatabaseStyle() {
   return {
     type: RESET_DATABASE_STYLE,
   };
 }
 
-export function toggleFullscreen() {
-  return {
-    type: TOGGLE_FULLSCREEN,
-  };
-}
 
-export function setViewport() {
-  return {
-    type: SET_MOBILE_VIEWPORT,
-  };
-}
-
-// Dispatch theme
-export function switchTheme(theme: string) {
-  return {
-    type: SWITCH_THEME,
-    payload: theme,
-  };
-}
+import { KEEP_ADMIN_BASE_COLOR } from '../../config.dev';
 
 // Get Selected theme
 export const getTheme = (theme: string) => {
