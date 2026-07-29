@@ -35,6 +35,11 @@ plan from the issue tracker.
    dependency is not satisfied yet. Take a `good-to-grab` item from
    [Unblocked anytime](#unblocked-anytime) instead.
 
+⚠️ **Rules 4 and 5 have largely expired.** Lanes A, B and C are closed
+([below](#where-the-programme-stands)); everything open is lane D or gated on it. Two instances
+now contend by default, so the thing to agree on is a **file set**, not a lane — pick disjoint
+subtrees under `src/components/<feature>/` and say which in the PR.
+
 ### The lanes
 
 | Lane | `track:*` | Owns |
@@ -51,7 +56,42 @@ labelled separately so the work stays visible, not so it can run concurrently.
 
 ---
 
-## What changed since the previous wave table
+## Where the programme stands
+
+**Measured on `new_code` @ `db214a5`, 2026-07-30.**
+
+Nine tracked issues closed in a day: #691, #697, #710, #711, #715, #765, #771, #807, #813.
+**Lanes A, B and C are empty of open work.** Every open issue is either lane D or gated on it:
+
+| Open | What it really is |
+|---|---|
+| **#806** | the per-file pass — the spine |
+| #713 · #712 · #717 · #718 | lane D work under other labels; they close *inside* #806 |
+| #825 | the styling half of the same pass, minus the 22 MUI-free files |
+| **#709** | wave-3 gate — waits for `@mui/*` to leave 55 files |
+| **#719** | wave-3 capstone — waits for React to leave 71 files |
+| #786 | the `new_code` → `main` merge |
+| #720 | the backlog index; mirrors this table |
+
+So the four-lane structure has served its purpose and the programme is now **single-lane**. That
+changes two things: contention is the default rather than the exception, and there is no longer a
+"take something from another lane" answer when you are blocked — the answer is to take a
+different **subtree** of #806.
+
+### What the closures moved
+
+- **#771 finished, and it handed work back.** `AppsTable.tsx` lost its MUI table but keeps
+  Formik and the store, so it is **tier D** now rather than done. `AgentsTable.tsx` came out the
+  other side as a tier-A leftover (91 lines, Linaria only).
+- **#813 finished at 869.6 kB eager**, down 30.9 %, and re-baselined the budget to 2 % headroom.
+  Eager source modules: 172 → **98**. Only one file in tier D is still eager (`Views.tsx`, P4),
+  so bundle contention has stopped being a scheduling input.
+- **#807 finished but is unproven.** `FormController` shipped with unit tests and has **zero
+  production users**. `StoreController` now has seven, all from #806's card-view slice.
+
+---
+
+## What changed since the first wave table
 
 Seven of that table's issues have closed, and eight issues have been filed that it does
 not contain. It is superseded by this document.
@@ -108,53 +148,55 @@ retires as the components convert.
 
 ## Current surface
 
-| | Report 04 baseline | `7ec97b1` | **`9f568a8`** |
-|---|--:|--:|--:|
-| `.tsx` files | 130 | 119 | **106** |
-| …importing React | 108 | 92 | **83** |
-| `useSelector`/`useDispatch` sites | 323 across 76 files | 176 across 63 | **157 across 64** |
-| files importing `@mui/*` | 82 | 69 | **68** |
-| `@mui/icons-material` / `react-icons` | 45 / 18 | 37 / 18 | **37 / 18** |
-| `@mui/x-*` packages | 3 | 0 ✅ | **0** ✅ |
-| Formik files | 19 | 15 | **15** |
-| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | 1 / 1 | **1 / 1** — both `AppShell.tsx` |
-| `store/databases/action.ts` | 2,883 lines | 2,926 | **47** ✅ — a barrel since #711 |
-| classic `switch` reducers / `createSlice` | 17 / 0 | 14 / 0 | **8 / 3** (of 11 — three dead slices deleted) |
-| `createSelector` | 0 | 1 | **1** |
-| `wa-stack` / `wa-cluster` / `wa-grid` usages | 0 | 0 | **0** |
-| `dependencies` | 32 | 24 | **22** |
-| `keep-*` elements | — | 27 | **37** |
-| tests | 53 files / 509 | 87 files / 996 | **101 files / 1211** ✅ |
-| `npm audit` | 10 high | 0 ✅ | **0** ✅ |
+| | Report 04 baseline | `7ec97b1` | `9f568a8` | **`db214a5`** |
+|---|--:|--:|--:|--:|
+| `.tsx` files | 130 | 119 | 106 | **90** |
+| …importing React | 108 | 92 | 83 | **71** |
+| `useSelector`/`useDispatch` sites | 323 across 76 files | 176 across 63 | 157 across 64 | **155 across 57** |
+| files importing `@mui/*` | 82 | 69 | 68 | **55** |
+| `@mui/icons-material` / `react-icons` | 45 / 18 | 37 / 18 | 37 / 18 | **31 / 18** |
+| `@mui/x-*` packages | 3 | 0 ✅ | 0 ✅ | **0** ✅ |
+| Formik files | 19 | 15 | 15 | **15** |
+| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | 1 / 1 | 1 / 1 | **1 / 1** — both `AppShell.tsx` |
+| `store/databases/action.ts` | 2,883 lines | 2,926 | 47 | **47** ✅ — a barrel since #711 |
+| classic `switch` reducers / `createSlice` | 17 / 0 | 14 / 0 | 8 / 3 | **0 / 11** ✅ — #710 |
+| `createSelector` | 0 | 1 | 1 | **1** |
+| `wa-stack` / `wa-cluster` / `wa-grid` usages | 0 | 0 | 0 | **in use** ✅ — #765 |
+| `dependencies` | 32 | 24 | 22 | **22** |
+| `keep-*` elements | — | 27 | 37 | **49** |
+| tests | 53 files / 509 | 87 files / 996 | 101 / 1211 | **115 / 1521** ✅ |
+| `npm audit` | 10 high | 0 ✅ | 0 ✅ | **0** ✅ |
 
-The `useSelector`/`useDispatch` count barely moved while 13 `.tsx` files disappeared, and that
-is expected rather than disappointing: tier A was chosen to be the files with **no** store
-access, so it could not reduce this number. The 157 remaining sites are #806 tiers B–D.
+Two rows are worth reading together. `.tsx` files fell 16 in a day while
+`useSelector`/`useDispatch` fell **two** — and both numbers are honest. The card-view slice
+replaced seven of those sites with `StoreController` and *deleted* six more outright (a prop that
+mirrored store state), but the remaining 155 sit overwhelmingly in **route components**, which
+cannot convert until the router does (#719). Expect this row to stay flat and then collapse at
+the end, not to track the file count.
+
+Three Linaria-carrying modules were deleted with no replacement (`components/flex`,
+`SchemaStyles`, `ScopeStyles`) and three more turned out to have no importers at all, which is
+why `@linaria/react` fell 69 → **51** without a CSS-Modules sweep (#825).
 
 ---
 
 ## Dependency graph
 
-Only five edges actually constrain the order. Everything else is lane contention, not
-dependency. **The whole lane-A chain has since resolved** — everything on the top row is
-closed, leaving only the tail of #710:
+Every edge that fed #806 has closed. What remains is a chain, not a graph:
 
 ```
-#800 ✅ ──▶ #801 ✅ #802 ✅ #803 ✅ #804 ✅ #805 ✅ ──▶ #711 ✅ split action.ts
-                                                              │
-                                                              ▼
-                                                        #710 databases slice  ← only lane-A work left
+#806 tier A ✅  ─▶  tiers B–C (in progress)  ─▶  tier D  ─▶  #709 remove Material Design
+                                                                     │
+                                                                     ▼
+                                                              #719 capstone  ─▶  #786 merge to main
 
-#807 FormController ─────────▶ #806 tier D ─┐
-#806 tier A ✅ · tiers B–C ─────────────────┼──▶ #709 remove Material Design ──▶ #719 capstone
-#771 keep-data-table ───────────────────────┘
-
-#713 a11y ─── no dependency, but same files as #806 — interleave, do not parallelise
+#713 a11y  ─── same files as #806. Interleave per file; never parallelise.
+#825       ─── same files. Its 22 MUI-free targets need re-measuring; eleven are already gone.
 ```
 
-Read the graph as: **#806 is the spine.** One thing still feeds it (#807, for tier D — the
-tier-A recipe now exists), and three things wait on it (#709, #719, and most of
-#712/#717/#718 which are folded into it).
+Read it as: **#806 is now the only thing on the critical path.** Nothing feeds it, and
+everything else waits on it. That is why the lane structure above has stopped paying for
+itself — there is one lane, and the useful unit of assignment is a subtree.
 
 ---
 
@@ -166,45 +208,75 @@ right** — they share files.
 
 | Wave | A — store & data | B — design system | C — infra & tests | D — React removal |
 |---|---|---|---|---|
-| **0** — no deps | ✅ #800 → #792 | ✅ #807 (PR #852) · **#771** (in flight) · **#765** | ✅ #691 (dropped) | ✅ **#806 tier A** (PR #835) |
-| **1** | ✅ #801 → #803 → #804 → #802 → #805 | — | **#813** (in flight) | **#806 tiers B–C** — 73 files · **#713** interleaved ← **in flight** |
-| **2** | ✅ #711 · ✅ #697 · ✅ #710 | — | — | **#806 tier D** — unblocked · closes **#717** **#718** **#712** |
+| **0** — no deps | ✅ #800 → #792 | ✅ #807 · ✅ #771 · ✅ #765 | ✅ #691 (dropped) | ✅ **#806 tier A** (PR #835) |
+| **1** | ✅ #801 → #803 → #804 → #802 → #805 | ✅ | ✅ #813 | **#806 tiers B–C** — 74 files left · **#713** interleaved ← **here** |
+| **2** | ✅ #711 · ✅ #697 · ✅ #710 | ✅ | ✅ | **#806 tier D** — 16 files, unblocked · closes **#717** **#718** **#712** |
 | **3** — gates | — | **#709** | merge `new_code` → `main` (PR #786) | **#719** capstone → closes **#720** |
 
 **Lane A is finished.** Every planned item in waves 0–2 is closed. All 11 reducers are
 `createSlice`, `store/databases/action.ts` is a 47-line barrel over ten concern modules, and the
 thunk coverage that made both safe is in place.
 
-Two open issues carry the `track:store` label, and neither was planned work — both are defects
-found while doing it and deliberately pinned rather than fixed, because each changes what a user
-sees and wants its own review: **#818** (`fetchScopes` rethrows before its own error dialog, so a
-failed scope fetch reports nothing) and **#848** (`updateScope`'s `resetForm` passes an object
-where a form name is expected, so it has never removed a form). Both P2/S. An instance freed up
-from another lane can take them; nothing in the programme waits on either.
+Two defects found while doing that work were pinned rather than folded in, because each changed
+what a user sees: **#818** (`fetchScopes` rethrew before its own error dialog, so a failed scope
+fetch reported nothing) and **#848** (`updateScope`'s `resetForm` passed an object where a form
+name was expected, so it had never removed a form). Both are now closed, by #850 and #851.
 
-**Lane D is the critical path now.** Tier A landed the recipe; tiers B–C are the 73-file bulk.
-**Tier D is no longer blocked** — #807 shipped `src/store/FormController.ts` in PR #852.
+**Read the table as one column.** Lanes A, B and C hold no open work; the only cells that are
+not ✅ are lane D's and the two wave-3 gates that wait on it. The per-wave sections below are kept
+as the record of what each item was.
 
-**Lane B is holding one gate, not two.** #807 is done, so #771 is the remaining one: it blocks
-#709, and it is in flight. Lane B is otherwise free for #765.
-
-**Pick route-lazy files while lane C is running.** #813's remaining work is the eager
-static-import closure, so the ~24 eager `.tsx` files are contended and the rest are not. The
-split is worth measuring rather than guessing: walk static `from '…'` edges from `src/index.tsx`
-and never follow `import(`.
+**Lanes B and C are finished too.** #771 and #765 closed, so lane B holds only #709 — which
+cannot start until #806 empties `@mui/*` out of the components. #813 closed at 869.6 kB eager,
+down 30.9 %, with the budget re-baselined to 2 % headroom.
 
 ~~**Lane A is a single file for waves 1–2.**~~ Obsolete: #711 split `store/databases/action.ts`
-into modules behind a barrel, and the file is now 47 lines. Lane-A items no longer serialise on
-it.
+into modules behind a barrel, and the file is now 47 lines.
+
+~~**Pick route-lazy files while lane C is running.**~~ Obsolete with #813: eager contention is
+gone (172 → **98** eager source modules, one eager file left in tier D). The rule it was standing
+in for still holds, though — **the eager bundle only grows when you convert an eager file.** Tier
+A went 23.4 kB over converting shell files; the whole card-view slice, being route-lazy, moved it
+by −0.3 kB.
+
+### #806, by what is left
+
+| Tier | files | LOC | eager | shape |
+|---|--:|--:|--:|---|
+| **A leftovers** | 16 | 1,403 | 6 | the 4 contexts, `AppIcon`, 4 Linaria style modules, 2 P4 files |
+| **B** one axis | 33 | 5,446 | 8 | MUI *or* store |
+| **C** both | 25 | 5,774 | 5 | the bulk |
+| **D** Formik | 16 | 5,667 | 1 | only `Views.tsx` (P4) is eager |
+
+Done: tier A (11 conversions, 3 deletions) plus the card-view subtree — both
+`commons/cardviews/displays/` families, their two shared children, and six Linaria style modules.
+
+### The three subtrees left, and why to take them whole
+
+Converting by subtree rather than by tier is what the card-view slice established: a view's
+children are usually one tier *up* from it, so **importer order beats tier order inside a
+feature**.
+
+| Subtree | ~LOC | Root | Notes |
+|---|--:|---|---|
+| **`applications/`** | ~3,000 | `AppItem`, `Kanban` | Formik-heavy; where **#717** mostly closes |
+| **`access/`** | ~4,000 | `TabsAccess.tsx` (1,008) | the deepest; holds `ModeCompare` (652), `Fields`, `AccessMode` |
+| **`forms/`** | ~3,500 | `FormsContainer.tsx` (805) | holds `DetailsSection` (696), `EditView` (626), the three tab views |
+
+Between them they hold most of the 55 files that gate #709.
+
+**Take `FormController` off the critical path first.** It shipped in #807 with unit tests and has
+**zero production users**. Prove it on `applications/FormDrawer.tsx` (61 lines) and `AppStack.tsx`
+(66) before anything reaches `TabsAccess.tsx` at 1,008 — the same argument that put the first
+`StoreController` in a 52-line dialog rather than in `EditView`.
 
 ---
 
 ## Wave 0
 
-> **Status.** Lanes A, C and D are done: #800 and #792 closed, #691 dropped, and #806 tier A
-> landed in PR #835. What remains in this wave is **lane B — #807 and #771** — and both are
-> gates, so they are the highest-value work on the board. The sections below are kept as the
-> record of what each item was.
+> **Status: wave 0 is closed in every lane.** #800, #792, #807, #771 and #765 are done, #691 was
+> dropped, and #806 tier A landed in PR #835. The sections below are kept as the record of what
+> each item was.
 
 ### D · #806 tier A — **done** (PR #835)
 
@@ -259,7 +331,7 @@ Note the MUI `<Snackbar>` lives in `components/alerts/Notification.tsx:34`, moun
 `AppShell.tsx:211` — one of the shell's last MUI dependencies. Whichever direction you
 consolidate, prefer the one that does not deepen it.
 
-### B · #807 — build `FormController` — **not started; gates tier D**
+### B · #807 — build `FormController` — ✅ done, **and still unproven in production**
 
 The last unbuilt foundation primitive, and the blocker for #806 tier D — 15 files,
 ~5,440 LOC, including the two largest components in the tree.
@@ -273,7 +345,7 @@ The last unbuilt foundation primitive, and the blocker for #806 tier D — 15 fi
   against what is used, not against Formik's API surface.
 - **Gate:** its own green suite before a single tier-D file is touched.
 
-### B · #771 — `keep-data-table` (in flight)
+### B · #771 — `keep-data-table` — ✅ done
 
 Already underway on `new_code`: the element (235 lines), its stylesheet, pagination, and
 the `KeepDataTable` React wrapper have landed, with `test/components/keep-elements/keep-data-table.test.ts`.
@@ -295,7 +367,7 @@ they belong to #771.
 No sorting and no selection anywhere in the six — zero `TableSortLabel`, zero `Checkbox`.
 Do not build features nothing uses.
 
-### B · #765 — `wa-stack` / `wa-cluster` / `wa-grid`
+### B · #765 — `wa-stack` / `wa-cluster` / `wa-grid` — ✅ done
 
 **Zero usages today.** The one box #708 left unticked, carved out because it is layout
 adoption rather than tokenization. Pure additive work with no dependency.
@@ -356,7 +428,7 @@ assuming they are absent:
 - **Null response** — #800's contract; should already be fixed when you get here.
 - **`JSON.parse` on a non-JSON body.**
 
-### D · #806 tiers B–C — 73 files, ~13,500 LOC
+### D · #806 tiers B–C — 74 files left, ~12,600 LOC
 
 The bulk, and the next thing to pick up. Tier B is one axis (MUI *or* store); tier C is both.
 
@@ -438,7 +510,7 @@ assertions in the element tests.
 
 ## Wave 2
 
-### A · #711 → #710 → #697 — ✅ #711, ✅ #697, #710 in flight
+### A · #711 → #710 → #697 — ✅ all three
 
 **#711 — split `databases/action.ts` (2,926 lines, ~60 exports, 5.7 % → covered by wave 1).**
 Six modules — `schemas`, `scopes`, `forms`, `views`, `agents`, `formulas` — plus a barrel
@@ -464,15 +536,18 @@ defer it until after #806 and re-measure, or drop it. **Do not do it blind** —
 requires profiling a heavy screen before and after, and some of these will make no
 measurable difference.
 
-### D · #806 tier D — 15 Formik files, ~5,440 LOC
+### D · #806 tier D — 16 Formik files, ~5,670 LOC
 
 Unblocked: #807 shipped `src/store/FormController.ts` with unit tests in PR #852. Includes
 `access/TabsAccess.tsx` (1,008 lines) and the four `applications/` forms.
 
-Three of the fifteen are **eager** — `login/LoginPage.tsx`, `database/QuickConfigForm.tsx` and
-`QuickConfigFormContainer.tsx` — and `applications/AppsTable.tsx` is #771's, so this tier
-collides with both other lanes while they are running. It is also the wrong place to debut two
-unproven primitives at once: these files need `StoreController` as well as `FormController`.
+**Sixteen files, not fifteen.** `applications/AppsTable.tsx` joined this tier when #771 closed:
+that pass took the MUI table out of it, but its Formik and store halves are untouched.
+
+The eager-collision warning here has expired — #813 left exactly one eager file in this tier,
+`Views.tsx`, which is a P4 shell file anyway. What has *not* expired is the other half: these
+files need `StoreController` as well as `FormController`, and `FormController` still has no
+production user. Prove it on the two smallest first (`FormDrawer` 61, `AppStack` 66).
 
 `LoginPage.tsx` is listed in tier D but is really tier C — #776 already dropped Formik
 from it, and its remaining matches are comments.
@@ -636,18 +711,26 @@ this change and a whole-layer silent breakage.
 
 ## Unblocked anytime
 
-If your lane is waiting, these have no dependencies and no lane contention worth worrying
-about:
+**This section is empty, and that is the news.** Every item it used to hold has closed: #765,
+#710's small slices, and the two 20-minute decisions (#691 dropped, #713 settled on WCAG 2.1 AA).
 
-- **#765** — `wa-stack`/`wa-cluster`/`wa-grid`, plus the `keep-tooltip.ts` Shoelace token names.
-- ~~**#710's four small slices**~~ — #710 is closed; all 14 reducers are `createSlice` now.
-- ~~**Decide #691** and **decide #713's a11y standard**~~ — both settled: #691 dropped, #713
-  holds to WCAG 2.1 AA.
-- **#825's 22 MUI-free Linaria files**, minus the ones lane D has already deleted. The issue's
-  list predates #806 tier A, which removed eight of them outright (`PageRouters`, `Homepage`,
-  `MobileHeader`, `ErrorWrapper`, `ZeroResultsWrapper`, `PageLoading`, `ColumnBar`,
-  `FormSettings`) and three more that turned out to have no importers at all
-  (`CarViewstyles`, both `v2/CardV2Styles`). Re-measure before starting.
+There is no longer a "your lane is idle, take this instead" answer. If two instances are running,
+they both work on #806 and the only thing that keeps them apart is **agreeing on disjoint
+subtrees** — see [the three subtrees left](#the-three-subtrees-left-and-why-to-take-them-whole).
+Say which subtree you have taken in the PR title.
+
+Two things sit outside #806 and can be taken by anyone:
+
+- **#878** — the stack view's phantom horizontal scrollbar. Cosmetic, P2/S, and the two obvious
+  causes are already ruled out in the issue.
+- **#877** — replace `BreadcrumbRouter` with `wa-breadcrumb`. One eager file, no dependency.
+
+**#825 needs re-measuring before anyone starts it.** Its list of 22 MUI-free Linaria files
+predates #806 tier A and the card-view slice, which between them deleted eleven of them outright
+(`PageRouters`, `Homepage`, `MobileHeader`, `ErrorWrapper`, `ZeroResultsWrapper`, `PageLoading`,
+`ColumnBar`, `FormSettings`, `CarViewstyles`, both `v2/CardV2Styles`) plus `components/flex`,
+`SchemaStyles` and `ScopeStyles`. `@linaria/react` is down to 51 files from 69 without a single
+CSS-Modules conversion.
 
 ---
 
