@@ -7,6 +7,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
+import { deepQuery } from '../../test-utils/shadow';
 import { headerLabels, nav, rangeText, setRowsPerPage } from '../../test-utils/tables';
 import AppsTable from '../../../src/components/applications/AppsTable';
 
@@ -64,9 +65,23 @@ describe('AppsTable — structure', () => {
     expect(screen.getByPlaceholderText('Search App Name')).toBeInTheDocument();
   });
 
-  it('replaces the whole table with a prompt when there are no apps', () => {
+  it('replaces the whole table with a prompt when there are no apps', async () => {
     renderAppsTable([]);
-    expect(screen.getByText('There are currently no apps to display.')).toBeInTheDocument();
+    // ZeroResultsWrapper became the Lit element keep-zero-results upstream (469d9cf), so
+    // mainLabel/secondaryLabel render into that element's shadow root on Lit's own update
+    // microtask — `screen` queries can't cross the shadow boundary, and querying before
+    // that microtask runs finds an empty root either way. deepQuery pierces the
+    // boundary; awaiting the element's updateComplete waits out the render.
+    const zeroResults = deepQuery<HTMLElement & { updateComplete: Promise<boolean> }>(
+      'keep-zero-results',
+    );
+    await zeroResults?.updateComplete;
+    expect(deepQuery('[data-testid="no-search-result"]')?.textContent?.trim()).toBe(
+      'There are currently no apps to display.',
+    );
+    expect(deepQuery('.secondary')?.textContent?.trim()).toBe(
+      "Click 'Add Application' to create an app.",
+    );
     expect(document.querySelector('table')).toBeNull();
   });
 });
@@ -126,7 +141,9 @@ describe('AppsTable — pagination', () => {
   it('shows every app when the page size is All', () => {
     renderAppsTable();
     setRowsPerPage(-1);
-    expect(visibleNames()).toHaveLength(12);
+    // Full identity list, not just a count, so a dropped/duplicated/misordered row is
+    // caught — matches the equivalent ConsentsTable assertion (#771).
+    expect(visibleNames()).toEqual(apps.map((a) => a.appName));
   });
 
   it('returns to page one when the page size changes', () => {
