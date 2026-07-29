@@ -47,10 +47,15 @@ export default defineConfig({
       // (0.131), which mis-desugars the `accessor` keyword and emits a reference to a
       // private field it never declares:
       //     Private field '#___private_isSchema_3' must be declared in an enclosing class
-      // Only `keep-elements/*.ts` is excluded. `KeepElements.tsx` stays in scope, as do
-      // `access/styles.ts` and `database/settings/sections/styles.ts` — the two non-.tsx
-      // files that really do declare Linaria `styled` components.
-      exclude: ['**/components/keep-elements/*.ts']
+      // The whole directory is excluded, not `keep-elements/*.ts` — a single `*` does not
+      // cross a directory boundary, so #813's `keep-elements/react/*.ts` wrappers would
+      // fall back into scope and hit the `accessor` bug above through the element classes
+      // they import. Nothing under `keep-elements/` contains Linaria, `KeepElements.tsx`
+      // included, so widening costs nothing.
+      //
+      // `access/styles.ts` and `database/settings/sections/styles.ts` stay in scope — they
+      // are the two non-.tsx files that really do declare Linaria `styled` components.
+      exclude: ['**/components/keep-elements/**']
     }),
     // The Lit elements use standard (TC39) decorators with `accessor` (#747).
     //

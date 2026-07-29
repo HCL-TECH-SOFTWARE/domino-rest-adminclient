@@ -13,7 +13,7 @@ import React, {
   useState,
 } from 'react';
 import { useNavigate } from '../../router/react';
-import { KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
+import { KeepUnsavedChangesDialog } from '../keep-elements/react/KeepUnsavedChangesDialog';
 
 interface NavigationGuardContextType {
   /** Mark the current page as having unsaved changes */

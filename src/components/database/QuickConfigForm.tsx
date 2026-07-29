@@ -28,11 +28,9 @@ import {
   InputContainer,
 } from '../../styles/CommonStyles';
 import { clearDBError } from '../../store/databases/action';
-import {
-  KeepButton,
-  KeepCheckbox,
-  KeepTooltip,
-} from '../keep-elements/KeepElements';
+import { KeepButton } from '../keep-elements/react/KeepButton';
+import { KeepCheckbox } from '../keep-elements/react/KeepCheckbox';
+import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 import { useAppDispatch } from '../../store/hooks';
 
 const Forms = styled.form`

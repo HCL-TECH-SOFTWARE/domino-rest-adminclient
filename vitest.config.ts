@@ -45,7 +45,7 @@ export default defineConfig({
     // longer note there.
     wyw({
       include: ['**/*.{ts,tsx}'],
-      exclude: ['**/components/keep-elements/*.ts'],
+      exclude: ['**/components/keep-elements/**'],
     }),
     // Must mirror vite.config.mts exactly — see the longer note there.
     //

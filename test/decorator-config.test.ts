@@ -99,9 +99,14 @@ describe('#747 standard decorators', () => {
     // wyw strips types with oxc-transform, which mis-desugars `accessor` into a reference
     // to a private field it never declares. The elements contain no Linaria — their `css`
     // comes from `lit` — so excluding them is both correct and cheaper.
+    //
+    // The glob must reach *subdirectories*. It was `keep-elements/*.ts` until #813 split
+    // the React wrappers into `keep-elements/react/`, and a single `*` does not cross a
+    // directory boundary — so the new modules silently fell back into wyw's scope, taking
+    // the element classes they import with them. `**` is what makes this hold.
     for (const file of ['vite.config.mts', 'vitest.config.ts']) {
-      expect(read(file), `${file} must exclude keep-elements from wyw`).toContain(
-        "'**/components/keep-elements/*.ts'",
+      expect(read(file), `${file} must exclude all of keep-elements from wyw`).toContain(
+        "'**/components/keep-elements/**'",
       );
     }
     for (const file of elementFiles) {

@@ -20,13 +20,11 @@ import { toggleAlert } from '../../store/alerts/action';
 import { IdP } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from '../../router/react';
-import {
-  KeepAlert,
-  KeepApiErrorDialog,
-  KeepButton,
-  KeepDropdown,
-  KeepTooltip
-} from '../keep-elements/KeepElements';
+import { KeepAlert } from '../keep-elements/react/KeepAlert';
+import { KeepApiErrorDialog } from '../keep-elements/react/KeepApiErrorDialog';
+import { KeepButton } from '../keep-elements/react/KeepButton';
+import { KeepDropdown } from '../keep-elements/react/KeepDropdown';
+import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 // WebAwesome's own React binding, as `AppShell.tsx` already does for `wa-page`.
 //
 // The two fields used to be `keep-input-text` / `keep-input-password`: Lit elements whose
