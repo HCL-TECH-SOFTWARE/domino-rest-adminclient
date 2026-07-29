@@ -192,7 +192,7 @@ describe('the store singleton', () => {
     expect(Object.keys(store.getState()).sort()).toEqual(
       [
         'account', 'alert', 'apps', 'consents', 'databases', 'dbSetting', 'dialog',
-        'drawer', 'histories', 'interceptor', 'loading', 'search', 'styles', 'users',
+        'drawer', 'loading', 'styles', 'users',
       ].sort(),
     );
   });
