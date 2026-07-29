@@ -63,24 +63,29 @@ export function rangeText(): string {
 /**
  * Change the page size.
  *
- * ⚠️ **PR 5 will need to rewrite this function body, and only this function body.**
- *
- * This is the one interaction with no query that spans the migration. Today MUI renders a
- * fake select — a `<div role="combobox">` that opens a popup `<ul role="listbox">` — and
- * driving it means `mouseDown` on the combobox then clicking the option. After the
- * migration `keep-data-table` renders a native `<select>` in its shadow root, driven by
- * setting `.value` and dispatching `change`.
+ * Handles both pagination shapes, because the two paginated tables migrate to
+ * `<keep-data-table>` in separate commits: for the stretch between them, one screen is
+ * still MUI and the other already native, and every test in this suite must stay green at
+ * both commits. `deepQuery('select')` finds the migrated shape first — a native `<select>`
+ * in `keep-data-table`'s shadow root, driven by setting `.value` and dispatching `change`
+ * (see the element's `onRowsPerPageChange`, which reads `event.target.value` and emits
+ * `rows-per-page-change`). When no such `<select>` exists yet, it falls back to MUI's fake
+ * select — a `<div role="combobox">` that opens a popup `<ul role="listbox">` — driven by
+ * `mouseDown` on the combobox then a click on the option.
  *
  * Every test that changes page size calls this helper instead of touching the widget, so
- * when the widget changes, no `it()` body moves. Replacement body for PR 5:
- *
- * ```ts
- * const select = deepQuery<HTMLSelectElement>('select')!;
- * select.value = String(value);
- * select.dispatchEvent(new Event('change', { bubbles: true }));
- * ```
+ * when the widget changes, no `it()` body moves. Once no MUI table remains, delete the
+ * MUI branch below and this collapses to the native-only body.
  */
 export function setRowsPerPage(value: number): void {
+  // Post-migration: a native <select> inside keep-data-table's shadow root.
+  const native = deepQuery<HTMLSelectElement>('select');
+  if (native) {
+    native.value = String(value);
+    native.dispatchEvent(new Event('change', { bubbles: true }));
+    return;
+  }
+  // Pre-migration: MUI's fake select — a combobox that opens a popup listbox.
   const combobox = screen.getByRole('combobox', { name: /rows per page/i });
   fireEvent.mouseDown(combobox);
   const listbox = within(screen.getByRole('listbox'));
