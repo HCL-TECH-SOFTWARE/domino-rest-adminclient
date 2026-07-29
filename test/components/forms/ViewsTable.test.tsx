@@ -7,7 +7,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, within } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
-import { bodyRows, headerLabels } from '../../test-utils/tables';
+import { bodyRows, cellTexts, headerLabels } from '../../test-utils/tables';
 import { deepQueryAll } from '../../test-utils/shadow';
 import ViewsTable from '../../../src/components/forms/ViewsTable';
 import { toggleAlert } from '../../../src/store/alerts/action';
@@ -17,7 +17,7 @@ vi.mock('../../../src/store/alerts/action', () => ({
 }));
 
 const views = [
-  { viewName: 'ActiveView', viewAlias: ['av'], viewActive: true, viewUpdated: false },
+  { viewName: 'ActiveView', viewAlias: ['av', 'av2'], viewActive: true, viewUpdated: false },
   { viewName: 'InactiveView', viewAlias: [], viewActive: false, viewUpdated: false },
 ];
 
@@ -66,12 +66,21 @@ describe('ViewsTable — structure', () => {
 
   it('shows the first alias only', () => {
     renderViewsTable();
-    expect(within(bodyRows()[0]).getByText('av')).toBeInTheDocument();
+    const row = bodyRows()[0];
+    // ActiveView has two aliases (['av', 'av2']); the cell must show only the first —
+    // a fixture with a single alias could not tell "first" apart from "all, joined".
+    expect(within(row).getByText('av')).toBeInTheDocument();
+    expect(within(row).queryByText('av2')).not.toBeInTheDocument();
   });
 
   it('shows no alias for a view without one', () => {
     renderViewsTable();
-    expect(within(bodyRows()[1]).queryByText('av')).not.toBeInTheDocument();
+    const row = bodyRows()[1];
+    // Pin the `(view.viewAlias.length > 0) &&` guard directly, on InactiveView's own
+    // alias cell — not by checking that ActiveView's alias text didn't leak into this
+    // row (true regardless of what InactiveView itself renders).
+    expect(cellTexts(row)[2]).toBe('');
+    expect(row.querySelectorAll('td')[1].querySelector('keep-tooltip')).toBeNull();
   });
 
   it('bolds the name of a view that changed while active', () => {
@@ -105,6 +114,7 @@ describe('ViewsTable — opening a view', () => {
   it('disables the edit buttons while a save is in flight', () => {
     renderViewsTable(views, { dialog: { loading: true } });
     expect(screen.getByTitle('ActiveView')).toBeDisabled();
+    expect(screen.getByTitle('InactiveView')).toBeDisabled();
   });
 });
 
