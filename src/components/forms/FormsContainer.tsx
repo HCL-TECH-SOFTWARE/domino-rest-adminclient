@@ -34,7 +34,6 @@ import {
  } from '../../store/databases/action';
 import { toggleSettings } from '../../store/dbsettings/action';
 import { getToken } from '../../store/account/action';
-import ErrorWrapper from '../wrapper/ErrorWrapper';
 import TabForms from './TabForms';
 import TabViews from './TabViews';
 import TabAgents from './TabAgents';
@@ -42,7 +41,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import EditViewDialog from './EditView';
-import { KeepButton, KeepFormDialogHeader, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
+import { KeepButton, KeepErrorWrapper, KeepFormDialogHeader, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
 import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
@@ -585,7 +584,7 @@ const FormsContainer = () => {
   }, [discardChangesDialog])
 
   return (
-    <ErrorWrapper errorStatus={errorStatus}>
+    <KeepErrorWrapper errorStatus={errorStatus}>
       <TopContainer className='mt-15'>
         <span className="top-nav color-text-primary">
             Schema Management
@@ -711,7 +710,7 @@ const FormsContainer = () => {
           </div>
         )}
       </CoreContainer>
-    </ErrorWrapper>
+    </KeepErrorWrapper>
   );
 };
 

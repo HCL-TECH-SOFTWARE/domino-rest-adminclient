@@ -134,12 +134,6 @@ export const TopBanner = styled.div`
   color: var(--wa-color-text-normal);
 `;
 
-export const Title = styled.div`
-  .message {
-    font-size: 20px;
-  }
-`;
-
 export const PanelContent = styled.form`
   padding: 20px 0;
 `;
@@ -276,15 +270,3 @@ export const FilterContainer = styled.div`
   }
 `;
 
-export const ErrorContainer = styled.div`
-  height: calc(100vh - 23px);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  .image-error {
-    height: 250px;
-  }
-`;

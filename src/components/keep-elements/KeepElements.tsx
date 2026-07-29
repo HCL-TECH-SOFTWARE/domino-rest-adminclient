@@ -34,6 +34,7 @@ import ZeroResults from './keep-zero-results';
 import FormDialogHeader, {
   type KeepFormDialogHeaderCloseDetail
 } from './keep-form-dialog-header';
+import ErrorWrapper from './keep-error-wrapper';
 import UnsavedChangesDialog, {
   type KeepUnsavedChangesDialogDetail
 } from './keep-unsaved-changes-dialog';
@@ -218,6 +219,12 @@ export const KeepPageLoading = createComponent({
 export const KeepZeroResults = createComponent({
   tagName: 'keep-zero-results',
   elementClass: ZeroResults,
+  react: React
+});
+
+export const KeepErrorWrapper = createComponent({
+  tagName: 'keep-error-wrapper',
+  elementClass: ErrorWrapper,
   react: React
 });
 
