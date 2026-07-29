@@ -5,8 +5,8 @@
  * ========================================================================== */
 
 import { describe, it, expect } from 'vitest';
-import dbSettingReducer from '../../../src/store/dbsettings/reducer';
-import { TOGGLE_DBSETTING_DIALOG, DBSettingDialogState } from '../../../src/store/dbsettings/types';
+import dbSettingReducer, { toggleSettings } from '../../../src/store/dbsettings/reducer';
+import type { DBSettingDialogState } from '../../../src/store/dbsettings/types';
 
 const initial: DBSettingDialogState = {
   visible: false,
@@ -14,19 +14,19 @@ const initial: DBSettingDialogState = {
 
 describe('dbSettingReducer', () => {
   it('returns the initial state for an unknown action', () => {
-    expect(dbSettingReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
+    expect(dbSettingReducer(undefined, { type: '@@UNKNOWN' })).toEqual(initial);
   });
 
-  it('TOGGLE_DBSETTING_DIALOG flips visible on each dispatch', () => {
-    const once = dbSettingReducer(initial, { type: TOGGLE_DBSETTING_DIALOG });
+  it('toggleSettings flips visible on each dispatch', () => {
+    const once = dbSettingReducer(initial, toggleSettings());
     expect(once.visible).toBe(true);
-    expect(dbSettingReducer(once, { type: TOGGLE_DBSETTING_DIALOG }).visible).toBe(false);
+    expect(dbSettingReducer(once, toggleSettings()).visible).toBe(false);
   });
 
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
-    expect(() =>
-      dbSettingReducer(frozen, { type: TOGGLE_DBSETTING_DIALOG })
-    ).not.toThrow();
+    expect(() => dbSettingReducer(frozen, toggleSettings())).not.toThrow();
+    expect(dbSettingReducer(frozen, toggleSettings())).not.toBe(frozen);
+    expect(frozen.visible).toBe(false);
   });
 });
