@@ -6,15 +6,7 @@
 
 import * as React from 'react';
 import { styled } from '@linaria/react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import { IconButton, TableFooter, TablePagination } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { FaSort } from "react-icons/fa";
 import { AppState } from '../../store';
 import { AppProp } from '../../store/applications/types';
@@ -24,8 +16,9 @@ import AppFilterContainer from './AppFilterContainer';
 import { fetchMyApps } from '../../store/applications/action';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import { useAppDispatch } from '../../store/hooks';
+import { KeepDataTable } from '../keep-elements/KeepElements';
 
-const StyledTableHead = styled(TableHead)`
+const StyledTableHead = styled.thead`
   border-bottom: 1px solid var(--wa-color-surface-border);
 
   .text {
@@ -42,20 +35,14 @@ const StyledTableHead = styled(TableHead)`
   }
 `
 
-const StyledTableBody = styled(TableBody)`
+const StyledTableBody = styled.tbody`
   font-size: var(--wa-font-size-m);
   padding-top: 20px;
   padding-bottom: 20px;
   border-bottom: none;
 `
 
-const StyledTableContainer = styled(TableContainer)`
-  border-radius: var(--wa-border-radius-l);
-  box-sizing: border-box;
-  border: 1px solid var(--wa-color-surface-border);
-  background: var(--wa-color-surface-raised);
-  padding: 0;
-
+const StyledTableContainer = styled.div`
   .launch {
     width: 4%;
   }
@@ -117,13 +104,6 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
     setPage(newPage);
     dispatch(fetchMyApps())
   };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  }
 
   const handleSortAppNames = () => {
     const appsCopy = [...apps]
@@ -206,138 +186,74 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
         <ZeroResultsWrapper mainLabel='There are currently no apps to display.' secondaryLabel="Click 'Add Application' to create an app." />
         :
         <StyledTableContainer>
-          <Table aria-label="consents table">
-            <StyledTableHead>
-              <TableRow>
-                <TableCell className='launch' />
-                <TableCell className='app-name text'>
-                  <div className='full-width flex flex-col gap-3'>
-                    <span className='small-text text-bold flex items-center gap-3'>
-                      App Name
-                      <button
-                        onClick={handleSortAppNames}
-                        className='no-background no-border cursor-pointer m-0 p-0'
-                      >
-                        <FaSort />
-                      </button>
-                    </span>
-                    <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
-                    {/* <KeepInputText
-                      hint='Search App Name'
-                    /> */}
-                  </div>
-                </TableCell>
-                <TableCell className='app-id-secret text'>
-                  <div className='full-width flex flex-col gap-3'>
-                    <span className='text-bold text-13'>
-                      App ID
-                    </span>
-                    <span className='text-bold text-13'>
-                      App Secret
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className='description text'>
-                  <div className='full-width flex flex-col gap-3'>
-                    <span className='small-text text-bold'>
-                      Description
-                    </span>
-                    <input type='text' className='search-bar hidden' />
-                  </div>
-                </TableCell>
-                <TableCell className='icons' />
-              </TableRow>
-            </StyledTableHead>
-            <StyledTableBody>
-              {(rowsPerPage > 0
-                ? filteredApps.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                : filteredApps
-              )
-                .map((app: AppProp, idx: number) => {
-                  return (
-                    <AppItem
-                      key={`${app.appName}-${idx}`}
-                      app={app}
-                      deleteApplication={deleteApplication}
-                      formik={formik}
-                    />
-                  )
-                })}
-            </StyledTableBody>
-            <TableFooter>
-              <TableRow>
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                  count={filteredApps.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                  // sx={{
-                  //   '& .MuiToolbar-root': {
-                  //     display: 'flex',
-                  //     alignItems: 'center',
-                  //     flexWrap: 'wrap',
-                  //     justifyContent: 'flex-end',
-                  //   },
-                  //   '& .MuiTablePagination-spacer': {
-                  //     flex: '1 1 100%',
-                  //   },
-                  //   '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                  //     margin: 0,
-                  //     lineHeight: 1.5,
-                  //   },
-                  //   '& .MuiTablePagination-input': {
-                  //     marginTop: 0,
-                  //     marginBottom: 0,
-                  //     marginLeft: '8px',
-                  //     marginRight: '24px',
-                  //     display: 'inline-flex',
-                  //     alignItems: 'center',
-                  //   },
-                  //   '& .MuiTablePagination-select': {
-                  //     display: 'inline-flex',
-                  //     alignItems: 'center',
-                  //     paddingTop: '4px',
-                  //     paddingBottom: '4px',
-                  //   },
-                  //   '& .MuiTablePagination-actions': {
-                  //     display: 'inline-flex',
-                  //     alignItems: 'center',
-                  //   },
-                  // }}
-                  slotProps={{
-                    select: {
-                      inputProps: {
-                        'aria-label': 'rows per page',
-                      },
-                      style: {
-                        borderRadius: '10px',
-                        border: '1px solid currentColor',
-                        width: '70px',
-                      }
-                    }
-                  }}
-                  ActionsComponent={({ count, page }) => (
-                    <div className='apps-table-bottom-row'>
-                      <IconButton disabled={page === 0} aria-label='First Page' onClick={(e) => handleChangePage(e, 0)}>
-                        <FirstPage />
-                      </IconButton>
-                      <IconButton disabled={page === 0} aria-label="Previous Page" onClick={(e) => handleChangePage(e, page - 1)}>
-                        <KeyboardArrowLeft />
-                      </IconButton>
-                      <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Next Page' onClick={(e) => handleChangePage(e, page + 1)}>
-                        <KeyboardArrowRight />
-                      </IconButton>
-                      <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Last Page' onClick={(e) => handleChangePage(e, Math.max(0, Math.ceil(filteredApps.length / rowsPerPage) - 1))}>
-                        <LastPage />
-                      </IconButton>
+          <KeepDataTable
+            paginated
+            count={filteredApps.length}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(e) => handleChangePage(null, e.detail.page)}
+            onRowsPerPageChange={(e) => { setRowsPerPage(e.detail.rowsPerPage); setPage(0); }}
+          >
+            <table aria-label="consents table">
+              <StyledTableHead>
+                <tr>
+                  <th className='launch' />
+                  <th className='app-name text'>
+                    <div className='full-width flex flex-col gap-3'>
+                      <span className='small-text text-bold flex items-center gap-3'>
+                        App Name
+                        <button
+                          onClick={handleSortAppNames}
+                          className='no-background no-border cursor-pointer m-0 p-0'
+                        >
+                          <FaSort />
+                        </button>
+                      </span>
+                      <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
+                      {/* <KeepInputText
+                        hint='Search App Name'
+                      /> */}
                     </div>
-                  )}
-                />
-              </TableRow>
-            </TableFooter>
-          </Table>
+                  </th>
+                  <th className='app-id-secret text'>
+                    <div className='full-width flex flex-col gap-3'>
+                      <span className='text-bold text-13'>
+                        App ID
+                      </span>
+                      <span className='text-bold text-13'>
+                        App Secret
+                      </span>
+                    </div>
+                  </th>
+                  <th className='description text'>
+                    <div className='full-width flex flex-col gap-3'>
+                      <span className='small-text text-bold'>
+                        Description
+                      </span>
+                      <input type='text' className='search-bar hidden' />
+                    </div>
+                  </th>
+                  <th className='icons' />
+                </tr>
+              </StyledTableHead>
+              <StyledTableBody>
+                {(rowsPerPage > 0
+                  ? filteredApps.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  : filteredApps
+                )
+                  .map((app: AppProp, idx: number) => {
+                    return (
+                      <AppItem
+                        key={`${app.appName}-${idx}`}
+                        app={app}
+                        deleteApplication={deleteApplication}
+                        formik={formik}
+                      />
+                    )
+                  })}
+              </StyledTableBody>
+            </table>
+          </KeepDataTable>
         </StyledTableContainer>
       }
       <AppFilterContainer

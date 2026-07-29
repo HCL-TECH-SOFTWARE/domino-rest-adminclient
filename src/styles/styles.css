@@ -1600,14 +1600,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiNENjQ2NkYiLz4KPC9zdmc+Cg==");
 }
 
-/* AppsTable.tsx */
-.apps-table-bottom-row {
-    flex-shrink: 0;
-    margin-left: 10;
-    display: inline-flex;
-    align-items: center;
-}
-
 /* AppCard.tsx */
 .app-card-app-icon {
     background: var(--body-color);
