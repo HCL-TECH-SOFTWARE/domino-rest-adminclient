@@ -18,7 +18,7 @@ import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { KeepAppStatus, KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
-const StyledTableRow = styled.tr`
+const Row = styled.tr`
   .expand keep-tooltip {
     display: block;
   }
@@ -212,7 +212,7 @@ const AppItem: React.FC<AppItemProps> = ({
   return (
     (
         <>
-            <StyledTableRow>
+            <Row>
                 <td className='expand'>
                     {app.appStatus === 'isActive' && <KeepTooltip content={`Launch ${app.appName}`} className='w-30px'>
                         <button
@@ -350,7 +350,7 @@ const AppItem: React.FC<AppItemProps> = ({
                     </KeepTooltip>
                   </OptionsContainer>
                 </td>
-            </StyledTableRow>
+            </Row>
             <dialog ref={ref} onClose={() => setIsGenerate(false)} className='regen-app-secret-dialog'>
                 <div className="dialog-title">
                   <text className='dialog-title-text'>Regenerate App Secret?</text>

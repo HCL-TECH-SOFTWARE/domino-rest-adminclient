@@ -15,7 +15,7 @@ import ConsentFilterContainer from '../../consents/ConsentFilterContainer';
 import { FaSort } from "react-icons/fa";
 import { KeepDataTable } from '../../keep-elements/KeepElements';
 
-const StyledTableHead = styled.thead`
+const Head = styled.thead`
   border-bottom: 1px solid var(--wa-color-surface-border);
 
   .text {
@@ -32,14 +32,14 @@ const StyledTableHead = styled.thead`
   }
 `
 
-const StyledTableBody = styled.tbody`
+const Body = styled.tbody`
   font-size: var(--wa-font-size-m);
   padding-top: 20px;
   padding-bottom: 20px;
   border-bottom: none;
 `
 
-const StyledTableContainer = styled.div`
+const ColumnLayout = styled.div`
   .expand {
     width: 50px;
   }
@@ -283,7 +283,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
         {consentsLoading || usersLoading ? 
           <APILoadingProgress label="Users and Consents" />
           :
-          <StyledTableContainer>
+          <ColumnLayout>
             <KeepDataTable
               paginated
               headerBand
@@ -294,7 +294,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
               onRowsPerPageChange={(e) => { setRowsPerPage(e.detail.rowsPerPage); setPage(0); }}
             >
               <table aria-label="consents table">
-                <StyledTableHead>
+                <Head>
                   <tr>
                     <th className='expand' />
                     <th className='user'>
@@ -342,8 +342,8 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                       </div>
                     </th>
                   </tr>
-                </StyledTableHead>
-                <StyledTableBody>
+                </Head>
+                <Body>
                   {(rowsPerPage > 0
                     ? filteredConsents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     : filteredConsents
@@ -357,10 +357,10 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                         />
                       )
                     })}
-                </StyledTableBody>
+                </Body>
               </table>
             </KeepDataTable>
-          </StyledTableContainer>
+          </ColumnLayout>
         }
         <ConsentFilterContainer
           setStatus={setStatus}

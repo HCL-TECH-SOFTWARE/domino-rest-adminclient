@@ -16,7 +16,7 @@ import { Consent } from '../../../store/consents/types';
 import { KeepTooltip } from '../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../store/hooks';
 
-const StyledTableRow = styled.tr`
+const Row = styled.tr`
   .exp-content {
     display: flex;
     flex-direction: column;
@@ -103,7 +103,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
   return (
     (
         <>
-            <StyledTableRow>
+            <Row>
                 <td className='expand off-border'>
                     {!showDetails &&
                     <button
@@ -154,8 +154,8 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                     Revoke
                   </button>
                 </td>
-            </StyledTableRow>
-            <StyledTableRow>
+            </Row>
+            <Row>
                 <td colSpan={5}>
                     <Collapse in={showDetails} timeout="auto" unmountOnExit>
                         <UrlContainer>
@@ -172,7 +172,7 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                         </UrlContainer>
                     </Collapse>
                 </td>
-            </StyledTableRow>
+            </Row>
       </>
     )
   );

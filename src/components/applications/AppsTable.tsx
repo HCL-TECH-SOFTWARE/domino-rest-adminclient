@@ -18,7 +18,7 @@ import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import { useAppDispatch } from '../../store/hooks';
 import { KeepDataTable } from '../keep-elements/KeepElements';
 
-const StyledTableHead = styled.thead`
+const Head = styled.thead`
   border-bottom: 1px solid var(--wa-color-surface-border);
 
   .text {
@@ -35,14 +35,14 @@ const StyledTableHead = styled.thead`
   }
 `
 
-const StyledTableBody = styled.tbody`
+const Body = styled.tbody`
   font-size: var(--wa-font-size-m);
   padding-top: 20px;
   padding-bottom: 20px;
   border-bottom: none;
 `
 
-const StyledTableContainer = styled.div`
+const ColumnLayout = styled.div`
   .launch {
     width: 4%;
   }
@@ -185,7 +185,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
       {apps.length === 0 ? 
         <ZeroResultsWrapper mainLabel='There are currently no apps to display.' secondaryLabel="Click 'Add Application' to create an app." />
         :
-        <StyledTableContainer>
+        <ColumnLayout>
           <KeepDataTable
             paginated
             count={filteredApps.length}
@@ -195,7 +195,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
             onRowsPerPageChange={(e) => { setRowsPerPage(e.detail.rowsPerPage); setPage(0); }}
           >
             <table aria-label="consents table">
-              <StyledTableHead>
+              <Head>
                 <tr>
                   <th className='launch' />
                   <th className='app-name text'>
@@ -235,8 +235,8 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                   </th>
                   <th className='icons' />
                 </tr>
-              </StyledTableHead>
-              <StyledTableBody>
+              </Head>
+              <Body>
                 {(rowsPerPage > 0
                   ? filteredApps.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   : filteredApps
@@ -251,10 +251,10 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                       />
                     )
                   })}
-              </StyledTableBody>
+              </Body>
             </table>
           </KeepDataTable>
-        </StyledTableContainer>
+        </ColumnLayout>
       }
       <AppFilterContainer
         status={status}
