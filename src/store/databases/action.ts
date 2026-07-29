@@ -2334,7 +2334,15 @@ export const processViewsAgents = (
         }
 
         try {
-          const { response, data } = await apiRequestWithRetry(() =>
+          // Destructured under different names on purpose. Called `data`, this
+          // binding shadowed the outer `data` for the whole block — including the
+          // `JSON.stringify(data)` in the request body below, which runs inside the
+          // callback while the binding is still in its temporal dead zone. Every
+          // save therefore raised "Cannot access 'data' before initialization"
+          // inside apiRequestWithRetry, which caught it and returned a failure: the
+          // POST was never sent, the user got a toast quoting a JavaScript error,
+          // and the thunk resolved as though it had merely failed. (#803)
+          const { response: saveResponse, data: saveData } = await apiRequestWithRetry(() =>
             fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
               method: 'POST',
               headers: {
@@ -2344,8 +2352,8 @@ export const processViewsAgents = (
               body: JSON.stringify(data),
             })
           )
-          const res = response
-          const resData = data
+          const res = saveResponse
+          const resData = saveData
 
           if (!res.ok) {
             throw new Error(JSON.stringify(resData))
