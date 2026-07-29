@@ -62,16 +62,23 @@ export const appsSlice = createSlice({
    * by string rather than by import. They must be matched literally, because
    * createSlice would namespace anything declared above.
    *
-   * - `dialog/toggleDeleteDialog` — `TOGGLE_DELETE_DIALOG` is declared in *both*
-   *   `dialog/types.ts` and `applications/types.ts` with the same value, so one
-   *   dispatch has always driven both reducers. #840 converted the dialog slice and
-   *   silently stopped this one seeing it, which left DeleteApplicationDialog unable
-   *   to open. The regression test in this PR is what would have caught it.
-   * - `SET_APP_ERROR` / `CLEAR_APP_ERROR` — `databases/types.ts` declares
-   *   `SET_DB_ERROR = 'SET_APP_ERROR'` and `CLEAR_DB_ERROR = 'CLEAR_APP_ERROR'`, so
-   *   every database error also writes this slice's `appError`. Preserved rather
-   *   than untangled: whether AppForm is *meant* to show database errors is a
-   *   product question, not a migration one.
+   * - `dialog/toggleDeleteDialog` — the delete dialog lives in the dialog slice and
+   *   this reducer follows it, matching its generated action *object*. The duplicate
+   *   `TOGGLE_DELETE_DIALOG` that used to be declared here as well is gone (#866); it
+   *   was what made #840's regression invisible, since converting the dialog slice
+   *   unhooked this one with no type error and no failing test.
+   * - `SET_APP_ERROR` / `CLEAR_APP_ERROR` — this slice's own, and no longer shared:
+   *   `databases/types.ts` used to declare `SET_DB_ERROR = 'SET_APP_ERROR'`, so every
+   *   database error wrote `appError` too. #866 untangled that.
+   *
+   *   ⚠️ **Nothing sets `appError` any more, and nothing did directly before.**
+   *   `setAppError` and both its dispatch sites are commented out in `action.ts`
+   *   (`:126`, `:128`, `:328`) — application failures report through `toggleAlert`
+   *   instead. The collision was the only thing ever setting this field, so
+   *   `AppForm.tsx:149`'s "Error: Unable to save application" banner has only ever
+   *   displayed *database* errors, and now displays nothing. Left standing rather
+   *   than deleted: removing a visible banner is a product call in a `track:views`
+   *   file, and it is filed separately.
    */
   extraReducers: (builder) => {
     builder
