@@ -24,7 +24,7 @@ import {
 } from '../databases/action';
 import { AppState } from '..';
 import { clearForms } from '../databases/action';
-import { ThunkAction } from 'redux-thunk';
+import { ThunkAction } from '@reduxjs/toolkit';
 import { AnyAction } from 'redux';
 import { apiRequestWithRetry, notify } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
