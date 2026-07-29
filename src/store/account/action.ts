@@ -5,23 +5,9 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  Credentials,
-  LOGIN,
-  SET_LOGIN_ERROR,
-  SET_401_ERROR,
-  AUTHENTICATE,
-  REMOVE_AUTH,
-  NAVITEMS,
-  PageListObj,
-  SET_IDP_LOGIN,
-  IdP,
-  SET_ERROR_MESSAGE,
-} from './types';
+import { Credentials, PageListObj } from './types';
 import { BASE_KEEP_API_URL, IDP_KEEP_API_URL } from '../../config.dev';
-import {
-  initState,
-} from '../databases/action';
+import { initState } from '../databases/action';
 import { AppState } from '..';
 import { clearForms } from '../databases/action';
 import { ThunkAction } from '@reduxjs/toolkit';
@@ -30,42 +16,45 @@ import { apiRequestWithRetry, notify } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
 import { checkForResponse } from '../../utils/common';
 import { getLogger } from '../../services/log-service';
+// `login` and `removeAuth` are aliased: this module exports a `login` *thunk*
+// taking credentials and a callback, and a `removeAuth` that clears the stored
+// tokens before returning the action. Both keep the names their callers use.
+import {
+  authenticate,
+  login as loginAction,
+  removeAuth as removeAuthAction,
+  set401Error,
+  setCurrentIdp,
+  setErrorMessage,
+  setIdpLogin,
+  setLoginError,
+  setNavItems
+} from './reducer';
+
+/**
+ * `createSlice` generates these now (#710). Re-exported so callers keep the import
+ * path and the names they already use.
+ */
+export {
+  authenticate,
+  set401Error,
+  setCurrentIdp,
+  setErrorMessage,
+  setIdpLogin,
+  setLoginError,
+  setNavItems,
+};
 
 const log = getLogger('store/account');
 
-export function setLoginError(error: boolean) {
-  return {
-    type: SET_LOGIN_ERROR,
-    payload: error
-  };
-}
-
-export function set401Error(error401: boolean) {
-  return {
-    type: SET_401_ERROR,
-    payload: error401
-  }
-}
-
-export function setErrorMessage(errorMessage: string) {
-  return {
-    type: SET_ERROR_MESSAGE,
-    payload: errorMessage,
-  };
-}
-
-export function authenticate() {
-  return {
-    type: AUTHENTICATE
-  };
-}
-
+/**
+ * Not a re-export: this clears the stored tokens before returning the action, so it
+ * stays a wrapper around the generated creator rather than becoming one.
+ */
 export function removeAuth() {
   localStorage.removeItem('user_token');
   localStorage.removeItem('refresh_token')
-  return {
-    type: REMOVE_AUTH
-  };
+  return removeAuthAction();
 }
 
 /**
@@ -190,9 +179,7 @@ export function login(credentials: Credentials, successCallback: () => void) {
       const jwtData = data;
       localStorage.setItem('user_token', JSON.stringify(jwtData));
       publishToken(jwtData)
-      dispatch({
-        type: LOGIN
-      });
+      dispatch(loginAction());
       successCallback()
     } else {
       log.debug('Login failed, dispatching error state')
@@ -275,19 +262,13 @@ export function showPages() {
       }
 
       // Save page state
-      dispatch({
-        type: NAVITEMS,
-        payload: pageList
-      });
+      dispatch(setNavItems(pageList));
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
       // If no configruation settings were found, use the default
-      dispatch({
-        type: NAVITEMS,
-        payload: pageList
-      });
+      dispatch(setNavItems(pageList));
 
       // Use the Keep response error if it's available
       if (err) {
@@ -315,20 +296,6 @@ export async function getIdpList() {
   return resJson
 }
 
-export function setIdpLogin(idpLogin: boolean) {
-  return {
-    type: SET_IDP_LOGIN,
-    payload: idpLogin,
-  }
-}
-
-export function setCurrentIdp(idp: IdP) {
-  return {
-    type: 'CURRENT_IDP',
-    payload: idp,
-  }
-}
-
 export function setPkceToken(token: any) {
   return {
     type: 'SET_PKCE_TOKEN',
@@ -343,9 +310,7 @@ export function loginWithPkce(token: any) {
     publishToken(token)
     dispatch(setIdpLogin(true))
     dispatch(authenticate())
-    dispatch({
-      type: LOGIN
-    });
+    dispatch(loginAction());
   }
 }
 

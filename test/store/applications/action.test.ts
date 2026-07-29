@@ -15,11 +15,11 @@ import {
   updateApp,
 } from '../../../src/store/applications/action';
 import {
-  ADD_APP,
-  DELETE_APP,
-  GET_APPS,
-  UPDATE_APP,
-} from '../../../src/store/applications/types';
+  addApp as addAppAction,
+  deleteApp as deleteAppAction,
+  getApps as getAppsAction,
+  updateApp as updateAppAction,
+} from '../../../src/store/applications/reducer';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry's own error path calls notify(), which mounts a <keep-alert>.
@@ -233,7 +233,7 @@ describe('the remaining applications thunks', () => {
 
       await fetchMyApps()(dispatch);
 
-      const action = dispatch.mock.calls.map((c) => c[0] as any).find((a) => a.type === GET_APPS);
+      const action = dispatch.mock.calls.map((c) => c[0] as any).find((a) => a.type === getAppsAction.type);
       expect(action.payload).toHaveLength(1);
       expect(action.payload[0]).toMatchObject({
         appId: 'app-1',
@@ -248,7 +248,7 @@ describe('the remaining applications thunks', () => {
 
       await fetchMyApps()(dispatch);
 
-      const action = dispatch.mock.calls.map((c) => c[0] as any).find((a) => a.type === GET_APPS);
+      const action = dispatch.mock.calls.map((c) => c[0] as any).find((a) => a.type === getAppsAction.type);
       expect(action.payload[0].usePkce).toBe(true);
     });
 
@@ -257,7 +257,7 @@ describe('the remaining applications thunks', () => {
 
       await fetchMyApps()(dispatch);
 
-      expect(types()).not.toContain(GET_APPS);
+      expect(types()).not.toContain(getAppsAction.type);
       expect(alertsOf(dispatch)).toHaveLength(1);
       isReadable(alertsOf(dispatch)[0]);
     });
@@ -267,7 +267,7 @@ describe('the remaining applications thunks', () => {
 
       await fetchMyApps()(dispatch);
 
-      expect(types()).not.toContain(GET_APPS);
+      expect(types()).not.toContain(getAppsAction.type);
     });
   });
 
@@ -280,7 +280,7 @@ describe('the remaining applications thunks', () => {
 
       expect(fetchMock.mock.calls[0][1].method).toBe('PUT');
       expect(String(fetchMock.mock.calls[0][0])).toContain('/admin/application/app-1');
-      expect(types()).toContain(UPDATE_APP);
+      expect(types()).toContain(updateAppAction.type);
       expect(alertsOf(dispatch).join()).toMatch(/has been updated/i);
     });
 
@@ -289,7 +289,7 @@ describe('the remaining applications thunks', () => {
 
       await updateApp(app)(dispatch);
 
-      expect(types()).not.toContain(UPDATE_APP);
+      expect(types()).not.toContain(updateAppAction.type);
       isReadable(alertsOf(dispatch)[0]);
     });
   });
@@ -300,7 +300,7 @@ describe('the remaining applications thunks', () => {
 
       await getSingleApp('app-1')(dispatch);
 
-      expect(types()).toContain(UPDATE_APP);
+      expect(types()).toContain(updateAppAction.type);
     });
 
     it('does not update the store when the request never completes', async () => {
@@ -308,7 +308,7 @@ describe('the remaining applications thunks', () => {
 
       await getSingleApp('app-1')(dispatch);
 
-      expect(types()).not.toContain(UPDATE_APP);
+      expect(types()).not.toContain(updateAppAction.type);
       isReadable(alertsOf(dispatch)[0]);
     });
   });
@@ -321,7 +321,7 @@ describe('the remaining applications thunks', () => {
       await deleteApplication('app-1')(dispatch);
 
       expect(fetchMock.mock.calls[0][1].method).toBe('DELETE');
-      expect(types()).toContain(DELETE_APP);
+      expect(types()).toContain(deleteAppAction.type);
       expect(alertsOf(dispatch).join()).toMatch(/deleted/i);
     });
 
@@ -331,7 +331,7 @@ describe('the remaining applications thunks', () => {
       await deleteApplication('app-1')(dispatch);
 
       // The dialog must close either way, or the user is stuck behind a modal.
-      expect(types()).not.toContain(DELETE_APP);
+      expect(types()).not.toContain(deleteAppAction.type);
       expect(alertsOf(dispatch).join()).toMatch(/error deleting/i);
     });
 
@@ -340,7 +340,7 @@ describe('the remaining applications thunks', () => {
 
       await deleteApplication('app-1')(dispatch);
 
-      expect(types()).not.toContain(DELETE_APP);
+      expect(types()).not.toContain(deleteAppAction.type);
       isReadable(alertsOf(dispatch)[0]);
     });
   });
@@ -353,7 +353,7 @@ describe('the remaining applications thunks', () => {
       await addApplication({ client_name: 'Test App' })(dispatch);
 
       expect(fetchMock.mock.calls[0][1].method).toBe('POST');
-      expect(types()).toContain(ADD_APP);
+      expect(types()).toContain(addAppAction.type);
       expect(alertsOf(dispatch).join()).toMatch(/new application added/i);
     });
 
@@ -362,7 +362,7 @@ describe('the remaining applications thunks', () => {
 
       await addApplication({ client_name: 'Test App' })(dispatch);
 
-      expect(types()).not.toContain(ADD_APP);
+      expect(types()).not.toContain(addAppAction.type);
     });
 
     it('adds nothing and explains itself when the request never completes', async () => {
@@ -370,7 +370,7 @@ describe('the remaining applications thunks', () => {
 
       await addApplication({ client_name: 'Test App' })(dispatch);
 
-      expect(types()).not.toContain(ADD_APP);
+      expect(types()).not.toContain(addAppAction.type);
       isReadable(alertsOf(dispatch)[0]);
     });
   });
