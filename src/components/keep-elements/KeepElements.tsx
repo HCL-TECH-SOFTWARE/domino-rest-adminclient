@@ -61,3 +61,6 @@ export { KeepSlimDatabaseCard } from './react/KeepSlimDatabaseCard';
 export { KeepScopesAlphabeticalView } from './react/KeepScopesAlphabeticalView';
 export { KeepScopesStacksView } from './react/KeepScopesStacksView';
 export { KeepScopesMultiView } from './react/KeepScopesMultiView';
+export { KeepSchemasCardsView } from './react/KeepSchemasCardsView';
+export { KeepSchemasDefaultView } from './react/KeepSchemasDefaultView';
+export { KeepSchemasStacksView } from './react/KeepSchemasStacksView';
