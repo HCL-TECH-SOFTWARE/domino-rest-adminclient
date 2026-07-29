@@ -146,13 +146,31 @@ export const fetchScopes = () => {
         dispatch(setPullScope(true));
       }
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-      if (err) throw err;
-        dispatch(toggleErrorDialog(`${error.statusCode}: ${error.message}`));
+      // Reports rather than propagates. Both callers in Views.tsx dispatch this
+      // fire-and-forget with no .catch, so rethrowing surfaced as an unhandled
+      // rejection and the user saw nothing at all -- the `if (err) throw err`
+      // that used to sit here fired on every path, making the dispatch below it
+      // unreachable (#818).
+      dispatch(toggleErrorDialog(errorDialogMessage(e)));
     }
   };
 };
+
+/**
+ * `status`, not `statusCode`: nothing in this codebase writes `statusCode`, so the
+ * dialog would have read "undefined: ..." had it ever opened. The parse is guarded
+ * because only the `!response.ok` throw above carries a JSON body -- anything else
+ * reaching the catch is a plain message.
+ */
+function errorDialogMessage(e: any): string {
+  const raw = e?.message ?? String(e);
+  try {
+    const body = JSON.parse(raw);
+    return body?.status ? `${body.status}: ${body.message}` : (body?.message ?? raw);
+  } catch {
+    return raw;
+  }
+}
 /**
  * Change Scope(API Name) and check for errors
  */
