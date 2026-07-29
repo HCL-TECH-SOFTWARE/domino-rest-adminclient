@@ -19,6 +19,16 @@
  * Every selector must start with `keep-data-table` — this sheet is global, and a bare
  * `td` rule would restyle every table in the app. A test enforces that.
  *
+ * The header rules are scoped to `thead th`, never bare `th`. A row-header cell
+ * (`<th scope="row">`) lives in `tbody`, and both `ViewsTable` and `FormsTable` use one
+ * for their edit column. An unqualified `th` selector gave those cells bold text, 30px of
+ * top padding and a stray bottom border — exactly what MUI's `tableCellClasses.head` /
+ * `.body` split used to prevent. Found in a browser during #771 PR 4; the suite runs with
+ * `css: false`, so a test pins the *selector* rather than the computed style.
+ *
+ * Keep prose out of this template string: the scoping test splits selectors on commas,
+ * so a CSS comment containing one would break it.
+ *
  * The values are lifted from the five near-identical Linaria blocks this replaces
  * (`StyledTableCell`, `StyledTableRow`, `StatusHeader`), so the migration is 1:1. See
  * #771.
@@ -33,14 +43,18 @@ keep-data-table td {
   padding: 20px 30px;
   text-align: left;
 }
-keep-data-table th {
+keep-data-table thead th {
   font-weight: bold;
   padding-top: 30px;
   border-bottom: 1px solid var(--wa-color-surface-border);
 }
-keep-data-table td {
+keep-data-table td,
+keep-data-table tbody th {
   font-size: var(--wa-font-size-m);
   border-bottom: none;
+}
+keep-data-table tbody th {
+  font-weight: normal;
 }
 keep-data-table[zebra] tbody tr:nth-of-type(odd) {
   background-color: var(--keep-surface-accent);

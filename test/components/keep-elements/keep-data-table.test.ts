@@ -54,6 +54,24 @@ describe('keep-data-table styles', () => {
     }
   });
 
+  // A row-header cell (`<th scope="row">`) lives in tbody — ViewsTable and FormsTable both
+  // use one for their edit column. An unqualified `th` selector styles it as a header:
+  // bold, 30px of top padding, and a bottom border the row should not have. MUI's
+  // tableCellClasses.head/.body split used to prevent that; this sheet has to do it by
+  // scoping. Found in a browser during #771 PR 4 — `css: false` means no test here can see
+  // a computed style, so pin the selector instead.
+  it('scopes the header rules to thead, so a tbody row-header stays a body cell', () => {
+    const headerRuleSelectors = TABLE_STYLE_TEXT.split('}')
+      .map((block) => block.split('{'))
+      .filter(([, declarations]) => declarations && /font-weight:\s*bold|padding-top:/.test(declarations))
+      .flatMap(([selector]) => selector.split(',').map((s) => s.trim()).filter(Boolean));
+
+    expect(headerRuleSelectors.length).toBeGreaterThan(0);
+    for (const selector of headerRuleSelectors) {
+      expect(selector, `header rule not scoped to thead: ${selector}`).toMatch(/\bthead\b/);
+    }
+  });
+
   it('adopts the sheet into the document', () => {
     expect(sheetCount()).toBe(0);
     adoptTableStyles();
