@@ -18,7 +18,7 @@ sound filter for *risk*, but it does not mean 22 conversions. Verified file by f
 
 | Disposition | Count |
 |---|--:|
-| Convert to a Lit element | **12** |
+| Convert to a Lit element | **11** (12 planned; see §1.4) |
 | Delete — dead code | **2** (+1 found outside the list) |
 | Defer to tier B/C | **8** |
 
@@ -32,7 +32,7 @@ In dependency order. `keep-*` names follow the existing element convention.
 | 2 | `components/loaders/PageLoading.tsx` | 99 | `keep-page-loading` | 70 lines of Linaria keyframes |
 | 3 | `components/commons/ZeroResultsWrapper.tsx` | 47 | `keep-zero-results` | 8 consumers |
 | 4 | `components/dialogs/FormDialogHeader.tsx` | 34 | `keep-form-dialog-header` | **18 consumers** — highest fan-in |
-| 5 | `components/commons/AppIcon.tsx` | 89 | `keep-app-icon` | 9 consumers; collapses a documented duplication |
+| ~~5~~ | ~~`components/commons/AppIcon.tsx`~~ | 89 | — | **Deferred during execution — see §1.4** |
 | 6 | `components/dialogs/UnsavedChangesDialog.tsx` | 64 | `keep-unsaved-changes-dialog` | Needs #4; 1 test + 2 mocks to update |
 | 7 | `components/wrapper/ErrorWrapper.tsx` | 75 | `keep-error-wrapper` | `children` → slot; drops the CommonStyles barrel |
 | 8 | `components/header/MobileHeader.tsx` | 74 | `keep-mobile-header` | `--header-height` contract; 2 tests |
@@ -87,6 +87,40 @@ branch children include `ScopesAlphabeticalView`, `ScopesStacksView`,
 `SchemasCardsView` … which are **not** in tier A. A Lit template cannot render a React
 child, so these convert only after their branches do. Their sole parents
 (`ScopeLists`, `SchemasLists`) are tier B/C as well.
+
+### 1.4 Deferred during execution: `AppIcon` (11 conversions, not 12)
+
+Found while converting, not during the survey, and it is the more interesting result of the
+two: **a file can pass the tier A import filter and still have a React-only API.**
+
+`AppIcon`'s own imports are clean — React, Linaria, and a service. But its props include two
+escape hatches typed against React:
+
+```ts
+as?: React.ElementType;   // element/component used for the loaded icon
+fallback?: React.ReactNode;
+```
+
+`fallback` converts fine; it becomes a named slot, and the React parent slots its MUI icon in
+as light DOM. **`as` does not convert at all.** Three call sites pass `as={DBImage}` /
+`as={AppImage}` — Linaria-styled `img`s that *replace the element type* of the icon. A custom
+element cannot be told to render its internal `<img>` as some other component, and once that
+`<img>` is inside a shadow root no external styled-component can reach it either. The
+replacement would be `::part(icon)` plus a CSS rule at each call site.
+
+Two of those three call sites are `applications/AppItem.tsx` and
+`applications/kanban/AppCard.tsx` — **tier D files, blocked on #807**. So converting `AppIcon`
+now means redesigning its API inside files this pass is not allowed to touch yet.
+
+It converts in tier D, alongside the consumers that force the API change. The payoff is still
+there when it happens: `keep-elements/app-icon-skeleton.ts` exists only because the React
+`AppIconSkeleton` "cannot reach inside these roots", and the two collapse into one.
+
+**Generalisable rule for tiers B–D — the second one this pass produced:** before scheduling a
+file, check its *exported API* for React types, not just its imports. `React.ElementType`,
+`React.ReactNode` and `React.ComponentType` in a props type mean the file's consumers are
+holding it in a React-specific way. `ReactNode` usually maps to a slot; `ElementType` maps to
+nothing.
 
 ---
 
@@ -219,7 +253,7 @@ survives the conversion before spending a commit on it.
 
 ## 7. Definition of done
 
-- 12 elements exist, each with a test; the dead code is deleted.
+- 11 elements exist, each with a test; the dead code is deleted.
 - Every new element clears the grep gate in §4.9.
 - `npm run lint` exit 0 · `npm run build` exit 0 · full suite green with no coverage
   threshold error.
