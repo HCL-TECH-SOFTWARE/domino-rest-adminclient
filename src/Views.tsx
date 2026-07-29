@@ -13,8 +13,9 @@ import ApplicationsContainer from './components/applications/Applications';
 import FormsContainer from './components/forms/FormsContainer';
 import { AppState } from './store';
 import { setLoading } from './store/loading/action';
-import Homepage from './components/home/Homepage';
-import PageRouters from './components/routers/PageRouters';
+import Section from './components/home/sections/Section';
+import BreadcrumbRouter from './components/routers/BreadcrumbRouter';
+import { KeepHomepage, KeepPageRouters } from './components/keep-elements/KeepElements';
 import SchemasLists from './components/schemas/SchemasLists';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
@@ -40,7 +41,7 @@ import { useAppDispatch } from './store/hooks';
  * is 48px on every side and would push the page content down by that much.
  *
  * The height stays viewport-relative rather than `100%` because both bars it subtracts sit
- * outside `wa-page`'s own grid rows: the 23px `.footer-container` is a fixed overlay, and
+ * outside `wa-page`'s own grid rows: the 23px `keep-footer` bar is a fixed overlay, and
  * `--header-height` is what `wa-page` measures its header region to be. Reading that
  * variable replaces the hardcoded `56px` this rule used to guess — get it wrong by a pixel
  * and the document gains a second scrollbar on top of this element's own.
@@ -52,7 +53,7 @@ const ViewContainer = styled.main`
   padding: 0 40px;
 
   @media only screen and (width < 768px) {
-    /* No footer overlay below the breakpoint — see .footer-container in styles.css. */
+    /* No footer overlay below the breakpoint — see the media query in keep-footer.ts. */
     height: calc(100vh - var(--header-height, 0px));
     padding: 0;
   }
@@ -85,7 +86,7 @@ const Views: React.FC = () => {
   const routes: RouteDef[] = useMemo(() => {
     const guard = () => authenticated;
     return [
-      { path: '/', element: <Homepage />, guard, redirectTo: '/' },
+      { path: '/', element: <KeepHomepage><Section /></KeepHomepage>, guard, redirectTo: '/' },
       { path: '/schema', element: <SchemasLists />, guard, redirectTo: '/' },
       { path: '/schema/:nsfPath/:dbName', element: <FormsContainer />, guard, redirectTo: '/' },
       {
@@ -176,7 +177,9 @@ const Views: React.FC = () => {
   return (
     <ViewContainer id="main-stack">
       <NavigationGuardProvider basename="/admin/ui">
-        <PageRouters />
+        <KeepPageRouters>
+          <BreadcrumbRouter />
+        </KeepPageRouters>
         <RouterOutlet routes={routes} />
 
         {/*

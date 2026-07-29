@@ -27,8 +27,7 @@ import { FiEdit } from 'react-icons/fi';
 import { Box } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 interface DetailsSectionProps {
@@ -585,8 +584,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
       </Information>
       <dialog ref={detailsRef} className='dialog pl-0 pr-0'>
         <div className='pr-30 pl-30 full-width'>
-          <FormDialogHeader
-            title='Edit Schema'
+          <KeepFormDialogHeader
+            heading='Edit Schema'
             onClose={handleClickCloseDetails}
           />
         </div>
@@ -675,8 +674,8 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
         </div>
       </dialog>
       <dialog ref={discardRef} className='dialog'>
-        <FormDialogHeader
-          title='Discard Changes?'
+        <KeepFormDialogHeader
+          heading='Discard Changes?'
           onClose={() => setDiscardDialog(false)}
         />
         <div className='dialog-content'>

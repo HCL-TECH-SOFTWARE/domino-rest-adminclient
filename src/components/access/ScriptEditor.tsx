@@ -12,8 +12,7 @@ import TestIcon from '@mui/icons-material/PlayArrow';
 import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { KeepButton, KeepTextformArray, KeepTooltip } from '../keep-elements/KeepElements';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { KeepButton, KeepFormDialogHeader, KeepTextformArray, KeepTooltip } from '../keep-elements/KeepElements';
 
 interface ScriptEditorProps {
   data: any;
@@ -242,8 +241,8 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
           </div>
           <dialog className='dialog half-width pr-0 pl-0' ref={ref} onClose={handleClose}>
             <div className='pr-30 pl-30 full-width'>
-              <FormDialogHeader
-                title={formulaTitle}
+              <KeepFormDialogHeader
+                heading={formulaTitle}
                 onClose={handleClose}
               />
             </div>

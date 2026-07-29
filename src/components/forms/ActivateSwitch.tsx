@@ -12,8 +12,7 @@ import { styled } from '@linaria/react';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { AGENTS_ERROR, VIEWS_ERROR } from '../../store/databases/types';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 const ToggleContainer = styled.div`
@@ -145,8 +144,8 @@ const ActivateSwitch: React.FC<ActivateSwitchProps> = ({ view, toggleActive, tog
       </div>
       <div>
         <dialog ref={ref} className='dialog'>
-          <FormDialogHeader
-            title={`Reset ${type === 'view' ? 'View' : 'Agent'} Columns?`}
+          <KeepFormDialogHeader
+            heading={`Reset ${type === 'view' ? 'View' : 'Agent'} Columns?`}
             onClose={() => {setResetView(false)}}
           />
           <div className='dialog-content'>

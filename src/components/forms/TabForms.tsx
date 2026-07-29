@@ -24,10 +24,9 @@ import {
   pullForms,
 } from "../../store/databases/action";
 import FormsTable from "./FormsTable";
-import FormDialogHeader from "../dialogs/FormDialogHeader";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import { KeepButton, KeepSwitch } from "../keep-elements/KeepElements";
+import { KeepButton, KeepFormDialogHeader, KeepSwitch } from "../keep-elements/KeepElements";
 import { useAppDispatch } from '../../store/hooks';
 
 const ButtonsPanel = styled.div`
@@ -321,7 +320,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         <KeepSwitch onToggle={handleToggleShowActive}>Show Active</KeepSwitch>
       </ButtonsPanel>
       <CreateFormDialogContainer ref={ref} onClose={handleCreateFormClose}>
-        <FormDialogHeader title="Add New Form Schema" onClose={handleCreateFormClose} />
+        <KeepFormDialogHeader heading="Add New Form Schema" onClose={handleCreateFormClose} />
         <Box className='full-width h-10vh'>
           <TextField
             value={value ? value : ""}
@@ -362,8 +361,8 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
         formList={formList}
       />
       <dialog ref={deactivateRef} className='dialog'>
-        <FormDialogHeader
-          title='WARNING: Deactivate ALL forms?'
+        <KeepFormDialogHeader
+          heading='WARNING: Deactivate ALL forms?'
           onClose={() => {setResetAllForms(false)}}
         />
         <div className='dialog-content'>

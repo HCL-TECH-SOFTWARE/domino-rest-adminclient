@@ -16,8 +16,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { KeepButton, KeepSwitch } from '../keep-elements/KeepElements';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { KeepButton, KeepFormDialogHeader, KeepSwitch } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 const TabViewsContainer = styled.div`
@@ -258,8 +257,8 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
          />
       </ViewPanel>
       <dialog ref={ref} className='dialog'>
-        <FormDialogHeader
-          title="Reset ALL View Columns?"
+        <KeepFormDialogHeader
+          heading="Reset ALL View Columns?"
           onClose={() => {setResetAllViews(false)}}
         />
         <div className='dialog-content'>

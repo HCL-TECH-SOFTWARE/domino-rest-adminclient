@@ -34,7 +34,6 @@ import {
  } from '../../store/databases/action';
 import { toggleSettings } from '../../store/dbsettings/action';
 import { getToken } from '../../store/account/action';
-import ErrorWrapper from '../wrapper/ErrorWrapper';
 import TabForms from './TabForms';
 import TabViews from './TabViews';
 import TabAgents from './TabAgents';
@@ -42,10 +41,9 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import EditViewDialog from './EditView';
-import { KeepButton, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
+import { KeepButton, KeepErrorWrapper, KeepFormDialogHeader, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
 import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -586,7 +584,7 @@ const FormsContainer = () => {
   }, [discardChangesDialog])
 
   return (
-    <ErrorWrapper errorStatus={errorStatus}>
+    <KeepErrorWrapper errorStatus={errorStatus}>
       <TopContainer className='mt-15'>
         <span className="top-nav color-text-primary">
             Schema Management
@@ -663,8 +661,8 @@ const FormsContainer = () => {
                   originalValue={savedSchemaText}
                 />}
                 <dialog ref={saveRef} className='dialog'>
-                  <FormDialogHeader
-                    title='Save changes?'
+                  <KeepFormDialogHeader
+                    heading='Save changes?'
                     onClose={handleClickNo}
                   />
                   <div className='dialog-content'>
@@ -678,8 +676,8 @@ const FormsContainer = () => {
                   </div>
                 </dialog>
                 <dialog ref={discardRef} className='dialog'>
-                  <FormDialogHeader
-                    title='Discard changes?'
+                  <KeepFormDialogHeader
+                    heading='Discard changes?'
                     onClose={handleDiscardChanges}
                   />
                   <div className='dialog-content'>
@@ -712,7 +710,7 @@ const FormsContainer = () => {
           </div>
         )}
       </CoreContainer>
-    </ErrorWrapper>
+    </KeepErrorWrapper>
   );
 };
 

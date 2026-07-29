@@ -13,7 +13,7 @@ import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { SchemasMainContainer, StackHeader } from './ScopeStyles';
-import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
+import { KeepZeroResults } from '../../../../keep-elements/KeepElements';
 import { ExtraFlex } from '../../../../flex';
 import { useAppDispatch } from '../../../../../store/hooks';
 
@@ -80,7 +80,7 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
                     )
                 )
             ) : (
-              <ZeroResultsWrapper
+              <KeepZeroResults
                 mainLabel="0 Active Scope "
                 secondaryLabel={``}
               />
@@ -116,7 +116,7 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
                     )
                 )
             ) : (
-              <ZeroResultsWrapper
+              <KeepZeroResults
                 mainLabel="0 Inactive Scope"
                 secondaryLabel={``}
               />

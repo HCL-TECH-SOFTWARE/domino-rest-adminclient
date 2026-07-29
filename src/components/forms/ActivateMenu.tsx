@@ -13,8 +13,7 @@ import { toggleAlert } from '../../store/alerts/action';
 import { Database, FORMS_ERROR } from '../../store/databases/types';
 import { deleteForm } from '../../store/databases/action';
 import { BsThreeDots } from "react-icons/bs";
-import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 interface ActivateMenuProps {
@@ -120,8 +119,8 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, schemaData, setSchema
           <MenuItem onClick={handleClickDeactivate} disabled={formList.includes(form.formName)}>Delete</MenuItem>
       </Menu>
       <dialog ref={ref} className='dialog'>
-        <FormDialogHeader
-          title={formList.includes(form.formName) ? `Reset Form?` : `WARNING: Deleting Custom Form`}
+        <KeepFormDialogHeader
+          heading={formList.includes(form.formName) ? `Reset Form?` : `WARNING: Deleting Custom Form`}
           onClose={() => setResetForm(false)}
         />
         <div className='dialog-content'>

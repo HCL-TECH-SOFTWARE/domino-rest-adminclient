@@ -111,8 +111,20 @@ vi.mock('../../../src/store/alerts/action', () => ({
   toggleAlert: vi.fn(() => ({ type: 'NOOP' })),
 }));
 
-vi.mock('../../../src/components/dialogs/UnsavedChangesDialog', () => ({
-  default: function MockUnsavedChangesDialog({ open, onSave, onDiscard, onCancel }: any) {
+/**
+ * #806 turned the dialog into `keep-unsaved-changes-dialog`, so it now arrives through the
+ * `KeepElements` bridge rather than its own module. Only that one export is replaced —
+ * spreading the original keeps every other `Keep*` wrapper this file renders real. These tests
+ * are about TabsAccess's behaviour, so a plain div is still the right stand-in.
+ */
+vi.mock('../../../src/components/keep-elements/KeepElements', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/components/keep-elements/KeepElements')>()),
+  KeepUnsavedChangesDialog: function MockUnsavedChangesDialog({
+    open,
+    onSave,
+    onDiscard,
+    onCancel,
+  }: any) {
     if (!open) return null;
     return (
       <div role="dialog">

@@ -15,14 +15,13 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import './App.css';
 import './styles/app-shell.css';
-import Footer from './Footer';
 import Views from './Views';
 import theme from './theme';
-import MobileHeader from './components/header/MobileHeader';
+import ProfileMenuDialog from './components/sidenav/ProfileMenuDialog';
 import Notification from './components/alerts/Notification';
 import SideNav from './components/sidenav/SideNav';
 import ProfileMenu from './components/sidenav/ProfileMenu';
-import { KeepTooltip } from './components/keep-elements/KeepElements';
+import { KeepFooter, KeepMobileHeader, KeepTooltip } from './components/keep-elements/KeepElements';
 import { applyTheme } from './services/theme-service';
 import { AppState } from './store';
 import { getTheme, switchTheme } from './store/styles/action';
@@ -40,7 +39,7 @@ import { useAppDispatch } from './store/hooks';
  *
  * Two regions are deliberately *not* used:
  *
- *   - `footer`. `.footer-container` is `position: fixed; bottom: 0` and 23px tall, which is
+ *   - `footer`. `keep-footer`'s bar is `position: fixed; bottom: 0` and 23px tall, which is
  *     where the `calc(100vh - 23px)` in this app's ~20 page-level rules comes from. Slotting
  *     it would add a grid row and change every one of them. It stays a fixed overlay outside
  *     the page element.
@@ -153,7 +152,11 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         */}
         {isMobile && (
           <div slot="header">
-            <MobileHeader />
+            {/* ProfileMenuDialog still imports MUI and react-redux, so it stays React and
+                crosses into the element as slotted light DOM (#806). */}
+            <KeepMobileHeader>
+              <ProfileMenuDialog />
+            </KeepMobileHeader>
           </div>
         )}
 
@@ -209,7 +212,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
       {/* Both sit outside the page element on purpose: the snackbar portals to
           document.body and the footer is a fixed overlay. See the note above. */}
       <Notification />
-      <Footer />
+      <KeepFooter />
     </ThemeProvider>
   );
 };

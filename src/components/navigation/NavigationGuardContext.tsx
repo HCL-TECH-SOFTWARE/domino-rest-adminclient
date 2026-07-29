@@ -13,7 +13,7 @@ import React, {
   useState,
 } from 'react';
 import { useNavigate } from '../../router/react';
-import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
+import { KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
 
 interface NavigationGuardContextType {
   /** Mark the current page as having unsaved changes */
@@ -218,7 +218,7 @@ export const NavigationGuardProvider: React.FC<Props> = ({
       value={{ setDirty, setSaveFunction, guardedNavigate }}
     >
       {children}
-      <UnsavedChangesDialog
+      <KeepUnsavedChangesDialog
         open={pendingNavPath !== null}
         onSave={handleSave}
         onDiscard={handleDiscard}

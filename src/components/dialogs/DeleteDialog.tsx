@@ -10,8 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { AppState } from '../../store';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { deleteSchema, deleteScope } from '../../store/databases/action';
-import FormDialogHeader from './FormDialogHeader';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 interface DeleteDialogProps {
@@ -50,8 +49,8 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({ open, selected }) => {
 
   return (
     <dialog ref={ref} className='dialog'>
-      <FormDialogHeader
-        title={loading ? `Deleting ${isDeleteSchema ? schemaName : apiName}` : `Delete ${isDeleteSchema ? schemaName : apiName}?`}
+      <KeepFormDialogHeader
+        heading={loading ? `Deleting ${isDeleteSchema ? schemaName : apiName}` : `Delete ${isDeleteSchema ? schemaName : apiName}?`}
         onClose={handleClose}
       />
       <div>

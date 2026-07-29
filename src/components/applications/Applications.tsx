@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { fetchMyApps } from '../../store/applications/action';
-import PageLoading from '../loaders/PageLoading';
+import { KeepPageLoading } from '../keep-elements/KeepElements';
 import Kanban from './kanban/Kanban';
 import { AppFormContext } from './ApplicationContext';
 import { useAppDispatch } from '../../store/hooks';
@@ -29,7 +29,7 @@ const Applications: React.FC = () => {
           {scopePull && appPull ? (
               <Kanban />
           ) : (
-            <PageLoading message="Loading Applications" />
+            <KeepPageLoading message="Loading Applications" />
           )}
         </AppFormContext.Provider>
     </>

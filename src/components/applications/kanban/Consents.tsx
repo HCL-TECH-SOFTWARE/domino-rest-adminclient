@@ -15,9 +15,7 @@ import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
-import { KeepButton } from '../../keep-elements/KeepElements';
-import ZeroResultsWrapper from '../../commons/ZeroResultsWrapper';
-import FormDialogHeader from '../../dialogs/FormDialogHeader';
+import { KeepButton, KeepFormDialogHeader, KeepZeroResults } from '../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../store/hooks';
 const ConsentsContainer = styled.div`
   display: flex;
@@ -156,13 +154,13 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
         setFiltersOn={setFiltersOn}
         reset={resetFilters}
         setReset={setResetFilters}
-      /> : <ZeroResultsWrapper
+      /> : <KeepZeroResults
             mainLabel="Sorry, no consents found"
             secondaryLabel={`What you search was unfortunately not found or doesn't exist.`}
           />}
       <dialog ref={ref} className='dialog'>
-        <FormDialogHeader
-          title={`Revoke consent?`}
+        <KeepFormDialogHeader
+          heading={`Revoke consent?`}
           onClose={handleCloseDialog}
         />
         <div className='dialog-content'>

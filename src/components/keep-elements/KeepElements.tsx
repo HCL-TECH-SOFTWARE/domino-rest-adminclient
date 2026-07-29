@@ -28,6 +28,21 @@ import Tooltip from './keep-tooltip';
 import Checkbox from './keep-checkbox';
 import MonacoEditor from './keep-monaco-editor';
 import Tree, { type KeepTreeSelectDetail } from './keep-tree';
+import Footer from './keep-footer';
+import PageLoading from './keep-page-loading';
+import ZeroResults from './keep-zero-results';
+import FormDialogHeader, {
+  type KeepFormDialogHeaderCloseDetail
+} from './keep-form-dialog-header';
+import ErrorWrapper from './keep-error-wrapper';
+import Homepage from './keep-homepage';
+import ScopesCardsView from './keep-scopes-cards-view';
+import ScopesDefaultView, { type KeepScopeOpenDetail } from './keep-scopes-default-view';
+import MobileHeader from './keep-mobile-header';
+import PageRouters from './keep-page-routers';
+import UnsavedChangesDialog, {
+  type KeepUnsavedChangesDialogDetail
+} from './keep-unsaved-changes-dialog';
 import DataTable, {
   type KeepDataTablePageChangeDetail,
   type KeepDataTableRowsPerPageChangeDetail
@@ -191,5 +206,89 @@ export const KeepMonacoEditor = createComponent({
   react: React,
   events: {
     onChange: 'change'
+  }
+});
+
+export const KeepFooter = createComponent({
+  tagName: 'keep-footer',
+  elementClass: Footer,
+  react: React
+});
+
+export const KeepPageLoading = createComponent({
+  tagName: 'keep-page-loading',
+  elementClass: PageLoading,
+  react: React
+});
+
+export const KeepZeroResults = createComponent({
+  tagName: 'keep-zero-results',
+  elementClass: ZeroResults,
+  react: React
+});
+
+export const KeepScopesDefaultView = createComponent({
+  tagName: 'keep-scopes-default-view',
+  elementClass: ScopesDefaultView,
+  react: React,
+  events: {
+    onScopeOpen: 'scope-open' as EventName<CustomEvent<KeepScopeOpenDetail>>
+  }
+});
+
+export const KeepScopesCardsView = createComponent({
+  tagName: 'keep-scopes-cards-view',
+  elementClass: ScopesCardsView,
+  react: React,
+  events: {
+    onScopeOpen: 'scope-open' as EventName<CustomEvent<KeepScopeOpenDetail>>
+  }
+});
+
+export const KeepHomepage = createComponent({
+  tagName: 'keep-homepage',
+  elementClass: Homepage,
+  react: React
+});
+
+export const KeepMobileHeader = createComponent({
+  tagName: 'keep-mobile-header',
+  elementClass: MobileHeader,
+  react: React
+});
+
+export const KeepPageRouters = createComponent({
+  tagName: 'keep-page-routers',
+  elementClass: PageRouters,
+  react: React
+});
+
+export const KeepErrorWrapper = createComponent({
+  tagName: 'keep-error-wrapper',
+  elementClass: ErrorWrapper,
+  react: React
+});
+
+export const KeepUnsavedChangesDialog = createComponent({
+  tagName: 'keep-unsaved-changes-dialog',
+  elementClass: UnsavedChangesDialog,
+  react: React,
+  events: {
+    // Prefixed on the element side so they cannot be confused with the native <dialog>
+    // `cancel`/`close` events; the React-facing names stay as they were.
+    onSave: 'dialog-save' as EventName<CustomEvent<KeepUnsavedChangesDialogDetail>>,
+    onDiscard: 'dialog-discard' as EventName<CustomEvent<KeepUnsavedChangesDialogDetail>>,
+    onCancel: 'dialog-cancel' as EventName<CustomEvent<KeepUnsavedChangesDialogDetail>>
+  }
+});
+
+export const KeepFormDialogHeader = createComponent({
+  tagName: 'keep-form-dialog-header',
+  elementClass: FormDialogHeader,
+  react: React,
+  events: {
+    // Maps to `header-close` rather than `close` so it cannot be confused with the native
+    // <dialog> event; consumers keep writing `onClose={…}` either way.
+    onClose: 'header-close' as EventName<CustomEvent<KeepFormDialogHeaderCloseDetail>>
   }
 });

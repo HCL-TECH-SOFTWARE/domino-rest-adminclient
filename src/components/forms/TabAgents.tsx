@@ -17,8 +17,7 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { RxDividerVertical } from 'react-icons/rx';
 import { Database } from '../../store/databases/types';
-import { KeepButton, KeepSwitch } from '../keep-elements/KeepElements';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { KeepButton, KeepFormDialogHeader, KeepSwitch } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 /**
@@ -170,8 +169,8 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
         />
       </div>
       <dialog ref={ref} className='dialog'>
-        <FormDialogHeader
-          title='Reset ALL Agents?'
+        <KeepFormDialogHeader
+          heading='Reset ALL Agents?'
           onClose={() => {setResetAllAgents(false)}}
         />
         <div className='dialog-content'>

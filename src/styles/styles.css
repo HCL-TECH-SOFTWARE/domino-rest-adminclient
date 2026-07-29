@@ -211,40 +211,9 @@ body[data-theme="dark"] .color-text-disabled {
     color: var(--text-color-primary);
 }
 
-.dialog-header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    align-items: center;
-    padding-right: 36px;
-}
-
-.dialog-header-close {
-    cursor: pointer;
-    font-size: 16px;
-    color: var(--dialog-header-color);
-    padding: 0;
-    border: none;
-    background: transparent;
-    margin: 0;
-    position: absolute;
-    top: -15px;
-    right: 0;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.dialog-header-title {
-    flex: 1;
-    text-overflow: ellipsis;
-    width: 100%;
-    overflow: hidden;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--dialog-header-color);
-}
+/* The dialog header's three rules moved into keep-form-dialog-header.ts (#806 tier A).
+   `--dialog-header-color` above is still read from there: custom properties inherit through
+   a shadow boundary, so only the class rules had to move. */
 
 .dialog-actions {
     width: 100%;
@@ -513,9 +482,6 @@ body[data-theme="dark"] .color-text-disabled {
     margin-bottom: 10px;
 }
 
-.mb-15 {
-    margin-bottom: 15px;
-}
 
 .mb-30 {
     margin-bottom: 30px;
@@ -1517,34 +1483,8 @@ body[data-theme="dark"] .add-import-svg-icon {
     color: light-dark(#087251, #66bfa4);
 }
 
-/* Footer.tsx */
-.footer-container {
-    display: flex;
-    position: fixed;
-    padding: 0 15px;
-    bottom: 0;
-    width: 100%;
-    /* align-items: center; */
-    justify-content: flex-end;
-    background: #212121;
-}
-
-/* Hidden below wa-page's mobile breakpoint, where the header bar takes the vertical budget
-   this 23px overlay would otherwise claim. It used to be gated in JSX; it is CSS now so the
-   shell does not have to thread a breakpoint into a fixed-position overlay. Keep the query
-   in step with MOBILE_BREAKPOINT_PX in src/AppShell.tsx. */
-@media screen and (width < 768px) {
-    .footer-container {
-        display: none;
-    }
-}
-
-.footer-copyright-text {
-    margin: 0;
-    margin-right: 20px;
-    color: #f5f5f5;
-    font-size: 14px;
-}
+/* The footer moved into keep-footer.ts (#806 tier A); its rules live in that element's
+   `static styles` because global CSS does not cross a shadow boundary. */
 
 /* ScriptEditor.tsx */
 .script-editor-container {

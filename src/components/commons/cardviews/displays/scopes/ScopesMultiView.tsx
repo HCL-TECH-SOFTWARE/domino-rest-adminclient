@@ -5,8 +5,10 @@
  * ========================================================================== */
 
 import React from 'react';
-import ScopesCardsView from './ScopesCardsView';
-import ScopesDefaultView from './ScopesDefaultView';
+import {
+  KeepScopesCardsView,
+  KeepScopesDefaultView,
+} from '../../../../keep-elements/KeepElements';
 import ScopesAlphabeticalView from './ScopesAlphabeticalView';
 import ScopesStacksView from './ScopesStacksView';
 
@@ -23,11 +25,21 @@ const ScopesMultiView: React.FC<ScopesMultiViewProps> = ({
 }) => {
   return (
     <>
-      {view === 'nsf' && <ScopesDefaultView databases={databases} openScope={openScope} />}
+      {view === 'nsf' && (
+        <KeepScopesDefaultView
+          databases={databases}
+          onScopeOpen={(e) => openScope(e.detail.scope)}
+        />
+      )}
       {view === 'alphabetical' && (
         <ScopesAlphabeticalView databases={databases} openScope={openScope} />
       )}
-      {view === 'card' && <ScopesCardsView databases={databases} openScope={openScope} />}
+      {view === 'card' && (
+        <KeepScopesCardsView
+          databases={databases}
+          onScopeOpen={(e) => openScope(e.detail.scope)}
+        />
+      )}
       {view === 'stack' && <ScopesStacksView databases={databases} openScope={openScope} />}
     </>
   );

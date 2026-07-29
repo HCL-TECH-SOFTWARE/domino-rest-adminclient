@@ -21,9 +21,7 @@ import { BsCheck2Circle } from 'react-icons/bs';
 import { IoMdClose } from 'react-icons/io';
 import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -598,8 +596,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         </div>
       </dialog>
       <dialog ref={resetRef} className='dialog'>
-        <FormDialogHeader
-          title='Reset View?'
+        <KeepFormDialogHeader
+          heading='Reset View?'
           onClose={() => {setResetDialogOpen(false)}}
         />
         <div className='dialog-content'>
@@ -614,7 +612,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
           <KeepButton onClick={handleConfirmReset}>Yes</KeepButton>
         </div>
       </dialog>
-      <UnsavedChangesDialog
+      <KeepUnsavedChangesDialog
         open={showDirtyDialog}
         onSave={handleDirtySave}
         onDiscard={closeWithoutSaving}

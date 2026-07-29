@@ -67,8 +67,9 @@ describe('shell dead code stays removed (#707)', () => {
 
   it('has no components/header/Header.tsx', () => {
     expect(existsSync(resolve(SRC, 'components/header/Header.tsx'))).toBe(false);
-    // MobileHeader is the one that actually rendered, and stays.
-    expect(existsSync(resolve(SRC, 'components/header/MobileHeader.tsx'))).toBe(true);
+    // MobileHeader is the one that actually rendered, and stays - as the keep-mobile-header
+    // element since #806 converted it.
+    expect(existsSync(resolve(SRC, 'components/keep-elements/keep-mobile-header.ts'))).toBe(true);
   });
 
   it('references SnackbarToaster nowhere', () => {
