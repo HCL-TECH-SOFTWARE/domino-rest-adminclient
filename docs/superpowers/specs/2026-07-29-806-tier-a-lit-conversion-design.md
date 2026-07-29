@@ -9,6 +9,10 @@ correct rather than to maximise the file count.
 Baseline before any change: `npm run lint` exit 0 · `npm run build` exit 0 ·
 87 test files / 996 tests pass.
 
+**Outcome**, rebased onto `new_code` @ `31b43c8`: 11 elements, 3 dead files deleted,
+lint 0 · build 0 · **95 test files / 1129 tests**, no coverage threshold regression.
+`.tsx` files 119 → 106; files importing React 93 → 83; Linaria consumers 69 → 60.
+
 ---
 
 ## 1. What the 22 files actually are
@@ -22,7 +26,7 @@ sound filter for *risk*, but it does not mean 22 conversions. Verified file by f
 | Delete — dead code | **2** (+1 found outside the list) |
 | Defer to tier B/C | **8** |
 
-### 1.1 Convert (12)
+### 1.1 Convert (11 of the 12 planned)
 
 In dependency order. `keep-*` names follow the existing element convention.
 
@@ -144,6 +148,46 @@ proven and the guard tests can be extended against a working baseline.
 
 ---
 
+## 3a. What execution added to the recipe
+
+Five things that were not in the plan and cost time. Tiers B–D should read these first.
+
+**Check the selector *kind*, not just the rule.** A converted element has to reproduce the
+styling it used to inherit, and what survives the shadow boundary is narrower than it looks:
+
+| How the style reached the element | Crosses a shadow boundary? |
+|---|---|
+| `--custom-property` | **yes** — inherits normally |
+| a class selector (`.color-text-primary`) | no |
+| a bare element selector (`img { … }`) | no |
+| the document's `box-sizing` reset | no |
+
+The last two are the ones that bite. `keep-overrides.css` sizes every image through a bare
+`img` selector, so the mobile header's logo rendered at its natural 448×444 in a 56px bar; and
+restating that rule was still not enough, because the reset that makes everything `border-box`
+also stops at the boundary, so the padding landed outside the height. Custom properties are the
+only free ride — `--dialog-header-color` and `--text-color-primary` both work untouched.
+
+**Grep the whole stylesheet, not the file whose name matches.** The dark-mode override for
+`.color-text-primary` lives in `styles.css`, not `dark-mode.css`. Copying the light-mode literal
+produced 1.1:1 contrast in dark mode across five headings, and a green suite.
+
+**No backticks inside a `css` tagged template.** Not even in a comment — a backtick terminates
+the template, and the error surfaces as `Property 'x' does not exist on type 'CSSResult'`
+somewhere below. This cost five separate fixes. `npm run lint` catches it immediately; run it
+before the suite.
+
+**The per-file gate is a grep, so prose defeats it.** A doc comment explaining why a slotted
+child still needs Material UI made a converted file match the gate's own pattern. Same shape as
+`dead-selectors.test.ts`: these checks match raw text, so naming the thing you removed keeps it
+looking present. Describe such packages in words, not as literals.
+
+**A props-less React child cannot take a `slot` attribute.** `<ProfileMenuDialog slot="profile" />`
+silently drops the attribute, because the component forwards no props, and the content is never
+assigned. Use a default slot, or wrap the child in a plain element that can carry the attribute.
+
+---
+
 ## 3. The risk that actually matters
 
 `FormDialogHeader` and `Footer` are styled **entirely by global classes in
@@ -245,9 +289,11 @@ survives the conversion before spending a commit on it.
 - Items 7–10 each render a still-React child (`FormsContainer`'s 126 lines of children,
   `ProfileMenuDialog`, `Section`, `BreadcrumbRouter`). These arrive through a slot from the
   React parent; they are not converted here.
-- Running the suite from this worktree requires `server.fs.allow` widened to the main
-  checkout. Without it, 18 files fail with `Denied ID …node_modules…?url` and 163 tests are
-  never collected — an artefact of the worktree, not of any change.
+- Running the suite from a worktree needs `npm ci` **inside the worktree**. Without it 18
+  files fail with `Denied ID …node_modules…?url`: Node resolves packages from the main
+  checkout one level up, but that path is outside Vite's root, so every `?url` asset import is
+  refused. Widening `server.fs.allow` also silences it, but installing is the real fix and is
+  what `test/node-modules-root.test.ts` now guards.
 
 ---
 
