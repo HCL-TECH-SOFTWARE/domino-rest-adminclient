@@ -81,8 +81,19 @@ to keep each PR the size of PR 1 — the two families share no files, only the t
 `SchemasMultiView` · `CardViewOptions`, and with them `SchemaStyles`, `schemas/SchemaStyles`
 and `flex/index.tsx` — the last of `ExtraFlex`'s four importers is in this set.
 
-`.schemas-alphabetical-schema-name` stays in `styles.css` until `SchemasAlphabeticalView`
-converts; the scopes element reproduced it but the schemas one still carries the class.
+Done in two parts: the three `ExtraFlex` views first (which killed `SchemaStyles` and
+`components/flex`), then `SchemasAlphabeticalView` and `SchemasMultiView`, which emptied
+`commons/cardviews/displays/` entirely.
+
+**No `RouterController` was needed after all.** The three-view pass parked navigation in the
+still-React `SchemasMultiView`; when that file converted too, the `schema-open` event simply
+travelled one boundary further to `SchemasLists`, which is React until #719. The controller is
+only wanted when the *route components* convert.
+
+### Left over
+
+`CardViewOptions` (75 lines, MUI + store, shared by both list pages). It is the last file under
+`commons/cardviews/`.
 
 `ScopeLists.tsx` and `SchemasLists.tsx` are the boundary. They stay React: they are what the
 router's `import()` resolves to, and the router binding is a P4 deletion (#719). They keep their

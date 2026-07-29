@@ -99,9 +99,8 @@ export default class ScopesAlphabeticalView extends KeepElement {
       }
 
       /*
-       * was .schemas-alphabetical-schema-name in styles.css. That rule stays there for now:
-       * SchemasAlphabeticalView is still React and still carries the class. It goes when that
-       * file converts.
+       * was the shared alphabetical-name rule in styles.css, which is deleted now that this
+       * view and the schemas one are both elements and nothing carries the class.
        */
       .api-name {
         font-size: 16px;

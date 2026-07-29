@@ -16,9 +16,13 @@ import { INIT_STATE } from '../../../src/store/dialog/types';
 import '../../../src/components/keep-elements/keep-schemas-cards-view';
 import '../../../src/components/keep-elements/keep-schemas-default-view';
 import '../../../src/components/keep-elements/keep-schemas-stacks-view';
+import '../../../src/components/keep-elements/keep-schemas-alphabetical-view';
+import '../../../src/components/keep-elements/keep-schemas-multi-view';
 import type SchemasCardsView from '../../../src/components/keep-elements/keep-schemas-cards-view';
 import type SchemasDefaultView from '../../../src/components/keep-elements/keep-schemas-default-view';
 import type SchemasStacksView from '../../../src/components/keep-elements/keep-schemas-stacks-view';
+import type SchemasAlphabeticalView from '../../../src/components/keep-elements/keep-schemas-alphabetical-view';
+import type SchemasMultiView from '../../../src/components/keep-elements/keep-schemas-multi-view';
 
 const schema = (over: Record<string, unknown> = {}) => ({
   apiName: 'demo',
@@ -231,6 +235,126 @@ describe('the schemas card views', () => {
         n.getAttribute('mainLabel'),
       );
       expect(labels).toEqual(['0 in use Schema ', '0 not in use Schema']);
+    });
+  });
+
+  describe('keep-schemas-alphabetical-view', () => {
+    const TAG = 'keep-schemas-alphabetical-view';
+
+    const letters = (el: SchemasAlphabeticalView) =>
+      [...el.shadowRoot!.querySelectorAll('.each-letter')] as HTMLButtonElement[];
+
+    it('registers the custom element', () => {
+      expect(customElements.get(TAG)).toBeTruthy();
+    });
+
+    it('groups by the initial of the schema name, letters in order', async () => {
+      const el = await mountLit<SchemasAlphabeticalView>(TAG, {
+        databases: [schema({ schemaName: 'Zeta' }), schema({ schemaName: 'Alpha' })],
+      });
+      const blocks = [...el.shadowRoot!.querySelectorAll('.block')].map((b) =>
+        b.getAttribute('data-letter'),
+      );
+      // The React version chose between schemaName and apiName on a pathname test that was
+      // always true in this view; the key is stated once now.
+      expect(blocks).toEqual(['A', 'Z']);
+    });
+
+    it('offers all 26 letters and disables the ones with nothing under them', async () => {
+      const el = await mountLit<SchemasAlphabeticalView>(TAG, {
+        databases: [schema({ schemaName: 'Alpha' })],
+      });
+      expect(letters(el)).toHaveLength(26);
+      // Real buttons, so a disabled letter is announced as disabled rather than carrying
+      // tabIndex={-1} on a div (WCAG 4.1.2).
+      expect(letters(el).find((b) => b.textContent!.trim() === 'A')!.disabled).toBe(false);
+      expect(letters(el).find((b) => b.textContent!.trim() === 'B')!.disabled).toBe(true);
+    });
+
+    it('marks the chosen letter as current', async () => {
+      const el = await mountLit<SchemasAlphabeticalView>(TAG, {
+        databases: [schema({ schemaName: 'Alpha' })],
+      });
+      const a = letters(el).find((b) => b.textContent!.trim() === 'A')!;
+      a.click();
+      await el.updateComplete;
+      expect(a.getAttribute('aria-current')).toBe('true');
+    });
+
+    it('names the usage bar, which was colour alone', async () => {
+      const el = await mountLit<SchemasAlphabeticalView>(TAG, { databases: [schema()] });
+      const bar = el.shadowRoot!.querySelector('.status')!;
+      // A tooltip is not an accessible name (WCAG 1.1.1).
+      expect(bar.getAttribute('role')).toBe('img');
+      expect(bar.getAttribute('aria-label')).toBe('Not used by Scopes');
+
+      store.dispatch(fetchKeepScopes([scopeFor('demo.nsf', 'Demo')] as never));
+      await el.updateComplete;
+      expect(el.shadowRoot!.querySelector('.status')!.getAttribute('aria-label')).toBe(
+        'Used by Scopes',
+      );
+    });
+
+    it('emits schema-open from the row', async () => {
+      const el = await mountLit<SchemasAlphabeticalView>(TAG, { databases: [schema()] });
+      const seen = listen(el, 'schema-open');
+      el.shadowRoot!.querySelector<HTMLElement>('.text-container')!.click();
+      expect(seen).toHaveLength(1);
+    });
+
+    it('names the icon-only delete control and opens the dialog on that schema', async () => {
+      const el = await mountLit<SchemasAlphabeticalView>(TAG, { databases: [schema()] });
+      const button = el.shadowRoot!.querySelector<HTMLElement>('.delete-button')!;
+      expect(button.getAttribute('aria-label')).toBe('Delete schema Demo');
+      button.click();
+      await el.updateComplete;
+      expect(store.getState().dialog.deleteDialog).toBe(true);
+      const dialog = el.shadowRoot!.querySelector('keep-delete-dialog') as HTMLElement & {
+        selected: { schemaName: string };
+      };
+      expect(dialog.selected.schemaName).toBe('Demo');
+    });
+
+    it('refuses to delete without the permission', async () => {
+      store.dispatch(fetchKeepPermissions({ createDbMapping: true, deleteDbMapping: false }));
+      const el = await mountLit<SchemasAlphabeticalView>(TAG, { databases: [schema()] });
+      el.shadowRoot!.querySelector<HTMLElement>('.delete-button')!.click();
+      expect(store.getState().dialog.deleteDialog).toBe(false);
+      expect(store.getState().alert.message).toContain('permission to delete schema');
+    });
+  });
+
+  describe('keep-schemas-multi-view', () => {
+    const TAG = 'keep-schemas-multi-view';
+    const VIEWS =
+      'keep-schemas-cards-view, keep-schemas-default-view, keep-schemas-alphabetical-view, keep-schemas-stacks-view';
+
+    it.each([
+      ['card', 'keep-schemas-cards-view'],
+      ['nsf', 'keep-schemas-default-view'],
+      ['alphabetical', 'keep-schemas-alphabetical-view'],
+      ['stack', 'keep-schemas-stacks-view'],
+    ])('renders %s as %s', async (view, tag) => {
+      const el = await mountLit<SchemasMultiView>(TAG, { view, databases: [schema()] });
+      expect(el.shadowRoot!.querySelector(tag)).toBeTruthy();
+      expect(el.shadowRoot!.querySelectorAll(VIEWS)).toHaveLength(1);
+    });
+
+    it('renders nothing for an unrecognised view', async () => {
+      const el = await mountLit<SchemasMultiView>(TAG, { view: 'treemap', databases: [schema()] });
+      expect(el.shadowRoot!.querySelectorAll(VIEWS)).toHaveLength(0);
+    });
+
+    it('lets a child schema-open through exactly once', async () => {
+      const el = await mountLit<SchemasMultiView>(TAG, { view: 'card', databases: [schema()] });
+      const child = el.shadowRoot!.querySelector('keep-schemas-cards-view') as HTMLElement & {
+        updateComplete: Promise<boolean>;
+      };
+      await child.updateComplete;
+      const seen = listen(el, 'schema-open');
+      child.shadowRoot!.querySelector<HTMLElement>('keep-default-card')!.click();
+      // Composed events cross both boundaries unaided; forwarding would double it.
+      expect(seen).toHaveLength(1);
     });
   });
 });
