@@ -28,6 +28,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm run lint
+      # `npm run build` is `tsc -b tsconfig.app.json` — it type-checks `src` and nothing
+      # else. Without this step `tsconfig.test.json` was never checked in CI, and five type
+      # errors accumulated in `test/` on a branch whose every gate was green. See #771.
+      - run: npm run typecheck
       - run: npm run build
       # Ratcheting gate on the *eager* closure — the bytes needed before first paint —
       # read from dist/.vite/manifest.json. Runs straight after the build because it needs
