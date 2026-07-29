@@ -17,6 +17,7 @@ import {
 } from '../../../src/store/databases/reducer';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../../../src/store/dialog/action';
 import { toggleDrawer } from '../../../src/store/drawer/action';
+import { resetForm as resetFormAction } from '../../../src/store/databases/reducer';
 import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
@@ -321,6 +322,18 @@ describe('databases — scopes', () => {
       await updateScope(true, { apiName: 'override', schemaName: 's' })(dispatch, getState);
 
       expect(JSON.parse(fetchMock.mock.calls[0][1].body).apiName).toBe('override');
+    });
+
+    // #848: this used to dispatch resetForm({ dbName: apiName }) on the no-override
+    // path. resetForm filters state.databases.forms by form.formName, so an object
+    // never matched and no form was ever removed. Deleted rather than repaired --
+    // making it work would switch on behaviour the app has never had.
+    it('does not try to reset the forms list', async () => {
+      returns(scope);
+
+      await updateScope(true)(dispatch, getState);
+
+      expect(types()).not.toContain(resetFormAction.type);
     });
 
     it('does not throw out of the thunk when the API refuses', async () => {

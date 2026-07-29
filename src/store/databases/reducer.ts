@@ -206,12 +206,10 @@ export const databasesSlice = createSlice({
     setDbIndex(state, action: PayloadAction<number>) {
       state.contextViewIndex = action.payload;
     },
-    // `any`, not `string`, and that is a finding rather than laziness. The filter
-    // compares `form.formName` to the payload, but scopes.ts dispatches
-    // `{ dbName: apiName }` — an object — so that call has never removed a form.
-    // Typed loosely to preserve it exactly; narrowing it here would be a silent
-    // behaviour change dressed up as a type fix. Worth its own issue.
-    resetForm(state, action: PayloadAction<any>) {
+    // `string` again since #848 removed the one caller that passed an object.
+    // tsc is now the guard: a second caller with a different shape is a compile
+    // error rather than a filter that silently matches nothing.
+    resetForm(state, action: PayloadAction<string>) {
       state.forms = state.forms.filter((form) => form.formName !== action.payload);
     },
     setLoadedForm(state, action: PayloadAction<{ db?: string; formName: string }>) {
