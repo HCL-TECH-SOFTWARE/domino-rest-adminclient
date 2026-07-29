@@ -14,7 +14,9 @@ import { KeepElement } from './keep-element';
 @customElement('keep-drawer')
 export default class Drawer extends KeepElement {
   static styles = css`
-        wa-drawer::part(panel) {
+        /* dialog, not panel: wa-drawer exposes dialog, header, header-actions, title,
+           close-button, close-button__base, body and footer. */
+        wa-drawer::part(dialog) {
             background: var(--wa-color-surface-default);
             color: var(--wa-color-text-normal);
         }
