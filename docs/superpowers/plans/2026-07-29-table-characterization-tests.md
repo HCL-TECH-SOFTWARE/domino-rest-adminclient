@@ -1073,6 +1073,7 @@ oddly; `renderWithProviders` accepts a `container`, so mount into a real tbody.
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
+import { deepQueryAll } from '../../test-utils/shadow';
 import AppItem from '../../../src/components/applications/AppItem';
 import { generateSecret } from '../../../src/store/applications/action';
 import { toggleApplicationDrawer } from '../../../src/store/drawer/action';
@@ -1121,6 +1122,36 @@ function renderAppItem(app = makeApp()) {
   return { deleteApplication, formik };
 }
 
+/**
+ * The `<button>` inside the `KeepTooltip` whose copy is `content`.
+ *
+ * `getByRole('button', { name: … })` cannot find these. `keep-tooltip` sets `role="tooltip"`
+ * on its *own* popup in the shadow root and projects the trigger through a plain `<slot>`
+ * — it never puts `aria-label` or `aria-describedby` on the slotted child. So an icon-only
+ * button wrapped in a tooltip has **no accessible name at all**.
+ *
+ * Locating by the tooltip's copy beats indexing into cells: it is stable against layout
+ * changes, it says what it means, and it pins the tooltip text as a side effect.
+ */
+function tooltipButton(content: string): HTMLButtonElement {
+  const host = deepQueryAll('keep-tooltip').find(
+    (t) => (t as unknown as { content?: string }).content === content,
+  );
+  if (!host) {
+    const seen = deepQueryAll('keep-tooltip')
+      .map((t) => (t as unknown as { content?: string }).content)
+      .join(', ');
+    throw new Error(`No keep-tooltip with content "${content}". Seen: [${seen}]`);
+  }
+  const button = host.querySelector('button');
+  if (!button) throw new Error(`keep-tooltip "${content}" wraps no button`);
+  return button;
+}
+
+/** Copy of every tooltip currently rendered — for absence assertions. */
+const tooltipCopy = () =>
+  deepQueryAll('keep-tooltip').map((t) => (t as unknown as { content?: string }).content);
+
 describe('AppItem — layout', () => {
   it('renders five cells in the data row', () => {
     renderAppItem();
@@ -1144,14 +1175,17 @@ describe('AppItem — launching', () => {
   it('opens the start page for an active app', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
     renderAppItem();
-    fireEvent.click(screen.getByRole('button', { name: /Launch Timesheets/i }));
+    fireEvent.click(tooltipButton('Launch Timesheets'));
     expect(open).toHaveBeenCalledWith('https://example.test/start');
     open.mockRestore();
   });
 
   it('offers no launch button for a disabled app', () => {
     renderAppItem(makeApp({ appStatus: 'disabled' }));
-    expect(screen.queryByRole('button', { name: /Launch/i })).not.toBeInTheDocument();
+    expect(tooltipCopy()).not.toContain('Launch Timesheets');
+    // The disabled app gets the inactive-marker tooltip instead — asserting that too keeps
+    // this from passing merely because the row failed to render at all.
+    expect(tooltipCopy()).toContain('This application is inactive.');
   });
 });
 
@@ -1183,7 +1217,7 @@ describe('AppItem — secrets', () => {
 describe('AppItem — actions', () => {
   it('loads the app into the form and opens the drawer on edit', () => {
     const { formik } = renderAppItem();
-    fireEvent.click(screen.getByRole('button', { name: /Edit Application/i }));
+    fireEvent.click(tooltipButton('Edit Application'));
     expect(formik.setValues).toHaveBeenCalledWith(
       expect.objectContaining({ appId: 'app-123', appName: 'Timesheets', appStatus: true }),
     );
@@ -1192,13 +1226,13 @@ describe('AppItem — actions', () => {
 
   it('reports the app status as a boolean derived from isActive', () => {
     const { formik } = renderAppItem(makeApp({ appStatus: 'disabled' }));
-    fireEvent.click(screen.getByRole('button', { name: /Edit Application/i }));
+    fireEvent.click(tooltipButton('Edit Application'));
     expect(formik.setValues).toHaveBeenCalledWith(expect.objectContaining({ appStatus: false }));
   });
 
   it('deletes by app id', () => {
     const { deleteApplication } = renderAppItem();
-    fireEvent.click(screen.getByRole('button', { name: /Delete Application/i }));
+    fireEvent.click(tooltipButton('Delete Application'));
     expect(deleteApplication).toHaveBeenCalledWith('app-123');
   });
 });
@@ -1209,15 +1243,17 @@ describe('AppItem — actions', () => {
 ```bash
 npx vitest run test/components/applications/AppItem.test.tsx
 ```
-Expected: all pass. The one likely correction: the buttons are wrapped by `KeepTooltip`,
-whose `content` is an **attribute**, not an accessible name — so
-`getByRole('button', { name: /Launch Timesheets/i })` may find nothing. If so, select by
-position within the cell and say so in a comment, e.g.
-```ts
-const launch = document.querySelector('td.expand button') as HTMLButtonElement;
-```
-and for edit/delete, `document.querySelectorAll('td:last-child button')[0]` / `[1]`.
-Prefer the role query if it works; fall back only where it does not.
+Expected: all pass. Note what `tooltipButton()` above already accounts for: **a
+`KeepTooltip`-wrapped icon button has no accessible name**, so `getByRole('button', { name })`
+cannot find it. `keep-tooltip.ts:54` puts `role="tooltip"` on its own popup inside the
+shadow root and projects the trigger through a bare `<slot>` (`:205`) — it never sets
+`aria-label` or `aria-describedby` on the slotted child, and `content` is a Lit property
+without `reflect: true`, so it is not an attribute either.
+
+If `tooltipButton()` throws, its message lists every tooltip copy it did find — pin what
+you observe. Do not fall back to positional selectors like
+`document.querySelectorAll('td:last-child button')[1]`; they pass for the wrong reasons and
+break on any layout change.
 
 - [ ] **Step 3: Negative control**
 
