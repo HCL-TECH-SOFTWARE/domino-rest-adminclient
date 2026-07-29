@@ -77,9 +77,11 @@ export default class Tip extends KeepElement {
      * - wa-card's own box-shadow: var(--wa-shadow-s) resolves to about 0 2px 2px -1px:
      *   real, but not enough to lift a near-white card off white.
      *
-     * So: --wa-shadow-m for elevation you can actually see, and the NEUTRAL border ramp
-     * rather than the surface one, which is two steps darker. Both stay sensible in dark
-     * mode, where the surfaces already differ (#1e1e2e against #252535, from keep-theme.css).
+     * So: --wa-shadow-l for elevation you can actually see, and the NEUTRAL border ramp
+     * rather than the surface one. Border and shadow were both raised a step after looking
+     * at them on the page -- quiet (neutral-90 in light) and shadow-m still read as faint.
+     * neutral-border-normal is neutral-80 in light and neutral-30 in dark, so it holds up
+     * both ways; the dark surfaces already differ (#1e1e2e against #252535, keep-theme.css).
      *
      * Nothing here sets --wa-panel-background-color, --wa-panel-border-color or
      * --border-radius: wa-card reads none of the three. It reads --wa-color-surface-*,
@@ -89,8 +91,8 @@ export default class Tip extends KeepElement {
      */
     wa-card {
       --wa-panel-border-radius: var(--wa-border-radius-l);
-      border-color: var(--wa-color-neutral-border-quiet);
-      box-shadow: var(--wa-shadow-m);
+      border-color: var(--wa-color-neutral-border-normal);
+      box-shadow: var(--wa-shadow-l);
       display: flex;
       flex: 1;
       overflow: hidden;
