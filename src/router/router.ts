@@ -197,6 +197,21 @@ export interface RouterOptions {
 }
 
 /**
+ * The part of a route this file needs to know about: where it matches, and how to fetch
+ * the code behind it (#813).
+ *
+ * `load` is typed `() => Promise<unknown>` rather than resolving to a component, because
+ * this module has no view framework in it and is not gaining one — `react.tsx` is the
+ * disposable half and narrows the result to `{ default: ComponentType }` at the point of
+ * use. The cost is one cast over there; the benefit is that the Lit controller replacing
+ * `react.tsx` inherits prefetching without this file changing.
+ */
+export interface LoadableRoute {
+  path: string;
+  load?: () => Promise<unknown>;
+}
+
+/**
  * Current location, navigation, and a subscription for views to re-render on.
  *
  * The basename is handled in exactly two places: stripped in {@link Router.location} and
@@ -209,6 +224,10 @@ export class Router {
   private readonly listeners = new Set<() => void>();
   private snapshot: RouterLocation;
   private stopListening: () => void;
+  /** Published by the view layer via {@link setRoutes}; only `prefetch` reads it. */
+  private routes: readonly LoadableRoute[] = [];
+  /** Route path → in-flight `load()`, so a chunk is fetched at most once. */
+  private readonly pending = new Map<string, Promise<unknown>>();
 
   constructor({ base = '', history = browserHistory() }: RouterOptions = {}) {
     this.base = base.replace(/\/$/, '');
@@ -250,6 +269,45 @@ export class Router {
     if (replace) this.history.replace(href);
     else this.history.push(href);
     this.sync();
+  }
+
+  /**
+   * Publish the active route table, so {@link prefetch} has something to match against.
+   *
+   * The router does not own the table — the view layer builds it, and rebuilds it when a
+   * guard's inputs change. This is a plain setter rather than constructor state for that
+   * reason.
+   */
+  setRoutes(routes: readonly LoadableRoute[]): void {
+    this.routes = routes;
+  }
+
+  /**
+   * Start fetching the chunk behind `to`, and return the in-flight promise.
+   *
+   * Idempotent per route: the promise is cached under the route's `path`, so a hover that
+   * fires `pointerenter` five times, or a hover followed by the actual click, does one
+   * fetch. Returns `undefined` when nothing matches or the match has no `load` — a caller
+   * prefetching a static route is not an error, it just has nothing to do.
+   *
+   * Failures are not cached: a chunk that failed on a flaky connection should be
+   * retryable, and React's `lazy` will ask for it again on render.
+   */
+  prefetch(to: To): Promise<unknown> | undefined {
+    const pathname = toHref(to, this.snapshot.pathname).split(/[?#]/)[0];
+    const matched = matchRoutes(this.routes, pathname);
+    if (!matched?.route.load) return undefined;
+
+    const key = matched.route.path;
+    const cached = this.pending.get(key);
+    if (cached) return cached;
+
+    const promise = matched.route.load().catch((error: unknown) => {
+      this.pending.delete(key);
+      throw error;
+    });
+    this.pending.set(key, promise);
+    return promise;
   }
 
   /** Subscribe to location changes. Returns an unsubscribe. */

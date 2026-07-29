@@ -8,20 +8,13 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { styled } from '@linaria/react';
 import { RouterOutlet, useLocation, type RouteDef } from './router/react';
 import { useSelector } from 'react-redux';
-import AccessMode from './components/access/AccessMode';
-import ApplicationsContainer from './components/applications/Applications';
-import FormsContainer from './components/forms/FormsContainer';
 import { AppState } from './store';
 import { setLoading } from './store/loading/action';
-import Section from './components/home/sections/Section';
 import BreadcrumbRouter from './components/routers/BreadcrumbRouter';
-import { KeepHomepage, KeepPageRouters } from './components/keep-elements/KeepElements';
-import SchemasLists from './components/schemas/SchemasLists';
+import { KeepPageLoading, KeepPageRouters } from './components/keep-elements/KeepElements';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
-import ScopeLists from './components/scopes/ScopeLists';
 import { NavigationGuardProvider } from './components/navigation/NavigationGuardContext';
 import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
-import ConsentsContainer from './components/applications/ConsentsContainer';
 import { useAppDispatch } from './store/hooks';
 
 /**
@@ -83,21 +76,57 @@ const Views: React.FC = () => {
    * App's copy always won, and its element is the whole page rather than a main-region
    * view, so this one could never render.
    */
+  /*
+   * `load` rather than `element` (#813): each of the seven is its own chunk, fetched when
+   * the route is first reached rather than sitting in the entry.
+   *
+   * `guard` still runs first, and creating a `React.lazy` does not call `load`, so an
+   * unauthenticated visitor is redirected without fetching the view they asked for.
+   *
+   * These are inline `import()` calls on purpose — the specifier has to be statically
+   * analysable for the bundler to emit a chunk, so a helper taking a path string would
+   * silently produce one big chunk again.
+   */
   const routes: RouteDef[] = useMemo(() => {
     const guard = () => authenticated;
     return [
-      { path: '/', element: <KeepHomepage><Section /></KeepHomepage>, guard, redirectTo: '/' },
-      { path: '/schema', element: <SchemasLists />, guard, redirectTo: '/' },
-      { path: '/schema/:nsfPath/:dbName', element: <FormsContainer />, guard, redirectTo: '/' },
+      { path: '/', load: () => import('./components/home/HomePage'), guard, redirectTo: '/' },
       {
-        path: '/schema/:nsfPath/:dbName/:formName/access',
-        element: <AccessMode />,
+        path: '/schema',
+        load: () => import('./components/schemas/SchemasLists'),
         guard,
         redirectTo: '/',
       },
-      { path: '/scope', element: <ScopeLists />, guard, redirectTo: '/' },
-      { path: '/apps', element: <ApplicationsContainer />, guard, redirectTo: '/' },
-      { path: '/apps/consents', element: <ConsentsContainer />, guard, redirectTo: '/' },
+      {
+        path: '/schema/:nsfPath/:dbName',
+        load: () => import('./components/forms/FormsContainer'),
+        guard,
+        redirectTo: '/',
+      },
+      {
+        path: '/schema/:nsfPath/:dbName/:formName/access',
+        load: () => import('./components/access/AccessMode'),
+        guard,
+        redirectTo: '/',
+      },
+      {
+        path: '/scope',
+        load: () => import('./components/scopes/ScopeLists'),
+        guard,
+        redirectTo: '/',
+      },
+      {
+        path: '/apps',
+        load: () => import('./components/applications/Applications'),
+        guard,
+        redirectTo: '/',
+      },
+      {
+        path: '/apps/consents',
+        load: () => import('./components/applications/ConsentsContainer'),
+        guard,
+        redirectTo: '/',
+      },
     ];
   }, [authenticated]);
 
@@ -180,7 +209,7 @@ const Views: React.FC = () => {
         <KeepPageRouters>
           <BreadcrumbRouter />
         </KeepPageRouters>
-        <RouterOutlet routes={routes} />
+        <RouterOutlet routes={routes} fallback={<KeepPageLoading message="loading view" />} />
 
         {/*
           /mail stays commented out: the Mail/Dashboard pair is blocked on LABS-1214
