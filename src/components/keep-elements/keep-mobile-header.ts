@@ -74,6 +74,27 @@ export default class MobileHeader extends KeepElement {
     }
 
     /*
+     * Reproduces the bare img rule in styles/keep-overrides.css. That is an element selector
+     * on a document stylesheet, so it does not cross a shadow boundary - and without it this
+     * logo renders at its natural 448x444 inside a 56px bar. Caught in a browser; the suite
+     * runs with css disabled and cannot see it.
+     *
+     * box-sizing is restated for the same reason, and it is the subtler half: the document
+     * reset that makes every element border-box does not cross the boundary either, so without
+     * it this box defaults to content-box and the 10px padding lands *outside* the 55px,
+     * giving a 75px logo in a 56px bar.
+     */
+    .logo img {
+      box-sizing: border-box;
+      background: #383838;
+      border-radius: 8px;
+      padding: 10px;
+      height: 55px;
+      width: auto;
+      display: block;
+    }
+
+    /*
      * Shrink-to-fit, not flex: 1. There used to be three equal thirds here - hamburger, logo,
      * profile - and the logo landed in the middle one. wa-page owns the hamburger now, so two
      * equal halves would centre the logo in the left half instead of on the bar.

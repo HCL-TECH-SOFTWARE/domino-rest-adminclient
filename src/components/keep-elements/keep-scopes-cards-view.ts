@@ -40,12 +40,19 @@ export default class ScopesCardsView extends KeepElement {
       gap: 20px;
     }
 
-    /* were the medium-font, mb-30, mt-5 and color-text-primary utilities. No stylesheet in the tree defines
-       medium-font, so only the other three had any effect. */
+    /*
+     * were the medium-font, mb-30, mt-5 and color-text-primary utilities. No stylesheet in the
+     * tree defines medium-font, so only the other three had any effect.
+     *
+     * The colour is the custom property, not the #000 the utility sets in light mode: that
+     * utility has a dark-mode override, and it is a light-DOM descendant selector that cannot
+     * reach into this shadow root. Copying the literal made the heading black on a near-black
+     * background in dark mode. The property is mode-aware and inherits across the boundary.
+     */
     .heading {
       margin-top: 5px;
       margin-bottom: 30px;
-      color: #000;
+      color: var(--text-color-primary);
     }
   `;
 

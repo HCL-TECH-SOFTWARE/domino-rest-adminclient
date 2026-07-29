@@ -56,8 +56,22 @@ export default class ErrorWrapper extends KeepElement {
       justify-content: center;
     }
 
+    /*
+     * The height was the only thing ErrorContainer set; the rest reproduces the bare img rule
+     * in styles/keep-overrides.css, which is an element selector on a document stylesheet and
+     * so does not cross a shadow boundary. Without it these illustrations lose their plate and
+     * render at natural size.
+     */
     .image {
+      /* Restated because the document's border-box reset does not cross the boundary either;
+         without it the 10px padding lands outside the 250px. */
+      box-sizing: border-box;
       height: 250px;
+      background: #383838;
+      border-radius: 8px;
+      padding: 10px;
+      width: auto;
+      display: block;
     }
 
     /* was Title's inner message rule */

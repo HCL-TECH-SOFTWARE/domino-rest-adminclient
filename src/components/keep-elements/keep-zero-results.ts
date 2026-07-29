@@ -19,9 +19,13 @@ import { KeepElement } from './keep-element';
  * `test/styles/dead-selectors.test.ts` matches raw text and a mention would have kept it
  * looking alive.
  *
- * `color: #000` is carried over as-is. It has no dark-mode override and never had one - the
- * same is true of the other 42 files using `color-text-primary`, so fixing it here alone
- * would only make this one screen inconsistent. Lane B's to resolve (#709).
+ * The text colour is the `--text-color-primary` custom property, **not** the `#000` that
+ * `color-text-primary` sets. That utility has a dark-mode override
+ * (`body[data-theme="dark"] .color-text-primary`) which lives in `styles.css` rather than
+ * `dark-mode.css`, and it is a light-DOM descendant selector, so it cannot reach into this
+ * shadow root. Copying the light-mode literal renders black on a near-black background in dark
+ * mode; the custom property is mode-aware and inherits across the boundary. Found in the
+ * browser, not by the suite - which runs with `css: false` and cannot see any of this.
  *
  * The Linaria block also defined `.no-result` and `.not-found`, which the markup never
  * applied. Both are dropped.
@@ -45,13 +49,13 @@ export default class ZeroResults extends KeepElement {
     /* was .large-text + .color-text-primary */
     .main {
       font-size: 20px;
-      color: #000;
+      color: var(--text-color-primary);
     }
 
     /* the margin utilities collapsed to their computed result, + .color-text-primary */
     .secondary {
       margin: 15px 0;
-      color: #000;
+      color: var(--text-color-primary);
     }
   `;
 
