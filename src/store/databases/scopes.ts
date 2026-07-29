@@ -21,7 +21,6 @@ import {
   deleteScope as deleteScopeAction,
   fetchKeepDatabases,
   fetchKeepScopes,
-  resetForm,
   setPullScope as setPullScopeAction,
 } from './reducer';
 
@@ -262,11 +261,16 @@ export const updateScope = (active: boolean, data?: any) => {
         }
       : formData;
 
-    // Reset Form
-    if (!data)
-      dispatch(resetForm({
-          dbName: apiName
-        }));
+    // The `dispatch(resetForm({ dbName: apiName }))` that used to sit here is
+    // deleted rather than repaired (#848). It never did anything: resetForm
+    // filters `state.databases.forms` by `form.formName`, and this passed an
+    // object, so no form ever matched. Its evident intent — drop the cached forms
+    // belonging to this database — is something the reducer cannot express, since
+    // it filters by form name and not by `dbName`.
+    //
+    // Making it work would switch on behaviour the app has never had, on the path
+    // that merely toggles a scope active from the list. That is a product change,
+    // not a bug fix, so it is gone and the intent is recorded here.
 
     try {
       const { response, data } = await apiRequestWithRetry(() =>
