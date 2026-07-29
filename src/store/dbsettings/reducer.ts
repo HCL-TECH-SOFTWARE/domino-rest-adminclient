@@ -1,30 +1,26 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import {
-  DBSettingDialogState,
-  DBSettingActionTypes,
-  TOGGLE_DBSETTING_DIALOG,
-} from './types';
+import { createSlice } from '@reduxjs/toolkit';
+import type { DBSettingDialogState } from './types';
 
 const initialState: DBSettingDialogState = {
   visible: false,
 };
 
-export default function dbSettingReducer(
-  state = initialState,
-  action: DBSettingActionTypes
-): DBSettingDialogState {
-  switch (action.type) {
-    case TOGGLE_DBSETTING_DIALOG:
-      return {
-        ...state,
-        visible: !state.visible,
-      };
-    default:
-      return state;
-  }
-}
+export const dbSettingSlice = createSlice({
+  name: 'dbSetting',
+  initialState,
+  reducers: {
+    toggleSettings(state) {
+      state.visible = !state.visible;
+    },
+  },
+});
+
+export const { toggleSettings } = dbSettingSlice.actions;
+
+export default dbSettingSlice.reducer;

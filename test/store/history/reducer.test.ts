@@ -5,8 +5,8 @@
  * ========================================================================== */
 
 import { describe, it, expect } from 'vitest';
-import historyReducer from '../../../src/store/history/reducer';
-import { ADD_HISTORY, HistoryState } from '../../../src/store/history/types';
+import historyReducer, { addHistory } from '../../../src/store/history/reducer';
+import type { HistoryState } from '../../../src/store/history/types';
 
 const initial: HistoryState = {
   histories: [
@@ -18,12 +18,12 @@ const initial: HistoryState = {
 
 describe('historyReducer', () => {
   it('returns the initial state for an unknown action', () => {
-    expect(historyReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
+    expect(historyReducer(undefined, { type: '@@UNKNOWN' })).toEqual(initial);
   });
 
-  it('ADD_HISTORY appends the payload to histories', () => {
+  it('addHistory appends the payload to histories', () => {
     const entry = { uri: 'scopes', label: 'Scopes' };
-    const next = historyReducer(initial, { type: ADD_HISTORY, payload: entry });
+    const next = historyReducer(initial, addHistory(entry));
     expect(next.histories).toHaveLength(initial.histories.length + 1);
     expect(next.histories[next.histories.length - 1]).toEqual(entry);
   });
@@ -31,8 +31,8 @@ describe('historyReducer', () => {
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
     const entry = { uri: 'scopes', label: 'Scopes' };
-    expect(() => historyReducer(frozen, { type: ADD_HISTORY, payload: entry })).not.toThrow();
-    const next = historyReducer(frozen, { type: ADD_HISTORY, payload: entry });
+    expect(() => historyReducer(frozen, addHistory(entry))).not.toThrow();
+    const next = historyReducer(frozen, addHistory(entry));
     expect(next).not.toBe(frozen);
     expect(frozen.histories).toHaveLength(3);
   });

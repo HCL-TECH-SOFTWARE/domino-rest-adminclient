@@ -1,25 +1,16 @@
 /* ========================================================================== *
- * Copyright (C) 2023, 2024 HCL America Inc.                                  *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-// Describing the shape of the Databases's slice of state
+/** One breadcrumb entry. */
 export interface KeepHistory {
   uri: string;
   label: string;
 }
 
+/** Shape of the breadcrumb-history slice of state. */
 export interface HistoryState {
   histories: KeepHistory[];
 }
-
-// Describing the different ACTION NAMES available
-export const ADD_HISTORY = 'ADD_HISTORY';
-
-export interface AddHistory {
-  type: typeof ADD_HISTORY;
-  payload: KeepHistory;
-}
-
-export type KeepHistoryActionTypes = AddHistory;

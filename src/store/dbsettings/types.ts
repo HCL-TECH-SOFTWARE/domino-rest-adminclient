@@ -1,18 +1,10 @@
 /* ========================================================================== *
- * Copyright (C) 2023, 2024 HCL America Inc.                                  *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-// Describing the shape of the Databases's slice of state
+/** Shape of the database-settings dialog slice of state. */
 export interface DBSettingDialogState {
   visible: boolean;
 }
-// Describing the different ACTION NAMES available
-export const TOGGLE_DBSETTING_DIALOG = 'TOGGLE_DBSETTING_DIALOG';
-
-export interface ToggleDialog {
-  type: typeof TOGGLE_DBSETTING_DIALOG;
-}
-
-export type DBSettingActionTypes = ToggleDialog;
