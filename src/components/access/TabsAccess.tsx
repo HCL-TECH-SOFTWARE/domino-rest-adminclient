@@ -16,7 +16,6 @@ import { Menu, MenuItem } from '@mui/material';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
 import AddModeDialog from './AddModeDialog';
-import UnsavedChangesDialog from '../dialogs/UnsavedChangesDialog';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import {
   testFormula,
@@ -36,7 +35,7 @@ import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import { BiCopy } from 'react-icons/bi';
 import { FiSave } from "react-icons/fi";
 import { Database } from '../../store/databases/types';
-import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepTooltip, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -995,7 +994,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
         </div>
       </TabNavigator>
       <FormDrawer formName='TestForm' formik={formik} />
-      <UnsavedChangesDialog
+      <KeepUnsavedChangesDialog
         open={pendingAction !== null}
         onSave={handlePendingActionSave}
         onDiscard={handlePendingActionDiscard}
