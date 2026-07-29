@@ -7,7 +7,6 @@
 import * as React from 'react';
 import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
-import { FaSort } from "react-icons/fa";
 import { AppState } from '../../store';
 import { AppProp } from '../../store/applications/types';
 import AppItem from './AppItem';
@@ -17,6 +16,7 @@ import { fetchMyApps } from '../../store/applications/action';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import { useAppDispatch } from '../../store/hooks';
 import { KeepDataTable } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const Head = styled.thead`
   border-bottom: 1px solid var(--wa-color-surface-border);
@@ -206,7 +206,7 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
                           onClick={handleSortAppNames}
                           className='no-background no-border cursor-pointer m-0 p-0'
                         >
-                          <FaSort />
+                          <KeepIcon name='sort' label='Sort by app name' />
                         </button>
                       </span>
                       <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />

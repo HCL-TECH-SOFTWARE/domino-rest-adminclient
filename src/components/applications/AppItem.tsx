@@ -12,10 +12,10 @@ import { AppIcon } from '../commons/AppIcon';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
 import { DeleteIcon } from '../../styles/CommonStyles';
-import { MdRefresh, MdEdit } from "react-icons/md";
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { KeepAppStatus, KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 const Row = styled.tr`
@@ -44,6 +44,18 @@ const Row = styled.tr`
 
   .off-border {
     border-bottom: 0;
+  }
+
+  /* Was MdRefresh color='#2873F0', an SVG color attribute. wa-icon paints from
+     currentColor, so the colour is a declaration now. The literal is carried over
+     unchanged; it is not on the WA token ramp. */
+  .regenerate-icon {
+    color: #2873F0;
+  }
+
+  /* Was MdEdit size={20}, i.e. a 20px SVG box. wa-icon sizes from font-size. */
+  .edit-icon {
+    font-size: 20px;
   }
 
   .delete-icon {
@@ -306,7 +318,7 @@ const AppItem: React.FC<AppItemProps> = ({
                               onClick={() => handleClickGenerate(false)}
                               className='no-background no-border cursor-pointer m-0 p-0'
                             >
-                              <MdRefresh color='#2873F0' />
+                              <KeepIcon name='arrows-rotate' label='Regenerate app secret' className='regenerate-icon' />
                             </button>
                             <span className='small-text color-text-hint'>********************</span>
                           </> : <>
@@ -353,7 +365,7 @@ const AppItem: React.FC<AppItemProps> = ({
                         onClick={viewEdit}
                         className='no-background no-border cursor-pointer m-0 p-0 color-text-primary'
                       >
-                        <MdEdit size={20} />
+                        <KeepIcon name='pencil' label='Edit Application' className='edit-icon' />
                       </button>
                     </KeepTooltip>
                     <div>

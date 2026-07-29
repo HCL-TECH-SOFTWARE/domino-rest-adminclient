@@ -7,16 +7,14 @@
 import * as React from "react";
 import { styled } from '@linaria/react';
 import { Box, Button, ButtonBase } from "@mui/material";
-import { FiEdit2 } from "react-icons/fi";
-import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { useNavigate } from '../../router/react';
 import { Database } from "../../store/databases/types";
 import ActivateMenu from "./ActivateMenu";
 import { WarningIcon } from "../../styles/CommonStyles";
-import { IoMdClose } from "react-icons/io";
 import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
 import { KeepButton, KeepDataTable, KeepTooltip } from "../keep-elements/KeepElements";
+import { KeepIcon } from "../keep-elements/react/KeepIcon";
 import { useAppDispatch } from '../../store/hooks';
 
 /** `width` is valid on <th> but absent from React's ThHTMLAttributes, which types it only on <td>. */
@@ -36,15 +34,16 @@ const StatusHeader = styled.div`
     align-items: center;
     gap: 4px;
   }
-
-  .status-icon {
-    display: inline-block;
-    vertical-align: middle;
-  }
 `;
 
 const EditIcon = styled.div`
   cursor: pointer;
+
+  /* Was FiEdit2 size='1.5em'. wa-icon takes its box from font-size, not width, so the
+     same relative measure has to be spelled as a font-size here. */
+  .edit-icon {
+    font-size: 1.5em;
+  }
 `;
 
 const ViewNameDisplay = styled.div`
@@ -82,6 +81,11 @@ const ActivateDialogContainer = styled.dialog`
     display: flex;
     justify-content: space-between;
     padding-bottom: 25px;
+  }
+
+  /* Was IoMdClose size='1.5em'. */
+  .close-icon {
+    font-size: 1.5em;
   }
 
   .header {
@@ -249,7 +253,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
                   <div>
                     <KeepTooltip content={`Activate the Forms that should be accessible\nvia rest API`} placement='bottom' without-arrow>
                       <div id='form-status-header-icon'>
-                        Status <AiOutlineQuestionCircle className="status-icon" />
+                        Status <KeepIcon name='circle-question' />
                       </div>
                     </KeepTooltip>
                   </div>
@@ -262,7 +266,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
               <tr key={form.formName+i}>
                 <th scope="row" {...colWidth('50px')}>
                   <EditIcon onClick={() => openForm(form.formName, form.formModes.length)}>
-                    <Button title={form.formName}><FiEdit2 size='1.5em' /></Button>
+                    <Button title={form.formName}><KeepIcon name='pencil' className='edit-icon' /></Button>
                   </EditIcon>
                 </th>
                 <td {...colWidth('550px')}>
@@ -313,7 +317,7 @@ const FormsTable: React.FC<FormsTableProps> = ({
             </div>
             <span className='title'>Activate Form?</span>
           </Box>
-          <ButtonBase onClick={handleCloseActivateDialog}><IoMdClose size='1.5em' /></ButtonBase>
+          <ButtonBase onClick={handleCloseActivateDialog}><KeepIcon name='xmark' label='Close' className='close-icon' /></ButtonBase>
         </Box>
         <Box className='content'>
           <span className='text-content'>This form is inactive. Activate this form to edit it?</span>

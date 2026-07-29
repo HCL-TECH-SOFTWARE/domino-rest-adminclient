@@ -40,13 +40,43 @@ describe('KeepIcon', () => {
     expect(renderIcon({ name: 'trash' }).name).toBe('trash');
   });
 
-  it('sets the glyph as a property, not an attribute', () => {
-    // Pinned because it is surprising and because it decides how everything else here is
-    // asserted: markup scans in `test/services/icon-library.test.ts` look at *source*, so
-    // they are unaffected, but any DOM assertion that reaches for getAttribute finds null.
-    const el = renderIcon({ name: 'trash' });
+  it('sets the glyph as a property, which Web Awesome then reflects', async () => {
+    // Pinned because the timing is a trap. React sets the *property* synchronously; the
+    // matching attribute does not exist until Lit's first update, which is async. Read the
+    // DOM in between — which is what a naive `getAttribute` assertion does — and every
+    // attribute reads as absent. Assert the property for synchronous checks; await
+    // `updateComplete` before asserting markup.
+    const el = renderIcon({ name: 'trash' }) as HTMLElement & {
+      name?: string;
+      updateComplete: Promise<unknown>;
+    };
     expect(el.getAttributeNames()).toEqual([]);
     expect(el.name).toBe('trash');
+
+    await el.updateComplete;
+    expect(el.getAttribute('name')).toBe('trash');
+  });
+
+  describe('canvas', () => {
+    /**
+     * Web Awesome's own default is `fixed`, a 1.25em × 1em box. `MuiSvgIcon` and
+     * `react-icons` both rendered 1em × 1em, so taking the Web Awesome default would have
+     * widened every converted call site by 25 %. `css: false` means no test here can see
+     * that, so the default is pinned instead.
+     */
+    it('defaults to auto, not to Web Awesome’s wider fixed canvas', async () => {
+      const el = renderIcon({ name: 'trash' }) as HTMLElement & { updateComplete: Promise<unknown> };
+      await el.updateComplete;
+      expect(el.getAttribute('canvas')).toBe('auto');
+    });
+
+    it('lets a call site ask for fixed-width alignment', async () => {
+      const el = renderIcon({ name: 'trash', canvas: 'fixed' }) as HTMLElement & {
+        updateComplete: Promise<unknown>;
+      };
+      await el.updateComplete;
+      expect(el.getAttribute('canvas')).toBe('fixed');
+    });
   });
 
   /**

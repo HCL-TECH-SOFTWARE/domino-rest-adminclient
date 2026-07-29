@@ -11,6 +11,9 @@ import { FA_LIBRARY } from '../../../services/icon-library';
 /** Web Awesome's `.wa-size-*` utilities, which are `font-size` classes. */
 export type KeepIconSize = 'xs' | 's' | 'm' | 'l' | 'xl';
 
+/** `wa-icon`'s canvas — the box the glyph is centred in. Orthogonal to `font-size`. */
+export type KeepIconCanvas = 'fixed' | 'auto' | 'square' | 'roomy';
+
 /**
  * The React spelling of `<wa-icon library="fa">` — the single icon entry point for `.tsx`
  * (#718). Lit templates keep writing the tag directly; there is nothing to wrap for them.
@@ -48,6 +51,21 @@ export type KeepIconSize = 'xs' | 's' | 'm' | 'l' | 'xl';
  * MUI's `SvgIcon` defaulted to a fixed 24px. With this app's `--wa-font-size-scale: 0.85`
  * the nearest token is `xl` (~22px), which is what an unsized MUI icon should become — and
  * unlike 24px it now tracks the type ramp.
+ *
+ * ## Canvas
+ *
+ * `canvas` defaults to **`auto`** here, not to Web Awesome's own default.
+ *
+ * Web Awesome's default is `fixed`, a **1.25em × 1em** box — Font Awesome's fixed-width
+ * behaviour, which pads every glyph to a common width so icons line up in a column. Both
+ * sets this replaces rendered a **1em × 1em** square instead (`MuiSvgIcon` sets
+ * `width: 1em; height: 1em`; `react-icons` the same). Keeping the Web Awesome default
+ * would therefore have widened all ~115 converted sites by 25 % — a layout change nothing
+ * asked for, and one the test suite cannot see because it runs with `css: false`.
+ *
+ * `auto` keeps the 1em height and lets the width follow the glyph, which is the closest
+ * match. Pass `canvas="fixed"` back where column alignment actually matters — a menu or a
+ * nav rail — which is a deliberate choice at a call site rather than a silent default.
  */
 export interface KeepIconProps {
   /** Font Awesome glyph name — must be registered in `services/icon-library` ICONS. */
@@ -59,16 +77,26 @@ export interface KeepIconProps {
   label?: string;
   /** Omit when the call site's own class sets `font-size` — see the note above. */
   size?: KeepIconSize;
+  /** Defaults to `auto`, matching the 1em box both replaced icon sets rendered. */
+  canvas?: KeepIconCanvas;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLElement>;
 }
 
-export const KeepIcon = ({ name, label, size, className, onClick }: KeepIconProps) => {
+export const KeepIcon = ({
+  name,
+  label,
+  size,
+  canvas = 'auto',
+  className,
+  onClick
+}: KeepIconProps) => {
   const classes = [size && `wa-size-${size}`, className].filter(Boolean).join(' ');
   return React.createElement('wa-icon', {
     library: FA_LIBRARY,
     name,
     label,
+    canvas,
     className: classes || undefined,
     onClick
   });
