@@ -22,10 +22,9 @@ import { useLocation, useNavigate } from '../../router/react';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import SchemasMultiView from '../commons/cardviews/displays/schemas/SchemasMultiView';
 import { toggleAlert } from '../../store/alerts/action';
-import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
-import { KeepButton, KeepTooltip, KeepZeroResults } from '../keep-elements/KeepElements';
+import { KeepButton, KeepNetworkErrorDialog, KeepTooltip, KeepZeroResults } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -205,7 +204,7 @@ const SchemasLists = () => {
             </FilterContainer>
             {results.length !== 0 && !loading.status && <SchemasMultiView databases={results} view={view} />}
             {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <KeepZeroResults mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
-            <NetworkErrorDialog />
+            <KeepNetworkErrorDialog />
             <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
           </>
       </WrapperContainer>

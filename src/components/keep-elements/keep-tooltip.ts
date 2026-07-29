@@ -7,6 +7,7 @@
 import { html, css, type PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 
 /**
  * Custom-styled tooltip. Tag: `keep-tooltip`. Exposed via `KeepElements.tsx` as
@@ -18,11 +19,14 @@ import { KeepElement } from './keep-element';
  */
 @customElement('keep-tooltip')
 export default class Tooltip extends KeepElement {
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     :host {
       display: inline-block;
     }
-  `;
+  `,
+  ];
 
   @property({ type: String }) accessor content = '';
   @property({ type: String }) accessor placement = 'top';

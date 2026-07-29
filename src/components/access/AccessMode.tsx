@@ -22,10 +22,9 @@ import {
 } from '../../store/databases/action';
 import { AccessContext } from './AccessContext';
 import { AppState } from '../../store';
-import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import GenericLoading from '../loading/GenericLoading';
 import ModeCompare from './ModeCompare';
-import { KeepButton, KeepPageLoading } from '../keep-elements/KeepElements';
+import { KeepButton, KeepNetworkErrorDialog, KeepPageLoading } from '../keep-elements/KeepElements';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -406,7 +405,7 @@ const AccessMode: React.FC = () => {
       ) : (
         <KeepPageLoading message={`Loading ${formName} Form Access Data`} />
       )}
-      <NetworkErrorDialog />
+      <KeepNetworkErrorDialog />
       {!newForm.enabled && allModes.length > 0 && <ModeCompare 
         open={openModeCompare}
         handleClose={handleCloseModeCompare}

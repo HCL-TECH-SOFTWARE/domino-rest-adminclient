@@ -9,10 +9,9 @@ import { useNavigate } from '../../../../../router/react';
 import { useSelector } from 'react-redux';
 import { ExtraFlex } from '../../../../flex';
 import { AppState } from '../../../../../store';
-import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { Database } from '../../../../../store/databases/types';
 import { SchemasMainContainer } from './SchemaStyles';
-import { KeepDefaultCard } from '../../../../keep-elements/KeepElements';
+import { KeepDefaultCard, KeepDeleteDialog } from '../../../../keep-elements/KeepElements';
 import { appIconUri, useAppIcons } from '../../../../../services/app-icons';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
@@ -27,7 +26,6 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
     (state: AppState) => state.databases
   );
 
-  const { deleteDialog } = useSelector((state: AppState) => state.dialog);
 
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
   const navigate = useNavigate();
@@ -86,13 +84,12 @@ const SchemasCardsView: React.FC<SchemasCardsViewProps> = ({ databases }) => {
           })
         }
       </ExtraFlex>
-      <DeleteDialog
+      <KeepDeleteDialog
         selected={{
           isDeleteSchema: true,
           nsfPath: selectedNsf,
           schemaName: selectedDB,
         }}
-        open={deleteDialog}
       />
     </SchemasMainContainer>
   );

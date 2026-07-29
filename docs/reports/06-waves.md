@@ -156,9 +156,9 @@ right** — they share files.
 
 | Wave | A — store & data | B — design system | C — infra & tests | D — React removal |
 |---|---|---|---|---|
-| **0** — no deps | ✅ #800 → #792 | **#807** · **#771** (in flight) · **#765** | ✅ #691 (dropped) | ✅ **#806 tier A** (PR #835) |
-| **1** | ✅ #801 → #803 → #804 → #802 → #805 | — | — | **#806 tiers B–C** — 73 files · **#713** interleaved ← **next** |
-| **2** | ✅ #711 · ✅ #697 · ✅ #710 | — | — | **#806 tier D** · closes **#717** **#718** **#712** |
+| **0** — no deps | ✅ #800 → #792 | ✅ #807 (PR #852) · **#771** (in flight) · **#765** | ✅ #691 (dropped) | ✅ **#806 tier A** (PR #835) |
+| **1** | ✅ #801 → #803 → #804 → #802 → #805 | — | **#813** (in flight) | **#806 tiers B–C** — 73 files · **#713** interleaved ← **in flight** |
+| **2** | ✅ #711 · ✅ #697 · ✅ #710 | — | — | **#806 tier D** — unblocked · closes **#717** **#718** **#712** |
 | **3** — gates | — | **#709** | merge `new_code` → `main` (PR #786) | **#719** capstone → closes **#720** |
 
 **Lane A is finished.** Every planned item in waves 0–2 is closed. All 11 reducers are
@@ -172,11 +172,16 @@ failed scope fetch reports nothing) and **#848** (`updateScope`'s `resetForm` pa
 where a form name is expected, so it has never removed a form). Both P2/S. An instance freed up
 from another lane can take them; nothing in the programme waits on either.
 
-**Lane D is the critical path now.** Tier A landed the recipe; tiers B–C are the 73-file bulk,
-and tier D is still gated on **#807**, which has not started.
+**Lane D is the critical path now.** Tier A landed the recipe; tiers B–C are the 73-file bulk.
+**Tier D is no longer blocked** — #807 shipped `src/store/FormController.ts` in PR #852.
 
-**Lane B is the other thing worth staffing.** #807 blocks tier D, #771 blocks #709, and both sit
-in wave 0 unfinished — so lane B is no longer "empty until #709", it is holding two gates.
+**Lane B is holding one gate, not two.** #807 is done, so #771 is the remaining one: it blocks
+#709, and it is in flight. Lane B is otherwise free for #765.
+
+**Pick route-lazy files while lane C is running.** #813's remaining work is the eager
+static-import closure, so the ~24 eager `.tsx` files are contended and the rest are not. The
+split is worth measuring rather than guessing: walk static `from '…'` edges from `src/index.tsx`
+and never follow `import(`.
 
 ~~**Lane A is a single file for waves 1–2.**~~ Obsolete: #711 split `store/databases/action.ts`
 into modules behind a barrel, and the file is now 47 lines. Lane-A items no longer serialise on
@@ -356,11 +361,16 @@ grep -n "from 'react'\|react-redux\|formik\|@mui/" src/path/to/File.ts   # empty
 
 Two things tier A did not have to face, and these files do:
 
-- **This is where `StoreController` finally gets used.** No production element uses it yet; the
-  157 remaining `useSelector`/`useDispatch` sites are here and in tier D. Do **not** put a
-  `StoreController` in a leaf whose still-React parent owns its state — `@lit/react` re-applies
-  every prop on every render with no dirty check, so the two fight. Read state in the React
-  container and pass it down until a whole subtree is Lit.
+- **`StoreController` is only legitimate where a prop does not already carry the same state.**
+  The rule is narrower than "tiers B–C is where it gets used". `@lit/react` re-applies every
+  prop on every parent render with no dirty check, so an element that reads state its parent
+  also passes down fights itself. Two shapes are safe: an element with **no props at all**
+  (`keep-network-error-dialog`, the first production user), and one whose controller selects
+  something **no caller passes** (`keep-slim-database-card` reading `databases.permissions`). A
+  prop that mirrors store state is the thing to delete — `keep-delete-dialog` took
+  `open={deleteDialog}` at all six call sites and now reads the flag itself. Route components
+  own most of the remaining 157 sites and cannot convert until the router does, so expect that
+  count to fall more slowly than the file count.
 - **Slot the children you cannot convert yet.** Tier A proved the pattern on four files: a
   converted parent does not force its children to convert, it slots them as light DOM.
 
@@ -372,15 +382,39 @@ React.
 **Skip the six #771 tables.** Skip `KeepElements.tsx` and `router/react.tsx` — those are
 P4 deletions, not conversions.
 
+**An element is two files now.** #854 split the barrel: the element goes in
+`keep-elements/keep-x.ts`, its `createComponent` wrapper in `keep-elements/react/KeepX.ts`, and
+`KeepElements.tsx` re-exports it. Only modules on the eager path import `./react/KeepX`
+directly.
+
+**In flight: the card-view subtree.** Plan in
+`docs/superpowers/plans/2026-07-30-lane-d-cardviews.md`. Two findings there generalise:
+
+- **Importer order beats tier order inside a subtree.** The four schemas views and both
+  remaining scopes views render the same two tier-C children, so converting a view first would
+  mean slotting React children out of a loop. Convert the shared children first.
+- **`AppIcon` is not the blocker tier A implied.** Its element-override prop exists to pass a
+  Linaria-styled `img`, which a converted consumer has no use for, and `keep-nsf-card` already
+  proves the in-element icon pattern (`loadAppIcons` → `appIconUri` → `wa-icon`, with the shared
+  skeleton). `AppIcon` dies when its last React consumer converts; it does not need to convert
+  first, and it is eager, so it should not.
+
 ### D · #713 — accessibility, interleaved
 
 Same files as #806, so it cannot run beside it. Fold each file's a11y fixes into that
 file's conversion commit — the conversion is rewriting the markup anyway, which is the
 cheapest possible moment to fix roles, labels and focus order.
 
-⚠️ **#713 has an open `needs-decision`:** which a11y standard to hold to (WCAG 2.1 AA is
-the usual answer). Settle that before the first file, because it determines whether the
-work is "fix what is obviously broken" or "meet a bar".
+✅ **Settled 2026-07-30: WCAG 2.1 AA.** Per file that means roles, accessible names, focus
+order, 4.5:1 text contrast and keyboard operability, plus 4.1.3 for anything that appears
+without a focus change. 2.2 AA was considered and not taken — its dragging-alternatives
+criterion would add real work in `FieldDndContainer`.
+
+What the first four conversions found, as a checklist of what to look for: dangling IDREFs
+(`aria-describedby` or an `id` pointing at nothing), icon-only controls with no accessible name,
+positive `tabIndex`, `div` click handlers that answer Enter but not Space, spinners with no
+`role="status"`, placeholder `alt` text on decorative images, and colour literals with no
+dark-mode override.
 
 The `jsx-a11y` tooling half of the issue is worth reconsidering: `oxlint` has a `jsx-a11y`
 plugin, but every rule it offers is dead the moment a file stops being `.tsx`. Prefer
@@ -422,8 +456,13 @@ measurable difference.
 
 ### D · #806 tier D — 15 Formik files, ~5,440 LOC
 
-Unblocked by #807. Includes `access/TabsAccess.tsx` (1,008 lines) and the four
-`applications/` forms.
+Unblocked: #807 shipped `src/store/FormController.ts` with unit tests in PR #852. Includes
+`access/TabsAccess.tsx` (1,008 lines) and the four `applications/` forms.
+
+Three of the fifteen are **eager** — `login/LoginPage.tsx`, `database/QuickConfigForm.tsx` and
+`QuickConfigFormContainer.tsx` — and `applications/AppsTable.tsx` is #771's, so this tier
+collides with both other lanes while they are running. It is also the wrong place to debut two
+unproven primitives at once: these files need `StoreController` as well as `FormController`.
 
 `LoginPage.tsx` is listed in tier D but is really tier C — #776 already dropped Formik
 from it, and its remaining matches are comments.
@@ -499,10 +538,14 @@ If your lane is waiting, these have no dependencies and no lane contention worth
 about:
 
 - **#765** — `wa-stack`/`wa-cluster`/`wa-grid`, plus the `keep-tooltip.ts` Shoelace token names.
-- **#710's four small slices** — `dbsettings`, `history`, `interceptor`, `search`. Their
-  reducer tests already exist.
-- **Decide #691** and **decide #713's a11y standard.** Both are 20-minute decisions that
-  block nothing and unblock a wave each.
+- ~~**#710's four small slices**~~ — #710 is closed; all 14 reducers are `createSlice` now.
+- ~~**Decide #691** and **decide #713's a11y standard**~~ — both settled: #691 dropped, #713
+  holds to WCAG 2.1 AA.
+- **#825's 22 MUI-free Linaria files**, minus the ones lane D has already deleted. The issue's
+  list predates #806 tier A, which removed eight of them outright (`PageRouters`, `Homepage`,
+  `MobileHeader`, `ErrorWrapper`, `ZeroResultsWrapper`, `PageLoading`, `ColumnBar`,
+  `FormSettings`) and three more that turned out to have no importers at all
+  (`CarViewstyles`, both `v2/CardV2Styles`). Re-measure before starting.
 
 ---
 
@@ -533,9 +576,12 @@ All four run in `pr_check.yml` on Node 24, followed by a SonarQube Cloud scan an
 gate. Note `npm run build` *is* the typecheck — there is no separate `tsc` step in CI, so a
 type error surfaces as a build failure.
 
-**The bundle budget is a hard gate, and it currently sits at 20 % headroom rather than 2 %.**
-Tier A put the eager bundle 23.4 kB over the original budget, and the gate was widened
-deliberately, to be revisited. The reason matters for tiers B–D, because it will recur: Linaria
+**The bundle budget is a hard gate, and it is back to 2 % headroom.** #813 took the eager
+closure down 30.9 % and re-baselined it, so the 20 % tier A needed is gone. That is survivable
+for the rest of lane D for one reason worth knowing: **the growth only happens when you convert
+an eager file.** The card-view slice is entirely route-lazy and measured 1222.2 kB against a
+1222.5 kB baseline — no movement at all. Tier A's 23.4 kB came from converting shell files. The
+mechanism, which still applies to any eager conversion: Linaria
 `styled` CSS is **extracted at build time** into the stylesheet, whereas Lit `static styles` is
 a template literal that ships **inside the JS chunk**. Every conversion therefore moves bytes
 out of `.css` and into the eager `.js`. The signature is raw growing several times faster than
@@ -572,6 +618,15 @@ used to inherit from document CSS:
 | a class selector (`.color-text-primary`) | no |
 | a **bare element selector** (`img { … }`) | no |
 | the document's `box-sizing: border-box` reset | no |
+| `dialog::backdrop`, from `body[data-theme="dark"] dialog::backdrop` | no |
+
+That last row cost every converted dialog its dark-mode backdrop — the modal kept the top layer
+and the page behind it stopped being dimmed, in seven elements, unnoticed since the first one
+converted. jsdom implements neither the top layer nor `::backdrop`, so no test could have seen
+it. `keep-elements/modal-backdrop.ts` now carries the rule for anything calling `showModal()`.
+
+The way to check a boundary crossing is to measure it rather than reason about it: mount the
+same construct in the light DOM, read `getComputedStyle` on both, and compare.
 
 The bottom two are the ones that bite, because nothing in the component's source hints they were
 involved. `keep-overrides.css` sizes every image through a bare `img` selector, so a converted

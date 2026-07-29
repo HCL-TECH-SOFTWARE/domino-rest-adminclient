@@ -15,6 +15,7 @@ import '@awesome.me/webawesome/dist/components/details/details.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 
 type Rule = Record<string, any>;
 
@@ -25,7 +26,9 @@ type Rule = Record<string, any>;
  */
 @customElement('keep-textform-array')
 export default class TextFormArray extends KeepElement {
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     .container {
       padding: 10px;
       margin-bottom: 10px;
@@ -129,7 +132,8 @@ export default class TextFormArray extends KeepElement {
       display: flex;
       flex: 1;
     }
-  `;
+  `,
+  ];
 
   @property({ type: Array }) accessor data: Rule[] = [];
   @property({ type: String }) accessor title = '';

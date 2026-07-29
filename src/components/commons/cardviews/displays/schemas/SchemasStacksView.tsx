@@ -9,12 +9,11 @@ import { useNavigate } from '../../../../../router/react';
 import { useSelector } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
 import { AppState } from '../../../../../store';
-import SlimDatabaseCard from '../../../../database/views/SlimDatabaseCard';
-import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { setDbIndex } from '../../../../../store/databases/action';
+import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { SchemasMainContainer, StackHeader } from './SchemaStyles';
-import { KeepZeroResults } from '../../../../keep-elements/KeepElements';
+import { KeepDeleteDialog, KeepSlimDatabaseCard, KeepZeroResults } from '../../../../keep-elements/KeepElements';
 import { ExtraFlex } from '../../../../flex';
 import { useAppDispatch } from '../../../../../store/hooks';
 
@@ -26,22 +25,30 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
   const { scopes, onlyShowSchemasWithScopes } = useSelector(
     (state: AppState) => state.databases
   );
-  const { deleteDialog } = useSelector((state: AppState) => state.dialog);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const setOption = useState({})[1];
-  const [selected, setselected] = useState('');
+  const setselected = useState('')[1];
   const dispatch = useAppDispatch();
 
   const [selectedDB, setSelectedDB] = useState('');
   const [selectedNsf, setSelectedNsf] = useState('');
 
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
   const schemasWithScopes = scopes.map((scope) => {
     return scope.nsfPath + ':' + scope.schemaName;
   });
+
+  /**
+   * The card has already checked `permissions.deleteDbMapping` and refused with an alert if
+   * it was missing, so reaching here means the delete is allowed. Recording the target and
+   * opening the dialog stay together in one handler: `keep-delete-dialog` reads its own open
+   * flag from the store, so a dispatch from inside the card would race these two setters.
+   */
+  const requestDelete = (database: any) => {
+    setSelectedDB(database.schemaName);
+    setSelectedNsf(database.nsfPath);
+    dispatch(toggleDeleteDialog());
+  };
 
   const loadDatabase = (
     event: React.MouseEvent<HTMLElement>,
@@ -92,16 +99,13 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
               inUseSchemas.map(
                 (database, index) =>
                   database.apiName !== 'keepconfig' && (
-                    <SlimDatabaseCard
-                      openDatabase={() => openDatabase(database)}
-                      open={open}
-                      selected={selected}
-                      aria-describedby={id}
-                      onContextMenu={(event) => loadDatabase(event, database)}
-                      database={database}
+                    <KeepSlimDatabaseCard
                       key={index}
-                      setSelectedDB={setSelectedDB}
-                      setSelectedNsf={setSelectedNsf}
+                      database={database}
+                      isSchema
+                      onCardOpen={() => openDatabase(database)}
+                      onCardDelete={() => requestDelete(database)}
+                      onContextMenu={(event) => loadDatabase(event, database)}
                     />
                   )
               )
@@ -129,18 +133,13 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
                   notInUseSchemas.map(
                     (database, index: number) =>
                       database.apiName !== 'keepconfig' && (
-                        <SlimDatabaseCard
-                          openDatabase={() => openDatabase(database)}
-                          open={open}
-                          selected={selected}
-                          aria-describedby={id}
-                          onContextMenu={(event) =>
-                            loadDatabase(event, database)
-                          }
-                          database={database}
+                        <KeepSlimDatabaseCard
                           key={index}
-                          setSelectedDB={setSelectedDB}
-                          setSelectedNsf={setSelectedNsf}
+                          database={database}
+                          isSchema
+                          onCardOpen={() => openDatabase(database)}
+                          onCardDelete={() => requestDelete(database)}
+                          onContextMenu={(event) => loadDatabase(event, database)}
                         />
                       )
                   )
@@ -155,13 +154,12 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
           </>
         </>
       )}
-      <DeleteDialog
+      <KeepDeleteDialog
         selected={{
           isDeleteSchema: true,
           nsfPath: selectedNsf,
           schemaName: selectedDB,
         }}
-        open={deleteDialog}
       />
     </SchemasMainContainer>
   );

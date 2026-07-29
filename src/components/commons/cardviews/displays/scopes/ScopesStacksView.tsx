@@ -5,15 +5,11 @@
  * ========================================================================== */
 
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
-import { AppState } from '../../../../../store';
-import SlimDatabaseCard from '../../../../database/views/SlimDatabaseCard';
-import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { SchemasMainContainer, StackHeader } from './ScopeStyles';
-import { KeepZeroResults } from '../../../../keep-elements/KeepElements';
+import { KeepDeleteDialog, KeepSlimDatabaseCard, KeepZeroResults } from '../../../../keep-elements/KeepElements';
 import { ExtraFlex } from '../../../../flex';
 import { useAppDispatch } from '../../../../../store/hooks';
 
@@ -23,17 +19,13 @@ type ScopesStacksViewProps = {
 };
 
 const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScope }) => {
-  const { deleteDialog } = useSelector((state: AppState) => state.dialog);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const setOption = useState({})[1];
-  const [selected, setselected] = useState('');
+  const setselected = useState('')[1];
   const dispatch = useAppDispatch();
 
   const [selectedDB, setSelectedDB] = useState('');
   const [selectedNsf, setSelectedNsf] = useState('');
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
 
   const loadDatabase = (
     event: React.MouseEvent<HTMLElement>,
@@ -66,16 +58,11 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
                 .map(
                   (database, index) =>
                     database.apiName !== 'keepconfig' && (
-                      <SlimDatabaseCard
-                        openDatabase={() => openScope(database)}
-                        open={open}
-                        selected={selected}
-                        aria-describedby={id}
-                        onContextMenu={(event) => loadDatabase(event, database)}
-                        database={database}
+                      <KeepSlimDatabaseCard
                         key={index}
-                        setSelectedDB={setSelectedDB}
-                        setSelectedNsf={setSelectedNsf}
+                        database={database}
+                        onCardOpen={() => openScope(database)}
+                        onContextMenu={(event) => loadDatabase(event, database)}
                       />
                     )
                 )
@@ -102,16 +89,11 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
                 .map(
                   (database, index: number) =>
                     database.apiName !== 'keepconfig' && (
-                      <SlimDatabaseCard
-                        openDatabase={() => openScope(database)}
-                        open={open}
-                        selected={selected}
-                        aria-describedby={id}
-                        onContextMenu={(event) => loadDatabase(event, database)}
-                        database={database}
+                      <KeepSlimDatabaseCard
                         key={index}
-                        setSelectedDB={setSelectedDB}
-                        setSelectedNsf={setSelectedNsf}
+                        database={database}
+                        onCardOpen={() => openScope(database)}
+                        onContextMenu={(event) => loadDatabase(event, database)}
                       />
                     )
                 )
@@ -124,13 +106,12 @@ const ScopesStacksView: React.FC<ScopesStacksViewProps> = ({ databases, openScop
           </>
         </ExtraFlex>
       </>
-      <DeleteDialog
+      <KeepDeleteDialog
         selected={{
           isDeleteSchema: true,
           nsfPath: selectedNsf,
           schemaName: selectedDB,
         }}
-        open={deleteDialog}
       />
     </SchemasMainContainer>
   );

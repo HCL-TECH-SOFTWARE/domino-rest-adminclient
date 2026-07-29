@@ -13,6 +13,7 @@ import './keep-button';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 
 /**
  * "Error calling API" dialog composed from the keep-dialog-* primitives and a
@@ -20,7 +21,9 @@ import { KeepElement } from './keep-element';
  */
 @customElement('keep-api-error-dialog')
 export default class ApiErrorDialog extends KeepElement {
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     dialog {
       padding: 0 0 10px 0;
       background-color: var(--wa-color-surface-raised);
@@ -33,7 +36,8 @@ export default class ApiErrorDialog extends KeepElement {
       zIndex: 1000;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
     }
-  `;
+  `,
+  ];
 
   @property({ type: String }) accessor errorMessage = '';
   @property({ type: Boolean }) accessor showDialog = false;
