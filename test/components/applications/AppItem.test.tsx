@@ -266,36 +266,65 @@ describe('AppItem — copy to clipboard', () => {
   });
 });
 
-describe('AppItem — the visible-secret branch', () => {
-  it('BUG: an already-generated secret renders as empty text, not the app.appSecret prop', () => {
+/**
+ * #844 — the row rendered a secret that was always blank.
+ *
+ * Two defects, characterized here during the #771 table work and fixed since. Both came
+ * from the same slip: **the branch tested the prop and rendered the state.**
+ *
+ * - `app.appSecret?.length > 0` guarded the visible-secret branch, but `{appSecret}` — a
+ *   component-local `useState('')` written only by `generateSecret`'s callback — is what
+ *   it printed. So any app whose secret came back from the API (`action.ts:67` populates
+ *   the prop straight from `client_secret`) showed a "Copy Application Secret" tooltip
+ *   over empty text.
+ * - `handleClickGenerate` called `setHasAppSecret(true)` outside its own `if`, so the
+ *   refresh button — which merely opens the confirmation dialog — flipped the row into
+ *   that same empty branch before the user had confirmed, and left it there on cancel.
+ */
+describe('AppItem — the visible-secret branch (#844)', () => {
+  it('shows the secret the API supplied', () => {
     renderAppItem(makeApp({ appSecret: 'sekrit-value' }));
     // Rule out the sibling branches first: appHasSecret is false and usePkce is false, so
     // neither the generate-prompt nor the masked-with-refresh branch should render.
     expect(screen.queryByText('Click to Generate Secret')).not.toBeInTheDocument();
     expect(screen.queryByText('********************')).not.toBeInTheDocument();
     expect(tooltipCopy()).toContain('Copy Application Secret');
-    // BUG (AppItem.tsx:300-312): the condition guarding this branch is
-    // `app.appSecret?.length > 0`, but what it renders is `{appSecret}` — the
-    // component-local `useState('')`, never seeded from the `app.appSecret` prop. So a
-    // secret the API actually returned renders as an empty tooltip-wrapped span instead
-    // of its value. Pinning the observed (buggy) behaviour: the prop's text is absent,
-    // and the rendered span is empty.
-    expect(screen.queryByText('sekrit-value')).not.toBeInTheDocument();
-    expect(tooltipSpan('Copy Application Secret').textContent).toBe('');
+
+    expect(tooltipSpan('Copy Application Secret').textContent).toBe('sekrit-value');
   });
 
-  it('the click-to-generate transition flips the row into that same empty, unmasked branch', () => {
-    renderAppItem();
-    fireEvent.click(screen.getByText('Click to Generate Secret'));
-    // AppItem.tsx:134-141: handleClickGenerate calls setHasAppSecret(true)
-    // unconditionally, regardless of its `newSecret` argument or whether a secret was
-    // actually produced (generateSecret is mocked here and never calls the real
-    // setAppSecret setter). So the click alone — not a resolved dispatch — flips the row
-    // straight from "offer to generate" into the branch characterized as buggy above:
-    // present, but showing empty text instead of a secret.
-    expect(screen.queryByText('Click to Generate Secret')).not.toBeInTheDocument();
-    expect(screen.queryByText('********************')).not.toBeInTheDocument();
-    expect(tooltipCopy()).toContain('Copy Application Secret');
-    expect(tooltipSpan('Copy Application Secret').textContent).toBe('');
+  // Not asserted here: that clicking the span copies "sekrit-value". `copyToClipboard`
+  // reads `currentTarget.innerText`, which jsdom answers `undefined` for every element —
+  // see the copy-to-clipboard block above, which pins that as jsdom's behaviour rather
+  // than polyfilling it. The span's content is the part this fix controls, and it is
+  // asserted above; what the browser then copies out of it follows from that.
+
+  it('keeps offering to generate when there is genuinely no secret', () => {
+    renderAppItem(makeApp({ appSecret: '' }));
+    expect(screen.getByText('Click to Generate Secret')).toBeInTheDocument();
+    expect(tooltipCopy()).not.toContain('Copy Application Secret');
+  });
+
+  it('leaves the masked secret alone until the regeneration is confirmed', () => {
+    // The refresh button opens "Regenerate App Secret?" and nothing more. It used to also
+    // set hasAppSecret, blanking the row before the user answered.
+    renderAppItem(makeApp({ appHasSecret: true }));
+    fireEvent.click(deepQueryAll('button').find((b) => b.querySelector('svg'))!);
+
+    expect(screen.getByText('********************')).toBeInTheDocument();
+    expect(generateSecret).not.toHaveBeenCalled();
+  });
+
+  it('generates only once the regeneration is confirmed', () => {
+    renderAppItem(makeApp({ appHasSecret: true }));
+    fireEvent.click(deepQueryAll('button').find((b) => b.querySelector('svg'))!);
+    fireEvent.click(screen.getByText('Yes'));
+
+    expect(generateSecret).toHaveBeenCalledWith(
+      'app-123',
+      'isActive',
+      expect.any(Function),
+      expect.any(Function),
+    );
   });
 });
