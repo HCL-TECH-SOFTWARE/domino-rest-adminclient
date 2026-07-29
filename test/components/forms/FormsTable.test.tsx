@@ -20,7 +20,6 @@ vi.mock('../../../src/router/react', async (importOriginal) => ({
 vi.mock('../../../src/store/databases/action', () => ({
   addForm: vi.fn(() => ({ type: 'ADD_FORM' })),
   handleDatabaseForms: vi.fn(() => ({ type: 'HANDLE_DATABASE_FORMS' })),
-  deleteForm: vi.fn(() => ({ type: 'DELETE_FORM' })),
 }));
 
 vi.mock('../../../src/components/forms/ActivateMenu', () => ({
@@ -47,7 +46,11 @@ const forms = [
   { formName: 'Invoice', alias: '', dbName: 'testdb', formModes: [] },
 ];
 
-const schemaData = { forms: [] } as any;
+// A pre-existing form in `schemaData.forms`, so the confirm-activation test below can
+// tell "appended to the existing forms" apart from "replaced the forms array wholesale"
+// — both would look identical if `schemaData.forms` started empty.
+const existingForm = { formName: 'Legacy', alias: 'lg', dbName: 'testdb', formModes: [{ modeName: 'default' }] };
+const schemaData = { forms: [existingForm] } as any;
 
 function renderFormsTable(list = forms, formList = ['Contact', 'Invoice']) {
   const setSchemaData = vi.fn();
@@ -124,10 +127,31 @@ describe('FormsTable — opening a form', () => {
   });
 
   it('activates the form when the offer is confirmed', () => {
-    renderFormsTable();
+    const { setSchemaData } = renderFormsTable();
     fireEvent.click(screen.getByTitle('Invoice'));
     fireEvent.click(screen.getByText('OK'));
-    expect(handleDatabaseForms).toHaveBeenCalled();
+
+    // Pin exactly what `toggleConfigure` (FormsTable.tsx) builds and dispatches, so a
+    // lookup bug that activates the wrong form, or a payload that drops/corrupts
+    // `alias`/`formModes`, or replaces `schemaData.forms` instead of appending to it,
+    // would all fail this — a bare `toHaveBeenCalled()` catches none of them.
+    const formModeData = {
+      modeName: 'default',
+      fields: [],
+      readAccessFormula: { formulaType: 'domino', formula: '@True' },
+      writeAccessFormula: { formulaType: 'domino', formula: '@True' },
+      deleteAccessFormula: { formulaType: 'domino', formula: '@False' },
+      computeWithForm: false,
+    };
+    const newForm = { formValue: 'Invoice', formName: 'Invoice', alias: '', formModes: [formModeData] };
+    expect(handleDatabaseForms).toHaveBeenCalledWith(
+      schemaData,
+      'testdb',
+      [existingForm, newForm],
+      setSchemaData,
+      'Invoice activated successfully.',
+      expect.any(Function),
+    );
   });
 
   it('leaves the form alone when the offer is cancelled', () => {
