@@ -11,9 +11,8 @@ import { styled } from '@linaria/react';
 import { useLocation } from '../../router/react';
 import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
-import { Database, Field } from '../../store/databases/types';
+import { Database, Field, Mode } from '../../store/databases/types';
 import { Box, MenuItem, Select } from '@mui/material';
-import { Mode } from 'fs';
 import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 
 const ModeCardsContainer = styled.div`
