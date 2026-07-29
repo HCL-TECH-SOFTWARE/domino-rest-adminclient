@@ -51,7 +51,7 @@ import { useAppDispatch } from '../../store/hooks';
 
 const log = getLogger('components/forms/FormsContainer');
 
-const CoreContainer = styled.div<{ show: boolean }>`
+const CoreContainer = styled.div`
   padding: 0;
   display: flex;
   height: calc( 100vh - 225px);
@@ -145,8 +145,7 @@ const FormsContainer = () => {
 
   // check if formModes key is present in the form object
   // if not, it will add new key(formModes) and add the formAccessModes values
-  
-  const { show } = useSelector((state: AppState) => state.search);
+
   const { nsfPath, dbName } = useParams() as {
     nsfPath: string;
     dbName: string;
@@ -593,7 +592,7 @@ const FormsContainer = () => {
             Schema Management
         </span>
       </TopContainer>
-      <CoreContainer show={show} id="databases-list">
+      <CoreContainer id="databases-list">
         {isFetch ? (
           <>
             <Details>
