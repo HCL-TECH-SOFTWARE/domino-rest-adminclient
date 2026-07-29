@@ -10,7 +10,6 @@ import databaseReducer from './databases/reducer';
 import drawerReducer from './drawer/reducer';
 import loadingReducer from './loading/reducer';
 import appsReducer from './applications/reducer';
-import dbSettingReducer from './dbsettings/reducer';
 import alertReducer from './alerts/reducer';
 import stylesReducer from './styles/reducer';
 import accountReducer from './account/reducer';
@@ -23,7 +22,9 @@ export const rootReducer = combineReducers({
   drawer: drawerReducer,
   loading: loadingReducer,
   apps: appsReducer,
-  dbSetting: dbSettingReducer,
+  // `dbSetting` was removed in #853. Its only opener went with the database settings
+  // screen in 19e56a2, so `visible` could no longer become true and the panel it gated
+  // could not be shown. Reinstating the screen means reinstating the slice with it.
   alert: alertReducer,
   styles: stylesReducer,
   account: accountReducer,

@@ -6,12 +6,10 @@
 
 import { Dispatch } from 'redux';
 import { toggleDrawer } from '../drawer/action';
-import { AppState } from '..';
-import { toggleAlert, closeSnackbar } from '../alerts/action';
+import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
-import { toggleSettings } from '../dbsettings/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { sortAndRemoveDupSchemas } from './schemas';
@@ -239,67 +237,22 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
     }
   };
 };
-export const updateScope = (active: boolean, data?: any) => {
-  return async (dispatch: Dispatch, getState: () => AppState) => {
-    dispatch(closeSnackbar());
-    dispatch(setApiLoading(true));
-    const { contextViewIndex, scopes } = getState().databases;
-    const { apiName, schemaName, nsfPath, description } = scopes[contextViewIndex];
-
-    const formData = {
-      apiName,
-      schemaName,
-      isActive: active ? true : false,
-      description,
-      nsfPath
-    };
-
-    const apiData = data
-      ? {
-          ...data,
-          isActive: active ? true : false
-        }
-      : formData;
-
-    // The `dispatch(resetForm({ dbName: apiName }))` that used to sit here is
-    // deleted rather than repaired (#848). It never did anything: resetForm
-    // filters `state.databases.forms` by `form.formName`, and this passed an
-    // object, so no form ever matched. Its evident intent — drop the cached forms
-    // belonging to this database — is something the reducer cannot express, since
-    // it filters by form name and not by `dbName`.
-    //
-    // Making it work would switch on behaviour the app has never had, on the path
-    // that merely toggles a scope active from the list. That is a product change,
-    // not a bug fix, so it is gone and the intent is recorded here.
-
-    try {
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/admin/scope`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(apiData),
-        })
-      )
-      const scopeData = data
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(scopeData))
-      }
-
-      dispatch(setApiLoading(false));
-      dispatch(updateScopeAction({ ...scopeData, index: contextViewIndex }));
-      dispatch(toggleAlert(`${apiName} has been successfully updated.`));
-      if (data) dispatch(toggleSettings());
-    } catch (e: any) {
-      // As in changeScope: clear the flag before anything that can throw.
-      dispatch(setApiLoading(false));
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-
-      log.error('Error updating scope', { error })
-    }
-  };
-};
+// The `updateScope` **thunk** was deleted here (#853). Not to be confused with the
+// slice action of the same name, which `changeScope` above still dispatches — that one
+// is live and stays.
+//
+// It had no callers. Both were in `components/database/settings/` — `DBSetting.tsx` and
+// `TabsSettings.tsx` — and went with the settings screen in 19e56a2. Nothing replaced it,
+// so the POST it wrapped had been unreachable ever since.
+//
+// Two defects rode along with it, kept here because either could be reintroduced by
+// copying a neighbouring thunk:
+//
+//   - `const { response, data } = await apiRequestWithRetry(…)` shadowed the `data`
+//     parameter, so its `if (data) dispatch(toggleSettings())` tested the response body
+//     rather than the caller's argument. Same shape as the `processViewsAgents` bug
+//     fixed in #803; the earlier `if (!data)` guard was fine, being in another scope.
+//   - that `toggleSettings()` was the only dispatch that could ever *open* the database
+//     settings panel. Its one surviving sibling in `FormsContainer` is guarded by
+//     `if (visible)` and can therefore only close. The `dbSetting` slice is deleted in
+//     this commit for the same reason.
