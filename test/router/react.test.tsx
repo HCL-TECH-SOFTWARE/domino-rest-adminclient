@@ -319,6 +319,107 @@ describe('RouterOutlet', () => {
     });
   });
 
+  describe('load', () => {
+    /**
+     * #813 — code-split routes. `load` replaces `element`, and `RouterOutlet` wraps the
+     * result in `React.lazy` + `Suspense`.
+     *
+     * Two of these pin contracts the app now depends on and that nothing else would catch:
+     * `App.tsx` fetches the whole shell through `load`, and `Views.tsx` guards seven routes
+     * on authentication.
+     */
+    const lazyRoute = (load: () => Promise<{ default: React.ComponentType }>): RouteDef[] => [
+      { path: '/schema', load },
+    ];
+
+    const page = (text: string) => ({ default: () => <span>{text}</span> });
+
+    it('shows the fallback, then the loaded component', async () => {
+      let resolve!: (m: { default: React.ComponentType }) => void;
+      const load = () => new Promise<{ default: React.ComponentType }>((r) => (resolve = r));
+
+      renderAt(
+        <RouterOutlet routes={lazyRoute(load)} fallback={<span>loading</span>} />,
+        '/schema',
+      );
+      expect(screen.getByText('loading')).toBeTruthy();
+
+      await act(async () => resolve(page('schemas')));
+      expect(screen.getByText('schemas')).toBeTruthy();
+    });
+
+    /**
+     * The memoisation contract. `React.lazy` returns a fresh component type per call and
+     * React remounts when the type changes, so the wrappers are memoised on the route
+     * table's identity — which makes a *stable* `routes` reference the caller's
+     * responsibility. `App.tsx` builds its table in a `useMemo` for exactly this reason;
+     * without it the shell would unmount and refetch on every render.
+     */
+    it('does not reload while the routes array keeps its identity', async () => {
+      const load = vi.fn().mockResolvedValue(page('schemas'));
+      const routes = lazyRoute(load);
+
+      const { router, rerender } = renderAt(<RouterOutlet routes={routes} />, '/schema');
+      await screen.findByText('schemas');
+
+      // Re-wrapped in the provider: `rerender` replaces the whole tree, so passing the
+      // outlet bare would drop the router out of scope.
+      const again = (r: RouteDef[]) =>
+        rerender(
+          <RouterProvider router={router}>
+            <RouterOutlet routes={r} />
+          </RouterProvider>,
+        );
+      again(routes);
+      again(routes);
+
+      expect(load).toHaveBeenCalledTimes(1);
+    });
+
+    it('reloads when a new routes array is passed, which is why callers memoise', async () => {
+      const load = vi.fn().mockResolvedValue(page('schemas'));
+
+      const { router, rerender } = renderAt(<RouterOutlet routes={lazyRoute(load)} />, '/schema');
+      await screen.findByText('schemas');
+
+      rerender(
+        <RouterProvider router={router}>
+          <RouterOutlet routes={lazyRoute(load)} />
+        </RouterProvider>,
+      );
+      await screen.findByText('schemas');
+
+      expect(load).toHaveBeenCalledTimes(2);
+    });
+
+    /**
+     * Creating a `lazy()` must not call `load`. Otherwise an unauthenticated visitor
+     * hitting a guarded URL would still fetch the view they are being redirected away
+     * from — every one of `Views.tsx`'s seven routes is guarded on `authenticated`.
+     */
+    it('never calls load when the guard fails', () => {
+      const load = vi.fn().mockResolvedValue(page('schemas'));
+
+      const { router } = renderAt(
+        <RouterOutlet routes={[{ path: '/schema', load, guard: () => false, redirectTo: '/' }]} />,
+        '/schema',
+      );
+
+      expect(load).not.toHaveBeenCalled();
+      expect(router.location().pathname).toBe('/');
+    });
+
+    it('prefers element over load when a route somehow has both', () => {
+      const load = vi.fn().mockResolvedValue(page('lazy'));
+      renderAt(
+        <RouterOutlet routes={[{ path: '/schema', element: <span>eager</span>, load }]} />,
+        '/schema',
+      );
+      expect(screen.getByText('eager')).toBeTruthy();
+      expect(load).not.toHaveBeenCalled();
+    });
+  });
+
   it('matches in declaration order, so a catch-all shadows what follows it', () => {
     renderAt(
       <RouterOutlet
