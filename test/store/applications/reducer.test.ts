@@ -16,7 +16,7 @@ import appsReducer, {
 } from '../../../src/store/applications/reducer';
 import { toggleDeleteDialog } from '../../../src/store/dialog/action';
 import { clearDBError, setDBError } from '../../../src/store/databases/shared';
-import { SET_APP_ERROR, CLEAR_APP_ERROR, INIT_STATE, ApplicationStates } from '../../../src/store/applications/types';
+import { SET_APP_ERROR, CLEAR_APP_ERROR, INIT_STATE, ApplicationStates, AppProp } from '../../../src/store/applications/types';
 
 const initial: ApplicationStates = {
   apps: [],
@@ -26,6 +26,31 @@ const initial: ApplicationStates = {
   appErrorMessage: '',
   deleteDialogOpen: false,
 };
+
+/**
+ * A complete `AppProp`, so a case names only the fields it asserts on.
+ *
+ * These fixtures used to be one- and two-field object literals. That compiled while the
+ * reducer was hand-written and took `AnyAction`, and stopped when #710 converted this
+ * slice — `createSlice` types each action creator's payload, so `addApp({ appId })` is now
+ * a type error rather than a silent `any`. The state fixtures below still use literals
+ * because `ApplicationStates['apps']` is `Array<any>`; only the payloads are checked.
+ */
+const makeApp = (overrides: Partial<AppProp> = {}): AppProp => ({
+  appName: '',
+  appDescription: '',
+  appCallbackUrls: [],
+  appContacts: [],
+  appIcon: '',
+  appId: '',
+  appScope: '',
+  appHasSecret: false,
+  appSecret: '',
+  appStartPage: '',
+  appStatus: '',
+  usePkce: false,
+  ...overrides,
+});
 
 describe('appsReducer', () => {
   it('returns the initial state for an unknown action', () => {
@@ -37,12 +62,12 @@ describe('appsReducer', () => {
   });
 
   it('getApps replaces apps from the payload', () => {
-    const apps = [{ appId: 'a1' }, { appId: 'a2' }];
+    const apps = [makeApp({ appId: 'a1' }), makeApp({ appId: 'a2' })];
     expect(appsReducer(initial, getApps(apps)).apps).toEqual(apps);
   });
 
   it('addApp appends the payload to apps', () => {
-    const app = { appId: 'a1', appName: 'First' };
+    const app = makeApp({ appId: 'a1', appName: 'First' });
     const next = appsReducer(initial, addApp(app));
     expect(next.apps).toHaveLength(1);
     expect(next.apps[0]).toEqual(app);
@@ -66,7 +91,7 @@ describe('appsReducer', () => {
       ...initial,
       apps: [{ appId: 'a1', appName: 'Old' }],
     };
-    const updated = { appId: 'a1', appName: 'New' };
+    const updated = makeApp({ appId: 'a1', appName: 'New' });
     const next = appsReducer(base, updateApp(updated));
     expect(next.apps[0]).toEqual(updated);
   });
