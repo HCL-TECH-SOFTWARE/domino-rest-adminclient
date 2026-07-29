@@ -68,8 +68,21 @@ import { KeepDataTable } from '../keep-elements/KeepElements';
 - `<TableHead>` → `<thead>`, `<TableBody>` → `<tbody>`, `<TableRow>`/`<StyledTableRow>` → `<tr>`
 - `<StyledTableCell>` → `<th>` inside `<thead>`, `<td>` inside `<tbody>`
 - `component="th" scope="row"` on a body cell → a literal `<th scope="row">`. Keep it: `cellTexts()` reads `th, td`, and it is the correct markup for a row header.
-- `width="550px"` and friends stay as HTML attributes.
 - `className` on a cell stays.
+
+**Two things the pseudocode above gets wrong — Task 1 found both:**
+
+- **Keep `className='p-30'` on the `<table>`.** `AgentsTable`, `ViewsTable` and `FormsTable` all carry it; `.p-30` is `padding: 30px` (`src/styles/styles.css:361`), which insets the rows from the container border. The element's `.container` has no padding of its own, so dropping the class moves every row 30px closer to the edge. `ColumnDetails` never had it — do not add it there.
+- **`width` does not typecheck on `<th>`.** React's `ThHTMLAttributes` omits it (only `TdHTMLAttributes` types it, as a deprecated attribute). It is valid HTML and renders fine; only the type is missing. Use a small local helper rather than scattering spreads:
+
+  ```tsx
+  /** `width` is valid on <th> but absent from React's ThHTMLAttributes, which types it only on <td>. */
+  const colWidth = (width: string) => ({ width });
+  // …
+  <th {...colWidth('550px')}>Agent Name</th>
+  ```
+
+  Do **not** move the widths to a `<colgroup>` — that changes which element carries them and can shift column proportions, which is exactly what this PR must not do.
 
 **3. Delete what the element now owns**
 
