@@ -1,0 +1,334 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Dispatch } from 'redux';
+import { changeScope, deleteScope, fetchScopes, updateScope } from '../../../src/store/databases/action';
+import {
+  ADD_SCOPE,
+  DELETE_SCOPE,
+  FETCH_KEEP_SCOPES,
+  SET_DB_ERROR,
+  SET_PULLED_SCOPE,
+  UPDATE_SCOPE,
+} from '../../../src/store/databases/types';
+import { SET_API_LOADING, TOGGLE_DELETE_DIALOG, TOGGLE_ERROR_DIALOG } from '../../../src/store/dialog/types';
+import { TOGGLE_DRAWER } from '../../../src/store/drawer/types';
+import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
+import { Level, Logger } from '../../../src/services/log-service';
+// apiRequestWithRetry notifies through a <keep-alert> on its error paths.
+import '../../../src/components/keep-elements/keep-alert';
+
+/**
+ * #801 — the **scopes** concern of `databases/action.ts`. Four thunks, following
+ * `schemas.test.ts` from #690 and organised the way #711 will split the file, so
+ * these move to `store/databases/scopes.ts` unchanged.
+ *
+ * Two defect classes carried over from #690, and both are present here:
+ *
+ * - **Stranded loading flag.** `setApiLoading(true)` on entry, `setApiLoading(false)`
+ *   only on the success path. `state.dialog.loading` is read by eight screens, so a
+ *   failed call leaves them loading until reload. `changeScope` and `updateScope` both
+ *   do this.
+ * - **Unguarded `JSON.parse` in the catch.** The shared
+ *   `JSON.parse(e.toString().replace(…))` idiom throws on any non-JSON error, so the
+ *   handler that was supposed to clear the flag throws instead — a second exception
+ *   raised by the error handler itself.
+ *
+ * `fetchScopes` has a third, all its own: its catch rethrows unconditionally, which
+ * makes the dispatch below it unreachable. See that describe block.
+ */
+
+const response = (init: { ok: boolean; status?: number; body?: unknown }) =>
+  ({
+    ok: init.ok,
+    status: init.status ?? (init.ok ? 200 : 500),
+    statusText: 'stubbed',
+    headers: { get: () => 'application/json' },
+    json: async () => init.body ?? {},
+  }) as unknown as Response;
+
+describe('databases — scopes', () => {
+  let dispatch: Dispatch & { mock: { calls: unknown[][] } };
+  let previousLevel: number;
+
+  const actions = () => dispatch.mock.calls.map((call) => call[0] as any);
+  const types = () => actions().map((a) => a?.type);
+  const alerts = () =>
+    actions().filter((a) => a?.type === TOGGLE_ALERT).map((a) => a.payload as string);
+
+  /** Every SET_API_LOADING payload, in order — the flag's whole life in one thunk run. */
+  const loadingSequence = () =>
+    actions().filter((a) => a?.type === SET_API_LOADING).map((a) => a.payload);
+
+  /** The flag must not be left on. */
+  const expectLoadingCleared = () => {
+    const seq = loadingSequence();
+    expect(seq.length, 'no SET_API_LOADING dispatched at all').toBeGreaterThan(0);
+    expect(seq[seq.length - 1], `loading left as ${seq[seq.length - 1]}`).toBe(false);
+  };
+
+  const scope = { apiName: 'demo', schemaName: 'demoSchema', nsfPath: 'db.nsf', description: 'a scope' };
+
+  /** updateScope reads the scope under edit out of the store rather than its arguments. */
+  const getState = () =>
+    ({ databases: { contextViewIndex: 0, scopes: [scope] } }) as any;
+
+  beforeAll(() => {
+    previousLevel = Logger.getLevel();
+    Logger.setLevel(Level.OFF);
+  });
+
+  afterAll(() => Logger.setLevel(previousLevel));
+
+  beforeEach(() => {
+    dispatch = vi.fn() as unknown as typeof dispatch;
+    localStorage.setItem('user_token', JSON.stringify({ bearer: 'a-bearer' }));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  const offline = () =>
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+  const refuses = (body: unknown = { message: 'nope' }) =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: false, status: 400, body })));
+  const refusesWithProse = () =>
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        headers: { get: () => 'text/html' },
+        json: async () => {
+          throw new SyntaxError('Unexpected token <');
+        },
+      } as unknown as Response),
+    );
+  const returns = (body: unknown, status = 200) =>
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response({ ok: true, status, body })));
+
+  describe('deleteScope', () => {
+    it('removes the scope and closes the dialog and drawer', async () => {
+      returns({});
+
+      await deleteScope('demo')(dispatch);
+
+      expect(types()).toContain(DELETE_SCOPE);
+      expect(actions().find((a) => a?.type === DELETE_SCOPE).payload).toBe('demo');
+      expect(types()).toContain(TOGGLE_DELETE_DIALOG);
+      expect(types()).toContain(TOGGLE_DRAWER);
+      expect(alerts().join()).toMatch(/successfully deleted/i);
+      expectLoadingCleared();
+    });
+
+    it('clears the loading flag and reports failure when the API refuses', async () => {
+      refuses({ message: 'scope in use' });
+
+      await deleteScope('demo')(dispatch);
+
+      expect(types()).not.toContain(DELETE_SCOPE);
+      expect(alerts().join()).toMatch(/delete scope failed/i);
+      expectLoadingCleared();
+    });
+
+    it('clears the loading flag when the request never completes', async () => {
+      offline();
+
+      // Before #800 this rejected: `response` was null, `response.ok` threw a
+      // TypeError, and the catch's JSON.parse then threw on the TypeError's own
+      // message — so setApiLoading(false) never ran and the screen span forever.
+      await expect(deleteScope('demo')(dispatch)).resolves.not.toThrow();
+      expect(alerts().join()).toMatch(/delete scope failed/i);
+      expectLoadingCleared();
+    });
+
+    it('clears the loading flag when the error body is not JSON', async () => {
+      refusesWithProse();
+
+      await expect(deleteScope('demo')(dispatch)).resolves.not.toThrow();
+      expectLoadingCleared();
+    });
+  });
+
+  describe('fetchScopes', () => {
+    it('stores the scopes it fetched', async () => {
+      const scopes = [scope, { ...scope, apiName: 'other' }];
+      returns(scopes);
+
+      await fetchScopes()(dispatch);
+
+      expect(types()).toContain(FETCH_KEEP_SCOPES);
+      expect(actions().find((a) => a?.type === FETCH_KEEP_SCOPES).payload).toEqual(scopes);
+    });
+
+    it('marks the pull complete when there are no scopes', async () => {
+      returns([]);
+
+      await fetchScopes()(dispatch);
+
+      expect(types()).toContain(SET_PULLED_SCOPE);
+      expect(types()).not.toContain(FETCH_KEEP_SCOPES);
+    });
+
+    it('skips keepconfig when building the schema summary', async () => {
+      returns([scope, { ...scope, apiName: 'keepconfig' }]);
+
+      await fetchScopes()(dispatch);
+
+      // Both scopes still reach the store; only the derived schema list filters.
+      expect(actions().find((a) => a?.type === FETCH_KEEP_SCOPES).payload).toHaveLength(2);
+    });
+
+    // The catch reads:
+    //
+    //   const error = JSON.parse(err)
+    //   if (err) throw err;
+    //   dispatch(toggleErrorDialog(`${error.statusCode}: ${error.message}`));
+    //
+    // `err` is a non-empty string on every path that reaches here, so the rethrow
+    // always fires and the dispatch below it can never run. The thunk rejects
+    // instead of reporting, which is why a failed scope fetch shows no dialog.
+    it('rejects instead of dispatching the error dialog — the dispatch is unreachable', async () => {
+      refuses({ statusCode: 400, message: 'nope' });
+
+      await expect(fetchScopes()(dispatch)).rejects.toBeDefined();
+      expect(types()).not.toContain(TOGGLE_ERROR_DIALOG);
+    });
+
+    it('rejects when the request never completes', async () => {
+      offline();
+
+      await expect(fetchScopes()(dispatch)).rejects.toBeDefined();
+      expect(types()).not.toContain(TOGGLE_ERROR_DIALOG);
+    });
+  });
+
+  describe('changeScope', () => {
+    it('adds the scope, closes the drawer and clears the loading flag', async () => {
+      returns({ ...scope, '@noteid': 42, '@created': 'now' });
+
+      await changeScope(scope)(dispatch);
+
+      expect(types()).toContain(ADD_SCOPE);
+      expect(types()).toContain(TOGGLE_DRAWER);
+      expect(alerts().join()).toMatch(/successfully created/i);
+      expectLoadingCleared();
+    });
+
+    it('updates rather than adds when told it is an edit', async () => {
+      returns(scope);
+
+      await changeScope(scope, true)(dispatch);
+
+      expect(types()).toContain(UPDATE_SCOPE);
+      expect(types()).not.toContain(ADD_SCOPE);
+      expect(alerts().join()).toMatch(/successfully updated/i);
+    });
+
+    it('strips the Domino @-metadata before it reaches the store', async () => {
+      returns({
+        ...scope,
+        '@noteid': 42,
+        '@created': 'now',
+        '@lastmodified': 'now',
+        '@revision': 1,
+        '@lastaccessed': 'now',
+        '@size': 10,
+        '@unread': 0,
+        '@etag': 'x',
+        $UpdatedBy: 'someone',
+      });
+
+      await changeScope(scope)(dispatch);
+
+      const payload = actions().find((a) => a?.type === ADD_SCOPE).payload;
+      expect(Object.keys(payload).filter((k) => k.startsWith('@') || k === '$UpdatedBy')).toEqual([]);
+      expect(payload.apiName).toBe('demo');
+    });
+
+    it('reports the failure as a form error', async () => {
+      refuses({ message: 'scope exists' });
+
+      await changeScope(scope)(dispatch);
+
+      expect(types()).toContain(SET_DB_ERROR);
+      expect(types()).not.toContain(ADD_SCOPE);
+    });
+
+    it('does not throw out of the thunk when the error body is not JSON', async () => {
+      refusesWithProse();
+
+      await expect(changeScope(scope)(dispatch)).resolves.not.toThrow();
+      expect(types()).not.toContain(ADD_SCOPE);
+    });
+
+    it('clears the loading flag on failure', async () => {
+      refuses({ message: 'scope exists' });
+
+      await changeScope(scope)(dispatch);
+
+      // setApiLoading(false) sat on the success path only, so any refused save
+      // left the eight screens reading state.dialog.loading spinning.
+      expectLoadingCleared();
+    });
+  });
+
+  describe('updateScope', () => {
+    it('saves the scope read out of the store and clears the loading flag', async () => {
+      returns(scope);
+
+      await updateScope(true)(dispatch, getState);
+
+      expect(types()).toContain(UPDATE_SCOPE);
+      expect(actions().find((a) => a?.type === UPDATE_SCOPE).payload).toMatchObject({ index: 0 });
+      expect(alerts().join()).toMatch(/successfully updated/i);
+      expectLoadingCleared();
+    });
+
+    it('sends the active flag it was given', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: scope }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await updateScope(false)(dispatch, getState);
+
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body).isActive).toBe(false);
+    });
+
+    it('prefers the override it was handed over the stored scope', async () => {
+      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: scope }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      await updateScope(true, { apiName: 'override', schemaName: 's' })(dispatch, getState);
+
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body).apiName).toBe('override');
+    });
+
+    it('does not throw out of the thunk when the API refuses', async () => {
+      refuses({ message: 'nope' });
+
+      await expect(updateScope(true)(dispatch, getState)).resolves.not.toThrow();
+      expect(types()).not.toContain(UPDATE_SCOPE);
+    });
+
+    it('does not throw out of the thunk when the error body is not JSON', async () => {
+      refusesWithProse();
+
+      await expect(updateScope(true)(dispatch, getState)).resolves.not.toThrow();
+    });
+
+    it('clears the loading flag on failure', async () => {
+      refuses({ message: 'nope' });
+
+      await updateScope(true)(dispatch, getState);
+
+      expectLoadingCleared();
+    });
+  });
+});
