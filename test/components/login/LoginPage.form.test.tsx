@@ -450,6 +450,138 @@ describe('LoginPage form (#743 part 2)', () => {
     });
   });
 
+  /**
+   * #809 — Enter in a field did not log anyone in.
+   *
+   * `wa-input` was doing its part all along: it calls WebAwesome's `submitOnEnter`, which
+   * searches `form.elements` for an enabled `type="submit"` control and calls
+   * `requestSubmit` on it. Two things defeated the search:
+   *
+   * - `keep-button` is not form-associated and renders its `<wa-button>` into a shadow
+   *   root, so the LOG IN button was never in `form.elements`;
+   * - the "Sign up with Passkey" `<button>` had no `type`, and a button in a form defaults
+   *   to submit — so it was the only match, and with no `onSubmit` the browser navigated
+   *   away and took the typed credentials with it.
+   */
+  describe('submitting with Enter (#809)', () => {
+    /**
+     * ⚠️ **The keystroke itself cannot be tested here, and these do not pretend to.**
+     *
+     * jsdom does not implement form association for custom elements: `formAssociated` is
+     * `true` and `attachInternals()` returns an object, but `internals.form` is always
+     * `null` and a `wa-input` never appears in `form.elements`. So `submitOnEnter` cannot
+     * find the form, gives up, and a synthetic `keydown` produces nothing — in jsdom, and
+     * only in jsdom. Driving it with one would have measured the environment.
+     *
+     * What is split out instead:
+     *
+     * - the *search* — that the form offers exactly one control matching WebAwesome's own
+     *   predicate, which is the step that used to find the wrong button or none;
+     * - the *consequence* — `requestSubmit`, the literal call `submitForm()` makes once the
+     *   search succeeds, and everything downstream of it, which is this page's code.
+     *
+     * The join between them is `internals.form`, which belongs to the library. **Enter in a
+     * real browser is still a manual check** — see the PR for what was run.
+     */
+    const submitByEnter = async (form: HTMLFormElement) => {
+      const submitter = [...form.elements].find(
+        (el) => (el as HTMLButtonElement).type === 'submit' && !el.matches(':disabled'),
+      ) as HTMLButtonElement | undefined;
+      // Fail loudly rather than silently submitting with no submitter, which is a
+      // different code path and would keep passing after a regression.
+      expect(submitter, 'no submit control for Enter to find').toBeDefined();
+      await act(async () => {
+        form.requestSubmit(submitter);
+      });
+    };
+
+    const loginForm = () => document.querySelector('form') as HTMLFormElement;
+
+    it('logs in with what the user typed', async () => {
+      await renderPage();
+      await type('form-username', 'someone');
+      await type('section-password', 'a-password');
+
+      await submitByEnter(loginForm());
+
+      expect(login).toHaveBeenCalledWith(
+        { username: 'someone', password: 'a-password' },
+        expect.any(Function),
+      );
+    });
+
+    it('does not navigate away, which is what used to lose the credentials', async () => {
+      // The form had no onSubmit, so a submit reached the browser and reloaded the page.
+      // preventDefault is the whole fix for that half; jsdom reports the default action
+      // it would have taken through `defaultPrevented`.
+      await renderPage();
+      await type('form-username', 'someone');
+      await type('section-password', 'a-password');
+
+      const submitted = vi.fn();
+      loginForm().addEventListener('submit', submitted);
+      await submitByEnter(loginForm());
+
+      expect(submitted).toHaveBeenCalledTimes(1);
+      expect(submitted.mock.calls[0][0].defaultPrevented).toBe(true);
+    });
+
+    it('takes the same validation path as the button', async () => {
+      // Submitting routes through handleClickLogIn rather than repeating it, so a blank
+      // password stops the login and marks the field exactly as clicking would.
+      await renderPage();
+      await type('form-username', 'someone');
+
+      await submitByEnter(loginForm());
+
+      expect(login).not.toHaveBeenCalled();
+      expect(isInvalid('section-password')).toBe(true);
+    });
+
+    it('respects the current mode rather than always attempting a password login', async () => {
+      const { restore } = await secureRender();
+      try {
+        await type('form-username', 'someone');
+        await click('LOG IN WITH PASSKEY');
+
+        await submitByEnter(loginForm());
+
+        expect(passkeyLogin).toHaveBeenCalledWith({ name: 'someone' });
+        expect(login).not.toHaveBeenCalled();
+      } finally {
+        restore();
+      }
+    });
+
+    /**
+     * The search half, run with WebAwesome's own predicate — copied from
+     * `internal/submit-on-enter.ts`, so this fails if the page stops offering what that
+     * function looks for, whatever the reason.
+     */
+    it('offers exactly one control for the search to select', async () => {
+      await renderPage();
+      const submitters = [...loginForm().elements].filter(
+        (el) => (el as HTMLButtonElement).type === 'submit' && !el.matches(':disabled'),
+      );
+
+      expect(submitters).toHaveLength(1);
+      // localName decides the branch: "button" is requestSubmit'd, anything else is
+      // click()ed, and a click on the LOG IN button would double-fire against onClick.
+      expect(submitters[0].localName).toBe('button');
+    });
+
+    it('does not let the passkey sign-up button submit the form', async () => {
+      // It carried no type, and a button in a form defaults to submit — so it was the
+      // control the search found, ahead of anything meant for logging in.
+      const { restore } = await secureRender();
+      try {
+        expect(screen.getByText('Sign up with Passkey').closest('button')!.type).toBe('button');
+      } finally {
+        restore();
+      }
+    });
+  });
+
   describe('passkey prefill', () => {
     beforeEach(() => {
       localStorage.setItem('use_keep_webauth', 'true');
