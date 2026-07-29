@@ -166,6 +166,13 @@ describe('LoginPage without Material UI (#743)', () => {
     await renderPage();
     const toggle = document.querySelector('keep-tooltip button');
     expect(toggle).not.toBeNull();
-    expect(toggle!.querySelector('svg')).not.toBeNull();
+    // This asserted `querySelector('svg')` while the toggle used react-icons, which put
+    // the graphic straight in the light DOM. `wa-icon` renders its `<svg>` inside a shadow
+    // root (#718), so that can no longer match however correct the markup is. Asserting the
+    // glyph name instead is narrower than the old check, not weaker: `svg` was satisfied by
+    // any graphic, this only by the theme icon.
+    const icon = toggle!.querySelector('wa-icon') as (HTMLElement & { name?: string }) | null;
+    expect(icon).not.toBeNull();
+    expect(icon!.name).toMatch(/^(moon|sun)$/);
   });
 });

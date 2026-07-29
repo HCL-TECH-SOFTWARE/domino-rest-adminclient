@@ -16,7 +16,6 @@ import { AppState } from "../../store";
 import { validateFormSchemaName } from "../../store/databases/scripts";
 import { styled } from '@linaria/react';
 import { TopNavigator } from "../../styles/CommonStyles";
-import { RxDividerVertical } from "react-icons/rx";
 import FormSearch from "./FormSearch";
 import {
   addForm,
@@ -70,8 +69,18 @@ const ButtonsPanel = styled.div`
     color: var(--wa-color-text-quiet);
   }
 
-  .vertical {
-    transform: translateY(29%);
+  /*
+   * The rule between the two buttons is CSS now rather than a glyph: .short-vertical from
+   * styles.css, the separator AppItem already draws. Two adjustments are scoped here. It
+   * is a div where the icon was inline, so it has to rejoin the buttons' inline flow; and
+   * its shared 31px height is taller than these two buttons, so the height the glyph was
+   * given (size 1.4em) is restated. Centring on the line box also retires the
+   * translateY(29%) nudge the glyph needed to look level.
+   */
+  .short-vertical {
+    display: inline-block;
+    vertical-align: middle;
+    height: 1.4em;
   }
 `;
 
@@ -308,7 +317,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           >
             Activate All
           </Button>
-          <RxDividerVertical size={"1.4em"} className="vertical" />
+          <div className='short-vertical' />
           <Button
             disabled={normalizeForms.length === 0 || loading}
             onClick={() => setResetAllForms(true)}

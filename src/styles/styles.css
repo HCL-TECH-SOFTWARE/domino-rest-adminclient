@@ -1403,6 +1403,9 @@ body[data-theme="dark"] .add-import-svg-icon {
     margin-right: 2%;
     display: inline-block;
     transform: translateY(4%);
+    /* Was FiPlus size={'1.2em'}. wa-icon takes its box from font-size, not width, so the
+       same relative measure has to be spelled as a font-size on this wrapper. */
+    font-size: 1.2em;
 }
 
 .add-all-text {

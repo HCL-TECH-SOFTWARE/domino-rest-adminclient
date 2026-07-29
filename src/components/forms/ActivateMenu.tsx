@@ -12,8 +12,8 @@ import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
 import { Database, FORMS_ERROR } from '../../store/databases/types';
 import { deleteForm } from '../../store/databases/action';
-import { BsThreeDots } from "react-icons/bs";
 import { KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 interface ActivateMenuProps {
@@ -106,7 +106,7 @@ const ActivateMenu: React.FC<ActivateMenuProps> = ({ form, schemaData, setSchema
         {active ? `Active` : `Inactive`}
       </text>
       <button onClick={handleOpenMenu} className='active-menu-button'>
-          <BsThreeDots className='color-text-primary' />
+          <KeepIcon name='ellipsis' label='Form actions' className='color-text-primary' />
       </button>
       <Menu
           id="basic-menu"
