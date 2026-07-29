@@ -451,6 +451,29 @@ const LoginPage = () => {
     }
   }
 
+  /**
+   * Enter in a field, which had never logged anyone in (#809).
+   *
+   * `wa-input` does its part — it calls WebAwesome's `submitOnEnter`, which looks through
+   * `form.elements` for an enabled `type="submit"` control and calls `requestSubmit` on
+   * it. What it found here was nothing, or the wrong thing:
+   *
+   * - `keep-button` is not form-associated and its `<wa-button>` sits in a shadow root, so
+   *   the LOG IN button is not in `form.elements` at all and can never be the submitter.
+   *   That is why the hidden native button below exists.
+   * - the "Sign up with Passkey" `<button>` carried no `type`, and a button in a form
+   *   defaults to `type="submit"`. It was the only match, so Enter submitted *it* — and
+   *   with no handler here the browser navigated, clearing the credentials just typed. It
+   *   is now `type="button"`, which is what it always meant.
+   *
+   * Routed through `handleClickLogIn` rather than duplicating it, so Enter and the button
+   * take exactly the same path: same mode switch, same validation, same dispatch.
+   */
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    handleClickLogIn();
+  }
+
   const handleLogInUsingIdp = async (_idp: any) => {
     setAuthType('oidc')
   }
@@ -641,7 +664,7 @@ const LoginPage = () => {
                 nothing to assistive tech. The message goes in `hint`, which `wa-input`
                 already wires to the inner control's `aria-describedby`, so it is announced
                 rather than merely coloured. */}
-            <LoginForm>
+            <LoginForm onSubmit={handleSubmit}>
               {authType !== 'oidc' &&
                 <section className='full-width'>
                   <WaInput
@@ -695,9 +718,23 @@ const LoginPage = () => {
               >
                 LOG IN
               </KeepButton>
+              {/* The form's submit control, and the only reason Enter works in a field.
+                  `keep-button` is not form-associated and renders its `<wa-button>` into a
+                  shadow root, so the visible LOG IN button above is invisible to
+                  `form.elements` and cannot be a submitter. This carries that role instead.
+
+                  `hidden` and not CSS: it must stay a *listed* form element to be found,
+                  which `hidden` leaves it, and it is never focused or clicked — the browser
+                  only ever names it as the submitter of `requestSubmit`. Keep it ahead of
+                  any other button in the form, since the search takes the first match. */}
+              <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
               {authType === 'password' && isHttps &&
                 <PasskeySignUpContainer id='passkey-signup'>
+                  {/* `type="button"`, because a button in a form defaults to submit and
+                      this one was therefore the form's only submit control — Enter in a
+                      field submitted the sign-up button (#809). */}
                   <button
+                    type="button"
                     className="no-background color-text-primary"
                     disabled={!displayKeepIdp}
                   >
