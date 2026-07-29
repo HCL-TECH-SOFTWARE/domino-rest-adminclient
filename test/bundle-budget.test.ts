@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { describe, expect, it } from 'vitest';
-// @ts-expect-error — plain ESM script, no .d.ts and not part of tsconfig's src graph.
 import { entryClosure } from '../scripts/bundle-budget.mjs';
 
 /**

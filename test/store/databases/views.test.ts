@@ -42,6 +42,22 @@ import '../../../src/components/keep-elements/keep-alert';
  * temporal dead zone. Fixed, with a regression guard in that describe block.
  */
 
+/**
+ * The `fetch` call that carried the POST, or a failure naming what was missing.
+ *
+ * `Array.prototype.find` returns `T | undefined`, so reading `post[1].body` off it is a
+ * type error (TS18048). `expect(post).toBeDefined()` reads like a guard but does not
+ * narrow, so the error survived it. Throwing here both narrows and keeps the diagnostic.
+ */
+const postCall = (fetchMock: { mock: { calls: any[] } }): any[] => {
+  const post = fetchMock.mock.calls.find((c: any) => c[1]?.method === 'POST');
+  if (!post) {
+    const methods = fetchMock.mock.calls.map((c: any) => c[1]?.method ?? 'GET').join(', ');
+    throw new Error(`no POST was sent. Methods seen: [${methods}]`);
+  }
+  return post;
+};
+
 const response = (init: { ok: boolean; status?: number; body?: unknown }) =>
   ({
     ok: init.ok,
@@ -270,7 +286,7 @@ describe('databases — views', () => {
       await dispatch.settled();
 
       // The POST to /schema is the last call; its body carries the final view list.
-      const post = fetchMock.mock.calls.find((c: any) => c[1]?.method === 'POST');
+      const post = postCall(fetchMock);
       const names = JSON.parse(post[1].body).views.map((v: any) => v.name);
       expect(names).toEqual([...new Set(names)]);
     });
@@ -349,8 +365,7 @@ describe('databases — views', () => {
 
       await processViewsAgents('demo', 'db.nsf', 'save', 'views', [], [], [{ name: 'All' }], [])(dispatch);
 
-      const post = fetchMock.mock.calls.find((c: any) => c[1]?.method === 'POST');
-      expect(post, 'no POST was sent').toBeDefined();
+      const post = postCall(fetchMock);
       expect(JSON.parse(post[1].body).availableViews).toEqual([{ name: 'All' }]);
       expect(alerts().join()).toMatch(/activated views have been saved/i);
     });
@@ -361,7 +376,7 @@ describe('databases — views', () => {
 
       await processViewsAgents('demo', 'db.nsf', 'save', 'agents', [], [], [], [{ name: 'Nightly' }])(dispatch);
 
-      const post = fetchMock.mock.calls.find((c: any) => c[1]?.method === 'POST');
+      const post = postCall(fetchMock);
       expect(JSON.parse(post[1].body).agents).toEqual([{ name: 'Nightly' }]);
       expect(alerts().join()).toMatch(/activated agents have been saved/i);
     });

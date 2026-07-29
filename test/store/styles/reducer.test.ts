@@ -64,8 +64,10 @@ describe('stylesReducer', () => {
     expect(stylesReducer(once, toggleFullscreen()).accessModeFullscreen).toBe(false);
   });
 
+  // `setViewport` takes no payload — it unconditionally sets the flag (see the reducer's
+  // own note). Passing one was a type error the CI gates never ran to catch.
   it('setViewport sets isMobile to true', () => {
-    const next = stylesReducer(initial, setViewport(true));
+    const next = stylesReducer(initial, setViewport());
     expect(next.isMobile).toBe(true);
   });
 
