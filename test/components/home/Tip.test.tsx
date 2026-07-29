@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { Router, memoryHistory } from '../../../src/router/router';
 import { RouterProvider } from '../../../src/router/react';
 import Tip from '../../../src/components/home/sections/Tip';
@@ -58,23 +58,69 @@ describe('homepage tiles', () => {
     expect(TILE_URIS).toEqual(['/schema', '/scope', '/apps', '/apps/consents']);
   });
 
-  it.each(TILE_URIS)('prefetches %s on hover, like the sidebar does', (uri) => {
-    vi.useFakeTimers();
+  const renderTip = (uri: string) => {
     const router = new Router({ history: memoryHistory(['/']) });
     router.setRoutes(VIEW_ROUTES);
     const prefetch = vi.spyOn(router, 'prefetch').mockReturnValue(undefined);
-
     render(
       <RouterProvider router={router}>
-        <Tip heading="A tile" description="desc" backgroundImage="x.jpg" uri={uri} />
+        <Tip heading="A tile" description="A description" backgroundImage="x.jpg" uri={uri} />
       </RouterProvider>,
     );
+    return { router, prefetch };
+  };
 
-    // Hover the heading, not the anchor: that is where a real pointer lands.
-    fireEvent.pointerEnter(screen.getByText('A tile'));
+  it.each(TILE_URIS)('prefetches %s on hover, like the sidebar does', (uri) => {
+    vi.useFakeTimers();
+    const { router, prefetch } = renderTip(uri);
+
+    // Hover the image, not the anchor: a real pointer lands on a descendant, and React's
+    // enter/leave semantics are what carry that up to the handler on the `<a>`.
+    const image = document.querySelector('img');
+    expect(image, 'the tile should render an image inside its link').toBeTruthy();
+    fireEvent.pointerEnter(image!);
     act(() => void vi.advanceTimersByTime(80));
 
     expect(prefetch).toHaveBeenCalledWith(uri);
+    router.dispose();
+  });
+
+  /**
+   * The constraint the whole `keep-tip` design turns on.
+   *
+   * `NavigationGuardContext` catches in-app navigation with a document-level capture
+   * listener doing `e.target.closest('a[href]')`. A click originating inside a shadow root
+   * is *retargeted*, so that listener would see `<keep-tip>` and `closest` would return
+   * `null` — the unsaved-changes prompt would stop appearing, with nothing failing loudly.
+   * The router's own click handling and hover prefetching hang off the same anchor.
+   *
+   * So: the anchor is passed in as slotted light-DOM content and must stay there.
+   */
+  it('keeps the anchor in the light DOM, where the navigation guard can see it', () => {
+    const { router } = renderTip('/schema');
+
+    const anchor = document.querySelector('a[href]');
+    expect(anchor, 'the anchor must be a light-DOM child, not inside the shadow root').toBeTruthy();
+    expect(anchor!.getAttribute('slot')).toBe('media');
+    expect(anchor!.getRootNode()).toBe(document);
+
+    // What the guard actually does, from where a real click starts.
+    expect(document.querySelector('img')!.closest('a[href]')).toBe(anchor);
+
+    router.dispose();
+  });
+
+  it('renders the heading and description inside the card', async () => {
+    const { router } = renderTip('/schema');
+    const tip = document.querySelector('keep-tip')!;
+    await tip.updateComplete;
+
+    expect(tip.shadowRoot?.textContent).toContain('A tile');
+    expect(tip.shadowRoot?.textContent).toContain('A description');
+    // Forwarded into wa-card's own media slot: a slot inside a shadow root can itself be
+    // assigned to a slot further down.
+    expect(tip.shadowRoot?.querySelector('slot[name="media"]')?.getAttribute('slot')).toBe('media');
+
     router.dispose();
   });
 

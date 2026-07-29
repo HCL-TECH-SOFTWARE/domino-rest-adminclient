@@ -5,48 +5,40 @@
  * ========================================================================== */
 
 import React from 'react';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
 import { styled } from '@linaria/react';
 import { Link } from '../../../router/react';
+import { KeepTip } from '../../keep-elements/react/KeepTip';
 
-const CardContainer = styled(Card)<{ bg: string }>`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-self: stretch;
-  background: var(--wa-color-surface-raised) !important;
-  margin-left: 8px;
-  margin-right: 8px;
-  border-radius: 8px !important;
-  overflow: hidden;
+/**
+ * The anchor that makes the whole tile clickable.
+ *
+ * It is the card's *media* — it wraps the image and is slotted into `<keep-tip>` — and its
+ * `::after` stretches over the rest of the card, so the heading and description stay part of
+ * the same single hit area they were in when the anchor wrapped everything. One link, one
+ * accessible name, whole tile clickable.
+ *
+ * **This rule has to live out here, in document scope.** Shadow CSS can style a slotted
+ * element with `::slotted()` but not its pseudo-elements — `::slotted(a)::after` matches
+ * nothing. `keep-tip` supplies the other half by making `:host` the positioning context.
+ *
+ * Replaces MUI's `CardActionArea`, which rendered a `<button>` *inside* this anchor:
+ * interactive content nested in interactive content, which is invalid HTML and gives
+ * keyboard and screen-reader users two stops where there is one destination.
+ */
+const TipLink = styled(Link)`
+  display: block;
+  line-height: 0;
 
-  @media only screen and (max-width: 768px) {
-    margin-right: 0;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
   }
 
-  .link {
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-  }
-
-  /* Ensure CardActionArea grows with content and doesn't clip the title. */
-  .MuiCardActionArea-root {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    height: 100%;
-  }
-
-  /* CardContent must be visible in full so the title isn't cut off. */
-  .MuiCardContent-root {
-    flex: 1;
-    overflow: visible;
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 `;
 
@@ -57,20 +49,20 @@ interface TipProps {
   uri: string;
 }
 
-const Tip: React.FC<TipProps> = ({ heading, description, backgroundImage, uri }) => {
-  return (
-    <CardContainer className="feature-item" bg={backgroundImage}>
-      <Link className="link" to={uri}>
-        <CardActionArea>
-          <CardMedia component="img" image={backgroundImage} title={description} className="tip-card-media" />
-          <CardContent className="flex flex-col">
-            <span className="huge-text wrap color-text-primary">{heading}</span>
-            <span className="small-text color-text-primary">{description}</span>
-          </CardContent>
-        </CardActionArea>
-      </Link>
-    </CardContainer>
-  );
-};
+const Tip: React.FC<TipProps> = ({ heading, description, backgroundImage, uri }) => (
+  <KeepTip className="feature-item" heading={heading} description={description}>
+    {/*
+      `slot="media"` puts this in `<wa-card>`'s media section, forwarded through `keep-tip`.
+      The anchor stays in the light DOM deliberately — see the note on the element for the
+      three things that break silently when it does not.
+
+      The image is decorative: the heading and description beside it carry the meaning, so an
+      empty alt keeps a screen reader from announcing the tile twice.
+    */}
+    <TipLink slot="media" to={uri}>
+      <img src={backgroundImage} alt="" />
+    </TipLink>
+  </KeepTip>
+);
 
 export default Tip;
