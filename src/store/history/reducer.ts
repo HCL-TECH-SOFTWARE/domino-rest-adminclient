@@ -1,30 +1,30 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { HistoryState, KeepHistoryActionTypes, ADD_HISTORY } from './types';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { HistoryState, KeepHistory } from './types';
 
 const initialState: HistoryState = {
   histories: [
     { uri: '/', label: 'HCL Notes Admin' },
     { uri: 'server', label: 'Server' },
-    { uri: 'keep-api', label: 'HCL Domino REST API' }
-  ]
+    { uri: 'keep-api', label: 'HCL Domino REST API' },
+  ],
 };
 
-export default function historyReducer(
-  state = initialState,
-  action: KeepHistoryActionTypes
-): HistoryState {
-  switch (action.type) {
-    case ADD_HISTORY:
-      return {
-        ...state,
-        histories: [...state.histories, action.payload]
-      };
-    default:
-      return state;
-  }
-}
+export const historySlice = createSlice({
+  name: 'histories',
+  initialState,
+  reducers: {
+    addHistory(state, action: PayloadAction<KeepHistory>) {
+      state.histories.push(action.payload);
+    },
+  },
+});
+
+export const { addHistory } = historySlice.actions;
+
+export default historySlice.reducer;
