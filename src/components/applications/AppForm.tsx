@@ -11,7 +11,6 @@ import { FormikProps } from 'formik';
 import Button from '@mui/material/Button';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSelector } from 'react-redux';
-import { Alert, AlertTitle } from '@mui/material';
 import ApplicationIcon from '@mui/icons-material/Apps';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from './ApplicationContext';
@@ -71,8 +70,6 @@ const PillBox = styled.div`
 const AppForm: React.FC<AppFormProps> = ({ formik }) => {
   const dispatch = useAppDispatch();
   const [formContext] = useContext(AppFormContext) as any;
-  const { appError } = useSelector((state: AppState) => state.apps);
-  const { appErrorMessage } = useSelector((state: AppState) => state.apps);
   const { scopes } = useSelector((state: AppState) => state.databases);
   const scopeValueArr = formik.values.appScope.length > 0 && formik.values.appScope.split(',');
   const [scopeValues, setScopeValues] = useState<Array<string>>(formContext === 'Edit' ? scopeValueArr : []);
@@ -146,14 +143,6 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
             ? ' Edit Application '
             : ' Add New Application '}
         </span>
-        {appError && appErrorMessage && (
-          <Alert className='m-0 mt-5 mb-5' severity="error">
-            <AlertTitle>Error: Unable to save application</AlertTitle>
-            <span className='big-text color-text-danger'>
-              {appErrorMessage}
-            </span>
-          </Alert>
-        )}
         <InputContainer className='mt-5'>
           <TextField
             autoComplete="off"

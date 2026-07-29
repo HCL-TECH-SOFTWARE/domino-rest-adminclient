@@ -103,11 +103,13 @@ describe('databases reducer — action types dispatched from outside the slice',
       });
     });
 
-    it('SET_DB_ERROR does not reach the applications slice', () => {
-      expect(appsReducer(undefined, { type: SET_DB_ERROR, payload: 'schema locked' } as any)).toMatchObject({
-        appError: false,
-        appErrorMessage: '',
-      });
+    it('SET_DB_ERROR leaves the applications slice untouched', () => {
+      // Not asserted against `appError`: #869 deleted that field, since this collision was
+      // the only thing that ever set it. Comparing the whole slice says the same and
+      // survives the field going away.
+      const initial = appsReducer(undefined, { type: '@@INIT' } as any);
+      expect(appsReducer(initial, { type: SET_DB_ERROR, payload: 'schema locked' } as any))
+        .toEqual(initial);
     });
 
     it('CLEAR_DB_ERROR clears the databases slice only', () => {
