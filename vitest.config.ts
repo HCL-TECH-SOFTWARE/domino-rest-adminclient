@@ -111,51 +111,71 @@ export default defineConfig({
       // measured, so a routine refactor does not fail CI but a real regression does.
       // Raise these as coverage grows — a gate far below reality protects nothing.
       //
-      // Re-measured on `new_code` @ 7ec97b1, 87 files / 996 tests. The previous numbers
-      // were set at #690, when the suite was 53 files / 509 tests; #788, #789, #790,
-      // #793–#799 have landed since and every gate had drifted below what it guards. The
-      // worst was `utils` functions — floor 55 against a real 96.4, a 41-point gap that
-      // would have let three quarters of that directory's functions go untested without
-      // failing CI.
+      // Re-measured on `new_code` @ fc470a8, 120 files / 1,507 tests. Previous pass was
+      // #820 at 7ec97b1 (87 files / 996), and the one before that #690 at 53/509.
       //
-      //                        floor was → is        measured @ 7ec97b1
-      //   global               40/40/38/35 → 44/44/42/38     46.7 / 47.1 / 45.7 / 41.4
-      //   keep-elements        80/80/72/62 → 83/83/82/67     86.7 / 86.1 / 86.1 / 70.9
-      //   services             90/90/90/88 → 93/93/90/91     96.0 / 96.2 / 93.2 / 94.9
-      //   store reducers       95/95/90/88 → 97/97/97/92      100 /  100 /  100 / 95.8
-      //   utils                85/85/55/60 → 96/96/93/91     99.3 / 99.4 / 96.4 / 95.4
-      //   access/action.ts     95/95/95/78 → 97/97/97/80      100 /  100 /  100 / 83.3
-      //   consents/action.ts   95/95/95/65 → 97/97/97/67      100 /  100 /  100 / 70.0
-      //   applications/action  87/87/87/65 → 88/88/88/66     91.6 / 91.6 / 91.7 / 69.6
-      //   StoreController.ts   95/95/95/90 → 97/97/97/95      100 /  100 /  100 /  100
+      // Two different problems this time, and the second matters more.
+      //
+      // **Drift.** The global floor sat 20 points under reality — #801–#805's thunk
+      // suites, #806's element conversions and #807 all landed behind it.
+      //
+      //                        floor was → is        measured @ fc470a8
+      //   global               44/44/42/38 → 61/61/63/49    64.4 / 64.7 / 66.9 / 53.1
+      //   keep-elements        83/83/82/67 → 85/85/84/68    88.8 / 88.0 / 87.8 / 72.8
+      //   utils                96/96/93/91 → 96/96/93/93    99.3 / 99.4 / 96.6 / 97.4
+      //   access/action.ts     97/97/97/80 → 97/97/97/84     100 /  100 /  100 / 87.5
+      //   applications/action  88/88/88/66 → 90/90/92/68    93.5 / 93.5 / 95.2 / 71.9
+      //   (reducers, services, consents, StoreController, store.ts unchanged — already
+      //    sit the right distance under their measurements)
+      //
+      // **Gaps.** Three well-tested areas had *no gate at all*, which drift cannot show:
+      // a directory nobody listed is not a low floor, it is no floor. All three arrived
+      // after #820 wrote this block, which is exactly how it happens.
+      //
+      //   src/store/databases/**    13 files, 84.4 % lines — #711's split modules and the
+      //                             ~500 thunk tests from #801–#805
+      //   src/router/**              2 files, 97.8 % — the in-repo router (#716, #813)
+      //   src/store/FormController   1 file, 100 % — and its sibling StoreController was
+      //                             gated, for a reason that applies equally to it
       //
       // Branch floors keep ~4 points of slack and the rest ~3: branch counts move under
       // ordinary refactoring (an added guard clause, a removed `default:` arm) in a way
       // line counts do not.
       thresholds: {
-        lines: 44,
-        statements: 44,
-        functions: 42,
-        branches: 38,
+        lines: 61,
+        statements: 61,
+        functions: 63,
+        branches: 49,
         'src/store/**/reducer.ts': { lines: 97, statements: 97, functions: 97, branches: 92 },
         // Thunk suites, per slice (#690). Gated individually rather than through one
-        // `**/action.ts` glob: databases/action.ts is still at 15 %, so a shared floor
-        // would have to sit there and would gate nothing for the slices that are done.
-        'src/store/access/action.ts': { lines: 97, statements: 97, functions: 97, branches: 80 },
+        // `**/action.ts` glob, because they are covered to very different depths.
+        'src/store/access/action.ts': { lines: 97, statements: 97, functions: 97, branches: 84 },
         'src/store/consents/action.ts': { lines: 97, statements: 97, functions: 97, branches: 67 },
-        'src/store/applications/action.ts': { lines: 88, statements: 88, functions: 88, branches: 66 },
-        // The React-removal primitives (#715). Measured at 100/100/100/100 — they are
-        // small, and every element converted in #719 depends on them being right, so
-        // they are gated close to the measurement rather than a few points below.
+        'src/store/applications/action.ts': { lines: 90, statements: 90, functions: 92, branches: 68 },
+        // #711 split the 2,926-line databases/action.ts into one module per concern, and
+        // #801–#805 covered them. That is the single largest body of store logic in the
+        // tree and it was ungated until now — the old comment here even said the file
+        // was "still at 15 %", which stopped being true several PRs ago.
+        'src/store/databases/**': { lines: 81, statements: 81, functions: 86, branches: 64 },
+        // The React-removal primitives (#715, #807). Small, and every element converted
+        // in #719 depends on them being right, so they are gated close to the measurement
+        // rather than a few points below. FormController is the newer half and had no
+        // floor at all; the argument for gating it is the same one written for its
+        // sibling, and 15 tier-D files are about to depend on it.
         'src/store/StoreController.ts': { lines: 97, statements: 97, functions: 97, branches: 95 },
+        'src/store/FormController.ts': { lines: 97, statements: 97, functions: 88, branches: 88 },
         // store.ts is one `configureStore` call: 100 % lines, and *zero* functions and
         // zero branches to count. Those two floors are vacuous — left where they are
         // rather than raised to imply a measurement that does not exist.
         'src/store/store.ts': { lines: 95, statements: 95, functions: 95, branches: 90 },
-        'src/utils/**': { lines: 96, statements: 96, functions: 93, branches: 91 },
-        // The 27 converted Lit elements. Raised from 80/80/72/62 — itself raised from
-        // 70/70/60/50 once the element suites and the Monaco tests landed.
-        'src/components/keep-elements/**': { lines: 83, statements: 83, functions: 82, branches: 67 },
+        // The router that replaced react-router-dom (#716), plus the code-splitting and
+        // prefetch contracts added in #813. `react.tsx` is deleted when the views become
+        // Lit elements; `router.ts` is not, and is what the Lit controller will bind to.
+        'src/router/**': { lines: 94, statements: 94, functions: 90, branches: 91 },
+        'src/utils/**': { lines: 96, statements: 96, functions: 93, branches: 93 },
+        // The converted Lit elements — 93 files now, including the per-element React
+        // wrappers #813 split out of the KeepElements barrel.
+        'src/components/keep-elements/**': { lines: 85, statements: 85, functions: 84, branches: 68 },
         // Pure, well-covered helpers (log, theme, icon library, WA token readers).
         // Nothing here should ever ship untested.
         'src/services/**': { lines: 93, statements: 93, functions: 90, branches: 91 },
