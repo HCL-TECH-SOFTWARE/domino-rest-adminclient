@@ -13,8 +13,9 @@ import ApplicationsContainer from './components/applications/Applications';
 import FormsContainer from './components/forms/FormsContainer';
 import { AppState } from './store';
 import { setLoading } from './store/loading/action';
-import Homepage from './components/home/Homepage';
-import PageRouters from './components/routers/PageRouters';
+import Section from './components/home/sections/Section';
+import BreadcrumbRouter from './components/routers/BreadcrumbRouter';
+import { KeepHomepage, KeepPageRouters } from './components/keep-elements/KeepElements';
 import SchemasLists from './components/schemas/SchemasLists';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import ScopeLists from './components/scopes/ScopeLists';
@@ -85,7 +86,7 @@ const Views: React.FC = () => {
   const routes: RouteDef[] = useMemo(() => {
     const guard = () => authenticated;
     return [
-      { path: '/', element: <Homepage />, guard, redirectTo: '/' },
+      { path: '/', element: <KeepHomepage><Section /></KeepHomepage>, guard, redirectTo: '/' },
       { path: '/schema', element: <SchemasLists />, guard, redirectTo: '/' },
       { path: '/schema/:nsfPath/:dbName', element: <FormsContainer />, guard, redirectTo: '/' },
       {
@@ -176,7 +177,9 @@ const Views: React.FC = () => {
   return (
     <ViewContainer id="main-stack">
       <NavigationGuardProvider basename="/admin/ui">
-        <PageRouters />
+        <KeepPageRouters>
+          <BreadcrumbRouter />
+        </KeepPageRouters>
         <RouterOutlet routes={routes} />
 
         {/*

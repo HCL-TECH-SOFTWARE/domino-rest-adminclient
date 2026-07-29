@@ -17,11 +17,11 @@ import './App.css';
 import './styles/app-shell.css';
 import Views from './Views';
 import theme from './theme';
-import MobileHeader from './components/header/MobileHeader';
+import ProfileMenuDialog from './components/sidenav/ProfileMenuDialog';
 import Notification from './components/alerts/Notification';
 import SideNav from './components/sidenav/SideNav';
 import ProfileMenu from './components/sidenav/ProfileMenu';
-import { KeepFooter, KeepTooltip } from './components/keep-elements/KeepElements';
+import { KeepFooter, KeepMobileHeader, KeepTooltip } from './components/keep-elements/KeepElements';
 import { applyTheme } from './services/theme-service';
 import { AppState } from './store';
 import { getTheme, switchTheme } from './store/styles/action';
@@ -152,7 +152,11 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         */}
         {isMobile && (
           <div slot="header">
-            <MobileHeader />
+            {/* ProfileMenuDialog still imports MUI and react-redux, so it stays React and
+                crosses into the element as slotted light DOM (#806). */}
+            <KeepMobileHeader>
+              <ProfileMenuDialog />
+            </KeepMobileHeader>
           </div>
         )}
 

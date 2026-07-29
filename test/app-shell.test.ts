@@ -31,7 +31,7 @@ const read = (path: string) => readFileSync(resolve(ROOT, path), 'utf8');
 const shell = read('src/AppShell.tsx');
 const shellCss = read('src/styles/app-shell.css');
 const views = read('src/Views.tsx');
-const mobileHeader = read('src/components/header/MobileHeader.tsx');
+const mobileHeader = read('src/components/keep-elements/keep-mobile-header.ts');
 const globalCss = read('src/styles/styles.css');
 /** The footer's own copy of the breakpoint since #806 moved it out of the global sheet. */
 const footerElement = read('src/components/keep-elements/keep-footer.ts');

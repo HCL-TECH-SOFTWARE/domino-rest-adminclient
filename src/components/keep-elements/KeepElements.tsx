@@ -35,6 +35,9 @@ import FormDialogHeader, {
   type KeepFormDialogHeaderCloseDetail
 } from './keep-form-dialog-header';
 import ErrorWrapper from './keep-error-wrapper';
+import Homepage from './keep-homepage';
+import MobileHeader from './keep-mobile-header';
+import PageRouters from './keep-page-routers';
 import UnsavedChangesDialog, {
   type KeepUnsavedChangesDialogDetail
 } from './keep-unsaved-changes-dialog';
@@ -219,6 +222,24 @@ export const KeepPageLoading = createComponent({
 export const KeepZeroResults = createComponent({
   tagName: 'keep-zero-results',
   elementClass: ZeroResults,
+  react: React
+});
+
+export const KeepHomepage = createComponent({
+  tagName: 'keep-homepage',
+  elementClass: Homepage,
+  react: React
+});
+
+export const KeepMobileHeader = createComponent({
+  tagName: 'keep-mobile-header',
+  elementClass: MobileHeader,
+  react: React
+});
+
+export const KeepPageRouters = createComponent({
+  tagName: 'keep-page-routers',
+  elementClass: PageRouters,
   react: React
 });
 
