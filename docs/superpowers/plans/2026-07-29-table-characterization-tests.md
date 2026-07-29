@@ -637,11 +637,17 @@ describe('AgentsTable — activation', () => {
 ```bash
 npx vitest run test/components/forms/AgentsTable.test.tsx
 ```
-Expected: all pass. Likely correction: the Status header text is inside a `KeepTooltip`'s
-`content` **attribute**, not a text node — if `getByText` cannot find it, assert instead on
-the trigger, `expect(screen.getByText(/^Status/)).toBeInTheDocument()`, and pin the tooltip
-copy via the attribute:
-`expect(deepQuery('keep-tooltip')?.getAttribute('content')).toContain('Activate the Agents')`.
+Expected: all pass. Likely correction: the Status header copy lives in `KeepTooltip`'s
+`content`, which is not a text node, so `getByText` cannot find it. Assert on the trigger,
+`expect(screen.getByText(/^Status/)).toBeInTheDocument()`, and pin the tooltip copy via the
+**property** — `keep-tooltip.ts` declares `content` without `reflect: true`, so
+`getAttribute('content')` is always `null` and `@lit/react` sets the live `.content` JS
+property instead:
+
+```ts
+const tip = deepQuery('keep-tooltip') as unknown as { content?: string } | null;
+expect(tip?.content).toContain('Activate the Agents');
+```
 
 - [ ] **Step 3: Negative control**
 
