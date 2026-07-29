@@ -62,10 +62,37 @@ export default class Tip extends KeepElement {
       color-scheme: inherit;
     }
 
+    /*
+     * NO BACKTICKS ANYWHERE IN THIS BLOCK. It sits inside a css tagged-template literal, so
+     * a backtick ends the template and the file stops parsing. Cost me a dev-server crash.
+     *
+     * The tile has to read as a raised surface in LIGHT mode, where WebAwesome gives it
+     * almost nothing to work with:
+     *
+     * - --wa-color-surface-raised and --wa-color-surface-default are BOTH white. The MUI
+     *   original set background: var(--wa-color-surface-raised) and so was white on white;
+     *   only MUI's own elevation shadow separated it from the page.
+     * - --wa-color-surface-border is --wa-color-neutral-90, and the neutral ramp is
+     *   mode-invariant, so in light mode that is a near-white line on a white page.
+     * - wa-card's own box-shadow: var(--wa-shadow-s) resolves to about 0 2px 2px -1px:
+     *   real, but not enough to lift a near-white card off white.
+     *
+     * So: --wa-shadow-l for elevation you can actually see, and the NEUTRAL border ramp
+     * rather than the surface one. Border and shadow were both raised a step after looking
+     * at them on the page -- quiet (neutral-90 in light) and shadow-m still read as faint.
+     * neutral-border-normal is neutral-80 in light and neutral-30 in dark, so it holds up
+     * both ways; the dark surfaces already differ (#1e1e2e against #252535, keep-theme.css).
+     *
+     * Nothing here sets --wa-panel-background-color, --wa-panel-border-color or
+     * --border-radius: wa-card reads none of the three. It reads --wa-color-surface-*,
+     * --wa-panel-border-radius and --wa-shadow-s. Setting the others looks like theming and
+     * does nothing at all -- they were copied from keep-default-card, where they are equally
+     * inert.
+     */
     wa-card {
-      --wa-panel-background-color: var(--wa-color-surface-raised);
-      --wa-panel-border-color: var(--wa-color-surface-border);
-      --border-radius: var(--wa-border-radius-l);
+      --wa-panel-border-radius: var(--wa-border-radius-l);
+      border-color: var(--wa-color-neutral-border-normal);
+      box-shadow: var(--wa-shadow-l);
       display: flex;
       flex: 1;
       overflow: hidden;

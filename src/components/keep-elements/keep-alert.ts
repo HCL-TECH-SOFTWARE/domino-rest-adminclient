@@ -113,10 +113,10 @@ export default class Alert extends KeepElement {
       stroke-linecap: round;
     }
 
-    /* Give the callout message room so it never slides under the X button */
-    wa-callout::part(base),
-    wa-callout::part(message),
-    wa-callout::part(body) {
+    /* Give the callout message room so it never slides under the X button.
+       Only message is a real wa-callout part -- the component exposes icon and message
+       and nothing else, so the base and body selectors listed here matched nothing. */
+    wa-callout::part(message) {
       padding-right: 2.5rem;
     }
 

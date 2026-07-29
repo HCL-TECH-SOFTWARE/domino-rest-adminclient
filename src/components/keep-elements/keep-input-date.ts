@@ -28,7 +28,7 @@ export default class InputDate extends KeepElement {
     :host {
       color-scheme: inherit;
     }
-    :host-context(body[data-theme='dark']) wa-input::part(form-control-label),
+    /* label is the real part; form-control-label was listed too and matched nothing. */
     :host-context(body[data-theme='dark']) wa-input::part(label) {
       color: #ffffff !important;
     }
