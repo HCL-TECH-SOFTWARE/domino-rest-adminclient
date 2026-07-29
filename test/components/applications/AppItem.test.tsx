@@ -11,12 +11,16 @@ import { deepQueryAll } from '../../test-utils/shadow';
 import AppItem from '../../../src/components/applications/AppItem';
 import { generateSecret } from '../../../src/store/applications/action';
 import { toggleApplicationDrawer } from '../../../src/store/drawer/action';
+import { toggleAlert } from '../../../src/store/alerts/action';
 
 vi.mock('../../../src/store/applications/action', () => ({
   generateSecret: vi.fn(() => ({ type: 'GENERATE_SECRET' })),
 }));
 vi.mock('../../../src/store/drawer/action', () => ({
   toggleApplicationDrawer: vi.fn(() => ({ type: 'TOGGLE_APP_DRAWER' })),
+}));
+vi.mock('../../../src/store/alerts/action', () => ({
+  toggleAlert: vi.fn(() => ({ type: 'TOGGLE_ALERT' })),
 }));
 vi.mock('../../../src/components/commons/AppIcon', () => ({
   AppIcon: () => <span data-testid="app-icon" />,
@@ -85,6 +89,26 @@ function tooltipButton(content: string): HTMLButtonElement {
 /** Copy of every tooltip currently rendered — for absence assertions. */
 const tooltipCopy = () =>
   deepQueryAll('keep-tooltip').map((t) => (t as unknown as { content?: string }).content);
+
+/**
+ * The `<span>` inside the `KeepTooltip` whose copy is `content`.
+ *
+ * The copy-to-clipboard triggers (App ID, App Secret) are plain `<span onClick=…>`s, not
+ * buttons — `tooltipButton` above deliberately throws if it finds no `<button>`, so it
+ * cannot be reused here. Same lookup-by-tooltip-copy strategy, different projected tag.
+ */
+function tooltipSpan(content: string): HTMLSpanElement {
+  const host = deepQueryAll('keep-tooltip').find(
+    (t) => (t as unknown as { content?: string }).content === content,
+  );
+  if (!host) {
+    const seen = tooltipCopy().join(', ');
+    throw new Error(`No keep-tooltip with content "${content}". Seen: [${seen}]`);
+  }
+  const span = host.querySelector('span');
+  if (!span) throw new Error(`keep-tooltip "${content}" wraps no span`);
+  return span as HTMLSpanElement;
+}
 
 describe('AppItem — layout', () => {
   it('renders five cells in the data row', () => {
@@ -195,5 +219,83 @@ describe('AppItem — actions', () => {
     const { deleteApplication } = renderAppItem();
     fireEvent.click(tooltipButton('Delete Application'));
     expect(deleteApplication).toHaveBeenCalledWith('app-123');
+  });
+});
+
+describe('AppItem — copy to clipboard', () => {
+  it('writes to the Clipboard API and reports success when it is available', () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn() },
+      configurable: true,
+    });
+    try {
+      renderAppItem();
+      fireEvent.click(tooltipSpan('Copy App Id'));
+      // jsdom implements neither a Clipboard API (stubbed above) nor `innerText` (not
+      // stubbed — and must not be, per the brief). `copyToClipboard` (AppItem.tsx:164-172)
+      // reads `currentTarget.innerText`, which jsdom always answers `undefined`, so the
+      // "copied" value comes out `undefined` rather than the app id. This is jsdom's
+      // actual behaviour, not a defect to polyfill around.
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(undefined);
+      expect(toggleAlert).toHaveBeenCalledWith('Copied undefined to clipboard');
+    } finally {
+      // Mirrors the window.open try/finally above: restore jsdom's default (no Clipboard
+      // API) so this stub cannot leak into the next test regardless of pass/fail.
+      delete (navigator as unknown as { clipboard?: unknown }).clipboard;
+    }
+  });
+
+  it('reports a failed copy when the Clipboard API is unavailable', () => {
+    const original = (navigator as unknown as { clipboard?: unknown }).clipboard;
+    delete (navigator as unknown as { clipboard?: unknown }).clipboard;
+    try {
+      // Confirms the fixture this test relies on — jsdom's real default, not an assumption.
+      expect(navigator.clipboard).toBeUndefined();
+      renderAppItem();
+      fireEvent.click(tooltipSpan('Copy App Id'));
+      // Trailing space before the closing backtick in AppItem.tsx:170 is in the source —
+      // pinned verbatim, not a typo introduced here.
+      expect(toggleAlert).toHaveBeenCalledWith(
+        'Failed to copy to clipboard. Please copy by yourself: undefined ',
+      );
+    } finally {
+      if (original !== undefined) {
+        Object.defineProperty(navigator, 'clipboard', { value: original, configurable: true });
+      }
+    }
+  });
+});
+
+describe('AppItem — the visible-secret branch', () => {
+  it('BUG: an already-generated secret renders as empty text, not the app.appSecret prop', () => {
+    renderAppItem(makeApp({ appSecret: 'sekrit-value' }));
+    // Rule out the sibling branches first: appHasSecret is false and usePkce is false, so
+    // neither the generate-prompt nor the masked-with-refresh branch should render.
+    expect(screen.queryByText('Click to Generate Secret')).not.toBeInTheDocument();
+    expect(screen.queryByText('********************')).not.toBeInTheDocument();
+    expect(tooltipCopy()).toContain('Copy Application Secret');
+    // BUG (AppItem.tsx:300-312): the condition guarding this branch is
+    // `app.appSecret?.length > 0`, but what it renders is `{appSecret}` — the
+    // component-local `useState('')`, never seeded from the `app.appSecret` prop. So a
+    // secret the API actually returned renders as an empty tooltip-wrapped span instead
+    // of its value. Pinning the observed (buggy) behaviour: the prop's text is absent,
+    // and the rendered span is empty.
+    expect(screen.queryByText('sekrit-value')).not.toBeInTheDocument();
+    expect(tooltipSpan('Copy Application Secret').textContent).toBe('');
+  });
+
+  it('the click-to-generate transition flips the row into that same empty, unmasked branch', () => {
+    renderAppItem();
+    fireEvent.click(screen.getByText('Click to Generate Secret'));
+    // AppItem.tsx:134-141: handleClickGenerate calls setHasAppSecret(true)
+    // unconditionally, regardless of its `newSecret` argument or whether a secret was
+    // actually produced (generateSecret is mocked here and never calls the real
+    // setAppSecret setter). So the click alone — not a resolved dispatch — flips the row
+    // straight from "offer to generate" into the branch characterized as buggy above:
+    // present, but showing empty text instead of a secret.
+    expect(screen.queryByText('Click to Generate Secret')).not.toBeInTheDocument();
+    expect(screen.queryByText('********************')).not.toBeInTheDocument();
+    expect(tooltipCopy()).toContain('Copy Application Secret');
+    expect(tooltipSpan('Copy Application Secret').textContent).toBe('');
   });
 });
