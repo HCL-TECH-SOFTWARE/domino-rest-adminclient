@@ -158,11 +158,19 @@ right** — they share files.
 |---|---|---|---|---|
 | **0** — no deps | ✅ #800 → #792 | **#807** · **#771** (in flight) · **#765** | ✅ #691 (dropped) | ✅ **#806 tier A** (PR #835) |
 | **1** | ✅ #801 → #803 → #804 → #802 → #805 | — | — | **#806 tiers B–C** — 73 files · **#713** interleaved ← **next** |
-| **2** | ✅ #711 · ✅ #697 · **#710** (in flight) | — | — | **#806 tier D** · closes **#717** **#718** **#712** |
+| **2** | ✅ #711 · ✅ #697 · ✅ #710 | — | — | **#806 tier D** · closes **#717** **#718** **#712** |
 | **3** — gates | — | **#709** | merge `new_code` → `main` (PR #786) | **#719** capstone → closes **#720** |
 
-**Lane A is all but finished.** Waves 0 and 1 are closed, and in wave 2 both #711 and #697 have
-landed; only #710's remaining slices are open. The chain that made lane A serial is gone.
+**Lane A is finished.** Every planned item in waves 0–2 is closed. All 11 reducers are
+`createSlice`, `store/databases/action.ts` is a 47-line barrel over ten concern modules, and the
+thunk coverage that made both safe is in place.
+
+Two open issues carry the `track:store` label, and neither was planned work — both are defects
+found while doing it and deliberately pinned rather than fixed, because each changes what a user
+sees and wants its own review: **#818** (`fetchScopes` rethrows before its own error dialog, so a
+failed scope fetch reports nothing) and **#848** (`updateScope`'s `resetForm` passes an object
+where a form name is expected, so it has never removed a form). Both P2/S. An instance freed up
+from another lane can take them; nothing in the programme waits on either.
 
 **Lane D is the critical path now.** Tier A landed the recipe; tiers B–C are the 73-file bulk,
 and tier D is still gated on **#807**, which has not started.
@@ -379,6 +387,10 @@ plugin, but every rule it offers is dead the moment a file stops being `.tsx`. P
 assertions in the element tests.
 
 ---
+
+> **Lane A detail below is historical.** Waves 0–2 for lane A are complete; the per-issue
+> sections are kept because they record *why* each thing was done and what was found. The two
+> defects they surfaced — #818 and #848 — are the only open `track:store` work.
 
 ## Wave 2
 
