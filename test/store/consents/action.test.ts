@@ -19,7 +19,7 @@ import {
   toggleDeleteConsent as toggleDeleteConsentAction,
 } from '../../../src/store/consents/reducer';
 import { toggleConsentsLoading } from '../../../src/store/loading/action';
-import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
+import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
 
 /**
@@ -60,7 +60,7 @@ describe('consents thunks', () => {
   const alerts = () =>
     dispatch.mock.calls
       .map((call) => call[0] as { type?: string; payload?: string })
-      .filter((a) => a?.type === TOGGLE_ALERT)
+      .filter((a) => a?.type === toggleAlert.type)
       .map((a) => a.payload as string);
 
   beforeAll(() => {

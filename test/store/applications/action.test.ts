@@ -20,7 +20,7 @@ import {
   getApps as getAppsAction,
   updateApp as updateAppAction,
 } from '../../../src/store/applications/reducer';
-import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
+import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry's own error path calls notify(), which mounts a <keep-alert>.
 // Without the element registered, `el.show` is undefined and the helper turns a clean
@@ -64,7 +64,7 @@ describe('generateSecret', () => {
   const alerts = () =>
     dispatch.mock.calls
       .map((call) => call[0] as { type?: string; payload?: string })
-      .filter((action) => action?.type === TOGGLE_ALERT)
+      .filter((action) => action?.type === toggleAlert.type)
       .map((action) => action.payload as string);
 
   beforeAll(() => {
@@ -174,7 +174,7 @@ describe('generateSecret', () => {
 const alertsOf = (dispatch: { mock: { calls: unknown[][] } }) =>
   dispatch.mock.calls
     .map((call) => call[0] as { type?: string; payload?: string })
-    .filter((action) => action?.type === TOGGLE_ALERT)
+    .filter((action) => action?.type === toggleAlert.type)
     .map((action) => action.payload as string);
 
 describe('the remaining applications thunks', () => {

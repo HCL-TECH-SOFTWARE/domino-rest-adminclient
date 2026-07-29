@@ -17,7 +17,7 @@ import {
 } from '../../../src/store/databases/types';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../../../src/store/dialog/action';
 import { toggleDrawer } from '../../../src/store/drawer/action';
-import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
+import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
 import '../../../src/components/keep-elements/keep-alert';
@@ -58,7 +58,7 @@ describe('databases — scopes', () => {
   const actions = () => dispatch.mock.calls.map((call) => call[0] as any);
   const types = () => actions().map((a) => a?.type);
   const alerts = () =>
-    actions().filter((a) => a?.type === TOGGLE_ALERT).map((a) => a.payload as string);
+    actions().filter((a) => a?.type === toggleAlert.type).map((a) => a.payload as string);
 
   /** Every setApiLoading.type payload, in order — the flag's whole life in one thunk run. */
   const loadingSequence = () =>
