@@ -10,6 +10,7 @@ import { styled } from '@linaria/react';
 import { useLocation } from '../../router/react';
 import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
+import { isFieldEqual, isFormulaEqual, isKeyEqual } from './mode-diff';
 import { Database, Field, Mode } from '../../store/databases/types';
 import { Box, MenuItem, Select } from '@mui/material';
 import { KeepButton, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
@@ -232,76 +233,6 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
       return Array.from(fieldNames);
     }
 
-    // Deep compare two objects
-    function deepEqual(obj1: any, obj2: any): boolean {
-      if (obj1 === obj2) {
-        return true
-      }
-    
-      if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
-        return false
-      }
-    
-      const keys1 = Object.keys(obj1)
-      const keys2 = Object.keys(obj2)
-    
-      if (keys1.length !== keys2.length) {
-        return false
-      }
-    
-      for (const key of keys1) {
-        if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
-          return false
-        }
-      }
-    
-      return true
-    }
-
-    // Check if field is equal across all modes
-    function isFieldEqual(fieldName: string) {
-      let fieldEqual = true;
-
-      let baseModeContents = allModes[getFormModeIndex(allModes, selectedModeNames[0])];
-      let baseField = baseModeContents.fields[getFieldIndex(baseModeContents.fields, fieldName)];
-
-      for (let i = 1; i < selectedModeNames.length; i++) {
-        if (selectedModeNames[i] === '') {
-          return false;
-        }
-
-        let modeContents = allModes[getFormModeIndex(allModes, selectedModeNames[i])];
-        let fieldtoCompare = modeContents.fields[getFieldIndex(modeContents.fields, fieldName)];
-        if (baseField && fieldtoCompare) {
-          return deepEqual(JSON.parse(JSON.stringify(baseField)), JSON.parse(JSON.stringify(fieldtoCompare)))
-        } else {
-          return false;
-        }
-      }
-
-      return fieldEqual;
-    }
-
-    // Check if field is equal across all modes
-    function isFormulaEqual(formula: string) {
-      let formulaEqual = true;
-
-      let baseModeContents = allModes[getFormModeIndex(allModes, selectedModeNames[0])];
-      let baseFormula = baseModeContents[formula as keyof Mode];
-
-      for (let i = 1; i < selectedModeNames.length; i++) {
-        if (selectedModeNames[i] === '') {
-          return false;
-        }
-
-        let modeContents = allModes[getFormModeIndex(allModes, selectedModeNames[i])];
-        let formulatoCompare = modeContents[formula as keyof Mode];
-        return deepEqual(JSON.parse(JSON.stringify(baseFormula)), JSON.parse(JSON.stringify(formulatoCompare)))
-      }
-
-      return formulaEqual
-    }
-
     function getFieldKeys(selectedModes: Array<string>, _fieldName: string) {
       let fieldKeys: any[];
       fieldKeys = [];
@@ -319,43 +250,6 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
       return Array.from(new Set(fieldKeys));
     }
 
-    // Check if field type/key is equal across all modes
-    function isKeyEqual(fieldName: string, fieldKey: string) {
-      let keyEqual = true;
-
-      let baseModeContents = allModes[getFormModeIndex(allModes, selectedModeNames[0])];
-
-      if (getFieldIndex(baseModeContents.fields, fieldName) < 0) {
-        return false;
-      }
-      let baseField = baseModeContents.fields[getFieldIndex(baseModeContents.fields, fieldName)];
-
-      if (!Object.keys(baseField).includes(fieldKey)) {
-        return false;
-      }
-
-      for (let i = 1; i < selectedModeNames.length; i++) {
-        if (selectedModeNames[i] === '') {
-          return false;
-        }
-
-        let modeContents = allModes[getFormModeIndex(allModes, selectedModeNames[i])];
-        if (getFieldIndex(modeContents.fields, fieldName) < 0) {
-          return false;
-        }
-        let field = modeContents.fields[getFieldIndex(modeContents.fields, fieldName)];
-        if (
-          Object.keys(baseField).includes(fieldKey) &&
-          field[fieldKey as keyof typeof field] === baseField[fieldKey as keyof typeof field]
-        ) {
-          keyEqual = true;
-        } else {
-          return false;
-        }
-      }
-
-      return keyEqual;
-    }
 
     if (selectedModeNames.length >= 2) {
       let fieldNames = getFieldNames(selectedModeNames); // contains all field names across all modes
@@ -363,14 +257,14 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
       let diffFieldsBuffer = {}; // will contain an object containing all the differences in all modes and fields
 
       fieldNames.forEach((fieldName: any) => {
-        if (!isFieldEqual(fieldName)) {
+        if (!isFieldEqual(allModes, selectedModeNames, fieldName)) {
           let diffKeys: Array<string | null>;
           diffKeys = [];
 
           let fieldKeys = getFieldKeys(selectedModeNames, fieldName);
 
           fieldKeys.forEach((fieldKey: string) => {
-            if (!(fieldKey === 'name') && !(fieldKey === 'externalName') && !isKeyEqual(fieldName, fieldKey)) {
+            if (!(fieldKey === 'name') && !(fieldKey === 'externalName') && !isKeyEqual(allModes, selectedModeNames, fieldName, fieldKey)) {
               diffKeys.push(fieldKey);
             }
           });
@@ -389,7 +283,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
 
       let diffFormulasBuffer: string[] = []
       formulas.forEach((formula: string) => {
-        if (!isFormulaEqual(formula)) {
+        if (!isFormulaEqual(allModes, selectedModeNames, formula)) {
           diffFormulasBuffer.push(formula)
         }
 
