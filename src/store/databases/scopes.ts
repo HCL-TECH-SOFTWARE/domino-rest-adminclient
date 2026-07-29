@@ -16,7 +16,6 @@ import {
 } from './types';
 import { toggleDrawer } from '../drawer/action';
 import { AppState } from '..';
-import { TOGGLE_DRAWER } from '../drawer/types';
 import { toggleAlert, closeSnackbar } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
@@ -212,9 +211,7 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
           payload: keepData
         });
   
-        dispatch({
-          type: TOGGLE_DRAWER
-        });
+        dispatch(toggleDrawer());
         dispatch(
           isEdit
             ? toggleAlert(`${dbData.apiName} has been successfully updated.`)

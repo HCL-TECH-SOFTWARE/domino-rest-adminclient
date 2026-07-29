@@ -5,8 +5,8 @@
  * ========================================================================== */
 
 import { describe, it, expect } from 'vitest';
-import usersReducer from '../../../src/store/access/reducer';
-import { SET_USERS, INIT_STATE, UserState } from '../../../src/store/access/types';
+import usersReducer, { setUsers } from '../../../src/store/access/reducer';
+import { INIT_STATE, UserState } from '../../../src/store/access/types';
 
 const initial: UserState = {
   users: null,
@@ -17,13 +17,16 @@ describe('usersReducer', () => {
     expect(usersReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('SET_USERS stores the payload on the users field', () => {
+  it('setUsers stores the payload on the users field', () => {
     const users = [{ user1: {} as any }];
-    const next = usersReducer(initial, { type: SET_USERS, payload: users });
+    const next = usersReducer(initial, setUsers(users));
     expect(next.users).toBe(users);
   });
 
-  it('INIT_STATE resets to the initial state', () => {
+  it('INIT_STATE still resets, though it is not this slice\'s action', () => {
+    // The cross-slice reset broadcast. createSlice namespaces its own actions as
+    // `users/…`, so this only keeps working because the slice matches the literal
+    // type in extraReducers. If that goes, this is the test that catches it.
     const dirty: UserState = { users: [{ user1: {} as any }] };
     expect(usersReducer(dirty, { type: INIT_STATE })).toEqual(initial);
   });
@@ -31,7 +34,7 @@ describe('usersReducer', () => {
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
     expect(() =>
-      usersReducer(frozen, { type: SET_USERS, payload: [{ u: {} as any }] })
+      usersReducer(frozen, setUsers([{ u: {} as any }]))
     ).not.toThrow();
   });
 });

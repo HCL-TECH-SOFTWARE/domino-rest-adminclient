@@ -7,7 +7,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Dispatch } from 'redux';
 import { fetchUsers } from '../../../src/store/access/action';
-import { SET_USERS } from '../../../src/store/access/types';
+import { setUsers } from '../../../src/store/access/reducer';
 import { TOGGLE_USERS_LOADING } from '../../../src/store/loading/types';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths; without the
@@ -64,7 +64,7 @@ describe('fetchUsers', () => {
     await fetchUsers()(dispatch);
 
     expect(dispatch.mock.calls.map((c) => c[0])).toContainEqual({
-      type: SET_USERS,
+      type: setUsers.type,
       payload: users,
     });
   });
@@ -87,7 +87,7 @@ describe('fetchUsers', () => {
     await fetchUsers()(dispatch);
 
     expect(loadingToggles()).toBe(2);
-    expect(types()).not.toContain(SET_USERS);
+    expect(types()).not.toContain(setUsers.type);
   });
 
   it('leaves the loading flag as it found it when the request never completes', async () => {

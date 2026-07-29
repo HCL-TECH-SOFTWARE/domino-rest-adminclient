@@ -8,7 +8,7 @@ import { Dispatch } from 'redux';
 import { ADMIN_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleUsersLoading } from '../loading/action';
-import { SET_USERS } from './types';
+import { setUsers } from './reducer';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
 
@@ -33,10 +33,7 @@ export function fetchUsers (startsWith?: string) {
         throw new Error(JSON.stringify(data))
       }
 
-      dispatch({
-        type: SET_USERS,
-        payload: data,
-      })
+      dispatch(setUsers(data))
       dispatch(toggleUsersLoading());
     } catch (e: any) {
       // `usersLoading` is a toggle, not a set: without this second flip the users list
