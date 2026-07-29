@@ -90,9 +90,19 @@ conversion to the per-file pass: *"convert per file, inside the component migrat
 not as a separate sweep."* That pass is now **#806**, which counts those sites — **157** of them
 today, since tier A deliberately took the files with no store access at all.
 
-**#708 closed with 84 `light-dark()` calls left in `dark-mode.css`.** Also correct. Every
-one of them is inside a `.Mui*` selector, so they are gated on #709 — deleting them before
-their components are replaced breaks what has not been converted yet.
+**#708 closed with 84 `light-dark()` calls left in `dark-mode.css`.** Also correct, but not
+for the reason first given here. An earlier revision said every one of them sits inside a
+`.Mui*` selector and so is gated on #709. Measured, they do not:
+
+| | `light-dark()` | goes with |
+|---|--:|---|
+| inside a `.Mui*` selector | **62** | #709 |
+| everywhere else | **22** | **#806**, per file |
+
+Of the sheet's 75 selectors, **53 contain `.Mui`** and **none contain `wa-`** — see
+[dark-mode.css is not a WebAwesome concern](#dark-modecss-is-not-a-webawesome-concern)
+below. So the file is not one blocker waiting on #709; it is two, and the smaller half
+retires as the components convert.
 
 ---
 
@@ -485,16 +495,57 @@ from it, and its remaining matches are comments.
 
 Only startable when #806 and #771 have emptied `@mui/*` out of the components.
 
-- Delete the `ThemeProvider` and `CssBaseline` (both in `AppShell.tsx`, lines 137–138),
-  `theme.ts`, and the `.Mui*` override sheet — **84 `light-dark()` calls in
-  `dark-mode.css`**, which is what #708 deliberately left standing.
+- Delete the `ThemeProvider` and `CssBaseline` — a single mount, `AppShell.tsx:138–139`.
+  `App.tsx` also matches a grep for both names, but only in comments explaining why #743
+  removed its pair.
+- Delete `theme.ts` and the `.Mui*` half of `dark-mode.css`: **53 of its 75 selectors**,
+  carrying **62 of its 84 `light-dark()` calls**. The other 22 selectors are not #709's to
+  remove — see below.
 - Drop `@mui/material`, `@mui/icons-material` and `@emotion/*`. Emotion has **0** direct
   imports; it is retained only as an MUI peer, so it goes when MUI goes.
-- `@mui/x-data-grid` is already **gone** (#774) — that budget line is spent.
+- `@mui/x-data-grid` is already **gone** (#774) — that budget line is spent. A grep for
+  `@mui/x-` still returns one hit, in a `keep-input-date.ts` comment recording what it
+  replaced.
 
 **Sequencing warning that has not expired:** delete each component's `.Mui*` override only
 when that component is replaced. Deleting the sheet early breaks everything not yet
 converted.
+
+#### dark-mode.css is not a WebAwesome concern
+
+**No selector in that file targets `wa-*`.** WebAwesome components take their dark mode
+from the token layer — `:root.wa-dark`, set by `applyTheme` in `services/theme-service.ts`
+— which is why a converted element is already correct in dark mode before anyone touches
+this sheet. Do not reach for `dark-mode.css` when a `keep-*` element looks wrong in dark;
+the answer is in `keep-theme.css` or the element's own `static styles`.
+
+That leaves 22 selectors, and **none of them is #709's job**. They split three ways:
+
+| | count | when it goes |
+|---|--:|---|
+| inline-style matchers | **3** | already dead — any time |
+| document-level chrome | **5** | survives the whole programme |
+| component light-DOM classes | **14** | **#806**, per file |
+
+**The 3 inline-style matchers** — `[style*="color: black"]`, `[style*="color:black"]`,
+`[style*="background: white"]` and `button[style*="border: none"]` — match nothing.
+Searching the tree for those strings returns only the selectors themselves; no markup in
+`src/` sets those attributes. Dead independently of MUI. (The production CSP's
+`style-src-attr 'none'` would have neutralised them regardless — see `keep-element.ts`.)
+
+**The 5 document-level rules** — `body[data-theme="dark"]`, `body[data-theme="dark"] a`,
+the two `::-webkit-scrollbar-*` rules and `dialog::backdrop` — style the document itself,
+not any component. They outlive both #709 and #806 and are the part of this file worth
+keeping.
+
+**The 14 component rules** are the ones to watch: `.text`, `.setting`, `.name`,
+`.computed`, `.search-container`, `.toggle-container`, `.unchecked`, `.option-container
+img`, `dialog .button-cancel`, `dialog textarea` and the rest. Light-DOM CSS **cannot
+cross a shadow boundary**, so each stops applying the moment its component becomes a Lit
+element — silently, with the rule still sitting here looking alive. The converted element
+has to carry those colours itself, in its own `static styles`; `keep-zero-results.ts`
+documents that trap from the other side, having been caught by it. They retire with #806,
+per file, and `test/styles/dead-selectors.test.ts` is what notices when one is orphaned.
 
 ### C · merge `new_code` → `main` (PR #786)
 
