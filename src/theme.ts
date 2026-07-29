@@ -86,16 +86,9 @@ const theme = (
           },
         },
       },
-      MuiBreadcrumbs: {
-        styleOverrides: {
-          root: {
-            background: currentTheme.breadcrumb.background,
-          },
-          separator: {
-            color: currentTheme.textColorPrimary,
-          },
-        },
-      },
+      // MuiBreadcrumbs went with #877: the breadcrumb is <wa-breadcrumb> now and MUI's
+      // is imported nowhere. The override was already inert — BreadcrumbRouter's own
+      // Linaria block set `background-color: transparent !important` over it.
       MuiTab: {
         styleOverrides: {
           root: {

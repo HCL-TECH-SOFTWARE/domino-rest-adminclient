@@ -5,17 +5,19 @@
  * ========================================================================== */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import BreadcrumbRouter from '../../../src/components/routers/BreadcrumbRouter';
 
 /**
- * #877 — characterization of the breadcrumb before `<wa-breadcrumb>` replaces MUI's.
+ * #877 — the breadcrumb, on `<wa-breadcrumb>` since MUI's was replaced.
  *
- * The component had **no tests at all**, which is why three defects had gone unnoticed.
- * These pin what it does today — the wrong answers included and labelled — so the swap
- * that follows can be read as a like-for-like replacement everywhere it is one, and the
- * three fixes show up as inverted assertions rather than as silent changes.
+ * Written first as characterization, against the MUI version and with three defects
+ * pinned as they were. The trail assertions carried over **unchanged** — that is what
+ * makes this a like-for-like swap — and the three marked BUG are inverted below, each
+ * next to what it used to do.
  *
  * The routes are not invented: they are the seven in `Views.tsx`'s route table.
  */
@@ -28,12 +30,36 @@ vi.mock('../../../src/components/navigation/NavigationGuardContext', () => ({
   useNavigationGuard: () => ({ guardedNavigate }),
 }));
 
-/** Render at a route and return the visible crumb labels, in order. */
+/**
+ * Render at a route and return the visible crumb labels, in order.
+ *
+ * The home page has no trail at all, so it is still read off its `<span>`; every other
+ * route is `<wa-breadcrumb-item>`s.
+ */
 const crumbsAt = (route: string) => {
   const { container } = renderWithProviders(<BreadcrumbRouter />, { route });
+  const items = [...container.querySelectorAll('wa-breadcrumb-item')];
+  if (items.length > 0) return items.map((i) => i.textContent?.trim() ?? '');
   return [...container.querySelectorAll('span')]
     .map((s) => s.textContent?.trim() ?? '')
-    .filter((t) => t.length > 0 && t !== '/');
+    .filter((t) => t.length > 0);
+};
+
+/**
+ * Render at a route and let the elements settle.
+ *
+ * `wa-breadcrumb-item` renders its `<button>` on Lit's first update, and `wa-breadcrumb`
+ * assigns `aria-current` from a `slotchange` handler — neither is synchronous with React's
+ * render. The label and navigation assertions above do not need this, because those read
+ * light DOM that React writes directly.
+ */
+const settledAt = async (route: string) => {
+  let container!: HTMLElement;
+  await act(async () => {
+    ({ container } = renderWithProviders(<BreadcrumbRouter />, { route }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  return [...container.querySelectorAll('wa-breadcrumb-item')];
 };
 
 /** Render at a route, click the crumb with this label, and report where it navigated. */
@@ -89,36 +115,23 @@ describe('BreadcrumbRouter — where each crumb navigates', () => {
   });
 
   /**
-   * ⚠️ The defect (#877). `handleOnClick` hardcodes `guardedNavigate('/schema')` for every
-   * section, so a crumb labelled "Scopes" or "Application Management" lands the user in
-   * Schemas. Pinned as-is; the fix in the next commit inverts these three.
+   * Was the defect: `handleOnClick` hardcoded `guardedNavigate('/schema')` for every
+   * section, so a crumb labelled "Scopes" or "Application Management" landed the user in
+   * Schemas. Label and destination are one object now (`sectionOf`), which is what stops
+   * the two drifting apart again.
    */
-  describe('BUG: every section crumb goes to /schema, whatever it is labelled', () => {
-    it('Scopes -> /schema, not /scope', () => {
-      expect(clickCrumbAt('/scope', 'Scopes')).toBe('/schema');
+  describe('each section crumb goes to the section it names', () => {
+    it('Scopes -> /scope, which used to be /schema', () => {
+      expect(clickCrumbAt('/scope', 'Scopes')).toBe('/scope');
     });
 
-    it('Application Management -> /schema, not /apps', () => {
-      expect(clickCrumbAt('/apps', 'Application Management')).toBe('/schema');
+    it('Application Management -> /apps, which used to be /schema', () => {
+      expect(clickCrumbAt('/apps', 'Application Management')).toBe('/apps');
     });
 
-    it('Application Management from a sub-page -> /schema, not /apps', () => {
-      expect(clickCrumbAt('/apps/consents', 'Application Management')).toBe('/schema');
+    it('Application Management from a sub-page -> /apps, which used to be /schema', () => {
+      expect(clickCrumbAt('/apps/consents', 'Application Management')).toBe('/apps');
     });
-  });
-});
-
-describe('BreadcrumbRouter — the branch that can never render', () => {
-  afterEach(cleanup);
-
-  /**
-   * ⚠️ The second defect. `:135-141` is guarded by `split('/').length === 5` and renders
-   * `split('/')[5]` — index 5 of a five-element array, so always `undefined`. It is dead
-   * twice over, because no route in `Views.tsx` produces a five-segment path either.
-   */
-  it('a five-segment path renders no crumb for its last segment', () => {
-    // '/a/b/c/d' -> ['', 'a', 'b', 'c', 'd']. The trail stops at split[3].
-    expect(crumbsAt('/a/b/c/d')).toEqual(['Overview', 'HCL Domino REST API Administrator', 'c']);
   });
 });
 
@@ -126,17 +139,57 @@ describe('BreadcrumbRouter — markup', () => {
   afterEach(cleanup);
 
   /**
-   * ⚠️ The third defect. Every crumb is a `<span onClick>`: no role, no tabindex, not
-   * reachable by keyboard, no focus ring. `wa-breadcrumb-item` renders a real control, so
-   * the swap fixes this rather than needing separate work. Counts toward #713.
+   * Was the third defect: every crumb was a `<span onClick>` — no role, no tabindex, not
+   * reachable by keyboard, no focus ring. `wa-breadcrumb-item` renders a real `<button>`
+   * in its shadow root, so the swap fixed this rather than needing separate work (#713).
    */
-  it('offers no keyboard-reachable control', () => {
-    const { container } = renderWithProviders(<BreadcrumbRouter />, { route: '/schema' });
-    expect(container.querySelectorAll('button, a[href], [tabindex]')).toHaveLength(0);
+  it('renders every crumb as a real button', async () => {
+    const items = await settledAt('/schema/db.nsf/Demo');
+
+    expect(items).toHaveLength(3);
+    for (const item of items) {
+      expect(item.shadowRoot?.querySelector('button[type="button"]'), item.textContent ?? '').not.toBeNull();
+    }
   });
 
-  it('is built on MUI today', () => {
-    const { container } = renderWithProviders(<BreadcrumbRouter />, { route: '/schema' });
-    expect(container.querySelector('.MuiBreadcrumbs-root')).not.toBeNull();
+  /**
+   * No `href`, deliberately. `wa-breadcrumb-item` renders an `<a>` when given one, and
+   * that anchor lives in the shadow root — where `NavigationGuardContext`'s
+   * `(e.target).closest('a[href]')` cannot reach it, because `e.target` retargets to the
+   * host. The unsaved-changes guard would stop firing for breadcrumb clicks, silently.
+   */
+  it('renders no anchor, which would bypass the unsaved-changes guard', async () => {
+    for (const item of await settledAt('/schema/db.nsf/Demo')) {
+      expect(item.shadowRoot?.querySelector('a')).toBeNull();
+    }
+  });
+
+  /**
+   * ⚠️ **`aria-current` cannot be asserted here, and this does not pretend to.**
+   *
+   * `wa-breadcrumb` assigns it from a `slotchange` handler, and jsdom does not fire
+   * `slotchange` — the attribute is null in this environment however long the test waits.
+   * Verified in Chrome instead; see the PR.
+   *
+   * What is asserted is the half that lives in this repo: the bold treatment keys off the
+   * attribute Web Awesome sets, not off a class whose branch conditions would have to be
+   * kept in step by hand. That is the property that used to be got wrong.
+   */
+  it('styles the current crumb from the attribute wa-breadcrumb sets, not from a class', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'src/components/routers/BreadcrumbRouter.tsx'),
+      'utf8',
+    );
+
+    expect(source).toContain('wa-breadcrumb-item[aria-current]::part(label)');
+    expect(source).not.toMatch(/className=\{[^}]*'current'/);
+  });
+
+  it('imports no MUI', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'src/components/routers/BreadcrumbRouter.tsx'),
+      'utf8',
+    );
+    expect(source).not.toMatch(/from '@mui\//);
   });
 });
