@@ -31,7 +31,7 @@ export class FormController<T extends object> implements ReactiveController {
 
   constructor(
     private readonly host: ReactiveControllerHost,
-    protected readonly options: FormControllerOptions<T>,
+    private readonly options: FormControllerOptions<T>,
   ) {
     host.addController(this);
     // Shallow copy is enough: setValue never mutates in place, it replaces.
@@ -42,21 +42,23 @@ export class FormController<T extends object> implements ReactiveController {
    * Readonly on purpose. Five tier-D files assign `formik.values.x = y` directly, which
    * never notified anything — it only appeared to work when an unrelated render followed.
    * `Readonly<T>` makes those a compile error instead of a race.
+   *
+   * The guarantee is one level deep: a nested object (e.g. `additionalModes`) is the same
+   * object as in `initialValues` until `setValue` replaces it, so assigning through a
+   * nested property still compiles and corrupts `initialValues` — go through `setValue`.
    */
   get values(): Readonly<T> {
     return this._values;
   }
 
-  /**
-   * `ReactiveController`'s callbacks are all optional, which makes it a "weak type" —
-   * TypeScript refuses to pass an object implementing none of them to `addController`
-   * (TS2559), the same rule that rejects `{}` for any all-optional interface. This
-   * controller has no lifecycle work yet, so the hook is a no-op; Task 2 is free to give
-   * it a body, or leave it, without touching this class's shape.
-   */
+  /** No-op: `ReactiveController`'s all-optional members make it a "weak type" — implementing none fails `addController` (TS2559). */
   hostConnected(): void {}
 
-  /** `path` is either a key or one level of dot-path (`additionalModes.odata`). */
+  /**
+   * `path` is either a key or one level of dot-path (`additionalModes.odata`). Only one
+   * level: `setValue('a.b.c', v)` writes a literal `'b.c'` key into `a` — do not build
+   * deeper paths.
+   */
   setValue(path: string, value: unknown): void {
     const dot = path.indexOf('.');
     if (dot === -1) {
@@ -67,7 +69,7 @@ export class FormController<T extends object> implements ReactiveController {
       const parent = (this._values as Record<string, unknown>)[head] as object;
       this._values = { ...this._values, [head]: { ...parent, [tail]: value } };
     }
-    // A field being fixed stops showing its old error, matching LoginPage.
+    // Clears just this field's error, one at a time — LoginPage clears its whole map instead.
     if (path in this._errors) {
       const { [path]: _removed, ...rest } = this._errors;
       this._errors = rest;
@@ -89,7 +91,7 @@ export class FormController<T extends object> implements ReactiveController {
   }
 
   /** Field messages. Empty until `submit()` has run at least once. */
-  get errors(): Readonly<Record<string, string>> {
+  get errors(): Readonly<Partial<Record<string, string>>> {
     return this._errors;
   }
 
@@ -103,28 +105,23 @@ export class FormController<T extends object> implements ReactiveController {
     return this._submitted;
   }
 
+  /** Whether `submit()` is in flight — from the call until it settles. A disabled submit
+   *  button wants this: validation is part of the wait, not just `onSubmit`'s promise. */
   get submitting(): boolean {
     return this._submitting;
   }
 
   async submit(): Promise<void> {
     this._submitted = true;
-    // Gated, not an unconditional `await this.validate()`: `await` never resolves
-    // synchronously, so skipping it when there is no schema keeps this path synchronous
-    // up to `_submitting = true` — see the "is submitting while pending" test.
-    if (this.options.schema) {
-      this._errors = await this.validate();
-      this.host.requestUpdate();
-      if (Object.keys(this._errors).length > 0) return;
-    }
-
     this._submitting = true;
     this.host.requestUpdate();
     try {
+      this._errors = await this.validate();
+      if (Object.keys(this._errors).length > 0) return;
       await this.options.onSubmit(this._values);
     } finally {
-      // `finally`, not a trailing statement: a rejected onSubmit must not leave the form
-      // stuck submitting with its buttons disabled.
+      // `finally`, not a trailing statement: validation failing, or onSubmit rejecting,
+      // must not leave the form stuck submitting with its buttons disabled.
       this._submitting = false;
       this.host.requestUpdate();
     }

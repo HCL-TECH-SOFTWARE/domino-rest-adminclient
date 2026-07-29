@@ -78,6 +78,15 @@ describe('FormController — values', () => {
   });
 });
 
+// Type-only, never called: proves `values` is `Readonly<T>` at compile time. `tsc -b` still
+// checks an unused function's body, so this fails the build the day the getter is widened —
+// vitest never executes it.
+function _assertValuesIsReadonly(el: HostElement): void {
+  // @ts-expect-error `values` is Readonly<T> — assignment through it must be a compile error.
+  el.form.values.name = 'nope';
+}
+void _assertValuesIsReadonly; // referenced, never called — silences "declared but never read"
+
 const schema = yup.object({
   name: yup.string().required('Name is required').min(3, 'Too short'),
 });
@@ -90,11 +99,26 @@ customElements.define('validating-host', ValidatingHost);
 
 const validating = () => new ValidatingHost();
 
+const twoFieldSchema = yup.object({
+  name: yup.string().required('Name is required'),
+  count: yup.number().min(1, 'Too few'),
+});
+
+class TwoFieldHost extends LitElement {
+  form = new FormController<Values>(this, { initialValues: INITIAL, schema: twoFieldSchema, onSubmit: vi.fn() });
+}
+customElements.define('two-field-host', TwoFieldHost);
+
+const twoField = () => new TwoFieldHost();
+
 describe('FormController — validation', () => {
   it('reports no errors before the first submit, even when invalid', () => {
     const el = validating();
     expect(el.form.errors).toEqual({});
     expect(el.form.submitted).toBe(false);
+    // Editing a still-invalid field must not trigger validation either — only submit() does.
+    el.form.setValue('name', 'x'); // still invalid: min(3)
+    expect(el.form.errors).toEqual({});
   });
 
   it('populates errors on submit and does not call onSubmit', async () => {
@@ -106,15 +130,7 @@ describe('FormController — validation', () => {
   });
 
   it('reports every failing field, not just the first', async () => {
-    const two = yup.object({
-      name: yup.string().required('Name is required'),
-      count: yup.number().min(1, 'Too few'),
-    });
-    class H extends LitElement {
-      form = new FormController<Values>(this, { initialValues: INITIAL, schema: two, onSubmit: vi.fn() });
-    }
-    customElements.define('two-error-host', H);
-    const el = new H();
+    const el = twoField();
     await el.form.submit();
     expect(Object.keys(el.form.errors).sort()).toEqual(['count', 'name']);
   });
@@ -123,7 +139,7 @@ describe('FormController — validation', () => {
     const el = validating();
     el.form.setValue('name', 'Ada');
     await el.form.submit();
-    expect(el.onSubmit).toHaveBeenCalledWith(el.form.values);
+    expect(el.onSubmit).toHaveBeenCalledWith({ ...INITIAL, name: 'Ada' });
     expect(el.form.errors).toEqual({});
   });
 
@@ -136,15 +152,7 @@ describe('FormController — validation', () => {
   });
 
   it('leaves other fields errors alone when one is edited', async () => {
-    const two = yup.object({
-      name: yup.string().required('Name is required'),
-      count: yup.number().min(1, 'Too few'),
-    });
-    class H extends LitElement {
-      form = new FormController<Values>(this, { initialValues: INITIAL, schema: two, onSubmit: vi.fn() });
-    }
-    customElements.define('sibling-error-host', H);
-    const el = new H();
+    const el = twoField();
     await el.form.submit();
     el.form.setValue('name', 'Ada');
     expect(el.form.errors.count).toBe('Too few');
@@ -161,17 +169,26 @@ describe('FormController — validation', () => {
   });
 
   it('is submitting while onSubmit is pending and not after', async () => {
+    let seenWhileCalled: boolean | undefined;
+    // Resolver bound at construction time (the Promise executor runs synchronously), not
+    // inside `onSubmit` — so releasing it never races `submit()`'s own await ordering.
     let release!: () => void;
-    const onSubmit = vi.fn(() => new Promise<void>((r) => { release = r; }));
+    const pending = new Promise<void>((r) => { release = r; });
+    // Read `submitting` from inside `onSubmit` itself, not from a tick count in the test:
+    // this stays correct regardless of how many microtasks validation takes first.
+    const onSubmit = vi.fn(() => {
+      seenWhileCalled = el.form.submitting;
+      return pending;
+    });
     class H extends LitElement {
       form = new FormController<Values>(this, { initialValues: INITIAL, onSubmit });
     }
     customElements.define('pending-host', H);
     const el = new H();
     const done = el.form.submit();
-    expect(el.form.submitting).toBe(true);
     release();
     await done;
+    expect(seenWhileCalled).toBe(true);
     expect(el.form.submitting).toBe(false);
   });
 
@@ -186,12 +203,26 @@ describe('FormController — validation', () => {
     expect(el.form.submitting).toBe(false);
   });
 
-  it('clears errors, submitted and submitting on reset', async () => {
+  it('clears errors and submitted on reset', async () => {
     const el = validating();
     await el.form.submit();
     el.form.reset();
     expect(el.form.errors).toEqual({});
     expect(el.form.submitted).toBe(false);
+  });
+
+  it('clears submitting on reset even mid-flight', () => {
+    // Never resolves — this test only cares about the state while submit() is in flight,
+    // so nothing needs to settle it.
+    const onSubmit = vi.fn(() => new Promise<void>(() => {}));
+    class H extends LitElement {
+      form = new FormController<Values>(this, { initialValues: INITIAL, onSubmit });
+    }
+    customElements.define('reset-mid-flight-host', H);
+    const el = new H();
+    void el.form.submit();
+    expect(el.form.submitting).toBe(true);
+    el.form.reset();
     expect(el.form.submitting).toBe(false);
   });
 });
