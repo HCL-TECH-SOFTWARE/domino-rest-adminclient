@@ -64,16 +64,16 @@ component around an unproven class.
 |---|---|
 | **no `touched`** | Formik's `!!errors.x && touched.x` collapses to `errors.x`, but errors now appear only **after the first submit** where Formik showed them on blur. That is a visible behaviour change in every converted form and needs a decision, not a silent adoption. |
 | **no `handleChange`** | each field wires its own `@input` → `setValue('name', …)`. More lines, but the `name`-string indirection goes. |
-| **`submit()` is not guarded against re-entry** | two concurrent `submit()` calls both reach `onSubmit` — measured, peak concurrency 2. Three of the five forms submit through a thunk, so a double-clicked save is two POSTs. `submitting` is exposed but nothing enforces it. |
+| **`submit()` is not guarded against re-entry** | two concurrent `submit()` calls both reach `onSubmit` — measured, peak concurrency 2. **All five** owners dispatch a mutating thunk from `onSubmit`, so a double-clicked save is two writes; for `addSchema` and `addApplication` that is two creates. Filed as #887. |
 
-The third is the only one that looks like a defect rather than a design choice.
+The third is the only one that looks like a defect rather than a design choice, and is filed as **#887** with the one-line fix and the recommendation to invert the characterisation test in the same commit.
 
 ## Recommended order
 
 1. **Decide the `touched` question** — either accept submit-time errors as the new behaviour
    across all five forms, or add blur-time validation to the primitive. It changes every
    conversion, so it is cheaper to settle than to revisit.
-2. **Guard `submit()`** against re-entry, or document that every caller must disable its button.
+2. **Guard `submit()`** against re-entry — #887. One line, and no existing caller can break because there are none.
 3. **Convert `QuickConfigFormContainer` + `QuickConfigForm`** (589 lines together) as the first
    real user. It is the smallest container/leaf pair, and `ScopeFormContainer`/`ScopeForm` (678)
    repeats its shape almost exactly — so whatever is learned there applies immediately.
