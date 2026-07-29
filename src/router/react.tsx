@@ -10,6 +10,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
 } from 'react';
 import {
@@ -102,6 +103,66 @@ export const Navigate: React.FC<{ to: string; replace?: boolean }> = ({ to, repl
 
 type AnchorProps = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>;
 
+/**
+ * How long a pointer must rest on a link before it counts as intent to go there (#813).
+ *
+ * Without a delay, sweeping the cursor across the sidebar on the way to somewhere else
+ * fetches every chunk it crosses. 80 ms is below the threshold at which a deliberate hover
+ * feels delayed, and above the time a passing cursor spends on any one item.
+ */
+const PREFETCH_INTENT_MS = 80;
+
+/** `navigator.connection`, which TypeScript's DOM lib does not declare. */
+type NetworkInformation = { saveData?: boolean; effectiveType?: string };
+
+/**
+ * Whether speculative fetching is welcome on this connection.
+ *
+ * Prefetching spends someone else's bandwidth on a guess. `saveData` is that person saying
+ * no outright, and the 2g tiers are a link where a speculative chunk competes with the one
+ * the user actually asked for. Absent the API — Safari and Firefox do not ship it — the
+ * answer is yes, which is the same default those browsers get for every other heuristic.
+ */
+const prefetchIsWelcome = (): boolean => {
+  const connection = (navigator as Navigator & { connection?: NetworkInformation }).connection;
+  if (!connection) return true;
+  if (connection.saveData) return false;
+  return connection.effectiveType !== '2g' && connection.effectiveType !== 'slow-2g';
+};
+
+/**
+ * Hover/focus intent for a destination, as a pair of start/cancel callbacks.
+ *
+ * Deliberately thin: deduplication lives in {@link Router.prefetch}, which caches the
+ * promise per route, so this never has to remember what it has already asked for — and the
+ * Lit `<keep-link>` that replaces {@link Link} in the React removal inherits that for free
+ * by calling the same method.
+ */
+function usePrefetchIntent(to: To): { start: () => void; cancel: () => void } {
+  const router = useRouter();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const cancel = useCallback(() => {
+    if (timer.current === undefined) return;
+    clearTimeout(timer.current);
+    timer.current = undefined;
+  }, []);
+
+  // A link can be unmounted mid-hover — a route swap, a closing drawer. Without this the
+  // timer would still fire and fetch a chunk for a link that is no longer on screen.
+  useEffect(() => cancel, [cancel]);
+
+  const start = useCallback(() => {
+    if (timer.current !== undefined || !prefetchIsWelcome()) return;
+    timer.current = setTimeout(() => {
+      timer.current = undefined;
+      router.prefetch(to);
+    }, PREFETCH_INTENT_MS);
+  }, [router, to]);
+
+  return { start, cancel };
+}
+
 export interface LinkProps extends AnchorProps {
   to: string;
   replace?: boolean;
@@ -116,8 +177,18 @@ export interface LinkProps extends AnchorProps {
  * That listener runs before this handler and calls `stopPropagation()`, so a guarded
  * navigation never reaches the router.
  */
-export const Link: React.FC<LinkProps> = ({ to, replace, onClick, ...rest }) => {
+export const Link: React.FC<LinkProps> = ({
+  to,
+  replace,
+  onClick,
+  onPointerEnter,
+  onPointerLeave,
+  onFocus,
+  onBlur,
+  ...rest
+}) => {
   const router = useRouter();
+  const prefetch = usePrefetchIntent(to);
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     onClick?.(event);
@@ -131,7 +202,37 @@ export const Link: React.FC<LinkProps> = ({ to, replace, onClick, ...rest }) => 
     router.navigate(to, { replace });
   };
 
-  return <a href={router.href(to)} onClick={handleClick} {...rest} />;
+  /*
+   * Focus as well as hover, or keyboard users get none of this — and blur cancels for the
+   * same reason pointerleave does: tabbing through a sidebar should not fetch every item
+   * it passes through.
+   *
+   * The caller's own handler runs first in each pair, matching how `onClick` is treated
+   * above, so wiring prefetching in cannot silently swallow a consumer's listener.
+   */
+  return (
+    <a
+      href={router.href(to)}
+      onClick={handleClick}
+      onPointerEnter={(event) => {
+        onPointerEnter?.(event);
+        prefetch.start();
+      }}
+      onPointerLeave={(event) => {
+        onPointerLeave?.(event);
+        prefetch.cancel();
+      }}
+      onFocus={(event) => {
+        onFocus?.(event);
+        prefetch.start();
+      }}
+      onBlur={(event) => {
+        onBlur?.(event);
+        prefetch.cancel();
+      }}
+      {...rest}
+    />
+  );
 };
 
 export interface NavLinkProps extends Omit<LinkProps, 'className'> {
