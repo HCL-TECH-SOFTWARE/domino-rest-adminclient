@@ -12,11 +12,11 @@ import {
   setLoadedFields,
 } from '../../../src/store/databases/action';
 import {
-  ADD_ACTIVEFIELDS,
-  SET_ACTIVEFORM,
-  SET_LOADEDFIELDS,
-  SET_LOADEDFORM,
-} from '../../../src/store/databases/types';
+  addActiveFields as addActiveFieldsAction,
+  setActiveForm as setActiveFormAction,
+  setLoadedFields as setLoadedFieldsAction,
+  setLoadedForm as setLoadedFormAction,
+} from '../../../src/store/databases/reducer';
 import { toggleErrorDialog } from '../../../src/store/dialog/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
@@ -100,7 +100,7 @@ describe('databases — fields', () => {
       await setLoadedFields('Order', [{ name: 'a' }])(dispatch);
 
       expect(actions()[0]).toEqual({
-        type: SET_LOADEDFIELDS,
+        type: setLoadedFieldsAction.type,
         payload: { formName: 'Order', fields: [{ name: 'a' }] },
       });
     });
@@ -109,7 +109,7 @@ describe('databases — fields', () => {
       await addActiveFields('Order', [{ name: 'a' }])(dispatch);
 
       expect(actions()[0]).toEqual({
-        type: ADD_ACTIVEFIELDS,
+        type: addActiveFieldsAction.type,
         payload: { activeFields: { formName: 'Order', fields: [{ name: 'a' }] } },
       });
     });
@@ -132,10 +132,10 @@ describe('databases — fields', () => {
       await fetchFields('demo', 'db.nsf', 'Order', 'Order', 'forms')(dispatch);
       await dispatch.settled();
 
-      expect(types()).toContain(SET_ACTIVEFORM);
-      expect(types()).toContain(SET_LOADEDFORM);
-      expect(types()).toContain(ADD_ACTIVEFIELDS);
-      expect(types()).toContain(SET_LOADEDFIELDS);
+      expect(types()).toContain(setActiveFormAction.type);
+      expect(types()).toContain(setLoadedFormAction.type);
+      expect(types()).toContain(addActiveFieldsAction.type);
+      expect(types()).toContain(setLoadedFieldsAction.type);
     });
 
     it('drops the three design keys and keeps the real fields', async () => {
@@ -144,7 +144,7 @@ describe('databases — fields', () => {
       await fetchFields('demo', 'db.nsf', 'Order', 'Order', 'forms')(dispatch);
       await dispatch.settled();
 
-      const fields = byType(ADD_ACTIVEFIELDS).payload.activeFields.fields;
+      const fields = byType(addActiveFieldsAction.type).payload.activeFields.fields;
       // The filter is positional -- `idx > 2` -- not by key, so it depends on the
       // three @-prefixed keys arriving first. They do, but only because the API
       // orders them that way.
@@ -160,7 +160,7 @@ describe('databases — fields', () => {
       // The two push sites disagree: the @-key branch sets both `content` and
       // `name`, the field branch sets `content` only. Pinned because consumers
       // read `content`, so "adding the missing name" would be a change, not a fix.
-      const fields = byType(ADD_ACTIVEFIELDS).payload.activeFields.fields;
+      const fields = byType(addActiveFieldsAction.type).payload.activeFields.fields;
       expect(fields.every((f: any) => f.content)).toBe(true);
       expect(fields.every((f: any) => f.name === undefined)).toBe(true);
     });
@@ -171,7 +171,7 @@ describe('databases — fields', () => {
       await fetchFields('demo', 'db.nsf', 'Order', 'Order', 'forms')(dispatch);
       await dispatch.settled();
 
-      const fields = byType(ADD_ACTIVEFIELDS).payload.activeFields.fields;
+      const fields = byType(addActiveFieldsAction.type).payload.activeFields.fields;
       expect(fields.find((f: any) => f.content === 'Customer').fieldAccess).toBe('RW');
       expect(fields.find((f: any) => f.content === 'Total').fieldAccess).toBe('RO');
     });
@@ -192,7 +192,7 @@ describe('databases — fields', () => {
       await fetchFields('demo', 'db.nsf', 'Order', 'Order', 'forms')(dispatch);
       await dispatch.settled();
 
-      expect(types()).not.toContain(ADD_ACTIVEFIELDS);
+      expect(types()).not.toContain(addActiveFieldsAction.type);
       expect(types()).toContain(toggleErrorDialog.type);
     });
 
@@ -215,7 +215,7 @@ describe('databases — fields', () => {
       await expect(
         fetchFields('demo', 'db.nsf', 'Order', 'Order', 'forms')(dispatch),
       ).resolves.not.toThrow();
-      expect(types()).not.toContain(ADD_ACTIVEFIELDS);
+      expect(types()).not.toContain(addActiveFieldsAction.type);
     });
   });
 
@@ -231,7 +231,7 @@ describe('databases — fields', () => {
       await dispatch.settled();
 
       // A reserved form name, not a real one — the all-fields panel reads it.
-      expect(byType(ADD_ACTIVEFIELDS).payload.activeFields.formName).toBe(
+      expect(byType(addActiveFieldsAction.type).payload.activeFields.formName).toBe(
         'keep_internal_form_for_allFields',
       );
     });
@@ -242,7 +242,7 @@ describe('databases — fields', () => {
       await getAllFieldsByNsf('db.nsf')(dispatch);
       await dispatch.settled();
 
-      const fields = byType(ADD_ACTIVEFIELDS).payload.activeFields.fields;
+      const fields = byType(addActiveFieldsAction.type).payload.activeFields.fields;
       const number = fields.find((f: any) => f.format === 'float');
       expect(number.type).toBe('number');
       const range = fields.find((f: any) => f.format === 'date-time' && f.isMultiValue);
@@ -255,7 +255,7 @@ describe('databases — fields', () => {
       await getAllFieldsByNsf('db.nsf')(dispatch);
       await dispatch.settled();
 
-      const fields = byType(ADD_ACTIVEFIELDS).payload.activeFields.fields;
+      const fields = byType(addActiveFieldsAction.type).payload.activeFields.fields;
       const file = fields.filter((f: any) => f.content === '$FILE');
       expect(file).toHaveLength(1);
       expect(file[0]).toMatchObject({ format: 'binary', type: 'object', fieldAccess: 'RW' });
@@ -267,14 +267,14 @@ describe('databases — fields', () => {
       await getAllFieldsByNsf('db.nsf')(dispatch);
       await dispatch.settled();
 
-      expect(types()).not.toContain(ADD_ACTIVEFIELDS);
+      expect(types()).not.toContain(addActiveFieldsAction.type);
     });
 
     it('does not throw out of the thunk when the request never completes', async () => {
       offline();
 
       await expect(getAllFieldsByNsf('db.nsf')(dispatch)).resolves.not.toThrow();
-      expect(types()).not.toContain(ADD_ACTIVEFIELDS);
+      expect(types()).not.toContain(addActiveFieldsAction.type);
     });
   });
 });

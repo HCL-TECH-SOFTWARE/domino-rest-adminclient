@@ -6,13 +6,13 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchDBConfig, fetchKeepPermissions, quickConfig } from '../../../src/store/databases/action';
+import { SET_DB_ERROR } from '../../../src/store/databases/types';
 import {
-  ADD_SCHEMA,
-  ADD_SCOPE,
-  FETCH_DB_CONFIG,
-  FETCH_KEEP_PERMISSIONS,
-  SET_DB_ERROR,
-} from '../../../src/store/databases/types';
+  addSchema as addSchemaAction,
+  addScope as addScopeAction,
+  fetchDbConfig as fetchDbConfigAction,
+  fetchKeepPermissions as fetchKeepPermissionsAction,
+} from '../../../src/store/databases/reducer';
 import { setApiLoading } from '../../../src/store/dialog/action';
 import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
@@ -87,7 +87,7 @@ describe('databases — database-level thunks', () => {
 
       await fetchKeepPermissions()(dispatch);
 
-      expect(actions().find((a: any) => a?.type === FETCH_KEEP_PERMISSIONS).payload).toEqual({
+      expect(actions().find((a: any) => a?.type === fetchKeepPermissionsAction.type).payload).toEqual({
         createDbMapping: ['a'],
         deleteDbMapping: ['b'],
       });
@@ -98,14 +98,14 @@ describe('databases — database-level thunks', () => {
 
       await fetchKeepPermissions()(dispatch);
 
-      expect(types()).not.toContain(FETCH_KEEP_PERMISSIONS);
+      expect(types()).not.toContain(fetchKeepPermissionsAction.type);
     });
 
     it('does not throw out of the thunk when the request never completes', async () => {
       offline();
 
       await expect(fetchKeepPermissions()(dispatch)).resolves.not.toThrow();
-      expect(types()).not.toContain(FETCH_KEEP_PERMISSIONS);
+      expect(types()).not.toContain(fetchKeepPermissionsAction.type);
     });
   });
 
@@ -115,7 +115,7 @@ describe('databases — database-level thunks', () => {
 
       await fetchDBConfig('demo')(dispatch);
 
-      expect(actions().find((a: any) => a?.type === FETCH_DB_CONFIG).payload).toEqual({
+      expect(actions().find((a: any) => a?.type === fetchDbConfigAction.type).payload).toEqual({
         apiName: 'demo',
         isActive: true,
       });
@@ -136,7 +136,7 @@ describe('databases — database-level thunks', () => {
 
       await fetchDBConfig('demo')(dispatch);
 
-      expect(types()).not.toContain(FETCH_DB_CONFIG);
+      expect(types()).not.toContain(fetchDbConfigAction.type);
       // setApiLoading(false) sat on the success path; the catch only logged.
       expectLoadingCleared();
     });
@@ -157,8 +157,8 @@ describe('databases — database-level thunks', () => {
 
       await quickConfig(dbData)(dispatch);
 
-      expect(types()).toContain(ADD_SCHEMA);
-      expect(types()).toContain(ADD_SCOPE);
+      expect(types()).toContain(addSchemaAction.type);
+      expect(types()).toContain(addScopeAction.type);
       expect(alerts().join()).toMatch(/successfully created/i);
       expectLoadingCleared();
     });
@@ -168,8 +168,8 @@ describe('databases — database-level thunks', () => {
 
       await quickConfig(dbData)(dispatch);
 
-      expect(types()).not.toContain(ADD_SCHEMA);
-      expect(types()).not.toContain(ADD_SCOPE);
+      expect(types()).not.toContain(addSchemaAction.type);
+      expect(types()).not.toContain(addScopeAction.type);
       expect(alerts().join()).not.toMatch(/successfully created/i);
       expect(types()).toContain(SET_DB_ERROR);
     });

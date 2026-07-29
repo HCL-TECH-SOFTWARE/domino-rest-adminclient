@@ -5,15 +5,7 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  Database,
-  SET_AGENTS,
-  UPDATE_AGENT,
-  SET_ACTIVEAGENTS,
-  AgentObj,
-  ADD_ACTIVEAGENT,
-  DELETE_ACTIVEAGENT,
-} from './types';
+import { Database, SET_ACTIVEAGENTS, AgentObj } from './types';
 import { AppDispatch } from '..';
 import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
@@ -21,6 +13,7 @@ import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
+import { addActiveAgent, deleteActiveAgent, setAgents as setAgentsAction, updateAgent } from './reducer';
 
 /**
  * Retrieves agents for a particular database and
@@ -135,31 +128,22 @@ function buildReduxAgentData(currentAgent: any, agentActive: boolean) {
 function updateActiveAgents(dbName: string, agentData: AgentObj) {
   return async (dispatch: Dispatch) => {
     // Update All Panel
-    dispatch({
-      type: UPDATE_AGENT,
-      payload: {
+    dispatch(updateAgent({
         db: dbName,
         agent: agentData
-      }
-    });
+      }));
 
     // Update Active Panel
     if (agentData.agentActive) {
-      dispatch({
-        type: ADD_ACTIVEAGENT,
-        payload: {
+      dispatch(addActiveAgent({
           db: dbName,
           activeAgent: agentData
-        }
-      });
+        }));
     } else {
-      dispatch({
-        type: DELETE_ACTIVEAGENT,
-        payload: {
+      dispatch(deleteActiveAgent({
           db: dbName,
           activeAgent: agentData.agentUnid
-        }
-      });
+        }));
     }
   };
 }
@@ -266,13 +250,10 @@ export const isActiveAgent = (unid: string, activeList: Array<AgentObj>) => {
  */
 export const setAgents = (dbName: string, agents: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: SET_AGENTS,
-      payload: {
+    await dispatch(setAgentsAction({
         db: dbName,
         agents
-      }
-    });
+      }));
   };
 };
 /*

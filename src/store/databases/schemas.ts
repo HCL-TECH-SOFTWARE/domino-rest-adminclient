@@ -5,21 +5,21 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  Database,
-  ADD_SCHEMA,
-  ADD_NEW_SCHEMA_TO_STATE,
-  DELETE_SCHEMA,
-  SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES,
-  CLEAR_SCHEMA_FORM,
-  UPDATE_ERROR,
-} from './types';
+import { Database } from './types';
 import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog } from '../dialog/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
+import {
+  addNewSchemaToState,
+  addSchema as addSchemaAction,
+  clearSchemaForm,
+  deleteSchema as deleteSchemaAction,
+  setOnlyShowSchemasWithScopes as setOnlyShowSchemasWithScopesAction,
+  updateError
+} from './reducer';
 
 /**
  * action.ts provides the action methods for the Database page
@@ -30,10 +30,7 @@ import { log, setDBError, clearDBError } from './shared';
  */
 
 export function addSchemas(database: Database) {
-  return {
-    type: ADD_SCHEMA,
-    payload: database
-  };
+  return addSchemaAction(database);
 }
 export function deleteSchema(dbData: any) {
   return async (dispatch: Dispatch) => {
@@ -56,13 +53,10 @@ export function deleteSchema(dbData: any) {
             throw new Error(JSON.stringify(data))
           }
 
-          dispatch({
-            type: DELETE_SCHEMA,
-            payload: {
+          dispatch(deleteSchemaAction({
               schemaName: dbData.schemaName,
               nsfPath: dbData.nsfPath
-            }
-          });
+            }));
           dispatch(toggleDeleteDialog());
           dispatch(setApiLoading(false));
           dispatch(toggleAlert(`${dbData.schemaName} has been successfully deleted.`));
@@ -159,23 +153,14 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
         throw new Error(JSON.stringify(data))
       }
 
-      dispatch({
-        type: ADD_SCHEMA,
-        payload: data
-      });
+      dispatch(addSchemaAction(data));
 
       if (response.status === 200) {
-        dispatch({
-          type: ADD_NEW_SCHEMA_TO_STATE,
-          payload: {
+        dispatch(addNewSchemaToState({
             schemaName: data.schemaName,
             nsfPath: data.nsfPath
-          }
-        });
-        dispatch({
-          type: CLEAR_SCHEMA_FORM,
-          payload: true
-        });
+          }));
+        dispatch(clearSchemaForm(true));
         if (resetCallback) {
           resetCallback();
         }
@@ -200,10 +185,7 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
       log.error('Error adding schema', { error: message })
       dispatch(setDBError(message));
 
-      dispatch({
-        type: CLEAR_SCHEMA_FORM,
-        payload: false,
-      });
+      dispatch(clearSchemaForm(false));
       dispatch(toggleAlert(`Unable to create schema ${dbData.schemaName}!`))
     }
   };
@@ -215,10 +197,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      dispatch({
-        type: UPDATE_ERROR,
-        payload: false
-      });
+      dispatch(updateError(false));
       try {
         const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, {
@@ -237,13 +216,10 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         if (setSchemaData) {
           setSchemaData(data);
         }
-        dispatch({
-          type: ADD_NEW_SCHEMA_TO_STATE,
-          payload: {
+        dispatch(addNewSchemaToState({
             schemaName: data.schemaName,
             nsfPath: data.nsfPath
-          }
-        });
+          }));
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(`Schema has been successfully updated.`));
       } catch (e: any) {
@@ -260,10 +236,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         }
 
         dispatch(toggleAlert(`Update schema failed! ${message}`));
-        dispatch({
-          type: UPDATE_ERROR,
-          payload: true
-        });
+        dispatch(updateError(true));
       }
     } catch (err: any) {
       dispatch(setApiLoading(false));
@@ -280,8 +253,5 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
  * Set only show schemas configured with scopes
  */
 export function setOnlyShowSchemasWithScopes(onlyShowSchemasWithScopes: boolean) {
-  return {
-    type: SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES,
-    payload: onlyShowSchemasWithScopes
-  };
+  return setOnlyShowSchemasWithScopesAction(onlyShowSchemasWithScopes);
 }

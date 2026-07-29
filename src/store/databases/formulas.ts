@@ -5,10 +5,10 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import { CLEAR_FORMULA_RESULTS } from './types';
 import { BASE_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { clearFormulaResults as clearFormulaResultsAction } from './reducer';
 
 /**
  * Call a Keep Api to test a Formula against a database.
@@ -66,7 +66,5 @@ export function saveResult(formulaType: string, result: string) {
  * CLear all Formula test results
  */
 export function clearFormulaResults() {
-  return {
-    type: CLEAR_FORMULA_RESULTS
-  };
+  return clearFormulaResultsAction();
 }

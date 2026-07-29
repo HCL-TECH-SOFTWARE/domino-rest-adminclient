@@ -14,11 +14,11 @@ import {
   updateSchema,
 } from '../../../src/store/databases/action';
 import {
-  ADD_NEW_SCHEMA_TO_STATE,
-  ADD_SCHEMA,
-  DELETE_SCHEMA,
-  UPDATE_ERROR,
-} from '../../../src/store/databases/types';
+  addNewSchemaToState as addNewSchemaToStateAction,
+  addSchema as addSchemaAction,
+  deleteSchema as deleteSchemaAction,
+  updateError as updateErrorAction,
+} from '../../../src/store/databases/reducer';
 import { setApiLoading } from '../../../src/store/dialog/action';
 import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
@@ -98,7 +98,7 @@ describe('databases — schemas', () => {
   describe('addSchemas (plain action)', () => {
     it('carries the database as its payload', () => {
       const db = { nsfPath: 'db.nsf', schemaName: 'demo' } as any;
-      expect(addSchemas(db)).toEqual({ type: ADD_SCHEMA, payload: db });
+      expect(addSchemas(db)).toEqual({ type: addSchemaAction.type, payload: db });
     });
   });
 
@@ -137,8 +137,8 @@ describe('databases — schemas', () => {
 
       await addSchema(schema)(dispatch);
 
-      expect(types()).toContain(ADD_SCHEMA);
-      expect(types()).toContain(ADD_NEW_SCHEMA_TO_STATE);
+      expect(types()).toContain(addSchemaAction.type);
+      expect(types()).toContain(addNewSchemaToStateAction.type);
       expect(alerts().join()).toMatch(/successfully created/i);
       expectLoadingCleared();
     });
@@ -157,7 +157,7 @@ describe('databases — schemas', () => {
 
       await addSchema(schema)(dispatch);
 
-      expect(types()).not.toContain(ADD_NEW_SCHEMA_TO_STATE);
+      expect(types()).not.toContain(addNewSchemaToStateAction.type);
       expect(alerts().join()).toMatch(/unable to create/i);
       expectLoadingCleared();
     });
@@ -178,7 +178,7 @@ describe('databases — schemas', () => {
       await updateSchema(schema, setSchemaData)(dispatch);
 
       expect(setSchemaData).toHaveBeenCalledWith(schema);
-      expect(types()).toContain(ADD_NEW_SCHEMA_TO_STATE);
+      expect(types()).toContain(addNewSchemaToStateAction.type);
       expect(alerts().join()).toMatch(/successfully updated/i);
       expectLoadingCleared();
     });
@@ -188,7 +188,7 @@ describe('databases — schemas', () => {
 
       await updateSchema(schema)(dispatch);
 
-      expect(actions()).toContainEqual({ type: UPDATE_ERROR, payload: true });
+      expect(actions()).toContainEqual({ type: updateErrorAction.type, payload: true });
       expect(alerts().join()).toMatch(/update schema failed/i);
       expectLoadingCleared();
     });
@@ -207,7 +207,7 @@ describe('databases — schemas', () => {
 
       await deleteSchema(schema)(dispatch);
 
-      expect(types()).toContain(DELETE_SCHEMA);
+      expect(types()).toContain(deleteSchemaAction.type);
       expect(alerts().join()).toMatch(/successfully deleted/i);
       expectLoadingCleared();
     });
@@ -217,7 +217,7 @@ describe('databases — schemas', () => {
 
       await deleteSchema(schema)(dispatch);
 
-      expect(types()).not.toContain(DELETE_SCHEMA);
+      expect(types()).not.toContain(deleteSchemaAction.type);
       expectLoadingCleared();
     });
 
@@ -227,7 +227,7 @@ describe('databases — schemas', () => {
 
       await deleteSchema({ nsfPath: '', schemaName: '' })(dispatch);
 
-      expect(types()).not.toContain(DELETE_SCHEMA);
+      expect(types()).not.toContain(deleteSchemaAction.type);
       expectLoadingCleared();
     });
   });

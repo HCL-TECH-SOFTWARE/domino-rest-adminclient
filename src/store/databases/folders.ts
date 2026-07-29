@@ -5,11 +5,11 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import { SET_FOLDERS } from './types';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log } from './shared';
+import { setFolders as setFoldersAction } from './reducer';
 
 /**
  * Retrieves folders for a particular database and
@@ -70,12 +70,9 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
  */
 export const setFolders = (dbName: string, folders: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: SET_FOLDERS,
-      payload: {
+    await dispatch(setFoldersAction({
         db: dbName,
         folders
-      }
-    });
+      }));
   };
 };

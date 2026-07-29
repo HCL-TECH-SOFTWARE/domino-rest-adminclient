@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { v4 as uuid } from 'uuid';
-import { SET_LOADEDFIELDS, ADD_ACTIVEFIELDS } from './types';
 import { AppDispatch } from '..';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
@@ -16,6 +15,10 @@ import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log } from './shared';
 import { setActiveForm, setLoadedForm } from './forms';
 import { setLoading } from '../loading/action';
+import {
+  addActiveFields as addActiveFieldsAction,
+  setLoadedFields as setLoadedFieldsAction,
+} from './reducer';
 
 /**
  * Save the list of fields for the currently loaded form.
@@ -25,13 +28,10 @@ import { setLoading } from '../loading/action';
  */
 export const setLoadedFields = (formName: string, fields: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: SET_LOADEDFIELDS,
-      payload: {
+    await dispatch(setLoadedFieldsAction({
         formName: formName,
         fields
-      }
-    });
+      }));
   };
 };
 /**
@@ -43,15 +43,7 @@ export const setLoadedFields = (formName: string, fields: Array<any>) => {
  */
 export const addActiveFields = (formName: string, fields: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: ADD_ACTIVEFIELDS,
-      payload: {
-        activeFields: {
-          formName,
-          fields
-        }
-      }
-    });
+    await dispatch(addActiveFieldsAction({ activeFields: { formName, fields } }));
   };
 };
 /**
