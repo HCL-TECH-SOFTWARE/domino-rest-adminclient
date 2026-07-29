@@ -511,6 +511,57 @@ Only startable when #806 and #771 have emptied `@mui/*` out of the components.
 when that component is replaced. Deleting the sheet early breaks everything not yet
 converted.
 
+#### theme.ts is 7 live overrides and 5 dead ones
+
+`useTheme()` has **zero callers**. Nothing in the app reads the theme in code, so
+`theme.ts`'s entire effect is its `palette` plus twelve `components.styleOverrides` — and
+five of those twelve now override a component nothing imports:
+
+| override | files still importing it | |
+|---|--:|---|
+| `MuiButton` | 16 | text-variant colour, `capitalize`, 16px |
+| `MuiCircularProgress` | 5 | the brand spinner colour |
+| `MuiPaper` | 4 | `currentTheme.secondary` background |
+| `MuiTab` | 2 | tab styling |
+| `MuiBreadcrumbs` · `MuiListItemIcon` · `MuiSwitch` | 1 each | colours |
+| `MuiBadge` · `MuiDialogTitle` · `MuiFormLabel` · `MuiInputBase` · `MuiTooltip` | **0** | **already inert** |
+
+**Those five can be deleted now**, independently of the mount and of #709's position in the
+wave order — an override for a component nothing imports cannot change anything. More
+usefully, this is a *per-component* progress signal: when #806 takes the last importer of a
+type to zero, that type's override becomes deletable the same day, and `theme.ts` shrinks
+ahead of the gate instead of all at once behind it.
+
+#### what actually happens if you drop the mount early
+
+Measured, not guessed — the mount was removed on a throwaway branch and the gates run:
+
+```
+npm run typecheck   exit 0
+npm run lint        exit 0
+npm run build       exit 0
+npm run test        2 failed | 1485 passed
+eager bundle        869.6 -> 852.8 kB raw  (-16.8 kB)
+```
+
+Both failures are the two bookkeeping guards in `test/components/login/LoginPage.layout.test.tsx`
+that assert `['src/AppShell.tsx']` for the last `CssBaseline` mount and the last `theme.ts`
+importer. They are *designed* to fail here; flipping them to `[]` is part of #709.
+
+**So it compiles, passes 1,485 tests, saves 17 kB — and visibly breaks dark mode.** Those
+seven live overrides read `currentTheme = getTheme(themeMode)`, and they are the only thing
+giving the remaining MUI surface its dark colours. Without the provider, ~30 Buttons, Papers
+and Tabs render stock-MUI light on a dark page: the same white-on-dark failure class as the
+overview tiles, and **nothing in CI reports it**, because the suite runs `css: false`.
+
+`CssBaseline` is the safe half. #743 established that WebAwesome's `native.css` already sets
+the same `box-sizing`/`margin` baseline, so removing it drops only MUI's typography and
+background, which the WA tokens supply anyway.
+
+That is the concrete reason this issue sits behind #806 and #771 rather than being a
+half-hour deletion: the mount is trivial to remove and is load-bearing until the last themed
+MUI component is gone.
+
 #### dark-mode.css is not a WebAwesome concern
 
 **No selector in that file targets `wa-*`.** WebAwesome components take their dark mode
