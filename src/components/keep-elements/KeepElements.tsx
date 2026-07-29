@@ -24,6 +24,7 @@ export { KeepAutocomplete } from './react/KeepAutocomplete';
 export { KeepSourceTree } from './react/KeepSourceTree';
 export { KeepSource } from './react/KeepSource';
 export { KeepTextform } from './react/KeepTextform';
+export { KeepTip } from './react/KeepTip';
 export { KeepTextformArray } from './react/KeepTextformArray';
 export { KeepDialogContent } from './react/KeepDialogContent';
 export { KeepDialogHeader } from './react/KeepDialogHeader';
