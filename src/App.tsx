@@ -9,8 +9,6 @@ import './App.css';
 import { Router } from './router/router';
 import { RouterOutlet, RouterProvider, type RouteDef } from './router/react';
 import { useSelector } from 'react-redux';
-import LoginPage from './components/login/LoginPage';
-import AppShell from './AppShell';
 import { AppState } from './store';
 import {
   authenticate,
@@ -98,16 +96,38 @@ const App: React.FC = () => {
    *
    * Report 03 §6 step 5; AppShell's pair is the last one.
    */
-  const routes: RouteDef[] = [
-    // `/callback` is listed first because matching is by declaration order, not by
-    // specificity (see `matchRoutes`) — behind the catch-all it would never be reached.
-    { path: '/callback', element: <CallbackPage /> },
-    { path: '*', element: authenticated ? <AppShell /> : <LoginPage /> },
-  ];
+  /*
+   * `AppShell` and `LoginPage` are mutually exclusive — an authenticated user never needs
+   * the login page, and an anonymous one never needs the shell — so neither belongs in the
+   * entry chunk (#813 step 3). The catch-all picks which one to *fetch* rather than which
+   * already-loaded element to render.
+   *
+   * **This array has to be memoised.** `RouterOutlet` builds one `React.lazy` per `load`
+   * route and memoises them on the table's identity; `lazy()` returns a fresh component
+   * type per call and React remounts when the type changes. A literal rebuilt each render
+   * would therefore unmount and refetch the whole shell on every App render. With
+   * `element:` that was harmless, which is why it was a literal until now.
+   */
+  const routes: RouteDef[] = useMemo(
+    () => [
+      // `/callback` is listed first because matching is by declaration order, not by
+      // specificity (see `matchRoutes`) — behind the catch-all it would never be reached.
+      // It keeps `element:`: it is the OAuth redirect landing, so its chunk would be
+      // fetched at the one moment the user is already waiting on a round trip.
+      { path: '/callback', element: <CallbackPage /> },
+      {
+        path: '*',
+        load: authenticated
+          ? () => import('./AppShell')
+          : () => import('./components/login/LoginPage'),
+      },
+    ],
+    [authenticated],
+  );
 
   return valid ? (
     <RouterProvider router={router}>
-      <RouterOutlet routes={routes} />
+      <RouterOutlet routes={routes} fallback={<KeepPageLoading message="loading page" />} />
     </RouterProvider>
   ) : (
     <KeepPageLoading message="loading page" />

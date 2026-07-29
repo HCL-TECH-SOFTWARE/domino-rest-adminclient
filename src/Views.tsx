@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { styled } from '@linaria/react';
 import { RouterOutlet, useLocation, type RouteDef } from './router/react';
 import { useSelector } from 'react-redux';
@@ -15,7 +15,27 @@ import { KeepPageLoading } from './components/keep-elements/react/KeepPageLoadin
 import { KeepPageRouters } from './components/keep-elements/react/KeepPageRouters';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
 import { NavigationGuardProvider } from './components/navigation/NavigationGuardContext';
-import QuickConfigFormContainer from './components/database/QuickConfigFormContainer';
+/*
+ * Lazy, and mounted on first open rather than while open (#813 step 3).
+ *
+ * It is the only thing on the eager path that reaches Formik and yup, and it renders a
+ * drawer that starts closed — so the entry chunk was paying for a form most sessions never
+ * open.
+ *
+ * Mounting it *while* `quickConfigDrawer` is true would be the smaller change and is what
+ * the issue suggests, but it breaks two things. `keep-drawer` wraps `<wa-drawer>`, whose
+ * close is animated and whose `wa-after-hide` fires only once that animation finishes;
+ * unmounting the instant the flag clears skips both. And the component renders the
+ * `dbError` alert *outside* the drawer, so an error would vanish the moment the drawer
+ * closed rather than staying up to be read.
+ *
+ * Mounting on first open and leaving it mounted keeps both behaviours and still keeps
+ * Formik out of the entry chunk. The one visible difference is that the very first open
+ * has no slide-in animation, because the element mounts with `open` already true.
+ */
+const QuickConfigFormContainer = React.lazy(
+  () => import('./components/database/QuickConfigFormContainer'),
+);
 import { useAppDispatch } from './store/hooks';
 
 /**
@@ -61,6 +81,13 @@ const Views: React.FC = () => {
 
   const { scopePull, databasePull } = useSelector((state: AppState) => state.databases);
   const { idpLogin, authenticated } = useSelector((state: AppState) => state.account);
+  const { quickConfigDrawer } = useSelector((state: AppState) => state.drawer);
+
+  /** Latches on the first open; see the note on the lazy import above. */
+  const [quickConfigOpened, setQuickConfigOpened] = useState(false);
+  useEffect(() => {
+    if (quickConfigDrawer) setQuickConfigOpened(true);
+  }, [quickConfigDrawer]);
 
   /*
    * The route table (#716), replacing the `<Routes>`/`<Route>` tree.
@@ -223,7 +250,11 @@ const Views: React.FC = () => {
           <Mail />
         </Route>
         */}
-      <QuickConfigFormContainer />
+      {quickConfigOpened && (
+        <React.Suspense fallback={null}>
+          <QuickConfigFormContainer />
+        </React.Suspense>
+      )}
       </NavigationGuardProvider>
     </ViewContainer>
   );
