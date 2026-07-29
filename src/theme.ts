@@ -49,28 +49,6 @@ const theme = (
       },
     },
     components: {
-      MuiTooltip: {
-        styleOverrides: {
-          tooltip: {
-            fontSize: 12,
-          },
-        },
-      },
-      MuiBadge: {
-        styleOverrides: {
-          badge: {
-            color: currentTheme.badgeColor.color,
-            backgroundColor: currentTheme.badgeColor.background,
-          },
-        },
-      },
-      MuiDialogTitle: {
-        styleOverrides: {
-          root: {
-            color: currentTheme.dialog.title,
-          },
-        },
-      },
       MuiButton: {
         styleOverrides: {
           root: {
@@ -118,13 +96,6 @@ const theme = (
           },
         },
       },
-      MuiInputBase: {
-        styleOverrides: {
-          input: {
-            color: currentTheme.textColorPrimary,
-          },
-        },
-      },
       MuiTab: {
         styleOverrides: {
           root: {
@@ -133,13 +104,6 @@ const theme = (
             }
           },
           textColorPrimary: {
-            color: currentTheme.textColorPrimary,
-          },
-        },
-      },
-      MuiFormLabel: {
-        styleOverrides: {
-          root: {
             color: currentTheme.textColorPrimary,
           },
         },
