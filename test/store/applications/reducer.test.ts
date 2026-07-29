@@ -5,21 +5,18 @@
  * ========================================================================== */
 
 import { describe, it, expect } from 'vitest';
-import appsReducer from '../../../src/store/applications/reducer';
-import {
-  EXECUTING,
-  GET_APPS,
-  ADD_APP,
-  DROP_UPDATE,
-  UPDATE_APP,
-  DELETE_APP,
-  SET_PULLED_APP,
-  TOGGLE_DELETE_DIALOG,
-  SET_APP_ERROR,
-  CLEAR_APP_ERROR,
-  INIT_STATE,
-  ApplicationStates,
-} from '../../../src/store/applications/types';
+import appsReducer, {
+  executing,
+  getApps,
+  addApp,
+  dropUpdate,
+  updateApp,
+  deleteApp,
+  setPulledApp,
+} from '../../../src/store/applications/reducer';
+import { toggleDeleteDialog } from '../../../src/store/dialog/action';
+import { clearDBError, setDBError } from '../../../src/store/databases/shared';
+import { SET_APP_ERROR, CLEAR_APP_ERROR, INIT_STATE, ApplicationStates } from '../../../src/store/applications/types';
 
 const initial: ApplicationStates = {
   apps: [],
@@ -35,66 +32,63 @@ describe('appsReducer', () => {
     expect(appsReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('EXECUTING sets status from the payload', () => {
-    expect(appsReducer(initial, { type: EXECUTING, payload: true }).status).toBe(true);
+  it('executing sets status from the payload', () => {
+    expect(appsReducer(initial, executing(true)).status).toBe(true);
   });
 
-  it('GET_APPS replaces apps from the payload', () => {
+  it('getApps replaces apps from the payload', () => {
     const apps = [{ appId: 'a1' }, { appId: 'a2' }];
-    expect(appsReducer(initial, { type: GET_APPS, payload: apps }).apps).toEqual(apps);
+    expect(appsReducer(initial, getApps(apps)).apps).toEqual(apps);
   });
 
-  it('ADD_APP appends the payload to apps', () => {
+  it('addApp appends the payload to apps', () => {
     const app = { appId: 'a1', appName: 'First' };
-    const next = appsReducer(initial, { type: ADD_APP, payload: app });
+    const next = appsReducer(initial, addApp(app));
     expect(next.apps).toHaveLength(1);
     expect(next.apps[0]).toEqual(app);
   });
 
-  it('DROP_UPDATE remaps the dropped app status from the droppableId index', () => {
+  it('dropUpdate remaps the dropped app status from the droppableId index', () => {
     const base: ApplicationStates = {
       ...initial,
       apps: [{ appId: 'a1', appStatus: 'Requested' }],
     };
-    const next = appsReducer(base, {
-      type: DROP_UPDATE,
-      payload: {
-        appId: 'a1',
-        destination: { droppableId: 1, index: 0, data: {} },
-      },
-    });
+    const next = appsReducer(
+      base,
+      dropUpdate({ appId: 'a1', destination: { droppableId: 1, index: 0, data: {} } } as any),
+    );
     // status = ['Requested', 'Active', 'Approved', 'Inactive']; index 1 -> 'Active'
     expect(next.apps[0].appStatus).toBe('Active');
   });
 
-  it('UPDATE_APP replaces the matching app with the payload', () => {
+  it('updateApp replaces the matching app with the payload', () => {
     const base: ApplicationStates = {
       ...initial,
       apps: [{ appId: 'a1', appName: 'Old' }],
     };
     const updated = { appId: 'a1', appName: 'New' };
-    const next = appsReducer(base, { type: UPDATE_APP, payload: updated });
+    const next = appsReducer(base, updateApp(updated));
     expect(next.apps[0]).toEqual(updated);
   });
 
-  it('DELETE_APP removes the app matching the payload id', () => {
+  it('deleteApp removes the app matching the payload id', () => {
     const base: ApplicationStates = {
       ...initial,
       apps: [{ appId: 'a1' }, { appId: 'a2' }],
     };
-    const next = appsReducer(base, { type: DELETE_APP, payload: 'a1' });
+    const next = appsReducer(base, deleteApp('a1'));
     expect(next.apps).toHaveLength(1);
     expect(next.apps[0].appId).toBe('a2');
   });
 
-  it('SET_PULLED_APP sets appPull from the payload', () => {
-    expect(appsReducer(initial, { type: SET_PULLED_APP, payload: true }).appPull).toBe(true);
+  it('setPulledApp sets appPull from the payload', () => {
+    expect(appsReducer(initial, setPulledApp(true)).appPull).toBe(true);
   });
 
   it('TOGGLE_DELETE_DIALOG flips deleteDialogOpen on each dispatch', () => {
-    const once = appsReducer(initial, { type: TOGGLE_DELETE_DIALOG });
+    const once = appsReducer(initial, toggleDeleteDialog());
     expect(once.deleteDialogOpen).toBe(true);
-    expect(appsReducer(once, { type: TOGGLE_DELETE_DIALOG }).deleteDialogOpen).toBe(false);
+    expect(appsReducer(once, toggleDeleteDialog()).deleteDialogOpen).toBe(false);
   });
 
   it('SET_APP_ERROR sets appError true and stores the message', () => {
@@ -124,6 +118,88 @@ describe('appsReducer', () => {
 
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
-    expect(() => appsReducer(frozen, { type: EXECUTING, payload: true })).not.toThrow();
+    expect(() => appsReducer(frozen, executing(true))).not.toThrow();
+  });
+});
+
+/**
+ * TOGGLE_DELETE_DIALOG, SET_APP_ERROR and CLEAR_APP_ERROR are declared in *two*
+ * slices each with identical values, so one dispatch has always driven both
+ * reducers. Namespacing either side breaks the pairing silently — no type error,
+ * no failing test, just a dialog that stops opening.
+ *
+ * #840 did exactly that: converting the dialog slice left this one unable to see
+ * `TOGGLE_DELETE_DIALOG`, so DeleteApplicationDialog could no longer open. These
+ * are the tests that would have caught it, and that keep the pairing honest as the
+ * last classic reducer (databases) is converted.
+ */
+/**
+ * Three reducers look up an app by id, and the classic implementation used the
+ * result of `findIndex` without checking it. On a miss that is -1, and:
+ *
+ *   draft.apps.splice(-1, 1)      removes the *last* app
+ *   draft.apps[-1] = payload      writes a "-1" property onto the array
+ *
+ * The createSlice versions guard the lookup, so a stale or unknown id is now a
+ * no-op. That is a behaviour change and the only one in #710 — hence these tests
+ * rather than a silent fix.
+ */
+describe('appsReducer — lookups that miss', () => {
+  const base: ApplicationStates = {
+    apps: [{ appId: 'a1', appName: 'First' }, { appId: 'a2', appName: 'Second' }],
+    status: false,
+    appPull: false,
+    appError: false,
+    appErrorMessage: '',
+    deleteDialogOpen: false,
+  } as ApplicationStates;
+
+  it('deleteApp leaves the list alone for an unknown id', () => {
+    // Previously splice(-1, 1), which deleted 'a2'.
+    const next = appsReducer(base, deleteApp('nosuchapp'));
+    expect(next.apps.map((a: any) => a.appId)).toEqual(['a1', 'a2']);
+  });
+
+  it('updateApp leaves the list alone for an unknown id', () => {
+    const next = appsReducer(base, updateApp({ appId: 'nosuchapp', appName: 'Ghost' } as any));
+    expect(next.apps).toEqual(base.apps);
+  });
+
+  it('dropUpdate leaves the list alone for an unknown id', () => {
+    const next = appsReducer(
+      base,
+      dropUpdate({ appId: 'nosuchapp', destination: { droppableId: 1, index: 0, data: {} } } as any),
+    );
+    expect(next.apps).toEqual(base.apps);
+  });
+});
+
+describe('appsReducer — actions shared with other slices', () => {
+  const initial: ApplicationStates = {
+    apps: [],
+    status: false,
+    appPull: false,
+    appError: false,
+    appErrorMessage: '',
+    deleteDialogOpen: false,
+  };
+
+  it("opens on the dialog slice's toggleDeleteDialog", () => {
+    expect(appsReducer(initial, toggleDeleteDialog()).deleteDialogOpen).toBe(true);
+  });
+
+  it("records a database error raised through databases' setDBError", () => {
+    // databases/types.ts declares SET_DB_ERROR = 'SET_APP_ERROR'. Whether AppForm
+    // should show database errors is a product question; this pins what it does.
+    const next = appsReducer(initial, setDBError('schema locked') as any);
+    expect(next).toMatchObject({ appError: true, appErrorMessage: 'schema locked' });
+  });
+
+  it("clears it again through databases' clearDBError", () => {
+    const dirty = { ...initial, appError: true, appErrorMessage: 'schema locked' };
+    expect(appsReducer(dirty, clearDBError() as any)).toMatchObject({
+      appError: false,
+      appErrorMessage: '',
+    });
   });
 });

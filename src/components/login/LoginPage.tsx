@@ -17,7 +17,7 @@ import { FiInfo, FiMoon, FiSun } from 'react-icons/fi';
 import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
-import { IdP, LOGIN } from '../../store/account/types';
+import { IdP } from '../../store/account/types';
 import { initiateAuthorizationRequest } from './pkce';
 import { useNavigate } from '../../router/react';
 import {
@@ -44,6 +44,9 @@ import { AlertManager, checkForResponse } from '../../utils/common';
 import { applyAppearance } from '../../services/theme-service';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
+// The generated action, not the `login` thunk of the same name in account/action.ts
+// — these two sites already hold a token and only need to mark the session authed.
+import { login as markAuthenticated } from '../../store/account/reducer';
 
 const log = getLogger('components/login/LoginPage');
 
@@ -330,9 +333,7 @@ const LoginPage = () => {
         localStorage.setItem('use_keep_webauth', 'true');
         localStorage.setItem('keep_user', json.username);
         setUsername(json.username);
-        dispatch({
-          type: LOGIN
-        });
+        dispatch(markAuthenticated());
         dispatch(toggleAlert('WebAuthn registration successful!'));
       })
       .catch((e) => {
@@ -355,9 +356,7 @@ const LoginPage = () => {
           dispatch(toggleAlert(json.message));
         } else {
           localStorage.setItem('user_token', JSON.stringify(json));
-          dispatch({
-            type: LOGIN
-          });
+          dispatch(markAuthenticated());
         }
       })
       .catch((err) => {
