@@ -32,7 +32,7 @@ const VENDORED = [
 ];
 
 const ROOT_FILES = ['vite.config.mts', 'vitest.config.ts', 'index.html'];
-const CODE_EXTS = /\.(ts|tsx|mts|css|js)$/;
+const CODE_EXTS = /\.(ts|tsx|mts|mjs|css|js)$/;
 
 const walk = (dir: string): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -43,7 +43,7 @@ const walk = (dir: string): string[] =>
 const rel = (file: string) => file.slice(ROOT.length + 1);
 
 const IN_SCOPE = [
-  ...['src', 'test']
+  ...['src', 'test', 'scripts']
     .flatMap((d) => walk(resolve(ROOT, d)))
     .map(rel)
     .filter((f) => CODE_EXTS.test(f)),
