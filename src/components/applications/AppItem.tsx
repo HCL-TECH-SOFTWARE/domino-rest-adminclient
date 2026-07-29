@@ -131,13 +131,25 @@ const AppItem: React.FC<AppItemProps> = ({
     window.open(app.appStartPage)
   }
 
+  /**
+   * `setHasAppSecret(true)` belongs to the branch that actually asks for a secret.
+   *
+   * It used to sit outside the `if`, so the refresh button — which only opens the
+   * "Regenerate App Secret?" confirmation — flipped the row into the just-generated
+   * branch immediately. That branch renders `appSecret`, still `''` because nothing had
+   * been generated, so the masked `********************` was replaced by blank text
+   * before the user had confirmed anything, and stayed blank if they cancelled (#844).
+   *
+   * The confirm path sets it in `regenerateSecret` instead, where a secret is really on
+   * its way.
+   */
   const handleClickGenerate = (newSecret: boolean) => {
     if (newSecret) {
       dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret))
+      setHasAppSecret(true)
     } else {
       setIsGenerate(true);
     }
-    setHasAppSecret(true)
   }
 
   useEffect(() => {
@@ -152,6 +164,7 @@ const AppItem: React.FC<AppItemProps> = ({
 
   const regenerateSecret = () => {
     dispatch(generateSecret(app.appId, app.appStatus, setGenerating, setAppSecret))
+    setHasAppSecret(true)
     setIsGenerate(false);
   }
 
@@ -297,17 +310,23 @@ const AppItem: React.FC<AppItemProps> = ({
                             </button>
                             <span className='small-text color-text-hint'>********************</span>
                           </> : <>
+                            {/* `app.appSecret`, not the local `appSecret`. This branch is
+                                guarded by the prop and used to render the state, which is
+                                `''` until something is generated in this session — so a
+                                secret the API had supplied showed as an empty span under a
+                                "Copy Application Secret" tooltip (#844). Each branch now
+                                renders the value it tests. */}
                             {app.appSecret?.length > 0 ? <>
                               <KeepTooltip
                                 content="Copy Application Secret"
-                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}} 
+                                onKeyDown={(e) => {handleKeyPress(e, () => {copyToClipboard(e)})}}
                               >
                                 <span
                                   className='small-text cursor-pointer script-editor-help-icon'
                                   ref={appSecretTextRef}
                                   onClick={copyToClipboard}
                                 >
-                                  {appSecret}
+                                  {app.appSecret}
                                 </span>
                               </KeepTooltip>
                             </> : <>
