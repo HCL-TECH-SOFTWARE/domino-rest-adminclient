@@ -6,51 +6,9 @@
 
 import * as React from 'react';
 import { styled } from '@linaria/react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import ActivateSwitch from './ActivateSwitch';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
-import { KeepTooltip } from '../keep-elements/KeepElements';
-
-const StyledTableCell = styled(TableCell)`
-  padding-left: 30px;
-  padding-right: 30px;
-
-  &.${tableCellClasses.head} {
-    font-weight: bold;
-    padding-top: 30px;
-    border-bottom: 1px solid var(--wa-color-surface-border);
-  }
-
-  &.${tableCellClasses.body} {
-    font-size: var(--wa-font-size-m);
-    padding-top: 20px;
-    padding-bottom: 20px;
-    border-bottom: none;
-  }
-`
-
-const StyledTableRow = styled(TableRow)`
-  &:nth-of-type(odd) {
-    background-color: var(--keep-surface-accent);
-    border-bottom: none;
-  }
-
-  &:last-child th, &:last-child td {
-    border-bottom: 0;
-  }
-`
-
-const StyledTableContainer = styled(TableContainer)`
-  border-radius: var(--wa-border-radius-l);
-  box-sizing: border-box;
-  border: 1px solid var(--wa-color-surface-border);
-  background: var(--wa-color-surface-raised);
-`;
+import { KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
 
 const StatusHeader = styled.div`
   cursor: default;
@@ -81,6 +39,9 @@ const AgentNameDisplay = styled.div`
   margin-left: 20px;
 `
 
+/** `width` is valid on <th> but absent from React's ThHTMLAttributes, which types it only on <td>. */
+const colWidth = (width: string) => ({ width });
+
 interface AgentsTableProps {
   agents: Array<{
     agentActive: boolean;
@@ -94,12 +55,12 @@ interface AgentsTableProps {
 
 const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleInactive }) => {
   return (
-    <StyledTableContainer>
-      <Table className='p-30' aria-label="views and agents table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell width="550px"><AgentNameHeader>Agent Name</AgentNameHeader></StyledTableCell>
-            <StyledTableCell>
+    <KeepDataTable zebra>
+      <table className="p-30" aria-label="views and agents table">
+        <thead>
+          <tr>
+            <th {...colWidth('550px')}><AgentNameHeader>Agent Name</AgentNameHeader></th>
+            <th>
               <StatusHeader>
                 <div>
                   <KeepTooltip content={`Activate the Agents that should be accessible\nvia rest API`} placement='bottom' without-arrow>
@@ -107,23 +68,23 @@ const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleI
                   </KeepTooltip>
                 </div>
               </StatusHeader>
-            </StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
           {agents.map((agent) => (
-            <StyledTableRow key={agent.agentName}>
-              <StyledTableCell width="550px">
+            <tr key={agent.agentName}>
+              <td width="550px">
                 <AgentNameDisplay>
                     {agent.agentName}
                 </AgentNameDisplay>
-              </StyledTableCell>
-              <StyledTableCell><ActivateSwitch view={agent} toggleActive={toggleActive} toggleInactive={toggleInactive} type={'agent'}/></StyledTableCell>
-            </StyledTableRow>
+              </td>
+              <td><ActivateSwitch view={agent} toggleActive={toggleActive} toggleInactive={toggleInactive} type={'agent'}/></td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
-    </StyledTableContainer>
+        </tbody>
+      </table>
+    </KeepDataTable>
   );
 };
 

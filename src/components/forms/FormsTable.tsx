@@ -6,12 +6,6 @@
 
 import * as React from "react";
 import { styled } from '@linaria/react';
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 import { Box, Button, ButtonBase } from "@mui/material";
 import { FiEdit2 } from "react-icons/fi";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
@@ -22,43 +16,11 @@ import { WarningIcon } from "../../styles/CommonStyles";
 import { IoMdClose } from "react-icons/io";
 import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
-import { KeepButton, KeepTooltip } from "../keep-elements/KeepElements";
+import { KeepButton, KeepDataTable, KeepTooltip } from "../keep-elements/KeepElements";
 import { useAppDispatch } from '../../store/hooks';
 
-const StyledTableCell = styled(TableCell)`
-  padding-left: 30px;
-  padding-right: 30px;
-
-  &.${tableCellClasses.head} {
-    font-weight: bold;
-    padding-top: 30px;
-    border-bottom: 1px solid #b8b8b8;
-  }
-
-  &.${tableCellClasses.body} {
-    font-size: var(--wa-font-size-m);
-    padding-top: 20px;
-    padding-bottom: 20px;
-    border-bottom: none;
-  }
-`;
-
-const StyledTableRow = styled(TableRow)`
-  &:nth-of-type(odd) {
-    background-color: var(--keep-surface-accent);
-  }
-
-  &:last-child th, &:last-child td {
-    border-bottom: 0;
-  }
-`;
-
-const StyledTableContainer = styled(TableContainer)`
-  border-radius: var(--wa-border-radius-l);
-  box-sizing: border-box;
-  border: 1px solid var(--wa-color-surface-border);
-  background: var(--wa-color-surface-raised);
-`
+/** `width` is valid on <th> but absent from React's ThHTMLAttributes, which types it only on <td>. */
+const colWidth = (width: string) => ({ width });
 
 const StatusHeader = styled.div`
   cursor: default;
@@ -265,12 +227,12 @@ const FormsTable: React.FC<FormsTableProps> = ({
 
   return (
     <>
-      <StyledTableContainer>
-        <Table className="p-30" aria-label="views and agents table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell width="50px" />
-              <StyledTableCell width="350px">
+      <KeepDataTable zebra>
+        <table className="p-30" aria-label="views and agents table">
+          <thead>
+            <tr>
+              <th {...colWidth('50px')}>{null}</th>
+              <th {...colWidth('350px')}>
                 <div className="flex flex-row">
                   <div className='forms-table-diamond-marker mr-5 hidden'>
                     <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
@@ -279,10 +241,10 @@ const FormsTable: React.FC<FormsTableProps> = ({
                   </div>
                   Form Name
                 </div>
-              </StyledTableCell>
-              <StyledTableCell width="350px">Form Aliases</StyledTableCell>
-              <StyledTableCell width="150px">Modes Available</StyledTableCell>
-              <StyledTableCell width="200px">
+              </th>
+              <th {...colWidth('350px')}>Form Aliases</th>
+              <th {...colWidth('150px')}>Modes Available</th>
+              <th {...colWidth('200px')}>
                 <StatusHeader>
                   <div>
                     <KeepTooltip content={`Activate the Forms that should be accessible\nvia rest API`} placement='bottom' without-arrow>
@@ -292,18 +254,18 @@ const FormsTable: React.FC<FormsTableProps> = ({
                     </KeepTooltip>
                   </div>
                 </StatusHeader>
-              </StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
             {forms.map((form,i) => (
-              <StyledTableRow key={form.formName+i}>
-                <StyledTableCell component="th" scope="row" width="50px">
+              <tr key={form.formName+i}>
+                <th scope="row" {...colWidth('50px')}>
                   <EditIcon onClick={() => openForm(form.formName, form.formModes.length)}>
                     <Button title={form.formName}><FiEdit2 size='1.5em' /></Button>
                   </EditIcon>
-                </StyledTableCell>
-                <StyledTableCell width="550px">
+                </th>
+                <td {...colWidth('550px')}>
                   <ViewNameDisplay>
                     <div className={`forms-table-diamond-marker ${formList.includes(form.formName) ? 'hidden' : 'visible'}`}>
                       <svg width='8' height='8' viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg">
@@ -315,18 +277,18 @@ const FormsTable: React.FC<FormsTableProps> = ({
                       {!formList.includes(form.formName) && <span className='custom-form'>custom form</span>}
                     </Box>
                   </ViewNameDisplay>
-                </StyledTableCell>
-                <StyledTableCell>
+                </td>
+                <td>
                   <ViewNameDisplay>
                     <span>{form.alias}</span>
                   </ViewNameDisplay>
-                </StyledTableCell>
-                <StyledTableCell>
+                </td>
+                <td>
                   <ViewNameDisplay>
                     <span>{form.formModes.length}</span>
                   </ViewNameDisplay>
-                </StyledTableCell>
-                <StyledTableCell className='table-cell-activate-menu'>
+                </td>
+                <td className='table-cell-activate-menu'>
                   <ActivateMenu
                     form={form}
                     nsfPath={nsfPath}
@@ -337,13 +299,12 @@ const FormsTable: React.FC<FormsTableProps> = ({
                     formList={formList}
                     toggleActivate={toggleConfigure}
                   />
-                </StyledTableCell>
-              </StyledTableRow>
-              
+                </td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
-      </StyledTableContainer>
+          </tbody>
+        </table>
+      </KeepDataTable>
       <ActivateDialogContainer ref={ref}>
         <Box className='header-close'>
           <Box className='header'>

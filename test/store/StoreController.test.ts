@@ -188,10 +188,13 @@ describe('the store singleton', () => {
     expect(again.store).toBe(store);
   });
 
+  // `dbSetting` was here until #853. It is deliberately not replaced by a smaller
+  // assertion: this list failing is the point, so that adding or dropping a slice is a
+  // decision someone records rather than a diff nobody notices.
   it('mounts every reducer in the root reducer', () => {
     expect(Object.keys(store.getState()).sort()).toEqual(
       [
-        'account', 'alert', 'apps', 'consents', 'databases', 'dbSetting', 'dialog',
+        'account', 'alert', 'apps', 'consents', 'databases', 'dialog',
         'drawer', 'loading', 'styles', 'users',
       ].sort(),
     );

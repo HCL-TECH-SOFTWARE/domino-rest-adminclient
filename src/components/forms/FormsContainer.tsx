@@ -32,7 +32,6 @@ import {
   updateSchema,
   fetchFolders,
  } from '../../store/databases/action';
-import { toggleSettings } from '../../store/dbsettings/action';
 import { getToken } from '../../store/account/action';
 import TabForms from './TabForms';
 import TabViews from './TabViews';
@@ -159,7 +158,6 @@ const FormsContainer = () => {
   
   const dispatch = useAppDispatch();
   const setData = useState<Array<string>>([])[1];
-  const { visible } = useSelector((state: AppState) => state.dbSetting);
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const [schemaData, setSchemaData] = useState({
     '@unid': "",
@@ -400,8 +398,9 @@ const FormsContainer = () => {
 
   useEffect(() => {
     document.title = `HCL Domino REST API | ${dbName} Forms`;
-    // check if settings dialog is opened
-    if (visible) dispatch(toggleSettings());
+    // The `if (visible) dispatch(toggleSettings())` that closed the database settings
+    // dialog on mount is gone with the slice (#853). It had been unreachable since
+    // 19e56a2 deleted the settings screen: nothing was left that could set `visible`.
 
     // Fetch current forms
     async function fetchForms() {
