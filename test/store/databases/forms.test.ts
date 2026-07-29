@@ -30,7 +30,7 @@ import {
   UNCONFIG_FORM,
 } from '../../../src/store/databases/types';
 import { setApiLoading, toggleDeleteDialog } from '../../../src/store/dialog/action';
-import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
+import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
 import '../../../src/components/keep-elements/keep-alert';
@@ -84,7 +84,7 @@ describe('databases — forms (destructive)', () => {
   const actions = () => dispatch.recorded.filter((a: any) => typeof a !== 'function');
   const types = () => actions().map((a: any) => a?.type);
   const alerts = () =>
-    actions().filter((a: any) => a?.type === TOGGLE_ALERT).map((a: any) => a.payload as string);
+    actions().filter((a: any) => a?.type === toggleAlert.type).map((a: any) => a.payload as string);
   const loadingSequence = () =>
     actions().filter((a: any) => a?.type === setApiLoading.type).map((a: any) => a.payload);
 
@@ -360,7 +360,7 @@ describe('databases — forms', () => {
   const actions = () => dispatch.recorded.filter((a: any) => typeof a !== 'function');
   const types = () => actions().map((a: any) => a?.type);
   const alerts = () =>
-    actions().filter((a: any) => a?.type === TOGGLE_ALERT).map((a: any) => a.payload as string);
+    actions().filter((a: any) => a?.type === toggleAlert.type).map((a: any) => a.payload as string);
   const loadingSequence = () =>
     actions().filter((a: any) => a?.type === setApiLoading.type).map((a: any) => a.payload);
 

@@ -6,7 +6,8 @@
 
 import { describe, it, expect } from 'vitest';
 import alertReducer from '../../../src/store/alerts/reducer';
-import { TOGGLE_ALERT, CLOSE_SNACKBAR, AlertState } from '../../../src/store/alerts/types';
+import { AlertState } from '../../../src/store/alerts/types';
+import { toggleAlert, closeSnackbar } from '../../../src/store/alerts/action';
 
 const initial: AlertState = {
   visible: false,
@@ -18,38 +19,38 @@ describe('alertReducer', () => {
     expect(alertReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('TOGGLE_ALERT shows the alert and sets the message', () => {
-    const next = alertReducer(initial, { type: TOGGLE_ALERT, payload: 'heads up' });
+  it('toggleAlert shows the alert and sets the message', () => {
+    const next = alertReducer(initial, toggleAlert('heads up'));
     expect(next).toMatchObject({ visible: true, message: 'heads up' });
   });
 
-  it('TOGGLE_ALERT keeps the alert visible when a second message arrives', () => {
+  it('toggleAlert keeps the alert visible when a second message arrives', () => {
     // It used to be `visible: !state.visible`, true to the action's name and wrong
     // for its only use. Notification auto-hides after 3s; a second alert inside that
     // window flipped visible back to false, so the new message replaced the old one
     // and was then never shown. Reported as "a second failure hides them
     // instead of showing one" (#792).
-    const once = alertReducer(initial, { type: TOGGLE_ALERT, payload: 'a' });
-    const twice = alertReducer(once, { type: TOGGLE_ALERT, payload: 'b' });
+    const once = alertReducer(initial, toggleAlert('a'));
+    const twice = alertReducer(once, toggleAlert('b'));
 
     expect(twice.visible).toBe(true);
     expect(twice.message).toBe('b');
   });
 
-  it('TOGGLE_ALERT re-shows an alert that was dismissed', () => {
+  it('toggleAlert re-shows an alert that was dismissed', () => {
     const dismissed = alertReducer(
       { visible: false, message: 'a' },
-      { type: TOGGLE_ALERT, payload: 'b' },
+      toggleAlert('b'),
     );
     expect(dismissed).toEqual({ visible: true, message: 'b' });
   });
 
-  it('CLOSE_SNACKBAR hides the alert but keeps the message', () => {
+  it('closeSnackbar hides the alert but keeps the message', () => {
     // It used to also clear `snackbarMessagE`, a field nothing ever wrote (#707). The
     // message is deliberately left alone: Notification reads `message` while it animates
     // out, so clearing it here would blank the text mid-transition.
     const open: AlertState = { ...initial, visible: true, message: 'msg' };
-    const next = alertReducer(open, { type: CLOSE_SNACKBAR });
+    const next = alertReducer(open, closeSnackbar());
 
     expect(next).toEqual({ visible: false, message: 'msg' });
   });
@@ -67,7 +68,7 @@ describe('alertReducer', () => {
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
     expect(() =>
-      alertReducer(frozen, { type: TOGGLE_ALERT, payload: 'x' })
+      alertReducer(frozen, toggleAlert('x'))
     ).not.toThrow();
   });
 });
