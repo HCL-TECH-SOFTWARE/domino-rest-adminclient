@@ -30,6 +30,7 @@ import MonacoEditor from './keep-monaco-editor';
 import Tree, { type KeepTreeSelectDetail } from './keep-tree';
 import Footer from './keep-footer';
 import PageLoading from './keep-page-loading';
+import ZeroResults from './keep-zero-results';
 import DataTable, {
   type KeepDataTablePageChangeDetail,
   type KeepDataTableRowsPerPageChangeDetail
@@ -205,5 +206,11 @@ export const KeepFooter = createComponent({
 export const KeepPageLoading = createComponent({
   tagName: 'keep-page-loading',
   elementClass: PageLoading,
+  react: React
+});
+
+export const KeepZeroResults = createComponent({
+  tagName: 'keep-zero-results',
+  elementClass: ZeroResults,
   react: React
 });

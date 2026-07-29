@@ -8,10 +8,9 @@ import React, { useEffect } from 'react';
 import { styled } from '@linaria/react';
 import DBIcon from '@mui/icons-material/Storage';
 import { useLocation } from '../../../../../router/react';
-import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { AppIcon } from '../../../AppIcon';
 import { Scope } from '../../../../../store/databases/types';
-import { KeepTooltip } from '../../../../keep-elements/KeepElements';
+import { KeepTooltip, KeepZeroResults } from '../../../../keep-elements/KeepElements';
 
 const AlphabeticalViewContainer = styled.div`
   display: flex;
@@ -142,7 +141,7 @@ const ScopesAlphabeticalView: React.FC<ScopesAlphabeticalSchemaViewProps> = ({
               </BlockContainer>
             ))
           ) : (
-            <ZeroResultsWrapper
+            <KeepZeroResults
               mainLabel=" Sorry, No result found"
               secondaryLabel={`What you search was unfortunately not found or doesn't exist.`}
             />

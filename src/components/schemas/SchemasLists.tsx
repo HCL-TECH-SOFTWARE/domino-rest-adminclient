@@ -22,11 +22,10 @@ import { useLocation, useNavigate } from '../../router/react';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import SchemasMultiView from '../commons/cardviews/displays/schemas/SchemasMultiView';
 import { toggleAlert } from '../../store/alerts/action';
-import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
-import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepButton, KeepTooltip, KeepZeroResults } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -205,7 +204,7 @@ const SchemasLists = () => {
               </KeepTooltip>
             </FilterContainer>
             {results.length !== 0 && !loading.status && <SchemasMultiView databases={results} view={view} />}
-            {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <ZeroResultsWrapper mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
+            {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <KeepZeroResults mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
             <NetworkErrorDialog />
             <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
           </>

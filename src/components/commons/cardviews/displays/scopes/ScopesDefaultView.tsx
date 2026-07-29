@@ -6,10 +6,9 @@
 
 import React from 'react';
 import { ExtraFlex } from '../../../../flex';
-import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { mapSchemas } from '../../../../../utils/mapper';
 import { SchemasMainContainer } from './ScopeStyles';
-import { KeepNsfCard } from '../../../../keep-elements/KeepElements';
+import { KeepNsfCard, KeepZeroResults } from '../../../../keep-elements/KeepElements';
 
 type ScopesDefaultViewProps = {
   databases: Array<any>;
@@ -38,7 +37,7 @@ const ScopesDefaultView: React.FC<ScopesDefaultViewProps> = ({
             );
           })
         ) : (
-          <ZeroResultsWrapper
+          <KeepZeroResults
             mainLabel=" Sorry, No result found"
             secondaryLabel={`What you search was unfortunately not found or doesn't exist.`}
           />

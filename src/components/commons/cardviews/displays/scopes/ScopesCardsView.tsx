@@ -6,9 +6,8 @@
 
 import React from 'react';
 import { ExtraFlex } from '../../../../flex';
-import ZeroResultsWrapper from '../../../ZeroResultsWrapper';
 import { SchemasMainContainer } from './ScopeStyles';
-import { KeepDefaultCard } from '../../../../keep-elements/KeepElements';
+import { KeepDefaultCard, KeepZeroResults } from '../../../../keep-elements/KeepElements';
 import { appIconUri, useAppIcons } from '../../../../../services/app-icons';
 
 type ScopesCardsViewProps = {
@@ -47,7 +46,7 @@ const ScopesCardsView: React.FC<ScopesCardsViewProps> = ({
             );
           })
         ) : (
-          <ZeroResultsWrapper
+          <KeepZeroResults
             mainLabel=" Sorry, No result found"
             secondaryLabel={`What you search was unfortunately not found or doesn't exist.`}
           />

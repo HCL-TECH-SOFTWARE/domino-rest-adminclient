@@ -4,44 +4,15 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import * as React from 'react';
-import { styled } from '@linaria/react';
-
-const NoResultFound = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-
-  .no-result {
-    font-size: var(--wa-font-size-xl);
-  }
-
-  .not-found {
-    margin: 15px 0;
-  }
-`;
-
-type ZeroResultsWrapperProps = {
-  mainLabel: string;
-  secondaryLabel: string;
-};
-
-const ZeroResultsWrapper: React.FC<ZeroResultsWrapperProps> = ({
-  mainLabel,
-  secondaryLabel,
-}) => {
-  return (
-    <NoResultFound>
-      <span className="large-text color-text-primary" data-testid="no-search-result">
-        {mainLabel}
-      </span>
-      <span className="m-0 mt-15 mb-15 color-text-primary">
-        {secondaryLabel}
-      </span>
-    </NoResultFound>
-  );
-};
-
-export default ZeroResultsWrapper;
+/**
+ * Retained for one consumer: `applications/AppsTable.tsx`.
+ *
+ * #806 converted this component to the `keep-zero-results` element and moved its other seven
+ * consumers over. `AppsTable.tsx` is one of the six MUI `<Table>` screens that **#771 owns**,
+ * and #806 must not touch those files, so the module path stays alive here instead.
+ *
+ * This is a re-export, not a second implementation - the props are identical, so there is
+ * still exactly one empty-state component. Delete this file when #771 converts `AppsTable`
+ * and drops the import.
+ */
+export { KeepZeroResults as default } from '../keep-elements/KeepElements';
