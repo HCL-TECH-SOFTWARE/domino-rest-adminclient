@@ -133,6 +133,47 @@ describe('appsReducer', () => {
  * are the tests that would have caught it, and that keep the pairing honest as the
  * last classic reducer (databases) is converted.
  */
+/**
+ * Three reducers look up an app by id, and the classic implementation used the
+ * result of `findIndex` without checking it. On a miss that is -1, and:
+ *
+ *   draft.apps.splice(-1, 1)      removes the *last* app
+ *   draft.apps[-1] = payload      writes a "-1" property onto the array
+ *
+ * The createSlice versions guard the lookup, so a stale or unknown id is now a
+ * no-op. That is a behaviour change and the only one in #710 — hence these tests
+ * rather than a silent fix.
+ */
+describe('appsReducer — lookups that miss', () => {
+  const base: ApplicationStates = {
+    apps: [{ appId: 'a1', appName: 'First' }, { appId: 'a2', appName: 'Second' }],
+    status: false,
+    appPull: false,
+    appError: false,
+    appErrorMessage: '',
+    deleteDialogOpen: false,
+  } as ApplicationStates;
+
+  it('deleteApp leaves the list alone for an unknown id', () => {
+    // Previously splice(-1, 1), which deleted 'a2'.
+    const next = appsReducer(base, deleteApp('nosuchapp'));
+    expect(next.apps.map((a: any) => a.appId)).toEqual(['a1', 'a2']);
+  });
+
+  it('updateApp leaves the list alone for an unknown id', () => {
+    const next = appsReducer(base, updateApp({ appId: 'nosuchapp', appName: 'Ghost' } as any));
+    expect(next.apps).toEqual(base.apps);
+  });
+
+  it('dropUpdate leaves the list alone for an unknown id', () => {
+    const next = appsReducer(
+      base,
+      dropUpdate({ appId: 'nosuchapp', destination: { droppableId: 1, index: 0, data: {} } } as any),
+    );
+    expect(next.apps).toEqual(base.apps);
+  });
+});
+
 describe('appsReducer — actions shared with other slices', () => {
   const initial: ApplicationStates = {
     apps: [],
