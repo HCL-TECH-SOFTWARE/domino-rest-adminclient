@@ -22,9 +22,14 @@ export default function alertReducer(
 ): AlertState {
   switch (action.type) {
     case TOGGLE_ALERT:
+      // `visible: true`, not `!state.visible`. The name says toggle, but every one
+      // of its 100-odd call sites means "show this message" — nothing dispatches it
+      // to dismiss. Notification auto-hides after 3s via CLOSE_SNACKBAR, so a second
+      // alert raised inside that window used to flip visible back to false: the new
+      // message was stored, the alert closed, and the user saw neither (#792).
       return {
         ...state,
-        visible: !state.visible,
+        visible: true,
         message: action.payload,
       };
     case CLOSE_SNACKBAR:

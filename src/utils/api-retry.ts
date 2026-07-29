@@ -63,7 +63,23 @@ const networkFailure = (message: string): ApiFailure => ({
     error: message,
 });
 
-export const apiRequestWithRetry = async (apiRequest: () => Promise<any>): Promise<ApiResult> => {
+export interface ApiRequestOptions {
+    /**
+     * Raise a `danger` toast when the request fails. Default `true`.
+     *
+     * Pass `false` where the caller already reports the failure itself. Most
+     * thunks catch and dispatch something contextual — "Delete scope failed!
+     * …" — which is a better message than the generic one raised here; with
+     * both firing the user got two toasts for one failure, in two corners of
+     * the screen, on two different timers (#792).
+     */
+    notifyOnError?: boolean;
+}
+
+export const apiRequestWithRetry = async (
+    apiRequest: () => Promise<any>,
+    { notifyOnError = true }: ApiRequestOptions = {},
+): Promise<ApiResult> => {
     try {
         // Make the initial API request
         const response = await apiRequest();
@@ -82,7 +98,12 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>): Promi
                 // `.error` off it unconditionally was how a failed refresh
                 // surfaced to the user as "Cannot read properties of undefined".
                 if (!refreshResponse || refreshResponse.error) {
-                    return networkFailure(refreshResponse?.error || "Failed to refresh token");
+                    const refreshError = refreshResponse?.error || "Failed to refresh token";
+                    // This exit used to return silently, so a refresh that failed
+                    // produced no toast at all unless the caller raised one.
+                    if (notifyOnError) notify(refreshError, 'danger')
+                    log.error(refreshError)
+                    return networkFailure(refreshError);
                 }
 
                 // Retry the original API request after refreshing the token.
@@ -110,7 +131,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>): Promi
             const errorMsg = `Error ${error.status}: ${error.message || 'An error occurred during the API request.'}`
             // Was logged twice — console.log and console.error with the identical
             // string, either side of the notify(). Kept once, at error.
-            notify(errorMsg, 'danger')
+            if (notifyOnError) notify(errorMsg, 'danger')
             log.error(errorMsg)
 
             // For other errors, return the error details
@@ -128,7 +149,7 @@ export const apiRequestWithRetry = async (apiRequest: () => Promise<any>): Promi
         // Handle unexpected errors — a dropped connection, a DNS failure, an
         // aborted request. Nothing was received, so this is a network failure.
         const message = err.message || "An unexpected error occurred";
-        notify(message, 'danger')
+        if (notifyOnError) notify(message, 'danger')
         log.error(message, { err })
         return networkFailure(message);
     }

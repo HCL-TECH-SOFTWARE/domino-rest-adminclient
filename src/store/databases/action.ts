@@ -122,8 +122,7 @@ export function deleteScope(apiName: string) {
             Authorization: `Bearer ${getToken()}`,
             'Content-Type': 'application/json',
           },
-        })
-      )
+        }), { notifyOnError: false })
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -162,8 +161,7 @@ export function deleteSchema(dbData: any) {
                 Authorization: `Bearer ${getToken()}`,
                 'Content-Type': 'application/json',
               },
-            })
-          )
+            }), { notifyOnError: false })
 
           if (!response.ok) {
             throw new Error(JSON.stringify(data))
@@ -1026,8 +1024,7 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(dbData),
-        })
-      )
+        }), { notifyOnError: false })
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -1103,8 +1100,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(schemaData),
-          })
-        )
+          }), { notifyOnError: false })
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1219,8 +1215,7 @@ export const pullForms = (nsfPath: string, _dbName: string, _setData: React.Disp
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
           },
-        })
-      )
+        }), { notifyOnError: false })
       
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
@@ -1276,8 +1271,7 @@ const updateForms = (
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(newSchemaData),
-          })
-        )
+          }), { notifyOnError: false })
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1441,8 +1435,7 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(newSchemaData),
-          })
-        )
+          }), { notifyOnError: false })
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1535,8 +1528,7 @@ async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolea
           'Content-Type': 'application/json'
         }
       }
-    )
-  )
+    ), { notifyOnError: false })
 
   // const obj = await response.json();
   const obj = data
@@ -1738,8 +1730,7 @@ export const updateAgents = (schemaData: Database, agentsData: any, dbName: stri
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(newSchemaData),
-          })
-        )
+          }), { notifyOnError: false })
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1836,8 +1827,7 @@ export const updateFormMode = (
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(newSchemaData),
-          })
-        )
+          }), { notifyOnError: false })
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1923,8 +1913,7 @@ export const deleteFormMode = (
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(newSchemaData),
-          })
-        )
+          }), { notifyOnError: false })
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
@@ -1989,8 +1978,7 @@ export const deleteForm = (
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(newSchemaData),
-          })
-        )
+          }), { notifyOnError: false })
 
         if (!response.ok) {
           throw new Error(JSON.stringify(data))

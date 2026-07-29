@@ -226,6 +226,65 @@ describe('apiRequestWithRetry', () => {
     expect(showSpy).toHaveBeenCalledWith('Network down', 'danger', expect.any(Number));
   });
 
+  // ---- Who reports the failure (#792) ----
+  //
+  // Both this helper and most of its callers raised a toast for the same
+  // failure: <keep-alert> top-right for 5s from here, a MUI Snackbar
+  // top-centre for 3s from the caller's catch. `notifyOnError: false` lets a
+  // caller that already says something contextual own the message.
+
+  describe('notifyOnError', () => {
+    const exits: Array<[string, () => void]> = [
+      ['a non-ok response', () => {
+        fetchMock.mockResolvedValueOnce(
+          fakeResponse({ ok: false, status: 500, body: { status: 500, message: 'Server exploded' } }),
+        );
+      }],
+      ['a rejected request', () => fetchMock.mockRejectedValueOnce(new Error('Network down'))],
+      ['a failed token refresh', () => {
+        fetchMock.mockResolvedValueOnce(
+          fakeResponse({ ok: false, status: 401, body: { status: 401, message: 'Unauthorized' } }),
+        );
+        vi.mocked(refreshToken).mockResolvedValueOnce({ error: 'invalid_grant' });
+      }],
+    ];
+
+    it('raises exactly one toast per failure by default', async () => {
+      for (const [name, arrange] of exits) {
+        vi.clearAllMocks();
+        arrange();
+
+        await apiRequestWithRetry(apiRequest);
+
+        expect(showSpy, name).toHaveBeenCalledTimes(1);
+      }
+    });
+
+    it('stays silent on every failure exit when the caller reports it', async () => {
+      for (const [name, arrange] of exits) {
+        vi.clearAllMocks();
+        arrange();
+
+        const result = await apiRequestWithRetry(apiRequest, { notifyOnError: false });
+
+        expect(showSpy, name).not.toHaveBeenCalled();
+        // Silent about it, but still reporting it upward.
+        expect(result.success, name).toBe(false);
+      }
+    });
+
+    it('never toasts on success, whatever the option says', async () => {
+      for (const opts of [undefined, { notifyOnError: true }, { notifyOnError: false }]) {
+        vi.clearAllMocks();
+        fetchMock.mockResolvedValueOnce(fakeResponse({ ok: true, status: 200, body: { id: 1 } }));
+
+        await apiRequestWithRetry(apiRequest, opts);
+
+        expect(showSpy).not.toHaveBeenCalled();
+      }
+    });
+  });
+
   // ---- The failure contract (#800) ----
   //
   // Every failure exit used to return `response: null`, while every caller
@@ -302,6 +361,17 @@ describe('apiRequestWithRetry', () => {
 
       expect(result.error).toBe('Failed to refresh token');
       expect(fetchMock).toHaveBeenCalledTimes(1); // no retry attempted
+    });
+
+    it('reports a failed token refresh, which used to return silently', async () => {
+      fetchMock.mockResolvedValueOnce(
+        fakeResponse({ ok: false, status: 401, body: { status: 401, message: 'Unauthorized' } }),
+      );
+      vi.mocked(refreshToken).mockResolvedValueOnce({ error: 'invalid_grant' });
+
+      await apiRequestWithRetry(apiRequest);
+
+      expect(showSpy).toHaveBeenCalledWith('invalid_grant', 'danger', expect.any(Number));
     });
 
     it('surfaces a non-JSON error body from the retry, rather than a parse failure', async () => {
