@@ -6,7 +6,7 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Dispatch } from 'redux';
-import { changeScope, deleteScope, fetchScopes, updateScope } from '../../../src/store/databases/action';
+import { changeScope, deleteScope, fetchScopes } from '../../../src/store/databases/action';
 import { SET_DB_ERROR } from '../../../src/store/databases/types';
 import {
   addScope as addScopeAction,
@@ -17,23 +17,22 @@ import {
 } from '../../../src/store/databases/reducer';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../../../src/store/dialog/action';
 import { toggleDrawer } from '../../../src/store/drawer/action';
-import { resetForm as resetFormAction } from '../../../src/store/databases/reducer';
 import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
 import '../../../src/components/keep-elements/keep-alert';
 
 /**
- * #801 — the **scopes** concern of `databases/action.ts`. Four thunks, following
+ * #801 — the **scopes** concern of `databases/action.ts`. Three thunks, following
  * `schemas.test.ts` from #690 and organised the way #711 will split the file, so
- * these move to `store/databases/scopes.ts` unchanged.
+ * these move to `store/databases/scopes.ts` unchanged. There were four until #853
+ * deleted `updateScope`, which had no callers — see the note at the foot of the file.
  *
  * Two defect classes carried over from #690, and both are present here:
  *
  * - **Stranded loading flag.** `setApiLoading(true)` on entry, `setApiLoading(false)`
  *   only on the success path. `state.dialog.loading` is read by eight screens, so a
- *   failed call leaves them loading until reload. `changeScope` and `updateScope` both
- *   do this.
+ *   failed call leaves them loading until reload. `changeScope` does this.
  * - **Unguarded `JSON.parse` in the catch.** The shared
  *   `JSON.parse(e.toString().replace(…))` idiom throws on any non-JSON error, so the
  *   handler that was supposed to clear the flag throws instead — a second exception
@@ -73,10 +72,6 @@ describe('databases — scopes', () => {
   };
 
   const scope = { apiName: 'demo', schemaName: 'demoSchema', nsfPath: 'db.nsf', description: 'a scope' };
-
-  /** updateScope reads the scope under edit out of the store rather than its arguments. */
-  const getState = () =>
-    ({ databases: { contextViewIndex: 0, scopes: [scope] } }) as any;
 
   beforeAll(() => {
     previousLevel = Logger.getLevel();
@@ -294,67 +289,11 @@ describe('databases — scopes', () => {
     });
   });
 
-  describe('updateScope', () => {
-    it('saves the scope read out of the store and clears the loading flag', async () => {
-      returns(scope);
-
-      await updateScope(true)(dispatch, getState);
-
-      expect(types()).toContain(updateScopeAction.type);
-      expect(actions().find((a) => a?.type === updateScopeAction.type).payload).toMatchObject({ index: 0 });
-      expect(alerts().join()).toMatch(/successfully updated/i);
-      expectLoadingCleared();
-    });
-
-    it('sends the active flag it was given', async () => {
-      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: scope }));
-      vi.stubGlobal('fetch', fetchMock);
-
-      await updateScope(false)(dispatch, getState);
-
-      expect(JSON.parse(fetchMock.mock.calls[0][1].body).isActive).toBe(false);
-    });
-
-    it('prefers the override it was handed over the stored scope', async () => {
-      const fetchMock = vi.fn().mockResolvedValue(response({ ok: true, body: scope }));
-      vi.stubGlobal('fetch', fetchMock);
-
-      await updateScope(true, { apiName: 'override', schemaName: 's' })(dispatch, getState);
-
-      expect(JSON.parse(fetchMock.mock.calls[0][1].body).apiName).toBe('override');
-    });
-
-    // #848: this used to dispatch resetForm({ dbName: apiName }) on the no-override
-    // path. resetForm filters state.databases.forms by form.formName, so an object
-    // never matched and no form was ever removed. Deleted rather than repaired --
-    // making it work would switch on behaviour the app has never had.
-    it('does not try to reset the forms list', async () => {
-      returns(scope);
-
-      await updateScope(true)(dispatch, getState);
-
-      expect(types()).not.toContain(resetFormAction.type);
-    });
-
-    it('does not throw out of the thunk when the API refuses', async () => {
-      refuses({ message: 'nope' });
-
-      await expect(updateScope(true)(dispatch, getState)).resolves.not.toThrow();
-      expect(types()).not.toContain(updateScopeAction.type);
-    });
-
-    it('does not throw out of the thunk when the error body is not JSON', async () => {
-      refusesWithProse();
-
-      await expect(updateScope(true)(dispatch, getState)).resolves.not.toThrow();
-    });
-
-    it('clears the loading flag on failure', async () => {
-      refuses({ message: 'nope' });
-
-      await updateScope(true)(dispatch, getState);
-
-      expectLoadingCleared();
-    });
-  });
+  // The `updateScope` thunk's seven tests were deleted with the thunk itself (#853).
+  //
+  // They are worth a note because they are how it stayed invisible: written in #801,
+  // they exercised the thunk directly and passed, which made a dead export look like a
+  // covered one. Coverage says a line ran, never that anything in the app runs it.
+  // Whatever replaces this — a settings screen, or nothing — needs a caller before it
+  // needs a test.
 });
