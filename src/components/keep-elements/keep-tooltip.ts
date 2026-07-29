@@ -64,7 +64,12 @@ export default class Tooltip extends KeepElement {
       padding: '4px 8px',
       borderRadius: '4px',
       fontSize: 'var(--wa-font-size-s)',
-      fontFamily: 'var(--wa-font-sans, inherit)',
+      // `--wa-font-sans` does not exist in WebAwesome — the family tokens are
+      // `--wa-font-family-{body,heading,code,longform}`. The old name resolved to nothing,
+      // so the `inherit` fallback always won and this read as token-driven while it was
+      // not (#765). No visual change: the body font already computes to the same stack
+      // this token holds, `ui-sans-serif, system-ui, sans-serif` — verified in a browser.
+      fontFamily: 'var(--wa-font-family-body)',
       lineHeight: '1.4',
       boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
       pointerEvents: 'none',
