@@ -45,8 +45,7 @@ export const fetchMyApps = () => {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json'
           }
-        })
-      )
+        }), { notifyOnError: false })
       if (!response.ok) {
         throw new Error(JSON.stringify(data.message))
       }
@@ -148,8 +147,7 @@ export function updateApp(appData: any) {
             ...appData,
             isActive: appData.status,
           }),
-        })
-      )
+        }), { notifyOnError: false })
       const res = response
       if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
@@ -199,8 +197,7 @@ export function getSingleApp(appId: string) {
             Authorization: `Bearer ${getToken()}`,
             'Content-Type': 'application/json'
           }
-        })
-      )
+        }), { notifyOnError: false })
       const res = response
       if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
@@ -261,8 +258,7 @@ export function deleteApplication(appId: string) {
             Authorization: `Bearer ${getToken()}`,
             'Content-Type': 'application/json'
           },
-        })
-      )
+        }), { notifyOnError: false })
       if (!response.ok) {
         throw new Error(JSON.stringify(data.message))
       }
@@ -305,8 +301,7 @@ export function addApplication(appData: any) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(appData),
-        })
-      )
+        }), { notifyOnError: false })
       const res = response
       if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
@@ -399,8 +394,7 @@ export const generateSecret = (
           // force=true overwrites any existing secret unconditionally. Callers must
           // confirm with the user before dispatching this (#740).
           body: JSON.stringify({ status: appStatus })
-        })
-      )
+        }), { notifyOnError: false })
 
       if (!response.ok) {
         throw new Error(JSON.stringify(data))

@@ -18,16 +18,30 @@ describe('alertReducer', () => {
     expect(alertReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('TOGGLE_ALERT flips visible and sets the message', () => {
+  it('TOGGLE_ALERT shows the alert and sets the message', () => {
     const next = alertReducer(initial, { type: TOGGLE_ALERT, payload: 'heads up' });
     expect(next).toMatchObject({ visible: true, message: 'heads up' });
   });
 
-  it('TOGGLE_ALERT toggles visible back on a second dispatch', () => {
+  it('TOGGLE_ALERT keeps the alert visible when a second message arrives', () => {
+    // It used to be `visible: !state.visible`, true to the action's name and wrong
+    // for its only use. Notification auto-hides after 3s; a second alert inside that
+    // window flipped visible back to false, so the new message replaced the old one
+    // and was then never shown. Reported as "a second failure hides them
+    // instead of showing one" (#792).
     const once = alertReducer(initial, { type: TOGGLE_ALERT, payload: 'a' });
     const twice = alertReducer(once, { type: TOGGLE_ALERT, payload: 'b' });
-    expect(twice.visible).toBe(false);
+
+    expect(twice.visible).toBe(true);
     expect(twice.message).toBe('b');
+  });
+
+  it('TOGGLE_ALERT re-shows an alert that was dismissed', () => {
+    const dismissed = alertReducer(
+      { visible: false, message: 'a' },
+      { type: TOGGLE_ALERT, payload: 'b' },
+    );
+    expect(dismissed).toEqual({ visible: true, message: 'b' });
   });
 
   it('CLOSE_SNACKBAR hides the alert but keeps the message', () => {
