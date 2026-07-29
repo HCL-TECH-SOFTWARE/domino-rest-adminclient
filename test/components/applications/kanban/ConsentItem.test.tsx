@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
 import ConsentItem from '../../../../src/components/applications/kanban/ConsentItem';
@@ -35,6 +35,21 @@ function makeConsent(overrides: Record<string, unknown> = {}) {
 
 const apps = [{ appId: 'app-123', appName: 'Timesheets' }];
 
+/**
+ * `renderConsentItem` mounts into a `<tbody>` that is itself inside a `<table>` appended to
+ * `document.body` — RTL's `container` must be the `<tbody>` (a `<tr>` cannot be a direct
+ * child of `<body>`), but RTL's own `cleanup()` only removes a container whose
+ * `parentNode === document.body`. Since the container here is the `<tbody>`, not the
+ * `<table>`, cleanup never removes the `<table>` itself, leaving an empty orphan behind
+ * after every test. Tracked here and swept in `afterEach` below.
+ */
+const tables: HTMLTableElement[] = [];
+
+afterEach(() => {
+  tables.forEach((table) => table.remove());
+  tables.length = 0;
+});
+
 function renderConsentItem(
   consent = makeConsent(),
   { expand = false, users = [] as any[] } = {},
@@ -43,6 +58,7 @@ function renderConsentItem(
   const tbody = document.createElement('tbody');
   table.appendChild(tbody);
   document.body.appendChild(table);
+  tables.push(table);
   return renderWithProviders(<ConsentItem consent={consent} expand={expand} />, {
     container: tbody,
     preloadedState: { apps: { apps }, users: { users } },
@@ -185,6 +201,28 @@ describe('ConsentItem — revoking', () => {
     expect(toggleDeleteConsent).toHaveBeenCalledWith(
       'unid-1',
       '',
+      'CN=Ann Lee/O=Acme',
+      'read,write',
+    );
+  });
+
+  it('dispatches the raw username even when the cell shows the resolved one', () => {
+    // With no directory match (the two tests above), the raw and resolved usernames are the
+    // same string, so neither can tell which one handleClickRevoke actually sends. This
+    // fixture gives the two values apart — same directory-match shape as "prefers the
+    // internet address from the directory" — and asserts both ends: the cell resolves to
+    // the directory's internet address, but the dispatch still carries the raw
+    // `consent.username`. ConsentItem.tsx:85,87 reads `consent.username` directly in
+    // `handleClickRevoke`, never the resolved `username` local computed for display
+    // (:90-93), so this is real, intentional-looking divergence, not a defect.
+    renderConsentItem(makeConsent(), {
+      users: [{ ann: { FullName: ['CN=Ann Lee/O=Acme'], InternetAddress: ['ann@acme.test'] } }],
+    });
+    expect(screen.getByText('ann@acme.test')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke' }));
+    expect(toggleDeleteConsent).toHaveBeenCalledWith(
+      'unid-1',
+      'Timesheets',
       'CN=Ann Lee/O=Acme',
       'read,write',
     );
