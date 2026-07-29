@@ -15,6 +15,7 @@ import React, {
 import {
   matchRoutes,
   Router,
+  type LoadableRoute,
   type RouteParams,
   type RouterLocation,
   type To,
@@ -162,10 +163,14 @@ export const NavLink: React.FC<NavLinkProps> = ({ to, className, end, ...rest })
   );
 };
 
-export interface RouteDef {
+export interface RouteDef extends LoadableRoute {
   /** Base-relative pattern: literal segments, `:param`, or a trailing `*`. */
   path: string;
-  element: React.ReactNode;
+  /**
+   * The view, rendered eagerly. Mutually exclusive with `load` in practice — give a route
+   * one or the other. `element` wins if both are present.
+   */
+  element?: React.ReactNode;
   /**
    * Rendered only when this returns true — the replacement for wrapping routes in a
    * `<Route element={<PrivateRoutes/>}>` whose `<Outlet/>` was the real child. Called
@@ -177,15 +182,51 @@ export interface RouteDef {
 }
 
 /**
+ * `load()` resolves to whatever the bundler hands back; `React.lazy` needs a default
+ * export that is a component. Narrowing here rather than in `router.ts` is deliberate —
+ * see the note on {@link LoadableRoute}.
+ */
+type ComponentModule = { default: React.ComponentType };
+
+/**
  * Renders the first route in `routes` that matches the current location, and publishes its
  * params to {@link useParams}.
  *
  * Order is significant and not ranked — see `matchRoutes`. Nothing renders when no route
  * matches; the hosts that need a fallback declare a trailing `'*'`.
+ *
+ * A route with `load` instead of `element` is code-split (#813). Two things about that are
+ * load-bearing:
+ *
+ * - **The `React.lazy` wrappers are memoised on the route table's identity.** `lazy()`
+ *   returns a fresh component type per call, and React remounts when the type changes —
+ *   so building them inline would unmount and refetch the view on every render of this
+ *   outlet, which `useLocation` makes frequent.
+ * - **`guard` is checked before the lazy element is rendered**, and creating a `lazy()`
+ *   does not call `load`. So an unauthenticated visitor is redirected without ever
+ *   fetching the chunk behind the route they asked for.
  */
-export const RouterOutlet: React.FC<{ routes: readonly RouteDef[] }> = ({ routes }) => {
+export const RouterOutlet: React.FC<{
+  routes: readonly RouteDef[];
+  /** Shown while a `load` route's chunk is in flight. */
+  fallback?: React.ReactNode;
+}> = ({ routes, fallback = null }) => {
+  const router = useRouter();
   const { pathname } = useLocation();
   const matched = useMemo(() => matchRoutes(routes, pathname), [routes, pathname]);
+
+  const lazyByPath = useMemo(() => {
+    const map = new Map<string, React.LazyExoticComponent<React.ComponentType>>();
+    for (const route of routes) {
+      if (route.load) map.set(route.path, React.lazy(route.load as () => Promise<ComponentModule>));
+    }
+    return map;
+  }, [routes]);
+
+  // Published for `Router.prefetch`, which the hover handlers in `Link`/`NavLink` call.
+  useEffect(() => {
+    router.setRoutes(routes);
+  }, [router, routes]);
 
   if (!matched) return null;
 
@@ -194,5 +235,17 @@ export const RouterOutlet: React.FC<{ routes: readonly RouteDef[] }> = ({ routes
     return route.redirectTo ? <Navigate to={route.redirectTo} /> : null;
   }
 
-  return <ParamsContext.Provider value={params}>{route.element}</ParamsContext.Provider>;
+  const Lazy = route.element ? undefined : lazyByPath.get(route.path);
+
+  return (
+    <ParamsContext.Provider value={params}>
+      {Lazy ? (
+        <React.Suspense fallback={fallback}>
+          <Lazy />
+        </React.Suspense>
+      ) : (
+        route.element
+      )}
+    </ParamsContext.Provider>
+  );
 };

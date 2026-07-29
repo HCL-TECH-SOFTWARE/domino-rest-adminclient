@@ -362,6 +362,85 @@ describe('Router', () => {
     });
   });
 
+  describe('prefetch', () => {
+    /**
+     * #813 — the chunk-loading half of route splitting.
+     *
+     * `prefetch` exists so a hover can start the fetch before the click. That makes
+     * "at most once per route" the property that matters: `pointerenter` fires repeatedly
+     * while a cursor rests on a link, and the click that follows would be a third request
+     * for a chunk already in flight.
+     */
+    const withRoutes = (load: () => Promise<unknown>) => {
+      const router = new Router({ history: memoryHistory(['/']) });
+      router.setRoutes([
+        { path: '/schema', load },
+        { path: '/scope' },
+        { path: '/apps/:id', load },
+      ]);
+      return router;
+    };
+
+    it('invokes load once however many times it is asked', async () => {
+      const load = vi.fn().mockResolvedValue({ default: () => null });
+      const router = withRoutes(load);
+
+      const first = router.prefetch('/schema');
+      const second = router.prefetch('/schema');
+      await Promise.all([first, second]);
+      router.prefetch('/schema');
+
+      expect(load).toHaveBeenCalledTimes(1);
+      expect(second).toBe(first);
+    });
+
+    it('matches parameterised routes', async () => {
+      const load = vi.fn().mockResolvedValue({ default: () => null });
+      const router = withRoutes(load);
+
+      await router.prefetch('/apps/42');
+
+      expect(load).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns undefined for a route with no load, and for no match at all', () => {
+      const load = vi.fn().mockResolvedValue({ default: () => null });
+      const router = withRoutes(load);
+
+      expect(router.prefetch('/scope')).toBeUndefined();
+      expect(router.prefetch('/nowhere')).toBeUndefined();
+      expect(load).not.toHaveBeenCalled();
+    });
+
+    it('does not cache a failure, so a dropped connection can be retried', async () => {
+      const load = vi
+        .fn()
+        .mockRejectedValueOnce(new Error('offline'))
+        .mockResolvedValue({ default: () => null });
+      const router = withRoutes(load);
+
+      await expect(router.prefetch('/schema')).rejects.toThrow('offline');
+      await router.prefetch('/schema');
+
+      expect(load).toHaveBeenCalledTimes(2);
+    });
+
+    it('prefetches nothing before setRoutes is called', () => {
+      const router = new Router({ history: memoryHistory(['/']) });
+
+      expect(router.prefetch('/schema')).toBeUndefined();
+    });
+
+    it('resolves a destination object, not just a pathname string', async () => {
+      const load = vi.fn().mockResolvedValue({ default: () => null });
+      const router = withRoutes(load);
+
+      await router.prefetch({ pathname: '/schema', search: '?view=list' });
+
+      expect(load).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('detaches from its history on dispose', () => {
     const stop = vi.fn();
     const history: RouterHistory = {
