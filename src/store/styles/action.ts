@@ -63,10 +63,6 @@ export const getTheme = (theme: string) => {
           activeTextColor: '#fff',
           activeIconColor: '#fff',
         },
-        breadcrumb: {
-          background: '#1e1e2e',
-          lastActiveColor: '#e0e0e0',
-        },
         activeIcon: '#8B6CE0',
         shimmerGradient:
           'linear-gradient(to right,#272726 4%,#3c3c3c 25%,#272726 36%)',
@@ -104,10 +100,6 @@ export const getTheme = (theme: string) => {
           iconColor: '#fff',
           activeTextColor: '#fff',
           activeIconColor: '#fff'
-        },
-        breadcrumb: {
-          background: 'white',
-          lastActiveColor: 'black',
         },
         activeIcon: KEEP_ADMIN_BASE_COLOR,
         shimmerGradient:

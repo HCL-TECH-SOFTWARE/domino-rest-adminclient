@@ -575,10 +575,6 @@ body[data-theme="dark"] .color-text-disabled {
     font-weight: 500;
 }
 
-.weight-600 {
-    font-weight: 600;
-}
-
 .transparent {
     background: transparent;
 }
