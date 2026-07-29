@@ -16,7 +16,7 @@ import {
   UPDATE_SCOPE,
 } from '../../../src/store/databases/types';
 import { SET_API_LOADING, TOGGLE_DELETE_DIALOG, TOGGLE_ERROR_DIALOG } from '../../../src/store/dialog/types';
-import { TOGGLE_DRAWER } from '../../../src/store/drawer/types';
+import { toggleDrawer } from '../../../src/store/drawer/action';
 import { TOGGLE_ALERT } from '../../../src/store/alerts/types';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
@@ -123,7 +123,7 @@ describe('databases — scopes', () => {
       expect(types()).toContain(DELETE_SCOPE);
       expect(actions().find((a) => a?.type === DELETE_SCOPE).payload).toBe('demo');
       expect(types()).toContain(TOGGLE_DELETE_DIALOG);
-      expect(types()).toContain(TOGGLE_DRAWER);
+      expect(types()).toContain(toggleDrawer.type);
       expect(alerts().join()).toMatch(/successfully deleted/i);
       expectLoadingCleared();
     });
@@ -217,7 +217,7 @@ describe('databases — scopes', () => {
       await changeScope(scope)(dispatch);
 
       expect(types()).toContain(ADD_SCOPE);
-      expect(types()).toContain(TOGGLE_DRAWER);
+      expect(types()).toContain(toggleDrawer.type);
       expect(alerts().join()).toMatch(/successfully created/i);
       expectLoadingCleared();
     });

@@ -1,19 +1,11 @@
 /* ========================================================================== *
- * Copyright (C) 2023, 2024 HCL America Inc.                                  *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import {
-  DrawerActionTypes,
-  DrawerState,
-  TOGGLE_DRAWER,
-  TOGGLE_APPLICATION_DRAWER,
-  TOGGLE_QUICKCONFIG_DRAWER,
-  INIT_STATE,
-  TOGGLE_CONSENTS_DRAWER,
-  TOGGLE_APPLICATION_FILTER_DRAWER,
-} from './types';
+import { createSlice } from '@reduxjs/toolkit';
+import { INIT_STATE, type DrawerState } from './types';
 
 const initialState: DrawerState = {
   visible: false,
@@ -23,41 +15,40 @@ const initialState: DrawerState = {
   consentsDrawer: false,
 };
 
-export default function drawerReducer(
-  state = initialState,
-  action: DrawerActionTypes
-): DrawerState {
-  switch (action.type) {
-    case TOGGLE_DRAWER:
-      return {
-        ...state,
-        visible: !state.visible,
-      };
-    case TOGGLE_APPLICATION_DRAWER:
-      return {
-        ...state,
-        applicationDrawer: !state.applicationDrawer,
-      };
-    case TOGGLE_APPLICATION_FILTER_DRAWER:
-      return {
-        ...state,
-        appFilterDrawer: !state.appFilterDrawer,
-      };
-    case TOGGLE_QUICKCONFIG_DRAWER:
-      return {
-        ...state,
-        quickConfigDrawer: !state.quickConfigDrawer,
-      };
-    case TOGGLE_CONSENTS_DRAWER:
-      return {
-        ...state,
-        consentsDrawer: !state.consentsDrawer,
-      }
-    case INIT_STATE:
-      return {
-        ...initialState
-      };
-    default:
-      return state;
-  }
-}
+export const drawerSlice = createSlice({
+  name: 'drawer',
+  initialState,
+  reducers: {
+    toggleDrawer(state) {
+      state.visible = !state.visible;
+    },
+    toggleApplicationDrawer(state) {
+      state.applicationDrawer = !state.applicationDrawer;
+    },
+    toggleAppFilterDrawer(state) {
+      state.appFilterDrawer = !state.appFilterDrawer;
+    },
+    toggleQuickConfigDrawer(state) {
+      state.quickConfigDrawer = !state.quickConfigDrawer;
+    },
+    toggleConsentsDrawer(state) {
+      state.consentsDrawer = !state.consentsDrawer;
+    },
+  },
+  // See access/reducer.ts: INIT_STATE is a bare cross-slice broadcast, not one of
+  // this slice's own actions, so it must be matched literally rather than declared
+  // under `reducers` where createSlice would namespace it to `drawer/INIT_STATE`.
+  extraReducers: (builder) => {
+    builder.addCase(INIT_STATE, () => initialState);
+  },
+});
+
+export const {
+  toggleDrawer,
+  toggleApplicationDrawer,
+  toggleAppFilterDrawer,
+  toggleQuickConfigDrawer,
+  toggleConsentsDrawer,
+} = drawerSlice.actions;
+
+export default drawerSlice.reducer;

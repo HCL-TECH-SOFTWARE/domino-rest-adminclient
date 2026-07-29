@@ -5,16 +5,14 @@
  * ========================================================================== */
 
 import { describe, it, expect } from 'vitest';
-import drawerReducer from '../../../src/store/drawer/reducer';
-import {
-  TOGGLE_DRAWER,
-  TOGGLE_APPLICATION_DRAWER,
-  TOGGLE_APPLICATION_FILTER_DRAWER,
-  TOGGLE_QUICKCONFIG_DRAWER,
-  TOGGLE_CONSENTS_DRAWER,
-  INIT_STATE,
-  DrawerState,
-} from '../../../src/store/drawer/types';
+import drawerReducer, {
+  toggleDrawer,
+  toggleApplicationDrawer,
+  toggleAppFilterDrawer,
+  toggleQuickConfigDrawer,
+  toggleConsentsDrawer,
+} from '../../../src/store/drawer/reducer';
+import { INIT_STATE, DrawerState } from '../../../src/store/drawer/types';
 
 const initial: DrawerState = {
   visible: false,
@@ -29,28 +27,28 @@ describe('drawerReducer', () => {
     expect(drawerReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('TOGGLE_DRAWER flips visible on each dispatch', () => {
-    const once = drawerReducer(initial, { type: TOGGLE_DRAWER });
+  it('toggleDrawer flips visible on each dispatch', () => {
+    const once = drawerReducer(initial, toggleDrawer());
     expect(once.visible).toBe(true);
-    expect(drawerReducer(once, { type: TOGGLE_DRAWER }).visible).toBe(false);
+    expect(drawerReducer(once, toggleDrawer()).visible).toBe(false);
   });
 
-  it('TOGGLE_APPLICATION_DRAWER flips applicationDrawer', () => {
-    expect(drawerReducer(initial, { type: TOGGLE_APPLICATION_DRAWER }).applicationDrawer).toBe(true);
+  it('toggleApplicationDrawer flips applicationDrawer', () => {
+    expect(drawerReducer(initial, toggleApplicationDrawer()).applicationDrawer).toBe(true);
   });
 
-  it('TOGGLE_APPLICATION_FILTER_DRAWER flips appFilterDrawer', () => {
-    expect(drawerReducer(initial, { type: TOGGLE_APPLICATION_FILTER_DRAWER }).appFilterDrawer).toBe(
+  it('toggleAppFilterDrawer flips appFilterDrawer', () => {
+    expect(drawerReducer(initial, toggleAppFilterDrawer()).appFilterDrawer).toBe(
       true,
     );
   });
 
-  it('TOGGLE_QUICKCONFIG_DRAWER flips quickConfigDrawer', () => {
-    expect(drawerReducer(initial, { type: TOGGLE_QUICKCONFIG_DRAWER }).quickConfigDrawer).toBe(true);
+  it('toggleQuickConfigDrawer flips quickConfigDrawer', () => {
+    expect(drawerReducer(initial, toggleQuickConfigDrawer()).quickConfigDrawer).toBe(true);
   });
 
-  it('TOGGLE_CONSENTS_DRAWER flips consentsDrawer', () => {
-    expect(drawerReducer(initial, { type: TOGGLE_CONSENTS_DRAWER }).consentsDrawer).toBe(true);
+  it('toggleConsentsDrawer flips consentsDrawer', () => {
+    expect(drawerReducer(initial, toggleConsentsDrawer()).consentsDrawer).toBe(true);
   });
 
   it('INIT_STATE resets to the initial state', () => {
@@ -66,7 +64,7 @@ describe('drawerReducer', () => {
 
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
-    expect(() => drawerReducer(frozen, { type: TOGGLE_DRAWER })).not.toThrow();
-    expect(drawerReducer(frozen, { type: TOGGLE_DRAWER })).not.toBe(frozen);
+    expect(() => drawerReducer(frozen, toggleDrawer())).not.toThrow();
+    expect(drawerReducer(frozen, toggleDrawer())).not.toBe(frozen);
   });
 });
