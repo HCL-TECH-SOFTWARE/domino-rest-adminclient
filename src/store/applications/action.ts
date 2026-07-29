@@ -5,17 +5,7 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  AppProp,
-  GET_APPS,
-  DELETE_APP,
-  SET_PULLED_APP,
-  EXECUTING,
-  ADD_APP,
-  UPDATE_APP,
-  CLEAR_APP_ERROR,
-  INIT_STATE,
-} from './types';
+import { AppProp, CLEAR_APP_ERROR, INIT_STATE } from './types';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleAlert } from '../alerts/action';
@@ -23,6 +13,18 @@ import { toggleApplicationDrawer } from '../drawer/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
 import { toggleDeleteDialog } from '../dialog/action';
+// `updateApp` is a thunk in this module and `executing` was a hand-written creator;
+// the generated action of the same name is aliased so callers keep the thunk.
+import {
+  addApp,
+  deleteApp,
+  executing,
+  getApps,
+  setPulledApp,
+  updateApp as updateAppAction
+} from './reducer';
+
+export { executing };
 
 const log = getLogger('store/applications');
 
@@ -71,10 +73,7 @@ export const fetchMyApps = () => {
         });
       });
 
-      dispatch({
-        type: GET_APPS,
-        payload: appsList
-      });
+      dispatch(getApps(appsList));
       dispatch(setPullApp(true));
     } catch (err: any) {
       // Use the Keep response error if it's available
@@ -169,10 +168,7 @@ export function updateApp(appData: any) {
         appStatus: data.status,
         usePkce: data.token_endpoint_auth_method === 'none',
       };
-      dispatch({
-        type: UPDATE_APP,
-        payload: appReduxData
-      });
+      dispatch(updateAppAction(appReduxData));
       dispatch(toggleApplicationDrawer());
       dispatch(toggleAlert(`${appData.client_name} has been updated!`));
     } catch (err: any) {
@@ -219,10 +215,7 @@ export function getSingleApp(appId: string) {
         appStatus: data.status,
         usePkce: data.token_endpoint_auth_method === 'none',
       };
-      dispatch({
-        type: UPDATE_APP,
-        payload: appReduxData
-      });
+      dispatch(updateAppAction(appReduxData));
     } catch (err: any) {
       // Use the Keep response error if it's available
       if (err) {
@@ -235,13 +228,6 @@ export function getSingleApp(appId: string) {
         dispatch(toggleAlert(`Error Updating App: ${err}`));
       }
     }
-  };
-}
-
-export function executing(visibility: boolean) {
-  return {
-    type: EXECUTING,
-    payload: visibility
   };
 }
 
@@ -265,10 +251,7 @@ export function deleteApplication(appId: string) {
         throw new Error(JSON.stringify(data.message))
       }
 
-      dispatch({
-        type: DELETE_APP,
-        payload: appId
-      });
+      dispatch(deleteApp(appId));
       dispatch(toggleDeleteDialog());
       dispatch(toggleAlert(`Application Deleted`));
     } catch (err: any) {
@@ -323,10 +306,7 @@ export function addApplication(appData: any) {
         appStatus: data.status,
         usePkce: data.token_endpoint_auth_method === 'none',
       };
-      dispatch({
-        type: ADD_APP,
-        payload: appReduxData
-      });
+      dispatch(addApp(appReduxData));
       dispatch(toggleApplicationDrawer());
       dispatch(toggleAlert(`New Application Added`));
     } catch (err: any) {
@@ -365,10 +345,7 @@ export function clearAppError() {
  * Set applications pulled flag
  */
 export const setPullApp = (appPull: boolean) => {
-  return {
-    type: SET_PULLED_APP,
-    payload: appPull
-  };
+  return setPulledApp(appPull);
 };
 
 /**

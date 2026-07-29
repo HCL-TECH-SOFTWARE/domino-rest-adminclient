@@ -1,26 +1,19 @@
 /* ========================================================================== *
- * Copyright (C) 2023, 2024 HCL America Inc.                                  *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { produce } from 'immer';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
   ApplicationStates,
-  GET_APPS,
-  AppsActionTypes,
-  status,
-  DELETE_APP,
-  EXECUTING,
-  ADD_APP,
-  SET_PULLED_APP,
-  TOGGLE_DELETE_DIALOG,
-  DROP_UPDATE,
-  UPDATE_APP,
-  SET_APP_ERROR,
+  AppProp,
   CLEAR_APP_ERROR,
   INIT_STATE,
+  SET_APP_ERROR,
+  status,
 } from './types';
+import { toggleDeleteDialog } from '../dialog/reducer';
 
 const initialState: ApplicationStates = {
   apps: [],
@@ -31,80 +24,73 @@ const initialState: ApplicationStates = {
   deleteDialogOpen: false,
 };
 
-export default function appsReducer(
-  state = initialState,
-  action: AppsActionTypes
-): ApplicationStates {
-  switch (action.type) {
-    case EXECUTING:
-      return {
-        ...state,
-        status: action.payload,
-      };
-    case GET_APPS:
-      return {
-        ...state,
-        apps: action.payload,
-      };
-    case ADD_APP:
-      return produce(state, (draft: ApplicationStates) => {
-        draft.apps.push(action.payload);
-      });
-    case DROP_UPDATE:
-      return produce(state, (draft: ApplicationStates) => {
-        const {
-          appId,
-          destination: { droppableId },
-        } = action.payload;
-        const appIndex = state.apps.findIndex(app => app.appId === appId);
+export const appsSlice = createSlice({
+  name: 'apps',
+  initialState,
+  reducers: {
+    executing(state, action: PayloadAction<boolean>) {
+      state.status = action.payload;
+    },
+    getApps(state, action: PayloadAction<AppProp[]>) {
+      state.apps = action.payload;
+    },
+    addApp(state, action: PayloadAction<AppProp>) {
+      state.apps.push(action.payload);
+    },
+    dropUpdate(
+      state,
+      action: PayloadAction<{ appId: string; destination: { droppableId: string } }>,
+    ) {
+      const { appId, destination } = action.payload;
+      const app = state.apps.find((a) => a.appId === appId);
+      if (app) app.appStatus = status[destination.droppableId as keyof typeof status];
+    },
+    updateApp(state, action: PayloadAction<AppProp>) {
+      const index = state.apps.findIndex((a) => a.appId === action.payload.appId);
+      if (index >= 0) state.apps[index] = action.payload;
+    },
+    deleteApp(state, action: PayloadAction<string>) {
+      const index = state.apps.findIndex((a) => a.appId === action.payload);
+      if (index >= 0) state.apps.splice(index, 1);
+    },
+    setPulledApp(state, action: PayloadAction<boolean>) {
+      state.appPull = action.payload;
+    },
+  },
+  /**
+   * Three actions this slice reacts to are **not its own**, and all three are shared
+   * by string rather than by import. They must be matched literally, because
+   * createSlice would namespace anything declared above.
+   *
+   * - `dialog/toggleDeleteDialog` — `TOGGLE_DELETE_DIALOG` is declared in *both*
+   *   `dialog/types.ts` and `applications/types.ts` with the same value, so one
+   *   dispatch has always driven both reducers. #840 converted the dialog slice and
+   *   silently stopped this one seeing it, which left DeleteApplicationDialog unable
+   *   to open. The regression test in this PR is what would have caught it.
+   * - `SET_APP_ERROR` / `CLEAR_APP_ERROR` — `databases/types.ts` declares
+   *   `SET_DB_ERROR = 'SET_APP_ERROR'` and `CLEAR_DB_ERROR = 'CLEAR_APP_ERROR'`, so
+   *   every database error also writes this slice's `appError`. Preserved rather
+   *   than untangled: whether AppForm is *meant* to show database errors is a
+   *   product question, not a migration one.
+   */
+  extraReducers: (builder) => {
+    builder
+      .addCase(toggleDeleteDialog, (state) => {
+        state.deleteDialogOpen = !state.deleteDialogOpen;
+      })
+      .addCase(SET_APP_ERROR, (state, action: any) => {
+        state.appError = true;
+        state.appErrorMessage = action.payload;
+      })
+      .addCase(CLEAR_APP_ERROR, (state) => {
+        state.appError = false;
+        state.appErrorMessage = '';
+      })
+      .addCase(INIT_STATE, () => initialState);
+  },
+});
 
-        draft.apps[appIndex] = {
-          ...state.apps[appIndex],
-          appStatus: status[droppableId],
-        };
-      });
-    case UPDATE_APP:
-      return produce(state, (draft: ApplicationStates) => {
-        const { appId } = action.payload;
-        const appIndex = state.apps.findIndex(app => app.appId === appId);
-        draft.apps[appIndex] = action.payload;
-      });
-    case DELETE_APP:
-      return produce(state, (draft: ApplicationStates) => {
-        const appIndex = state.apps.findIndex(
-          app => app.appId === action.payload
-        );
-        draft.apps.splice(appIndex, 1);
-      });
-    case SET_PULLED_APP:
-      return {
-        ...state,
-        appPull: action.payload,
-      };
-    case TOGGLE_DELETE_DIALOG:
-      return {
-        ...state,
-        deleteDialogOpen: !state.deleteDialogOpen,     
-      };
-    // Store an Application error for display in the UI
-    case SET_APP_ERROR:
-      return {
-        ...state,
-        appError: true,
-        appErrorMessage: action.payload,     
-     };
-    // Clear an Application error
-    case CLEAR_APP_ERROR:
-       return {
-         ...state,
-         appError: false,
-         appErrorMessage: '',
-       };
-    case INIT_STATE:
-      return {
-        ...initialState
-      };
-    default:
-      return state;
-  }
-}
+export const { executing, getApps, addApp, dropUpdate, updateApp, deleteApp, setPulledApp } =
+  appsSlice.actions;
+
+export default appsSlice.reducer;

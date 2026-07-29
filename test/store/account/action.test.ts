@@ -14,7 +14,7 @@ import {
   renewToken,
   showPages,
 } from '../../../src/store/account/action';
-import { REMOVE_AUTH } from '../../../src/store/account/types';
+import { removeAuth } from '../../../src/store/account/reducer';
 import { Level, Logger } from '../../../src/services/log-service';
 import { waitForToken } from '../../../src/utils/token-emitter';
 
@@ -101,7 +101,7 @@ describe('renewToken', () => {
 
     await renewToken()(dispatch);
 
-    expect(types()).toEqual([REMOVE_AUTH]);
+    expect(types()).toEqual([removeAuth.type]);
     expect(localStorage.getItem('user_token')).toBeNull();
   });
 
@@ -114,7 +114,7 @@ describe('renewToken', () => {
 
     await renewToken()(dispatch);
 
-    expect(types()).toEqual([REMOVE_AUTH]);
+    expect(types()).toEqual([removeAuth.type]);
   });
 
   it('signs out when a 200 carries an unparseable body', async () => {
@@ -122,7 +122,7 @@ describe('renewToken', () => {
 
     await renewToken()(dispatch);
 
-    expect(types()).toEqual([REMOVE_AUTH]);
+    expect(types()).toEqual([removeAuth.type]);
   });
 
   it('signs out when the request never completes', async () => {
@@ -130,7 +130,7 @@ describe('renewToken', () => {
 
     await renewToken()(dispatch);
 
-    expect(types()).toEqual([REMOVE_AUTH]);
+    expect(types()).toEqual([removeAuth.type]);
   });
 
   // A 200 whose payload is missing `bearer` previously dispatched RENEW_TOKEN with
@@ -140,7 +140,7 @@ describe('renewToken', () => {
 
     await renewToken()(dispatch);
 
-    expect(types()).toEqual([REMOVE_AUTH]);
+    expect(types()).toEqual([removeAuth.type]);
   });
 
   /**
@@ -166,7 +166,7 @@ describe('renewToken', () => {
 
     const [, options] = fetchMock.mock.calls[0];
     expect(options.headers.Authorization).toBe('Bearer issued-by-login');
-    expect(types()).not.toContain(REMOVE_AUTH);
+    expect(types()).not.toContain(removeAuth.type);
   });
 
   it('signs out without calling the API when the stored token is corrupt', async () => {
@@ -176,7 +176,7 @@ describe('renewToken', () => {
 
     await renewToken()(dispatch);
 
-    expect(types()).toEqual([REMOVE_AUTH]);
+    expect(types()).toEqual([removeAuth.type]);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

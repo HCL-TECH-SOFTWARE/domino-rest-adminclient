@@ -3,12 +3,15 @@
 **The operational companion to reports 00–05.** Those six say *what* is wrong and *why*.
 This one says *who picks up what, in which order, and how they know they are done*.
 
-Measured against `new_code` @ `7ec97b1`, 2026-07-29.
+Measured against `new_code` @ `9f568a8`, 2026-07-29 (originally written at `7ec97b1` the same
+day; twelve PRs landed between the two, so the tables below have been re-measured).
 
 ```
-npm run lint    exit 0
-npm run test    exit 0    87 files, 996 tests
-npm audit                 0 vulnerabilities
+npm run lint          exit 0
+npm run build         exit 0
+npm run test          exit 0    101 files, 1211 tests
+npm run bundle:budget exit 0    1769.9 kB raw / 437.9 kB gzip
+npm audit                       0 vulnerabilities
 ```
 
 ---
@@ -68,7 +71,7 @@ not contain. It is superseded by this document.
 | #715 StoreController | #798 |
 | #699 npm audit | #793 + #797 — `npm audit` now reports **0 vulnerabilities** |
 
-**Filed since, and open:**
+**Filed since.** All but #806 and #807 have closed in the meantime:
 
 | Issue | Why it exists |
 |---|---|
@@ -84,7 +87,8 @@ not contain. It is superseded by this document.
 correct. The issue's deliverable was the *primitives* — `src/store/store.ts` and
 `src/store/StoreController.ts`, both shipped and tested in #798. Its own text hands the
 conversion to the per-file pass: *"convert per file, inside the component migration pass —
-not as a separate sweep."* That pass is now **#806**, which counts the 176 sites.
+not as a separate sweep."* That pass is now **#806**, which counts those sites — **157** of them
+today, since tier A deliberately took the files with no store access at all.
 
 **#708 closed with 84 `light-dark()` calls left in `dark-mode.css`.** Also correct. Every
 one of them is inside a `.Mui*` selector, so they are gated on #709 — deleting them before
@@ -94,46 +98,53 @@ their components are replaced breaks what has not been converted yet.
 
 ## Current surface
 
-| | Report 04 baseline | **`7ec97b1`** |
-|---|--:|--:|
-| `.tsx` files | 130 | **119** |
-| …importing React | 108 | **92** |
-| `useSelector`/`useDispatch` sites | 323 across 76 files | **176 across 63** |
-| files importing `@mui/*` | 82 | **69** |
-| `@mui/icons-material` / `react-icons` | 45 / 18 | **37 / 18** |
-| `@mui/x-*` packages | 3 | **0** ✅ |
-| Formik files | 19 | **15** |
-| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | **1 / 1** — both `AppShell.tsx` |
-| `store/databases/action.ts` | 2,883 lines | **2,926** |
-| classic `switch` reducers / `createSlice` | 17 / 0 | **14 / 0** |
-| `createSelector` | 0 | **1** |
-| `wa-stack` / `wa-cluster` / `wa-grid` usages | 0 | **0** |
-| `dependencies` | 32 | **24** |
-| tests | 53 files / 509 | **87 files / 996** ✅ |
-| `npm audit` | 10 high | **0** ✅ |
+| | Report 04 baseline | `7ec97b1` | **`9f568a8`** |
+|---|--:|--:|--:|
+| `.tsx` files | 130 | 119 | **106** |
+| …importing React | 108 | 92 | **83** |
+| `useSelector`/`useDispatch` sites | 323 across 76 files | 176 across 63 | **157 across 64** |
+| files importing `@mui/*` | 82 | 69 | **68** |
+| `@mui/icons-material` / `react-icons` | 45 / 18 | 37 / 18 | **37 / 18** |
+| `@mui/x-*` packages | 3 | 0 ✅ | **0** ✅ |
+| Formik files | 19 | 15 | **15** |
+| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | 1 / 1 | **1 / 1** — both `AppShell.tsx` |
+| `store/databases/action.ts` | 2,883 lines | 2,926 | **47** ✅ — a barrel since #711 |
+| classic `switch` reducers / `createSlice` | 17 / 0 | 14 / 0 | **8 / 3** (of 11 — three dead slices deleted) |
+| `createSelector` | 0 | 1 | **1** |
+| `wa-stack` / `wa-cluster` / `wa-grid` usages | 0 | 0 | **0** |
+| `dependencies` | 32 | 24 | **22** |
+| `keep-*` elements | — | 27 | **37** |
+| tests | 53 files / 509 | 87 files / 996 | **101 files / 1211** ✅ |
+| `npm audit` | 10 high | 0 ✅ | **0** ✅ |
+
+The `useSelector`/`useDispatch` count barely moved while 13 `.tsx` files disappeared, and that
+is expected rather than disappointing: tier A was chosen to be the files with **no** store
+access, so it could not reduce this number. The 157 remaining sites are #806 tiers B–D.
 
 ---
 
 ## Dependency graph
 
 Only five edges actually constrain the order. Everything else is lane contention, not
-dependency.
+dependency. **The whole lane-A chain has since resolved** — everything on the top row is
+closed, leaving only the tail of #710:
 
 ```
-#800 null-response contract ──▶ #801 #802 #803 #804 #805 thunk tests ──▶ #711 split action.ts
-                                                                              │
-                                                                              ▼
-                                                                        #710 databases slice
+#800 ✅ ──▶ #801 ✅ #802 ✅ #803 ✅ #804 ✅ #805 ✅ ──▶ #711 ✅ split action.ts
+                                                              │
+                                                              ▼
+                                                        #710 databases slice  ← only lane-A work left
 
 #807 FormController ─────────▶ #806 tier D ─┐
-#806 tiers A–C ─────────────────────────────┼──▶ #709 remove Material Design ──▶ #719 capstone
+#806 tier A ✅ · tiers B–C ─────────────────┼──▶ #709 remove Material Design ──▶ #719 capstone
 #771 keep-data-table ───────────────────────┘
 
 #713 a11y ─── no dependency, but same files as #806 — interleave, do not parallelise
 ```
 
-Read the graph as: **#806 is the spine.** Two things feed it (#807, and the tier-A recipe),
-three things wait on it (#709, #719, and most of #712/#717/#718 which are folded into it).
+Read the graph as: **#806 is the spine.** One thing still feeds it (#807, for tier D — the
+tier-A recipe now exists), and three things wait on it (#709, #719, and most of
+#712/#717/#718 which are folded into it).
 
 ---
 
@@ -145,25 +156,58 @@ right** — they share files.
 
 | Wave | A — store & data | B — design system | C — infra & tests | D — React removal |
 |---|---|---|---|---|
-| **0** — no deps | **#800** → **#792** | **#807** · **#771** (in flight) · **#765** | **#691** (decide first) | **#806 tier A** — 22 files |
-| **1** | **#801** → **#803** → **#804** → **#802** → **#805** | — | — | **#806 tiers B–C** — 73 files · **#713** interleaved |
-| **2** | **#711** → **#710** → **#697** | — | — | **#806 tier D** · closes **#717** **#718** **#712** |
+| **0** — no deps | ✅ #800 → #792 | **#807** · **#771** (in flight) · **#765** | ✅ #691 (dropped) | ✅ **#806 tier A** (PR #835) |
+| **1** | ✅ #801 → #803 → #804 → #802 → #805 | — | — | **#806 tiers B–C** — 73 files · **#713** interleaved ← **next** |
+| **2** | ✅ #711 · ✅ #697 · **#710** (in flight) | — | — | **#806 tier D** · closes **#717** **#718** **#712** |
 | **3** — gates | — | **#709** | merge `new_code` → `main` (PR #786) | **#719** capstone → closes **#720** |
 
-**Wave 0 is four independent starts.** Nothing in it waits on anything. If you have four
-instances, this is the moment they are all genuinely parallel.
+**Lane A is all but finished.** Waves 0 and 1 are closed, and in wave 2 both #711 and #697 have
+landed; only #710's remaining slices are open. The chain that made lane A serial is gone.
 
-**Lane A is a single file for waves 1–2.** `store/databases/action.ts` is 2,926 lines and
-every lane-A item after #800 touches it. One instance at a time, no exceptions.
+**Lane D is the critical path now.** Tier A landed the recipe; tiers B–C are the 73-file bulk,
+and tier D is still gated on **#807**, which has not started.
 
-**Lane B empties after wave 0** and does not reappear until #709. That is expected — the
-design system's remaining work *is* #709, and #709 cannot start early.
+**Lane B is the other thing worth staffing.** #807 blocks tier D, #771 blocks #709, and both sit
+in wave 0 unfinished — so lane B is no longer "empty until #709", it is holding two gates.
+
+~~**Lane A is a single file for waves 1–2.**~~ Obsolete: #711 split `store/databases/action.ts`
+into modules behind a barrel, and the file is now 47 lines. Lane-A items no longer serialise on
+it.
 
 ---
 
 ## Wave 0
 
-### A · #800 — `apiRequestWithRetry` returns a null response
+> **Status.** Lanes A, C and D are done: #800 and #792 closed, #691 dropped, and #806 tier A
+> landed in PR #835. What remains in this wave is **lane B — #807 and #771** — and both are
+> gates, so they are the highest-value work on the board. The sections below are kept as the
+> record of what each item was.
+
+### D · #806 tier A — **done** (PR #835)
+
+Worth reading before tiers B–C, because the list was not what it looked like. The 22 files were
+**11 conversions, 3 deletions and 8 deferrals**, and the deferrals are the interesting part:
+
+- Three of the four "contexts" are `createContext({}) as any` factories with no JSX and cannot
+  be elements at all. **Decision recorded: contexts become redux store slices read through
+  `StoreController`**, not `@lit/context`.
+- **`AppIcon` moved to tier D.** It passes the import filter but exposes
+  `as?: React.ElementType`, which has no custom-element equivalent, and two of its three `as`
+  call sites are tier D files. **Check a file's exported API for React types, not just its
+  imports** — `ReactNode` maps to a slot, `ElementType` maps to nothing.
+- Two planned prep commits were dead work: a transitive dependency reached only through a style
+  module disappears with the conversion, because the styling moves into `static styles` anyway.
+
+Three regressions got through a green suite and were caught in a browser — black-on-black text,
+a 448×444 logo in a 56px bar, and a `box-sizing` mismatch. The cause in every case was assuming
+a global rule would still apply inside a shadow root. **Only custom properties cross a shadow
+boundary**; class selectors, bare element selectors and the document's `box-sizing` reset do
+not.
+
+The full recipe, and five more things execution taught, are in
+`docs/superpowers/specs/2026-07-29-806-tier-a-lit-conversion-design.md`. Tiers B–C start there.
+
+### A · #800 — `apiRequestWithRetry` returns a null response — ✅ done
 
 **Do this before any thunk test.** #801 says so explicitly, and the reason is that the
 tests you would otherwise write encode the broken contract.
@@ -180,7 +224,7 @@ alert, or a spinner that never stops.
   to narrow. The second is the reason the issue says "systemic and belongs in one place".
 - **Gate:** no call site reads `.ok` off a possibly-null response, and `tsc` proves it.
 
-### A · #792 — one failure, two toasts
+### A · #792 — one failure, two toasts — ✅ done
 
 `apiRequestWithRetry` calls `notify()` on both error paths *and* its callers dispatch
 `toggleAlert` for the same failure. Two systems: `<keep-alert>` top-right for 5,000 ms, and
@@ -192,7 +236,7 @@ Note the MUI `<Snackbar>` lives in `components/alerts/Notification.tsx:34`, moun
 `AppShell.tsx:211` — one of the shell's last MUI dependencies. Whichever direction you
 consolidate, prefer the one that does not deepen it.
 
-### B · #807 — build `FormController`
+### B · #807 — build `FormController` — **not started; gates tier D**
 
 The last unbuilt foundation primitive, and the blocker for #806 tier D — 15 files,
 ~5,440 LOC, including the two largest components in the tree.
@@ -237,28 +281,32 @@ adoption rather than tokenization. Pure additive work with no dependency.
 fallback wins, so the code looks token-driven and is not. Fix those while you are in the
 element layer.
 
-### C · #691 — smoke tests for the React components — **decide first**
+### C · #691 — smoke tests for the React components — **decided: dropped**
 
-This issue was written when the components were staying React. #806 converts them to Lit
-and renames them `.ts`, at which point `@testing-library/react` smoke tests are deleted
-along with their subjects.
+Closed as option 1 below. #806's per-file gate requires a test for each new element, so the
+coverage arrives with the conversion instead. Tier A demonstrated it in both directions: it
+added 11 element suites and deleted one `@testing-library/react` file whose subject had become
+an element.
 
-Three honest options — pick one and record it on the issue before writing anything:
+The original three options, kept for the record:
 
 1. **Drop it.** #806's per-file gate requires a test for each new element, so coverage
-   arrives with the conversion. This is the default.
+   arrives with the conversion. This is the default. ← **chosen**
 2. **Retarget it** to the components #806 will convert *last* (tier D), where a regression
    net has months to pay off.
 3. **Keep it as written** only if the wave plan slips far enough that React components are
    load-bearing for another release.
 
-11 test files already use `@testing-library/react`, and `renderWithProviders()` exists.
+10 test files still use `@testing-library/react`, and `renderWithProviders()` exists. Note for
+tiers B–D: when a converted component is `vi.mock`'d by another file's test, retarget the mock
+onto the single `KeepElements` export with `importOriginal` rather than mocking the whole
+module — otherwise every other `Keep*` wrapper in that test becomes a stub.
 
 ---
 
 ## Wave 1
 
-### A · #801 → #803 → #804 → #802 → #805 — the thunk tests
+### A · #801 → #803 → #804 → #802 → #805 — the thunk tests — ✅ done
 
 `databases/action.ts` has **40 exported thunks**; #690 tested 4. These five issues cover
 the other 36, grouped by the concerns #711 will split out — so each suite lands as
@@ -287,12 +335,26 @@ assuming they are absent:
 
 ### D · #806 tiers B–C — 73 files, ~13,500 LOC
 
-The bulk. Tier B is one axis (MUI *or* store); tier C is both. Follow the recipe tier A
-established, one commit per file, and hold the gate:
+The bulk, and the next thing to pick up. Tier B is one axis (MUI *or* store); tier C is both.
+
+**The recipe tier A established is
+`docs/superpowers/specs/2026-07-29-806-tier-a-lit-conversion-design.md`** — read §4 for the
+per-file steps and §3a for the five traps that cost time. One commit per file, and hold the
+gate:
 
 ```
 grep -n "from 'react'\|react-redux\|formik\|@mui/" src/path/to/File.ts   # empty
 ```
+
+Two things tier A did not have to face, and these files do:
+
+- **This is where `StoreController` finally gets used.** No production element uses it yet; the
+  157 remaining `useSelector`/`useDispatch` sites are here and in tier D. Do **not** put a
+  `StoreController` in a leaf whose still-React parent owns its state — `@lit/react` re-applies
+  every prop on every render with no dirty check, so the two fight. Read state in the React
+  container and pass it down until a whole subtree is Lit.
+- **Slot the children you cannot convert yet.** Tier A proved the pattern on four files: a
+  converted parent does not force its children to convert, it slots them as light DOM.
 
 **Convert the 13 Linaria style modules last within tier B** (`styles/*.tsx`, `*Styles.tsx`,
 `CarViewstyles.tsx`). They are not components — they are `.tsx` only because Linaria's
@@ -320,7 +382,7 @@ assertions in the element tests.
 
 ## Wave 2
 
-### A · #711 → #710 → #697
+### A · #711 → #710 → #697 — ✅ #711, ✅ #697, #710 in flight
 
 **#711 — split `databases/action.ts` (2,926 lines, ~60 exports, 5.7 % → covered by wave 1).**
 Six modules — `schemas`, `scopes`, `forms`, `views`, `agents`, `formulas` — plus a barrel
@@ -449,14 +511,29 @@ about:
 **Before you claim done:**
 
 ```
-npm run lint      # oxlint, gates CI at error
-npm run build     # tsc -b tsconfig.app.json && vite build — this is the typecheck
-npm run test      # vitest run --coverage
+npm run lint          # oxlint, gates CI at error
+npm run build         # tsc -b tsconfig.app.json && vite build — this is the typecheck
+npm run test          # vitest run --coverage
+npm run bundle:budget # eager-closure size against bundle-budget.json (#813 / PR #834)
 ```
 
-All three run in `pr_check.yml` on Node 24, followed by a SonarQube Cloud scan and quality
+All four run in `pr_check.yml` on Node 24, followed by a SonarQube Cloud scan and quality
 gate. Note `npm run build` *is* the typecheck — there is no separate `tsc` step in CI, so a
 type error surfaces as a build failure.
+
+**The bundle budget is a hard gate, and it currently sits at 20 % headroom rather than 2 %.**
+Tier A put the eager bundle 23.4 kB over the original budget, and the gate was widened
+deliberately, to be revisited. The reason matters for tiers B–D, because it will recur: Linaria
+`styled` CSS is **extracted at build time** into the stylesheet, whereas Lit `static styles` is
+a template literal that ships **inside the JS chunk**. Every conversion therefore moves bytes
+out of `.css` and into the eager `.js`. The signature is raw growing several times faster than
+gzip, since CSS text compresses far better than code. Two things to know:
+
+- `--update` refuses to *raise* the budget. A justified increase is a hand edit of
+  `bundle-budget.json`, so a reviewer sees it.
+- Comments inside a `css` template are string content, so minifiers do not strip them and they
+  ship. Roughly 6 kB of tier A's growth is prose. Hoisting long rationales into the class
+  docblock, above `static styles`, is the cheap win when raw needs to come down.
 
 **Coverage is enforced, not advisory.** `vitest.config.ts` sets a global floor plus
 per-directory gates: `src/store/**/reducer.ts` at 95 %, `utils/**`, `components/keep-elements/**`,
@@ -471,7 +548,40 @@ no canvas backend, so every guard on the token layer is a *source-scanning* test
 structure, not appearance. **A green suite is not evidence that a visual change looks
 right.** Anything touching layout or tokens needs a human click-through in both colour
 modes — and most screens sit behind login. #777 found a grey login page this way, after the
-suite went green.
+suite went green, and #806 tier A found three more the same way.
+
+**Only custom properties cross a shadow boundary.** The single most productive trap in tier A,
+and unavoidable in tiers B–D, because converting a component means reproducing the styling it
+used to inherit from document CSS:
+
+| How the style reached the element | Crosses? |
+|---|---|
+| `var(--custom-property)` | **yes** — inherits normally |
+| a class selector (`.color-text-primary`) | no |
+| a **bare element selector** (`img { … }`) | no |
+| the document's `box-sizing: border-box` reset | no |
+
+The bottom two are the ones that bite, because nothing in the component's source hints they were
+involved. `keep-overrides.css` sizes every image through a bare `img` selector, so a converted
+header logo rendered at its natural 448×444 inside a 56px bar — and restating that rule was
+still not enough, because the reset that makes everything `border-box` also stops at the
+boundary, so the padding landed outside the height. Two corollaries:
+
+- **Grep the whole stylesheet, not the file whose name matches.** The dark-mode override for
+  `.color-text-primary` lives in `styles.css`, not `dark-mode.css`. Copying the light-mode
+  literal gave 1.1:1 contrast in dark mode across five headings.
+- **No backticks inside a `css` tagged template**, comments included — a backtick terminates the
+  template and the error surfaces as `Property 'x' does not exist on type 'CSSResult'` somewhere
+  below. `npm run lint` catches it immediately; run lint before the suite.
+
+**The per-file gate is a grep, so prose defeats it.** A doc comment explaining why a slotted
+child still needs Material UI made a converted file match the gate's own pattern. Same shape as
+`test/styles/dead-selectors.test.ts`: these checks match raw text, so naming the thing you
+removed keeps it looking present. Describe such packages in words, not as literals.
+
+**A props-less React child cannot take a `slot` attribute.** `<Foo slot="bar" />` silently drops
+it when `Foo` forwards no props, and the content is never assigned. Use a default slot, or wrap
+the child in a plain element that can carry the attribute.
 
 **Vitest fails in a worktree that was never `npm ci`-ed — run `npm ci`.** Exactly 18 files
 die with `Denied ID /…/node_modules/@fortawesome/…/arrows-rotate.svg?url`. It is not your
