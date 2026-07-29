@@ -9,7 +9,6 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { rootReducer } from '../../src/store';
 import { setDBError, clearDBError } from '../../src/store/databases/shared';
-import { clearAppError } from '../../src/store/applications/action';
 
 /**
  * #866 — one action type value, two slices reacting.
@@ -88,37 +87,39 @@ describe('action type values are unique across slices (#866)', () => {
  * The consequence, asserted against the real root reducer rather than the declarations.
  *
  * The check above would still pass if someone reintroduced the collision by writing the
- * literal at the `addCase` instead of via a constant. These two say what actually matters
- * — that one slice's error is not the other's — whichever way it were reintroduced.
+ * literal at the `addCase` instead of via a constant. These say what actually matters —
+ * that a database error reaches the databases slice and nothing else — whichever way it
+ * were reintroduced.
+ *
+ * Asserted as "the other slices are untouched" rather than against a named field, because
+ * #869 deleted `apps.appError`: the collision was the only thing that ever set it. A test
+ * naming that field would have had to be deleted with it, and this one did not.
  */
 describe('a database error stays in the databases slice (#866)', () => {
   const initial = () => rootReducer(undefined, { type: '@@INIT' } as never);
 
-  it('setDBError does not raise the applications error', () => {
-    const next = rootReducer(initial(), setDBError('a database problem') as never);
+  it('setDBError writes the databases slice and no other', () => {
+    const before = initial();
+    const next = rootReducer(before, setDBError('a database problem') as never);
 
     expect(next.databases.dbError).toBe(true);
     expect(next.databases.dbErrorMessage).toBe('a database problem');
-    // AppForm.tsx renders this as "Error: Unable to save application", carrying whatever
-    // message the *database* call failed with.
-    expect(next.apps.appError).toBe(false);
+
+    for (const slice of Object.keys(before) as Array<keyof typeof before>) {
+      if (slice === 'databases') continue;
+      expect(next[slice], `${slice} reacted to a databases action`).toEqual(before[slice]);
+    }
   });
 
-  it('clearAppError does not clear the database error banner', () => {
-    // ScopeForm and QuickConfigForm both render `dbError && dbErrorMessage`.
+  it('clearDBError clears the databases slice and no other', () => {
     const withError = rootReducer(initial(), setDBError('a database problem') as never);
-    const next = rootReducer(withError, clearAppError() as never);
+    const next = rootReducer(withError, clearDBError() as never);
 
-    expect(next.databases.dbError).toBe(true);
-  });
+    expect(next.databases.dbError).toBe(false);
 
-  it('clearDBError does not clear the application error', () => {
-    const appError = rootReducer(initial(), {
-      type: 'apps/setAppError',
-      payload: 'an application problem',
-    } as never);
-    const next = rootReducer(appError, clearDBError() as never);
-
-    expect(next.apps.appError).toBe(appError.apps.appError);
+    for (const slice of Object.keys(withError) as Array<keyof typeof withError>) {
+      if (slice === 'databases') continue;
+      expect(next[slice], `${slice} reacted to a databases action`).toEqual(withError[slice]);
+    }
   });
 });

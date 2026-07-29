@@ -8,9 +8,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
   ApplicationStates,
   AppProp,
-  CLEAR_APP_ERROR,
   INIT_STATE,
-  SET_APP_ERROR,
   status,
 } from './types';
 import { toggleDeleteDialog } from '../dialog/reducer';
@@ -19,8 +17,6 @@ const initialState: ApplicationStates = {
   apps: [],
   status: false,
   appPull: false,
-  appError: false,
-  appErrorMessage: '',
   deleteDialogOpen: false,
 };
 
@@ -58,40 +54,27 @@ export const appsSlice = createSlice({
     },
   },
   /**
-   * Three actions this slice reacts to are **not its own**, and all three are shared
-   * by string rather than by import. They must be matched literally, because
-   * createSlice would namespace anything declared above.
+   * Two actions this slice reacts to are **not its own**.
    *
    * - `dialog/toggleDeleteDialog` — the delete dialog lives in the dialog slice and
    *   this reducer follows it, matching its generated action *object*. The duplicate
    *   `TOGGLE_DELETE_DIALOG` that used to be declared here as well is gone (#866); it
    *   was what made #840's regression invisible, since converting the dialog slice
    *   unhooked this one with no type error and no failing test.
-   * - `SET_APP_ERROR` / `CLEAR_APP_ERROR` — this slice's own, and no longer shared:
-   *   `databases/types.ts` used to declare `SET_DB_ERROR = 'SET_APP_ERROR'`, so every
-   *   database error wrote `appError` too. #866 untangled that.
+   * - `INIT_STATE` — the cross-slice reset broadcast, matched literally because
+   *   createSlice would namespace anything declared above.
    *
-   *   ⚠️ **Nothing sets `appError` any more, and nothing did directly before.**
-   *   `setAppError` and both its dispatch sites are commented out in `action.ts`
-   *   (`:126`, `:128`, `:328`) — application failures report through `toggleAlert`
-   *   instead. The collision was the only thing ever setting this field, so
-   *   `AppForm.tsx:149`'s "Error: Unable to save application" banner has only ever
-   *   displayed *database* errors, and now displays nothing. Left standing rather
-   *   than deleted: removing a visible banner is a product call in a `track:views`
-   *   file, and it is filed separately.
+   * `SET_APP_ERROR` / `CLEAR_APP_ERROR` were here until #869, along with `appError`
+   * and `appErrorMessage`. Nothing dispatched them: `setAppError` and both its call
+   * sites had been commented out, and the only thing reaching those cases was
+   * `databases`' `SET_DB_ERROR`, which shared the value until #866 renamed it — so
+   * AppForm's "Error: Unable to save application" banner had only ever shown
+   * *database* errors. Application failures report through `toggleAlert`.
    */
   extraReducers: (builder) => {
     builder
       .addCase(toggleDeleteDialog, (state) => {
         state.deleteDialogOpen = !state.deleteDialogOpen;
-      })
-      .addCase(SET_APP_ERROR, (state, action: any) => {
-        state.appError = true;
-        state.appErrorMessage = action.payload;
-      })
-      .addCase(CLEAR_APP_ERROR, (state) => {
-        state.appError = false;
-        state.appErrorMessage = '';
       })
       .addCase(INIT_STATE, () => initialState);
   },

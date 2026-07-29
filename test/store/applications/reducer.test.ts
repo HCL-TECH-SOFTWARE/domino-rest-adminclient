@@ -16,14 +16,12 @@ import appsReducer, {
 } from '../../../src/store/applications/reducer';
 import { toggleDeleteDialog } from '../../../src/store/dialog/action';
 import { clearDBError, setDBError } from '../../../src/store/databases/shared';
-import { SET_APP_ERROR, CLEAR_APP_ERROR, INIT_STATE, ApplicationStates, AppProp } from '../../../src/store/applications/types';
+import { INIT_STATE, ApplicationStates, AppProp } from '../../../src/store/applications/types';
 
 const initial: ApplicationStates = {
   apps: [],
   status: false,
   appPull: false,
-  appError: false,
-  appErrorMessage: '',
   deleteDialogOpen: false,
 };
 
@@ -116,19 +114,17 @@ describe('appsReducer', () => {
     expect(appsReducer(once, toggleDeleteDialog()).deleteDialogOpen).toBe(false);
   });
 
-  it('SET_APP_ERROR sets appError true and stores the message', () => {
-    const next = appsReducer(initial, { type: SET_APP_ERROR, payload: 'boom' });
-    expect(next).toMatchObject({ appError: true, appErrorMessage: 'boom' });
-  });
-
-  it('CLEAR_APP_ERROR clears appError and the message', () => {
-    const errored: ApplicationStates = {
-      ...initial,
-      appError: true,
-      appErrorMessage: 'boom',
-    };
-    const next = appsReducer(errored, { type: CLEAR_APP_ERROR });
-    expect(next).toMatchObject({ appError: false, appErrorMessage: '' });
+  // `SET_APP_ERROR` / `CLEAR_APP_ERROR` were tested here until #869. Both are gone with
+  // `appError` and `appErrorMessage`: nothing ever dispatched them — `setAppError` and its
+  // two call sites had been commented out — and the only thing that reached those cases
+  // was `databases`' `SET_DB_ERROR`, which shared the value until #866 renamed it.
+  it('carries no error fields', () => {
+    expect(Object.keys(appsReducer(undefined, { type: '@@UNKNOWN' } as any)).sort()).toEqual([
+      'appPull',
+      'apps',
+      'deleteDialogOpen',
+      'status',
+    ]);
   });
 
   it('INIT_STATE resets to the initial state', () => {
@@ -177,8 +173,6 @@ describe('appsReducer — lookups that miss', () => {
     apps: [{ appId: 'a1', appName: 'First' }, { appId: 'a2', appName: 'Second' }],
     status: false,
     appPull: false,
-    appError: false,
-    appErrorMessage: '',
     deleteDialogOpen: false,
   } as ApplicationStates;
 
@@ -207,8 +201,6 @@ describe('appsReducer — actions shared with other slices', () => {
     apps: [],
     status: false,
     appPull: false,
-    appError: false,
-    appErrorMessage: '',
     deleteDialogOpen: false,
   };
 
@@ -217,18 +209,13 @@ describe('appsReducer — actions shared with other slices', () => {
   });
 
   it("ignores a database error raised through databases' setDBError", () => {
-    // It used to record it: AppForm.tsx renders `appError && appErrorMessage` under the
-    // title "Error: Unable to save application", so a failed *database* call put a
-    // database message behind an application heading (#866).
-    const next = appsReducer(initial, setDBError('schema locked') as any);
-    expect(next).toMatchObject({ appError: false, appErrorMessage: '' });
+    // It used to record it, because both slices declared the same value (#866). Asserted
+    // as "unchanged" rather than against `appError`, which #869 deleted.
+    expect(appsReducer(initial, setDBError('schema locked') as any)).toEqual(initial);
   });
 
-  it("does not have its error cleared by databases' clearDBError", () => {
-    const dirty = { ...initial, appError: true, appErrorMessage: 'an application problem' };
-    expect(appsReducer(dirty, clearDBError() as any)).toMatchObject({
-      appError: true,
-      appErrorMessage: 'an application problem',
-    });
+  it("is untouched by databases' clearDBError", () => {
+    const dirty = { ...initial, apps: [{ appId: 'a1' }], deleteDialogOpen: true };
+    expect(appsReducer(dirty, clearDBError() as any)).toEqual(dirty);
   });
 });

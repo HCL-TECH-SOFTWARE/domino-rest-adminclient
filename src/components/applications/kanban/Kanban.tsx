@@ -14,7 +14,6 @@ import {
   deleteApplication,
   addApplication,
   updateApp,
-  clearAppError,
   fetchMyApps,
 } from '../../../store/applications/action';
 import { AppState } from '../../../store';
@@ -116,10 +115,9 @@ const Kanban: React.FC = () => {
       appIcon: icon,
       usePkce: false,
     },
-    // Clear errors if user makes changes
-    validate: () => {
-      dispatch(clearAppError());
-    },
+    // No `validate` here. It was `() => { dispatch(clearAppError()) }` — a dispatch hook
+    // wearing a validator's name, clearing a field nothing sets (#869). Same shape as the
+    // one #743 removed from LoginPage. `validationSchema` below is the real validation.
     validationSchema: ApplicationFormSchema,
 
     onSubmit: (values) => {
@@ -152,8 +150,6 @@ const Kanban: React.FC = () => {
    */
   const createAction = () => {
     if(permissionCreate){
-      dispatch(clearAppError());
-  
       // Set the context and open the drawer
       setFormContext('create');
   
