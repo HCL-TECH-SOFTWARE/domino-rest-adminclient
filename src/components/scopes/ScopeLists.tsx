@@ -22,9 +22,8 @@ import APILoadingProgress from '../loading/APILoadingProgress';
 import { WrapperContainer } from '../commons/Wrappers';
 import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import { useLocation, useNavigate } from '../../router/react';
-import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiView';
 import { toggleAlert } from '../../store/alerts/action';
-import { KeepButton, KeepNetworkErrorDialog } from '../keep-elements/KeepElements';
+import { KeepButton, KeepNetworkErrorDialog, KeepScopesMultiView } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 const ScopeLists = () => {
@@ -142,10 +141,11 @@ const ScopeLists = () => {
               <CardViewOptions changeView={changeView} />
             </TopContainer>
             {(databasePull || scopePull) && (
-              <ScopesMultiView
+              <KeepScopesMultiView
                 databases={results}
                 view={view}
-                openScope={openScope} />
+                onScopeOpen={(e) => openScope(e.detail.scope)}
+              />
             )}
             {/* Always mount the drawer container so the underlying
                 <wa-drawer> can play its slide-in / slide-out

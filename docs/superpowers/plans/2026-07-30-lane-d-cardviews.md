@@ -69,12 +69,20 @@ Leaves first. One commit per file; each must clear the gate before the next star
 3. **`dialogs/DeleteDialog.tsx`** (80) → `keep-delete-dialog`
 4. **`database/views/SlimDatabaseCard.tsx`** (205) → `keep-slim-database-card`
 
-### PR 2 — the views
+### PR 2 — the scopes views
 
-`ScopesStacksView` · `ScopesAlphabeticalView` · `ScopesMultiView` · `SchemasCardsView` ·
-`SchemasDefaultView` · `SchemasStacksView` · `SchemasAlphabeticalView` · `SchemasMultiView` ·
-`CardViewOptions`, and with them the style modules `ScopeStyles`, `SchemaStyles`,
-`schemas/SchemaStyles`, `flex/index.tsx`.
+`ScopesAlphabeticalView` · `ScopesStacksView` · `ScopesMultiView` · `ScopeStyles`. Done: the
+scopes subtree is entirely Lit and `displays/scopes/` is gone. Split out from the schemas half
+to keep each PR the size of PR 1 — the two families share no files, only the two leaves above.
+
+### PR 3 — the schemas views
+
+`SchemasCardsView` · `SchemasDefaultView` · `SchemasStacksView` · `SchemasAlphabeticalView` ·
+`SchemasMultiView` · `CardViewOptions`, and with them `SchemaStyles`, `schemas/SchemaStyles`
+and `flex/index.tsx` — the last of `ExtraFlex`'s four importers is in this set.
+
+`.schemas-alphabetical-schema-name` stays in `styles.css` until `SchemasAlphabeticalView`
+converts; the scopes element reproduced it but the schemas one still carries the class.
 
 `ScopeLists.tsx` and `SchemasLists.tsx` are the boundary. They stay React: they are what the
 router's `import()` resolves to, and the router binding is a P4 deletion (#719). They keep their
