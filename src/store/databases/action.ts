@@ -37,11 +37,8 @@ import {
   SET_RETRY_COUNT,
   CLEAR_FORMS,
   SET_DB_INDEX,
-  SET_DB_ERROR,
-  CLEAR_DB_ERROR,
   APPEND_CONFIGURED_FORM,
   RESET_FORM,
-  CLEAR_FORMULA_RESULTS,
   ViewObj,
   AgentObj,
   UNCONFIG_FORM,
@@ -57,8 +54,7 @@ import {
   ADD_ACTIVEAGENT,
   DELETE_ACTIVEAGENT,
   UPDATE_ERROR,
-  SET_FORM_NAME,
-  SET_FOLDERS
+  SET_FORM_NAME
 } from './types';
 import { setLoading } from '../loading/action';
 import { toggleDrawer, toggleQuickConfigDrawer } from '../drawer/action';
@@ -67,7 +63,7 @@ import { getFormIndex, getFormModeIndex } from './scripts';
 import { TOGGLE_DRAWER } from '../drawer/types';
 import { SET_VALUE, TOGGLE_DETAILS_LOADING } from '../loading/types';
 import { toggleAlert, closeSnackbar } from '../alerts/action';
-import { SETUP_KEEP_API_URL, BASE_KEEP_API_URL } from '../../config.dev';
+import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
 import { toggleSettings } from '../dbsettings/action';
@@ -76,9 +72,13 @@ import { AlertManager, fullEncode } from '../../utils/common';
 import { getAppIcons, loadAppIcons } from '../../services/app-icons';
 import { SET_API_LOADING } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import { getLogger } from '../../services/log-service';
+import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 
-const log = getLogger('store/databases');
+// Re-exported so every existing `from '../store/databases/action'` import keeps
+// working unchanged: this file is the barrel while #711 moves the concerns out.
+export * from './shared';
+export * from './formulas';
+export * from './folders';
 
 /**
  * action.ts provides the action methods for the Database page
@@ -100,14 +100,6 @@ export function setDbIndex(index: number) {
     type: SET_DB_INDEX,
     payload: index
   };
-}
-
-function getErrorMsg(error: any) {
-  if (error) {
-    if (error.response && error.response.statusText) return error.response.statusText;
-    if (error.message) return error.message;
-  }
-  return '';
 }
 
 export function deleteScope(apiName: string) {
@@ -764,58 +756,6 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
       log.error('Error fetching views', { error });
-    }
-  };
-};
-
-/**
- * Retrieves folders for a particular database and
- * passes them to Redux.
- *
- * @param dbName the name of the schema
- * @param nsfPath the name of the database
- */
-export const fetchFolders = (dbName: string, nsfPath: string) => {
-  return async (dispatch: Dispatch) => {
-    try {
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            Accept: 'application/json',
-          },
-        })
-      )
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data))
-      }
-
-      dispatch(
-        setFolders(
-          dbName,
-          data.folders.map((folder: any) => {
-            let aliasArray: Array<any> = [];
-            if (folder['@alias'] != null && folder['@alias'].length > 0) {
-              if (Array.isArray(folder['@alias'])) {
-                aliasArray = folder['@alias'];
-              } else {
-                aliasArray.push(folder['@alias']);
-              }
-            }
-            return {
-              viewName: folder['@name'],
-              viewAlias: aliasArray,
-              viewUnid: folder['@unid'],
-              viewUpdated: folder['columns'] && folder['columns'].length ? true : false
-            };
-          })
-        ) as any
-      );
-    } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-      log.error('Error fetching folders', { error })
     }
   };
 };
@@ -2562,24 +2502,6 @@ export const setViews = (dbName: string, views: Array<any>) => {
   };
 };
 
-/**
- * Save a list of folders for a particular database
- *
- * @param dbname the database containing the views
- * @param views the array of views
- */
-export const setFolders = (dbName: string, folders: Array<any>) => {
-  return async (dispatch: any) => {
-    await dispatch({
-      type: SET_FOLDERS,
-      payload: {
-        db: dbName,
-        folders
-      }
-    });
-  };
-};
-
 /*
  * Save a list of views for a particular database
  *
@@ -2676,93 +2598,11 @@ export const unConfigForm = (schemaName: string, formName: string) => {
 };
 
 /**
- * Call a Keep Api to test a Formula against a database.
- *
- * @param formulaData Formula information needed to run the test
- */
-export const testFormula = (dataSource: string, formulaData: any, formulaType: string) => {
-  return async (dispatch: Dispatch) => {
-    // Run Formula test
-    try {
-      const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formulaData),
-        })
-      )
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data))
-      }
-
-      dispatch(saveResult(formulaType, data.result[0].result[0]));
-    } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-
-      // Use the response error if it's available
-      if (error.message) {
-        dispatch(saveResult(formulaType, error.message));
-      }
-      // Otherwise use the generic error
-      else {
-        dispatch(saveResult(formulaType, `Error: ${error}`));
-      }
-    }
-  };
-};
-
-/**
- * Save the results of a Formula test.
- *
- * @param formulaType The Forumla being tested
- * @param result Test result
- */
-export function saveResult(formulaType: string, result: string) {
-  return {
-    type: formulaType,
-    payload: result
-  };
-}
-
-/**
- * CLear all Formula test results
- */
-export function clearFormulaResults() {
-  return {
-    type: CLEAR_FORMULA_RESULTS
-  };
-}
-
-/**
  * Clear Form results
  */
 export function clearForms() {
   return {
     type: CLEAR_FORMS
-  };
-}
-
-/**
- * Store Database error to display in the UI
- */
-export function setDBError(message: string) {
-  return {
-    type: SET_DB_ERROR,
-    payload: message
-  };
-}
-
-/**
- * Clear Database error
- */
-export function clearDBError() {
-  return {
-    type: CLEAR_DB_ERROR
   };
 }
 
