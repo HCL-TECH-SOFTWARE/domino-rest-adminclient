@@ -5,15 +5,6 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  ADD_SCOPE,
-  SET_PULLED_SCOPE,
-  FETCH_KEEP_DATABASES,
-  DELETE_SCOPE,
-  UPDATE_SCOPE,
-  RESET_FORM,
-  FETCH_KEEP_SCOPES,
-} from './types';
 import { toggleDrawer } from '../drawer/action';
 import { AppState } from '..';
 import { toggleAlert, closeSnackbar } from '../alerts/action';
@@ -24,6 +15,15 @@ import { toggleSettings } from '../dbsettings/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { sortAndRemoveDupSchemas } from './schemas';
+import {
+  addScope as addScopeAction,
+  updateScope as updateScopeAction,
+  deleteScope as deleteScopeAction,
+  fetchKeepDatabases,
+  fetchKeepScopes,
+  resetForm,
+  setPullScope as setPullScopeAction,
+} from './reducer';
 
 export function deleteScope(apiName: string) {
   return async (dispatch: Dispatch) => {
@@ -43,10 +43,7 @@ export function deleteScope(apiName: string) {
         throw new Error(JSON.stringify(data))
       }
 
-      dispatch({
-        type: DELETE_SCOPE,
-        payload: apiName
-      });
+      dispatch(deleteScopeAction(apiName));
       dispatch(setApiLoading(false));
       dispatch(toggleDeleteDialog());
       dispatch(toggleDrawer());
@@ -61,10 +58,7 @@ export function deleteScope(apiName: string) {
   };
 }
 export const setPullScope = (scopePull: boolean) => {
-  return {
-    type: SET_PULLED_SCOPE,
-    payload: scopePull
-  };
+  return setPullScopeAction(scopePull);
 };
 export const fetchScope = async (scopeData: any) => {
   const { apiName } = scopeData;
@@ -137,14 +131,8 @@ export const fetchScopes = () => {
           });
         sortAndRemoveDupSchemas(simpleSchemas);
         // Once summary of scopes and schemas fetched, dispatch them to refresh UI first
-        dispatch({
-          type: FETCH_KEEP_DATABASES,
-          payload: []
-        });
-        dispatch({
-          type: FETCH_KEEP_SCOPES,
-          payload: scopes
-        });
+        dispatch(fetchKeepDatabases([]));
+        dispatch(fetchKeepScopes(scopes));
 
         // Begin fetch detailed schemas and refresh store
         simpleSchemas.forEach(() => {
@@ -206,10 +194,9 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
           }
           return acc;
         }, {} as { [key: string]: any });
-        dispatch({
-          type: isEdit ? UPDATE_SCOPE : ADD_SCOPE,
-          payload: keepData
-        });
+        // A conditional action type, so it needs the branch rather than a
+        // rewrite: `isEdit ? updateScope : addScope` picks the creator.
+        dispatch(isEdit ? updateScopeAction(keepData) : addScopeAction(keepData));
   
         dispatch(toggleDrawer());
         dispatch(
@@ -259,12 +246,9 @@ export const updateScope = (active: boolean, data?: any) => {
 
     // Reset Form
     if (!data)
-      dispatch({
-        type: RESET_FORM,
-        payload: {
+      dispatch(resetForm({
           dbName: apiName
-        }
-      });
+        }));
 
     try {
       const { response, data } = await apiRequestWithRetry(() =>
@@ -284,10 +268,7 @@ export const updateScope = (active: boolean, data?: any) => {
       }
 
       dispatch(setApiLoading(false));
-      dispatch({
-        type: UPDATE_SCOPE,
-        payload: { ...scopeData, index: contextViewIndex }
-      });
+      dispatch(updateScopeAction({ ...scopeData, index: contextViewIndex }));
       dispatch(toggleAlert(`${apiName} has been successfully updated.`));
       if (data) dispatch(toggleSettings());
     } catch (e: any) {

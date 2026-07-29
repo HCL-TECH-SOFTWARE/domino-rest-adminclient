@@ -12,13 +12,13 @@ import {
   setAgents,
   updateAgents,
 } from '../../../src/store/databases/action';
+import { SET_ACTIVEAGENTS } from '../../../src/store/databases/types';
 import {
-  ADD_ACTIVEAGENT,
-  DELETE_ACTIVEAGENT,
-  SET_ACTIVEAGENTS,
-  SET_AGENTS,
-  UPDATE_AGENT,
-} from '../../../src/store/databases/types';
+  addActiveAgent as addActiveAgentAction,
+  deleteActiveAgent as deleteActiveAgentAction,
+  setAgents as setAgentsAction,
+  updateAgent as updateAgentAction,
+} from '../../../src/store/databases/reducer';
 import { setApiLoading } from '../../../src/store/dialog/action';
 import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
@@ -128,7 +128,7 @@ describe('databases — agents', () => {
     it('setAgents carries the database and its agents', async () => {
       await setAgents('demo', [agent])(dispatch);
 
-      expect(actions()[0]).toEqual({ type: SET_AGENTS, payload: { db: 'demo', agents: [agent] } });
+      expect(actions()[0]).toEqual({ type: setAgentsAction.type, payload: { db: 'demo', agents: [agent] } });
     });
 
     it('setActiveAgents carries the database and its active agents', async () => {
@@ -147,7 +147,7 @@ describe('databases — agents', () => {
 
       await fetchAgents('demo', 'db.nsf')(dispatch);
 
-      expect(actions().find((a: any) => a?.type === SET_AGENTS).payload.agents).toEqual([
+      expect(actions().find((a: any) => a?.type === setAgentsAction.type).payload.agents).toEqual([
         { agentName: 'Nightly', agentAlias: ['nite'], agentUnid: 'a1' },
       ]);
     });
@@ -163,7 +163,7 @@ describe('databases — agents', () => {
 
       await fetchAgents('demo', 'db.nsf')(dispatch);
 
-      const agents = actions().find((a: any) => a?.type === SET_AGENTS).payload.agents;
+      const agents = actions().find((a: any) => a?.type === setAgentsAction.type).payload.agents;
       expect(agents.map((a: any) => a.agentAlias)).toEqual([['solo'], [], ['x', 'y']]);
     });
 
@@ -172,14 +172,14 @@ describe('databases — agents', () => {
 
       await fetchAgents('demo', 'db.nsf')(dispatch);
 
-      expect(types()).not.toContain(SET_AGENTS);
+      expect(types()).not.toContain(setAgentsAction.type);
     });
 
     it('does not throw out of the thunk when the request never completes', async () => {
       offline();
 
       await expect(fetchAgents('demo', 'db.nsf')(dispatch)).resolves.not.toThrow();
-      expect(types()).not.toContain(SET_AGENTS);
+      expect(types()).not.toContain(setAgentsAction.type);
     });
 
     it('does not throw out of the thunk when the error body is not JSON', async () => {
@@ -223,7 +223,7 @@ describe('databases — agents', () => {
       await updateAgents(schemaData, [agent], 'demo', before)(dispatch);
 
       // The only thunk in this file that undoes its own optimistic update.
-      const restored = actions().filter((a: any) => a?.type === SET_AGENTS);
+      const restored = actions().filter((a: any) => a?.type === setAgentsAction.type);
       expect(restored).toHaveLength(1);
       expect(restored[0].payload.agents).toEqual(before);
       expect(alerts().join()).toMatch(/update agents failed/i);
@@ -235,7 +235,7 @@ describe('databases — agents', () => {
       const before = [{ agentName: 'Previous', agentUnid: 'p1' }];
 
       await expect(updateAgents(schemaData, [agent], 'demo', before)(dispatch)).resolves.not.toThrow();
-      expect(actions().find((a: any) => a?.type === SET_AGENTS).payload.agents).toEqual(before);
+      expect(actions().find((a: any) => a?.type === setAgentsAction.type).payload.agents).toEqual(before);
       expectLoadingCleared();
     });
 
@@ -254,8 +254,8 @@ describe('databases — agents', () => {
       await handleDatabaseAgents([agent], [], 'demo', schemaData, true, [])(dispatch);
       await dispatch.settled();
 
-      expect(types()).toContain(UPDATE_AGENT);
-      expect(types()).toContain(ADD_ACTIVEAGENT);
+      expect(types()).toContain(updateAgentAction.type);
+      expect(types()).toContain(addActiveAgentAction.type);
       expect(alerts().join()).toMatch(/agents have been successfully saved/i);
     });
 
@@ -265,8 +265,8 @@ describe('databases — agents', () => {
       await handleDatabaseAgents([agent], [agent], 'demo', schemaData, false, [agent])(dispatch);
       await dispatch.settled();
 
-      expect(types()).toContain(DELETE_ACTIVEAGENT);
-      expect(types()).not.toContain(ADD_ACTIVEAGENT);
+      expect(types()).toContain(deleteActiveAgentAction.type);
+      expect(types()).not.toContain(addActiveAgentAction.type);
     });
 
     it('drops the deactivated agent from the list it sends', async () => {

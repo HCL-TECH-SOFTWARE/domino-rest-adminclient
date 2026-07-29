@@ -6,7 +6,9 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchFolders, setFolders } from '../../../src/store/databases/action';
-import { SET_FOLDERS } from '../../../src/store/databases/types';
+import {
+  setFolders as setFoldersAction,
+} from '../../../src/store/databases/reducer';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
 import '../../../src/components/keep-elements/keep-alert';
@@ -71,7 +73,7 @@ describe('databases — folders', () => {
       await setFolders('demo', [{ viewName: 'Inbox' }])(dispatch);
 
       expect(actions()[0]).toEqual({
-        type: SET_FOLDERS,
+        type: setFoldersAction.type,
         payload: { db: 'demo', folders: [{ viewName: 'Inbox' }] },
       });
     });
@@ -85,7 +87,7 @@ describe('databases — folders', () => {
 
       await fetchFolders('demo', 'db.nsf')(dispatch);
 
-      const stored = actions().find((a: any) => a?.type === SET_FOLDERS).payload.folders;
+      const stored = actions().find((a: any) => a?.type === setFoldersAction.type).payload.folders;
       expect(stored).toEqual([
         { viewName: 'Inbox', viewAlias: ['In'], viewUnid: 'f1', viewUpdated: true },
       ]);
@@ -102,7 +104,7 @@ describe('databases — folders', () => {
 
       await fetchFolders('demo', 'db.nsf')(dispatch);
 
-      const stored = actions().find((a: any) => a?.type === SET_FOLDERS).payload.folders;
+      const stored = actions().find((a: any) => a?.type === setFoldersAction.type).payload.folders;
       expect(stored.map((f: any) => f.viewAlias)).toEqual([['solo'], [], ['a', 'b']]);
     });
 
@@ -111,7 +113,7 @@ describe('databases — folders', () => {
 
       await fetchFolders('demo', 'db.nsf')(dispatch);
 
-      const stored = actions().find((a: any) => a?.type === SET_FOLDERS).payload.folders;
+      const stored = actions().find((a: any) => a?.type === setFoldersAction.type).payload.folders;
       expect(stored.map((f: any) => f.viewUpdated)).toEqual([false, true]);
     });
 
@@ -120,14 +122,14 @@ describe('databases — folders', () => {
 
       await fetchFolders('demo', 'db.nsf')(dispatch);
 
-      expect(types()).not.toContain(SET_FOLDERS);
+      expect(types()).not.toContain(setFoldersAction.type);
     });
 
     it('does not throw out of the thunk when the request never completes', async () => {
       offline();
 
       await expect(fetchFolders('demo', 'db.nsf')(dispatch)).resolves.not.toThrow();
-      expect(types()).not.toContain(SET_FOLDERS);
+      expect(types()).not.toContain(setFoldersAction.type);
     });
   });
 });

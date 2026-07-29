@@ -5,19 +5,7 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  Database,
-  SET_VIEWS,
-  UPDATE_VIEW,
-  SET_ACTIVEVIEWS,
-  UPDATE_AGENT,
-  SET_ACTIVEAGENTS,
-  ViewObj,
-  AgentObj,
-  ADD_ACTIVEVIEW,
-  DELETE_ACTIVEVIEW,
-  VIEWS_ERROR,
-} from './types';
+import { Database, SET_ACTIVEVIEWS, SET_ACTIVEAGENTS, ViewObj, AgentObj, VIEWS_ERROR } from './types';
 import { AppDispatch } from '..';
 import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
@@ -27,6 +15,13 @@ import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
 import { isActiveAgent } from './agents';
+import {
+  addActiveView,
+  deleteActiveView,
+  setViews as setViewsAction,
+  updateAgent,
+  updateView
+} from './reducer';
 
 /**
  * Retrieves views for a particular database and
@@ -282,31 +277,22 @@ function buildReduxViewData(currentView: any, viewActive: boolean) {
 function updatePanels(dbName: string, viewData: ViewObj) {
   return async (dispatch: Dispatch) => {
     // Update All Panel
-    dispatch({
-      type: UPDATE_VIEW,
-      payload: {
+    dispatch(updateView({
         db: dbName,
         view: viewData
-      }
-    });
+      }));
 
     // Update Active Panel
     if (viewData.viewActive) {
-      dispatch({
-        type: ADD_ACTIVEVIEW,
-        payload: {
+      dispatch(addActiveView({
           db: dbName,
           activeView: viewData
-        }
-      });
+        }));
     } else {
-      dispatch({
-        type: DELETE_ACTIVEVIEW,
-        payload: {
+      dispatch(deleteActiveView({
           db: dbName,
           activeView: viewData.viewUnid
-        }
-      });
+        }));
     }
   };
 }
@@ -413,13 +399,10 @@ export const processViewsAgents = (
               viewActive: true,
               viewUpdated: view.viewUpdated
             };
-            dispatch({
-              type: UPDATE_VIEW,
-              payload: {
+            dispatch(updateView({
                 db: dbName,
                 view: viewData
-              }
-            });
+              }));
           }
         });
 
@@ -432,13 +415,10 @@ export const processViewsAgents = (
               agentUnid: agent.agentUnid,
               agentActive: true
             };
-            dispatch({
-              type: UPDATE_AGENT,
-              payload: {
+            dispatch(updateAgent({
                 db: dbName,
                 agent: agentData
-              }
-            });
+              }));
           }
         });
       }
@@ -523,13 +503,10 @@ export const isActiveView = (unid: string, activeList: Array<ViewObj>) => {
  */
 export const setViews = (dbName: string, views: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: SET_VIEWS,
-      payload: {
+    await dispatch(setViewsAction({
         db: dbName,
         views
-      }
-    });
+      }));
   };
 };
 /*

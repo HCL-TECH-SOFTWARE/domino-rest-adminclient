@@ -12,14 +12,12 @@ import {
   setActiveViews,
   setViews,
 } from '../../../src/store/databases/action';
+import { SET_ACTIVEAGENTS, SET_ACTIVEVIEWS, VIEWS_ERROR } from '../../../src/store/databases/types';
 import {
-  SET_ACTIVEAGENTS,
-  SET_ACTIVEVIEWS,
-  SET_VIEWS,
-  UPDATE_AGENT,
-  UPDATE_VIEW,
-  VIEWS_ERROR,
-} from '../../../src/store/databases/types';
+  setViews as setViewsAction,
+  updateAgent as updateAgentAction,
+  updateView as updateViewAction,
+} from '../../../src/store/databases/reducer';
 import { setApiLoading } from '../../../src/store/dialog/action';
 import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
@@ -135,7 +133,7 @@ describe('databases — views', () => {
       await setViews('demo', [{ viewName: 'All' }])(dispatch);
 
       expect(actions()[0]).toEqual({
-        type: SET_VIEWS,
+        type: setViewsAction.type,
         payload: { db: 'demo', views: [{ viewName: 'All' }] },
       });
     });
@@ -160,7 +158,7 @@ describe('databases — views', () => {
 
       await fetchViews('demo', 'db.nsf')(dispatch);
 
-      expect(actions().find((a: any) => a?.type === SET_VIEWS).payload.views[0]).toEqual({
+      expect(actions().find((a: any) => a?.type === setViewsAction.type).payload.views[0]).toEqual({
         viewName: 'All',
         viewAlias: ['a1'],
         viewUnid: 'u1',
@@ -180,7 +178,7 @@ describe('databases — views', () => {
 
       await fetchViews('demo', 'db.nsf')(dispatch);
 
-      const views = actions().find((a: any) => a?.type === SET_VIEWS).payload.views;
+      const views = actions().find((a: any) => a?.type === setViewsAction.type).payload.views;
       expect(views.map((v: any) => v.viewAlias)).toEqual([['solo'], [], ['a', 'b']]);
     });
 
@@ -189,7 +187,7 @@ describe('databases — views', () => {
 
       await fetchViews('demo', 'db.nsf')(dispatch);
 
-      const views = actions().find((a: any) => a?.type === SET_VIEWS).payload.views;
+      const views = actions().find((a: any) => a?.type === setViewsAction.type).payload.views;
       expect(views.map((v: any) => v.viewUpdated)).toEqual([false, true]);
     });
 
@@ -198,14 +196,14 @@ describe('databases — views', () => {
 
       await fetchViews('demo', 'db.nsf')(dispatch);
 
-      expect(types()).not.toContain(SET_VIEWS);
+      expect(types()).not.toContain(setViewsAction.type);
     });
 
     it('does not throw out of the thunk when the request never completes', async () => {
       offline();
 
       await expect(fetchViews('demo', 'db.nsf')(dispatch)).resolves.not.toThrow();
-      expect(types()).not.toContain(SET_VIEWS);
+      expect(types()).not.toContain(setViewsAction.type);
     });
 
     it('does not throw out of the thunk when the error body is not JSON', async () => {
@@ -315,10 +313,10 @@ describe('databases — views', () => {
 
       await processViewsAgents('demo', 'db.nsf', 'init', 'views', allViews, allAgents, [], [])(dispatch);
 
-      const updated = actions().filter((a: any) => a?.type === UPDATE_VIEW);
+      const updated = actions().filter((a: any) => a?.type === updateViewAction.type);
       expect(updated).toHaveLength(1);
       expect(updated[0].payload.view.viewUnid).toBe('u1');
-      expect(actions().filter((a: any) => a?.type === UPDATE_AGENT)).toHaveLength(1);
+      expect(actions().filter((a: any) => a?.type === updateAgentAction.type)).toHaveLength(1);
     });
 
     it('does not throw out of the thunk when the schema read is refused', async () => {

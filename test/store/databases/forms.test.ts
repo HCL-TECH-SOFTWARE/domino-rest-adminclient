@@ -18,17 +18,17 @@ import {
   setForms,
   updateFormMode,
 } from '../../../src/store/databases/action';
+import { SET_DB_ERROR } from '../../../src/store/databases/types';
 import {
-  ADD_FORM,
-  ADD_NSF_DESIGN,
-  CACHE_FORM_FIELDS,
-  RESET_FORM,
-  SET_CURRENTFORMS,
-  SET_DB_ERROR,
-  SET_FORM_NAME,
-  SET_FORMS,
-  UNCONFIG_FORM,
-} from '../../../src/store/databases/types';
+  addForm as addFormAction,
+  addNsfDesign as addNsfDesignAction,
+  cacheFormFields as cacheFormFieldsAction,
+  resetForm as resetFormAction,
+  setCurrentForms as setCurrentFormsAction,
+  setFormName as setFormNameAction,
+  setForms as setFormsAction,
+  unConfigForm as unConfigFormAction,
+} from '../../../src/store/databases/reducer';
 import { setApiLoading, toggleDeleteDialog } from '../../../src/store/dialog/action';
 import { toggleAlert } from '../../../src/store/alerts/action';
 import { Level, Logger } from '../../../src/services/log-service';
@@ -226,7 +226,7 @@ describe('databases — forms (destructive)', () => {
 
       const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(sent.forms.map((f: any) => f.formName)).toEqual(['Invoice']);
-      expect(actions().find((a: any) => a?.type === UNCONFIG_FORM).payload).toEqual({
+      expect(actions().find((a: any) => a?.type === unConfigFormAction.type).payload).toEqual({
         schemaName: 'demo',
         formName: 'Order',
       });
@@ -242,10 +242,10 @@ describe('databases — forms (destructive)', () => {
       returns(schemaData);
       await deleteForm(schemaData, 'Order', vi.fn(), true)(dispatch);
       expect(alerts().join()).toMatch(/successfully deleted form Order/i);
-      expect(types()).toContain(RESET_FORM);
+      expect(types()).toContain(resetFormAction.type);
     });
 
-    // `setSchemaData` is optional, but both the alert and the RESET_FORM dispatch sit
+    // `setSchemaData` is optional, but both the alert and the resetFormAction.type dispatch sit
     // inside `if (setSchemaData)`. Called without it — which the signature permits —
     // the form is deleted and unconfigured, and the user is told nothing at all.
     it('says nothing when called without the optional callback', async () => {
@@ -253,7 +253,7 @@ describe('databases — forms (destructive)', () => {
 
       await deleteForm(schemaData, 'Order')(dispatch);
 
-      expect(types()).toContain(UNCONFIG_FORM);
+      expect(types()).toContain(unConfigFormAction.type);
       expect(alerts()).toEqual([]);
     });
 
@@ -265,7 +265,7 @@ describe('databases — forms (destructive)', () => {
 
       expect(alerts().join()).not.toMatch(/successfully/i);
       expect(alerts().join()).toMatch(/delete form failed/i);
-      expect(types()).not.toContain(UNCONFIG_FORM);
+      expect(types()).not.toContain(unConfigFormAction.type);
       expect(setSchemaData).not.toHaveBeenCalled();
       expectLoadingCleared();
     });
@@ -275,7 +275,7 @@ describe('databases — forms (destructive)', () => {
 
       await expect(deleteForm(schemaData, 'Order', vi.fn())(dispatch)).resolves.not.toThrow();
       expect(alerts().join()).not.toMatch(/successfully/i);
-      expect(types()).not.toContain(UNCONFIG_FORM);
+      expect(types()).not.toContain(unConfigFormAction.type);
       expectLoadingCleared();
     });
 
@@ -407,25 +407,25 @@ describe('databases — forms', () => {
     it('setForms carries the database and its forms', async () => {
       await setForms('demo', [{ formName: 'Order' }])(dispatch);
       expect(actions()[0]).toEqual({
-        type: SET_FORMS,
+        type: setFormsAction.type,
         payload: { db: 'demo', forms: [{ formName: 'Order' }] },
       });
     });
 
     it('setCurrentForms carries the database and its forms', async () => {
       await setCurrentForms('demo', [{ formName: 'Order' }])(dispatch);
-      expect(actions()[0].type).toBe(SET_CURRENTFORMS);
+      expect(actions()[0].type).toBe(setCurrentFormsAction.type);
     });
 
     it('setFormName carries the name', async () => {
       await setFormName('Order')(dispatch);
-      expect(actions()[0]).toEqual({ type: SET_FORM_NAME, payload: 'Order' });
+      expect(actions()[0]).toEqual({ type: setFormNameAction.type, payload: 'Order' });
     });
 
     it('cacheFormFields carries the database, form and fields', async () => {
       await cacheFormFields('demo', 'Order', [{ name: 'a' }])(dispatch);
       expect(actions()[0]).toEqual({
-        type: CACHE_FORM_FIELDS,
+        type: cacheFormFieldsAction.type,
         payload: { db: 'demo', formName: 'Order', fields: [{ name: 'a' }] },
       });
     });
@@ -433,12 +433,12 @@ describe('databases — forms', () => {
     it('addForm carries the form when enabling, and drops it when disabling', async () => {
       const form = { dbName: 'demo', formName: 'New', alias: [], formModes: [], formAccessModes: [] };
       await addForm(true, form)(dispatch);
-      expect(actions()[0]).toEqual({ type: ADD_FORM, payload: { enabled: true, form } });
+      expect(actions()[0]).toEqual({ type: addFormAction.type, payload: { enabled: true, form } });
 
       dispatch = makeDispatch();
       await addForm(false, form)(dispatch);
       // The form is deliberately omitted on the disabling branch.
-      expect(actions()[0]).toEqual({ type: ADD_FORM, payload: { enabled: false } });
+      expect(actions()[0]).toEqual({ type: addFormAction.type, payload: { enabled: false } });
     });
   });
 
@@ -448,7 +448,7 @@ describe('databases — forms', () => {
 
       await pullForms('db.nsf', 'demo', vi.fn())(dispatch);
 
-      expect(types()).toContain(ADD_NSF_DESIGN);
+      expect(types()).toContain(addNsfDesignAction.type);
       // setApiLoading(true) went out on entry and nothing ever cleared it — on any
       // path, success included. Eight screens read state.dialog.loading.
       expectLoadingCleared();
@@ -460,7 +460,7 @@ describe('databases — forms', () => {
       await pullForms('db.nsf', 'demo', vi.fn())(dispatch);
 
       expect(types()).toContain(SET_DB_ERROR);
-      expect(types()).not.toContain(ADD_NSF_DESIGN);
+      expect(types()).not.toContain(addNsfDesignAction.type);
       expectLoadingCleared();
     });
 

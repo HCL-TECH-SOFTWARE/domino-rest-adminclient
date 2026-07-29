@@ -6,7 +6,9 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearFormulaResults, saveResult, testFormula } from '../../../src/store/databases/action';
-import { CLEAR_FORMULA_RESULTS } from '../../../src/store/databases/types';
+import {
+  clearFormulaResults as clearFormulaResultsAction,
+} from '../../../src/store/databases/reducer';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
 import '../../../src/components/keep-elements/keep-alert';
@@ -78,7 +80,7 @@ describe('databases — formulas', () => {
     });
 
     it('clearFormulaResults carries no payload', () => {
-      expect(clearFormulaResults()).toEqual({ type: CLEAR_FORMULA_RESULTS });
+      expect(clearFormulaResults()).toEqual({ type: clearFormulaResultsAction.type });
     });
   });
 

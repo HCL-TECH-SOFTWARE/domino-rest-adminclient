@@ -5,20 +5,7 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  Database,
-  SET_FORMS,
-  ADD_FORM,
-  SET_CURRENTFORMS,
-  SET_LOADEDFORM,
-  SET_ACTIVEFORM,
-  CACHE_FORM_FIELDS,
-  CLEAR_FORMS,
-  APPEND_CONFIGURED_FORM,
-  RESET_FORM,
-  UNCONFIG_FORM,
-  SET_FORM_NAME,
-} from './types';
+import { Database } from './types';
 import { AppDispatch } from '..';
 import { getFormIndex, getFormModeIndex } from './scripts';
 import { toggleAlert } from '../alerts/action';
@@ -29,24 +16,31 @@ import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { addNsfDesign } from './databases';
+import {
+  addForm as addFormAction,
+  appendConfiguredForm as appendConfiguredFormAction,
+  cacheFormFields as cacheFormFieldsAction,
+  clearForms as clearFormsAction,
+  resetForm,
+  setActiveForm as setActiveFormAction,
+  setCurrentForms as setCurrentFormsAction,
+  setFormName as setFormNameAction,
+  setForms as setFormsAction,
+  setLoadedForm as setLoadedFormAction,
+  unConfigForm as unConfigFormAction
+} from './reducer';
 
 export function setLoadedForm(dbName: string, formName: string) {
-  return {
-    type: SET_LOADEDFORM,
-    payload: {
+  return setLoadedFormAction({
       db: dbName,
       formName
-    }
-  };
+    });
 }
 export function setActiveForm(dbName: string, formName: string) {
-  return {
-    type: SET_ACTIVEFORM,
-    payload: {
+  return setActiveFormAction({
       db: dbName,
       formName
-    }
-  };
+    });
 }
 /**
  * Prepare form object to pass into the schema data payload.
@@ -212,13 +206,10 @@ const updateForms = (
         });
 
         dispatch(
-          dispatch({
-            type: SET_FORMS,
-            payload: {
+          dispatch(setFormsAction({
               db: dbName,
               forms: configformsList
-            }
-          })
+            }))
         );
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(successMsg));
@@ -247,10 +238,7 @@ const updateForms = (
 };
 export function setFormName(formName: string) {
   return async (dispatch: Dispatch) => {
-    dispatch({
-      type: SET_FORM_NAME,
-      payload: formName
-    });
+    dispatch(setFormNameAction(formName));
   };
 }
 /**
@@ -478,10 +466,7 @@ export const deleteForm = (
             ...data,
           });
           if (customForm) {
-            dispatch({
-              type: RESET_FORM,
-              payload: formName
-            });
+            dispatch(resetForm(formName));
             dispatch(toggleAlert(`Successfully deleted form ${formName}.`));
           } else {
             dispatch(toggleAlert(`Successfully deactivated form ${formName}.`));
@@ -515,13 +500,10 @@ export const deleteForm = (
  */
 export const setForms = (dbName: string, forms: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: SET_FORMS,
-      payload: {
+    await dispatch(setFormsAction({
         db: dbName,
         forms
-      }
-    });
+      }));
   };
 };
 /**
@@ -541,20 +523,14 @@ export const addForm = (
 ) => {
   return async (dispatch: any) => {
     if (enabled) {
-      await dispatch({
-        type: ADD_FORM,
-        payload: {
+      await dispatch(addFormAction({
           enabled: true,
           form: form
-        }
-      });
+        }));
     } else {
-      await dispatch({
-        type: ADD_FORM,
-        payload: {
+      await dispatch(addFormAction({
           enabled: false
-        }
-      });
+        }));
     }
   };
 };
@@ -610,52 +586,38 @@ export const saveNewForm = (
  */
 export const setCurrentForms = (dbName: string, forms: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: SET_CURRENTFORMS,
-      payload: {
+    await dispatch(setCurrentFormsAction({
         db: dbName,
         forms
-      }
-    });
+      }));
   };
 };
 export const cacheFormFields = (dbName: string, formName: string, fields: Array<any>) => {
   return async (dispatch: any) => {
-    await dispatch({
-      type: CACHE_FORM_FIELDS,
-      payload: {
+    await dispatch(cacheFormFieldsAction({
         db: dbName,
         formName,
         fields
-      }
-    });
+      }));
   };
 };
 export const appendConfiguredForm = (formIndex: number, data: object) => {
-  return {
-    type: APPEND_CONFIGURED_FORM,
-    payload: {
+  return appendConfiguredFormAction({
       formIndex,
       data
-    }
-  };
+    });
 };
 
 // function to Unconfigure form
 export const unConfigForm = (schemaName: string, formName: string) => {
-  return {
-    type: UNCONFIG_FORM,
-    payload: {
+  return unConfigFormAction({
       schemaName,
       formName
-    }
-  };
+    });
 };
 /**
  * Clear Form results
  */
 export function clearForms() {
-  return {
-    type: CLEAR_FORMS
-  };
+  return clearFormsAction();
 }

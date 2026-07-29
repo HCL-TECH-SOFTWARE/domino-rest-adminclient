@@ -7,14 +7,14 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Dispatch } from 'redux';
 import { changeScope, deleteScope, fetchScopes, updateScope } from '../../../src/store/databases/action';
+import { SET_DB_ERROR } from '../../../src/store/databases/types';
 import {
-  ADD_SCOPE,
-  DELETE_SCOPE,
-  FETCH_KEEP_SCOPES,
-  SET_DB_ERROR,
-  SET_PULLED_SCOPE,
-  UPDATE_SCOPE,
-} from '../../../src/store/databases/types';
+  addScope as addScopeAction,
+  deleteScope as deleteScopeAction,
+  fetchKeepScopes as fetchKeepScopesAction,
+  setPullScope as setPullScopeAction,
+  updateScope as updateScopeAction,
+} from '../../../src/store/databases/reducer';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../../../src/store/dialog/action';
 import { toggleDrawer } from '../../../src/store/drawer/action';
 import { toggleAlert } from '../../../src/store/alerts/action';
@@ -120,8 +120,8 @@ describe('databases — scopes', () => {
 
       await deleteScope('demo')(dispatch);
 
-      expect(types()).toContain(DELETE_SCOPE);
-      expect(actions().find((a) => a?.type === DELETE_SCOPE).payload).toBe('demo');
+      expect(types()).toContain(deleteScopeAction.type);
+      expect(actions().find((a) => a?.type === deleteScopeAction.type).payload).toBe('demo');
       expect(types()).toContain(toggleDeleteDialog.type);
       expect(types()).toContain(toggleDrawer.type);
       expect(alerts().join()).toMatch(/successfully deleted/i);
@@ -133,7 +133,7 @@ describe('databases — scopes', () => {
 
       await deleteScope('demo')(dispatch);
 
-      expect(types()).not.toContain(DELETE_SCOPE);
+      expect(types()).not.toContain(deleteScopeAction.type);
       expect(alerts().join()).toMatch(/delete scope failed/i);
       expectLoadingCleared();
     });
@@ -164,8 +164,8 @@ describe('databases — scopes', () => {
 
       await fetchScopes()(dispatch);
 
-      expect(types()).toContain(FETCH_KEEP_SCOPES);
-      expect(actions().find((a) => a?.type === FETCH_KEEP_SCOPES).payload).toEqual(scopes);
+      expect(types()).toContain(fetchKeepScopesAction.type);
+      expect(actions().find((a) => a?.type === fetchKeepScopesAction.type).payload).toEqual(scopes);
     });
 
     it('marks the pull complete when there are no scopes', async () => {
@@ -173,8 +173,8 @@ describe('databases — scopes', () => {
 
       await fetchScopes()(dispatch);
 
-      expect(types()).toContain(SET_PULLED_SCOPE);
-      expect(types()).not.toContain(FETCH_KEEP_SCOPES);
+      expect(types()).toContain(setPullScopeAction.type);
+      expect(types()).not.toContain(fetchKeepScopesAction.type);
     });
 
     it('skips keepconfig when building the schema summary', async () => {
@@ -183,7 +183,7 @@ describe('databases — scopes', () => {
       await fetchScopes()(dispatch);
 
       // Both scopes still reach the store; only the derived schema list filters.
-      expect(actions().find((a) => a?.type === FETCH_KEEP_SCOPES).payload).toHaveLength(2);
+      expect(actions().find((a) => a?.type === fetchKeepScopesAction.type).payload).toHaveLength(2);
     });
 
     // The catch reads:
@@ -216,7 +216,7 @@ describe('databases — scopes', () => {
 
       await changeScope(scope)(dispatch);
 
-      expect(types()).toContain(ADD_SCOPE);
+      expect(types()).toContain(addScopeAction.type);
       expect(types()).toContain(toggleDrawer.type);
       expect(alerts().join()).toMatch(/successfully created/i);
       expectLoadingCleared();
@@ -227,8 +227,8 @@ describe('databases — scopes', () => {
 
       await changeScope(scope, true)(dispatch);
 
-      expect(types()).toContain(UPDATE_SCOPE);
-      expect(types()).not.toContain(ADD_SCOPE);
+      expect(types()).toContain(updateScopeAction.type);
+      expect(types()).not.toContain(addScopeAction.type);
       expect(alerts().join()).toMatch(/successfully updated/i);
     });
 
@@ -248,7 +248,7 @@ describe('databases — scopes', () => {
 
       await changeScope(scope)(dispatch);
 
-      const payload = actions().find((a) => a?.type === ADD_SCOPE).payload;
+      const payload = actions().find((a) => a?.type === addScopeAction.type).payload;
       expect(Object.keys(payload).filter((k) => k.startsWith('@') || k === '$UpdatedBy')).toEqual([]);
       expect(payload.apiName).toBe('demo');
     });
@@ -259,14 +259,14 @@ describe('databases — scopes', () => {
       await changeScope(scope)(dispatch);
 
       expect(types()).toContain(SET_DB_ERROR);
-      expect(types()).not.toContain(ADD_SCOPE);
+      expect(types()).not.toContain(addScopeAction.type);
     });
 
     it('does not throw out of the thunk when the error body is not JSON', async () => {
       refusesWithProse();
 
       await expect(changeScope(scope)(dispatch)).resolves.not.toThrow();
-      expect(types()).not.toContain(ADD_SCOPE);
+      expect(types()).not.toContain(addScopeAction.type);
     });
 
     it('clears the loading flag on failure', async () => {
@@ -286,8 +286,8 @@ describe('databases — scopes', () => {
 
       await updateScope(true)(dispatch, getState);
 
-      expect(types()).toContain(UPDATE_SCOPE);
-      expect(actions().find((a) => a?.type === UPDATE_SCOPE).payload).toMatchObject({ index: 0 });
+      expect(types()).toContain(updateScopeAction.type);
+      expect(actions().find((a) => a?.type === updateScopeAction.type).payload).toMatchObject({ index: 0 });
       expect(alerts().join()).toMatch(/successfully updated/i);
       expectLoadingCleared();
     });
@@ -314,7 +314,7 @@ describe('databases — scopes', () => {
       refuses({ message: 'nope' });
 
       await expect(updateScope(true)(dispatch, getState)).resolves.not.toThrow();
-      expect(types()).not.toContain(UPDATE_SCOPE);
+      expect(types()).not.toContain(updateScopeAction.type);
     });
 
     it('does not throw out of the thunk when the error body is not JSON', async () => {

@@ -5,20 +5,7 @@
  * ========================================================================== */
 
 import { Dispatch } from 'redux';
-import {
-  ADD_SCHEMA,
-  ADD_SCOPE,
-  ADD_NEW_SCHEMA_TO_STATE,
-  SET_PULLED_DATABASE,
-  ADD_AVAILABLE_DATABASE,
-  FETCH_DB_CONFIG,
-  UPDATE_SCHEMA,
-  SET_RETRY_COUNT,
-  SET_DB_INDEX,
-  ADD_NSF_DESIGN,
-  FETCH_KEEP_PERMISSIONS,
-  INIT_STATE,
-} from './types';
+import { INIT_STATE } from './types';
 import { setLoading, toggleDetailsLoading } from '../loading/action';
 import { toggleQuickConfigDrawer } from '../drawer/action';
 import { AppState } from '..';
@@ -30,18 +17,25 @@ import { AlertManager } from '../../utils/common';
 import { getAppIcons, loadAppIcons } from '../../services/app-icons';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
+import {
+  addAvailableDatabase,
+  addNewSchemaToState,
+  addNsfDesign as addNsfDesignAction,
+  addSchema,
+  addScope,
+  fetchDbConfig,
+  fetchKeepPermissions as fetchKeepPermissionsAction,
+  setDbIndex as setDbIndexAction,
+  setPullDatabase as setPullDatabaseAction,
+  setRetryCount,
+  updateSchema
+} from './reducer';
 
 export function setDbIndex(index: number) {
-  return {
-    type: SET_DB_INDEX,
-    payload: index
-  };
+  return setDbIndexAction(index);
 }
 export const setPullDatabase = (databasePull: boolean) => {
-  return {
-    type: SET_PULLED_DATABASE,
-    payload: databasePull
-  };
+  return setPullDatabaseAction(databasePull);
 };
 const processResponse = async (response: any, dispatch: Dispatch, scopeList: Array<any>) => {
   // `displayResult` puts the base64 payload in the store next to `iconName`, and it runs
@@ -70,10 +64,7 @@ const processResponse = async (response: any, dispatch: Dispatch, scopeList: Arr
         const stringChunk = chunk.map((c: any) => JSON.stringify(c));
         const uniqueChunk = [...new Set(stringChunk)].map((c: any) => JSON.parse(c));
         setTimeout(() => {
-          dispatch({
-            type: UPDATE_SCHEMA,
-            payload: uniqueChunk
-          });
+          dispatch(updateSchema(uniqueChunk));
         });
       }
 
@@ -157,10 +148,7 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
       const uniqueChunk = [...new Set(stringChunk)].map((c) => JSON.parse(c));
 
       setTimeout(() => {
-        dispatch({
-          type: UPDATE_SCHEMA,
-          payload: uniqueChunk
-        });
+        dispatch(updateSchema(uniqueChunk));
       });
     }
   }
@@ -175,10 +163,7 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
     if (typeof apiName === 'string') return apiName;
     else return apiName.name;
   });
-  dispatch({
-    type: ADD_AVAILABLE_DATABASE,
-    payload: availableDatabases
-  });
+  dispatch(addAvailableDatabase(availableDatabases));
 
   return schemasWithoutScopes;
 };
@@ -328,26 +313,17 @@ export const quickConfig = (dbData: any) => {
         server
       };
 
-      dispatch({
-        type: ADD_SCHEMA,
-        payload: schemaData
-      });
+      dispatch(addSchema(schemaData));
 
-      dispatch({
-        type: ADD_SCOPE,
-        payload: scopeData
-      });
+      dispatch(addScope(scopeData));
 
       dispatch(toggleQuickConfigDrawer());
 
       if (response.status === 200) {
-        dispatch({
-          type: ADD_NEW_SCHEMA_TO_STATE,
-          payload: {
+        dispatch(addNewSchemaToState({
             schemaName: schemaName,
             nsfPath: nsfPath
-          }
-        });
+          }));
       }
 
       dispatch(toggleAlert(`${schemaName} and ${dbData.scopeName} have been successfully created.`));
@@ -386,10 +362,7 @@ export const fetchDBConfig = (config: string) => {
         throw new Error(JSON.stringify(dbConfig))
       }
 
-      dispatch({
-        type: FETCH_DB_CONFIG,
-        payload: dbConfig
-      });
+      dispatch(fetchDbConfig(dbConfig));
       dispatch(setApiLoading(false));
       dispatch(toggleDetailsLoading());
     } catch (e: any) {
@@ -404,22 +377,16 @@ export const fetchDBConfig = (config: string) => {
   };
 };
 export const retry = (count: number) => {
-  return {
-    type: SET_RETRY_COUNT,
-    payload: count
-  };
+  return setRetryCount(count);
 };
 /**
  * Add Nsf design
  */
 export function addNsfDesign(nsfPath: string, nsfDesign: any) {
-  return {
-    type: ADD_NSF_DESIGN,
-    payload: {
+  return addNsfDesignAction({
       nsfPath,
       nsfDesign
-    }
-  };
+    });
 }
 export const fetchKeepPermissions = () => {
   return async (dispatch: Dispatch) => {
@@ -437,13 +404,10 @@ export const fetchKeepPermissions = () => {
         throw new Error(JSON.stringify(data))
       }
 
-      dispatch({
-        type: FETCH_KEEP_PERMISSIONS,
-        payload: {
+      dispatch(fetchKeepPermissionsAction({
           createDbMapping: data.CreateDbMapping,
           deleteDbMapping: data.DeleteDbMapping
-        }
-      });
+        }));
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
