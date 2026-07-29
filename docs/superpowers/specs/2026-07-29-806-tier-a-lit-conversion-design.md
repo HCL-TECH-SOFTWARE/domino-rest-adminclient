@@ -34,12 +34,12 @@ In dependency order. `keep-*` names follow the existing element convention.
 | 4 | `components/dialogs/FormDialogHeader.tsx` | 34 | `keep-form-dialog-header` | **18 consumers** — highest fan-in |
 | 5 | `components/commons/AppIcon.tsx` | 89 | `keep-app-icon` | 9 consumers; collapses a documented duplication |
 | 6 | `components/dialogs/UnsavedChangesDialog.tsx` | 64 | `keep-unsaved-changes-dialog` | Needs #4; 1 test + 2 mocks to update |
-| 7 | `components/wrapper/ErrorWrapper.tsx` | 75 | `keep-error-wrapper` | `children` → slot; needs prep P2 |
+| 7 | `components/wrapper/ErrorWrapper.tsx` | 75 | `keep-error-wrapper` | `children` → slot; drops the CommonStyles barrel |
 | 8 | `components/header/MobileHeader.tsx` | 74 | `keep-mobile-header` | `--header-height` contract; 2 tests |
 | 9 | `components/home/Homepage.tsx` | 22 | `keep-homepage` | Slots a redux child |
 | 10 | `components/routers/PageRouters.tsx` | 33 | `keep-page-routers` | Slots an MUI+redux child |
-| 11 | `…/displays/scopes/ScopesDefaultView.tsx` | 51 | `keep-scopes-default-view` | Needs prep P1 |
-| 12 | `…/displays/scopes/ScopesCardsView.tsx` | 60 | `keep-scopes-cards-view` | Needs prep P1 |
+| 11 | `…/displays/scopes/ScopesDefaultView.tsx` | 51 | `keep-scopes-default-view` | Absorbs ExtraFlex; drops ScopeStyles |
+| 12 | `…/displays/scopes/ScopesCardsView.tsx` | 60 | `keep-scopes-cards-view` | Absorbs ExtraFlex; drops ScopeStyles |
 
 Note `src/Footer.tsx`, not `src/components/Footer.tsx` — the path in #806 is wrong.
 
@@ -168,17 +168,27 @@ still the rule until a whole subtree is Lit.
 
 ---
 
-## 5. Prep commits
+## 5. Prep commits — none needed
 
-Two commits before any conversion, each removing a transitive `@mui/material` edge that
-makes a "React-only" file not actually React-only.
+Three of the twelve reach `@mui/material` transitively through a shared style module:
+items 11 and 12 import `SchemasMainContainer` from `…/scopes/ScopeStyles.tsx`, which
+imports MUI's `Card` for a *different* export; item 7 imports `{ ErrorContainer, Title }`
+from the `styles/CommonStyles` barrel, three of whose six re-exports import MUI.
 
-- **P1** — `…/displays/scopes/ScopeStyles.tsx` imports `@mui/material`'s `Card` for one
-  export. Items 11 and 12 import only `SchemasMainContainer`, a plain `styled.div` four
-  declarations long. Split it out so the MUI edge is not in their module graph.
-- **P2** — `ErrorWrapper` imports `{ ErrorContainer, Title }` from the `styles/CommonStyles`
-  barrel, which re-exports six modules, three of which import MUI. Both symbols live in
-  `styles/layout.tsx`, which imports only `@linaria/react`. Deep-import it.
+The obvious prep — split the leaf symbols out, or deep-import them — **is unnecessary
+work**. Each of the three files imports exactly one symbol from its style module, and §3
+already requires that styling move into the element's `static styles`. The import
+disappears with the conversion; there is nothing to untangle first.
+
+The MUI edge does survive for the *other* consumers of those modules
+(`SchemasCardsView`, `SchemasStacksView`, `SchemasDefaultView`, `ScopesStacksView`, and the
+rest of the `CommonStyles` barrel's users). All are tier B/C. Splitting the modules for
+their benefit now would edit files ahead of their own conversion — the thing §1.3 declines
+to do everywhere else. Leave it; it resolves the same way when they convert.
+
+**Generalisable rule for tiers B–D:** a transitive dependency reached only through a style
+module is not a blocker for converting the file that reaches it. Check whether the import
+survives the conversion before spending a commit on it.
 
 ---
 
@@ -209,7 +219,7 @@ makes a "React-only" file not actually React-only.
 
 ## 7. Definition of done
 
-- 12 elements exist, each with a test; 3 dead files deleted; 2 prep commits landed.
+- 12 elements exist, each with a test; the dead code is deleted.
 - Every new element clears the grep gate in §4.9.
 - `npm run lint` exit 0 · `npm run build` exit 0 · full suite green with no coverage
   threshold error.
