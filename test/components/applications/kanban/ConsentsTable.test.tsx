@@ -119,7 +119,7 @@ describe('ConsentsTable — pagination', () => {
   it('advances a page', () => {
     renderConsentsTable();
     fireEvent.click(nav.next());
-    expect(visibleUsers()[0]).toBe('User06');
+    expect(visibleUsers()).toEqual(['User06', 'User07', 'User08', 'User09', 'User10']);
   });
 
   it('shows a short final page', () => {
@@ -144,7 +144,10 @@ describe('ConsentsTable — pagination', () => {
   it('shows every consent when the page size is All', () => {
     renderConsentsTable();
     setRowsPerPage(-1);
-    expect(visibleUsers()).toHaveLength(12);
+    // Full identity list, not just a count, so a dropped/duplicated/misordered record
+    // in the `rowsPerPage > 0 ? slice(...) : filteredConsents` ternary is caught — that
+    // ternary is exactly what PR 5 rewrites.
+    expect(visibleUsers()).toEqual(consents.map((c) => c.username));
   });
 });
 
@@ -204,16 +207,24 @@ describe('ConsentsTable — filtering and sorting', () => {
 
   // BUG: `handleSortUsers`/`handleSortAppNames` call `consents.sort(...)` on the exact
   // array reference read from the store, mutating it in place instead of sorting a copy
-  // (contrast AppsTable, which copies with `[...apps]` first). Pinning the mutation
-  // itself, not just its user-visible ordering effect.
+  // (contrast AppsTable, which copies with `[...apps]` first). `ConsentsTable` never
+  // dispatches, so `store.getState()` cannot change reference over its lifetime no
+  // matter what the component does — comparing the array *reference* would pass
+  // whether or not the in-place sort existed. Comparing *content* through that same
+  // reference is what actually depends on the mutation: two clicks (ascending, then
+  // descending) guarantee a real reorder, since a single ascending click on an
+  // already-ascending fixture would leave the order (and therefore the content check)
+  // unchanged even though `.sort()` still ran.
   it('mutates the store consents array in place when sorting', () => {
     const { store } = renderConsentsTable();
-    const before = store.getState().consents.consents;
+    const usernames = () => store.getState().consents.consents.map((c: { username: string }) => c.username);
+    const before = usernames();
     const sort = screen.getByPlaceholderText('Search User')
       .closest('td, th')!
       .querySelector('button')!;
     fireEvent.click(sort);
-    const after = store.getState().consents.consents;
-    expect(after).toBe(before);
+    fireEvent.click(sort);
+    const after = usernames();
+    expect(after).not.toEqual(before);
   });
 });
