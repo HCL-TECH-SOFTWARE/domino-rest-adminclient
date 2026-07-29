@@ -1051,8 +1051,12 @@ git commit -m "Characterize FormsTable before the keep-data-table migration (#77
   `makeApp` here is local to this file. Do not export it.
 
 **Pinned:** the five cells; the launch button for an active app and its absence when
-disabled; App ID display and copy-to-clipboard; the PKCE branch; the three app-secret
-branches (`Click to Generate Secret` / masked with refresh / generated); the edit button
+disabled; App ID display and copy-to-clipboard (**both** of its branches — `navigator.clipboard`
+is undefined in jsdom, so the failure path is the default one); the PKCE branch; the
+**four** reachable app-secret states — `Click to Generate Secret` (no secret anywhere),
+masked `********************` with a refresh button (`app.appHasSecret`), the visible-secret
+branch (`app.appSecret?.length > 0`), and the local-state branch after `handleClickGenerate`
+sets `hasAppSecret` — the edit button
 loading formik and opening the drawer; the delete button.
 
 `AppIcon` is mocked — it resolves icons through `useAppIcons` and has its own suite
@@ -2043,6 +2047,35 @@ It is not — PRs 4 and 5 follow. Leave #771 open. (`closes #771` does not auto-
 while PRs target `new_code`.)
 
 ---
+
+## What the characterization found
+
+Writing tests against untested code surfaces defects. Per the rules above these are **pinned
+as-is, never fixed** — a migration PR must be able to tell "the migration broke it" from "we
+fixed it". Each is marked with a `// BUG:` comment at its assertion.
+
+### `AppItem` renders an app secret that is always blank
+
+`src/components/applications/AppItem.tsx:300` guards on `app.appSecret?.length > 0` — the
+**prop** — but line 310 renders `{appSecret}`, the component-local `useState('')` declared at
+`:122` and never seeded from the prop. So whenever the API supplies a secret, the guard
+passes and the user sees empty text.
+
+It is a live path: `src/store/applications/action.ts:77` sets `appSecret` straight from the
+API's `client_secret`. It compounds with `handleClickGenerate` (`:134-141`), which calls
+`setHasAppSecret(true)` **unconditionally** — outside its own `if (newSecret)` branch — so
+merely clicking "Click to Generate Secret" flips the row into the same broken branch.
+
+Pinned in `test/components/applications/AppItem.test.tsx`. **Needs its own issue and fix,
+separate from #771.**
+
+### Two smaller observations, pinned or recorded
+
+- `AppsTable.handleSortAppNames` (`:128-138`) sorts the raw `apps` prop rather than
+  `filteredApps`, so sorting after filtering silently drops the filter. Not exercised by the
+  suite — the plan pins filtering and sorting separately, not their conjunction.
+- `ActivateSwitch.tsx:153` renders a literal `<text>` element, which React reports as an
+  unrecognized tag. Harmless, but it is the one piece of console noise these suites emit.
 
 ## Self-Review
 
