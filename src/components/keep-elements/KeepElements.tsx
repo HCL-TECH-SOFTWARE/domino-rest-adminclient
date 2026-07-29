@@ -28,6 +28,7 @@ import Tooltip from './keep-tooltip';
 import Checkbox from './keep-checkbox';
 import MonacoEditor from './keep-monaco-editor';
 import Tree, { type KeepTreeSelectDetail } from './keep-tree';
+import Footer from './keep-footer';
 import DataTable, {
   type KeepDataTablePageChangeDetail,
   type KeepDataTableRowsPerPageChangeDetail
@@ -192,4 +193,10 @@ export const KeepMonacoEditor = createComponent({
   events: {
     onChange: 'change'
   }
+});
+
+export const KeepFooter = createComponent({
+  tagName: 'keep-footer',
+  elementClass: Footer,
+  react: React
 });

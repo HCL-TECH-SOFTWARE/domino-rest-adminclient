@@ -33,6 +33,8 @@ const shellCss = read('src/styles/app-shell.css');
 const views = read('src/Views.tsx');
 const mobileHeader = read('src/components/header/MobileHeader.tsx');
 const globalCss = read('src/styles/styles.css');
+/** The footer's own copy of the breakpoint since #806 moved it out of the global sheet. */
+const footerElement = read('src/components/keep-elements/keep-footer.ts');
 
 /** Block comments dropped, so prose about a name is not mistaken for a use of it. */
 const code = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
@@ -73,7 +75,10 @@ describe('AppShell on wa-page (#707)', () => {
 
     // Same form as wa-page's own `@media screen and (width < ${breakpoint})`, so the two
     // agree on which side of the boundary pixel falls.
-    for (const [label, css] of [['app-shell.css', shellCss], ['Views.tsx', views], ['styles.css', globalCss]] as const) {
+    // The third statement of the breakpoint used to sit in styles.css, next to the footer's
+    // global rules. #806 moved the footer into a shadow root, so its media query moved with
+    // it — global CSS does not cross a shadow boundary.
+    for (const [label, css] of [['app-shell.css', shellCss], ['Views.tsx', views], ['keep-footer.ts', footerElement]] as const) {
       expect(css, `${label} lost its (width < ${px}px) query`).toMatch(
         new RegExp(`\\(width < ${px}px\\)`),
       );

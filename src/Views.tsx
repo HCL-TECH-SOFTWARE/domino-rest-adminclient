@@ -40,7 +40,7 @@ import { useAppDispatch } from './store/hooks';
  * is 48px on every side and would push the page content down by that much.
  *
  * The height stays viewport-relative rather than `100%` because both bars it subtracts sit
- * outside `wa-page`'s own grid rows: the 23px `.footer-container` is a fixed overlay, and
+ * outside `wa-page`'s own grid rows: the 23px `keep-footer` bar is a fixed overlay, and
  * `--header-height` is what `wa-page` measures its header region to be. Reading that
  * variable replaces the hardcoded `56px` this rule used to guess — get it wrong by a pixel
  * and the document gains a second scrollbar on top of this element's own.
@@ -52,7 +52,7 @@ const ViewContainer = styled.main`
   padding: 0 40px;
 
   @media only screen and (width < 768px) {
-    /* No footer overlay below the breakpoint — see .footer-container in styles.css. */
+    /* No footer overlay below the breakpoint — see the media query in keep-footer.ts. */
     height: calc(100vh - var(--header-height, 0px));
     padding: 0;
   }
