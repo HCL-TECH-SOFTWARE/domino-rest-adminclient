@@ -7,6 +7,7 @@
 import { html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 import { StoreController } from '../../store/StoreController';
 import { toggleErrorDialog } from '../../store/dialog/action';
 import './keep-form-dialog-header';
@@ -39,7 +40,9 @@ import './keep-button';
  */
 @customElement('keep-network-error-dialog')
 export default class NetworkErrorDialog extends KeepElement {
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     /*
      * The React dialog carried no className, so it got the user-agent box plus the bare
      * element-selector rule in styles/dark-mode.css, which does not reach into this shadow
@@ -92,7 +95,8 @@ export default class NetworkErrorDialog extends KeepElement {
       align-content: center;
       align-items: center;
     }
-  `;
+  `,
+  ];
 
   private readonly dialogState = new StoreController(this, (state) => state.dialog);
 

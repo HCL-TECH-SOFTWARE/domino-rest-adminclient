@@ -7,6 +7,7 @@
 import { html, css, type PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 import './keep-form-dialog-header';
 import './keep-button';
 
@@ -25,7 +26,9 @@ export type KeepUnsavedChangesDialogDetail = undefined;
  */
 @customElement('keep-unsaved-changes-dialog')
 export default class UnsavedChangesDialog extends KeepElement {
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     /* was .dialog + .dialog[open] in styles.css; all four classes have other consumers, so
        the rules stay there too and these are copies rather than moves. */
     dialog {
@@ -74,7 +77,8 @@ export default class UnsavedChangesDialog extends KeepElement {
       align-content: center;
       align-items: center;
     }
-  `;
+  `,
+  ];
 
   /** Drives `showModal()` / `close()` on the inner native dialog. */
   @property({ type: Boolean }) accessor open = false;

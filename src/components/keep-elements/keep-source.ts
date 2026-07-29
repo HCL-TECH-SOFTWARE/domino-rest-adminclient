@@ -24,6 +24,7 @@ import { getLogger } from '../../services/log-service';
 
 const log = getLogger('components/keep-source');
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 
 /** WebAwesome custom elements are not typed as native inputs — narrow only the
  *  members the code actually touches (matches reports/02 §6.3 guidance). */
@@ -144,7 +145,9 @@ export default class SourceTree extends KeepElement {
   /* The `.input-validation-pattern` rules below use `:state(user-invalid)` /
      `:state(user-valid)`, not the Shoelace-era `data-user-*` attributes WebAwesome 3.x
      never sets — see the note in keep-input-text.ts, including why it is out here (#742). */
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     :host {
       color-scheme: inherit;
       color: var(--wa-color-text-normal);
@@ -345,7 +348,8 @@ export default class SourceTree extends KeepElement {
     .hidden {
       display: none;
     }
-  `;
+  `,
+  ];
 
   updated(changedProperties: PropertyValues) {
     if (changedProperties.has('content')) {

@@ -7,6 +7,7 @@
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 import { StoreController } from '../../store/StoreController';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { deleteSchema, deleteScope } from '../../store/databases/action';
@@ -46,7 +47,9 @@ export interface KeepDeleteTarget {
  */
 @customElement('keep-delete-dialog')
 export default class DeleteDialog extends KeepElement {
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     /* was the dialog class pair in styles/styles.css */
     dialog {
       border: 1px solid var(--wa-color-surface-border);
@@ -104,7 +107,12 @@ export default class DeleteDialog extends KeepElement {
       align-items: center;
     }
 
-    /* was the dialog-actions and pt-30 pair */
+    /*
+     * was dialog-actions. The pt-30 utility beside it is not reproduced: it was there because
+     * the React markup nested the content and the actions inside a plain div with no gap, and
+     * as direct children of the dialog they now get its own 30px gap. Keeping both put 60px
+     * between the warning and the buttons, which is visible.
+     */
     .actions {
       width: 100%;
       display: flex;
@@ -112,7 +120,6 @@ export default class DeleteDialog extends KeepElement {
       gap: 10px;
       align-content: center;
       align-items: center;
-      padding-top: 30px;
     }
 
     /* Announced, never shown: carries the delete-in-progress status message for 4.1.3. */
@@ -124,7 +131,8 @@ export default class DeleteDialog extends KeepElement {
       clip-path: inset(50%);
       white-space: nowrap;
     }
-  `;
+  `,
+  ];
 
   @property({ attribute: false }) accessor selected: KeepDeleteTarget = {};
 
