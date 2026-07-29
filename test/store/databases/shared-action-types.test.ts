@@ -84,10 +84,18 @@ describe('databases reducer — action types dispatched from outside the slice',
     });
   });
 
-  describe('the three shared with another slice', () => {
-    // SET_DB_ERROR is declared as 'SET_APP_ERROR' and CLEAR_DB_ERROR as
-    // 'CLEAR_APP_ERROR' — the same values the applications slice uses. One dispatch
-    // drives both reducers, and #840 showed what happens when that pairing breaks.
+  /**
+   * These two used to be titled "shared with another slice", and they asserted the
+   * sharing: `SET_DB_ERROR` was declared as `'SET_APP_ERROR'` and `CLEAR_DB_ERROR` as
+   * `'CLEAR_APP_ERROR'`, the values the applications slice uses, so one dispatch drove
+   * both reducers.
+   *
+   * #866 renamed them to `'databases/…'`. The assertions are inverted rather than
+   * deleted, because "a database error does not touch the applications slice" is the
+   * property worth holding, and this file is where someone reintroducing the old value
+   * would look.
+   */
+  describe('the database error types, no longer shared with the applications slice', () => {
     it('SET_DB_ERROR reaches the databases slice', () => {
       expect(dispatch(SET_DB_ERROR, 'schema locked')).toMatchObject({
         dbError: true,
@@ -95,16 +103,20 @@ describe('databases reducer — action types dispatched from outside the slice',
       });
     });
 
-    it('SET_DB_ERROR reaches the applications slice too, under its own name', () => {
+    it('SET_DB_ERROR does not reach the applications slice', () => {
       expect(appsReducer(undefined, { type: SET_DB_ERROR, payload: 'schema locked' } as any)).toMatchObject({
-        appError: true,
-        appErrorMessage: 'schema locked',
+        appError: false,
+        appErrorMessage: '',
       });
     });
 
-    it('CLEAR_DB_ERROR clears both', () => {
+    it('CLEAR_DB_ERROR clears the databases slice only', () => {
       expect(dispatch(CLEAR_DB_ERROR)).toMatchObject({ dbError: false, dbErrorMessage: '' });
-      expect(appsReducer(undefined, { type: CLEAR_DB_ERROR } as any)).toMatchObject({ appError: false });
+    });
+
+    it('is namespaced, so the value itself cannot collide again', () => {
+      expect(SET_DB_ERROR).toBe('databases/setDBError');
+      expect(CLEAR_DB_ERROR).toBe('databases/clearDBError');
     });
 
     it('INIT_STATE resets, and is not this slice’s own action', () => {

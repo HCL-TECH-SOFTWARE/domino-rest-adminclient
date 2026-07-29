@@ -82,9 +82,12 @@ const initialState: DBState = {
  *   as the action type, and `components/access/TabsAccess.tsx` hard-codes the five
  *   strings it passes. Namespacing them empties the formula-test results panel,
  *   and nothing would catch it: the string is untyped the whole way through.
- * - `SET_DB_ERROR` / `CLEAR_DB_ERROR` — declared as `'SET_APP_ERROR'` /
- *   `'CLEAR_APP_ERROR'`, the same values the applications slice uses, so one
- *   dispatch feeds both reducers. #843 pinned that pairing from the other side.
+ * - `SET_DB_ERROR` / `CLEAR_DB_ERROR` — literal only because the values are still
+ *   spelled out in `types.ts`. They no longer collide: #866 renamed them from
+ *   `'SET_APP_ERROR'` / `'CLEAR_APP_ERROR'` — the applications slice's values — to
+ *   `'databases/…'`, so a database error stays in this slice. Both are dispatched
+ *   solely through `setDBError`/`clearDBError` in `./shared`, never as raw strings,
+ *   so these two could become generated creators whenever someone wants them to.
  * - `VIEWS_ERROR`, `AGENTS_ERROR`, `FETCH_AVAILABLE_DATABASES`, `SET_ACTIVEVIEWS`,
  *   `SET_ACTIVEAGENTS` — dispatched raw from `ActivateSwitch`, `ScopeLists`,
  *   `FormsContainer` and `EditView`. Left literal rather than rewiring six

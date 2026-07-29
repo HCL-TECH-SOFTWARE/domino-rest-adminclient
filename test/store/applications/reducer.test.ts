@@ -148,15 +148,18 @@ describe('appsReducer', () => {
 });
 
 /**
- * TOGGLE_DELETE_DIALOG, SET_APP_ERROR and CLEAR_APP_ERROR are declared in *two*
- * slices each with identical values, so one dispatch has always driven both
- * reducers. Namespacing either side breaks the pairing silently — no type error,
- * no failing test, just a dialog that stops opening.
+ * This slice deliberately answers one action from another slice, and deliberately no
+ * longer answers two others.
  *
- * #840 did exactly that: converting the dialog slice left this one unable to see
- * `TOGGLE_DELETE_DIALOG`, so DeleteApplicationDialog could no longer open. These
- * are the tests that would have caught it, and that keep the pairing honest as the
- * last classic reducer (databases) is converted.
+ * **Kept:** the delete dialog lives in the dialog slice, and this reducer follows its
+ * generated action *object*. #840 broke that by converting the dialog slice while
+ * `TOGGLE_DELETE_DIALOG` was declared identically in both — no type error, no failing
+ * test, just a dialog that stopped opening. The duplicate declaration is gone (#866);
+ * this test is what holds the intentional half.
+ *
+ * **Removed:** `databases/types.ts` used to declare `SET_DB_ERROR = 'SET_APP_ERROR'`, so
+ * every database error also wrote `appError`. #866 namespaced it. The tests that pinned
+ * that behaviour are inverted below rather than deleted.
  */
 /**
  * Three reducers look up an app by id, and the classic implementation used the
@@ -213,18 +216,19 @@ describe('appsReducer — actions shared with other slices', () => {
     expect(appsReducer(initial, toggleDeleteDialog()).deleteDialogOpen).toBe(true);
   });
 
-  it("records a database error raised through databases' setDBError", () => {
-    // databases/types.ts declares SET_DB_ERROR = 'SET_APP_ERROR'. Whether AppForm
-    // should show database errors is a product question; this pins what it does.
+  it("ignores a database error raised through databases' setDBError", () => {
+    // It used to record it: AppForm.tsx renders `appError && appErrorMessage` under the
+    // title "Error: Unable to save application", so a failed *database* call put a
+    // database message behind an application heading (#866).
     const next = appsReducer(initial, setDBError('schema locked') as any);
-    expect(next).toMatchObject({ appError: true, appErrorMessage: 'schema locked' });
+    expect(next).toMatchObject({ appError: false, appErrorMessage: '' });
   });
 
-  it("clears it again through databases' clearDBError", () => {
-    const dirty = { ...initial, appError: true, appErrorMessage: 'schema locked' };
+  it("does not have its error cleared by databases' clearDBError", () => {
+    const dirty = { ...initial, appError: true, appErrorMessage: 'an application problem' };
     expect(appsReducer(dirty, clearDBError() as any)).toMatchObject({
-      appError: false,
-      appErrorMessage: '',
+      appError: true,
+      appErrorMessage: 'an application problem',
     });
   });
 });

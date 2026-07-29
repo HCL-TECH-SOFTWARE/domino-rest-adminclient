@@ -54,7 +54,10 @@ export const ADD_APP = 'ADD_APP';
 export const SET_PULLED_APP = 'SET_PULLED_APP';
 export const DELETE_APP = 'DELETE_APP';
 export const EXECUTING = 'EXECUTING';
-export const TOGGLE_DELETE_DIALOG = 'TOGGLE_DELETE_DIALOG';
+// `TOGGLE_DELETE_DIALOG` was declared here too, with the same value as the one in
+// `dialog/types.ts`, so one dispatch drove both reducers. That is what made #840's
+// regression invisible — converting the dialog slice unhooked this one, silently. The
+// dialog slice owns it; this reducer matches its generated action *object* (#866).
 export const SET_APP_ERROR = 'SET_APP_ERROR';
 export const CLEAR_APP_ERROR = 'CLEAR_APP_ERROR';
 export const INIT_STATE = 'INIT_STATE';
@@ -84,10 +87,6 @@ interface DeleteApp {
 interface Deleting {
   type: typeof EXECUTING;
   payload: boolean;
-}
-
-interface ToggleDeleteDialog {
-  type: typeof TOGGLE_DELETE_DIALOG;
 }
 
 interface DropUpdate {
@@ -137,7 +136,6 @@ export type AppsActionTypes =
   | SetPullApp
   | Deleting
   | AddApp
-  | ToggleDeleteDialog
   | UpdateApp
   | SetAppError
   | InitState
