@@ -39,7 +39,7 @@ export function toggleDeleteDialog() {
 export const fetchMyApps = () => {
   return async (dispatch: Dispatch) => {
     try {
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/applications`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -47,17 +47,6 @@ export const fetchMyApps = () => {
           }
         })
       )
-      
-      // apiRequestWithRetry returns a null response for a request that never
-      
-      // completed; reading .ok off it threw before any handling below.
-      
-      if (!response) {
-      
-        throw new Error(error ?? 'the request did not complete')
-      
-      }
-      
       if (!response.ok) {
         throw new Error(JSON.stringify(data.message))
       }
@@ -148,7 +137,7 @@ export function updateApp(appData: any) {
   return async (dispatch: Dispatch) => {
     try {
       // Based on API verb, this is now PUT instead of patch
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application/${appData.client_id}`, {
           method: 'PUT',
           headers: {
@@ -162,17 +151,6 @@ export function updateApp(appData: any) {
         })
       )
       const res = response
-
-      // apiRequestWithRetry returns a null response for a request that never
-
-      // completed; reading .ok off it threw before any handling below.
-
-      if (!response) {
-
-        throw new Error(error ?? 'the request did not complete')
-
-      }
-
       if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
       }
@@ -215,7 +193,7 @@ export function updateApp(appData: any) {
 export function getSingleApp(appId: string) {
   return async (dispatch: Dispatch) => {
     try {
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -224,17 +202,6 @@ export function getSingleApp(appId: string) {
         })
       )
       const res = response
-
-      // apiRequestWithRetry returns a null response for a request that never
-
-      // completed; reading .ok off it threw before any handling below.
-
-      if (!response) {
-
-        throw new Error(error ?? 'the request did not complete')
-
-      }
-
       if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
       }
@@ -287,7 +254,7 @@ export function deleteApplication(appId: string) {
     dispatch(executing(true));
 
     try {
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}`, {
           method: 'DELETE',
           headers: {
@@ -296,17 +263,6 @@ export function deleteApplication(appId: string) {
           },
         })
       )
-      
-      // apiRequestWithRetry returns a null response for a request that never
-      
-      // completed; reading .ok off it threw before any handling below.
-      
-      if (!response) {
-      
-        throw new Error(error ?? 'the request did not complete')
-      
-      }
-      
       if (!response.ok) {
         throw new Error(JSON.stringify(data.message))
       }
@@ -341,7 +297,7 @@ export function addApplication(appData: any) {
   return async (dispatch: Dispatch) => {
     dispatch(executing(true));
     try {
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application`, {
           method: 'POST',
           headers: {
@@ -352,17 +308,6 @@ export function addApplication(appData: any) {
         })
       )
       const res = response
-
-      // apiRequestWithRetry returns a null response for a request that never
-
-      // completed; reading .ok off it threw before any handling below.
-
-      if (!response) {
-
-        throw new Error(error ?? 'the request did not complete')
-
-      }
-
       if (!res.ok) {
         throw new Error(JSON.stringify(data.message))
       }
@@ -444,7 +389,7 @@ export const generateSecret = (
     setGenerating(true)
 
     try {
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/admin/application/${appId}/secret?force=true`, {
           method: 'POST',
           headers: {
@@ -457,12 +402,6 @@ export const generateSecret = (
         })
       )
 
-      // apiRequestWithRetry does not rethrow a failed request — it returns a null
-      // response. Reading `.ok` off that threw a TypeError, which then hit the catch
-      // below and broke it in turn, so a dropped connection produced no alert at all.
-      if (!response) {
-        throw new Error(JSON.stringify({ message: error ?? 'the request did not complete' }))
-      }
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }

@@ -20,7 +20,7 @@ export function fetchUsers (startsWith?: string) {
   return async (dispatch: Dispatch) => {
     dispatch(toggleUsersLoading());
     try {
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(callUrl, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -29,11 +29,6 @@ export function fetchUsers (startsWith?: string) {
         })
       )
 
-      // apiRequestWithRetry does not rethrow a failed request, it returns a null
-      // response — so this has to be checked before `.ok`.
-      if (!response) {
-        throw new Error(error ?? 'the request did not complete')
-      }
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }

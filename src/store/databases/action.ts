@@ -264,7 +264,7 @@ export const fetchScope = async (scopeData: any) => {
 export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: (schemaData: any) => void) => {
   return async (dispatch: Dispatch) => {
     try {
-      const { response, data, error } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -273,10 +273,6 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
         })
       )
 
-      // apiRequestWithRetry returns a null response for a request that never completed.
-      if (!response) {
-        throw new Error(error ?? 'the request did not complete')
-      }
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }
@@ -1022,7 +1018,7 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
-      const { response, data, error: requestError } = await apiRequestWithRetry(() =>
+      const { response, data } = await apiRequestWithRetry(() =>
         fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, {
           method: 'POST',
           headers: {
@@ -1033,10 +1029,6 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
         })
       )
 
-      // apiRequestWithRetry returns a null response for a request that never completed.
-      if (!response) {
-        throw new Error(requestError ?? 'the request did not complete')
-      }
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }
@@ -1103,7 +1095,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         payload: false
       });
       try {
-        const { response, data, error: requestError } = await apiRequestWithRetry(() =>
+        const { response, data } = await apiRequestWithRetry(() =>
           fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, {
             method: 'POST',
             headers: {
@@ -1114,10 +1106,6 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
           })
         )
 
-        // apiRequestWithRetry returns a null response for a request that never completed.
-        if (!response) {
-          throw new Error(requestError ?? 'the request did not complete')
-        }
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
         }
