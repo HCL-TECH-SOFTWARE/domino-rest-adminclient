@@ -186,27 +186,40 @@ describe('databases — scopes', () => {
       expect(actions().find((a) => a?.type === fetchKeepScopesAction.type).payload).toHaveLength(2);
     });
 
-    // The catch reads:
-    //
-    //   const error = JSON.parse(err)
-    //   if (err) throw err;
-    //   dispatch(toggleErrorDialog(`${error.statusCode}: ${error.message}`));
-    //
-    // `err` is a non-empty string on every path that reaches here, so the rethrow
-    // always fires and the dispatch below it can never run. The thunk rejects
-    // instead of reporting, which is why a failed scope fetch shows no dialog.
-    it('rejects instead of dispatching the error dialog — the dispatch is unreachable', async () => {
-      refuses({ statusCode: 400, message: 'nope' });
+    // These four replace the pair that pinned #818: the catch used to run
+    // `if (err) throw err` before its own dispatch, so the error dialog was
+    // unreachable and the thunk rejected instead. Both callers in Views.tsx
+    // dispatch fire-and-forget, so that rejection surfaced as an unhandled
+    // promise and the user saw nothing.
+    it('opens the error dialog instead of rejecting when the API refuses', async () => {
+      refuses({ status: 400, message: 'nope' });
 
-      await expect(fetchScopes()(dispatch)).rejects.toBeDefined();
-      expect(types()).not.toContain(toggleErrorDialog.type);
+      await expect(fetchScopes()(dispatch)).resolves.not.toThrow();
+      expect(types()).toContain(toggleErrorDialog.type);
     });
 
-    it('rejects when the request never completes', async () => {
+    it('titles the dialog with the status, not the absent statusCode', async () => {
+      refuses({ status: 400, message: 'nope' });
+
+      await fetchScopes()(dispatch);
+
+      // Was `${error.statusCode}: ...` — nothing writes statusCode, so it would
+      // have read "undefined: nope" had it ever rendered.
+      expect(actions().find((a) => a?.type === toggleErrorDialog.type).payload).toBe('400: nope');
+    });
+
+    it('reports the message when the request never completes', async () => {
       offline();
 
-      await expect(fetchScopes()(dispatch)).rejects.toBeDefined();
-      expect(types()).not.toContain(toggleErrorDialog.type);
+      await expect(fetchScopes()(dispatch)).resolves.not.toThrow();
+      expect(actions().find((a) => a?.type === toggleErrorDialog.type).payload).toMatch(/failed to fetch/i);
+    });
+
+    it('reports a non-JSON error rather than throwing on the parse', async () => {
+      refusesWithProse();
+
+      await expect(fetchScopes()(dispatch)).resolves.not.toThrow();
+      expect(types()).toContain(toggleErrorDialog.type);
     });
   });
 
