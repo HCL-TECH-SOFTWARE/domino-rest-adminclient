@@ -223,8 +223,12 @@ describe('FormController against the five real forms', () => {
 
   it('GAP: submit is not guarded against re-entry', async () => {
     // A double-clicked save button calls onSubmit twice. `submitting` is exposed so a caller
-    // can disable the button, but nothing enforces it. Three of the five forms submit through
-    // a thunk, so this would be two POSTs.
+    // can disable the button, but nothing enforces it, and the second click can land before the
+    // re-render that would disable it. All five form owners dispatch a mutating thunk from
+    // onSubmit, so this is two writes -- two *creates* for addSchema and addApplication.
+    //
+    // Filed as #887. This test asserts the behaviour as it stands so the change is visible; it
+    // has to be inverted by whichever commit adds the guard.
     let running = 0;
     let peak = 0;
     const el = await mountLit<FormHost>('test-form-host');
