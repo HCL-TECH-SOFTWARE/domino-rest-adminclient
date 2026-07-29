@@ -18,7 +18,6 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog } from '../dialog/action';
-import { SET_API_LOADING } from '../dialog/types';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
 
@@ -113,10 +112,7 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
       }
 
       setSchemaData(data);
-      dispatch({
-        type: SET_API_LOADING,
-        payload: false
-      });
+      dispatch(setApiLoading(false));
     } catch (e: any) {
       // The old JSON.parse over the stringified error threw for anything that was not a
       // JSON body, so this handler failed and the rejection escaped the thunk.

@@ -5,15 +5,8 @@
  * ========================================================================== */
 
 import { describe, it, expect } from 'vitest';
-import consentsReducer from '../../../src/store/consents/reducer';
-import {
-  SET_CONSENTS,
-  DELETE_CONSENT,
-  TOGGLE_DELETE_CONSENT,
-  INIT_STATE,
-  Consent,
-  ConsentState,
-} from '../../../src/store/consents/types';
+import consentsReducer, { setConsents, deleteConsent, toggleDeleteConsent } from '../../../src/store/consents/reducer';
+import { INIT_STATE, Consent, ConsentState } from '../../../src/store/consents/types';
 
 const initial: ConsentState = {
   consents: [],
@@ -43,33 +36,30 @@ describe('consentsReducer', () => {
     expect(consentsReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('SET_CONSENTS replaces consents from the payload', () => {
+  it('setConsents replaces consents from the payload', () => {
     const consents = [makeConsent({ client_id: 'c1' }), makeConsent({ client_id: 'c2' })];
-    expect(consentsReducer(initial, { type: SET_CONSENTS, payload: consents }).consents).toEqual(
+    expect(consentsReducer(initial, setConsents(consents)).consents).toEqual(
       consents
     );
   });
 
-  it('DELETE_CONSENT removes the consent matching client_id and clears deleteUnid', () => {
+  it('deleteConsent removes the consent matching client_id and clears deleteUnid', () => {
     const base: ConsentState = {
       ...initial,
       consents: [makeConsent({ client_id: 'c1' }), makeConsent({ client_id: 'c2' })],
       deleteUnid: 'unid',
     };
-    const next = consentsReducer(base, {
-      type: DELETE_CONSENT,
-      payload: makeConsent({ client_id: 'c1' }),
-    });
+    const next = consentsReducer(base, deleteConsent(makeConsent({ client_id: 'c1' })));
     expect(next.consents).toHaveLength(1);
     expect(next.consents[0].client_id).toBe('c2');
     expect(next.deleteUnid).toBe('');
   });
 
-  it('TOGGLE_DELETE_CONSENT flips the dialog and stores the payload fields', () => {
-    const next = consentsReducer(initial, {
-      type: TOGGLE_DELETE_CONSENT,
-      payload: { unid: 'u1', appName: 'My App', username: 'bob', scope: 'read' },
-    });
+  it('toggleDeleteConsent flips the dialog and stores the payload fields', () => {
+    const next = consentsReducer(
+      initial,
+      toggleDeleteConsent({ unid: 'u1', appName: 'My App', username: 'bob', scope: 'read' }),
+    );
     expect(next).toMatchObject({
       deleteConsentDialog: true,
       deleteUnid: 'u1',
@@ -92,7 +82,7 @@ describe('consentsReducer', () => {
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
     expect(() =>
-      consentsReducer(frozen, { type: SET_CONSENTS, payload: [makeConsent({})] })
+      consentsReducer(frozen, setConsents([makeConsent({})]))
     ).not.toThrow();
   });
 });

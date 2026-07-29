@@ -36,14 +36,8 @@ vi.hoisted(() => {
   }
 });
 
-import stylesReducer from '../../../src/store/styles/reducer';
-import {
-  ADJUST_DATABASE_STYLE,
-  TOGGLE_FULLSCREEN,
-  SET_MOBILE_VIEWPORT,
-  SWITCH_THEME,
-  StylesState,
-} from '../../../src/store/styles/types';
+import stylesReducer, { adjustDatabaseStyle, toggleFullscreen, setViewport, switchTheme } from '../../../src/store/styles/reducer';
+import { StylesState } from '../../../src/store/styles/types';
 
 // themeMode is seeded from localStorage at module load; derive it the same way
 // so the expected initial state matches regardless of the environment default.
@@ -59,29 +53,29 @@ describe('stylesReducer', () => {
     expect(stylesReducer(undefined, { type: '@@UNKNOWN' } as any)).toEqual(initial);
   });
 
-  it('ADJUST_DATABASE_STYLE sets databaseSize from the payload', () => {
-    const next = stylesReducer(initial, { type: ADJUST_DATABASE_STYLE, payload: 42 });
+  it('adjustDatabaseStyle sets databaseSize from the payload', () => {
+    const next = stylesReducer(initial, adjustDatabaseStyle(42));
     expect(next.databaseSize).toBe(42);
   });
 
-  it('TOGGLE_FULLSCREEN flips accessModeFullscreen on each dispatch', () => {
-    const once = stylesReducer(initial, { type: TOGGLE_FULLSCREEN });
+  it('toggleFullscreen flips accessModeFullscreen on each dispatch', () => {
+    const once = stylesReducer(initial, toggleFullscreen());
     expect(once.accessModeFullscreen).toBe(true);
-    expect(stylesReducer(once, { type: TOGGLE_FULLSCREEN }).accessModeFullscreen).toBe(false);
+    expect(stylesReducer(once, toggleFullscreen()).accessModeFullscreen).toBe(false);
   });
 
-  it('SET_MOBILE_VIEWPORT sets isMobile to true', () => {
-    const next = stylesReducer(initial, { type: SET_MOBILE_VIEWPORT, payload: true });
+  it('setViewport sets isMobile to true', () => {
+    const next = stylesReducer(initial, setViewport(true));
     expect(next.isMobile).toBe(true);
   });
 
-  it('SWITCH_THEME sets themeMode from the payload', () => {
-    const next = stylesReducer(initial, { type: SWITCH_THEME, payload: 'dark' });
+  it('switchTheme sets themeMode from the payload', () => {
+    const next = stylesReducer(initial, switchTheme('dark'));
     expect(next.themeMode).toBe('dark');
   });
 
   it('does not mutate the input state', () => {
     const frozen = Object.freeze({ ...initial });
-    expect(() => stylesReducer(frozen, { type: TOGGLE_FULLSCREEN })).not.toThrow();
+    expect(() => stylesReducer(frozen, toggleFullscreen())).not.toThrow();
   });
 });

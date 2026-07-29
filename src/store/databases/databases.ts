@@ -19,10 +19,9 @@ import {
   FETCH_KEEP_PERMISSIONS,
   INIT_STATE,
 } from './types';
-import { setLoading } from '../loading/action';
+import { setLoading, toggleDetailsLoading } from '../loading/action';
 import { toggleQuickConfigDrawer } from '../drawer/action';
 import { AppState } from '..';
-import { SET_VALUE, TOGGLE_DETAILS_LOADING } from '../loading/types';
 import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
@@ -85,10 +84,7 @@ const processResponse = async (response: any, dispatch: Dispatch, scopeList: Arr
     try {
       let decoded = td.decode(value);
       buffer += decoded;
-      dispatch({
-        type: SET_VALUE,
-        payload: { status: false }
-      });
+      dispatch(setLoading({ status: false }));
     } catch (e) {
       // A malformed chunk must not kill the stream: `processText` recurses per chunk, so
       // throwing here would abandon the rest of the response silently. Log and continue
@@ -395,7 +391,7 @@ export const fetchDBConfig = (config: string) => {
         payload: dbConfig
       });
       dispatch(setApiLoading(false));
-      dispatch({ type: TOGGLE_DETAILS_LOADING });
+      dispatch(toggleDetailsLoading());
     } catch (e: any) {
       // Before the parse, which throws on any non-JSON error and would take the
       // rest of this handler with it.

@@ -1,59 +1,45 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import {
-  DialogActionTypes,
-  DialogStates,
-  SET_API_LOADING,
-  TOGGLE_DELETE_DIALOG,
-  INIT_STATE,
-  TOGGLE_ERROR_DIALOG,
-  TOGGLE_RESET_VIEW_DIALOG,
-} from './types';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { INIT_STATE, type DialogStates } from './types';
 
 const initialState: DialogStates = {
   deleteDialog: false,
   errorDialogOpen: false,
-  errorDialogMessage: "",
+  errorDialogMessage: '',
   loading: false,
   resetViewDialog: false,
 };
 
-export default function dialogReducer(
-  state = initialState,
-  action: DialogActionTypes
-): DialogStates {
-  switch (action.type) {
-    case SET_API_LOADING:
-      return {
-        ...state,
-        loading: action.payload,
-      };
+export const dialogSlice = createSlice({
+  name: 'dialog',
+  initialState,
+  reducers: {
+    setApiLoading(state, action: PayloadAction<boolean>) {
+      state.loading = action.payload;
+    },
+    toggleDeleteDialog(state) {
+      state.deleteDialog = !state.deleteDialog;
+    },
+    toggleErrorDialog(state, action: PayloadAction<string>) {
+      state.errorDialogOpen = !state.errorDialogOpen;
+      state.errorDialogMessage = action.payload;
+    },
+    toggleResetViewDialog(state, action: PayloadAction<boolean>) {
+      state.resetViewDialog = action.payload;
+    },
+  },
+  // See access/reducer.ts: a bare cross-slice broadcast, matched literally.
+  extraReducers: (builder) => {
+    builder.addCase(INIT_STATE, () => initialState);
+  },
+});
 
-    case TOGGLE_DELETE_DIALOG:
-      return {
-        ...state,
-        deleteDialog: !state.deleteDialog,
-      };
-    case TOGGLE_ERROR_DIALOG:
-      return {
-        ...state,
-        errorDialogOpen: !state.errorDialogOpen,
-        errorDialogMessage: action.payload,
-      };
-    case INIT_STATE:
-      return {
-        ...initialState
-      };
-    case TOGGLE_RESET_VIEW_DIALOG:
-      return {
-        ...state,
-        resetViewDialog: action.payload,
-      };
-    default:
-      return state;
-  }
-}
+export const { setApiLoading, toggleDeleteDialog, toggleErrorDialog, toggleResetViewDialog } =
+  dialogSlice.actions;
+
+export default dialogSlice.reducer;

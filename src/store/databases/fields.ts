@@ -7,7 +7,6 @@
 import { v4 as uuid } from 'uuid';
 import { SET_LOADEDFIELDS, ADD_ACTIVEFIELDS } from './types';
 import { AppDispatch } from '..';
-import { SET_VALUE } from '../loading/types';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleErrorDialog } from '../dialog/action';
@@ -16,6 +15,7 @@ import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log } from './shared';
 import { setActiveForm, setLoadedForm } from './forms';
+import { setLoading } from '../loading/action';
 
 /**
  * Save the list of fields for the currently loaded form.
@@ -133,12 +133,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
       dispatch(setLoadedForm(schemaName, formName));
       dispatch(setLoadedFields(externalName, draggableFields));
 
-      dispatch({
-        type: SET_VALUE,
-        payload: {
-          status: false
-        }
-      });
+      dispatch(setLoading({ status: false }));
     } catch (e: any) {
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)

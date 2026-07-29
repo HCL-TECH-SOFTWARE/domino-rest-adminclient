@@ -17,7 +17,7 @@ import {
   SET_LOADEDFIELDS,
   SET_LOADEDFORM,
 } from '../../../src/store/databases/types';
-import { TOGGLE_ERROR_DIALOG } from '../../../src/store/dialog/types';
+import { toggleErrorDialog } from '../../../src/store/dialog/action';
 import { Level, Logger } from '../../../src/services/log-service';
 // apiRequestWithRetry notifies through a <keep-alert> on its error paths.
 import '../../../src/components/keep-elements/keep-alert';
@@ -193,7 +193,7 @@ describe('databases — fields', () => {
       await dispatch.settled();
 
       expect(types()).not.toContain(ADD_ACTIVEFIELDS);
-      expect(types()).toContain(TOGGLE_ERROR_DIALOG);
+      expect(types()).toContain(toggleErrorDialog.type);
     });
 
     // The handler builds its title from `error.statusCode`, but checkForResponse and
@@ -206,7 +206,7 @@ describe('databases — fields', () => {
       await fetchFields('demo', 'db.nsf', 'Order', 'Order', 'forms')(dispatch);
       await dispatch.settled();
 
-      expect(byType(TOGGLE_ERROR_DIALOG).payload).toBe('undefined: no such form');
+      expect(byType(toggleErrorDialog.type).payload).toBe('undefined: no such form');
     });
 
     it('does not throw out of the thunk when the request never completes', async () => {
