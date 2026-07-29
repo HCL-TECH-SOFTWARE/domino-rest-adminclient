@@ -2076,6 +2076,9 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
   
         dispatch(setApiLoading(false));
       } catch (e: any) {
+        // Cleared before the parse below, not after: JSON.parse throws on any
+        // non-JSON error, and a handler that throws never reaches its own tail.
+        dispatch(setApiLoading(false));
         const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
         const error = JSON.parse(err)
 
@@ -2083,6 +2086,7 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
       }
     } catch (err: any) {
       // Use the response error if it's available
+      dispatch(setApiLoading(false));
       dispatch(setDBError(getErrorMsg(err)));
     }
   };
@@ -2177,6 +2181,8 @@ export const updateScope = (active: boolean, data?: any) => {
       dispatch(toggleAlert(`${apiName} has been successfully updated.`));
       if (data) dispatch(toggleSettings());
     } catch (e: any) {
+      // As in changeScope: clear the flag before anything that can throw.
+      dispatch(setApiLoading(false));
       const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
       const error = JSON.parse(err)
 
