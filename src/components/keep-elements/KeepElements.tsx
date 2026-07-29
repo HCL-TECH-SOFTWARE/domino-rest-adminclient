@@ -31,6 +31,9 @@ import Tree, { type KeepTreeSelectDetail } from './keep-tree';
 import Footer from './keep-footer';
 import PageLoading from './keep-page-loading';
 import ZeroResults from './keep-zero-results';
+import FormDialogHeader, {
+  type KeepFormDialogHeaderCloseDetail
+} from './keep-form-dialog-header';
 import DataTable, {
   type KeepDataTablePageChangeDetail,
   type KeepDataTableRowsPerPageChangeDetail
@@ -213,4 +216,15 @@ export const KeepZeroResults = createComponent({
   tagName: 'keep-zero-results',
   elementClass: ZeroResults,
   react: React
+});
+
+export const KeepFormDialogHeader = createComponent({
+  tagName: 'keep-form-dialog-header',
+  elementClass: FormDialogHeader,
+  react: React,
+  events: {
+    // Maps to `header-close` rather than `close` so it cannot be confused with the native
+    // <dialog> event; consumers keep writing `onClose={…}` either way.
+    onClose: 'header-close' as EventName<CustomEvent<KeepFormDialogHeaderCloseDetail>>
+  }
 });

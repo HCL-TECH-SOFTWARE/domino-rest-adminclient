@@ -18,6 +18,18 @@ const button = (label: string) =>
     (b) => b.textContent?.trim() === label,
   ) as HTMLElement | undefined;
 
+/**
+ * The header is `keep-form-dialog-header` since #806, so its heading and close button live in
+ * a shadow root. Lit's first render lands on a microtask, hence the `updateComplete` await.
+ */
+const header = async () => {
+  const el = document.querySelector('keep-form-dialog-header') as HTMLElement & {
+    updateComplete: Promise<boolean>;
+  };
+  await el.updateComplete;
+  return el.shadowRoot!;
+};
+
 describe('UnsavedChangesDialog', () => {
   const defaultProps = {
     open: true,
@@ -30,10 +42,12 @@ describe('UnsavedChangesDialog', () => {
     vi.clearAllMocks();
   });
 
-  it('renders title, message, and all three buttons when open', () => {
+  it('renders title, message, and all three buttons when open', async () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
 
-    expect(screen.getByText('Unsaved Changes')).toBeInTheDocument();
+    expect((await header()).querySelector('.heading')!.textContent).toContain(
+      'Unsaved Changes',
+    );
     expect(
       screen.getByText(/Changes have been made/)
     ).toBeInTheDocument();
@@ -76,9 +90,9 @@ describe('UnsavedChangesDialog', () => {
     expect(defaultProps.onDiscard).not.toHaveBeenCalled();
   });
 
-  it('calls onCancel when the header close button is clicked', () => {
+  it('calls onCancel when the header close button is clicked', async () => {
     render(<UnsavedChangesDialog {...defaultProps} />);
-    fireEvent.click(document.querySelector('.dialog-header-close')!);
+    fireEvent.click((await header()).querySelector('button.close')!);
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
     expect(defaultProps.onSave).not.toHaveBeenCalled();
     expect(defaultProps.onDiscard).not.toHaveBeenCalled();

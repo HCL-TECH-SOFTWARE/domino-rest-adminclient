@@ -6,10 +6,9 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { AppState } from '../../store';
 import { toggleErrorDialog } from '../../store/dialog/action';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 /**
@@ -36,7 +35,7 @@ const NetworkErrorDialog: React.FC = () => {
 
   return (
     <dialog ref={ref}>
-      <FormDialogHeader title="Error" onClose={() => dispatch(toggleErrorDialog(errorDialogMessage))} />
+      <KeepFormDialogHeader heading="Error" onClose={() => dispatch(toggleErrorDialog(errorDialogMessage))} />
       <div className="dialog-content">
         <p className="dialog-content-text">{errorDialogMessage}</p>
       </div>

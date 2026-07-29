@@ -6,8 +6,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
 
 interface AddmodeDialogProps {
   open: boolean;
@@ -47,7 +46,7 @@ const AddModeDialog: React.FC<AddmodeDialogProps> = ({
       className='add-mode-dialog-container'
     >
       <div className='dialog-content gap-20'>
-        <FormDialogHeader title={clone ? `Clone ${modeName}` : `Add New Mode`} onClose={handleClose} />
+        <KeepFormDialogHeader heading={clone ? `Clone ${modeName}` : `Add New Mode`} onClose={handleClose} />
         <div className='add-mode-content-container'>
           <div className='flex flex-col gap-5'>
             <p className='add-mode-content-text'>

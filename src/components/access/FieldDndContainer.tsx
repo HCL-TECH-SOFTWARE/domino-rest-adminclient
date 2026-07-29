@@ -14,8 +14,7 @@ import FieldContainer from './FieldContainer';
 import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
 import { toggleAlert } from '../../store/alerts/action';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
-import { KeepButton, KeepCheckbox, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepButton, KeepCheckbox, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -343,8 +342,8 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
               <WarningIcon />
             </div>
             <div className='full-width'>
-              <FormDialogHeader
-                title="Remove Field"
+              <KeepFormDialogHeader
+                heading="Remove Field"
                 onClose={handleCloseDialog}
               />
             </div>

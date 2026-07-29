@@ -42,10 +42,9 @@ import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
 import EditViewDialog from './EditView';
-import { KeepButton, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
 import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -663,8 +662,8 @@ const FormsContainer = () => {
                   originalValue={savedSchemaText}
                 />}
                 <dialog ref={saveRef} className='dialog'>
-                  <FormDialogHeader
-                    title='Save changes?'
+                  <KeepFormDialogHeader
+                    heading='Save changes?'
                     onClose={handleClickNo}
                   />
                   <div className='dialog-content'>
@@ -678,8 +677,8 @@ const FormsContainer = () => {
                   </div>
                 </dialog>
                 <dialog ref={discardRef} className='dialog'>
-                  <FormDialogHeader
-                    title='Discard changes?'
+                  <KeepFormDialogHeader
+                    heading='Discard changes?'
                     onClose={handleDiscardChanges}
                   />
                   <div className='dialog-content'>

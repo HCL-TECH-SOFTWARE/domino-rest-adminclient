@@ -14,8 +14,7 @@ import { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } fr
 import { IconDropdown } from '../commons/IconDropdown';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { KeepAutocomplete, KeepButton } from '../keep-elements/KeepElements';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
+import { KeepAutocomplete, KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 interface AddImportDialogProps {
@@ -407,9 +406,9 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const Title = (
     <div className='add-import-dialog-header'>
-      <FormDialogHeader
+      <KeepFormDialogHeader
         onClose={handleCloseDialog}
-        title={!importDialogOpen ? `Add New Schema` : `${importFlag ? "Import Schema" : "Create Schema"}` }
+        heading={!importDialogOpen ? `Add New Schema` : `${importFlag ? "Import Schema" : "Create Schema"}` }
       />
     </div>
   )

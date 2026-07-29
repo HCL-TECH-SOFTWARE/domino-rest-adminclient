@@ -5,8 +5,7 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef } from 'react';
-import FormDialogHeader from './FormDialogHeader';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
 
 interface UnsavedChangesDialogProps {
   open: boolean;
@@ -43,7 +42,7 @@ const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
   
   return (
     <dialog ref={ref} className='dialog'>
-      <FormDialogHeader title="Unsaved Changes" onClose={onCancel} />
+      <KeepFormDialogHeader heading="Unsaved Changes" onClose={onCancel} />
       <div className='dialog-content'>
         <p className='dialog-content-text'>
           Changes have been made. Would you like to save these changes?

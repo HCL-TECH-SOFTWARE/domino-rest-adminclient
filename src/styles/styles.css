@@ -211,40 +211,9 @@ body[data-theme="dark"] .color-text-disabled {
     color: var(--text-color-primary);
 }
 
-.dialog-header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    align-items: center;
-    padding-right: 36px;
-}
-
-.dialog-header-close {
-    cursor: pointer;
-    font-size: 16px;
-    color: var(--dialog-header-color);
-    padding: 0;
-    border: none;
-    background: transparent;
-    margin: 0;
-    position: absolute;
-    top: -15px;
-    right: 0;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.dialog-header-title {
-    flex: 1;
-    text-overflow: ellipsis;
-    width: 100%;
-    overflow: hidden;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--dialog-header-color);
-}
+/* The dialog header's three rules moved into keep-form-dialog-header.ts (#806 tier A).
+   `--dialog-header-color` above is still read from there: custom properties inherit through
+   a shadow boundary, so only the class rules had to move. */
 
 .dialog-actions {
     width: 100%;

@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useEffect, useRef, useState } from 'react';
-import FormDialogHeader from '../dialogs/FormDialogHeader';
 import { BlueSwitch, DeleteIcon, SearchInput } from '../../styles/CommonStyles';
 import { styled } from '@linaria/react';
 import { useLocation } from '../../router/react';
@@ -13,7 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import { Database, Field, Mode } from '../../store/databases/types';
 import { Box, MenuItem, Select } from '@mui/material';
-import { KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
 
 const ModeCardsContainer = styled.div`
   padding: 0;
@@ -470,7 +469,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
     // <dialog className='mode-compare-dialog-container' open={open} onClose={handleClose}>
     <dialog ref={ref} className='dialog full-width'>
       {/* <Box className='mode-compare-container'> */}
-        <FormDialogHeader title={`Mode Compare - ${formName} Form`} onClose={handleClose} />
+        <KeepFormDialogHeader heading={`Mode Compare - ${formName} Form`} onClose={handleClose} />
         <div className="dialog-content">
           <div className='flex flex-col full-width justify-between items-center'>
             <div className="flex flex-row pb-10">
