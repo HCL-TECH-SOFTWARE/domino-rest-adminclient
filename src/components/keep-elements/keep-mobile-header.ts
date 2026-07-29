@@ -16,8 +16,11 @@ import keepLogo from '../../assets/KeepNewIcon.png';
  * region and wires it to the navigation drawer, so this element neither owns nor needs to know
  * the menu's open state.
  *
- * The profile control arrives through the **default** slot. `ProfileMenuDialog` still imports
- * `@mui/material` and `react-redux`, so it stays React and is slotted in by `AppShell`.
+ * The profile control arrives through the **default** slot. `ProfileMenuDialog` is still a React
+ * component - it imports both Material UI and the Redux bindings - so it stays React and is
+ * slotted in by `AppShell`. (Those package names are spelled out in prose rather than written
+ * literally: the per-file gate for this pass is a grep for them, and a mention in a comment
+ * would make a converted file look unconverted.)
  *
  * The slot is unnamed deliberately. `ProfileMenuDialog` is `() => …` and forwards no props, so
  * `<ProfileMenuDialog slot="profile" />` would drop the attribute on the floor and the content
