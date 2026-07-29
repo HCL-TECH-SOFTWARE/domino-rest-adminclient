@@ -15,7 +15,8 @@ import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
 import { appIconPayload, useAppIcons } from '../../services/app-icons';
-import { KeepAlert, KeepDrawer } from '../keep-elements/KeepElements';
+import { KeepAlert } from '../keep-elements/react/KeepAlert';
+import { KeepDrawer } from '../keep-elements/react/KeepDrawer';
 import { useAppDispatch } from '../../store/hooks';
 
 const QuickConfigFormSchema = Yup.object().shape({

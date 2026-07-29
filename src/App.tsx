@@ -20,7 +20,7 @@ import {
 } from './store/account/action';
 import { TokenProps } from './store/account/types';
 import CallbackPage from './components/login/CallbackPage';
-import { KeepPageLoading } from './components/keep-elements/KeepElements';
+import { KeepPageLoading } from './components/keep-elements/react/KeepPageLoading';
 import { useAppDispatch } from './store/hooks';
 
 const App: React.FC = () => {

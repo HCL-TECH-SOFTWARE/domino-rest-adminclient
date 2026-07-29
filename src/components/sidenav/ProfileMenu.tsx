@@ -16,7 +16,7 @@ import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { TokenProps } from '../../store/account/types';
-import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 
 /**
  * Profile section rendered in the sidenav.

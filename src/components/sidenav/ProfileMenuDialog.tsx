@@ -15,7 +15,7 @@ import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { TokenProps } from '../../store/account/types';
-import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 
 const ProfileMenuCard = styled(Paper)`
   padding: 30px 30px 30px 30px;

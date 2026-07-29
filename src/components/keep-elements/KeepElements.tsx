@@ -4,291 +4,53 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
-import { createComponent, type EventName } from '@lit/react';
-import Autocomplete from './keep-autocomplete';
-import SourceTree from './keep-source';
-import SourceContents from './keep-source-header';
-import TextForm from './keep-textform';
-import TextFormArray from './keep-textform-array';
-import DialogHeader from './keep-dialog-header';
-import DialogContent from './keep-dialog-content';
-import DialogActions from './keep-dialog-actions';
-import Button from './keep-button';
-import InputDate from './keep-input-date';
-import Dropdown from './keep-dropdown';
-import AppStatus from './keep-app-status';
-import ApiErrorDialog from './keep-api-error-dialog';
-import DefaultCard from './keep-default-card';
-import Alert from './keep-alert';
-import Drawer from './keep-drawer';
-import Switch from './keep-switch';
-import NsfCard from './keep-nsf-card';
-import Tooltip from './keep-tooltip';
-import Checkbox from './keep-checkbox';
-import MonacoEditor from './keep-monaco-editor';
-import Tree, { type KeepTreeSelectDetail } from './keep-tree';
-import Footer from './keep-footer';
-import PageLoading from './keep-page-loading';
-import ZeroResults from './keep-zero-results';
-import FormDialogHeader, {
-  type KeepFormDialogHeaderCloseDetail
-} from './keep-form-dialog-header';
-import ErrorWrapper from './keep-error-wrapper';
-import Homepage from './keep-homepage';
-import ScopesCardsView from './keep-scopes-cards-view';
-import ScopesDefaultView, { type KeepScopeOpenDetail } from './keep-scopes-default-view';
-import MobileHeader from './keep-mobile-header';
-import PageRouters from './keep-page-routers';
-import UnsavedChangesDialog, {
-  type KeepUnsavedChangesDialogDetail
-} from './keep-unsaved-changes-dialog';
-import DataTable, {
-  type KeepDataTablePageChangeDetail,
-  type KeepDataTableRowsPerPageChangeDetail
-} from './keep-data-table';
-
-export const KeepAutocomplete = createComponent({
-  tagName: 'keep-autocomplete',
-  elementClass: Autocomplete,
-  react: React
-});
-
-export const KeepSourceTree = createComponent({
-  tagName: 'keep-source-tree',
-  elementClass: SourceTree,
-  react: React
-});
-
-export const KeepSource = createComponent({
-  tagName: 'keep-source',
-  elementClass: SourceContents,
-  react: React
-});
-
-export const KeepTextform = createComponent({
-  tagName: 'keep-textform',
-  elementClass: TextForm,
-  react: React
-});
-
-export const KeepTextformArray = createComponent({
-  tagName: 'keep-textform-array',
-  elementClass: TextFormArray,
-  react: React
-});
-
-
-
-export const KeepDialogContent = createComponent({
-  tagName: 'keep-dialog-content',
-  elementClass: DialogContent,
-  react: React
-});
-
-export const KeepDialogHeader = createComponent({
-  tagName: 'keep-dialog-header',
-  elementClass: DialogHeader,
-  react: React
-});
-
-export const KeepDialogActions = createComponent({
-  tagName: 'keep-dialog-actions',
-  elementClass: DialogActions,
-  react: React
-});
-
-export const KeepButton = createComponent({
-  tagName: 'keep-button',
-  elementClass: Button,
-  react: React
-});
-
-export const KeepInputDate = createComponent({
-  tagName: 'keep-input-date',
-  elementClass: InputDate,
-  react: React,
-  events: { onDateChange: 'date-change' },
-});
-
-export const KeepDropdown = createComponent({
-  tagName: 'keep-dropdown',
-  elementClass: Dropdown,
-  react: React
-});
-
-export const KeepAppStatus = createComponent({
-  tagName: 'keep-app-status',
-  elementClass: AppStatus,
-  react: React
-});
-
-export const KeepApiErrorDialog = createComponent({
-  tagName: 'keep-api-error-dialog',
-  elementClass: ApiErrorDialog,
-  react: React
-});
-
-export const KeepDefaultCard = createComponent({
-  tagName: 'keep-default-card',
-  elementClass: DefaultCard,
-  react: React
-});
-
-export const KeepAlert = createComponent({
-  tagName: 'keep-alert',
-  elementClass: Alert,
-  react: React
-});
-
-export const KeepDrawer = createComponent({
-  tagName: 'keep-drawer',
-  elementClass: Drawer,
-  react: React
-});
-
-export const KeepSwitch = createComponent({
-  tagName: 'keep-switch',
-  elementClass: Switch,
-  react: React
-});
-
-export const KeepNsfCard = createComponent({
-  tagName: 'keep-nsf-card',
-  elementClass: NsfCard,
-  react: React
-});
-
-export const KeepTooltip = createComponent({
-  tagName: 'keep-tooltip',
-  elementClass: Tooltip,
-  react: React
-});
-
-export const KeepCheckbox = createComponent({
-  tagName: 'keep-checkbox',
-  elementClass: Checkbox,
-  react: React,
-  events: {
-    onChange: 'change'
-  }
-});
-
-export const KeepTree = createComponent({
-  tagName: 'keep-tree',
-  elementClass: Tree,
-  react: React,
-  events: {
-    onItemSelect: 'item-select' as EventName<CustomEvent<KeepTreeSelectDetail>>
-  }
-});
-
 /**
- * Pagination here is **controlled**: pass `page` and `rowsPerPage` down, and update them
- * from `onPageChange` / `onRowsPerPageChange`. The element never writes them back — see
- * the note in `keep-data-table.ts` for why that matters with this wrapper.
+ * Re-export barrel over `keep-elements/react/*` (#813 step 2).
+ *
+ * Every wrapper used to be declared here, in one module. That made the file the single
+ * eager entry point for all 34 Lit elements and everything they import: a module wanting
+ * `KeepTooltip` pulled in Monaco's wrapper, the data table, the source editor and every
+ * WebAwesome component they reach. Eight modules on the critical path did exactly that,
+ * which is why route splitting alone only moved the eager bundle 17 %.
+ *
+ * The declarations now live one per file under `./react/`. This barrel stays so the ~50
+ * route-local importers and the test suites keep their import path — inside a route
+ * chunk the whole set is wanted anyway. **Modules on the eager path import from
+ * `./react/<Name>` directly**, and `test/bundle-budget.test.ts` plus the budget gate are
+ * what keep it that way.
  */
-export const KeepDataTable = createComponent({
-  tagName: 'keep-data-table',
-  elementClass: DataTable,
-  react: React,
-  events: {
-    onPageChange: 'page-change' as EventName<CustomEvent<KeepDataTablePageChangeDetail>>,
-    onRowsPerPageChange: 'rows-per-page-change' as EventName<
-      CustomEvent<KeepDataTableRowsPerPageChangeDetail>
-    >
-  }
-});
 
-export const KeepMonacoEditor = createComponent({
-  tagName: 'keep-monaco-editor',
-  elementClass: MonacoEditor,
-  react: React,
-  events: {
-    onChange: 'change'
-  }
-});
-
-export const KeepFooter = createComponent({
-  tagName: 'keep-footer',
-  elementClass: Footer,
-  react: React
-});
-
-export const KeepPageLoading = createComponent({
-  tagName: 'keep-page-loading',
-  elementClass: PageLoading,
-  react: React
-});
-
-export const KeepZeroResults = createComponent({
-  tagName: 'keep-zero-results',
-  elementClass: ZeroResults,
-  react: React
-});
-
-export const KeepScopesDefaultView = createComponent({
-  tagName: 'keep-scopes-default-view',
-  elementClass: ScopesDefaultView,
-  react: React,
-  events: {
-    onScopeOpen: 'scope-open' as EventName<CustomEvent<KeepScopeOpenDetail>>
-  }
-});
-
-export const KeepScopesCardsView = createComponent({
-  tagName: 'keep-scopes-cards-view',
-  elementClass: ScopesCardsView,
-  react: React,
-  events: {
-    onScopeOpen: 'scope-open' as EventName<CustomEvent<KeepScopeOpenDetail>>
-  }
-});
-
-export const KeepHomepage = createComponent({
-  tagName: 'keep-homepage',
-  elementClass: Homepage,
-  react: React
-});
-
-export const KeepMobileHeader = createComponent({
-  tagName: 'keep-mobile-header',
-  elementClass: MobileHeader,
-  react: React
-});
-
-export const KeepPageRouters = createComponent({
-  tagName: 'keep-page-routers',
-  elementClass: PageRouters,
-  react: React
-});
-
-export const KeepErrorWrapper = createComponent({
-  tagName: 'keep-error-wrapper',
-  elementClass: ErrorWrapper,
-  react: React
-});
-
-export const KeepUnsavedChangesDialog = createComponent({
-  tagName: 'keep-unsaved-changes-dialog',
-  elementClass: UnsavedChangesDialog,
-  react: React,
-  events: {
-    // Prefixed on the element side so they cannot be confused with the native <dialog>
-    // `cancel`/`close` events; the React-facing names stay as they were.
-    onSave: 'dialog-save' as EventName<CustomEvent<KeepUnsavedChangesDialogDetail>>,
-    onDiscard: 'dialog-discard' as EventName<CustomEvent<KeepUnsavedChangesDialogDetail>>,
-    onCancel: 'dialog-cancel' as EventName<CustomEvent<KeepUnsavedChangesDialogDetail>>
-  }
-});
-
-export const KeepFormDialogHeader = createComponent({
-  tagName: 'keep-form-dialog-header',
-  elementClass: FormDialogHeader,
-  react: React,
-  events: {
-    // Maps to `header-close` rather than `close` so it cannot be confused with the native
-    // <dialog> event; consumers keep writing `onClose={…}` either way.
-    onClose: 'header-close' as EventName<CustomEvent<KeepFormDialogHeaderCloseDetail>>
-  }
-});
+export { KeepAutocomplete } from './react/KeepAutocomplete';
+export { KeepSourceTree } from './react/KeepSourceTree';
+export { KeepSource } from './react/KeepSource';
+export { KeepTextform } from './react/KeepTextform';
+export { KeepTextformArray } from './react/KeepTextformArray';
+export { KeepDialogContent } from './react/KeepDialogContent';
+export { KeepDialogHeader } from './react/KeepDialogHeader';
+export { KeepDialogActions } from './react/KeepDialogActions';
+export { KeepButton } from './react/KeepButton';
+export { KeepInputDate } from './react/KeepInputDate';
+export { KeepDropdown } from './react/KeepDropdown';
+export { KeepAppStatus } from './react/KeepAppStatus';
+export { KeepApiErrorDialog } from './react/KeepApiErrorDialog';
+export { KeepDefaultCard } from './react/KeepDefaultCard';
+export { KeepAlert } from './react/KeepAlert';
+export { KeepDrawer } from './react/KeepDrawer';
+export { KeepSwitch } from './react/KeepSwitch';
+export { KeepNsfCard } from './react/KeepNsfCard';
+export { KeepTooltip } from './react/KeepTooltip';
+export { KeepCheckbox } from './react/KeepCheckbox';
+export { KeepTree } from './react/KeepTree';
+export { KeepDataTable } from './react/KeepDataTable';
+export { KeepMonacoEditor } from './react/KeepMonacoEditor';
+export { KeepFooter } from './react/KeepFooter';
+export { KeepPageLoading } from './react/KeepPageLoading';
+export { KeepZeroResults } from './react/KeepZeroResults';
+export { KeepScopesDefaultView } from './react/KeepScopesDefaultView';
+export { KeepScopesCardsView } from './react/KeepScopesCardsView';
+export { KeepHomepage } from './react/KeepHomepage';
+export { KeepMobileHeader } from './react/KeepMobileHeader';
+export { KeepPageRouters } from './react/KeepPageRouters';
+export { KeepErrorWrapper } from './react/KeepErrorWrapper';
+export { KeepUnsavedChangesDialog } from './react/KeepUnsavedChangesDialog';
+export { KeepFormDialogHeader } from './react/KeepFormDialogHeader';

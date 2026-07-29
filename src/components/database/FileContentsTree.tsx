@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { AvailableDatabases } from '../../store/databases/types';
 import APILoadingProgress from '../loading/APILoadingProgress';
-import { KeepTree } from '../keep-elements/KeepElements';
+import { KeepTree } from '../keep-elements/react/KeepTree';
 import type { KeepTreeNode, KeepTreeSelectDetail } from '../keep-elements/keep-tree';
 
 /** Font Awesome glyphs registered in `services/icon-library`. */

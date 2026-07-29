@@ -19,7 +19,7 @@ import { AppState } from '../../store';
 import { appRoutes as routes, apps, databases, settings } from './Routes';
 import { showPages } from '../../store/account/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
-import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 import { useAppDispatch } from '../../store/hooks';
 
 /**
