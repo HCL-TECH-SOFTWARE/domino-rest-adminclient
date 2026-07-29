@@ -55,3 +55,4 @@ export { KeepErrorWrapper } from './react/KeepErrorWrapper';
 export { KeepUnsavedChangesDialog } from './react/KeepUnsavedChangesDialog';
 export { KeepFormDialogHeader } from './react/KeepFormDialogHeader';
 export { KeepNetworkErrorDialog } from './react/KeepNetworkErrorDialog';
+export { KeepDeleteDialog } from './react/KeepDeleteDialog';

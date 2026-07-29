@@ -14,10 +14,9 @@ import { Box } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../../../store';
 import { DeleteIcon } from '../../../../../styles/CommonStyles';
-import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
-import { KeepTooltip } from '../../../../keep-elements/KeepElements';
+import { KeepDeleteDialog, KeepTooltip } from '../../../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../../../store/hooks';
 
 const AlphabeticalViewContainer = styled.div`
@@ -204,7 +203,6 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
   const allLetters = getAllLetters();
 
   const { scopes, permissions } = useSelector((state: AppState) => state.databases);
-  const { deleteDialog } = useSelector((state: AppState) => state.dialog);
   const dispatch = useAppDispatch();
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
   const [selectedNsf, setSelectedNsf] = useState('');
@@ -341,13 +339,12 @@ const SchemasAlphabeticalView: React.FC<AlphabeticalSchemaViewProps> = ({
           }
         </Box>
       </AlphabeticalViewContainer>
-      <DeleteDialog
+      <KeepDeleteDialog
         selected={{
           isDeleteSchema: true,
           nsfPath: selectedNsf,
           schemaName: selectedDB,
         }}
-        open={deleteDialog}
       />
     </>
   );

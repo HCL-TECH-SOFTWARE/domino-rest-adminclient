@@ -1176,20 +1176,6 @@ body[data-theme="dark"] .add-import-svg-icon {
 }
 
 /* DeleteDialog.tsx */
-.delete-dialog-progress-icon {
-    min-width: 400;
-    height: 150;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.delete-schema-dialog-text {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    word-break: break-word;
-}
-
 /* SingleFieldContainer.tsx */
 .item-container {
     display: flex;

@@ -9,10 +9,9 @@ import { useNavigate } from '../../../../../router/react';
 import { ExtraFlex } from '../../../../flex';
 import { mapSchemas } from '../../../../../utils/mapper';
 import { SchemasMainContainer } from './SchemaStyles';
-import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { shallowEqual, useSelector } from 'react-redux';
 import { AppState } from '../../../../../store';
-import { KeepNsfCard } from '../../../../keep-elements/KeepElements';
+import { KeepDeleteDialog, KeepNsfCard } from '../../../../keep-elements/KeepElements';
 import { toggleDeleteDialog } from '../../../../../store/dialog/action';
 import { toggleAlert } from '../../../../../store/alerts/action';
 import { useAppDispatch } from '../../../../../store/hooks';
@@ -27,7 +26,6 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
   const navigate = useNavigate();
   const [selectedNsf, setSelectedNsf] = useState('');
   const [selectedDB, setSelectedDB] = useState('');
-  const { deleteDialog } = useSelector((state: AppState) => state.dialog, shallowEqual);
   const [schemasWithScopes, setSchemasWithScopes] = useState([]) as any;
   const { scopes, permissions } = useSelector((state: AppState) => state.databases, shallowEqual);
   
@@ -93,13 +91,12 @@ const SchemasDefaultView: React.FC<SchemasDefaultViewProps> = ({
           }
         </ExtraFlex>
       </SchemasMainContainer>
-      <DeleteDialog
+      <KeepDeleteDialog
         selected={{
           isDeleteSchema: true,
           nsfPath: selectedNsf,
           schemaName: selectedDB,
         }}
-        open={deleteDialog}
       />
     </>
   );

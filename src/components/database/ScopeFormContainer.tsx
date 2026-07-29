@@ -10,7 +10,6 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import ScopeForm from './ScopeForm';
 import { AppState } from '../../store';
-import DeleteDialog from '../dialogs/DeleteDialog';
 import { toggleDrawer } from '../../store/drawer/action';
 import { changeScope, clearDBError } from '../../store/databases/action';
 import { toggleDeleteDialog } from '../../store/dialog/action';
@@ -19,7 +18,7 @@ import {
   DrawerFormContainer,
 } from '../../styles/CommonStyles';
 import { toggleAlert } from '../../store/alerts/action';
-import { KeepDrawer } from '../keep-elements/KeepElements';
+import { KeepDeleteDialog, KeepDrawer } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 type ScopeFormContainerProps = {
@@ -50,7 +49,6 @@ const ScopeFormSchema = Yup.object().shape({
 
 const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit, permissions}) => {
   const { visible } = useSelector((state: AppState) => state.drawer);
-  const { deleteDialog } = useSelector((state: AppState) => state.dialog);
   const dispatch = useAppDispatch();
   const descriptionElementRef = React.useRef<HTMLElement>(null);
   const [nsfPath, setNsfPath] = useState('');
@@ -208,12 +206,11 @@ const ScopeFormContainer: React.FC<ScopeFormContainerProps> = ({database, isEdit
           handleDelete={handleDelete}
           path={{ nsfPath, setNsfPath, schemaName, setSchemaName: handleSetSchema }}
         />
-        <DeleteDialog
+        <KeepDeleteDialog
           selected={{
             isDeleteSchema: false,
             apiName: database.apiName,
           }}
-          open={deleteDialog}
         />
       </DrawerFormContainer>
     </KeepDrawer>

@@ -10,11 +10,10 @@ import { useSelector } from 'react-redux';
 import { Scope } from '../../../../../store/databases/types';
 import { AppState } from '../../../../../store';
 import SlimDatabaseCard from '../../../../database/views/SlimDatabaseCard';
-import DeleteDialog from '../../../../dialogs/DeleteDialog';
 import { setDbIndex } from '../../../../../store/databases/action';
 import { getDatabaseIndex } from '../../../../../store/databases/scripts';
 import { SchemasMainContainer, StackHeader } from './SchemaStyles';
-import { KeepZeroResults } from '../../../../keep-elements/KeepElements';
+import { KeepDeleteDialog, KeepZeroResults } from '../../../../keep-elements/KeepElements';
 import { ExtraFlex } from '../../../../flex';
 import { useAppDispatch } from '../../../../../store/hooks';
 
@@ -26,7 +25,6 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
   const { scopes, onlyShowSchemasWithScopes } = useSelector(
     (state: AppState) => state.databases
   );
-  const { deleteDialog } = useSelector((state: AppState) => state.dialog);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const setOption = useState({})[1];
@@ -155,13 +153,12 @@ const SchemasStacksView: React.FC<SchemasStacksViewProps> = ({ databases }) => {
           </>
         </>
       )}
-      <DeleteDialog
+      <KeepDeleteDialog
         selected={{
           isDeleteSchema: true,
           nsfPath: selectedNsf,
           schemaName: selectedDB,
         }}
-        open={deleteDialog}
       />
     </SchemasMainContainer>
   );
