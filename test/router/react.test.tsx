@@ -205,6 +205,152 @@ describe('Link', () => {
     fireEvent.click(screen.getByText('Schemas'));
     expect(router.location().pathname).toBe('/');
   });
+
+  describe('prefetch on intent', () => {
+    /**
+     * #813 step 4. Hovering a link starts fetching the route's chunk before the click.
+     *
+     * The delay is the point: without it, sweeping the cursor across the sidebar on the
+     * way to somewhere else fetches every chunk it crosses. So each of these asserts on
+     * *when* the fetch happens, not only that it does.
+     *
+     * Dedup is not retested here — it lives in `Router.prefetch`, which caches the promise
+     * per route and has its own cases in `router.test.ts`.
+     */
+    const setConnection = (value: unknown) => {
+      Object.defineProperty(navigator, 'connection', {
+        value,
+        configurable: true,
+        writable: true,
+      });
+    };
+
+    afterEach(() => {
+      vi.useRealTimers();
+      setConnection(undefined);
+    });
+
+    const renderLink = (extra: Record<string, unknown> = {}) => {
+      const router = makeRouter('/');
+      router.setRoutes([{ path: '/schema', load: vi.fn() }]);
+      const spy = vi.spyOn(router, 'prefetch').mockReturnValue(undefined);
+      render(
+        <RouterProvider router={router}>
+          <Link to="/schema" {...extra}>
+            Schemas
+          </Link>
+        </RouterProvider>,
+      );
+      return { spy, link: screen.getByText('Schemas') };
+    };
+
+    it('does not prefetch before the intent delay elapses', () => {
+      vi.useFakeTimers();
+      const { spy, link } = renderLink();
+
+      fireEvent.pointerEnter(link);
+      act(() => void vi.advanceTimersByTime(79));
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('prefetches once the pointer has rested', () => {
+      vi.useFakeTimers();
+      const { spy, link } = renderLink();
+
+      fireEvent.pointerEnter(link);
+      act(() => void vi.advanceTimersByTime(80));
+
+      expect(spy).toHaveBeenCalledWith('/schema');
+    });
+
+    it('cancels when the pointer leaves before the delay', () => {
+      vi.useFakeTimers();
+      const { spy, link } = renderLink();
+
+      fireEvent.pointerEnter(link);
+      act(() => void vi.advanceTimersByTime(50));
+      fireEvent.pointerLeave(link);
+      act(() => void vi.advanceTimersByTime(500));
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    /** Keyboard users reach a link by focus, never by pointer. */
+    it('prefetches on focus, and cancels on blur', () => {
+      vi.useFakeTimers();
+      const { spy, link } = renderLink();
+
+      fireEvent.focus(link);
+      act(() => void vi.advanceTimersByTime(80));
+      expect(spy).toHaveBeenCalledWith('/schema');
+
+      spy.mockClear();
+      fireEvent.focus(link);
+      fireEvent.blur(link);
+      act(() => void vi.advanceTimersByTime(500));
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('does not fire after the link unmounts mid-hover', () => {
+      vi.useFakeTimers();
+      const { spy, link } = renderLink();
+
+      fireEvent.pointerEnter(link);
+      cleanup();
+      act(() => void vi.advanceTimersByTime(500));
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('respects saveData', () => {
+      vi.useFakeTimers();
+      setConnection({ saveData: true, effectiveType: '4g' });
+      const { spy, link } = renderLink();
+
+      fireEvent.pointerEnter(link);
+      act(() => void vi.advanceTimersByTime(500));
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it.each(['2g', 'slow-2g'])('does not spend a %s connection on a guess', (effectiveType) => {
+      vi.useFakeTimers();
+      setConnection({ effectiveType });
+      const { spy, link } = renderLink();
+
+      fireEvent.pointerEnter(link);
+      act(() => void vi.advanceTimersByTime(500));
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('prefetches on a fast connection, and where the API is absent', () => {
+      vi.useFakeTimers();
+      setConnection({ effectiveType: '4g' });
+      const fast = renderLink();
+      fireEvent.pointerEnter(fast.link);
+      act(() => void vi.advanceTimersByTime(80));
+      expect(fast.spy).toHaveBeenCalled();
+
+      cleanup();
+      setConnection(undefined); // Safari and Firefox
+      const absent = renderLink();
+      fireEvent.pointerEnter(absent.link);
+      act(() => void vi.advanceTimersByTime(80));
+      expect(absent.spy).toHaveBeenCalled();
+    });
+
+    it('still runs a caller-supplied pointer handler', () => {
+      vi.useFakeTimers();
+      const onPointerEnter = vi.fn();
+      const { link } = renderLink({ onPointerEnter });
+
+      fireEvent.pointerEnter(link);
+
+      expect(onPointerEnter).toHaveBeenCalledTimes(1);
+    });
+  });
 });
 
 describe('NavLink', () => {
