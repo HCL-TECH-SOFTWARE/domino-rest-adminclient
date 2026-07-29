@@ -6,7 +6,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@linaria/react';
-import { Box, TableCell, TableRow } from '@mui/material';
+import { Box } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
 import { AppIcon } from '../commons/AppIcon';
 import { generateSecret } from '../../store/applications/action';
@@ -18,7 +18,7 @@ import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { KeepAppStatus, KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
-const StyledTableRow = styled(TableRow)`
+const Row = styled.tr`
   .expand keep-tooltip {
     display: block;
   }
@@ -225,8 +225,8 @@ const AppItem: React.FC<AppItemProps> = ({
   return (
     (
         <>
-            <StyledTableRow>
-                <TableCell className='expand'>
+            <Row>
+                <td className='expand'>
                     {app.appStatus === 'isActive' && <KeepTooltip content={`Launch ${app.appName}`} className='w-30px'>
                         <button
                           onClick={launch}
@@ -246,8 +246,8 @@ const AppItem: React.FC<AppItemProps> = ({
                             <path d="M16.666 13.3333L26.666 19.9999L16.666 26.6666V13.3333Z" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </KeepTooltip>}
-                </TableCell>
-                <TableCell className='app-name'>
+                </td>
+                <td className='app-name'>
                   <AppNameContainer>
                     <AppIcon
                         name={app.appIcon}
@@ -262,8 +262,8 @@ const AppItem: React.FC<AppItemProps> = ({
                         </div>
                     </div>
                   </AppNameContainer>
-                </TableCell>
-                <TableCell className='expiration exp-content'>
+                </td>
+                <td className='expiration exp-content'>
                   <Box>
                     <AppIdSecretContainer>
                       <span className='small-text'>App ID:</span>
@@ -342,11 +342,11 @@ const AppItem: React.FC<AppItemProps> = ({
                       </AppIdSecretContainer>
                     )}
                   </Box>
-                </TableCell>
-                <TableCell>
+                </td>
+                <td>
                   <span className='small-text'>{app.appDescription}</span>
-                </TableCell>
-                <TableCell>
+                </td>
+                <td>
                   <OptionsContainer>
                     <KeepTooltip content="Edit Application" className='w-30px flex flex-end'>
                       <button
@@ -368,8 +368,8 @@ const AppItem: React.FC<AppItemProps> = ({
                       </button>
                     </KeepTooltip>
                   </OptionsContainer>
-                </TableCell>
-            </StyledTableRow>
+                </td>
+            </Row>
             <dialog ref={ref} onClose={() => setIsGenerate(false)} className='regen-app-secret-dialog'>
                 <div className="dialog-title">
                   <text className='dialog-title-text'>Regenerate App Secret?</text>

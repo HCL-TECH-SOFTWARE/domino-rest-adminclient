@@ -6,25 +6,17 @@
 
 import * as React from 'react';
 import { styled } from '@linaria/react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import { IconButton, TableFooter, TablePagination } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import APILoadingProgress from '../../loading/APILoadingProgress';
 import { Consent } from '../../../store/consents/types';
 import ConsentItem from './ConsentItem';
-import { FirstPage, LastPage, KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import ConsentFilterContainer from '../../consents/ConsentFilterContainer';
 import { FaSort } from "react-icons/fa";
+import { KeepDataTable } from '../../keep-elements/KeepElements';
 
-const StyledTableHead = styled(TableHead)`
+const Head = styled.thead`
   border-bottom: 1px solid var(--wa-color-surface-border);
-  background-color: light-dark(#F0F4F7, #252535);
 
   .text {
     font-weight: bold;
@@ -40,20 +32,14 @@ const StyledTableHead = styled(TableHead)`
   }
 `
 
-const StyledTableBody = styled(TableBody)`
+const Body = styled.tbody`
   font-size: var(--wa-font-size-m);
   padding-top: 20px;
   padding-bottom: 20px;
   border-bottom: none;
 `
 
-const StyledTableContainer = styled(TableContainer)`
-  border-radius: var(--wa-border-radius-l);
-  box-sizing: border-box;
-  border: 1px solid var(--wa-color-surface-border);
-  background: var(--wa-color-surface-raised);
-  padding: 0;
-
+const ColumnLayout = styled.div`
   .expand {
     width: 50px;
   }
@@ -113,20 +99,6 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
   // sorting flags states
   const [sortUser, setSortUser] = React.useState(true)
   const [sortAppName, setSortAppName] = React.useState(true)
-
-  const handleChangePage = (
-    _event: React.MouseEvent<HTMLButtonElement> | null,
-    newPage: number,
-  ) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  }
 
   const resetFilters = () => {
     setStatus("All")
@@ -311,114 +283,84 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
         {consentsLoading || usersLoading ? 
           <APILoadingProgress label="Users and Consents" />
           :
-          <StyledTableContainer>
-            <Table aria-label="consents table">
-              <StyledTableHead>
-                <TableRow>
-                  <TableCell className='expand' />
-                  <TableCell className='user'>
-                    <div className='full-width flex flex-col gap-3'>
-                      <span className='small-text text-bold flex items-center gap-3'>
-                        User
-                        <button
-                          onClick={handleSortUsers}
-                          className='no-background no-border cursor-pointer m-0 p-0'
-                        >
-                          <FaSort />
-                        </button>
-                      </span>
-                      <input type='text' placeholder='Search User' value={user} onChange={(e) => setUser(e.target.value)} className='search-bar' />
-                    </div>
-                  </TableCell>
-                  <TableCell className='app-name text'>
-                    <div className='full-width flex flex-col gap-3'>
-                      <span className='small-text text-bold flex items-center gap-3'>
-                        App Name
-                        <button
-                          onClick={handleSortAppNames}
-                          className='no-background no-border cursor-pointer m-0 p-0'
-                        >
-                          <FaSort />
-                        </button>
-                      </span>
-                      <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
-                    </div>
-                  </TableCell>
-                  <TableCell className='expirations text'>
-                    <div className='full-width flex flex-col gap-3'>
-                      <span className='small-text text-bold flex items-center gap-3'>
-                        Expirations
-                      </span>
-                      <input type='text' className='search-bar hidden' />
-                    </div>
-                  </TableCell>
-                  <TableCell className='action text'>
-                    <div className='full-width flex flex-col gap-3'>
-                      <span className='small-text text-bold flex items-center gap-3'>
-                        Action
-                      </span>
-                      <input type='text' className='search-bar hidden' />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              </StyledTableHead>
-              <StyledTableBody>
-                {(rowsPerPage > 0
-                  ? filteredConsents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  : filteredConsents
-                )
-                  .map((consent: Consent, idx: number) => {
-                    return (
-                      <ConsentItem
-                        key={`${consent.username}-${idx}`}
-                        consent={consent}
-                        expand={expand}
-                      />
-                    )
-                  })}
-              </StyledTableBody>
-              <TableFooter>
-                <TableRow>
-                  <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-                    count={filteredConsents.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    slotProps={{
-                      select: {
-                        inputProps: {
-                          'aria-label': 'rows per page',
-                        },
-                        style: {
-                          borderRadius: '10px',
-                          border: '1px solid currentColor',
-                          width: '70px',
-                        }
-                      }
-                    }}
-                    ActionsComponent={({ count, page }) => (
-                      <div className='shrink-0 ml-10'>
-                        <IconButton disabled={page === 0} aria-label='First Page' onClick={() => setPage(0)}>
-                          <FirstPage />
-                        </IconButton>
-                        <IconButton disabled={page === 0} aria-label="Previous Page" onClick={() => setPage(page - 1)}>
-                          <KeyboardArrowLeft />
-                        </IconButton>
-                        <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Next Page' onClick={() => setPage(page + 1)}>
-                          <KeyboardArrowRight />
-                        </IconButton>
-                        <IconButton disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label='Last Page' onClick={() => setPage(Math.max(0, Math.ceil(filteredConsents.length / rowsPerPage) - 1))}>
-                          <LastPage />
-                        </IconButton>
+          <ColumnLayout>
+            <KeepDataTable
+              paginated
+              headerBand
+              count={filteredConsents.length}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              onPageChange={(e) => setPage(e.detail.page)}
+              onRowsPerPageChange={(e) => { setRowsPerPage(e.detail.rowsPerPage); setPage(0); }}
+            >
+              <table aria-label="consents table">
+                <Head>
+                  <tr>
+                    <th className='expand' />
+                    <th className='user'>
+                      <div className='full-width flex flex-col gap-3'>
+                        <span className='small-text text-bold flex items-center gap-3'>
+                          User
+                          <button
+                            onClick={handleSortUsers}
+                            className='no-background no-border cursor-pointer m-0 p-0'
+                          >
+                            <FaSort />
+                          </button>
+                        </span>
+                        <input type='text' placeholder='Search User' value={user} onChange={(e) => setUser(e.target.value)} className='search-bar' />
                       </div>
-                    )}
-                  />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </StyledTableContainer>
+                    </th>
+                    <th className='app-name text'>
+                      <div className='full-width flex flex-col gap-3'>
+                        <span className='small-text text-bold flex items-center gap-3'>
+                          App Name
+                          <button
+                            onClick={handleSortAppNames}
+                            className='no-background no-border cursor-pointer m-0 p-0'
+                          >
+                            <FaSort />
+                          </button>
+                        </span>
+                        <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />
+                      </div>
+                    </th>
+                    <th className='expirations text'>
+                      <div className='full-width flex flex-col gap-3'>
+                        <span className='small-text text-bold flex items-center gap-3'>
+                          Expirations
+                        </span>
+                        <input type='text' className='search-bar hidden' />
+                      </div>
+                    </th>
+                    <th className='action text'>
+                      <div className='full-width flex flex-col gap-3'>
+                        <span className='small-text text-bold flex items-center gap-3'>
+                          Action
+                        </span>
+                        <input type='text' className='search-bar hidden' />
+                      </div>
+                    </th>
+                  </tr>
+                </Head>
+                <Body>
+                  {(rowsPerPage > 0
+                    ? filteredConsents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    : filteredConsents
+                  )
+                    .map((consent: Consent, idx: number) => {
+                      return (
+                        <ConsentItem
+                          key={`${consent.username}-${idx}`}
+                          consent={consent}
+                          expand={expand}
+                        />
+                      )
+                    })}
+                </Body>
+              </table>
+            </KeepDataTable>
+          </ColumnLayout>
         }
         <ConsentFilterContainer
           setStatus={setStatus}

@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { styled } from '@linaria/react';
-import { Box, Collapse, TableCell, TableRow } from '@mui/material';
+import { Box, Collapse } from '@mui/material';
 import { AppState } from '../../../store';
 import { toggleDeleteConsent } from '../../../store/consents/action';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -16,7 +16,7 @@ import { Consent } from '../../../store/consents/types';
 import { KeepTooltip } from '../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../store/hooks';
 
-const StyledTableRow = styled(TableRow)`
+const Row = styled.tr`
   .exp-content {
     display: flex;
     flex-direction: column;
@@ -103,26 +103,26 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
   return (
     (
         <>
-            <StyledTableRow>
-                <TableCell className='expand off-border'>
-                    {!showDetails && 
+            <Row>
+                <td className='expand off-border'>
+                    {!showDetails &&
                     <button
                       onClick={() => {setShowDetails(true)}}
                       className='no-background no-border cursor-pointer m-0 p-0'
                     >
                       <ExpandMoreIcon />
                     </button>}
-                    {showDetails && 
+                    {showDetails &&
                     <button
                       onClick={() => {setShowDetails(false)}}
                       className='no-background no-border cursor-pointer m-0 p-0'
                     >
                       <ExpandLessIcon />
                     </button>}
-                </TableCell>
-                <TableCell className='user off-border'>{username}</TableCell>
-                <TableCell className='app-name off-border'>{app ? app.appName : "-"}</TableCell>
-                <TableCell className='expiration exp-content off-border'>
+                </td>
+                <td className='user off-border'>{username}</td>
+                <td className='app-name off-border'>{app ? app.appName : "-"}</td>
+                <td className='expiration exp-content off-border'>
                     <Box className='exp-row'>
                         <KeepTooltip content={expirationPast > 0 && expirationPast <= 86400000 ? "Expiring in less than a day" : ""}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 9 9" fill="none">
@@ -145,18 +145,18 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                           {`${new Date(consent.refresh_token_expires_at).toUTCString() !== 'Invalid Date' ? new Date(consent.refresh_token_expires_at).toUTCString() : "-"}`}
                         </span>
                     </Box>
-                </TableCell>
-                <TableCell className='off-border'>
+                </td>
+                <td className='off-border'>
                   <button
                     onClick={handleClickRevoke}
                     className='revoke no-background no-border cursor-pointer m-0 p-0'
                   >
                     Revoke
                   </button>
-                </TableCell>
-            </StyledTableRow>
-            <StyledTableRow>
-                <TableCell colSpan={5}>
+                </td>
+            </Row>
+            <Row>
+                <td colSpan={5}>
                     <Collapse in={showDetails} timeout="auto" unmountOnExit>
                         <UrlContainer>
                             <span><b>URL:</b></span>
@@ -171,8 +171,8 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                             </Box>
                         </UrlContainer>
                     </Collapse>
-                </TableCell>
-            </StyledTableRow>
+                </td>
+            </Row>
       </>
     )
   );
