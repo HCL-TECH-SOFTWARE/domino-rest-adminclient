@@ -28,16 +28,33 @@ export default class DefaultCard extends KeepElement {
             color-scheme: inherit;
             color: var(--wa-color-text-loud);
         }
+        /*
+         * NO BACKTICKS IN THIS BLOCK -- it is inside a css tagged template, and one ends
+         * the template.
+         *
+         * What is deliberately absent here, having been measured rather than assumed:
+         *
+         *  - --wa-panel-background-color and --wa-panel-border-color. wa-card does not read
+         *    either. It reads --wa-color-surface-*, --wa-panel-border-radius and
+         *    --wa-shadow-s. Setting those two looked like theming and did nothing.
+         *  - a wa-card::part(base) rule. That part does not exist -- card exposes body,
+         *    header, footer and media. Painting it red changed nothing on screen, which is
+         *    how three more declarations turned out to be dead.
+         *
+         * The visible bug all of that was hiding: in LIGHT mode
+         * --wa-color-surface-raised is white and so is --wa-color-surface-default, and the
+         * card also set border: none. A white card with no border on a white page, held up
+         * only by wa-card's own --wa-shadow-s (about 0 2px 2px -1px). Dark mode was always
+         * fine, because there the two surfaces genuinely differ (#252535 on #1e1e2e).
+         *
+         * So the border is real now, from the NEUTRAL ramp rather than the surface one, and
+         * the shadow is a step up.
+         */
         wa-card {
-            --wa-panel-background-color: var(--wa-color-surface-raised);
-            --wa-panel-border-color: var(--wa-color-surface-border);
             color: var(--wa-color-text-loud);
             background: var(--wa-color-surface-raised);
-        }
-        wa-card::part(base) {
-            background: var(--wa-color-surface-raised);
-            border-color: var(--wa-color-surface-border);
-            color: var(--wa-color-text-loud);
+            border-color: var(--wa-color-neutral-border-normal);
+            box-shadow: var(--wa-shadow-l);
         }
         wa-card::part(body) {
             background: var(--wa-color-surface-raised);
@@ -54,9 +71,7 @@ export default class DefaultCard extends KeepElement {
             color: var(--wa-color-text-loud);
         }
         wa-card {
-            --border-radius: var(--wa-border-radius-l);
             margin: 0;
-            border: none;
             border-radius: 15px;
             width: 315px;
             height: 250px;
@@ -67,9 +82,21 @@ export default class DefaultCard extends KeepElement {
             justify-content: space-between;
             box-sizing: border-box;
             overflow: hidden;
+            /*
+             * border: none used to sit here and is what made the card edgeless in light
+             * mode. --border-radius sat here too and did nothing -- wa-card reads
+             * --wa-panel-border-radius; the literal border-radius below is what has been
+             * doing the work all along.
+             */
             &:hover {
                 cursor: pointer;
-                --border-color: #5F1EBE;
+                /*
+                 * Was --border-color: #5F1EBE, which was inert twice over: nothing reads
+                 * --border-color, and #5F1EBE is the fourth purple that predated the ramp
+                 * -- config.dev.ts records #706 replacing it with #7c5fd9. Now it is the
+                 * real property and the brand token, so hovering a card actually shows.
+                 */
+                border-color: var(--wa-color-brand-50);
             }
         }
 
