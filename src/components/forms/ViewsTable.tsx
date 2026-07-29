@@ -6,12 +6,6 @@
 
 import * as React from 'react';
 import { styled } from '@linaria/react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import ActivateSwitch from './ActivateSwitch';
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
@@ -20,45 +14,8 @@ import { toggleAlert } from '../../store/alerts/action';
 import { FiEdit2 } from 'react-icons/fi';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaRegFolderOpen } from "react-icons/fa";
-import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
-
-const StyledTableCell = styled(TableCell)`
-  padding-left: 30px;
-  padding-right: 30px;
-`
-
-const StyledTableHead = styled(TableHead)`
-  font-weight: bold;
-  padding-top: 30px;
-  border-bottom: 1px solid var(--wa-color-surface-border);
-`
-
-const StyledTableBody = styled(TableBody)`
-  font-size: var(--wa-font-size-m);
-  padding-top: 20px;
-  padding-bottom: 20px;
-  border-bottom: none;
-`
-
-const StyledTableRow = styled(TableRow)`
-  &:nth-of-type(odd) {
-    background-color: var(--keep-surface-accent);
-    border-bottom: none;
-  }
-
-  // hide last border
-  &:last-child th, &:last-child td {
-    border-bottom: 0;
-  }
-`
-
-const StyledTableContainer = styled(TableContainer)`
-  border-radius: var(--wa-border-radius-l);
-  box-sizing: border-box;
-  border: 1px solid var(--wa-color-surface-border);
-  background: var(--wa-color-surface-raised);
-`
 
 const StatusHeader = styled.div`
   cursor: default;
@@ -96,6 +53,9 @@ const AliasContainer = styled.span`
     cursor: default;
 `
 
+/** `width` is valid on <th> but absent from React's ThHTMLAttributes, which types it only on <td>. */
+const colWidth = (width: string) => ({ width });
+
 interface ViewsTableProps {
   views: Array<any>;
   toggleActive: any;
@@ -121,16 +81,16 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
       setViewOpen(true);
     }
   }
-  
+
   return (
-    <StyledTableContainer>
-      <Table className='p-30' aria-label="views and agents table">
-        <StyledTableHead>
-          <TableRow>
-            <StyledTableCell width="50px" />
-            <StyledTableCell width="550px">View Name</StyledTableCell>
-            <StyledTableCell width="500px">Alias</StyledTableCell>
-            <StyledTableCell>
+    <KeepDataTable zebra>
+      <table className='p-30' aria-label="views and agents table">
+        <thead>
+          <tr>
+            <th {...colWidth('50px')}>{null}</th>
+            <th {...colWidth('550px')}>View Name</th>
+            <th {...colWidth('500px')}>Alias</th>
+            <th>
               <StatusHeader>
                 <div>
                   <KeepTooltip content={`Activate the Views that should be accessible\nvia rest API`} placement='bottom' without-arrow>
@@ -138,20 +98,20 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                   </KeepTooltip>
                 </div>
               </StatusHeader>
-            </StyledTableCell>
-          </TableRow>
-        </StyledTableHead>
-        <StyledTableBody>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
           {views.map((view) => (
-            <StyledTableRow key={view.viewName}>
-              <StyledTableCell component="th" scope="row" width="50px">
+            <tr key={view.viewName}>
+              <th scope="row" {...colWidth('50px')}>
                 <EditIcon onClick={() => {handleClickViewName(view.viewName, view.viewActive)}}>
                   <Button title={view.viewName} disabled={loading}><FiEdit2 size='1.5em' /></Button>
                 </EditIcon>
-              </StyledTableCell>
-              <StyledTableCell width="550px">
+              </th>
+              <td {...colWidth('550px')}>
                 <ViewNameDisplay>
-                  {folderNames.includes(view.viewName) && 
+                  {folderNames.includes(view.viewName) &&
                     <KeepTooltip content={`${view.viewName} is a folder.`}>
                       <span>
                         <FaRegFolderOpen size='1.2em' />
@@ -168,14 +128,14 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                         <AiOutlineQuestionCircle className='views-table-question-circle' />
                       </span>
                     </KeepTooltip>
-                  </span> 
+                  </span>
                     :
-                    <span>{view.viewName}</span>  
-                    
+                    <span>{view.viewName}</span>
+
                   }
                   </ViewNameDisplay>
-              </StyledTableCell>
-              <StyledTableCell width="500px">
+              </td>
+              <td {...colWidth('500px')}>
                 <AliasContainer>
                   {(view.viewAlias.length > 0) && <KeepTooltip
                     content={Array.isArray(view.viewAlias) ? view.viewAlias.join('\n') : view.viewAlias}
@@ -185,13 +145,13 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                     <div>{view.viewAlias[0]}</div>
                   </KeepTooltip>}
                 </AliasContainer>
-              </StyledTableCell>
-              <StyledTableCell><ActivateSwitch view={view} toggleActive={toggleActive} toggleInactive={toggleInactive} type={'view'}/></StyledTableCell>
-            </StyledTableRow>
+              </td>
+              <td><ActivateSwitch view={view} toggleActive={toggleActive} toggleInactive={toggleInactive} type={'view'}/></td>
+            </tr>
           ))}
-        </StyledTableBody>
-      </Table>
-    </StyledTableContainer>
+        </tbody>
+      </table>
+    </KeepDataTable>
   );
 };
 
