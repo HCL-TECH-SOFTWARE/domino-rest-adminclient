@@ -473,10 +473,19 @@ right.** Anything touching layout or tokens needs a human click-through in both 
 modes — and most screens sit behind login. #777 found a grey login page this way, after the
 suite went green.
 
-**Vitest fails in a git worktree.** Errors reading `Denied ID …node_modules…?url` are
-Vite's `server.fs` root, not your change. On this worktree the bare run reported 18 failed
-files; with `server.fs.allow` widened to the main checkout, **87 files / 996 tests pass**.
-Add a temporary config rather than debugging your diff.
+**Vitest fails in a worktree that was never `npm ci`-ed — run `npm ci`.** Exactly 18 files
+die with `Denied ID /…/node_modules/@fortawesome/…/arrows-rotate.svg?url`. It is not your
+diff: Node's resolver walks *up* the filesystem and Vite's `server.fs` check does not, so a
+worktree under `.claude/worktrees/<name>` resolves every package from the main checkout,
+one level above the Vite root. Bare JS imports survive that; the 17 `?url` SVG imports in
+`src/services/icon-library.ts` do not, which is why it is always those 18.
+
+> ⚠️ **Do not widen `server.fs.allow` to the parent.** An earlier version of this section
+> recommended exactly that, and it is wrong. It silences the error while resolving every
+> dependency from whatever branch the main checkout has out, against a different
+> `package-lock.json` than the branch under test — so the suite goes green while saying
+> nothing about the code it just ran on. A loud failure replaced by a silent one.
+> `test/node-modules-root.test.ts` (#811, PR #812) now fails with the instruction instead.
 
 **`@lit/react` re-applies props on every render with no dirty check.** Never pass `value`
 to a `Keep*` input as a controlled prop — it clobbers what the user has typed. Live risk
