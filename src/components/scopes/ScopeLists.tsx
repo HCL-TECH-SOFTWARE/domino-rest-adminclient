@@ -24,8 +24,7 @@ import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import { useLocation, useNavigate } from '../../router/react';
 import ScopesMultiView from '../commons/cardviews/displays/scopes/ScopesMultiView';
 import { toggleAlert } from '../../store/alerts/action';
-import NetworkErrorDialog from '../dialogs/NetworkErrorDialog';
-import { KeepButton } from '../keep-elements/KeepElements';
+import { KeepButton, KeepNetworkErrorDialog } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 const ScopeLists = () => {
@@ -155,7 +154,7 @@ const ScopeLists = () => {
                 animating out. The drawer manages its own open state
                 via the redux `visible` flag. */}
             <ScopeFormContainer database={selectedScope} isEdit={isEdit} permissions={permissions}/>
-            <NetworkErrorDialog />
+            <KeepNetworkErrorDialog />
           </>
         {!(databasePull || scopePull) && <APILoadingProgress label="Scopes" />}
       </WrapperContainer>
