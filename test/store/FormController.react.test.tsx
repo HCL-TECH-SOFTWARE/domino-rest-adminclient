@@ -126,7 +126,16 @@ describe('useFormController', () => {
       return (
         <>
           <button onClick={() => setTag('second')}>change</button>
-          <Harness onSubmit={() => calls.push(tag)} expose={(f) => (held = f)} />
+          {/* Braces, not a concise body: `push` returns a number, and `onSubmit`'s
+              `void | Promise<void>` is a union — so TS's "a value-returning function is
+              assignable to a void-returning one" allowance does not apply. `tsc -b` catches
+              this; `tsc --noEmit` does not look at `test/` at all. */}
+          <Harness
+            onSubmit={() => {
+              calls.push(tag);
+            }}
+            expose={(f) => (held = f)}
+          />
         </>
       );
     }
