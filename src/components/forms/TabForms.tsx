@@ -21,10 +21,10 @@ import {
   handleDatabaseForms,
   pullForms,
 } from "../../store/databases/action";
-import FormsTable from "./FormsTable";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import { KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch } from "../keep-elements/KeepElements";
+import { fullEncode } from "../../utils/common";
+import { KeepButton, KeepFormDialogHeader, KeepFormsTable, KeepSearchInput, KeepSwitch } from "../keep-elements/KeepElements";
 import { useAppDispatch } from '../../store/hooks';
 
 const ButtonsPanel = styled.div`
@@ -358,7 +358,13 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
           <KeepButton onClick={handleClickCreateForm}>Create</KeepButton>
         </ButtonsPanel>
       </CreateFormDialogContainer>
-      <FormsTable
+      {/* `nsfPath` is not passed any more: the table used it only to build the URL it
+          navigated to, and that navigation is this component's job now — the element has
+          no router to reach for, so it names the form and the URL is built here. Both of
+          the table's own navigations spelled this path, one of them encoding `nsfPath`
+          with the partial `fullEncode` helper; they collapse onto the standard encoder
+          the other `/schema/...` call sites in the tree use, including the one below. */}
+      <KeepFormsTable
         forms={
           searchKey === ""
             ? normalizeForms.filter(
@@ -371,10 +377,12 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
               )
         }
         dbName={dbName}
-        nsfPath={nsfPath}
         schemaData={schemaData}
         setSchemaData={setSchemaData}
         formList={formList}
+        onFormOpen={(e) =>
+          navigate(`/schema/${encodeURIComponent(nsfPath)}/${dbName}/${fullEncode(e.detail.formName)}/access`)
+        }
       />
       <dialog ref={deactivateRef} className='dialog'>
         <KeepFormDialogHeader

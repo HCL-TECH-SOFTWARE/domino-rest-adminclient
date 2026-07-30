@@ -115,6 +115,37 @@ export default class ColumnDetails extends KeepElement {
         padding: 0;
       }
 
+      /*
+       * The reset on :host alone is not enough: it covers this element's own box, not the
+       * cells inside it. Web Awesome supplies the page-wide reset as html{border-box} plus a
+       * universal box-sizing:inherit, and a universal selector does not cross the boundary —
+       * so the two fixed-width columns below were measuring their width *plus* the 60px of
+       * horizontal padding the adopted sheet gives every cell.
+       *
+       * The three rules after it are the rest of wa-native's table region, lost the same way
+       * through bare element selectors: the hairline above each body row, cell content topped
+       * rather than centred, and header cells one step down the type ramp.
+       */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      tbody tr {
+        border-block-start: var(--wa-border-style) var(--wa-border-width-s)
+          var(--wa-color-border-quiet);
+      }
+
+      th,
+      td {
+        vertical-align: top;
+      }
+
+      thead th {
+        font-size: var(--wa-font-size-smaller);
+      }
+
       /* Were width attributes on the header cells. */
       .col-actions {
         width: 150px;

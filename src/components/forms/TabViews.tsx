@@ -12,9 +12,8 @@ import { AppState } from '../../store';
 import { handleDatabaseViews } from '../../store/databases/action';
 import { styled } from '@linaria/react';
 import { TopNavigator } from '../../styles/CommonStyles';
-import ViewsTable from './ViewsTable';
 import { Database } from '../../store/databases/types';
-import { KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch, KeepViewsTable } from '../keep-elements/KeepElements';
 import type { KeepSearchChangeDetail } from '../keep-elements/keep-search-input';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -99,10 +98,11 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
   const [searchKey, setSearchKey] = useState('');
   const [resetAllViews, setResetAllViews] = useState(false);
 
-  let { dbName, nsfPath } = useParams() as { dbName: string, nsfPath: string };
+  // `nsfPath` used to be read here as well, only to be handed to the table, which never
+  // looked at it. The route still carries it; nothing on this tab needs it.
+  let { dbName } = useParams() as { dbName: string };
   dbName = decodeURIComponent(dbName);
-  nsfPath = decodeURIComponent(nsfPath);
-  
+
   const [activeViews, setActiveViews] = useState(schemaData['views']?.map((view: any) => {
     const folderNames = folders.map((folder) => {return folder.viewName});
     return {
@@ -257,7 +257,10 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
         <KeepSwitch onToggle={handleToggleShowActive}>Show Active</KeepSwitch>
       </div>
       <ViewPanel>
-        <ViewsTable
+        {/* `dbName` and `nsfPath` are not passed any more: the table declared them and
+            never read them. The two open-a-view setters arrive as one event — the element
+            raises the "activate it first" alert itself, as the table always did. */}
+        <KeepViewsTable
           views = {
             searchKey === ''
               ? lists
@@ -265,12 +268,14 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
                   .sort((a, b) => (a.viewName > b.viewName ? 1 : -1))
               : filtered
           }
-          toggleActive={toggleActive}
-          toggleInactive={toggleInactive}
-          dbName={dbName}
-          nsfPath={nsfPath}
-          setViewOpen={setViewOpen}
-          setOpenViewName={setOpenViewName}
+          onViewOpen={(event) => {
+            if (event.detail.active) {
+              setOpenViewName(event.detail.viewName);
+            }
+            setViewOpen(event.detail.active);
+          }}
+          onViewActivate={(event) => { void toggleActive(event.detail.view); }}
+          onViewDeactivate={(event) => { void toggleInactive(event.detail.view); }}
          />
       </ViewPanel>
       <dialog ref={ref} className='dialog'>

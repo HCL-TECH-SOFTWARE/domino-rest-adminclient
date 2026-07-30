@@ -13,9 +13,8 @@ import { AppState } from '../../store';
 import { styled } from '@linaria/react';
 import { handleDatabaseAgents } from '../../store/databases/action';
 import { TopNavigator } from '../../styles/CommonStyles';
-import AgentsTable from './AgentsTable';
 import { Database } from '../../store/databases/types';
-import { KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch } from '../keep-elements/KeepElements';
+import { KeepAgentsTable, KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch } from '../keep-elements/KeepElements';
 import type { KeepSearchChangeDetail } from '../keep-elements/keep-search-input';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -173,7 +172,7 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
         <KeepSwitch onToggle={handleToggleShowActive}>Show Active</KeepSwitch>
       </ButtonsPanel>
       <div className="flex-container">
-        <AgentsTable 
+        <KeepAgentsTable
           agents={
             searchKey === ''
               ? lists
@@ -181,8 +180,8 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
                 .sort((a, b) => (a.agentName > b.agentName ? 1 : -1))
                   : filtered
           }
-          toggleActive={toggleActive}
-          toggleInactive={toggleInactive}
+          onAgentActivate={(event) => { void toggleActive(event.detail.agent); }}
+          onAgentDeactivate={(event) => { void toggleInactive(event.detail.agent); }}
         />
       </div>
       <dialog ref={ref} className='dialog'>
