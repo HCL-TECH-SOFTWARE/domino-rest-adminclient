@@ -1769,7 +1769,18 @@ body[data-theme="dark"] .add-import-svg-icon {
     font-weight: 700;
 }
 
-/* ProfileMenu.tsx */
+/*
+ * OptionList.tsx — the fixed box the Sign Out glyph sits in.
+ *
+ * Named for ProfileMenu.tsx, which no longer carries it. Both profile components used to
+ * put this class on the icon element itself, where the width and height were dead: MUI's
+ * own `width: 1em; height: 1em` on `.MuiSvgIcon-root` has the same specificity and was
+ * injected later, so those icons drew 24px and never 36px. On a wa-icon the declarations
+ * would have started applying — as a 36px canvas around a glyph still sized by font-size,
+ * which is padding, not a bigger icon — so the class was dropped from both and the icons
+ * carry size='xl' instead (#718). Here it is on a real wrapper div and the 36px box is
+ * genuine, so the rule stays.
+ */
 .profile-menu-user-icon {
     width: 36px;
     height: 36px;

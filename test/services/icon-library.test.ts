@@ -73,7 +73,9 @@ describe('icon-library', () => {
 
     const fallback = getIconLibrary('default');
     expect(fallback, 'the default icon library is not registered').toBeTruthy();
-    expect(fallback!.resolver('bars')).toBe(ICONS.bars);
+    // `IconLibraryResolver` takes (name, family, variant, autoWidth). Ours reads only the
+    // first — a narrower function is assignable — but the call site still owes all four.
+    expect(fallback!.resolver('bars', 'classic', 'solid', false)).toBe(ICONS.bars);
   });
 
   it('bundles the glyph WebAwesome asks for by itself', () => {

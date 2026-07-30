@@ -25,7 +25,7 @@
  *
  * Registered under the explicit name `fa`, and **also** as `default` — see below.
  *
- * To add an icon: import its URL and add it to {@link ICONS}. Only what is listed here
+ * To add an icon: import its URL and add it to {@link BUNDLED}. Only what is listed here
  * is bundled.
  */
 
@@ -89,8 +89,13 @@ const log = getLogger('services/icon-library');
  * were outline-weight in their old set (`AccountCircleOutlined`, `InfoOutlined`, and
  * everything from Feather) and are solid now. That is deliberate: one coherent weight
  * beats a per-glyph match to four inconsistent legacy sets.
+ *
+ * Declared with `satisfies` rather than a `Record<string, string>` annotation so the keys
+ * survive as string literals and {@link FaIconName} can be derived from them. {@link ICONS}
+ * below is the same object under the widened type, which is what the resolver and the
+ * guards in `test/services/icon-library.test.ts` index by an arbitrary string.
  */
-export const ICONS: Record<string, string> = {
+const BUNDLED = {
   'arrows-rotate': arrowsRotate,
   ban,
   bars,
@@ -135,7 +140,27 @@ export const ICONS: Record<string, string> = {
   'table-cells-large': tableCellsLarge,
   trash,
   xmark
-};
+} satisfies Record<string, string>;
+
+/**
+ * Every bundled glyph name, as a literal union.
+ *
+ * `test/services/icon-library.test.ts` catches an unregistered name only where it is written
+ * as a literal in `.tsx` markup — `<KeepIcon name='house'>`, `<wa-icon name="house">`,
+ * `<KeepButton icon="house">`. A name that lives in a data table instead, as the sidenav's
+ * route metadata does (`components/sidenav/Routes.ts`), is invisible to that scan and would
+ * reach the resolver, log a warning and render an empty glyph. Typing such a field as
+ * `FaIconName` moves the same failure to `tsc`, i.e. to `npm run build`.
+ */
+export type FaIconName = keyof typeof BUNDLED;
+
+/**
+ * Font Awesome name → bundled URL.
+ *
+ * The same object as {@link BUNDLED}, widened: the resolver looks up whatever string a
+ * `<wa-icon name>` carries, which a literal-keyed type cannot be indexed by.
+ */
+export const ICONS: Record<string, string> = BUNDLED;
 
 /** The library name to pass as `<wa-icon library="...">`. */
 export const FA_LIBRARY = 'fa';

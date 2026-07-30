@@ -183,7 +183,16 @@ wa-page > .nav-header {
   background: rgb(255 255 255 / 25%);
 }
 
-.nav-theme-toggle svg {
+/*
+ * Retargeted from `.nav-theme-toggle svg` (#718). The sun/moon glyph is a wa-icon now and
+ * draws into a shadow root, so an `svg` descendant selector out here stops matching.
+ *
+ * This rule is why the toggle is not part of the 24px-to-token shrink the rest of the
+ * codemod produced: a descendant selector is (0,1,1) and beats MUI's own `.MuiSvgIcon-root`
+ * at (0,1,0), so 20px is what shipped and 20px is what it keeps. Colour needs no help —
+ * `.nav-theme-toggle` sets it on the button and wa-icon paints from currentColor.
+ */
+.nav-theme-toggle wa-icon {
   font-size: 20px;
 }
 
@@ -219,6 +228,9 @@ wa-page.nav-collapsed .nav-collapse-toggle {
   transition-duration: 195ms;
 }
 
-.nav-collapse-toggle svg {
+/* Retargeted from `.nav-collapse-toggle svg` (#718), for the reason above: the chevron is a
+   wa-icon and its graphic is in a shadow root. Also (0,1,1), so 19px was already in force
+   over MUI's default and the tab's geometry is unchanged. */
+.nav-collapse-toggle wa-icon {
   font-size: 19px;
 }
