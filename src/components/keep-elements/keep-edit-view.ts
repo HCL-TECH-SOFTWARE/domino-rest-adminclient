@@ -94,13 +94,12 @@ function externalNameFor(column: KeepEditViewDesignColumn): string {
  * `setSchemaData` — handed to the update thunk so the parent's copy of the schema is
  * refreshed from the response — became `schema-change`.
  *
- * ## A defect carried over deliberately
+ * ## Saving no longer blanks the schema's owners (#932)
  *
- * The saved payload takes `owners` and `excludedViews` from a derived object that hardcodes
- * them to `[]` and `undefined`, not from the schema this dialog was given. So saving a
- * column selection blanks the application's owner list. That is what shipped, this pass is
- * behaviour-preserving, and changing it needs a decision about what the correct payload is
- * — see {@link buildUpdatedSchema}.
+ * The payload used to hardcode `owners: []` and `excludedViews: undefined` while reading
+ * every other field off the schema, so choosing which columns a view exposes destroyed the
+ * schema's owner list without saying so. The conversion reproduced that deliberately; it is
+ * repaired here — see {@link buildUpdatedSchema}.
  *
  * ## Accessibility (#713)
  *
@@ -776,10 +775,20 @@ export default class EditView extends KeepElement {
   /**
    * The POST body for a save or a reset.
    *
-   * `owners` and `excludedViews` are the carried-over defect noted on the class: the original
-   * read them from a derived object that hardcoded them rather than from the schema, so both
-   * are overwritten on every save from this dialog. Reproduced, not repaired — see the class
-   * comment.
+   * Every field is read from the schema this dialog was handed. `owners` and `excludedViews`
+   * used to be the two exceptions — hardcoded to `[]` and `undefined` on a derived object that
+   * both save paths spread into the request — so choosing which columns a view exposes blanked
+   * the schema's owner list, silently, from a dialog that says nothing about owners (#932).
+   *
+   * They are echoed rather than omitted because `updateSchema` POSTs this object whole to
+   * `/schema?nsfPath=…&configName=…`: an absent key is not a request to leave a value alone.
+   * `DetailsSection.tsx`, the app's other full-schema writer, destructures both off the schema
+   * and passes them straight through, and this now sends what that one sends.
+   *
+   * `?? []` on `owners` only. A schema that has never had owners can arrive without the key,
+   * and `undefined` there would serialise the field away — which is half of what this fixes.
+   * `excludedViews` has no such default: `[]` and absent mean different things to the
+   * endpoint, so the schema's own value is passed through untouched.
    */
   private buildUpdatedSchema(views: any[]) {
     const schema = this.schemaData;
@@ -803,8 +812,8 @@ export default class EditView extends KeepElement {
       requireRevisionToUpdate: schema?.requireRevisionToUpdate,
       agents: schema?.agents,
       views,
-      excludedViews: undefined,
-      owners: [] as string[],
+      excludedViews: schema?.excludedViews,
+      owners: (schema?.owners ?? []) as string[],
       forms: schema?.forms,
     };
   }
