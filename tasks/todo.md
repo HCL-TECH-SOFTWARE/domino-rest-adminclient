@@ -102,4 +102,49 @@ resolved against its call-site context from the inventory, not guessed.
 
 ## Review
 
-_Pending._
+**Done.** PR #913 into `new_code`, nine commits. 115 sites, 43 files, both packages
+uninstalled; `dependencies` 22 → 19.
+
+| Gate | Result |
+|---|---|
+| `npm run lint` | exit 0 |
+| `npm run typecheck` | exit 0 |
+| `npm run build` | exit 0 |
+| `npm run test` | 131 files / 1697 tests |
+| `npm run bundle:budget` | 888.1 kB raw / 243.8 kB gzip — under by 4.3 / 2.1 |
+
+`new_code` itself is red (issue **#914**): PR #911 put `FormController.ts` under its
+coverage floor. This branch touches no store file, so it inherits that failure. Filed
+rather than fixed, to keep an icon codemod out of the store.
+
+### What actually mattered
+
+**A live CDN dependency nobody knew about.** `<wa-page>`'s navigation toggle fetched
+`bars.svg` from `ka-f.fontawesome.com` on every authenticated screen. The `connect-src`
+wildcard permitted it, so it neither failed nor reported. The module's own comment claimed
+the opposite was true. Removing it is worth more than the codemod.
+
+**The bundle did not shrink the way the issue predicted.** MUI's icon factory left the
+eager closure, but the 44 bundled glyphs inline as base64 `data:` URIs, so raw ended up
++19.5 kB on the pre-codemod baseline and gzip +4.9. Still under budget. The real saving
+waits for `@mui/material` itself (#709).
+
+**Four inventory errors, one shape.** Every one named a source line where the compiled
+selector said something else — a rule in a component the file never renders, a Linaria
+rule that nests into a descendant selector, two rules an `!important` elsewhere had
+already killed, and a dead block keyed on a class this repo's router never emits. A static
+scan cannot tell you which rule governs an icon. The compiled selector can.
+
+**MUI had been overriding the app's own icon size classes** for as long as they existed.
+That turned a mechanical codemod into a design decision, and it needed the user, not me.
+
+### Left undone, deliberately
+
+- **~111 of 115 sites are unverified in a browser.** They sit behind a login this
+  environment cannot pass. Every glyph name is proven to resolve, but not one is proven to
+  be the right size in its real container, and `css: false` means the suite cannot say
+  either. This is the largest gap in the work.
+- `app-icons.ts` (#731) and the `.Mui*` half of `dark-mode.css` (#709) — out of scope.
+- `ColumnDetails`' bare `onClick` icon keeps its missing button: that a11y defect is #713's.
+- The solid `sun` reads as a settings gear at 24px. Registry supports a regular-weight
+  entry if wanted; it is a design call.
