@@ -62,21 +62,56 @@ component around an unproven class.
 
 | Gap | Consequence for the conversion |
 |---|---|
-| **no `touched`** | Formik's `!!errors.x && touched.x` collapses to `errors.x`, but errors now appear only **after the first submit** where Formik showed them on blur. That is a visible behaviour change in every converted form and needs a decision, not a silent adoption. |
+| ~~**no `touched`**~~ | **Withdrawn — this was never a gap.** See the correction below. |
 | **no `handleChange`** | each field wires its own `@input` → `setValue('name', …)`. More lines, but the `name`-string indirection goes. |
-| **`submit()` is not guarded against re-entry** | two concurrent `submit()` calls both reach `onSubmit` — measured, peak concurrency 2. **All five** owners dispatch a mutating thunk from `onSubmit`, so a double-clicked save is two writes; for `addSchema` and `addApplication` that is two creates. Filed as #887. |
+| ~~**`submit()` is not guarded against re-entry**~~ | **Fixed in #889.** Two concurrent `submit()` calls both reached `onSubmit` — measured, peak concurrency 2. **All five** owners dispatch a mutating thunk, so a double-clicked save was two writes; two *creates* for `addSchema` and `addApplication`. |
 
-The third is the only one that looks like a defect rather than a design choice, and is filed as **#887** with the one-line fix and the recommendation to invert the characterisation test in the same commit.
+### Correction: the `touched` gap was not a gap
+
+This was written as the first thing to settle before tier D, on the grounds that errors would move
+from blur-time to submit-time in every converted form. **That was wrong**, and `FormController`'s own
+docstring already had it right. Two paths reach Formik's `touched`, and one of them is unused:
+
+| Claim | Check | Result |
+|---|---|---|
+| blur is wired somewhere | `grep -rn "handleBlur\|onBlur\|setFieldTouched" src` | **zero** hits on any form field — the three hits are in `router/react.tsx`, unrelated |
+| Formik marks `touched` on submit | `formik.esm.js:321`, the `SUBMIT_ATTEMPT` case | `touched: setNestedObjectValues(state.values, true)` — every field, at once |
+
+So all **17** `errors.X && touched.X` reads across `ScopeForm`, `QuickConfigForm`,
+`AddImportDialog` and `AppForm` already mean *"after a submit attempt"*, which is exactly what
+`submitted` reports. There is no behaviour change and nothing to decide; the rewrite is mechanical.
+
+**The real difference is narrower**, and belongs in each conversion's PR body rather than in a
+decision gate: Formik's `validateOnChange` (default `true`) re-ran the schema on every keystroke, so
+after the first submit an error tracked each character. `FormController` clears that field's error in
+`setValue` and recomputes only in `submit()` — the error clears on edit and returns on the next
+submit.
+
+### Correction: the re-entrancy fix took option 2, not option 1
+
+#889 returns the in-flight promise rather than early-returning, so `await submit()` means "the submit
+finished" for every caller — an early `return` would resolve immediately with `errors` still empty
+from the unfinished first run, and `AddImportDialog`'s `await submit(); if (no errors) close()` shape
+would close over a POST still in flight. It also handles `reset()` **mid-flight**, which
+`addSchema`'s `resetCallback` does from inside `onSubmit`; a `_generation` counter stops the
+abandoned run clearing the next one's flags. Neither was anticipated here.
 
 ## Recommended order
 
-1. **Decide the `touched` question** — either accept submit-time errors as the new behaviour
-   across all five forms, or add blur-time validation to the primitive. It changes every
-   conversion, so it is cheaper to settle than to revisit.
-2. **Guard `submit()`** against re-entry — #887. One line, and no existing caller can break because there are none.
+Superseded by the execution plan on **#717**, which records the constraint this spec missed:
+`FormController` is a `ReactiveController` and takes a `ReactiveControllerHost`, so **a `.tsx` file
+cannot use it at all**. Formik removal and the Lit conversion are therefore one inseparable operation
+per file unless a React host adapter breaks the coupling — which is the route #717 takes, so step 3
+below is now the Formik axis only and #806 tier D keeps the rest.
+
+1. ~~**Decide the `touched` question.**~~ Withdrawn — there was no question. See above.
+2. ~~**Guard `submit()`** against re-entry.~~ Done in #889.
 3. **Convert `QuickConfigFormContainer` + `QuickConfigForm`** (589 lines together) as the first
    real user. It is the smallest container/leaf pair, and `ScopeFormContainer`/`ScopeForm` (678)
-   repeats its shape almost exactly — so whatever is learned there applies immediately.
+   repeats its shape almost exactly — so whatever is learned there applies immediately. The 589
+   understates the file: `QuickConfigForm` also carries **10** MUI imports, including a whole
+   `Menu`-based icon picker, which stays with #806 tier D. Six defects found while reading the pair
+   are filed as #892–#897.
 4. `AddImportDialog` after that, **not** before, despite being self-contained. Its 427 lines carry
    more than a form:
    - `IconDropdown` (78 lines, MUI `Menu`) is rendered inside it, so it converts too or moves out
