@@ -78,10 +78,6 @@
     font-size: 24px;
 }
 
-.line-height-normal {
-    line-height: normal;
-}
-
 .text-transform-none {
     text-transform: none;
 }
@@ -507,10 +503,6 @@ body[data-theme="dark"] .color-text-disabled {
     text-overflow: ellipsis;
 }
 
-.z-2 {
-    z-index: 2;
-}
-
 .justify-start {
     justify-content: flex-start;
 }
@@ -833,11 +825,6 @@ body[data-theme="dark"] .field-batch-delete-text {
 }
 
 /* ModeCompare.tsx */
-.mode-compare-container {
-    padding: 30px;
-    height: 100%;
-}
-
 /*
  * The colour was MUI's color="primary", i.e. theme.palette.primary.main, which theme.ts
  * binds to getTheme(mode).textColorPrimary — the value keep-theme.css pins
@@ -845,11 +832,6 @@ body[data-theme="dark"] .field-batch-delete-text {
  * currentColor, so the token has to be declared here. No font-size: the glyph was an
  * unsized MUI SvgIcon (24px), and it carries size="xl" at the call site instead.
  */
-.mode-compare-search-icon {
-    margin-right: 10px;
-    color: var(--wa-color-text-normal);
-}
-
 .mode-compare-card-container {
     display: flex;
     padding-top: 9px;
@@ -904,18 +886,8 @@ body[data-theme="dark"] .field-batch-delete-text {
     width: 15px;
 }
 
-.formula-name-container {
-    width: calc(0.4*(100% - 15px));
-    overflow-wrap: break-word;
-}
-
 .mode-compare-formula-name {
     color: light-dark(#323a3d, #7d939a);
-}
-
-.formula-name-value-container {
-    width: calc(0.6*(100% - 15px));
-    overflow-wrap: break-word;
 }
 
 .compare-diff-values-indicator {
@@ -1319,17 +1291,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     overflow-y: hidden;
 }
 
-.edit-view-close-button {
-    cursor: pointer;
-    justify-content: right;
-    align-items: right;
-    position: absolute;
-    top: 1%;
-    right: 1%;
-    background: transparent;
-    color: var(--text-color-primary);
-}
-
 .edit-view-title-container {
     display: flex;
     justify-content: space-between;
@@ -1381,10 +1342,6 @@ body[data-theme="dark"] .add-import-svg-icon {
         color: #fff;
         cursor: not-allowed;
     }
-}
-
-.edit-view-save-text {
-    color: #fff;
 }
 
 .column-bar-container {
