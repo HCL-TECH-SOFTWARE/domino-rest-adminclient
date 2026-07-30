@@ -173,14 +173,41 @@ text.medium {
     font-size: 14px;
     display: block;
 }
-img {
-    background: #383838;
-    border-radius: 8px;
-    padding: 10px;
-    height: 55px;
-    width: auto;
-    display: block;
-}
+/*
+ * There is deliberately no `img` rule here.
+ *
+ * One used to sit at this point in the DefaultCard block:
+ *
+ *     img { background: #383838; border-radius: 8px; padding: 10px;
+ *           height: 55px; width: auto; display: block; }
+ *
+ * It was written for the app icon in the default card, and it is still what styles
+ * it — but as a copy inside `keep-default-card.ts`'s own `static styles`, which is the
+ * only place that can reach it now the card is a Lit element. Document CSS does not
+ * cross a shadow boundary.
+ *
+ * So in document scope it reached no card icon and, being a bare type selector, every
+ * *other* image in the app instead — all five of them, in four places. Each one sets
+ * its own size, so `height`/`width`/`display` were overridden everywhere and inert;
+ * `background`, `padding` and `border-radius` were not, and leaked:
+ *
+ *   Tip.tsx (keep-tip media)   a 10px #383838 frame around the tile image — #907. The
+ *                              one place it also broke layout: the slotted anchor
+ *                              inherits `content-box` from the `<slot>` (the `*`
+ *                              box-sizing reset does not cross the boundary either), so
+ *                              `width: 100%` plus 10px of padding overflowed wa-card's
+ *                              media box by 20px and was clipped.
+ *   AppShell.tsx sidenav logo  a 37px box with 10px of padding, leaving a 17px logo
+ *                              on a dark tile.
+ *   LoginPage.tsx logo         a grey ring around the logo's own artwork.
+ *   AddImportDialog.tsx icons  39px icons drawn at 19px (`background` was overridden).
+ *
+ * Reported as dark-in-light mode because #383838 is mode-invariant: against the dark
+ * card in dark mode it is nearly invisible, against a white one it is a black frame.
+ *
+ * `test/styles/type-selectors.test.ts` keeps it from coming back, and holds the other
+ * bare type selectors in this file to the set that already existed.
+ */
 div.main {
     display: flex;
     flex-direction: row;
