@@ -26,7 +26,6 @@
  * `test/keep-element-wrappers.test.ts` fails if they do not.
  */
 
-export { KeepAutocomplete } from './react/KeepAutocomplete';
 export { KeepSource } from './react/KeepSource';
 export { KeepTip } from './react/KeepTip';
 export { KeepButton } from './react/KeepButton';
@@ -69,9 +68,13 @@ export { KeepAgentsTable } from './react/KeepAgentsTable';
 export { KeepFormsTable } from './react/KeepFormsTable';
 export { KeepProfileMenu } from './react/KeepProfileMenu';
 export { KeepProfileMenuDialog } from './react/KeepProfileMenuDialog';
-export { KeepIconDropdown } from './react/KeepIconDropdown';
 export { KeepModeFields } from './react/KeepModeFields';
 export { KeepEditView } from './react/KeepEditView';
 export { KeepModeCompare } from './react/KeepModeCompare';
-export { KeepConsentsTable } from './react/KeepConsentsTable';
 export { KeepFieldList } from './react/KeepFieldList';
+export { KeepAppIcon } from './react/KeepAppIcon';
+export { KeepConsents } from './react/KeepConsents';
+export { KeepConsentsContainer } from './react/KeepConsentsContainer';
+export { KeepTestForm } from './react/KeepTestForm';
+export { KeepAppForm } from './react/KeepAppForm';
+export { KeepAddImportDialog } from './react/KeepAddImportDialog';

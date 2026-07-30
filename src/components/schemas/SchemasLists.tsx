@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import {
@@ -17,9 +17,8 @@ import { TopContainer, FilterContainer, BlueSwitch } from '../../styles/CommonSt
 import { SettingContext } from '../database/settings/SettingContext';
 import { useLocation, useNavigate } from '../../router/react';
 import { toggleAlert } from '../../store/alerts/action';
-import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
-import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepPageLoading, KeepSchemasMultiView, KeepTooltip, KeepWrapperContainer, KeepZeroResults } from '../keep-elements/KeepElements';
+import { KeepAddImportDialog, KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepPageLoading, KeepSchemasMultiView, KeepTooltip, KeepWrapperContainer, KeepZeroResults } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -75,8 +74,8 @@ const SchemasLists = () => {
     setSearchKey(key);
   };
 
-  // add + import-related values
-  const ref = useRef<HTMLDialogElement>(null);
+  // add + import-related values. The dialog is `keep-add-import-dialog`, which owns its own
+  // form state and opens itself from this flag, so this page only raises and lowers it.
   const [addImportDialog, setAddImportDialog] = useState(false);
 
   const handleClickOpen = () => {
@@ -116,16 +115,6 @@ const SchemasLists = () => {
   const handleCloseAddImport = () => {
     setAddImportDialog(false);
   }
-
-  useEffect(() => {
-    if (addImportDialog) {
-      ref.current?.showModal();
-    } else {
-      if (ref.current?.close) {
-        ref.current?.close();
-      }
-    }
-  }, [addImportDialog])
 
   useEffect(() => {
     if (!databasePull && databasesOverview.length === 0) {
@@ -226,7 +215,7 @@ const SchemasLists = () => {
             )}
             {loading.status ? <KeepPageLoading contained pageHeight message="Schemas are loading. This may take a few seconds..." /> : results.length === 0 && <KeepZeroResults mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
             <KeepNetworkErrorDialog />
-            <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
+            <KeepAddImportDialog open={addImportDialog} onDialogClose={handleCloseAddImport} />
           </>
       </KeepWrapperContainer>
     </SettingContext.Provider>

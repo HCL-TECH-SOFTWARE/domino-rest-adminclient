@@ -7,14 +7,16 @@
 import { css, html } from 'lit';
 
 /**
- * The Lit half of the icon placeholder — the shadow-DOM twin of `AppIconSkeleton`
- * (`components/commons/AppIcon.tsx`), which cannot reach inside these roots.
+ * The one icon placeholder. It used to be half of a pair: this module and a styled span
+ * of the same name in `components/commons/AppIcon.tsx`, which existed only because a
+ * document-level rule cannot reach inside these shadow roots. That component is now
+ * `keep-app-icon` and shares this one, so the pair has collapsed (#806).
  *
- * Used by the two elements that paint an app icon themselves: `keep-default-card` (whose
- * `icon` property is empty until the caller can resolve it) and `keep-nsf-card` (which
- * loads the payloads itself). Both need it for the same reason — #772 put the 219 KB icon
- * map behind a dynamic `import()`, so there is a window where the name is known and the
- * payload is not.
+ * Used by every element that paints an app icon: `keep-app-icon` itself, `keep-default-card`
+ * (whose `icon` property is empty until the caller can resolve it), `keep-nsf-card` and
+ * `keep-icon-dropdown` (which load the payloads themselves), and `keep-slim-database-card`.
+ * All need it for the same reason — #772 put the 219 KB icon map behind a dynamic
+ * `import()`, so there is a window where the name is known and the payload is not.
  */
 export const appIconSkeletonStyles = css`
   @keyframes app-icon-skeleton-sweep {

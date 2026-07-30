@@ -22,10 +22,11 @@ vi.mock('../../../src/store/drawer/action', () => ({
 vi.mock('../../../src/store/alerts/action', () => ({
   toggleAlert: vi.fn(() => ({ type: 'TOGGLE_ALERT' })),
 }));
-vi.mock('../../../src/components/commons/AppIcon', () => ({
-  AppIcon: () => <span data-testid="app-icon" />,
-  default: () => <span data-testid="app-icon" />,
-}));
+// The icon is a real custom element now, so there is no component left to stand in for.
+// What the stand-in was actually keeping out of this file is the 221 KB payload chunk the
+// element imports on connect (#772) — so that is what is mocked, and the element renders
+// for real, showing its placeholder because the map comes back empty.
+vi.mock('../../../src/styles/app-icons', () => ({ default: {} }));
 
 function makeApp(overrides: Record<string, unknown> = {}) {
   return {

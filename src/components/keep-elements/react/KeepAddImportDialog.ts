@@ -5,11 +5,16 @@
  * ========================================================================== */
 
 import React from 'react';
-import { createComponent } from '@lit/react';
-import Autocomplete from '../keep-autocomplete';
+import { createComponent, type EventName } from '@lit/react';
+import AddImportDialog, {
+  type KeepAddImportDialogCloseDetail,
+} from '../keep-add-import-dialog';
 
-export const KeepAutocomplete = createComponent({
-  tagName: 'keep-autocomplete',
-  elementClass: Autocomplete,
-  react: React
+export const KeepAddImportDialog = createComponent({
+  tagName: 'keep-add-import-dialog',
+  elementClass: AddImportDialog,
+  react: React,
+  events: {
+    onDialogClose: 'dialog-close' as EventName<CustomEvent<KeepAddImportDialogCloseDetail>>,
+  },
 });

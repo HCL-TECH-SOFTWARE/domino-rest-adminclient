@@ -17,6 +17,7 @@ import dialogReducer from './dialog/reducer';
 import consentsReducer from './consents/reducer';
 import usersReducer from './access/reducer';
 import accessModeReducer from './accessMode/reducer';
+import navigationGuardReducer from './navigationGuard/reducer';
 
 export const rootReducer = combineReducers({
   databases: databaseReducer,
@@ -34,6 +35,8 @@ export const rootReducer = combineReducers({
   users: usersReducer,
   // Was `AccessContext`, the React context `AccessMode.tsx` provided (#806 decision 1).
   accessMode: accessModeReducer,
+  // Was `NavigationGuardContext`, the React context `Views.tsx` provided (#806 decision 1).
+  navigationGuard: navigationGuardReducer,
 });
 
 export type AppState = ReturnType<typeof rootReducer>;

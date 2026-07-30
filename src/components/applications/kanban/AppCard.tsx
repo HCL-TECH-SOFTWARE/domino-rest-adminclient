@@ -10,7 +10,6 @@ import { styled } from '@linaria/react';
 import Button from '@mui/material/Button';
 import { AppProp, AppFormProp } from '../../../store/applications/types';
 import { toggleApplicationDrawer } from '../../../store/drawer/action';
-import { AppIcon } from '../../commons/AppIcon';
 import { generateSecret } from '../../../store/applications/action';
 import { AppFormContext } from '../ApplicationContext';
 import { toggleAlert } from '../../../store/alerts/action';
@@ -21,20 +20,29 @@ import {
   Header,
   InputContainer
 } from '../../../styles/CommonStyles';
-import { KeepButton, KeepTooltip } from '../../keep-elements/KeepElements';
+import { KeepAppIcon, KeepButton, KeepTooltip } from '../../keep-elements/KeepElements';
 import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../../store/hooks';
 
-const AppImage = styled.img`
-  margin-top: 8px;
-  background: #383838;
-  border-radius: 8px;
-  padding: 6px;
-  height: 40px !important;
-`;
-
 const Icon = styled.div`
   padding-right: 10px;
+
+  /* Was AppImage, a styled image handed to the icon component's element-override prop.
+     That prop is gone with the conversion: the icon is a custom element now and its image
+     lives in a shadow root, where no class from this stylesheet reaches it. The element
+     exposes the image as a part, which is the one hook that does cross.
+     width is stated because the element's own rule stretches the image to the host, and
+     here the host is unsized — the height and the picture's own ratio decide the box, as
+     they did when these declarations sat on the image itself. The dark plate is carried
+     over unchanged; it is a literal, not a token, so it does not follow the theme. */
+  keep-app-icon::part(icon) {
+    margin-top: 8px;
+    background: #383838;
+    border-radius: 8px;
+    padding: 6px;
+    width: auto;
+    height: 40px;
+  }
 `;
 interface AppCardProps {
   item: AppProp;
@@ -207,13 +215,18 @@ const AppCard: React.FC<AppCardProps> = ({
         </Action>
         <Header>
           <Icon>
-            <AppIcon
+            {/* The fallback is slotted, so it stays in this document's light DOM and its
+                class still reaches it. The span is required: the icon wrapper forwards a
+                fixed set of props and would drop a `slot` attribute silently. */}
+            <KeepAppIcon
               name={item.appIcon}
               alt="db-icon"
               className='color-hover'
-              as={AppImage}
-              fallback={<KeepIcon name='table-cells-large' size='xl' className='app-card-app-icon' />}
-            />
+            >
+              <span slot="fallback">
+                <KeepIcon name='table-cells-large' size='xl' className='app-card-app-icon' />
+              </span>
+            </KeepAppIcon>
           </Icon>
           <KeepTooltip content={item.appName}>
             <span className="appName" color="textPrimary">

@@ -194,11 +194,17 @@ describe('the store singleton', () => {
   //
   // `accessMode` arrived with #806: it is the former `AccessContext`, converted to a slice
   // rather than to a `@lit/context` provider (reports/04 §3).
+  //
+  // `navigationGuard` arrived the same way, and is the more interesting of the two. It was
+  // not a `[state, setState]` pair but a three-function API published through a context, and
+  // the tier A spec had declined to convert it for exactly that reason. Only the *state*
+  // moved here — the save callback is a closure, so it stays a module singleton rather than
+  // being forced into a slice it cannot be serialised into.
   it('mounts every reducer in the root reducer', () => {
     expect(Object.keys(store.getState()).sort()).toEqual(
       [
         'accessMode', 'account', 'alert', 'apps', 'consents', 'databases', 'dialog',
-        'drawer', 'loading', 'styles', 'users',
+        'drawer', 'loading', 'navigationGuard', 'styles', 'users',
       ].sort(),
     );
   });

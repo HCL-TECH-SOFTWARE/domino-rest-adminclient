@@ -368,13 +368,7 @@ body[data-theme="dark"] .color-text-disabled {
 
 .pt-5 {
     padding-top: 5px;
-}
-
-.pt-10 {
-    padding-top: 10px;
-}
-
-.pt-30 {
+}.pt-30 {
     padding-top: 30px;
 }
 
@@ -396,13 +390,7 @@ body[data-theme="dark"] .color-text-disabled {
 
 .pb-10 {
     padding-bottom: 10px;
-}
-
-.pb-30 {
-    padding-bottom: 30px;
-}
-
-.pb-40 {
+}.pb-40 {
     padding-bottom: 40px;
 }
 
@@ -1029,127 +1017,6 @@ body[data-theme="dark"] .field-batch-delete-text {
 
 .regen-app-secret-dialog[open] {
     display: flex;
-}
-
-/* AddImportDialog.tsx */
-.add-import-dialog {
-    padding: 0;
-}
-
-.add-import-dialog-container {
-    width: 100%;
-    height: 100%;
-    padding: 0 35px;
-    flex-direction: column;
-    gap: 30px;
-    background: var(--wa-color-surface-raised);
-}
-
-.add-import-dialog-container[open] {
-    display: flex;
-}
-
-.add-import-option-container {
-    border: 1px solid #AFAFAF;
-    border-radius: 5px;
-    padding: 15px 10px;
-    display: flex;
-    gap: 23px;
-    align-items: center;
-    background-color: var(--wa-color-surface-default);
-    margin-bottom: 30px;
-
-    &:hover {
-        cursor: pointer;
-        background-color: light-dark(#D5E0F3, #353548);
-    }
-}
-
-.add-import-text-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.add-import-option-title {
-    font-weight: 700;
-    font-size: 16px;
-    padding: 0;
-    margin: 0;
-    color: var(--text-color-primary);
-}
-
-.add-import-option-description {
-    font-weight: 400;
-    font-size: 14px;
-    padding: 0;
-    margin: 0;
-    color: var(--hint-text-color);
-}
-
-.add-import-svg-icon {
-    color: var(--wa-color-text-loud);
-    width: 39px;
-    height: 39px;
-    background-color: light-dark(white, transparent);
-}
-
-body[data-theme="dark"] .add-import-svg-icon {
-    filter: invert(1);
-}
-
-.add-import-dialog-header {
-    padding: 30px 30px 0 30px;
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    background: transparent;
-}
-
-.import-dialog-content {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 10px;
-}
-
-.add-import-back-button {
-    font-size: 14px;
-    background: var(--wa-color-surface-raised);
-    justify-content: flex-start;
-    gap: 5px;
-    color: var(--text-color-primary);
-}
-
-.import-dialog-content-section {
-    padding: 0 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.import-icon-schema-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.import-icon-dropdown-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.import-schema-name-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    flex: 1;
-}
-
-.import-schema-field-input {
-    width: 100%;
-    max-height: 41px;
 }
 
 /* DeleteDialog.tsx */

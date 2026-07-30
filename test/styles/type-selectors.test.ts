@@ -87,10 +87,21 @@ describe('document-scope sheets add no new bare type selector (#907)', () => {
 
   it('finds both sheets and their rules', () => {
     // A bad path or a broken regex would make every assertion below vacuously pass.
+    //
+    // Per-sheet only. There was an aggregate `> 300` here as well; it is removed rather than
+    // lowered, because it was redundant for this test's stated purpose and actively harmful
+    // to it. The purpose is non-vacuity, and the per-sheet floor is the *stronger* check —
+    // an aggregate can be satisfied while one sheet parses to nothing, which is precisely the
+    // failure it was meant to catch.
+    //
+    // What the aggregate actually tracked was the size of the stylesheet, which #806 shrinks
+    // every wave as screens move into shadow roots. It had already been edited once for that
+    // reason and was about to be edited a third time — a number that must be re-set whenever
+    // the thing it measures legitimately changes is not a guard, it is a chore that trains
+    // people to move floors.
     for (const { path, selectors } of sheets) {
       expect(selectors.length, `no top-level rules parsed out of ${path}`).toBeGreaterThan(20);
     }
-    expect(sheets.reduce((total, sheet) => total + sheet.selectors.length, 0)).toBeGreaterThan(300);
   });
 
   it.each(SHEETS)('%s adds none beyond the four that predate #907', (path) => {

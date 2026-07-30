@@ -14,7 +14,7 @@ import BreadcrumbRouter from './components/routers/BreadcrumbRouter';
 import { KeepPageLoading } from './components/keep-elements/react/KeepPageLoading';
 import { KeepPageRouters } from './components/keep-elements/react/KeepPageRouters';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
-import { NavigationGuardProvider } from './components/navigation/NavigationGuardContext';
+import { NavigationGuard } from './components/navigation/NavigationGuard';
 /*
  * Lazy, and mounted on first open rather than while open (#813 step 3).
  *
@@ -153,8 +153,17 @@ const Views: React.FC = () => {
         redirectTo: '/',
       },
       {
+        /*
+         * The only route whose view is a Lit element (#806). `React.lazy` needs a module
+         * whose default export is a component, so the route points at the element's
+         * `@lit/react` wrapper rather than at `keep-consents-container` itself — the same
+         * shape the quick-config drawer above is loaded with.
+         */
         path: '/apps/consents',
-        load: () => import('./components/applications/ConsentsContainer'),
+        load: () =>
+          import('./components/keep-elements/react/KeepConsentsContainer').then((m) => ({
+            default: m.KeepConsentsContainer,
+          })),
         guard,
         redirectTo: '/',
       },
@@ -236,29 +245,34 @@ const Views: React.FC = () => {
 
   return (
     <ViewContainer id="main-stack">
-      <NavigationGuardProvider basename="/admin/ui">
-        <KeepPageRouters>
-          <BreadcrumbRouter />
-        </KeepPageRouters>
-        <RouterOutlet routes={routes} fallback={<KeepPageLoading message="loading view" />} />
+      {/*
+        A sibling, not a wrapper. It was `<NavigationGuardProvider>` around the routes, but
+        its state lives in the store now (#806 decision 1) and its listeners are on
+        `document` and `window` — so the subtree it appeared to scope was never the subtree
+        it guarded, and a component moved out of it would have looked guarded and not been.
+      */}
+      <NavigationGuard basename="/admin/ui" />
+      <KeepPageRouters>
+        <BreadcrumbRouter />
+      </KeepPageRouters>
+      <RouterOutlet routes={routes} fallback={<KeepPageLoading message="loading view" />} />
 
-        {/*
-          /mail stays commented out: the Mail/Dashboard pair is blocked on LABS-1214
-          (#698). /settings went with src/components/settings/ (#681), and /groups and
-          /people went with their screens in #770 — the v6 router upgrade (9324783,
-          2024-04-25) commented all four out instead of converting them, and nobody
-          noticed for fifteen months.
+      {/*
+        /mail stays commented out: the Mail/Dashboard pair is blocked on LABS-1214
+        (#698). /settings went with src/components/settings/ (#681), and /groups and
+        /people went with their screens in #770 — the v6 router upgrade (9324783,
+        2024-04-25) commented all four out instead of converting them, and nobody
+        noticed for fifteen months.
 
-        <Route path="/mail">
-          <Mail />
-        </Route>
-        */}
+      <Route path="/mail">
+        <Mail />
+      </Route>
+      */}
       {quickConfigOpened && (
         <React.Suspense fallback={null}>
           <KeepQuickConfigDrawer />
         </React.Suspense>
       )}
-      </NavigationGuardProvider>
     </ViewContainer>
   );
 };
