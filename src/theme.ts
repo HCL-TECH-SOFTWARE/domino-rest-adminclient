@@ -72,13 +72,6 @@ const theme = (
           },
         },
       },
-      MuiListItemIcon: {
-        styleOverrides: {
-          root: {
-            color: currentTheme.textPrimary,
-          },
-        },
-      },
       MuiCircularProgress: {
         styleOverrides: {
           colorPrimary: {

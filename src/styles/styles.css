@@ -78,10 +78,6 @@
     font-size: 24px;
 }
 
-.giant-text {
-    font-size: 60px;
-}
-
 .line-height-normal {
     line-height: normal;
 }
@@ -172,10 +168,6 @@ body[data-theme="dark"] .color-text-primary {
 
 body[data-theme="dark"] .color-text-disabled {
     color: #8d8d8d;
-}
-
-.color-text-secondary {
-    color: var(--text-color-secondary);
 }
 
 .dialog {
@@ -987,13 +979,6 @@ body[data-theme="dark"] .field-batch-delete-text {
     gap: 40px;
 }
 
-.add-mode-content-text {
-    font-size: 15px;
-    padding: 0;
-    margin: 0;
-    color: var(--hint-text-color);
-}
-
 /* TabsAccess.tsx */
 .mode-buttons {
     background: none;
@@ -1248,14 +1233,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     gap: 10px;
     width: 100%;
     align-items: center;
-}
-
-.active-text {
-    color: var(--active-indicator-color)
-}
-
-.inactive-text {
-    color: var(--inactive-indicator-color)
 }
 
 .active-menu-button {
@@ -1804,11 +1781,5 @@ body[data-theme="dark"] .add-import-svg-icon {
     display: block;
     /* No margin-top: the 30px this used to carry is now .nav-header's padding, which the
        57px rail and the mobile drawer both need to share. */
-}
-
-.side-nav-text-link {
-    margin-left: -4px;
-    font-size: 16px;
-    font-weight: 400;
 }
 
