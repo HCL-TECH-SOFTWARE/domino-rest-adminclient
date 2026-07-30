@@ -4,6 +4,33 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
+/* `hidden` has to hide.
+
+   WebAwesome's native.css styles bare form controls — `button`, `input[type=button|
+   submit|reset|file]`, and separately `label` and `summary` — and among other things
+   gives them a `display`, a height and a fill. Those declarations are author-origin,
+   and *every* author declaration outranks the user-agent `[hidden] { display: none }`
+   no matter which cascade layer it sits in. So a `<button hidden>` in the light DOM
+   renders: 29×37, filled with the neutral ramp.
+
+   That is what put a dark square under LOG IN. The login form's submit control is a
+   hidden native button — `keep-button` renders its `<wa-button>` into a shadow root, so
+   it can never be a submitter, and without that button Enter in a field logs nobody in
+   (#809). Every other hidden bare button, label or summary in the app had the same
+   problem; the login page is just where one existed.
+
+   `!important` because `hidden` is an absolute statement about an element, not a
+   preference to be weighed against the next rule. Delete this once WebAwesome stops
+   setting `display` on bare controls — test/styles/hidden-attribute.test.ts fails when
+   that day comes.
+
+   The user-agent rule this restores is really `[hidden]:not([hidden='until-found'])`.
+   Nothing here uses `hidden="until-found"`; if something does, add that `:not()` or
+   find-in-page will never reveal it. */
+[hidden] {
+  display: none !important;
+}
+
 /* Switch base styles */
 :root keep-switch {
   color-scheme: inherit;
