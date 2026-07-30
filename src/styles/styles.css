@@ -854,8 +854,16 @@ body[data-theme="dark"] .field-batch-delete-text {
     height: 100%;
 }
 
+/*
+ * The colour was MUI's color="primary", i.e. theme.palette.primary.main, which theme.ts
+ * binds to getTheme(mode).textColorPrimary — the value keep-theme.css pins
+ * --wa-color-text-normal to in both modes. wa-icon has no color attribute and paints from
+ * currentColor, so the token has to be declared here. No font-size: the glyph was an
+ * unsized MUI SvgIcon (24px), and it carries size="xl" at the call site instead.
+ */
 .mode-compare-search-icon {
     margin-right: 10px;
+    color: var(--wa-color-text-normal);
 }
 
 .mode-compare-card-container {
@@ -1021,6 +1029,42 @@ body[data-theme="dark"] .field-batch-delete-text {
     font-size: 16px;
     margin-right: 5px;
     padding: 0;
+}
+
+/*
+ * The Delete Mode glyph. Its colour was MUI's color='primary', i.e.
+ * theme.palette.primary.main, which theme.ts binds to getTheme(mode).textColorPrimary —
+ * the value keep-theme.css pins --wa-color-text-normal to in both modes. wa-icon has no
+ * color attribute and paints from currentColor, so it has to be a declaration. It cannot
+ * be inherited the way the Clone and Add glyphs beside it inherit theirs: this is the one
+ * button in the row whose class list omits color-text-primary.
+ */
+.tabs-access-delete-icon {
+    color: var(--wa-color-text-normal);
+}
+
+/*
+ * The Save glyph, which sat at 0.9em where the other three in this row sit at 1em. That
+ * em resolved against the 16px .tabs-access-action-icon sets on the very same element, so
+ * the glyph drew at 14.4px. Written as an em here it would resolve against the button
+ * instead and land somewhere else, so the product is spelled out.
+ */
+.tabs-access-save-icon {
+    font-size: 14.4px;
+}
+
+/*
+ * The Save glyph's two colours, previously a conditional passed as a prop. The condition
+ * is the same one the caption beside it switches on, but the values are not the caption's
+ * color-text-primary / color-text-disabled pair — the disabled grey is #A7A8A9, which is
+ * not --text-color-disabled — so both ends are restated here.
+ */
+.tabs-access-save-icon-enabled {
+    color: var(--wa-color-text-normal);
+}
+
+.tabs-access-save-icon-disabled {
+    color: #A7A8A9;
 }
 
 .access-load-tab-container {
@@ -1494,6 +1538,20 @@ body[data-theme="dark"] .add-import-svg-icon {
 
 .script-editor-help-icon {
     color: #2d91e3;
+}
+
+/*
+ * The "Test Formulas" play glyph. Renamed from the bare `.action-icon` it used to carry,
+ * which matched no rule anywhere and sat one letter away from `.tabs-access-action-icon`.
+ *
+ * The colour was MUI's color='primary', i.e. theme.palette.primary.main, which theme.ts
+ * binds to getTheme(mode).textColorPrimary — the value keep-theme.css pins
+ * --wa-color-text-normal to in both modes. wa-icon has no color attribute and paints from
+ * currentColor, so it has to be a declaration. No font-size: the glyph was an unsized MUI
+ * SvgIcon (24px) and carries size='xl' at the call site instead.
+ */
+.script-editor-action-icon {
+    color: var(--wa-color-text-normal);
 }
 
 .script-editor-access-container {

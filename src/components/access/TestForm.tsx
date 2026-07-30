@@ -9,7 +9,6 @@ import TextField from '@mui/material/TextField';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
-import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@linaria/react';
 import { FormikProps } from 'formik';
 import { useSelector } from 'react-redux';
@@ -25,6 +24,7 @@ import {
   AutoContainer,
 } from '../../styles/CommonStyles';
 import { KeepCheckbox } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 const TestsPanel = styled.div`
@@ -90,8 +90,10 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
     <FormContentContainer role="presentation" className='full-width'>
       {!displayTestResults &&
         <TestsPanel>
-          <CloseIcon
-            cursor="pointer"
+          <KeepIcon
+            name="xmark"
+            label="Close"
+            size="xl"
             className="close-icon float-right"
             onClick={() => {
               dispatch(toggleApplicationDrawer());
@@ -195,7 +197,7 @@ const TestForm: React.FC<TestFormProps> = ({ formik }) => {
       </TestsPanel> 
     }
     {displayTestResults && <ResultsPanel>
-      <CloseIcon cursor="pointer" className="close-icon float-right"
+      <KeepIcon name="xmark" label="Close" size="xl" className="close-icon float-right"
         onClick={() => {
             dispatch(toggleApplicationDrawer());
             dispatch(clearFormulaResults());

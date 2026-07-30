@@ -58,10 +58,10 @@ export type KeepIconCanvas = 'fixed' | 'auto' | 'square' | 'roomy';
  *
  * Web Awesome's default is `fixed`, a **1.25em × 1em** box — Font Awesome's fixed-width
  * behaviour, which pads every glyph to a common width so icons line up in a column. Both
- * sets this replaces rendered a **1em × 1em** square instead (`MuiSvgIcon` sets
- * `width: 1em; height: 1em`; `react-icons` the same). Keeping the Web Awesome default
- * would therefore have widened all ~115 converted sites by 25 % — a layout change nothing
- * asked for, and one the test suite cannot see because it runs with `css: false`.
+ * of the legacy icon sets this replaces rendered a **1em × 1em** square instead, setting
+ * `width: 1em; height: 1em` on the graphic itself. Keeping the Web Awesome default would
+ * therefore have widened all ~115 converted sites by 25 % — a layout change nothing asked
+ * for, and one the test suite cannot see because it runs with `css: false`.
  *
  * `auto` keeps the 1em height and lets the width follow the glyph, which is the closest
  * match. Pass `canvas="fixed"` back where column alignment actually matters — a menu or a

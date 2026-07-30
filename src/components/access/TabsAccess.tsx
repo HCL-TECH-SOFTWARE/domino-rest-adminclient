@@ -9,9 +9,6 @@ import Button from '@mui/material/Button';
 import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from '../../router/react';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { Menu, MenuItem } from '@mui/material';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
@@ -32,10 +29,9 @@ import {
   findScopeBySchema,
 } from '../../store/databases/scripts';
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
-import { BiCopy } from 'react-icons/bi';
-import { FiSave } from "react-icons/fi";
 import { Database } from '../../store/databases/types';
 import { KeepTooltip, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -881,7 +877,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
             className='change-mode-svg-btn text-transform-none'
             onClick={handleFieldListOnClick}
           >
-            <ArrowDropDownIcon />
+            <KeepIcon name='caret-down' label='Select Mode' size='xl' />
           </Button>
           <Menu
             anchorEl={anchorEl}
@@ -909,7 +905,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               disabled={newForm.enabled}
               className={`mode-buttons color-text-primary ${newForm.enabled ? 'cursor-default' : 'cursor-pointer'} flex gap-5`}
             >
-              <BiCopy className='tabs-access-action-icon' />
+              <KeepIcon name='copy' className='tabs-access-action-icon' />
               <span className={`small-text weight-400 ${newForm.enabled ? 'color-text-disabled' : 'color-text-primary'}`}>
                 Clone Mode
               </span>
@@ -919,7 +915,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
               disabled={newForm.enabled}
               className={`mode-buttons color-text-primary ${newForm.enabled ? 'cursor-default' : 'cursor-pointer'}`}
             >
-              <AddIcon className='tabs-access-action-icon' />
+              <KeepIcon name='plus' className='tabs-access-action-icon' />
               <span className={`small-text weight-400 ${newForm.enabled ? 'color-text-disabled' : 'color-text-primary'}`}>
                 Add Mode
               </span>
@@ -939,7 +935,7 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                   onClick={onDeleteClick}
                   className='cursor-pointer mode-buttons'
                 >
-                  <DeleteIcon color='primary' className='tabs-access-action-icon' />
+                  <KeepIcon name='trash' className='tabs-access-action-icon tabs-access-delete-icon' />
                   <span className={`small-text weight-400 ${newForm.enabled ? 'color-text-disabled' : 'color-text-primary'}`}>
                     Delete Mode
                   </span>
@@ -961,12 +957,11 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                   p-0 flex items-center gap-5
                 `}
               >
-                <FiSave
-                  className='tabs-access-action-icon'
-                  color={!newForm.enabled || saveEnabled
-                    ? 'var(--wa-color-text-normal)'
-                    : '#A7A8A9'}
-                  size='0.9em'
+                <KeepIcon
+                  name='floppy-disk'
+                  className={`tabs-access-action-icon tabs-access-save-icon ${!newForm.enabled || saveEnabled
+                    ? 'tabs-access-save-icon-enabled'
+                    : 'tabs-access-save-icon-disabled'}`}
                 />
                 <span className={`small-text weight-400 ${!newForm.enabled ? 'color-text-primary' : saveEnabled ? 'color-text-primary' : 'color-text-disabled'}`}>
                   Save

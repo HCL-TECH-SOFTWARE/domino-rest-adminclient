@@ -6,13 +6,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, ButtonBase, Collapse, TextField } from '@mui/material';
-import { FiEdit2 } from 'react-icons/fi';
 import { BlueSwitch } from '../../styles/CommonStyles';
-import TestIcon from '@mui/icons-material/PlayArrow';
-import HelpCenterIcon from '@mui/icons-material/HelpCenter';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { KeepButton, KeepFormDialogHeader, KeepTextformArray, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 interface ScriptEditorProps {
   data: any;
@@ -137,13 +133,17 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
           <p className='script-editor-settings-text m-0'>Mode Settings</p>
           <div className='flex flex-row items-center'>
             <Button onClick={test}>
-              <TestIcon className='action-icon' color='primary' />
+              <KeepIcon name='play' size='xl' className='script-editor-action-icon' />
               <p className='color-text-primary m-0 small-text'>
                 Test Formulas
               </p>
             </Button>
             <Button className='expand-button' onClick={handleClickExpand}>
-              {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              <KeepIcon
+                name={expanded ? 'chevron-up' : 'chevron-down'}
+                label={expanded ? 'Collapse Mode Settings' : 'Expand Mode Settings'}
+                size='xl'
+              />
             </Button>
           </div>
         </div>
@@ -156,7 +156,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   disabled={!(data.readAccessFormula)} 
                   onClick={() => openDialog("Formula for Read Access", data.readAccessFormula.formula)}
                 >
-                  <FiEdit2 />
+                  <KeepIcon name='pencil' label='Edit Formula for Read Access' />
                 </ButtonBase>
               </div>
               {data.readAccessFormula && <p className='tiny-text weight-400 m-0'>{data.readAccessFormula.formula}</p>}
@@ -169,7 +169,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   disabled={!(data.writeAccessFormula)} 
                   onClick={() => openDialog("Formula for Write Access", data.writeAccessFormula.formula)}
                 >
-                  <FiEdit2 />
+                  <KeepIcon name='pencil' label='Edit Formula for Write Access' />
                 </ButtonBase>
               </div>
               <div className='flex justify-between'>
@@ -190,7 +190,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   disabled={!(data.deleteAccessFormula)} 
                   onClick={() => openDialog("Formula for Delete Access", data.deleteAccessFormula.formula)}
                 >
-                  <FiEdit2 />
+                  <KeepIcon name='pencil' label='Edit Formula for Delete Access' />
                 </ButtonBase>
               </div>
               {data.deleteAccessFormula?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.deleteAccessFormula.formula}</p>}
@@ -203,7 +203,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   disabled={!(data.onLoad)} 
                   onClick={() => openDialog("On Load Formula", data.onLoad.formula)}
                 >
-                  <FiEdit2 />
+                  <KeepIcon name='pencil' label='Edit On Load Formula' />
                 </ButtonBase>
               </div>
               {data.onLoad?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.onLoad.formula}</p>}
@@ -218,7 +218,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   disabled={!(data.onSave)} 
                   onClick={() => openDialog("On Save Formula", data.onSave.formula)}
                 >
-                  <FiEdit2 />
+                  <KeepIcon name='pencil' label='Edit On Save Formula' />
                 </ButtonBase>
               </div>
               {data.onSave?.formula !== "" && <p className='tiny-text weight-400 m-0'>{data.onSave.formula}</p>}
@@ -230,7 +230,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
                   Sign Document
                 </span>
                 <KeepTooltip content="Please understand this option before enabling, see the documentation on enabling encryption.">
-                  <HelpCenterIcon className='script-editor-help-icon' />
+                  <KeepIcon name='circle-question' size='xl' className='script-editor-help-icon' />
                 </KeepTooltip>
                 <BlueSwitch size='small' checked={data.sign} onChange={handleToggleSign} />
               </section>
@@ -288,7 +288,11 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ data, setScripts, test, val
           <p className='script-editor-settings-text m-0'>Validation Rules</p>
           <div className='flex flex-row items-center'>
             <Button className='p-0 m-0' onClick={handleClickExpandValidation}>
-              {validationExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              <KeepIcon
+                name={validationExpanded ? 'chevron-up' : 'chevron-down'}
+                label={validationExpanded ? 'Collapse Validation Rules' : 'Expand Validation Rules'}
+                size='xl'
+              />
             </Button>
           </div>
         </div>

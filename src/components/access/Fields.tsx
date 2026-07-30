@@ -8,9 +8,6 @@ import React, { useState, useEffect } from 'react';
 import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
 import { MenuItem, CircularProgress, Select } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import SearchIcon from '@mui/icons-material/Search';
-import { MdLibraryAdd } from 'react-icons/md';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import SingleFieldContainer from './SingleFieldContainer';
@@ -20,6 +17,7 @@ import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, SearchContainer, SearchInput } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 const FieldContainer = styled.div`
@@ -134,9 +132,15 @@ const IconButton = styled.button`
     align-items: center;
   }
 
+  /*
+   * Both glyphs in this header are wa-icon now, and wa-icon takes its box from font-size
+   * rather than width: its graphic lives in a shadow root, so a width declared here no
+   * longer reaches it. 18px is the measure this rule has always asked these two icons
+   * for; expressing it as a font-size is what still delivers it.
+   */
   .icon {
     margin: 0;
-    width: 18px;
+    font-size: 18px;
   }
 `;
 
@@ -339,7 +343,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
             content="Refresh List of Fields"
           >
             <IconButton className="icon-button" onClick={handleRefreshFields}>
-              <RefreshIcon className="icon" />
+              <KeepIcon name="arrows-rotate" label="Refresh List of Fields" className="icon" />
             </IconButton>
           </KeepTooltip>
           <KeepTooltip
@@ -347,7 +351,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
             className='w-40'
           >
             <IconButton className="icon-button" onClick={handleAddAll}>
-              <MdLibraryAdd className="icon" />
+              <KeepIcon name="square-plus" label="Add All Fields" className="icon" />
             </IconButton>
           </KeepTooltip>
         </FieldsDropDownHeader>
@@ -381,7 +385,7 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
         <FieldsDropDown>
           <FormSearchContainer className="main-search-container">
             <SearchContainer className="search-container">
-              <SearchIcon color="primary" className="search-icon" />
+              <KeepIcon name="magnifying-glass" className="search-icon" />
               <SearchInput placeholder="Search Field" onChange={handleSearchField} />
             </SearchContainer>
           </FormSearchContainer>

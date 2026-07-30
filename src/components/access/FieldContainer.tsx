@@ -10,8 +10,8 @@ import TextField from '@mui/material/TextField';
 import { convert2FieldType } from '../../utils/field-types';
 import { Box } from '@mui/material';
 import { BlueSwitch, EncryptSignOptions } from '../../styles/CommonStyles';
-import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 interface SingleFieldContainerProps {
   item?: any;
@@ -299,7 +299,7 @@ const FieldContainer: React.FC<SingleFieldContainerProps> = ({
                 content='Please understand this option before enabling, see the documentation on enabling encryption.'
               >
                 <div className='small-icon'>
-                  <HelpCenterIcon className='small-text script-editor-help-icon' />
+                  <KeepIcon name='circle-question' className='small-text script-editor-help-icon' />
                 </div>
               </KeepTooltip>
               <BlueSwitch size='small' checked={encrypt} onChange={toggleEncrypt} />
