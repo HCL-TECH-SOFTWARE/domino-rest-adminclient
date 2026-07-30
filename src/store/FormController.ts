@@ -13,6 +13,26 @@ export interface FormControllerOptions<T extends object> {
 }
 
 /**
+ * A field of `T`, or one level of dot-path into a nested object of `T` — exactly the set
+ * `setValue` accepts, and the keys `errors` and `touched` are keyed on (#935).
+ *
+ * `keyof T & string` alone would have been wrong. A nested yup rule reports a dotted path
+ * (`additionalModes.odata`) that no top-level key covers, and `submit()` unions those paths
+ * into `touched`, so half the live entries would not have type-checked. One level, because
+ * that is all `setValue` writes: `setValue('a.b.c', v)` puts a literal `'b.c'` key inside `a`.
+ *
+ * Arrays are left as bare keys. Spreading their indices and `length` into the union would
+ * offer `tags.0` and `tags.length` as field names, which `setValue` cannot honour.
+ */
+export type FormPath<T> = {
+  [K in keyof T & string]: NonNullable<T[K]> extends readonly unknown[]
+    ? K
+    : NonNullable<T[K]> extends object
+      ? K | `${K}.${keyof NonNullable<T[K]> & string}`
+      : K;
+}[keyof T & string];
+
+/**
  * Form state for a Lit element (#807) — the replacement for Formik.
  *
  * Formik's failure here was not its error map, which `LoginPage.tsx` still keeps happily.
@@ -31,10 +51,28 @@ export interface FormControllerOptions<T extends object> {
  * message waited for the Add button. Wiring `@blur` is per-field work in the converted
  * element; the primitive side is `touched` + `handleBlur` + `validateField`.
  */
+/**
+ * A copy of `map` without `key`.
+ *
+ * Not the rest-destructure this replaces. `const { [key]: _drop, ...rest } = map` types `rest`
+ * as `Omit<Partial<Record<FormPath<T>, V>>, FormPath<T>>`, and once the key is a union
+ * TypeScript cannot see that back as the original map type — it reduces the remaining keys to
+ * `never` and rejects the assignment.
+ */
+function without<K extends PropertyKey, V>(
+  map: Partial<Record<K, V>>,
+  key: K,
+): Partial<Record<K, V>> {
+  const next = { ...map };
+  delete next[key];
+  return next;
+}
+
 export class FormController<T extends object> implements ReactiveController {
   private _values: T;
-  private _errors: Record<string, string> = {};
-  private _touched: Record<string, boolean> = {};
+  private _extras: Record<string, unknown> = {};
+  private _errors: Partial<Record<FormPath<T>, string>> = {};
+  private _touched: Partial<Record<FormPath<T>, boolean>> = {};
   private _submitted = false;
   private _submitting = false;
   private _inFlight?: Promise<void>;
@@ -71,7 +109,7 @@ export class FormController<T extends object> implements ReactiveController {
    * level: `setValue('a.b.c', v)` writes a literal `'b.c'` key into `a` — do not build
    * deeper paths.
    */
-  setValue(path: string, value: unknown): void {
+  setValue(path: FormPath<T>, value: unknown): void {
     const dot = path.indexOf('.');
     if (dot === -1) {
       this._values = { ...this._values, [path]: value };
@@ -82,20 +120,74 @@ export class FormController<T extends object> implements ReactiveController {
       this._values = { ...this._values, [head]: { ...parent, [tail]: value } };
     }
     // Clears just this field's error, one at a time — LoginPage clears its whole map instead.
-    if (path in this._errors) {
-      const { [path]: _removed, ...rest } = this._errors;
-      this._errors = rest;
-    }
+    if (path in this._errors) this._errors = without(this._errors, path);
     this.host.requestUpdate();
   }
 
+  /**
+   * Merge `next` over the current values. Keys absent from `next` keep what they had.
+   *
+   * The right default, and the only one until #935: a form restoring one row of a record, or
+   * writing back a field it just computed, means "these, and leave the rest". When the whole
+   * object is the new truth — a parsed file, a preloaded payload — that is `replaceValues`.
+   */
   setValues(next: Partial<T>): void {
     this._values = { ...this._values, ...next };
     this.host.requestUpdate();
   }
 
+  /**
+   * Replace the values wholesale: keys absent from `next` go back to nothing rather than
+   * keeping what they had (#935).
+   *
+   * The import case needs this and `setValues` cannot express it. The React file-import path
+   * spread a parsed `.json` straight into the values object, so a key the file omitted was
+   * *meant* to disappear; done as a merge it silently keeps whatever the previous file, or the
+   * user, had put there.
+   *
+   * Takes a whole `T`, not a `Partial<T>`, because "replace" and "partial" do not belong in
+   * the same call — a partial replace is how you get a form with holes in it. A file that
+   * carries only some of the fields should be read into a complete `T` by the caller, which is
+   * where the defaults for the rest actually live.
+   *
+   * Errors and touched are left alone, exactly as `setValues` leaves them: this reports new
+   * values, not a new form. Use `reset()` for that.
+   */
+  replaceValues(next: T): void {
+    this._values = { ...next };
+    this.host.requestUpdate();
+  }
+
+  /**
+   * Fields the form carries but does not own — and therefore has no control, no validation
+   * rule and no place in `T` for (#935).
+   *
+   * An imported payload is the case this exists for. The file names fields belonging to the
+   * record that this particular form does not edit; they have to survive the round trip, and
+   * with a typed `T` they have nowhere to live. Without this, each converting form invents a
+   * private bag, spreads it under the values when building its payload, and remembers to clear
+   * it in `reset()` — bookkeeping that is per-form and easy to get wrong.
+   *
+   * Deliberately untyped: it is the escape hatch, and `Record<string, unknown>` is an honest
+   * description of "whatever the file had". Anything the form actually owns belongs in `T`.
+   *
+   * The payload is `{ ...form.extras, ...form.values }` — extras underneath, so a field the
+   * form owns always wins over a stale copy of it in the imported data. Left to the caller,
+   * which owns the rest of the payload shape anyway.
+   */
+  get extras(): Readonly<Record<string, unknown>> {
+    return this._extras;
+  }
+
+  /** Replace the carried-but-not-owned fields. Cleared by `reset()`, like everything else. */
+  setExtras(next: Record<string, unknown>): void {
+    this._extras = { ...next };
+    this.host.requestUpdate();
+  }
+
   reset(): void {
     this._values = { ...this.options.initialValues };
+    this._extras = {};
     this._errors = {};
     this._touched = {};
     this._submitted = false;
@@ -113,7 +205,7 @@ export class FormController<T extends object> implements ReactiveController {
    * blur, or on a submit attempt, whichever comes first. Untouched fields are absent, so
    * `errors.x` alone never shows a message for a field the user has not reached yet.
    */
-  get errors(): Readonly<Partial<Record<string, string>>> {
+  get errors(): Readonly<Partial<Record<FormPath<T>, string>>> {
     return this._errors;
   }
 
@@ -130,7 +222,7 @@ export class FormController<T extends object> implements ReactiveController {
    * their `touched.x` only ever became true on submit and `submitted` was the honest name for
    * what they meant. Converted forms wire `@blur` and get the behaviour the markup implied.
    */
-  get touched(): Readonly<Partial<Record<string, boolean>>> {
+  get touched(): Readonly<Partial<Record<FormPath<T>, boolean>>> {
     return this._touched;
   }
 
@@ -158,7 +250,7 @@ export class FormController<T extends object> implements ReactiveController {
    * The returned promise is there so a test can await it; template handlers discard it. It
    * rejects only if the schema itself crashed — see `validateField`.
    */
-  handleBlur(path: string): Promise<void> {
+  handleBlur(path: FormPath<T>): Promise<void> {
     this._touched = { ...this._touched, [path]: true };
     this.host.requestUpdate();
     return this.validateField(path);
@@ -177,13 +269,12 @@ export class FormController<T extends object> implements ReactiveController {
    * nothing about this field, so clearing its error would be a lie. The existing entry is
    * left as it was.
    */
-  async validateField(path: string): Promise<void> {
+  async validateField(path: FormPath<T>): Promise<void> {
     const found = await this.validate();
     const message = found[path];
     if (message === undefined) {
       if (!(path in this._errors)) return;
-      const { [path]: _removed, ...rest } = this._errors;
-      this._errors = rest;
+      this._errors = without(this._errors, path);
     } else {
       if (this._errors[path] === message) return;
       this._errors = { ...this._errors, [path]: message };
@@ -225,8 +316,8 @@ export class FormController<T extends object> implements ReactiveController {
       // Error paths are unioned in, not just the value keys, because a nested rule reports a
       // dotted path (`additionalModes.odata`) that no top-level key would cover.
       this._touched = { ...this._touched };
-      for (const key of Object.keys(this._values)) this._touched[key] = true;
-      for (const key of Object.keys(this._errors)) this._touched[key] = true;
+      const keys = [...Object.keys(this._values), ...Object.keys(this._errors)];
+      for (const key of keys) this._touched[key as FormPath<T>] = true;
       if (Object.keys(this._errors).length > 0) return;
       await this.options.onSubmit(this._values);
     } finally {
@@ -244,7 +335,7 @@ export class FormController<T extends object> implements ReactiveController {
     }
   }
 
-  private async validate(): Promise<Record<string, string>> {
+  private async validate(): Promise<Partial<Record<FormPath<T>, string>>> {
     const { schema } = this.options;
     if (!schema) return {};
     try {
@@ -262,7 +353,10 @@ export class FormController<T extends object> implements ReactiveController {
       for (const issue of issues) {
         if (issue.path && !(issue.path in found)) found[issue.path] = issue.message;
       }
-      return found;
+      // The one place a plain string becomes a FormPath<T>. yup reports whatever its schema
+      // was built with, and nothing types that against `T` — so this is the boundary where the
+      // two are asserted to agree, rather than a cast sprinkled through the readers.
+      return found as Partial<Record<FormPath<T>, string>>;
     }
   }
 }

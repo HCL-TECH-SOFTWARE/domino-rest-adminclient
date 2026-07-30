@@ -78,6 +78,166 @@ describe('FormController — values', () => {
   });
 });
 
+// ---- #935 ------------------------------------------------------------------------------------
+
+describe('FormController — replaceValues', () => {
+  /**
+   * The distinction the import case turns on. `setValues` merges, so a key the new object
+   * omits keeps whatever was there — which for a parsed file means the *previous* file's
+   * value, or the user's, silently surviving into the payload.
+   */
+  it('drops what the new object omits, where setValues would keep it', () => {
+    const merged = host();
+    merged.form.setValue('name', 'from the user');
+    merged.form.setValues({ count: 7 });
+    expect(merged.form.values.name).toBe('from the user');
+
+    const replaced = host();
+    replaced.form.setValue('name', 'from the user');
+    replaced.form.replaceValues({ ...INITIAL, count: 7 });
+    expect(replaced.form.values.name).toBe('');
+    expect(replaced.form.values.count).toBe(7);
+  });
+
+  it('requests a host update', () => {
+    const el = host();
+    const spy = vi.spyOn(el, 'requestUpdate');
+    el.form.replaceValues({ ...INITIAL, name: 'Ada' });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('does not adopt the caller object, so a later mutation cannot reach into the form', () => {
+    const el = host();
+    const next = { ...INITIAL, name: 'Ada' };
+    el.form.replaceValues(next);
+    next.name = 'mutated after the call';
+    expect(el.form.values.name).toBe('Ada');
+  });
+
+  it('reports new values, not a new form: errors and touched survive', async () => {
+    const el = new HostElement();
+    const form = new FormController<Values>(el, {
+      initialValues: INITIAL,
+      onSubmit: vi.fn(),
+      schema: yup.object().shape({ name: yup.string().required('Name is required') }),
+    });
+    await form.submit();
+    expect(form.errors.name).toBe('Name is required');
+
+    form.replaceValues({ ...INITIAL, count: 2 });
+
+    expect(form.errors.name).toBe('Name is required');
+    expect(form.touched.name).toBe(true);
+    expect(form.submitted).toBe(true);
+  });
+});
+
+describe('FormController — extras', () => {
+  /**
+   * Fields an imported payload carries that this form does not own. Before this they had
+   * nowhere to live under a typed `T`, so the converting form kept a private bag, spread it
+   * under the values when building the payload, and had to remember to clear it in `reset`.
+   */
+  it('starts empty', () => {
+    expect(host().form.extras).toEqual({});
+  });
+
+  it('carries fields that are not part of T', () => {
+    const el = host();
+    el.form.setExtras({ '@unid': 'abc', owners: ['someone'] });
+    expect(el.form.extras).toEqual({ '@unid': 'abc', owners: ['someone'] });
+  });
+
+  it('keeps them out of values, so onSubmit still receives exactly T', async () => {
+    const el = host();
+    const onSubmit = vi.fn();
+    const form = new FormController<Values>(el, { initialValues: INITIAL, onSubmit });
+    form.setExtras({ '@unid': 'abc' });
+    await form.submit();
+    expect(onSubmit).toHaveBeenCalledWith(INITIAL);
+    expect(form.values).not.toHaveProperty('@unid');
+  });
+
+  it('replaces rather than merges, so a second import cannot leave the first behind', () => {
+    const el = host();
+    el.form.setExtras({ '@unid': 'first', stale: true });
+    el.form.setExtras({ '@unid': 'second' });
+    expect(el.form.extras).toEqual({ '@unid': 'second' });
+  });
+
+  it('does not adopt the caller object', () => {
+    const el = host();
+    const bag: Record<string, unknown> = { '@unid': 'abc' };
+    el.form.setExtras(bag);
+    bag['@unid'] = 'mutated after the call';
+    expect(el.form.extras['@unid']).toBe('abc');
+  });
+
+  it('is cleared by reset, which is the bookkeeping each form used to do by hand', () => {
+    const el = host();
+    el.form.setExtras({ '@unid': 'abc' });
+    el.form.reset();
+    expect(el.form.extras).toEqual({});
+  });
+
+  it('requests a host update', () => {
+    const el = host();
+    const spy = vi.spyOn(el, 'requestUpdate');
+    el.form.setExtras({ '@unid': 'abc' });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('sits under the values in the payload the caller builds', () => {
+    // The documented precedence: a field the form owns wins over a stale copy of it in the
+    // imported data. Asserted here so the doc comment is not the only statement of it.
+    const el = host();
+    el.form.setExtras({ '@unid': 'abc', name: 'stale copy from the file' });
+    el.form.setValue('name', 'what the user typed');
+    expect({ ...el.form.extras, ...el.form.values }).toMatchObject({
+      '@unid': 'abc',
+      name: 'what the user typed',
+    });
+  });
+});
+
+/**
+ * `errors` and `touched` are keyed on `FormPath<T>`, so a mistyped field name is a compile
+ * error rather than a silent `undefined` that reads as "no error for this field".
+ *
+ * These assertions are made by `tsc`, not by vitest — `npm run typecheck` builds `test/` too,
+ * and `@ts-expect-error` fails the build if the line below it *compiles*. The runtime body is
+ * there so the file still describes what it pins.
+ */
+describe('FormController — a mistyped field name does not compile', () => {
+  it('rejects an unknown key on errors, touched, setValue and handleBlur', () => {
+    const form = host().form;
+
+    // @ts-expect-error 'schmaName' is not a field of Values — this was the silent undefined.
+    void form.errors.schmaName;
+    // @ts-expect-error same, on the display gate that reads it.
+    void form.touched.schmaName;
+    // @ts-expect-error a typo'd write used to create a junk key on the values object.
+    form.setValue('nmae', 'Ada');
+    // @ts-expect-error and a typo'd blur validated, and marked touched, a field nothing shows.
+    void form.handleBlur('nmae');
+
+    // The correctly spelled ones still compile, so the union is not simply `never`.
+    expect(form.errors.name).toBeUndefined();
+    expect(form.touched.additionalModes).toBeUndefined();
+  });
+
+  it('accepts one level of dot path, which is what a nested yup rule reports', () => {
+    const form = host().form;
+    form.setValue('additionalModes.odata', true);
+    void form.errors['additionalModes.odata'];
+
+    // @ts-expect-error two levels are not written as a path — setValue would create 'b.c'.
+    form.setValue('additionalModes.odata.deeper', true);
+
+    expect(form.values.additionalModes.odata).toBe(true);
+  });
+});
+
 // Type-only, never called: proves `values` is `Readonly<T>` at compile time. `tsc -b` still
 // checks an unused function's body, so this fails the build the day the getter is widened —
 // vitest never executes it.

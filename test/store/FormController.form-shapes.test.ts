@@ -306,7 +306,12 @@ describe('FormController against the five real forms', () => {
       schema: nested,
     });
     await form.submit();
-    for (const key of Object.keys(INITIAL)) expect(form.touched[key]).toBe(true);
+    // `keyof SchemaForm` rather than the bare `string` Object.keys hands back: `touched` is
+    // keyed on FormPath<SchemaForm> now, and an unnarrowed string index is exactly the lookup
+    // #935 set out to make a compile error.
+    for (const key of Object.keys(INITIAL) as Array<keyof SchemaForm & string>) {
+      expect(form.touched[key]).toBe(true);
+    }
     expect(form.errors['dqlFormula.formula']).toBe('Formula is too short');
     expect(form.touched['dqlFormula.formula']).toBe(true);
   });
