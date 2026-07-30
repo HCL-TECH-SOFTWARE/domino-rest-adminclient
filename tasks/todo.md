@@ -200,7 +200,83 @@ produce again.
 Still needing real eyes, per-screen lists are in the PR. The largest single risk is `SideNav`,
 which is on every authenticated screen in both modes.
 
-## Wave 2 — not started
+## Review — wave 2
 
-Carried forward: `APILoadingProgress` folds into `keep-page-loading` the same way
-`GenericLoading` did (four consumers plus a mock). Then the wave-2 clusters listed above.
+**Landed**, 8 commits on `feat/806-wave-2`, stacked on the wave 1 branch. 13 React files
+deleted, 9 elements created, 9 wrappers added and 4 deleted.
+
+| Gate | wave 1 | **after wave 2** |
+|---|---|---|
+| `npm run lint` | 0 | **0** |
+| `npm run typecheck` | 0 | **0** |
+| `npm run build` | 0 | **0** |
+| `npm test` | 146 / 1951 | **156 files / 2222 tests** |
+| `npm run bundle:budget` | 891.7 / 241.2 kB | **876.0 / 232.5 kB** ✅ |
+
+**The bundle ended up smaller than the baseline this whole run started from** (887.5 kB),
+having absorbed two waves of conversions.
+
+### The bundle scare, and what it actually was
+
+Wave 2 first measured **911.3 kB — 18.8 kB over budget**. It was a regression, not a budget
+that needed raising: a static `wa-popover` import from the profile menus put Web Awesome's
+popover and its positioning engine into the eager closure, worth **36.9 kB raw / 12.1 kB
+gzip**, measured by building with and without it. Fetching it off the eager path is safe
+because the popover starts closed — but `wa-popover:not(:defined) { display: none }` is
+required, not defensive: an un-upgraded popover is an inline box that would flash the user's
+name and the sign-out list under the avatar on every load.
+
+### The recipe note from wave 1 was incomplete
+
+Wave 1 said "re-adopt `keep-data-table`'s document sheet" when nesting a table. Necessary,
+not sufficient — Web Awesome **also** styles tables from `wa-native` through bare element
+selectors. Four rules were being lost: the row hairline, top-aligned cell content, the
+smaller header font, and the universal box-sizing reset without which a fixed-width column
+measures its width *plus* 60px of cell padding.
+
+That gap had already shipped in `keep-column-details` (wave 1). Fixed in all four table
+elements here. Generalised: **any bare element selector this app leans on stops at the
+boundary — table, input, dialog, hr, img.**
+
+### Measuring beat reading
+
+Four table elements were fixed by inspection, then measured in a browser — and one of them,
+`keep-forms-table`, was still wrong: it inherited box-sizing rather than stating it, and the
+adopted sheet's own declaration on the cells beat the inherited value. Reading the code said
+it was fixed; the computed style said otherwise.
+
+### Defects found, none introduced by this wave
+
+- **A white screen.** `noFieldObj` was nested one level too deep, so a form with zero fields
+  did not render a placeholder — it took the schema screen down.
+- **A keyboard-dead list.** The add-field control was `visibility: hidden` until hover, so it
+  could not take focus and was absent from the accessibility tree.
+- **Two reachable crashes** in the formula cards and the multi-value toggle, both unguarded
+  reads of a key the schema allows to be missing.
+- **Dark mode illegible in the sidenav footer** — 1.35:1, because the labels flipped to a
+  light grey on a gradient that has no dark variant. Now 11.65:1 where the block sits.
+- **Cancel did not cancel** in the app filter, Escape desynced its store flag, and its
+  focus-on-open was dead code.
+- Two navigations spelled `nsfPath` differently; a row menu threw on an unknown form.
+
+### Reconciled rather than left to diverge
+
+Three sibling tables shipped three different answers to the same questions. All now
+re-emit the switch's toggle as their own event, and each names itself for assistive tech
+where all three previously said "views and agents table".
+
+Agents twice declined a merge I suggested, correctly: the two filter containers share a
+shell but not a body, and the three tables differ in what they are, not in a parameter.
+
+### Browser pass
+
+Same harness and the same limitation. All four tables verified in both modes and measured
+identically: border-box cells, 12px header against 13.6px body, top-aligned content, 1px
+hairline. Per-screen lists for a human are on the PR.
+
+## Wave 3 — not started
+
+Carried forward from the agents' reports: extract `keep-filter-drawer` as the shared shell
+when `ConsentFilterContainer` converts; check `keep-quick-config-drawer` for the unguarded
+close double-toggle; and the dead CSS that survives only because new elements name it in
+prose, which needs the rules and the prose changed in one commit.
