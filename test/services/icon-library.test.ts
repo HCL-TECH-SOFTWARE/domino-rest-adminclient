@@ -132,6 +132,36 @@ describe('icon-library', () => {
     expect(missing, `KeepIcon glyph names absent from ICONS:\n${missing.join('\n')}`).toEqual([]);
   });
 
+  /**
+   * #718 consolidated four icon systems onto `wa-icon`. Two of them are now uninstalled,
+   * and this is what keeps them uninstalled: re-adding either is a one-line import that
+   * would otherwise pass every other check in the repo.
+   *
+   * Scans `src/` and the manifest, deliberately not `test/`, because several test files
+   * explain in prose what the migration replaced and naming a thing you removed should not
+   * read as having it back.
+   */
+  describe('the retired icon systems stay retired', () => {
+    const RETIRED = ['@mui/icons-material', 'react-icons'];
+
+    it('is imported nowhere in src', () => {
+      const offenders: string[] = [];
+      for (const file of SOURCES) {
+        const source = read(file);
+        for (const pkg of RETIRED) {
+          if (source.includes(pkg)) offenders.push(`${rel(file)}: ${pkg}`);
+        }
+      }
+      expect(offenders, `a retired icon package is back:\n${offenders.join('\n')}`).toEqual([]);
+    });
+
+    it('is not a dependency', () => {
+      const manifest = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8'));
+      const declared = { ...manifest.dependencies, ...manifest.devDependencies };
+      expect(RETIRED.filter((pkg) => pkg in declared)).toEqual([]);
+    });
+  });
+
   it('routes every named icon through this library rather than the Font Awesome CDN', () => {
     // A `<wa-icon name="...">` without `library` falls through to Web Awesome's default
     // resolver, which fetches from ka-f.fontawesome.com at runtime. That is the external
