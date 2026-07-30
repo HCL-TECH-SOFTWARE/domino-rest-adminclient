@@ -39,10 +39,27 @@ describe('keep-app-filter', () => {
     store.dispatch({ type: INIT_STATE });
   });
 
-  const mount = (props: Partial<AppFilter> = {}) => mountLit<AppFilter>(TAG, props);
+  /**
+   * The panel, the footer and the rules around them moved into the shared
+   * `keep-filter-drawer` shell, so the drawer and the three buttons now live one shadow root
+   * deeper than the sections do. Only these four readers move: every assertion below is the
+   * one it always was.
+   */
+  const shell = (el: AppFilter) =>
+    el.shadowRoot!.querySelector('keep-filter-drawer') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+
+  const mount = async (props: Partial<AppFilter> = {}) => {
+    const el = await mountLit<AppFilter>(TAG, props);
+    // `mountLit` awaits this element's first update; the shell's own is scheduled by it and
+    // has not run yet, so the drawer and buttons are not in its root until this drains.
+    await settle(el);
+    return el;
+  };
 
   const drawer = (el: AppFilter) =>
-    el.shadowRoot!.querySelector('keep-drawer') as HTMLElement & {
+    shell(el).shadowRoot!.querySelector('keep-drawer') as HTMLElement & {
       open: boolean;
       closeFn: () => void;
     };
@@ -53,7 +70,7 @@ describe('keep-app-filter', () => {
     Array.from(groups(el)[index].querySelectorAll('wa-radio'));
 
   const buttons = (el: AppFilter) =>
-    Array.from(el.shadowRoot!.querySelectorAll('keep-button')) as HTMLElement[];
+    Array.from(shell(el).shadowRoot!.querySelectorAll('keep-button')) as HTMLElement[];
 
   const buttonNamed = (el: AppFilter, text: string) =>
     buttons(el).find((button) => button.textContent!.trim() === text)!;
@@ -62,12 +79,14 @@ describe('keep-app-filter', () => {
    * A store dispatch reaches the element through `StoreController.requestUpdate()`, and Web
    * Awesome's radio group settles its own children a tick later again (`syncRadioElements`
    * awaits each radio, and `change` is emitted from `updateComplete.then`) — so assertions
-   * drain the microtask queue rather than awaiting a single update.
+   * drain the microtask queue rather than awaiting a single update. The shell is awaited
+   * alongside, since a change to the open flag has to reach it before the drawer moves.
    */
   const settle = async (el: AppFilter) => {
     for (let i = 0; i < 5; i++) {
       await Promise.resolve();
       await el.updateComplete;
+      await shell(el)?.updateComplete;
     }
   };
 
@@ -350,6 +369,31 @@ describe('keep-app-filter', () => {
     await open(el);
     await el.focusFirstField();
     expect(el.shadowRoot!.activeElement?.tagName.toLowerCase()).toBe('wa-radio');
+  });
+
+  it('keeps the shell’s own events inside: filter-change is the whole outbound contract', async () => {
+    // `filter-apply` / `filter-reset` / `filter-cancel` are composed, so left alone they
+    // would cross this boundary too and reach a consumer that has no way to interpret them.
+    const el = await mount();
+    const leaked = vi.fn();
+    ['filter-apply', 'filter-reset', 'filter-cancel'].forEach((type) =>
+      document.body.addEventListener(type, leaked),
+    );
+    await open(el);
+
+    buttonNamed(el, 'Show Results').click();
+    await settle(el);
+    await open(el);
+    buttonNamed(el, 'Reset').click();
+    await settle(el);
+    await open(el);
+    buttonNamed(el, 'Cancel').click();
+    await settle(el);
+
+    expect(leaked).not.toHaveBeenCalled();
+    ['filter-apply', 'filter-reset', 'filter-cancel'].forEach((type) =>
+      document.body.removeEventListener(type, leaked),
+    );
   });
 
   it('focusFirstField is a no-op when there is nothing to focus', async () => {
