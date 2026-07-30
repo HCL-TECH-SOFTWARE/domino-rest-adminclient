@@ -11,11 +11,12 @@ import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import { styled } from '@linaria/react';
-import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { TokenProps } from '../../store/account/types';
+import { useNavigate } from '../../router/react';
 import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
+import { KeepOptionList } from '../keep-elements/react/KeepOptionList';
 
 const ProfileMenuCard = styled(Paper)`
   padding: 30px 30px 30px 30px;
@@ -40,6 +41,18 @@ const ProfileMenu = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [open, setOpen] = useState(false);
   const { idpLogin } = useSelector((state: AppState) => state.account);
+  const navigate = useNavigate();
+
+  /**
+   * `keep-option-list` dispatches the logout thunk itself and then emits `logout`. The
+   * redirect stays here because the router is only reachable through React context — an
+   * element has no way to get at it. The element emits synchronously right after its
+   * dispatch, so the dispatch-then-navigate order the old inline `OptionList` had is
+   * unchanged.
+   */
+  const handleLogout = () => {
+    navigate('/');
+  };
 
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -119,7 +132,7 @@ const ProfileMenu = () => {
                     </span>
                   </ProfileInfo>
                 </AvatarContainer>
-                <OptionList toggleMenu={setOpen} />
+                <KeepOptionList onLogout={handleLogout} />
               </ProfileMenuCard>
             </Fade>
           </ClickAwayListener>

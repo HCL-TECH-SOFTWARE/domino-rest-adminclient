@@ -6,12 +6,11 @@
 
 import * as React from 'react';
 import { styled } from '@linaria/react';
-import ActivateSwitch from './ActivateSwitch';
 import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
-import { KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepActivateSwitch, KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -150,7 +149,14 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                   </KeepTooltip>}
                 </AliasContainer>
               </td>
-              <td><ActivateSwitch view={view} toggleActive={toggleActive} toggleInactive={toggleInactive} type={'view'}/></td>
+              <td>
+                <KeepActivateSwitch
+                  view={view}
+                  type="view"
+                  onToggleActive={(event) => { toggleActive(event.detail.view); }}
+                  onToggleInactive={(event) => { toggleInactive(event.detail.view); }}
+                />
+              </td>
             </tr>
           ))}
         </tbody>

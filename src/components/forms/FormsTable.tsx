@@ -9,11 +9,10 @@ import { styled } from '@linaria/react';
 import { Box, Button, ButtonBase } from "@mui/material";
 import { useNavigate } from '../../router/react';
 import { Database } from "../../store/databases/types";
-import ActivateMenu from "./ActivateMenu";
 import { WarningIcon } from "../../styles/CommonStyles";
 import { addForm, handleDatabaseForms } from "../../store/databases/action";
 import { fullEncode } from "../../utils/common";
-import { KeepButton, KeepDataTable, KeepTooltip } from "../keep-elements/KeepElements";
+import { KeepActivateMenu, KeepButton, KeepDataTable, KeepTooltip } from "../keep-elements/KeepElements";
 import { KeepIcon } from "../keep-elements/react/KeepIcon";
 import { useAppDispatch } from '../../store/hooks';
 
@@ -293,15 +292,14 @@ const FormsTable: React.FC<FormsTableProps> = ({
                   </ViewNameDisplay>
                 </td>
                 <td className='table-cell-activate-menu'>
-                  <ActivateMenu
+                  {/* `nsfPath`, `dbName` and `forms` are not passed any more: the old
+                      component declared them and never read them. */}
+                  <KeepActivateMenu
                     form={form}
-                    nsfPath={nsfPath}
-                    dbName={dbName}
-                    forms={forms}
                     schemaData={schemaData}
                     setSchemaData={setSchemaData}
                     formList={formList}
-                    toggleActivate={toggleConfigure}
+                    onActivateForm={(e) => toggleConfigure(e.detail.formName, false)}
                   />
                 </td>
               </tr>

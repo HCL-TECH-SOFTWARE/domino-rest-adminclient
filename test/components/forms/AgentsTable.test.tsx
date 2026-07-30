@@ -4,12 +4,14 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import { bodyRows, cellTexts, headerLabels } from '../../test-utils/tables';
 import { deepQuery } from '../../test-utils/shadow';
 import AgentsTable from '../../../src/components/forms/AgentsTable';
+import { store } from '../../../src/store/store';
+import { setApiLoading } from '../../../src/store/dialog/action';
 
 const agents = [
   { agentActive: false, agentAlias: [], agentName: 'NightlyClean', agentUnid: 'u1' },
@@ -25,8 +27,38 @@ function renderAgentsTable(list = agents) {
   return { toggleActive, toggleInactive };
 }
 
-/** The switch is a click target, not a <button> — scope to the row and take its container. */
-const toggleIn = (row: HTMLTableRowElement) => row.querySelector('.toggle-container')!;
+/**
+ * The switch is `<keep-activate-switch>` now, so everything it draws is in a shadow root
+ * and Lit's first update is async. `performUpdate()` is synchronous — the same accommodation
+ * `test-utils/tables.ts` makes for `keep-data-table` — so these stay synchronous reads of
+ * exactly what they read before.
+ *
+ * It is `protected` on `ReactiveElement`, hence the cast through `unknown`: the tag map types
+ * the query result as the element class, and a protected member cannot be widened to a public
+ * one in a single assertion.
+ */
+const switchIn = (row: HTMLTableRowElement) => {
+  const el = row.querySelector('keep-activate-switch')!;
+  (el as unknown as { performUpdate: () => void }).performUpdate();
+  return el.shadowRoot!;
+};
+
+/** The one click target. It used to be a div; it is the switch button itself now. */
+const toggleIn = (row: HTMLTableRowElement) =>
+  switchIn(row).querySelector<HTMLButtonElement>('button.toggle-container')!;
+
+/** The filled half, which is the one carrying the current state. */
+const stateOf = (row: HTMLTableRowElement) =>
+  switchIn(row).querySelector('.toggle-btn')!.textContent?.trim();
+
+/**
+ * The element reads `dialog.loading` from the real store, not from the Provider's — the
+ * converted elements have no Provider to read. Anything this file sets there has to be put
+ * back, because that store outlives the test.
+ */
+afterEach(() => {
+  store.dispatch(setApiLoading(false));
+});
 
 describe('AgentsTable — structure', () => {
   it('labels the columns', () => {
@@ -64,10 +96,24 @@ describe('AgentsTable — activation', () => {
   it('shows Inactive for an inactive agent and Active for an active one', () => {
     renderAgentsTable();
     const [inactive, active] = bodyRows();
-    // Both labels are always in the DOM (the switch renders each side); the *first*
-    // button is the highlighted one, so assert on that.
-    expect(within(inactive).getAllByRole('button')[0]).toHaveTextContent('Inactive');
-    expect(within(active).getAllByRole('button')[0]).toHaveTextContent('Active');
+    // Both labels are always in the DOM (the switch renders each side); the filled half is
+    // the highlighted one, so assert on that.
+    //
+    // This is also the only place the seeding order is exercised for real: the element
+    // snapshots `agentActive` in its first `willUpdate`, and the bridge assigns `view` from
+    // a layout effect. If that ever stopped happening before Lit's first update, both rows
+    // would read "Inactive" here.
+    expect(stateOf(inactive)).toBe('Inactive');
+    expect(stateOf(active)).toBe('Active');
+  });
+
+  it('gives each switch an accessible name and a switch role', () => {
+    renderAgentsTable();
+    const [inactive, active] = bodyRows();
+    expect(toggleIn(inactive).getAttribute('role')).toBe('switch');
+    expect(toggleIn(inactive).getAttribute('aria-label')).toBe('Agent NightlyClean');
+    expect(toggleIn(inactive).getAttribute('aria-checked')).toBe('false');
+    expect(toggleIn(active).getAttribute('aria-checked')).toBe('true');
   });
 
   it('activates an inactive agent', () => {
@@ -85,12 +131,10 @@ describe('AgentsTable — activation', () => {
   });
 
   it('refuses to toggle while a save is in flight', () => {
-    const toggleActive = vi.fn();
-    const toggleInactive = vi.fn();
-    renderWithProviders(
-      <AgentsTable agents={agents} toggleActive={toggleActive} toggleInactive={toggleInactive} />,
-      { preloadedState: { dialog: { loading: true } } },
-    );
+    // `preloadedState` no longer reaches this: the switch is a Lit element reading the
+    // real store through a StoreController, so the flag has to be set there.
+    store.dispatch(setApiLoading(true));
+    const { toggleActive, toggleInactive } = renderAgentsTable();
     fireEvent.click(toggleIn(bodyRows()[0]));
     expect(toggleActive).not.toHaveBeenCalled();
     expect(toggleInactive).not.toHaveBeenCalled();

@@ -4,12 +4,20 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css } from 'lit';
+import { html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
 
 /**
  * Full-column loading state: four pulsing dots over a caption.
+ *
+ * Two layouts, selected by the `contained` property:
+ *
+ *   - default — a page-level overlay: absolutely positioned, `100vh - 100px` tall. This is
+ *     what the route fallbacks in `App.tsx` / `Views.tsx` and the applications list use.
+ *   - `contained` — normal flow, filling its parent box. This is the shape the old
+ *     `GenericLoading` had, and it is what a loading state nested inside an already-laid-out
+ *     panel needs; the overlay variant would escape that panel and cover the page.
  *
  * Three values below are carried over from the Linaria original **unchanged and on purpose**,
  * so that this conversion is behaviour-preserving. All three are lane B's to fix, not this
@@ -37,10 +45,28 @@ export default class PageLoading extends KeepElement {
       justify-content: center;
     }
 
+    /*
+     * Only the overlay variant needs to paint over whatever it is covering. A contained
+     * instance sits inside a panel that already has its own background, and a hard white
+     * there would be a light patch in dark mode.
+     */
     @media only screen and (max-width: 768px) {
-      :host {
+      :host(:not([contained])) {
         background: white;
       }
+    }
+
+    /*
+     * Contained variant: fill the parent in normal flow rather than overlay the page.
+     * Only these two declarations differ — putting the host back in flow is what makes the
+     * width and centring above take effect, and the left offset becomes inert. Between them
+     * the two sizings cover both kinds of parent: in a flex column the flex-grow above wins,
+     * in a block parent the percentage does, and it resolves against the parent's *content*
+     * box, so a padded parent does not overflow.
+     */
+    :host([contained]) {
+      position: static;
+      height: 100%;
     }
 
     .dots {
@@ -106,6 +132,16 @@ export default class PageLoading extends KeepElement {
       }
     }
 
+    /*
+     * The caption is rendered even with no message, so the live region already exists when
+     * the text arrives — but then its default block margin still pushes the dots off centre.
+     * The class is set in render() rather than matched with an empty-element pseudo-class,
+     * so the suite can assert it: the tests run with CSS disabled.
+     */
+    p.empty {
+      margin: 0;
+    }
+
     /* The dots convey the same thing the caption does, so stopping them costs nothing. */
     @media (prefers-reduced-motion: reduce) {
       .dots div {
@@ -116,6 +152,12 @@ export default class PageLoading extends KeepElement {
 
   /** The caption under the dots. Announced, so it should say what is loading. */
   @property({ type: String }) accessor message = '';
+
+  /**
+   * Lay out in normal flow, filling the parent, instead of overlaying the page.
+   * Reflected because the two layouts are selected entirely in `static styles`.
+   */
+  @property({ type: Boolean, reflect: true }) accessor contained = false;
 
   render() {
     // The dots are decorative; the caption carries the information. `role="status"` has an
@@ -128,7 +170,7 @@ export default class PageLoading extends KeepElement {
         <div></div>
         <div></div>
       </div>
-      <p role="status">${this.message}</p>
+      <p role="status" class=${this.message ? nothing : 'empty'}>${this.message}</p>
     `;
   }
 }
