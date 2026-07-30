@@ -1678,10 +1678,14 @@ body[data-theme="dark"] .add-import-svg-icon {
     padding-right: 5px;
 }
 
-.database-search-dropdown-arrow {
-    width: 50px;
-    height: 40px;
-}
+/*
+ * .database-search-dropdown-arrow is gone with the icon set that ignored it. It declared
+ * width: 50px; height: 40px on the search-type caret, which MuiSvgIcon's own width: 1em;
+ * height: 1em outranked by injection order, so the caret has always drawn at 24px square.
+ * wa-icon would have honoured it — but as a 50x40 canvas centred around a glyph that
+ * takes its size from font-size, i.e. a wider button gap rather than a bigger caret. The
+ * call site carries size='xl' instead, which is what it renders at now.
+ */
 
 /* FormsContainer.tsx */
 .forms-container-loading-container {

@@ -129,6 +129,18 @@ export const DrawerFormContainer = styled.div`
   height: 100%;
   max-height: 100vh;
   overflow: hidden;
+
+  /*
+   * The consents filter drawer's close glyph used to carry cursor="pointer" as a prop,
+   * which the old icon set forwarded onto the graphic it drew into the light DOM as an
+   * SVG presentation attribute. wa-icon draws its graphic inside a shadow root and takes
+   * no such prop, so the cursor has to be a declaration. Scoped here rather than made
+   * global, for the same reason the identical rule in FormContentContainer below is:
+   * ConsentFilterContainer is the only close-icon inside this container.
+   */
+  .close-icon {
+    cursor: pointer;
+  }
 `;
 
 export const FormContentContainer = styled.div`

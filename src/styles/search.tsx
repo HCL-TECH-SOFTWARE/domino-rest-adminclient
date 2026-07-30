@@ -28,9 +28,16 @@ export const FormSearchContainer = styled('div')`
     font-size: 19px;
     color: var(--wa-color-text-normal);
   }
+  /*
+   * The colour was MUI's color="primary" on the SvgIcon, exactly as for .search-icon
+   * above, and resolves to the same token. DatabaseSearch is the only clear glyph inside
+   * a search container; QuickConfigForm reuses the class name in a drawer that this rule
+   * never reached, and declares its own.
+   */
   .clear-icon {
     font-size: 19px;
     cursor: pointer;
+    color: var(--wa-color-text-normal);
   }
 `;
 

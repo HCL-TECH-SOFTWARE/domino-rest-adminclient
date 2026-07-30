@@ -12,8 +12,6 @@ import { useSelector } from 'react-redux';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
-import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
-import StorageIcon from '@mui/icons-material/Storage';
 import { Alert, AlertTitle } from '@mui/material';
 import { FormikProps } from 'formik';
 import SchemaContentsTree from './SchemaContentsTree';
@@ -27,6 +25,7 @@ import {
   InputContainer,
 } from '../../styles/CommonStyles';
 import { KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 const Forms = styled.form`
@@ -244,7 +243,9 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
       <FormContentContainer className='full-width flex flex-col'>
 
         <span className="scope-form-header">
-          <StorageIcon />
+          {/* No size: .scope-form-header sets font-size 24px and wa-icon derives its box
+              from the inherited value, which reproduces MUI's default here exactly. */}
+          <KeepIcon name="database" />
           <span className='ml-10'>{isEdit ? `Edit Scope` : `Add New Scope`}</span>
         </span>
         {dbError && dbErrorMessage && (
@@ -350,7 +351,10 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             className="icon-select color-text-primary p-0 w-fit"
           >
             {maximumAccessLevel ? maximumAccessLevel : "Editor"}
-            <ChevronDown className='big-text' />
+            {/* No size: .big-text sets font-size 18px, which a wa-size-* token could not
+                override from @layer wa-utilities. The glyph is the KeyboardArrowDown
+                module, whatever the local alias said. */}
+            <KeepIcon name='chevron-down' className='big-text' />
           </Button>
           <Menu
             id="acl-menu"
@@ -381,14 +385,21 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
             onClick={handleSelectIcon}
             className="icon-select color-text-primary p-0 w-fit flex gap-5"
           >
+            {/* The fallback loses w-35px: that class declared a width, which
+                MuiSvgIcon's own width: 1em outranked by injection order, so this glyph
+                has always drawn 24px square. wa-icon would have honoured the 35px as a
+                canvas around a graphic still sized by font-size — empty space rather
+                than a bigger icon. size='xl' is what reproduces the 24px. */}
             <AppIcon
               name={icon}
               className="quick-config-icon-image"
               alt="db-icon"
-              fallback={<StorageIcon className='w-35px mr-15' />}
+              fallback={<KeepIcon name='database' size='xl' className='mr-15' />}
             />
             {checkIcon(icon) ? icon : ''}
-            <ChevronDown className='big-text' />
+            {/* No size: .big-text sets font-size 18px, which a wa-size-* token could not
+                override from @layer wa-utilities. */}
+            <KeepIcon name='chevron-down' className='big-text' />
           </Button>
           <Menu
             id="lock-menu"
