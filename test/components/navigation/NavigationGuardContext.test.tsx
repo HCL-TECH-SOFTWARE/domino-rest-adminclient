@@ -104,6 +104,33 @@ class ClosedAnchorHost extends HTMLElement {
 customElements.define('test-closed-anchor', ClosedAnchorHost);
 
 /**
+ * Put a fixture host in the document, outside the React tree.
+ *
+ * Imperative rather than JSX for two reasons. A custom element has no entry in
+ * `JSX.IntrinsicElements`, so `<test-shadow-anchor />` is a compile error unless the global JSX
+ * types are augmented — which a test file has no business doing for a fixture. And it is the
+ * more honest shape: the guard listens on `document` in the capture phase, so an anchor does
+ * **not** have to be inside the provider's subtree for it to be guarded, and these tests now say
+ * so out loud.
+ */
+const fixtures: HTMLElement[] = [];
+
+const appendFixture = <T extends HTMLElement>(tag: string, lightDom = ''): T => {
+  const host = document.createElement(tag) as T;
+  if (lightDom) host.innerHTML = lightDom;
+  document.body.append(host);
+  fixtures.push(host);
+  return host;
+};
+
+// `cleanup()` unmounts React trees; these hosts are appended to the body on their own, so a
+// leaked one would sit in the document for every later test and be found by its `querySelector`.
+afterEach(() => {
+  fixtures.forEach((host) => host.remove());
+  fixtures.length = 0;
+});
+
+/**
  * Click something, with jsdom's unimplemented-navigation noise suppressed.
  *
  * When the guard blocks, it calls `stopPropagation()` in the capture phase and the event never
@@ -148,9 +175,9 @@ describe('NavigationGuardProvider — in-app link clicks', () => {
    * the handler returned — no error, no failing test, the dialog simply stopped appearing.
    */
   it('blocks an anchor rendered inside a shadow root', () => {
-    mount({ children: <test-shadow-anchor /> as unknown as React.ReactNode });
+    mount();
+    const host = appendFixture('test-shadow-anchor');
 
-    const host = document.querySelector('test-shadow-anchor')!;
     clickThrough(host.shadowRoot!.querySelector('#inside')!);
 
     expect(dialogOpen()).toBe(true);
@@ -161,13 +188,8 @@ describe('NavigationGuardProvider — in-app link clicks', () => {
    * under both traversals, and is pinned here because a traversal change must not move it.
    */
   it('blocks a slotted anchor, which was never the broken case', () => {
-    mount({
-      children: (
-        <test-shadow-anchor>
-          <a href="/scope" data-testid="slotted">Scopes</a>
-        </test-shadow-anchor>
-      ) as unknown as React.ReactNode,
-    });
+    mount();
+    appendFixture('test-shadow-anchor', '<a href="/scope" data-testid="slotted">Scopes</a>');
 
     clickThrough(document.querySelector('a[data-testid="slotted"]')!);
 
@@ -181,9 +203,9 @@ describe('NavigationGuardProvider — in-app link clicks', () => {
    * would reach it, which is why this is a note and not a bug.
    */
   it('cannot see an anchor behind a closed shadow root', () => {
-    mount({ children: <test-closed-anchor /> as unknown as React.ReactNode });
+    mount();
+    const host = appendFixture<ClosedAnchorHost>('test-closed-anchor');
 
-    const host = document.querySelector('test-closed-anchor') as ClosedAnchorHost;
     clickThrough(host.inner);
 
     expect(dialogOpen()).toBe(false);
