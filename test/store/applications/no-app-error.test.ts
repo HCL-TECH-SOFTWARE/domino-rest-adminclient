@@ -40,16 +40,20 @@ const read = (file: string) =>
  * errors, and after #866 showed nothing at all.
  *
  * A source scan rather than a render test, because the two components involved —
- * `AppForm.tsx` and `kanban/Kanban.tsx` — have no render harness, and building one for a
+ * `AppForm.tsx` and `kanban/Kanban.tsx` — had no render harness, and building one for a
  * deletion would be a larger and more fragile thing than the deletion itself. What is
  * asserted is exactly what was removed: no reader, no writer, no state.
+ *
+ * The first of those two has since become `keep-elements/keep-app-form.ts` (#806), which is
+ * what the canary below now names — it is the file that would have carried the banner. The
+ * scan itself is unchanged: it covers every `.ts` and `.tsx` under `src`, elements included.
  *
  * The reducer's own shape is pinned separately, in `reducer.test.ts`.
  */
 describe('the application-error machinery is gone (#869)', () => {
   it('scans a plausible number of files, so the assertions cannot pass vacuously', () => {
     expect(SOURCES.length).toBeGreaterThan(100);
-    expect(SOURCES).toContain('src/components/applications/AppForm.tsx');
+    expect(SOURCES).toContain('src/components/keep-elements/keep-app-form.ts');
     expect(SOURCES).toContain('src/components/applications/kanban/Kanban.tsx');
   });
 
