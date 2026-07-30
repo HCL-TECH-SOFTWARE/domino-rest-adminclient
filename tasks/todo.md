@@ -61,21 +61,49 @@ converted, so it converts in wave 1.
 
 ## Wave 1 — leaves, 12 agents
 
-Each cluster is a file plus its consumers, chosen so no two clusters touch the same file.
+Each cluster is a file plus the consumers it must edit, cut so that **no two clusters touch
+the same file**. Consumers are updated, never converted, in this wave.
 
-- [ ] A1 `home/sections/Tip.tsx` + `Section.tsx` + `HomePage.tsx` (whole home subtree)
-- [ ] A2 `commons/Wrappers.tsx` (→ consumers `SchemasLists`, `ScopeLists`)
-- [ ] A3 `mail/Mail.tsx`
-- [ ] B1 `forms/ColumnDetails.tsx` (→ `EditView`)
-- [ ] B2 `access/AddModeDialog.tsx` (→ `TabsAccess`)
-- [ ] B3 `login/CallbackPage.tsx` (→ `App.tsx`, import line only)
-- [ ] B4 `loading/APILoadingProgress.tsx` + `loading/GenericLoading.tsx` (5 + 1 consumers)
-- [ ] B5 `applications/DeleteApplicationDialog.tsx` (→ `TabsAccess`, `Kanban`)
-- [ ] B6 `forms/FormSearch.tsx` + `ViewSearch.tsx` + `AgentSearch.tsx` (near-identical trio)
-- [ ] B7 `sidenav/OptionList.tsx` (→ `ProfileMenu`, `ProfileMenuDialog`)
-- [ ] B8 `database/SchemaContentsTree.tsx` (→ `ScopeForm`)
-- [ ] C1 `commons/cardviews/CardViewOptions.tsx` (→ `SchemasLists`, `ScopeLists`)
-- [ ] C2 `alerts/Notification.tsx` (→ `AppShell`)
+| # | Files converted | Consumers edited |
+|---|---|---|
+| 01 | `commons/Wrappers.tsx` · `commons/cardviews/CardViewOptions.tsx` · `database/DatabaseSearch.tsx` | `SchemasLists`, `ScopeLists` |
+| 02 | `mail/Mail.tsx` | — (no live consumer) |
+| 03 | `forms/ColumnDetails.tsx` | `EditView` |
+| 04 | `access/AddModeDialog.tsx` · `applications/DeleteApplicationDialog.tsx` | `TabsAccess`, `Kanban` |
+| 05 | `loading/GenericLoading.tsx` | `AccessMode` |
+| 06 | `forms/FormSearch.tsx` | `TabForms` |
+| 07 | `forms/ViewSearch.tsx` · `forms/AgentSearch.tsx` | `TabViews`, `TabAgents` |
+| 08 | `sidenav/OptionList.tsx` | `ProfileMenu`, `ProfileMenuDialog` |
+| 09 | `database/SchemaContentsTree.tsx` | `ScopeForm` |
+| 10 | `alerts/Notification.tsx` · `sidenav/SideNav.tsx` | `AppShell` |
+| 11 | `forms/ActivateMenu.tsx` | `FormsTable` |
+| 12 | `forms/ActivateSwitch.tsx` | `AgentsTable`, `ViewsTable` |
+
+`KeepElements.tsx` is the one file every agent may touch; it is append-only and each agent
+re-reads before editing.
+
+### Dropped from wave 1, with reasons
+
+**The home subtree — `Tip.tsx`, `Section.tsx`, `HomePage.tsx` — is blocked on a missing
+primitive.** There is no Lit router controller: the router is handed out through React
+context with no module-level instance, so an element cannot reach it (stated in
+`keep-schemas-cards-view.ts` and `keep-schemas-default-view.ts`). `Tip.tsx` is already a thin
+React shim over the existing `keep-tip` element, and what remains of it is a Linaria-styled
+`Link` that the element's own doc comment says **must** stay in document scope, because
+`::slotted(a)::after` matches nothing. `Section.tsx` renders `Tip` in three loops, and a Lit
+template cannot render a React child — so `Section` cannot convert while `Tip` needs `Link`.
+`HomePage.tsx` is a 3-line composition and a route root. This subtree wants the router
+controller first; that is the same shape of gap `FormController` (#807) was for tier D.
+
+**`login/CallbackPage.tsx`** calls `navigate('/')` after the OAuth callback and its only
+parent is `App.tsx`. Converting it pushes navigation into the P4 shell, which belongs to #719.
+
+**`loading/APILoadingProgress.tsx`** has five consumers (`ConsentsTable`,
+`SchemaContentsTree`, `EditView`, `SchemasLists`, `ScopeLists`) that overlap four separate
+clusters. It gets a wave of its own rather than a four-way write conflict.
+
+**`access/SingleFieldContainer.tsx`** needs `AccessContext` turned into a store slice first
+(decision 1), and that edits `AccessMode`, which cluster 05 already owns.
 
 ## Wave 2 — mid clusters
 
@@ -101,6 +129,78 @@ Each cluster is a file plus its consumers, chosen so no two clusters touch the s
 
 ---
 
-## Review
+## Review — wave 1
 
-_(filled in as waves land)_
+**Landed.** 11 commits on `worktree-fluttering-skipping-fairy`. 18 React files deleted,
+14 elements created, 13 wrappers added and 1 deleted.
+
+| Gate | Before (`0d5458c`) | After |
+|---|---|---|
+| `npm run lint` | 0 | **0** |
+| `npm run typecheck` | 0 | **0** |
+| `npm run build` | 0 | **0** |
+| `npm test` | 133 files / 1709 tests | **146 files / 1951 tests** |
+| `npm run bundle:budget` | 887.5 kB / 243.7 kB | **891.7 kB / 241.2 kB** |
+
+⚠️ **Raw bundle headroom is down to 0.7 kB** (from 4.9 kB). Gzip improved by 2.5 kB. The next
+wave will breach the raw budget unless something comes out — worth deciding whether to raise
+the budget or land a deletion first.
+
+### What the parallel run actually cost and returned
+
+12 agents, 11 clean. One (`SideNav` + `Notification`) stalled at its own verification step
+with the work complete; its 47 tests passed unchanged, so it needed no rework.
+
+The predicted collision happened exactly once and was handled correctly: two agents converted
+the same search-component family and produced two elements. Neither edited the other's files,
+both reported it, and the second deliberately matched the first's event name, detail shape and
+wrapper prop so the collapse cost one import line. Reconciled onto the generic element,
+grafting the duplicate's search landmark and host-level focus ring.
+
+**Deleting beat converting three times.** `GenericLoading` folded into `keep-page-loading`
+behind one boolean; the three search components became one element; and wave 0 deleted three
+files outright. Told to check for reuse, agents twice correctly *declined* it
+(`keep-file-contents-tree`, `keep-switch`) with reasons that hold up.
+
+### Defects found, none of them things this wave broke
+
+- **39 declarations in `dark-mode.css` are invalid CSS and have never applied.**
+  `light-dark(inherit, …)` — `inherit` is not a valid component value inside the function, so
+  the declaration is dropped at parse and the `!important` on it is moot. 33 `color`
+  (mostly masked by the body rule) and 6 `background-color` (not masked — those dark surfaces
+  have never rendered). The file's own header documents this as the mechanism.
+- **Dropdown menus wired `@click` per item are dead for keyboard users**, and a click listener
+  on a *disabled* item still fires. Found independently by two agents. `keep-source`,
+  `keep-quick-config-form` and `keep-dropdown` already ship that pattern.
+- Bugs fixed while converting: a stale add-mode field that made Save contradict the visible
+  text; an activate-menu status dot that never updated and read the wrong colour in dark mode;
+  two Escape handlers whose flags stayed set, one of which made a view undeactivatable for the
+  life of the page; and the mail glyph at 1.2:1.
+- Dead code removed: `FORMS_ERROR`/`updateFormError` (no reducer case, never written), six
+  orphaned CSS rules, a dead MUI theme override, and several never-read props.
+- Pre-existing and **not** actioned: `apps.deleteDialogOpen` duplicates `dialog.deleteDialog`;
+  `--text-color-secondary` is now read by no rule but two elements cite it as a warning.
+
+### Browser pass
+
+The app itself is unreachable — the dev server proxies `/api` to a remote Keep server and
+there are no credentials here, the same wall the #718 run hit. Verified the elements in
+isolation instead, against the app's real stylesheets and theme mechanism, in both modes.
+
+Confirmed: the nested `keep-data-table` chrome survives re-adoption into another shadow root;
+the mail glyph is 11.73:1 where it was 1.2:1; the add-mode label and hint render as intended;
+search fields, pickers, switches and dialogs are correct in both modes.
+
+**A limitation worth stating: an element whose background is painted by an ancestor reads as
+1:1 contrast in isolation.** `keep-side-nav` did exactly that. It is not a defect — the rail's
+gradient comes from `wa-page::part(menu)`, which depends on nothing `SideNav` carried, and
+re-testing on that gradient renders correctly. But it is a false positive the harness will
+produce again.
+
+Still needing real eyes, per-screen lists are in the PR. The largest single risk is `SideNav`,
+which is on every authenticated screen in both modes.
+
+## Wave 2 — not started
+
+Carried forward: `APILoadingProgress` folds into `keep-page-loading` the same way
+`GenericLoading` did (four consumers plus a mock). Then the wave-2 clusters listed above.
