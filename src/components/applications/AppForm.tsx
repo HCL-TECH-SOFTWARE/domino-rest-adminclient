@@ -9,9 +9,7 @@ import TextField from '@mui/material/TextField';
 import { styled } from '@linaria/react';
 import { FormikProps } from 'formik';
 import Button from '@mui/material/Button';
-import CloseIcon from '@mui/icons-material/Close';
 import { useSelector } from 'react-redux';
-import ApplicationIcon from '@mui/icons-material/Apps';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { AppFormContext } from './ApplicationContext';
 import { AppState } from '../../store';
@@ -22,6 +20,7 @@ import {
   PanelContent,
 } from '../../styles/CommonStyles';
 import { KeepAutocomplete, KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { APP_ICON_NAMES, useAppIcons } from '../../services/app-icons';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -138,7 +137,10 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
         <span
           className="app-form-header background-keep-base full-width"
         >
-          <ApplicationIcon />
+          {/* No `size`: `.app-form-header` sets font-size 24px and wa-icon derives its box
+              from the inherited value, which reproduces MUI's default here exactly. A token
+              step would be the only thing that changed it. */}
+          <KeepIcon name="table-cells-large" />
           {formContext === 'Edit'
             ? ' Edit Application '
             : ' Add New Application '}
@@ -228,7 +230,10 @@ const AppForm: React.FC<AppFormProps> = ({ formik }) => {
                     {scope}
                   </span>
                   <RemoveButton onClick={() => removeScopeFromApp(scope)} >
-                    <CloseIcon fontSize='inherit' />
+                    {/* No size: the glyph carried fontSize='inherit' so that it tracked the
+                        pill's type, and wa-icon derives its box from the inherited
+                        font-size already. A size token here would pin what was relative. */}
+                    <KeepIcon name="xmark" label={`Remove ${scope}`} />
                   </RemoveButton>
                 </PillBox>
               ))}

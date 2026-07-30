@@ -6,16 +6,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@linaria/react';
-import CloseIcon from '@mui/icons-material/Close';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { RxDividerVertical } from 'react-icons/rx';
 import ConsentsTable from './ConsentsTable';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
 import { KeepButton, KeepFormDialogHeader, KeepZeroResults } from '../../keep-elements/KeepElements';
+import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../../store/hooks';
 const ConsentsContainer = styled.div`
   display: flex;
@@ -63,6 +60,19 @@ const OptionsBar = styled.div`
   .text {
     font-size: 16px;
     font-weight: 400;
+  }
+
+  /*
+   * The two rules between the three buttons are CSS now rather than glyphs: the
+   * .short-vertical from styles.css that AppItem already draws, as in 72a0c1f. This bar is
+   * a flex row with align-items:center, so a bare div lands in the same place the glyph
+   * did and needs no inline-block. Only the height is restated, from the size="1.5em" the
+   * glyph carried; the shared 31px belongs to a taller row. The colour deliberately
+   * becomes the class's --wa-color-text-loud rather than the hardcoded #A0A0A0 that was
+   * passed to the glyph, which was on no token ramp.
+   */
+  .short-vertical {
+    height: 1.5em;
   }
 `;
 
@@ -112,7 +122,7 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
           onClick={handleClose}
           className='no-background no-border cursor-pointer m-0 p-0'
         >
-          {dialog && <CloseIcon />}
+          {dialog && <KeepIcon name="xmark" label="Close" size="xl" />}
         </button>
       </Header>
       <OptionsBar>
@@ -120,18 +130,18 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
           onClick={() => setExpand(true)}
           className="option no-border cursor-pointer color-text-primary"
         >
-          <ExpandMoreIcon className='p-0' />
+          <KeepIcon name="chevron-down" size="xl" className="p-0" />
           Expand all
         </button>
-        <RxDividerVertical color="#A0A0A0" size="1.5em" />
+        <div className='short-vertical' />
         <button
           onClick={() => setExpand(false)}
           className="option no-border cursor-pointer color-text-primary"
         >
-          <ExpandLessIcon />
+          <KeepIcon name="chevron-up" size="xl" />
           Collapse all
         </button>
-        <RxDividerVertical color="#A0A0A0" size="1.5em" />
+        <div className='short-vertical' />
         <button
           onClick={() => dispatch(toggleConsentsDrawer())}
           className="option no-border cursor-pointer color-text-primary"

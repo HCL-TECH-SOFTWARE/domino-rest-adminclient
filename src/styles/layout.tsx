@@ -199,8 +199,23 @@ export const Footer = styled.div`
   }
 `;
 
+/*
+ * AppCard's hover action rail, and its only consumer.
+ *
+ * The selector was svg, which reached the graphic MUI drew straight into the light DOM.
+ * wa-icon draws its graphic inside a shadow root, so an svg selector out here matches
+ * nothing any more and all four glyphs would have fallen back to the card's own type.
+ * Retargeted to the custom element, which is where every one of these declarations
+ * belongs anyway: wa-icon takes its box from font-size, and cursor and float apply to the
+ * host rather than to the graphic.
+ *
+ * 18px is what this rule has always delivered here — a descendant selector outranks
+ * MuiSvgIcon's 24px default, unlike the bare app classes elsewhere in this migration. So
+ * these four sites keep their size and take no size prop; a wa-size-* token would sit in
+ * @layer wa-utilities and lose to this rule regardless.
+ */
 export const Action = styled.div`
-  svg {
+  wa-icon {
     font-size: 18px;
     cursor: pointer;
     margin: 0 3px;

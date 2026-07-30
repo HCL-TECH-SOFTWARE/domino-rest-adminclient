@@ -10,10 +10,9 @@ import { styled } from '@linaria/react';
 import { Box, Collapse } from '@mui/material';
 import { AppState } from '../../../store';
 import { toggleDeleteConsent } from '../../../store/consents/action';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import { Consent } from '../../../store/consents/types';
 import { KeepTooltip } from '../../keep-elements/KeepElements';
+import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../../store/hooks';
 
 const Row = styled.tr`
@@ -110,14 +109,14 @@ const ConsentItem: React.FC<ConsentItemProps> = ({
                       onClick={() => {setShowDetails(true)}}
                       className='no-background no-border cursor-pointer m-0 p-0'
                     >
-                      <ExpandMoreIcon />
+                      <KeepIcon name='chevron-down' label='Show consent details' size='xl' />
                     </button>}
                     {showDetails &&
                     <button
                       onClick={() => {setShowDetails(false)}}
                       className='no-background no-border cursor-pointer m-0 p-0'
                     >
-                      <ExpandLessIcon />
+                      <KeepIcon name='chevron-up' label='Hide consent details' size='xl' />
                     </button>}
                 </td>
                 <td className='user off-border'>{username}</td>
