@@ -58,8 +58,9 @@ const sameDay = (a: Date, b: Date) =>
 const unparseable = (value: string) => new Date(value).toUTCString() === 'Invalid Date';
 
 /**
- * The OAuth consents list. Tag: `keep-consents-table`. Exposed to React as
- * `KeepConsentsTable`.
+ * The OAuth consents list. Tag: `keep-consents-table`. Rendered only from
+ * {@link ./keep-consents}'s template, so it has no `@lit/react` wrapper — the one it had was
+ * deleted with the last `.tsx` that rendered it.
  *
  * Replaces `applications/kanban/ConsentsTable.tsx`. It owns the list, the two search boxes,
  * both sorts, the paging and every filter the drawer sets; each row is a
@@ -68,11 +69,11 @@ const unparseable = (value: string) => new Date(value).toUTCString() === 'Invali
  *
  * ## Store access
  *
- * Four subscriptions, one per `useSelector` the original had. `Consents.tsx` survives as
- * React but hands none of this down — it selects the consents only to decide between this
- * table and a zero-results panel — so there is no property for a subscription here to fight.
- * Three of the four select a slice reference and the fourth a boolean, so the controller's
- * `Object.is` check is exact rather than firing on every unrelated store move.
+ * Four subscriptions, one per `useSelector` the original had. The parent hands none of this
+ * down — it selects the consents only to decide between this table and a zero-results panel —
+ * so there is no property for a subscription here to fight. Three of the four select a slice
+ * reference and the fourth a boolean, so the controller's `Object.is` check is exact rather
+ * than firing on every unrelated store move.
  *
  * ## Three effects, one pass
  *
