@@ -13,6 +13,20 @@ import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
 import { TextEncoder, TextDecoder } from 'node:util';
 
+// Silence Lit's "Lit is in dev mode" banner (#918) — one stderr line per test file that
+// touches a Lit or WebAwesome element, so it scales with the suite: 77 lines per full run
+// at 5d4567a. It is per-file rather than per-run because `litIssuedWarnings` is a
+// per-realm global and Vitest isolates each test file. This is Lit's own escape hatch,
+// not a console patch: `issueWarning(code, warning)` skips any warning whose *code* is
+// already in `globalThis.litIssuedWarnings`, and reactive-element's comment says so —
+// "disabling via `code` can be done by users". Suppressing by code rather than by message
+// means the other dev-mode diagnostics (`change-in-update`, `multiple-versions`, …) still
+// print; those catch real bugs. Must run before the microtask that issues it, which any
+// setup file does. Vitest resolves Lit's `development` export condition, so the dev build
+// is what the suite loads — and should be: it validates more than the production build.
+(globalThis as { litIssuedWarnings?: Set<string> }).litIssuedWarnings ??= new Set();
+(globalThis as { litIssuedWarnings?: Set<string> }).litIssuedWarnings!.add('dev-mode');
+
 // Was jest.config `globals` — some jsdom builds need these for uuid/nanoid/react-router.
 if (typeof globalThis.TextEncoder === 'undefined') {
   globalThis.TextEncoder = TextEncoder as unknown as typeof globalThis.TextEncoder;
