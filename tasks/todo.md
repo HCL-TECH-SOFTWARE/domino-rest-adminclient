@@ -274,9 +274,70 @@ Same harness and the same limitation. All four tables verified in both modes and
 identically: border-box cells, 12px header against 13.6px body, top-aligned content, 1px
 hairline. Per-screen lists for a human are on the PR.
 
-## Wave 3 — not started
+## Review — wave 3
 
-Carried forward from the agents' reports: extract `keep-filter-drawer` as the shared shell
-when `ConsentFilterContainer` converts; check `keep-quick-config-drawer` for the unguarded
-close double-toggle; and the dead CSS that survives only because new elements name it in
-prose, which needs the rules and the prose changed in one commit.
+**Landed**, 9 commits. 9 React files deleted, 11 elements created, 6 wrappers retired.
+
+| Gate | wave 2 | **after wave 3** |
+|---|---|---|
+| `npm run lint` | 0 | **0** |
+| `npm run typecheck` | 0 | **0** |
+| `npm run build` | 0 | **0** |
+| `npm test` | 156 / 2222 | **163 files / 2469 tests** |
+| `npm run bundle:budget` | 876.0 / 232.5 kB | **867.1 / 230.5 kB** ✅ 25.3 kB under |
+
+### The infrastructure failed, and triage mattered more than retrying
+
+**All seven agents died** to connection drops and stalls. Most got far enough to leave
+partial work, so the first job was deciding what to keep:
+
+- **kept**: the quick-config drawer fix and `IconDropdown`, both complete;
+- **reverted**: a dead-CSS cleanup that had deleted **329 lines** from `styles.css` and lowered
+  a guard floor, whose author never reported which rules or why. With `css: false` a wrong
+  deletion there is invisible, so unverifiable bulk deletion was not worth keeping. Refiled as
+  **#930** with a *verified* list — 44 classes, each proven prose-only by a comment-stripping
+  scan, four spot-checked by hand;
+- **reverted**: a `keep-edit-view.ts` that did not compile (the backtick-in-`css`-template trap
+  again) and a half-extracted `keep-filter-drawer`.
+
+The retry gave every agent an explicit save-early instruction and an ordering, so an
+interruption would leave a usable prefix. All four then completed.
+
+### Four bugs that were live in production
+
+- **Sorting the consents table has never worked.** Both handlers sorted in place on the array
+  read straight from the store; RTK deep-freezes reducer output, so every real list threw. The
+  characterization suite missed it by seeding through `preloadedState`, which bypasses the
+  reducer *and* the freeze — **and then pinned the mutation as intended behaviour.**
+- **"Show Active" was dead on all three tabs.** `keep-switch` bound `@wa-change`; `wa-switch`
+  emits plain `change`. Its test dispatched the wrong event by hand, so it passed. Confirmed
+  live: a real click left the callback count at zero, and one after the fix.
+- **Every converted dialog had no backdrop in light mode.** `modal-backdrop.ts` reproduced only
+  the dark rule, on the stated reasoning that light "has no rule to reproduce" — but Web
+  Awesome's native layer carries an unconditional one. Verified against `native.css`, then
+  measured on a real modal in a shadow root.
+- **The success alert after a batch field delete never fired** — `toggleAlert` called without a
+  `dispatch`, a silent no-op since #710.
+
+Two tests in this codebase have now been found *codifying* a defect rather than catching it.
+That is worth remembering when a characterization suite looks reassuring.
+
+### #928 was mine and it was wrong
+
+I filed it blaming `allModes`. That read is unguarded but is not the one that fires first —
+`fetchFieldsArray` throws earlier, because `nsfDesigns` is populated only by a *sibling* route.
+A third read, `findIndex(...) || 0`, never fires its fallback because `-1` is truthy, and that
+one breaks any renamed default mode on every load path. All three fixed and mutation-checked;
+the issue is corrected, and the remaining gap (nothing on that route fetches the design, plus
+an encoded/decoded key mismatch) is **#933**.
+
+### Filed this wave
+
+**#930** dead CSS · **#932** Edit View blanks the schema's owners list · **#933** access route
+never fetches the design.
+
+## Wave 4 — not started
+
+Remaining: `DetailsSection` (725, shares `FormsContainer` with the now-converted `EditView`),
+`NavigationGuardContext` + `BreadcrumbRouter` (the router half wants **#926**), the four style
+modules, and tier D, which is still untouched by design.
