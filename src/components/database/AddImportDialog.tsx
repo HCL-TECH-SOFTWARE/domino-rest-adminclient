@@ -26,8 +26,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
   open,
   handleClose,
 }) => {
-  const { databases, availableDatabases } = useSelector((state: AppState) => state.databases);
-  const [schemas, setSchemas] = useState([]) as any;
+  const { databasesOverview, availableDatabases } = useSelector((state: AppState) => state.databases);
 
   const fileElement = document.createElement('input');
 
@@ -65,9 +64,21 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
         }
         return retval;
       })
-      .test('Unique Schema Name', 'Schema name already exists in this database! Change the schema name or the database.', (val) => {
-        if(schemas.includes(nsfPath + ':' + val)) return false
-        else return true
+      // Two reads had to change before this rule could report anything at all (#905).
+      //
+      // It compared against `state.databases.databases`, which no reducer in the store writes:
+      // `[]` from `initialState` onwards, so the list was always empty and the rule always
+      // passed. `databasesOverview` is the one that holds `{ nsfPath, schemaName }`.
+      //
+      // And it compared against the `nsfPath` *state*, which is one render behind at submit
+      // time: `handleClickSaveSchema` calls `setNsfPath` and `formik.submitForm()` back to
+      // back. `context.parent` is the values object formik is validating — assigned on that
+      // same line — so reading the sibling field there sees the database the user picked.
+      .test('Unique Schema Name', 'Schema name already exists in this database! Change the schema name or the database.', (val, context) => {
+        const { nsfPath } = context.parent as { nsfPath?: string };
+        return !databasesOverview.some(
+          (schema) => schema.nsfPath === nsfPath && schema.schemaName === val,
+        );
       })
       .matches(/^[a-z0-9_]+$/g, "Schema name should only contain lowercase letters, numbers, and underscores."),
     description: Yup.string()
@@ -208,13 +219,6 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
     setImportDialogOpen(false);
     formik.resetForm()
   }
-
-  useEffect(() => {
-    const schemas = databases.map((database) => {
-      return database.nsfPath + ':' + database.schemaName;
-    });
-    setSchemas(schemas);
-  }, [databases]);
 
   const handleSelectIcon = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
