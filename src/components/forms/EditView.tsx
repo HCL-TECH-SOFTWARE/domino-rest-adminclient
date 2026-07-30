@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ColumnDetails from './ColumnDetails';
 import { fetchViews, updateSchema } from '../../store/databases/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../../store/account/action';
@@ -20,6 +19,11 @@ import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { KeepButton, KeepFormDialogHeader, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
+import { KeepColumnDetails } from '../keep-elements/react/KeepColumnDetails';
+import type {
+  KeepColumnEditDetail,
+  KeepColumnRemoveDetail,
+} from '../keep-elements/keep-column-details';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -50,7 +54,6 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
 }) => {
   const [chosenColumns, setChosenColumns] = useState<any[]>([]);
   const [fetchedColumns, setFetchedColumns] = useState<any[]>([]);
-  const [editColumn, setEditColumn] = useState({});
   const [hoveredColumn, setHoveredColumn] = useState({});
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [showDirtyDialog, setShowDirtyDialog] = useState(false);
@@ -129,11 +132,6 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     }
   }
 
-  const setEditColumnName = (columnName: string) => {
-    let index = chosenColumns.findIndex((col) => col.name === columnName);
-    setEditColumn(chosenColumns[index]);
-  }
-
   const setRemoveColumn = (columnName: string) => {
     let chosenColumnsBuffer: any[];
     chosenColumnsBuffer = [];
@@ -170,7 +168,6 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     setShowDirtyDialog(false);
     setChosenColumns([]);
     handleClose();
-    setEditColumn({});
   };
 
   const handleClickClose = () => {
@@ -583,13 +580,14 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               }
             </div>
           </div>
-          <ColumnDetails
-            viewName={viewName}
-            column={editColumn}
-            chosenColumns={chosenColumns}
-            handleEditColumn={handleEditColumn}
-            setEditColumn={setEditColumnName}
-            setRemoveColumn={setRemoveColumn}
+          <KeepColumnDetails
+            columns={chosenColumns}
+            onColumnEdit={(event: CustomEvent<KeepColumnEditDetail>) =>
+              handleEditColumn(event.detail.column, event.detail.externalName)
+            }
+            onColumnRemove={(event: CustomEvent<KeepColumnRemoveDetail>) =>
+              setRemoveColumn(event.detail.name)
+            }
           />
         </div>
       </dialog>
