@@ -18,7 +18,6 @@ import {
 } from '../../../store/applications/action';
 import { AppState } from '../../../store';
 import { toggleAlert } from '../../../store/alerts/action';
-import DeleteApplicationDialog from '../DeleteApplicationDialog';
 import FormDrawer from '../FormDrawer';
 import { toggleDeleteDialog } from '../../../store/dialog/action';
 import { AppFormContext } from '../ApplicationContext';
@@ -28,7 +27,7 @@ import Consents from './Consents';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
 import AppsTable from '../AppsTable';
-import { KeepButton } from '../../keep-elements/KeepElements';
+import { KeepButton, KeepConfirmDeleteDialog } from '../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../store/hooks';
 
 const AppContainer = styled.div`
@@ -203,10 +202,10 @@ const Kanban: React.FC = () => {
             formik={formik}
           />
         </AppStackContainer>
-        <DeleteApplicationDialog
-          dialogTitle={deleteAppTitle}
-          deleteMessage={deleteAppMessage}
-          handleDelete={deleteApp}
+        <KeepConfirmDeleteDialog
+          heading={deleteAppTitle}
+          message={deleteAppMessage}
+          onConfirm={deleteApp}
         />
         <FormDrawer formName="AppForm" formik={formik} />
         <ConsentsDialogContainer open={consentDialogOpen} onClose={() => {setConsentDialogOpen(false)}} fullScreen>

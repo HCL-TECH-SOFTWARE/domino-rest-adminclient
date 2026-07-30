@@ -74,21 +74,9 @@ vi.mock('../../../src/components/access/FieldDndContainer', () => ({
   },
 }));
 
-vi.mock('../../../src/components/access/AddModeDialog', () => ({
-  default: function MockAddModeDialog() {
-    return <div data-testid="add-mode-dialog" />;
-  },
-}));
-
 vi.mock('../../../src/components/applications/FormDrawer', () => ({
   default: function MockFormDrawer() {
     return <div data-testid="form-drawer" />;
-  },
-}));
-
-vi.mock('../../../src/components/applications/DeleteApplicationDialog', () => ({
-  default: function MockDeleteApplicationDialog() {
-    return <div data-testid="delete-dialog" />;
   },
 }));
 
@@ -112,10 +100,10 @@ vi.mock('../../../src/store/alerts/action', () => ({
 }));
 
 /**
- * #806 turned the dialog into `keep-unsaved-changes-dialog`, so it now arrives through the
- * `KeepElements` bridge rather than its own module. Only that one export is replaced —
+ * #806 turned three of this file's dialogs into custom elements, so they now arrive through
+ * the `KeepElements` bridge rather than their own modules. Only those exports are replaced —
  * spreading the original keeps every other `Keep*` wrapper this file renders real. These tests
- * are about TabsAccess's behaviour, so a plain div is still the right stand-in.
+ * are about TabsAccess's behaviour, so plain divs are still the right stand-ins.
  */
 vi.mock('../../../src/components/keep-elements/KeepElements', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/components/keep-elements/KeepElements')>()),
@@ -134,6 +122,12 @@ vi.mock('../../../src/components/keep-elements/KeepElements', async (importOrigi
         <button onClick={onSave}>Yes</button>
       </div>
     );
+  },
+  KeepAddModeDialog: function MockAddModeDialog() {
+    return <div data-testid="add-mode-dialog" />;
+  },
+  KeepConfirmDeleteDialog: function MockConfirmDeleteDialog() {
+    return <div data-testid="delete-dialog" />;
   },
 }));
 
