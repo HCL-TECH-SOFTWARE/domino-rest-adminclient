@@ -89,7 +89,9 @@ function makeSchemaData(viewColumns?: any[]): any {
     isActive: 'true',
     forms: [],
     agents: [],
+    // Both are here because the save payload used to hardcode them away (#932).
     owners: ['someone'],
+    excludedViews: ['HiddenView'],
     views: [
       {
         name: 'TestView',
@@ -586,6 +588,57 @@ describe('keep-edit-view', () => {
       expect(payload.views).toEqual([{ name: 'TestView', alias: [], unid: 'unid-1' }]);
     });
 
+    // ---- #932 ---------------------------------------------------------------------------
+
+    /**
+     * The dialog chooses which columns a view exposes. It has nothing to say about owners, and
+     * it used to destroy them anyway: every field in the payload was read from the schema
+     * except `owners` and `excludedViews`, which were hardcoded to `[]` and `undefined` on a
+     * derived object that both save paths spread into the request. `updateSchema` POSTs the
+     * object whole, so the endpoint echoed the blanks back and the owner list was gone —
+     * silently, with nothing on screen mentioning owners.
+     */
+    it('leaves the schema owners alone when saving a column selection', async () => {
+      const el = await mount();
+      await flush(el);
+
+      saveButton(el).click();
+      await el.updateComplete;
+
+      const [payload] = vi.mocked(databasesActions.updateSchema).mock.calls[0];
+      expect(payload.owners).toEqual(['someone']);
+    });
+
+    it('leaves excludedViews alone when saving a column selection', async () => {
+      const el = await mount();
+      await flush(el);
+
+      saveButton(el).click();
+      await el.updateComplete;
+
+      const [payload] = vi.mocked(databasesActions.updateSchema).mock.calls[0];
+      expect(payload.excludedViews).toEqual(['HiddenView']);
+    });
+
+    /**
+     * A schema that never had owners can arrive without the key. `undefined` would serialise
+     * the field away, which is half of what this fixes — so the default is an empty array,
+     * matching what the payload always sent for that case.
+     */
+    it('sends an empty owner list, not undefined, when the schema has none', async () => {
+      const schemaData = makeSchemaData(defaultColumns);
+      delete schemaData.owners;
+      const el = await mount({ schemaData });
+      await flush(el);
+
+      saveButton(el).click();
+      await el.updateComplete;
+
+      const [payload] = vi.mocked(databasesActions.updateSchema).mock.calls[0];
+      expect(payload.owners).toEqual([]);
+      expect('owners' in payload).toBe(true);
+    });
+
     it('reports the schema the endpoint echoed back', async () => {
       const el = await mount();
       await flush(el);
@@ -704,6 +757,21 @@ describe('keep-edit-view', () => {
       const [payload] = vi.mocked(databasesActions.updateSchema).mock.calls[0];
       expect(payload.views).toEqual([{ name: 'TestView', alias: [], unid: 'unid-1' }]);
       expect(closes).toHaveLength(1);
+    });
+
+    // The reset path builds the same payload, and it destroyed the same two fields (#932).
+    it('leaves the owners and excludedViews alone when resetting', async () => {
+      const el = await mount();
+      await flush(el);
+
+      resetButton(el).click();
+      await el.updateComplete;
+      shadow(el).querySelectorAll('keep-button')[1].dispatchEvent(new MouseEvent('click'));
+      await el.updateComplete;
+
+      const [payload] = vi.mocked(databasesActions.updateSchema).mock.calls[0];
+      expect(payload.owners).toEqual(['someone']);
+      expect(payload.excludedViews).toEqual(['HiddenView']);
     });
 
     it('resets nothing when the schema carries no views at all', async () => {
