@@ -169,9 +169,15 @@ export class FormController<T extends object> implements ReactiveController {
       await schema.validate(this._values, { abortEarly: false });
       return {};
     } catch (error) {
+      const issues = (error as { inner?: Array<{ path?: string; message: string }> }).inner;
+      // A validator that *crashed* is not a validator that passed (#890). An empty map is how
+      // this method says "valid", so swallowing a non-ValidationError sent `submit()` straight
+      // on to `onSubmit` with unvalidated values — reachable from any `.test()` closure that
+      // reads state outside the form, which is exactly what `AddImportDialog`'s does.
+      if (!issues) throw error;
       // abortEarly: false collects every failure in `inner`; first message per field wins.
       const found: Record<string, string> = {};
-      for (const issue of (error as { inner?: Array<{ path?: string; message: string }> }).inner ?? []) {
+      for (const issue of issues) {
         if (issue.path && !(issue.path in found)) found[issue.path] = issue.message;
       }
       return found;
