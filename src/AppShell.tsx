@@ -13,8 +13,8 @@ import './App.css';
 import './styles/app-shell.css';
 import Views from './Views';
 import theme from './theme';
-import ProfileMenuDialog from './components/sidenav/ProfileMenuDialog';
-import ProfileMenu from './components/sidenav/ProfileMenu';
+import { KeepProfileMenu } from './components/keep-elements/react/KeepProfileMenu';
+import { KeepProfileMenuDialog } from './components/keep-elements/react/KeepProfileMenuDialog';
 import { KeepFooter } from './components/keep-elements/react/KeepFooter';
 import { KeepMobileHeader } from './components/keep-elements/react/KeepMobileHeader';
 import { KeepNotification } from './components/keep-elements/react/KeepNotification';
@@ -97,8 +97,9 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [collapsed, setCollapsed] = React.useState(true);
   const isMobile = useMobileView();
   const dispatch = useAppDispatch();
-  // Read, not subscribed: the instance is stable for the life of the app and only
-  // `keep-side-nav` needs it. Its own subscription is what re-renders it on navigation.
+  // Read, not subscribed: the instance is stable for the life of the app. `keep-side-nav`
+  // takes it as a property (its own subscription is what re-renders it on navigation), and
+  // the sign-out handler below navigates with it.
   const router = useRouter();
 
   const { themeMode } = useSelector((state: AppState) => state.styles);
@@ -135,6 +136,19 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
     dispatch(switchTheme(newTheme));
   };
 
+  /*
+   * The redirect half of signing out (#806).
+   *
+   * `keep-option-list` clears the session and emits `logout`; the event is composed, so it
+   * crosses the profile elements' shadow roots and arrives on their wrappers. The navigation
+   * has to happen out here because the router is only reachable through React — the same
+   * reason `keep-side-nav` takes the instance as a property. It moves onto the element when
+   * the Lit router controller lands (#926).
+   */
+  const handleLogout = useCallback(() => {
+    router.navigate('/');
+  }, [router]);
+
   return (
     <ThemeProvider theme={currentTheme}>
       <CssBaseline />
@@ -155,10 +169,10 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         */}
         {isMobile && (
           <div slot="header">
-            {/* ProfileMenuDialog still imports MUI and react-redux, so it stays React and
-                crosses into the element as slotted light DOM (#806). */}
+            {/* The profile control crosses into `keep-mobile-header` as slotted light DOM,
+                which is what its unnamed slot is for. */}
             <KeepMobileHeader>
-              <ProfileMenuDialog />
+              <KeepProfileMenuDialog onLogout={handleLogout} />
             </KeepMobileHeader>
           </div>
         )}
@@ -216,7 +230,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </div>
 
         <div slot="navigation-footer">
-          <ProfileMenu open={expanded} />
+          <KeepProfileMenu expanded={expanded} onLogout={handleLogout} />
         </div>
 
         {children ?? <Views />}

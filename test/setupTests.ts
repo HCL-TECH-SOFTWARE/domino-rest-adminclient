@@ -92,6 +92,12 @@ if (!HTMLDialogElement.prototype.showModal) {
 if (!HTMLDialogElement.prototype.close) {
   HTMLDialogElement.prototype.close = vi.fn();
 }
+// `show()` belongs with its two siblings: it is the non-modal open, and it is what
+// `wa-popover` calls. Without it the popover rejects on open and simply never appears —
+// which reads in a test as "the panel did not render" rather than as a missing stub.
+if (!HTMLDialogElement.prototype.show) {
+  HTMLDialogElement.prototype.show = vi.fn();
+}
 
 // jsdom does not implement the Popover / top-layer API used by keep-alert.
 if (!HTMLElement.prototype.showPopover) {
