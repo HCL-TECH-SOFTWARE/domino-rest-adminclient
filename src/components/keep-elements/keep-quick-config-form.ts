@@ -246,11 +246,20 @@ export default class QuickConfigForm extends KeepElement {
         display: block;
       }
 
-      /* 86 icons: the list scrolls rather than running off the drawer. */
-      .icon-menu {
-        max-height: 40vh;
-        overflow-y: auto;
-      }
+      /* The 86 icons used to be wrapped in a scrolling .icon-menu div. Both the div and its
+       * scroll box are gone (#925).
+       *
+       * The div made the menu keyboard-dead: wa-dropdown collects its items from
+       * defaultSlot.assignedElements({ flatten: true }), filtered by localName — top-level
+       * assigned nodes only. With the items inside a div, the only assigned element was that
+       * div, so getItems() answered an empty array and the arrow keys had nothing to move
+       * through. Measured in Chrome: ArrowDown on the open menu left focus on the trigger.
+       *
+       * Nothing replaces the scroll box, because wa-dropdown already caps the menu itself.
+       * Its wa-popup carries auto-size="vertical" and writes --auto-size-available-height,
+       * which the menu part reads as its max-height. Measured open, in a 600px viewport:
+       * max-height 580px, overflow-y auto, scrollHeight 3104 against clientHeight 578. A
+       * ::part(menu) max-height here loses to that rule and would be dead weight. */
 
       .field-label {
         display: block;
@@ -464,6 +473,23 @@ export default class QuickConfigForm extends KeepElement {
   }
 
   /**
+   * The icon picker's selection, taken from the dropdown rather than from a `@click` on each
+   * item (#925). Web Awesome only synthesises a `click` for pointer selection, so the old
+   * per-item handler never ran for anyone using the arrow keys and Enter.
+   *
+   * `checked` is re-asserted rather than left to the toggle `makeSelection` performs on a
+   * `type="checkbox"` item. Toggling is the wrong verb for a single-select list: re-picking
+   * the icon the form already holds would untick it, and Lit would not put it back, because
+   * its `?checked=${iconName === values.iconName}` binding sees no change to commit.
+   */
+  private handleIconSelect(event: Event): void {
+    event.stopPropagation();
+    const { item } = (event as CustomEvent<{ item: { value: string; checked: boolean } }>).detail;
+    item.checked = true;
+    this.form.setValue('iconName', item.value);
+  }
+
+  /**
    * `keep-checkbox` re-emits its own composed `change` with no detail, having stopped the
    * inner `wa-checkbox` event — so the state lives on the element, and `target` is the
    * `keep-checkbox` rather than an `<input>`.
@@ -574,7 +600,7 @@ export default class QuickConfigForm extends KeepElement {
 
         <div class="input-container">
           <span class="field-label" id="icon-label">Schema Icon</span>
-          <wa-dropdown>
+          <wa-dropdown @wa-select=${this.handleIconSelect}>
             <wa-button
               class="icon-select"
               slot="trigger"
@@ -585,20 +611,18 @@ export default class QuickConfigForm extends KeepElement {
               ${this.renderIcon(values.iconName, 'icon-image')}
               <span>${values.iconName}</span>
             </wa-button>
-            <div class="icon-menu">
-              ${APP_ICON_NAMES.map(
-                (iconName) => html`
-                  <wa-dropdown-item
-                    type="checkbox"
-                    ?checked=${iconName === values.iconName}
-                    @click=${() => this.form.setValue('iconName', iconName)}
-                  >
-                    <span slot="icon">${this.renderIcon(iconName, 'icon-menu-image')}</span>
-                    ${iconName}
-                  </wa-dropdown-item>
-                `,
-              )}
-            </div>
+            ${APP_ICON_NAMES.map(
+              (iconName) => html`
+                <wa-dropdown-item
+                  type="checkbox"
+                  value=${iconName}
+                  ?checked=${iconName === values.iconName}
+                >
+                  <span slot="icon">${this.renderIcon(iconName, 'icon-menu-image')}</span>
+                  ${iconName}
+                </wa-dropdown-item>
+              `,
+            )}
           </wa-dropdown>
         </div>
 

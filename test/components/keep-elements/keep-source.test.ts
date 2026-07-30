@@ -179,4 +179,109 @@ describe('keep-source-tree (SourceTree)', () => {
     expect(newValue.value).toBe('');
     expect(close).toHaveBeenCalledTimes(1);
   });
+
+  // ---- #925 -----------------------------------------------------------------------------------
+
+  /**
+   * Two defects in how this menu is reached, both measured in Chrome (#925).
+   *
+   * The entries were bound `@click` per item, and Web Awesome only synthesises a click for
+   * *pointer* selection — both paths emit `wa-select` from `makeSelection`, and only that one.
+   *
+   * And the row had no trigger at all: `slot="trigger"` sat on the `wa-icon` *inside* the
+   * `wa-button`, so the icon was assigned to no slot (it never rendered) and the button fell
+   * into the dropdown's default slot — into the menu itself. Right-clicking a value was the
+   * only way in, which left object and array rows, which carry no `@contextmenu`, with none.
+   *
+   * The tests above call `handleClickAdd` and friends directly, which is why they never caught
+   * either: they prove the handler bodies and say nothing about how the menu reaches them.
+   *
+   * ⚠️ These prove the *binding*, not that the menu is usable from the keyboard — it is not,
+   * and cannot be while the dropdown is nested in a `wa-tree` that claims Enter and the arrows
+   * for itself. That is #940, and no assertion here should be read as covering it.
+   */
+  const dropdowns = (el: SourceTree) => Array.from(shadow(el).querySelectorAll('wa-dropdown'));
+
+  /** What Web Awesome emits when an item is chosen, by pointer or by keyboard. */
+  const selectMenuItem = (el: SourceTree, row: number, value: string) =>
+    dropdowns(el)[row].dispatchEvent(
+      new CustomEvent('wa-select', {
+        detail: { item: { value } },
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      }),
+    );
+
+  it('gives every row a real, slotted trigger', async () => {
+    const el = await mountWithContent({ name: 'Widget', meta: { x: 1 } });
+    for (const dropdown of dropdowns(el)) {
+      const trigger = dropdown.querySelector('[slot="trigger"]');
+      expect(trigger, 'the row has no trigger, so the menu cannot be opened').toBeTruthy();
+      expect(trigger!.localName).toBe('wa-button');
+      // The icon belongs inside the trigger, not slotted in its place.
+      expect(trigger!.querySelector('wa-icon')).toBeTruthy();
+    }
+  });
+
+  it('labels every menu entry with the value wa-select reports back', async () => {
+    const el = await mountWithContent({ name: 'Widget' });
+    const values = Array.from(dropdowns(el)[0].querySelectorAll('wa-dropdown-item')).map((item) =>
+      item.getAttribute('value'),
+    );
+    expect(values).toEqual(['add', 'edit', 'duplicate', 'remove']);
+  });
+
+  it('removes the row when Remove is selected', async () => {
+    const el = await mountWithContent({ name: 'Widget', count: 3 });
+    selectMenuItem(el, 1, 'remove');
+    await el.updateComplete;
+    expect('count' in el.editedContent).toBe(false);
+    expect(el.editedContent.name).toBe('Widget');
+  });
+
+  it('duplicates the row when Duplicate is selected', async () => {
+    const el = await mountWithContent({ meta: { x: 1 } });
+    selectMenuItem(el, 0, 'duplicate');
+    await el.updateComplete;
+    expect(el.editedContent).toHaveProperty('meta_copy');
+  });
+
+  it('opens the add dialog when Add is selected', async () => {
+    const el = await mountWithContent({ name: 'Widget' });
+    const dialog = shadow(el).querySelector('dialog') as HTMLDialogElement;
+    const showModal = vi.fn();
+    dialog.showModal = showModal;
+
+    selectMenuItem(el, 0, 'add');
+
+    expect(showModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables Edit on object rows and Duplicate on leaf rows', async () => {
+    // With the entries bound per item the template swapped in a `null` handler to express
+    // this. `makeSelection` skips disabled items before it emits, so the attribute is the
+    // whole mechanism now.
+    const el = await mountWithContent({ name: 'Widget', meta: { x: 1 } });
+    const itemsOf = (row: number) =>
+      Object.fromEntries(
+        Array.from(dropdowns(el)[row].querySelectorAll('wa-dropdown-item')).map((item) => [
+          item.getAttribute('value'),
+          item.hasAttribute('disabled'),
+        ]),
+      );
+    expect(itemsOf(0)).toMatchObject({ edit: false, duplicate: true });
+    expect(itemsOf(1)).toMatchObject({ edit: true, duplicate: false });
+  });
+
+  it('does not let the composed wa-select escape into the host document', async () => {
+    const el = await mountWithContent({ name: 'Widget' });
+    const leaked = vi.fn();
+    document.body.addEventListener('wa-select', leaked);
+
+    selectMenuItem(el, 0, 'remove');
+
+    expect(leaked).not.toHaveBeenCalled();
+    document.body.removeEventListener('wa-select', leaked);
+  });
 });
