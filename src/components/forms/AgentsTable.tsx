@@ -6,8 +6,7 @@
 
 import * as React from 'react';
 import { styled } from '@linaria/react';
-import ActivateSwitch from './ActivateSwitch';
-import { KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepActivateSwitch, KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const StatusHeader = styled.div`
@@ -74,7 +73,14 @@ const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleI
                     {agent.agentName}
                 </AgentNameDisplay>
               </td>
-              <td><ActivateSwitch view={agent} toggleActive={toggleActive} toggleInactive={toggleInactive} type={'agent'}/></td>
+              <td>
+                <KeepActivateSwitch
+                  view={agent}
+                  type="agent"
+                  onToggleActive={(event) => { void toggleActive(event.detail.view); }}
+                  onToggleInactive={(event) => { void toggleInactive(event.detail.view); }}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
