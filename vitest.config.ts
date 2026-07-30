@@ -162,8 +162,13 @@ export default defineConfig({
         // rather than a few points below. FormController is the newer half and had no
         // floor at all; the argument for gating it is the same one written for its
         // sibling, and 15 tier-D files are about to depend on it.
+        //
+        // FormController's floors were 97/97/88/88 against a measurement of 100/100/100/92.85,
+        // because 14 branches make each one worth 7 points and there was no room to sit closer.
+        // #887 and #890 took it to 100/100/100/100 over 18 branches, so it now gets its
+        // sibling's numbers exactly — which is what the paragraph above always intended.
         'src/store/StoreController.ts': { lines: 97, statements: 97, functions: 97, branches: 95 },
-        'src/store/FormController.ts': { lines: 97, statements: 97, functions: 88, branches: 88 },
+        'src/store/FormController.ts': { lines: 97, statements: 97, functions: 97, branches: 95 },
         // store.ts is one `configureStore` call: 100 % lines, and *zero* functions and
         // zero branches to count. Those two floors are vacuous — left where they are
         // rather than raised to imply a measurement that does not exist.

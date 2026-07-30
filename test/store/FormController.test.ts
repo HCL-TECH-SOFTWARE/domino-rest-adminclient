@@ -228,6 +228,59 @@ describe('FormController — validation', () => {
 });
 
 /**
+ * #890 — a crashing validator is not a passing validator.
+ *
+ * `validate()` reads field messages out of a yup rejection's `inner` array, and an empty map is
+ * how it says "valid". `inner ?? []` therefore turned any non-`ValidationError` into a phantom
+ * success and `submit()` wrote unvalidated values — reachable from any `.test()` closure that
+ * reads state outside the form, which is what `AddImportDialog`'s uniqueness check does.
+ */
+describe('FormController — a validator that throws', () => {
+  const crashingSchema = yup.object({
+    name: yup.string().test('boom', 'unused', () => {
+      throw new TypeError('existing is undefined');
+    }),
+  }) as yup.AnyObjectSchema;
+
+  const crashingHost = (tag: string, onSubmit = vi.fn()) => {
+    class H extends LitElement {
+      form = new FormController<Values>(this, { initialValues: INITIAL, schema: crashingSchema, onSubmit });
+    }
+    customElements.define(tag, H);
+    return { el: new H(), onSubmit };
+  };
+
+  it('does not report the crash as a valid form', async () => {
+    const { el, onSubmit } = crashingHost('validator-crash-host');
+    await expect(el.form.submit()).rejects.toThrow('existing is undefined');
+    // The defect: `errors` was `{}` and this had been called, POSTing unvalidated values.
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(el.form.errors).toEqual({});
+  });
+
+  it('leaves the form usable, not stuck submitting', async () => {
+    const { el } = crashingHost('validator-crash-usable-host');
+    await expect(el.form.submit()).rejects.toThrow(TypeError);
+    expect(el.form.submitting).toBe(false);
+    // And re-entry has not latched either — the crash is retryable like any other rejection.
+    await expect(el.form.submit()).rejects.toThrow(TypeError);
+  });
+
+  it('still reports ordinary validation failures as errors rather than throwing', async () => {
+    // The rethrow keys off a missing `inner`, so it must not catch real ValidationErrors.
+    const onSubmit = vi.fn();
+    class H extends LitElement {
+      form = new FormController<Values>(this, { initialValues: INITIAL, schema: twoFieldSchema, onSubmit });
+    }
+    customElements.define('validator-normal-host', H);
+    const el = new H();
+    await expect(el.form.submit()).resolves.toBeUndefined();
+    expect(el.form.errors).toEqual({ name: 'Name is required', count: 'Too few' });
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+});
+
+/**
  * #887 — one write per press.
  *
  * `submit()` used to run its whole body on every call, so a double-clicked Save dispatched a
