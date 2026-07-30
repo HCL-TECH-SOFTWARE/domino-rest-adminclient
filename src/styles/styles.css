@@ -1606,20 +1606,6 @@ body[data-theme="dark"] .add-import-svg-icon {
     background-color: light-dark(#000, #3a3a4a);
 }
 
-/* IconDropdown.tsx */
-.icon-dropdown-span {
-    text-transform: capitalize;
-    padding-left: 11px;
-    color: var(--wa-color-text-normal);
-}
-
-.icon-dropdown-image {
-    color: var(--hover-color);
-    height: 35;
-    width: 35;
-    margin-right: 15px;
-}
-
 /* CardViewOptions.tsx */
 .multicard-view-container {
     width: 200px;

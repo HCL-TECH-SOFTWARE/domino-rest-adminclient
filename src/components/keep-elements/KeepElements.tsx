@@ -74,3 +74,4 @@ export { KeepProfileMenuDialog } from './react/KeepProfileMenuDialog';
 export { KeepSingleField } from './react/KeepSingleField';
 export { KeepFieldContainer } from './react/KeepFieldContainer';
 export { KeepScriptEditor } from './react/KeepScriptEditor';
+export { KeepIconDropdown } from './react/KeepIconDropdown';
