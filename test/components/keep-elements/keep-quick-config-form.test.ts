@@ -387,6 +387,76 @@ describe('keep-quick-config-form', () => {
     expect(submitted[0].iconName).toBe('beach');
   });
 
+
+  // ---- implicit submission (#896) ------------------------------------------------------------
+
+  it('has an enabled native submit control, which is what implicit submission looks for', async () => {
+    // wa-input's Enter handling walks `form.elements` for an enabled type="submit". Neither
+    // keep-button nor its inner wa-button is form-associated, so without this Enter did nothing.
+    const el = await mount();
+    const form = el.shadowRoot!.querySelector('form')!;
+    const submitter = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(submitter).toBeTruthy();
+    expect(submitter.disabled).toBe(false);
+    expect([...form.elements]).toContain(submitter);
+  });
+
+  it('the submitter is hidden from sight and from the tab order', async () => {
+    const el = await mount();
+    const submitter = el.shadowRoot!.querySelector('button[type="submit"]')!;
+    expect(submitter.hasAttribute('hidden')).toBe(true);
+    expect(submitter.getAttribute('aria-hidden')).toBe('true');
+    expect(submitter.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('a submit event runs the same validation as the Add button', async () => {
+    const el = await mount();
+    el.shadowRoot!.querySelector('form')!.dispatchEvent(
+      new Event('submit', { bubbles: true, cancelable: true }));
+    await settle(el);
+    expect(submitted).toEqual([]);
+    expect(errors(el).length).toBeGreaterThan(0);
+  });
+
+  it('a submit event cannot skip the duplicate-name rules', async () => {
+    // The rules are in the yup schema, not in a guard before submit, so every route into the
+    // form runs them. This is the property that makes the schema the right home for them.
+    store.dispatch(fetchKeepScopes([{ apiName: 'hrscope' }]));
+    const el = await mount();
+    await fill(el);
+    el.shadowRoot!.querySelector('form')!.dispatchEvent(
+      new Event('submit', { bubbles: true, cancelable: true }));
+    await settle(el);
+    expect(submitted).toEqual([]);
+    expect(errors(el)).toContain('The name already exists.');
+  });
+
+  it('a submit event creates the schema when the form is valid', async () => {
+    const el = await mount();
+    await fill(el);
+    el.shadowRoot!.querySelector('form')!.dispatchEvent(
+      new Event('submit', { bubbles: true, cancelable: true }));
+    await settle(el);
+    expect(submitted).toHaveLength(1);
+  });
+
+  it('a submit event does not navigate', async () => {
+    const el = await mount();
+    const event = new Event('submit', { bubbles: true, cancelable: true });
+    el.shadowRoot!.querySelector('form')!.dispatchEvent(event);
+    await settle(el);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('the database search box is outside the form, so Enter there cannot submit', async () => {
+    // Structural rather than a keydown guard: a control with no form ancestor has nothing to
+    // submit, so there is no handler to get wrong.
+    const el = await mount();
+    const search = inputFor(el, 'Search Databases');
+    expect(search.closest('form')).toBeNull();
+    expect(inputFor(el, 'Schema Name').closest('form')).not.toBeNull();
+  });
+
   // ---- reset and close -----------------------------------------------------------------------
 
   it('reset clears the fields and the errors', async () => {

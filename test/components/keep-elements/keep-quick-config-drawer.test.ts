@@ -160,14 +160,15 @@ describe('keep-quick-config-drawer', () => {
     expect(store.getState().databases.dbError).toBe(false);
   });
 
-  it('a toast, once shown, outlives the condition that created it (#906)', async () => {
+  it('a toast, once shown, outlives the condition that created it (#902)', async () => {
     // Not an assertion of what *should* happen — a record of what does. `keep-alert` moves
     // itself into document.body on first show, so it is no longer between the markers of the
     // Lit part that created it; switching that part to `nothing` cannot take it away. It
     // hides itself on a 5s timer instead, and a second error mints a second element.
     //
     // Pre-existing: the React container conditionally rendered <KeepAlert> the same way. Filed
-    // as #906 rather than worked around here, because the fix belongs in keep-alert.
+    // as #902 (by the PR that converted this pair to FormController) rather than worked around
+    // here, because the fix belongs in keep-alert.
     const el = await mount();
     await raise(el, 'first');
     expect(document.body.querySelectorAll('keep-alert')).toHaveLength(1);

@@ -105,8 +105,9 @@ export default class QuickConfigForm extends KeepElement {
         box-sizing: border-box;
       }
 
-      /* Was the Forms styled.form. A real <form> is not used: nothing submits it, and the
-         Add button drives FormController directly. */
+      /* Was the Forms styled.form, which wrapped both columns. The real form is now the
+         right-hand column only, so the database search box sits outside it and Enter there
+         cannot submit (#896). */
       :host {
         display: flex;
         flex: 1 1 auto;
@@ -156,6 +157,10 @@ export default class QuickConfigForm extends KeepElement {
       /* --- right column: the fields ------------------------------------------------ */
 
       .form-content {
+        /* A form element, not a div, so Enter in a field submits (#896). margin: 0 because
+           some UA stylesheets give form a bottom margin, which would push the row taller
+           than the drawer. */
+        margin: 0;
         padding: 0 20px;
         min-width: 55%;
         max-width: 100%;
@@ -440,6 +445,25 @@ export default class QuickConfigForm extends KeepElement {
   }
 
   /**
+   * Implicit submission — Enter in any field (#896).
+   *
+   * `preventDefault` because a native submit would navigate; the values live in the controller,
+   * not in `form.elements`, so there is nothing for the browser to send anyway.
+   *
+   * Straight to `submit()` rather than a separate path: the two "already exists" rules live in
+   * the yup schema here, so Enter and the Add button run exactly the same validation. That is
+   * the reason to put them in the schema rather than in a guard before submit — a guard has to
+   * be repeated on every route into the form, and one of them will eventually be missed.
+   *
+   * The database search box is deliberately **outside** this form, so Enter there associates
+   * with no form and cannot reach this handler.
+   */
+  private handleSubmitEvent(event: Event): void {
+    event.preventDefault();
+    void this.form.submit();
+  }
+
+  /**
    * `keep-checkbox` re-emits its own composed `change` with no detail, having stopped the
    * inner `wa-checkbox` event — so the state lives on the element, and `target` is the
    * `keep-checkbox` rather than an `<input>`.
@@ -498,7 +522,7 @@ export default class QuickConfigForm extends KeepElement {
         </div>
       </div>
 
-      <div class="form-content">
+      <form class="form-content" @submit=${(e: Event) => this.handleSubmitEvent(e)}>
         <span class="form-header">
           <wa-icon library=${FA_LIBRARY} name="database" label="Database"></wa-icon>
           <span>Quick Config</span>
@@ -613,7 +637,16 @@ export default class QuickConfigForm extends KeepElement {
             Add
           </keep-button>
         </div>
-      </div>
+
+        <!-- The form's only submitter, so Enter in a field reaches the submit handler (#896).
+             Neither keep-button nor its inner wa-button is form-associated, and wa-input's
+             implicit submission walks the form's elements collection for an enabled submit
+             control - with none, Enter did nothing at all.
+
+             No backticks in this comment: it sits inside an html tagged template, and one
+             would close it. Same trap as the css templates above. -->
+        <button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
+      </form>
     `;
   }
 }
