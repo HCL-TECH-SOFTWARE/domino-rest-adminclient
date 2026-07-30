@@ -30,7 +30,7 @@ import {
   KeepPageLoading,
 } from '../keep-elements/KeepElements';
 import type { KeepFieldsAddDetail } from '../keep-elements/keep-field-list';
-import { useNavigationGuard } from '../navigation/NavigationGuardContext';
+import { useNavigationGuard } from '../navigation/NavigationGuard';
 import { useAppDispatch } from '../../store/hooks';
 
 const AccessMode: React.FC = () => {

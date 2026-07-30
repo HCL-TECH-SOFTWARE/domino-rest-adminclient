@@ -10,7 +10,7 @@ import WaBreadcrumb from '@awesome.me/webawesome/dist/react/breadcrumb/index.js'
 import WaBreadcrumbItem from '@awesome.me/webawesome/dist/react/breadcrumb-item/index.js';
 import WaIcon from '@awesome.me/webawesome/dist/react/icon/index.js';
 import { useLocation } from '../../router/react';
-import { useNavigationGuard } from '../navigation/NavigationGuardContext';
+import { useNavigationGuard } from '../navigation/NavigationGuard';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { ActionHeader, PageTitle, TopBanner } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
@@ -80,18 +80,18 @@ const sectionOf = (pathname: string): { label: string; path: string } => {
 /**
  * The breadcrumb trail in the top banner, on `<wa-breadcrumb>` since #877.
  *
- * **The items carry no `href`, deliberately.** `wa-breadcrumb-item` renders an `<a>` when
- * given one and a `<button>` without, and the `<a>` would break the unsaved-changes guard
- * *silently*: `NavigationGuardContext` intercepts link clicks with
+ * **The items carry no `href`, and that is now a leftover rather than a constraint.**
+ * `wa-breadcrumb-item` renders an `<a>` when given one and a `<button>` without, and the
+ * `<a>` used to break the unsaved-changes guard *silently*: it intercepted link clicks with
  * `(e.target).closest('a[href]')`, but that anchor lives in the item's shadow root, so
- * `e.target` retargets to the host and `closest()` walks light-DOM ancestors that contain
- * no anchor. Buttons plus `guardedNavigate` are the path that file documents for
- * programmatic navigation, and they are keyboard-reachable, which the `<span onClick>`
- * these replaced was not.
+ * `e.target` retargeted to the host and `closest()` walked light-DOM ancestors that contain
+ * no anchor. #901 taught the guard to walk `event.composedPath()`, which reaches it — see
+ * the shadow-root case in `test/components/navigation/NavigationGuard.test.tsx`.
  *
- * Giving the items real URLs is worth doing — ⌘-click, open in new tab, copy link — but
- * it means teaching the shared guard to walk `event.composedPath()`, which affects every
- * `<Link>` in the app. That is its own change, not a side effect of this one.
+ * So giving the items real URLs — ⌘-click, open in new tab, copy link — is unblocked, and
+ * is #877's follow-up. It is still not a side effect of moving the guard's state into the
+ * store: `guardedNavigate` is the documented path for programmatic navigation and the
+ * buttons are keyboard-reachable, which the `<span onClick>` these replaced was not.
  */
 const BreadcrumbRouter: React.FC = () => {
   const { pathname } = useLocation();

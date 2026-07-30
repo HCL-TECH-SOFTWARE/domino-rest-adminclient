@@ -24,9 +24,10 @@ import BreadcrumbRouter from '../../../src/components/routers/BreadcrumbRouter';
 
 const guardedNavigate = vi.fn();
 
-// The real provider reaches for history and a dirty-state ref; the breadcrumb only ever
-// calls `guardedNavigate`, so the context is stubbed down to that.
-vi.mock('../../../src/components/navigation/NavigationGuardContext', () => ({
+// The real hook reads the store and the router; the breadcrumb only ever calls
+// `guardedNavigate`, so the module is stubbed down to that. Stubbing it also keeps this
+// suite on `renderWithProviders`'s static store, which holds no `navigationGuard` slice.
+vi.mock('../../../src/components/navigation/NavigationGuard', () => ({
   useNavigationGuard: () => ({ guardedNavigate }),
 }));
 
@@ -153,10 +154,13 @@ describe('BreadcrumbRouter — markup', () => {
   });
 
   /**
-   * No `href`, deliberately. `wa-breadcrumb-item` renders an `<a>` when given one, and
-   * that anchor lives in the shadow root — where `NavigationGuardContext`'s
-   * `(e.target).closest('a[href]')` cannot reach it, because `e.target` retargets to the
-   * host. The unsaved-changes guard would stop firing for breadcrumb clicks, silently.
+   * No `href`. `wa-breadcrumb-item` renders an `<a>` when given one, and that anchor lives
+   * in the shadow root — where the guard's original `(e.target).closest('a[href]')` could
+   * not reach it, because `e.target` retargets to the host, so the unsaved-changes guard
+   * stopped firing for breadcrumb clicks, silently.
+   *
+   * #901 fixed that traversal, so an `href` no longer bypasses the guard and #877's
+   * follow-up is unblocked. Until it lands the markup is what it is, and this pins it.
    */
   it('renders no anchor, which would bypass the unsaved-changes guard', async () => {
     for (const item of await settledAt('/schema/db.nsf/Demo')) {

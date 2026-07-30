@@ -7,28 +7,38 @@
 import React, { useEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import WaBreadcrumbItem from '@awesome.me/webawesome/dist/react/breadcrumb-item/index.js';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import {
-  NavigationGuardProvider,
+  NavigationGuard,
   useNavigationGuard,
-} from '../../../src/components/navigation/NavigationGuardContext';
+} from '../../../src/components/navigation/NavigationGuard';
+import navigationGuardReducer from '../../../src/store/navigationGuard/reducer';
+import { setSaveFunction } from '../../../src/store/navigationGuard/saveFunction';
 import { Link } from '../../../src/router/react';
 
 /**
- * #884 — the unsaved-changes guard, which had no tests at all.
+ * #884 — the unsaved-changes guard, converted to a store slice by #806 (decision 1).
  *
- * `test/router/react.test.tsx` has a `describe('guard')` block, but that is about *route*
- * guards (`guard: () => false`) — a different mechanism entirely. This file covers the one
- * that stops a user losing work, whose only real consumer is `access/AccessMode.tsx`: the
- * access-mode editor, where losing unsaved changes costs the most.
+ * Every assertion in `NavigationGuardContext.test.tsx` is carried over. Two things about
+ * the file changed with the conversion and nothing else did:
  *
- * Written before the traversal change, so the shadow-root case below is the gate: it fails
- * against `closest('a[href]')` and passes on `composedPath()`. The rest pin behaviour that
- * already worked, because the point of a traversal change is that *nothing else* moves.
+ * - There is no provider. `<NavigationGuard/>` is a **sibling** of the components it
+ *   guards, not an ancestor, because its listeners are on `document` and `window`. The old
+ *   file's fixtures already proved that by appending anchors outside the React tree.
+ * - The store is real. `renderWithProviders` builds its store from identity reducers by
+ *   design — component tests assert what renders for a given state, not that dispatching
+ *   changes it — and the guard *is* a state machine, so this suite nests a Provider holding
+ *   the real reducer. The inner store is the one every hook below sees.
+ *
+ * The shadow-root case remains the gate for #884: it fails against `closest('a[href]')` and
+ * passes on `composedPath()`. The rest pin behaviour that already worked, because the point
+ * of moving state is that *nothing else* moves.
  */
 
-/** The dialog's `open` prop is how the provider says "blocked" — it renders one, always. */
+/** The dialog's `open` prop is how the guard says "blocked" — it renders one, always. */
 const dialogOpen = () =>
   (document.querySelector('keep-unsaved-changes-dialog') as (HTMLElement & { open: boolean }) | null)
     ?.open ?? false;
@@ -36,22 +46,37 @@ const dialogOpen = () =>
 const dialog = () => document.querySelector('keep-unsaved-changes-dialog') as HTMLElement;
 
 /**
- * Drives the context the way `AccessMode` does — `setDirty` plus a registered save function —
+ * Drives the guard the way `AccessMode` does — `setDirty` plus a registered save function —
  * and exposes the programmatic path the breadcrumb uses.
+ *
+ * The save registration is cleared on unmount, exactly as `AccessMode.tsx` does it: the
+ * function lives in a module now rather than in a provider's ref, so nothing drops it
+ * automatically when the screen that registered it goes away.
  */
 const Harness: React.FC<{ dirty: boolean; save?: () => Promise<void>; to?: string }> = ({
   dirty,
   save,
   to = '/scope',
 }) => {
-  const { setDirty, setSaveFunction, guardedNavigate } = useNavigationGuard();
+  const { setDirty, setSaveFunction: register, guardedNavigate } = useNavigationGuard();
   useEffect(() => setDirty(dirty), [dirty, setDirty]);
-  useEffect(() => setSaveFunction(save ?? null), [save, setSaveFunction]);
+  useEffect(() => {
+    register(save ?? null);
+    return () => register(null);
+  }, [save, register]);
   return (
     <button type="button" data-testid="programmatic" onClick={() => guardedNavigate(to)}>
       go
     </button>
   );
+};
+
+/** A store with the guard's real reducer in it — see the note at the top of the file. */
+const guardStore = () => configureStore({ reducer: { navigationGuard: navigationGuardReducer } });
+
+const renderGuarded = (ui: React.ReactNode, route: string) => {
+  const store = guardStore();
+  return { ...renderWithProviders(<Provider store={store}>{ui}</Provider>, { route }), guard: store };
 };
 
 interface MountOptions {
@@ -63,20 +88,28 @@ interface MountOptions {
   children?: React.ReactNode;
 }
 
-const mount = ({ dirty = true, save, basename, route = '/schema/db.nsf/Demo', to, children }: MountOptions = {}) =>
-  renderWithProviders(
-    <NavigationGuardProvider basename={basename}>
+const mount = ({
+  dirty = true,
+  save,
+  basename,
+  route = '/schema/db.nsf/Demo',
+  to,
+  children,
+}: MountOptions = {}) =>
+  renderGuarded(
+    <>
+      <NavigationGuard basename={basename} />
       <Harness dirty={dirty} save={save} to={to} />
       {children}
-    </NavigationGuardProvider>,
-    { route },
+    </>,
+    route,
   );
 
 /**
  * An anchor the guard can only reach through `composedPath()`.
  *
  * Synthetic on purpose: **no shipped component renders its own anchor yet**, which is exactly
- * why the defect is latent rather than live. This stands in for what #806 produces as each
+ * why the defect was latent rather than live. This stands in for what #806 produces as each
  * component converts — and `wa-breadcrumb-item[href]`, exercised further down, is the real
  * article once #877's follow-up lands.
  */
@@ -110,8 +143,8 @@ customElements.define('test-closed-anchor', ClosedAnchorHost);
  * `JSX.IntrinsicElements`, so `<test-shadow-anchor />` is a compile error unless the global JSX
  * types are augmented — which a test file has no business doing for a fixture. And it is the
  * more honest shape: the guard listens on `document` in the capture phase, so an anchor does
- * **not** have to be inside the provider's subtree for it to be guarded, and these tests now say
- * so out loud.
+ * **not** have to be near the guard in the tree for it to be guarded, and these tests say so
+ * out loud.
  */
 const fixtures: HTMLElement[] = [];
 
@@ -130,6 +163,10 @@ afterEach(() => {
   fixtures.length = 0;
 });
 
+// The save registration is module state and outlives a render. The Harness clears it on
+// unmount; this is the belt to that pair of braces.
+afterEach(() => setSaveFunction(null));
+
 /**
  * Click something, with jsdom's unimplemented-navigation noise suppressed.
  *
@@ -147,7 +184,7 @@ const clickThrough = (node: Element) => {
   }
 };
 
-describe('NavigationGuardProvider — in-app link clicks', () => {
+describe('NavigationGuard — in-app link clicks', () => {
   afterEach(cleanup);
 
   it('blocks a dirty in-app Link click and offers the dialog', () => {
@@ -215,6 +252,9 @@ describe('NavigationGuardProvider — in-app link clicks', () => {
     ['an external link', 'https://example.com/docs'],
     ['a mailto: link', 'mailto:someone@example.com'],
     ['an in-page hash link', '#section'],
+    // `hasAttribute('href')` is true and `getAttribute` is '' — an anchor that means "this
+    // page". Blocking it would put the dialog up for a navigation that never happens.
+    ['an empty href', ''],
   ])('lets %s through even when dirty', (_label, href) => {
     mount({ children: <a href={href} data-testid="out">out</a> });
 
@@ -254,30 +294,62 @@ describe('NavigationGuardProvider — in-app link clicks', () => {
 
     expect(router!.location().pathname).toBe('/');
   });
-});
 
-describe('NavigationGuardProvider — used outside its provider', () => {
-  afterEach(cleanup);
-
-  /**
-   * The default context value is three no-ops, so a component that calls `useNavigationGuard`
-   * without a provider above it degrades silently instead of throwing. Worth pinning: it means
-   * a converted component can lose its guard by being mounted in the wrong place, and the only
-   * symptom is that nothing happens — the same failure mode as #884 itself.
-   */
-  it('degrades to no-ops rather than throwing', () => {
-    const { router } = renderWithProviders(<Harness dirty save={async () => {}} />, {
-      route: '/schema/db.nsf/Demo',
+  it('leaves an href that is not under the basename alone', async () => {
+    // Stripping is conditional on the prefix matching. A link the base does not cover is
+    // already route-relative, and slicing it blindly would eat its first eight characters.
+    const { router } = mount({
+      basename: '/admin/ui',
+      children: <a href="/scope" data-testid="unbased">Scopes</a>,
     });
 
-    expect(() => fireEvent.click(document.querySelector('[data-testid="programmatic"]')!)).not.toThrow();
-    // No provider, so no dialog was ever rendered, and nothing navigated.
-    expect(document.querySelector('keep-unsaved-changes-dialog')).toBeNull();
-    expect(router!.location().pathname).toBe('/schema/db.nsf/Demo');
+    clickThrough(document.querySelector('a[data-testid="unbased"]')!);
+    await act(async () => {
+      dialog().dispatchEvent(new CustomEvent('dialog-discard'));
+    });
+
+    expect(router!.location().pathname).toBe('/scope');
   });
 });
 
-describe('NavigationGuardProvider — the real wa-breadcrumb-item case', () => {
+describe('NavigationGuard — with no guard mounted', () => {
+  afterEach(cleanup);
+
+  /**
+   * Replaces "degrades to no-ops rather than throwing".
+   *
+   * That test pinned the context's default value — three no-ops, so a component rendered
+   * outside `NavigationGuardProvider` lost its guard silently, which is the same failure mode
+   * as #884 itself. There is no provider to be outside of now, so what is pinned instead is
+   * the half that still matters: with no `<NavigationGuard/>` on the page there is no dialog
+   * and nothing navigates, and calling the hook still does not throw.
+   */
+  it('does not throw, show a dialog, or navigate', () => {
+    const { router } = renderGuarded(
+      <Harness dirty save={async () => {}} />,
+      '/schema/db.nsf/Demo',
+    );
+
+    expect(() =>
+      fireEvent.click(document.querySelector('[data-testid="programmatic"]')!),
+    ).not.toThrow();
+    expect(document.querySelector('keep-unsaved-changes-dialog')).toBeNull();
+    expect(router!.location().pathname).toBe('/schema/db.nsf/Demo');
+  });
+
+  /**
+   * The half the conversion *fixes*, asserted so it cannot quietly regress: the hook reaches
+   * the store, not an ancestor, so a consumer's position in the tree no longer decides
+   * whether it has a guard at all.
+   */
+  it('still records the dirty flag, from a component with no guard above it', () => {
+    const { guard } = renderGuarded(<Harness dirty save={async () => {}} />, '/schema/db.nsf/Demo');
+
+    expect(guard.getState().navigationGuard.isDirty).toBe(true);
+  });
+});
+
+describe('NavigationGuard — the real wa-breadcrumb-item case', () => {
   afterEach(cleanup);
 
   /**
@@ -306,7 +378,7 @@ describe('NavigationGuardProvider — the real wa-breadcrumb-item case', () => {
   });
 });
 
-describe('NavigationGuardProvider — guardedNavigate', () => {
+describe('NavigationGuard — guardedNavigate', () => {
   afterEach(cleanup);
 
   it('defers a dirty programmatic navigation to the dialog', () => {
@@ -328,7 +400,7 @@ describe('NavigationGuardProvider — guardedNavigate', () => {
   });
 });
 
-describe('NavigationGuardProvider — hard navigation and history', () => {
+describe('NavigationGuard — hard navigation and history', () => {
   afterEach(cleanup);
 
   const beforeUnload = () => {
@@ -343,6 +415,8 @@ describe('NavigationGuardProvider — hard navigation and history', () => {
   });
 
   it('leaves beforeunload alone when clean', () => {
+    // No listener at all now, where the provider registered one for the session and had it
+    // return early. Same observable answer, one fewer handler in front of every unload.
     mount({ dirty: false });
     expect(beforeUnload().defaultPrevented).toBe(false);
   });
@@ -350,7 +424,8 @@ describe('NavigationGuardProvider — hard navigation and history', () => {
   it('pushes the URL back and offers the dialog on back/forward', () => {
     const pushState = vi.spyOn(window.history, 'pushState');
     mount();
-    // The effect pushes once on mount, so that the first Back has something to land on.
+    // The effect pushes once when the page turns dirty, so the first Back has something to
+    // land on.
     pushState.mockClear();
 
     act(() => {
@@ -365,7 +440,7 @@ describe('NavigationGuardProvider — hard navigation and history', () => {
   it('actually goes back when the Back dialog is discarded', async () => {
     // The other popstate test proves the URL is pushed back and the dialog opens; this proves
     // the deferred navigation is a *history* move (`navigate(-1)`) rather than a path push —
-    // the '__BACK__' sentinel's whole purpose, and the half a user would notice.
+    // the sentinel's whole purpose, and the half a user would notice.
     const { router } = mount();
     await act(async () => router!.navigate('/scope'));
     expect(router!.location().pathname).toBe('/scope');
@@ -396,7 +471,7 @@ describe('NavigationGuardProvider — hard navigation and history', () => {
   });
 });
 
-describe('NavigationGuardProvider — resolving the dialog', () => {
+describe('NavigationGuard — resolving the dialog', () => {
   beforeEach(() => vi.clearAllMocks());
   afterEach(cleanup);
 
@@ -450,8 +525,7 @@ describe('NavigationGuardProvider — resolving the dialog', () => {
 
   it('ignores a save event when nothing is pending', async () => {
     // The dialog is always mounted — only its `open` prop changes — so its events can arrive
-    // with no navigation queued. `performPendingNavigation` guards on that, and this is what
-    // the guard is for: a stray event must not navigate the user anywhere.
+    // with no navigation queued. A stray event must not navigate the user anywhere.
     const save = vi.fn().mockResolvedValue(undefined);
     const { router } = mount({ save });
     expect(dialogOpen()).toBe(false);
@@ -471,5 +545,34 @@ describe('NavigationGuardProvider — resolving the dialog', () => {
     });
 
     expect(router!.location().pathname).toBe('/scope');
+  });
+});
+
+describe('NavigationGuard — the state it keeps', () => {
+  afterEach(cleanup);
+
+  /**
+   * The point of #806 decision 1, asserted rather than assumed: the guard's state is in the
+   * store, where a Lit element can read it through `StoreController`, and not in a React
+   * subtree only its own consumers can see.
+   */
+  it('holds the dirty flag and the pending navigation in the slice', () => {
+    const { guard, getByTestId } = mount();
+    expect(guard.getState().navigationGuard).toEqual({ isDirty: true, pendingPath: null });
+
+    fireEvent.click(getByTestId('programmatic'));
+
+    expect(guard.getState().navigationGuard).toEqual({ isDirty: true, pendingPath: '/scope' });
+  });
+
+  it('clears both when the user leaves', async () => {
+    const { guard, getByTestId } = mount();
+    fireEvent.click(getByTestId('programmatic'));
+
+    await act(async () => {
+      dialog().dispatchEvent(new CustomEvent('dialog-discard'));
+    });
+
+    expect(guard.getState().navigationGuard).toEqual({ isDirty: false, pendingPath: null });
   });
 });
