@@ -194,6 +194,12 @@ export default defineConfig({
         // Pure, well-covered helpers (log, theme, icon library, WA token readers).
         // Nothing here should ever ship untested.
         'src/services/**': { lines: 93, statements: 93, functions: 90, branches: 91 },
+        // The unsaved-changes guard (#884), which had *no* tests until it was measured at
+        // 100/100/100/100. Gated close to the measurement for the same reason the two
+        // controllers above are: it is one small file, its failure mode is silent — the dialog
+        // simply stops appearing — and what it protects is the user's unsaved work in the
+        // access-mode editor. #806 adds consumers to it rather than removing them.
+        'src/components/navigation/**': { lines: 97, statements: 97, functions: 97, branches: 95 },
       },
     },
   },
