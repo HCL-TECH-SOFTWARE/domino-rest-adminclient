@@ -217,24 +217,134 @@ describe('FormController against the five real forms', () => {
     expect(calls).toBe(1);
   });
 
-  // ---- gaps, recorded rather than worked around -------------------------------------------
+  // ---- blur-time validation, added for #717's first conversion -----------------------------
 
-  it('GAP: has no per-field touched, so errors can only appear after a submit', async () => {
+  it('reports a field on its own blur, and only that field', async () => {
+    // Was the gap this file recorded: errors could not appear before the first submit press.
+    // A blur now validates, so tabbing out of an empty required field reports it -- and
+    // *nothing else*, which is the difference from Formik. Formik computed the whole map
+    // eagerly and needed `touched` to hide the rest; here the rest is never computed.
     const el = await mountLit<FormHost>('test-form-host');
     const form = new FormController<SchemaForm>(el, {
       initialValues: INITIAL,
       onSubmit: () => {},
       schema: schemaFor([], () => ''),
     });
-    // Formik's `!!errors.x && touched.x` guard exists because errors are computed eagerly and
-    // must be hidden until the user has been near the field. Here they are computed *at
-    // submit*, so the guard collapses to `errors.x` — but it also means a converted form shows
-    // nothing until the first submit attempt, where Formik showed it on blur.
     expect(form.errors).toEqual({});
-    expect('touched' in form).toBe(false);
-    await form.submit();
-    expect(Object.keys(form.errors).length).toBeGreaterThan(0);
+    expect(form.touched).toEqual({});
+
+    await form.handleBlur('schemaName');
+
+    expect(form.touched.schemaName).toBe(true);
+    // toBeDefined, not an exact message: an empty string fails both `required` and `min(3)`,
+    // and yup does not promise which lands in `inner` first.
+    expect(form.errors.schemaName).toBeDefined();
+    // description is equally invalid and equally unvalidated -- untouched, unreported.
+    expect(form.touched.description).toBeUndefined();
+    expect(form.errors.description).toBeUndefined();
   });
+
+  it('clears a blurred field error on the next blur, once fixed', async () => {
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: () => {},
+      schema: schemaFor([], () => ''),
+    });
+    await form.handleBlur('schemaName');
+    expect(form.errors.schemaName).toBeDefined();
+    form.setValue('schemaName', 'abc');
+    await form.handleBlur('schemaName');
+    expect(form.errors.schemaName).toBeUndefined();
+    // still touched -- which is why `touched.x && errors.x` needs both halves.
+    expect(form.touched.schemaName).toBe(true);
+  });
+
+  it('validateField keeps every other field message intact', async () => {
+    // The whole schema runs on each call, so the danger is that one field's pass wipes the
+    // map. Only `path`'s entry may move.
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: { ...INITIAL, description: 'fine' },
+      onSubmit: () => {},
+      schema: schemaFor([], () => ''),
+    });
+    await form.submit();
+    expect(form.errors.schemaName).toBeDefined();
+
+    form.setValues({ description: '' });
+    await form.validateField('description');
+
+    expect(form.errors.description).toBe('Please provide a short description!');
+    expect(form.errors.schemaName).toBeDefined();
+  });
+
+  it('validateField does not mark the field touched', async () => {
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: () => {},
+      schema: schemaFor([], () => ''),
+    });
+    await form.validateField('schemaName');
+    expect(form.errors.schemaName).toBeDefined();
+    expect(form.touched.schemaName).toBeUndefined();
+  });
+
+  it('a submit attempt marks every field touched, including nested error paths', async () => {
+    // Formik's SUBMIT_ATTEMPT reducer did this, and forms depend on it: a required field the
+    // user never focused has to report itself on the first press.
+    const el = await mountLit<FormHost>('test-form-host');
+    const nested = Yup.object().shape({
+      dqlFormula: Yup.object().shape({
+        formula: Yup.string().min(20, 'Formula is too short'),
+      }),
+    }) as Yup.AnyObjectSchema;
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: () => {},
+      schema: nested,
+    });
+    await form.submit();
+    for (const key of Object.keys(INITIAL)) expect(form.touched[key]).toBe(true);
+    expect(form.errors['dqlFormula.formula']).toBe('Formula is too short');
+    expect(form.touched['dqlFormula.formula']).toBe(true);
+  });
+
+  it('reset clears touched alongside values and errors', async () => {
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: () => {},
+      schema: schemaFor([], () => ''),
+    });
+    await form.handleBlur('schemaName');
+    expect(form.touched.schemaName).toBe(true);
+    form.reset();
+    expect(form.touched).toEqual({});
+  });
+
+  it('validateField leaves the error alone when the schema crashes', async () => {
+    // #890's rule, one door along: a validator that threw has told us nothing about this
+    // field, so clearing its message would be a lie. Rejects rather than reporting valid.
+    const el = await mountLit<FormHost>('test-form-host');
+    const boom = Yup.object().shape({
+      schemaName: Yup.string().test('boom', 'unused', () => {
+        throw new TypeError('cannot read properties of undefined');
+      }),
+    }) as Yup.AnyObjectSchema;
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: () => {},
+      schema: boom,
+    });
+    await expect(form.handleBlur('schemaName')).rejects.toThrow('cannot read properties');
+    expect(form.errors.schemaName).toBeUndefined();
+    // touched still flipped: the user did leave the field, whatever the validator did.
+    expect(form.touched.schemaName).toBe(true);
+  });
+
+  // ---- gaps, recorded rather than worked around -------------------------------------------
 
   it('GAP: no handleChange, so each field needs its own listener', async () => {
     // Formik hands one `handleChange` to every input and reads `name`. Converted forms wire

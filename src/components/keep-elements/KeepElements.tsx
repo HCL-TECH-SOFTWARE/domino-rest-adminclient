@@ -56,3 +56,4 @@ export { KeepNetworkErrorDialog } from './react/KeepNetworkErrorDialog';
 export { KeepDeleteDialog } from './react/KeepDeleteDialog';
 export { KeepScopesMultiView } from './react/KeepScopesMultiView';
 export { KeepSchemasMultiView } from './react/KeepSchemasMultiView';
+export { KeepQuickConfigDrawer } from './react/KeepQuickConfigDrawer';
