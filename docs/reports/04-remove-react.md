@@ -4,30 +4,48 @@
 `@hcl-software/domino-rest-adminclient`, leaving a Lit + WebAwesome + framework-agnostic
 Redux SPA on Vite.
 
-> **Refreshed 2026-07-28** against branch `new_code` @ `fcab645`. Previous refreshes:
-> `e17010c` and `7594672` (both 2026-07-27). Originally written 2026-07-24.
+> **Refreshed 2026-07-30** against branch `new_code` @ `0d5458c`. Previous refreshes:
+> `fcab645` (2026-07-28), `e17010c` and `7594672` (both 2026-07-27). Originally written
+> 2026-07-24.
 >
-> **No React *view* has been removed yet** — still on plan; this report is the last phase.
-> But the ground under it shifted more this round than in any previous one:
-> - ✅ **Three React-coupled runtime dependencies are gone from `package.json`** —
->   `@monaco-editor/react` + `@monaco-editor/loader` (#675), `@mui/x-date-pickers` (#703)
->   and `@mui/x-tree-view` (#704). §5 is closed. `dependencies` is down from 32 to **26**.
-> - ✅ **The bundle claim in §7 is now proven at scale, not just in principle.** #693/#729
->   put Monaco behind a dynamic `import()`; the entry chunk fell **6,322.51 kB →
->   2,111.11 kB / 594.20 kB gzip** (−66.6 %). The technique §7 recommends works here.
-> - ✅ **The shell is no longer React-structured.** #707 rebased it on `<wa-page>`, so
->   §7's "swap the entry point" step now inherits a shell whose *layout* is already a web
->   component — only the React subtrees inside its slots remain.
-> - ✅ **Nothing in the view layer reads a theme value.** #708 retired the `theme` prop
->   plumbing entirely, which removes a whole category of prop-threading that a
->   `StoreController` migration would otherwise have had to reproduce.
-> - ✅ **The test story keeps improving**: 70 test files / 747 tests, **7** of which use
->   `@testing-library/react` (up from 4 — the LoginPage suites). **29** element suites use
->   the framework-agnostic `mountLit` helper.
-> - ✅ **G0 is green.** `npm run lint && npm run build && npm run test` all exit 0
->   (747 tests, 34.72 % line coverage).
-> - 🔴 **One blocker remains where there were three**: MUI X DataGrid (5 files, **#702**).
->   WebAwesome ships no data grid in any tier, so "buy Pro" was never available.
+> **This is the refresh where the plan became execution.** Every previous revision opened
+> with "no React view has been removed yet". That is no longer true — **39 `.tsx` views have
+> been converted to Lit elements** since `fcab645`, and the phases this report defines are
+> now being worked, not staged.
+> - ✅ **P0 is complete.** Both primitives exist and have production users:
+>   `StoreController` (#798, **11** users) and `FormController` (#807, **2**). §3 and §4 are
+>   no longer proposals.
+> - ✅ **P1 is complete.** `react-router-dom` is **gone** — #716 replaced it with a 2-file
+>   in-repo router at `src/router/`, covered at **97.8 %**, and #813 added route-level code
+>   splitting on top. §10 is closed.
+> - 🟡 **P2 is in flight and is the whole critical path.** The per-file leaf pass (**#806**)
+>   has taken `.tsx` from 125 to **86**, and **79 files / 16,682 LOC** remain. Nothing feeds
+>   it; #709, #719 and #786 all wait on it.
+> - ✅ **Every blocker is cleared.** MUI X DataGrid — the one blocker the last refresh
+>   carried — is **gone** (#770 deleted the People/Groups screens with it), and the icon
+>   systems are gone too (#718/#913). `dependencies` is down from 32 → 26 → **19**.
+> - ✅ **The store is no longer a liability.** #710 finished `createSlice`, #711 split the
+>   2,885-line God action file into 13 modules, #694 typed the dispatch and removed all 94
+>   `dispatch(… as any)` casts. Report 00's P1-1/2/3 all closed.
+> - ⚠️ **The test suite is no longer "mostly React-free".** **25 of 133** files use
+>   `@testing-library/react`, up from 7 of 70 — because #806's characterization suites test
+>   React components *before* converting them. §8 grew from a 7-file job to a 25-file one,
+>   deliberately, and those files are deleted with their subjects.
+> - ✅ **G0 is green.** `lint`, `typecheck`, `build`, `bundle:budget` and `test` all exit 0
+>   (**133 files / 1709 tests, 70.18 %**), and `npm audit` reports 0 vulnerabilities.
+
+### The counting rule this report now uses
+
+**A `.ts`/`.tsx` file whose entire content is a React binding for a `keep-*` element is not
+counted as remaining work.** It holds no logic — one `@lit/react` `createComponent` call, or
+a re-export of one — and its correct end state is *deletion alongside its last consumer*.
+
+The excluded set is **34 files**: the 32 wrappers under `components/keep-elements/react/`,
+the `KeepElements.tsx` barrel, and `commons/ZeroResultsWrapper.tsx`. **32 of the tree's 101
+React importers are these shims**, so roughly a third of §11's exit gate
+(`grep -rn "from 'react'" src` empty) is satisfied by deletion rather than conversion.
+`test/keep-element-wrappers.test.ts` fails if a wrapper outlives its last consumer, which is
+why the orphan count is 0 rather than the 16 that had quietly accumulated.
 
 **This report orchestrates the others.** It sequences and gates the whole migration and
 covers the React-specific plumbing (entry point, routing, `react-redux`, Formik, Monaco
@@ -38,7 +56,8 @@ catalogue, defer to:
   is a direct prerequisite for §3.
 - **Report 01** — test tooling; the coverage that makes this rewrite survivable.
 - **Report 02** — MUI → Lit/WebAwesome component migration (the 125 `.tsx` views). The
-  date-picker and tree-view replacements are ✅ done; DataGrid (**#702**) is the one left.
+  date-picker, tree-view and DataGrid replacements are all ✅ done; what remains is
+  `@mui/material` in **43** files (**#709**), executed per-file inside **#806**.
 - **Report 03** — the `wa-page` shell, design tokens, and icon migration
   (`@mui/icons-material` + `react-icons` + `app-icons.ts` → `<wa-icon>`).
 
@@ -47,82 +66,85 @@ defines the gates that make that ordering explicit.
 
 ---
 
-## 1. Current-state snapshot (verified 2026-07-28)
+## 1. Current-state snapshot (verified 2026-07-30)
 
-| Fact | 2026-07-24 | `7594672` | `e17010c` | **`fcab645`** | Source |
+| Fact | 2026-07-24 | `e17010c` | `fcab645` | **`0d5458c`** | Source |
 |---|---|---|---|---|---|
-| `.tsx` files | 135 | 130 | 130 | **125** | `find src -name '*.tsx'` |
-| `.tsx`/`.ts` importing React | 109 | 107 | 107 | **97** | `grep -rln "from 'react'"` |
-| Files using `react-redux` | 85 | 77 | 77 | **70** | grep |
-| `useSelector` call sites | 224 | 207 | 207 | **178** | grep |
-| `useDispatch` call sites | 120 | 116 | 116 | **112** | grep |
-| `connect()` HOC call sites | **0** | 0 | 0 | **0** | grep — **all Redux consumption is via hooks** |
-| `createSelector` (memoized selectors) | — | 0 | 0 | **0** | grep — see §3 |
-| `React.lazy` / `Suspense` | — | — | 0 | **0** | grep — no React-side code-splitting at all |
-| `dispatch(… as any)` casts | — | 95 | 95 | **94** | grep — report 00 P1-1 (**#694**) still open |
-| `as any` (whole `src`) | — | — | 154 | **153** | grep |
-| Files using `formik` | 19 | 19 | 19 | **19** (`useFormik` 8, `FormikProps` 11) | grep |
-| Files using `yup` | 7 | 7 | 7 | **7** | grep |
-| `@mui/material` imports | 70 files | 69 | 69 / 175 refs | **60 `.tsx` / 149 refs** | grep |
-| `@mui/icons-material` imports | 47 files | 45 | 45 / 99 refs | **41 / 87 refs** | grep |
-| `react-icons` imports | 18 files | 18 | 18 | **18** | grep |
-| `@mui/x-data-grid` | 5 files | 5 | 5 | **5** 🔴 the last MUI X package | grep |
-| `@mui/x-date-pickers` | 2 files | 2 | 2 | ➖ **gone** ✅ (#703) | `package.json` |
-| `@mui/x-tree-view` | 2 files | 2 | 2 | ➖ **gone** ✅ (#704) | `package.json` |
-| `@mui/lab` | present in deps | removed ✅ | ➖ gone | ➖ gone | `package.json` |
-| `@monaco-editor/*` | 1 file | 1 file | 0 imports | ➖ **gone from deps** ✅ (#675) | `package.json` |
-| `dayjs` | dep | dep | dep | 🟡 **dep with 0 real consumers** — only a comment matches | grep |
+| `.tsx` files | 135 | 130 | 125 | **86** (84 excl. wc shims) | `find src -name '*.tsx'` |
+| `.tsx`/`.ts` importing React | 109 | 107 | 97 | **101 raw / 69 excl. shims** | `grep -rln "from 'react'"` |
+| **Files left in the #806 pass** | — | — | — | **79 / 16,682 LOC** | per-tier, §9 |
+| Files using `react-redux` | 85 | 77 | 70 | **51** | grep |
+| `useSelector` call sites | 224 | 207 | 178 | **137** | grep |
+| `useDispatch` call sites | 120 | 116 | 112 | **9** + `useAppDispatch` **82** | grep — #694 typed it |
+| `connect()` HOC call sites | **0** | 0 | 0 | **0** | grep — all Redux consumption is via hooks |
+| `StoreController` production users | — | — | 0 | **11** ✅ | grep — §3 shipped |
+| `FormController` production users | — | — | — | **2** ✅ | grep — §4 shipped |
+| `createSelector` (memoized selectors) | — | 0 | 0 | **2** | grep — see §3 |
+| `React.lazy` / `Suspense` | — | 0 | 0 | **in use** ✅ (#813) | one memoised `lazy()` per `load` route |
+| `dispatch(… as any)` casts | — | 95 | 94 | **0** ✅ (#694) | grep |
+| `as any` (whole `src`) | — | 154 | 153 | **44** | grep |
+| Files using `formik` | 19 | 19 | 19 | **12** | `grep -rl "from 'formik'"` |
+| Files using `yup` | 7 | 7 | 7 | **4** | grep |
+| `@mui/material` imports | 70 files | 69 / 175 refs | 60 / 149 refs | **43 files / 84 refs** | grep |
+| `@mui/icons-material` imports | 47 files | 45 / 99 refs | 41 / 87 refs | ➖ **gone** ✅ (#718/#913) | `package.json` |
+| `react-icons` imports | 18 files | 18 | 18 | ➖ **gone** ✅ (#718/#913) | `package.json` |
+| `@mui/x-data-grid` | 5 files | 5 | 5 🔴 | ➖ **gone** ✅ (#770) | `package.json` |
+| `@mui/x-date-pickers` / `-tree-view` / `@mui/lab` | present | gone | gone | ➖ gone | `package.json` |
+| `@monaco-editor/*` | 1 file | 0 imports | gone from deps | ➖ gone | `package.json` |
+| `dayjs` | dep | dep | 🟡 dep, 0 consumers | ➖ **gone** | `package.json` |
+| `immer` / `redux` direct importers | — | — | — | `immer` ✅ **dropped** (`e27102f`); `redux` **0** importers, still declared 🟡 | grep |
 | `@emotion/*` direct imports in `src` | **0** | 0 | 0 | **0** (MUI peer only) | grep |
-| Hand-written Lit web components | 24 plain-JS `.js` | 26 TS | 26 TS | **25 elements** (26 `.ts` incl. the base) | `src/components/keep-elements/` |
-| `@lit/react` bridge | 1 file (`LitElements.tsx`) | 1 file | 1 file | **1 file** (`KeepElements.tsx`, 24 wrappers) | grep |
-| WA React wrappers used directly | 0 | 0 | 0 | **1** — `WaPage` in `AppShell.tsx` | grep |
-| `@testing-library/react` | 4 of 4 test files | 4 of 53 | 4 of 63 | **7 of 70** | grep |
-| Framework-agnostic element tests | 0 | 26 | 28 | **29** (via `test/test-utils/lit.ts`) | grep |
-| Router | `react-router-dom` v7 | v7.18.1, 31 files | v7.18.1, 31 files | **v7.18.1**, **29** importing files | grep |
-| `<Routes>` hosts | 3 | 2 | 2 | **2** (`App.tsx`, `Views.tsx`) | grep |
-| Live route paths | — | ~13 (claimed) | 9 (measured) | **9** — `*`, `/callback` in `App.tsx`; `/`, `/schema`, `/schema/:nsfPath/:dbName`, `/schema/…/access`, `/scope`, `/apps`, `/apps/consents` in `Views.tsx` | `App.tsx` + `Views.tsx` |
-| Dead route stubs | — | — | `settings` (8 `.tsx`) | ➖ **`settings/` deleted** ✅ (#681); `/groups`, `/people`, `/mail` remain as empty `<Route>` shells | grep |
-| Route hooks | `useNavigate` 14, `useLocation` 14, `useParams` 4 | unchanged | unchanged | **`useNavigate` 14, `useLocation` 13, `useParams` 4** | grep |
-| App shell | `HomeElement` (Linaria flex) | same | same | **`AppShell` on `<wa-page>`** ✅ (#707) | `src/AppShell.tsx` |
-| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | 2 / 3 | 2 / 3 | **1 / 1** (both in `AppShell.tsx`) | grep |
-| `getTheme()` readers | 31 | 22 | 22 | **4** ✅ (#708) | grep |
-| Entry chunk | — | 6.94 MB / 1.88 MB gzip | 6,322.51 kB / 1,703.85 kB | **2,111.11 kB / 594.20 kB gzip** ✅ | `npm run build` — see §7 |
+| Hand-written Lit web components | 24 plain-JS | 26 TS | 25 elements | **50 elements** (54 `.ts`) | `src/components/keep-elements/` |
+| `@lit/react` bridge | 1 file | 1 file | 1 file, 24 wrappers | **32 wrappers**, one per file + a 59-line barrel | `keep-elements/react/` |
+| Orphaned wrappers | — | — | — | **0** (was 16) — gated by a test | `test/keep-element-wrappers.test.ts` |
+| WA React wrappers used directly | 0 | 0 | 1 (`WaPage`) | **≥5** — `WaPage`, `WaBreadcrumb`, `WaBreadcrumbItem`, `WaIcon`, `WaInput` | grep |
+| `@testing-library/react` | 4 of 4 | 4 of 63 | 7 of 70 | **25 of 133** ⚠️ up, by design | grep |
+| Framework-agnostic element tests | 0 | 28 | 29 | **43** (via `test/test-utils/lit.ts`) | grep |
+| Router | `react-router-dom` v7 | v7.18.1, 31 files | v7.18.1, 29 files | ➖ **REMOVED** ✅ (#716) — in-repo `src/router/`, 2 files, **97.8 %** covered | `package.json` |
+| Route tables | 3 `<Routes>` | 2 | 2 | **2** — `App.tsx`, `Views.tsx`, now plain `RouteDef[]` arrays | grep |
+| Live route paths | — | 9 | 9 | **9** — `/callback`, `*` in `App.tsx`; `/`, `/schema`, `/schema/:nsfPath/:dbName`, `/schema/…/access`, `/scope`, `/apps`, `/apps/consents` in `Views.tsx` | `App.tsx` + `Views.tsx` |
+| Route hooks | `useNavigate` 14, `useLocation` 14, `useParams` 4 | unchanged | 14 / 13 / 4 | **25 / 29 / 11** — now the in-repo router's own hooks | grep |
+| App shell | `HomeElement` (Linaria flex) | same | `AppShell` on `<wa-page>` ✅ | same | `src/AppShell.tsx` |
+| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | 2 / 3 | 1 / 1 | **1 / 1** (both `AppShell.tsx`) 🔴 **#709** | grep |
+| `getTheme()` readers | 31 | 22 | 4 | **6** | grep |
+| Eager bundle closure | — | not measured | not measured | **887.5 kB raw / 243.7 kB gzip** | `npm run bundle:budget` — §7 |
+| Entry chunk (misleading alone) | — | 6,322.51 kB | 2,111.11 kB | **323.5 kB** | see §7 |
 
-Key versions at `fcab645`: react **19.2.8** · react-dom 19.2.8 · react-redux 9.3.0 ·
-react-router-dom **7.18.1** · @reduxjs/toolkit **2.12.0** · @mui/material 9.2.0 ·
-@awesome.me/webawesome 3.10.0 · lit 3.3.3 · monaco-editor 0.55.1 · prettier 3.9.6 ·
-typescript 7.0.2 · vite 8.1.5 · vitest 4.1.10.
-**26** `dependencies` (was 32), 17 `devDependencies`.
+Key versions at `0d5458c`: react **19.2.8** · react-dom 19.2.8 · react-redux 9.3.0 ·
+@reduxjs/toolkit **2.12.0** · @mui/material 9.2.0 · @awesome.me/webawesome 3.10.0 ·
+lit 3.3.3 · monaco-editor 0.55.1 · prettier 3.9.6 · typescript 7.0.2 · vite 8.1.5 ·
+vitest 4.1.10. **18** `dependencies` (was 26, and 32 originally), 17 `devDependencies`.
 
-**Four findings that de-risk the whole effort:**
+**What de-risks the remaining effort:**
 
-1. **Zero `connect()` HOCs** — every store read/write goes through
-   `useSelector`/`useDispatch`. Replacing `react-redux` is a mechanical hook→controller
-   swap, not an architecture change.
-2. **The Redux store is already framework-agnostic** — `src/store/index.ts` is plain
-   `combineReducers` over **17 classic switch reducers**; `configureStore` lives in the
-   entry point (`src/index.tsx`). It survives untouched. **And it is now well tested** —
-   every `store/*/reducer.ts` is at **100 %** line coverage against a 95 % gate (report 01),
-   and #673 added the first *action*/thunk test (`test/store/account/action.test.ts`, covering
-   `renewToken`'s error paths). Reducer parity plus the first thunk contract makes the
-   eventual RTK/`createSlice` modernization (report 00 P1-2) materially safer than it was.
-3. **26 typed Lit elements already exist** and are only *adapted* into React via
-   `@lit/react`. Removing React means deleting the adapter (`KeepElements.tsx`) and using
-   the custom elements directly — these components get *simpler*, not rewritten. This is
-   now more than a claim: the elements are TypeScript, decorated, individually unit-tested
-   without React, and augment `HTMLElementTagNameMap` for direct-DOM typing.
-4. **The test suite is mostly already React-free.** **63 of 70** files never touch
-   `@testing-library/react`. §8 is a 7-file job, not a whole-suite migration — and it grew
-   for a good reason: #745/#748 added two LoginPage suites while dropping MUI from that
-   screen.
+1. **Zero `connect()` HOCs, and both primitives now exist.** Every store read/write goes
+   through hooks, and `StoreController` (11 users) has proven the hook→controller swap is
+   mechanical. This is no longer a prediction.
+2. **The Redux store is framework-agnostic *and* modern.** #710 migrated all 10 slices to
+   `createSlice`, #711 split the God action file into 13 modules, and #694 typed the
+   dispatch. Reducers are at **100 %** line coverage, `store/databases` at **84.4 %**. The
+   store survives React's removal untouched.
+3. **50 typed Lit elements already exist**, individually unit-tested without React, and
+   augment `HTMLElementTagNameMap` for direct-DOM typing. Removing React means deleting the
+   32 adapters and using the elements directly — these components get *simpler*, not
+   rewritten.
+4. **The remaining work is enumerated per file, not estimated.** §9 and #806 carry a
+   four-tier breakdown of all 79 files by axis (MUI, store, Formik), derived mechanically
+   from the tree rather than carried forward.
 
-✅ **The orphaned-route finding is resolved.** The previous refresh found `SettingsPage.tsx`
-rendering four `<Route>` elements with **no `<Routes>` parent**, reachable from nothing.
-**#681 deleted the whole `components/settings` subtree** (8 `.tsx`) along with the dangling
-`/settings/account` navigation. The live inventory is now genuinely 9 paths across 2
-`<Routes>` hosts — see **§10**. Three empty `<Route>` shells (`/groups`, `/people`,
-`/mail`) remain in `Views.tsx`, annotated as pending LABS-1214 rather than left as silent
-TODOs (report 00 P2-7).
+⚠️ **Two claims from previous revisions are now false and should not be repeated:**
+
+- **"The test suite is mostly already React-free."** It is less React-free than it was:
+  **25 of 133** files use `@testing-library/react`, up from 7 of 70. That is deliberate —
+  #806 writes characterization suites against a React component *before* converting it
+  (#880 for `BreadcrumbRouter`, #885 for the five Formik shapes), and those suites are
+  deleted with their subjects. But §8 is a 25-file job now, not a 7-file one.
+- **"No React view has been removed yet."** 39 have.
+
+✅ **The route inventory is stable at 9 paths across 2 tables**, and both tables are now
+plain `RouteDef[]` arrays consumed by the in-repo router rather than JSX `<Routes>` trees —
+so §10's replacement work is done. The `/groups`, `/people` and `/mail` shells are gone with
+the People/Groups deletion (#770).
 
 ---
 
@@ -144,15 +166,15 @@ risky surface (owned by reports 02/03, listed here for completeness).
 | ~~`@monaco-editor/react`~~, ~~`@monaco-editor/loader`~~ | `keep-monaco-editor` | ✅ **DONE** (#675) | Both deleted from `dependencies`, together with the `disabledpostinstall` script that fed the AMD loader. |
 | `monaco-editor` | **Keep** — direct dependency, imported by `keep-monaco-editor` | — | ✅ Now a **dynamic** `import()` (#693/#729), along with its three workers and the editor CSS. `editor.api2` is a 3,626.93 kB chunk fetched on first use. |
 | `prettier` 3.9.6 | **Keep** | ✅ **done** | #673 moved it to `dependencies` *and* behind a memoised dynamic `import()` — it now code-splits out of the entry chunk (report 00 P0-10 closed). |
-| `react-icons` | WebAwesome `<wa-icon>` (report 03 §6.4) | Hard→03 | 18 files. |
+| ~~`react-icons`~~ | WebAwesome `<wa-icon>` | ➖ | ✅ **gone** — uninstalled in #718/#913 |
 | `@mui/icons-material` | WebAwesome `<wa-icon>` (report 03 §6.4) | Hard→03 | **41** files. **#718** |
 | `@mui/material` | Lit + WebAwesome components (report 02) | Hard→02 | **60 `.tsx`** — largest surface. **#709** |
 | ~~`@mui/lab`~~ | — | ✅ **already removed** | `0349a71`. |
-| `@mui/x-data-grid` | Third-party WC grid or custom Lit table (report 02 §5.1) | **Hard**→02 | 5 files; **the riskiest single widget, and now the only MUI X package left**. No WebAwesome grid exists in any tier. **#702** |
+| ~~`@mui/x-data-grid`~~ | custom Lit table | ➖ | ✅ **gone** — #771 built `keep-data-table` and migrated all six MUI `<Table>` screens; #770 then deleted the People/Groups screens and the package. Was the riskiest single widget for four revisions |
 | ~~`@mui/x-date-pickers`~~ | `keep-input-date` on `wa-input[type=date]` | ✅ **DONE** (#703) | Removed from `package.json`. Authored, not bought. |
 | ~~`@mui/x-tree-view`~~ | `keep-tree` on `wa-tree`/`wa-tree-item` | ✅ **DONE** (#704) | Removed from `package.json`. It was flagged as the cheapest MUI X removal and it was. |
 | `@emotion/react`, `@emotion/styled` | — (removed) | Drop | MUI peers only; **0** direct imports. |
-| `formik` | Native form + Yup (§4) | **Work** | 19 files. **#717** |
+| `formik` | `FormController` + Yup (§4) | **Work** | **12** files (was 19). `FormController` shipped in #807 and has 2 production users. **#717** |
 | `@fortawesome/fontawesome-free` 7.3.1 | — | **Keep** ✅ | Load-bearing: `src/services/icon-library.ts` imports its glyphs as `?url` SVGs to self-host WA icons. |
 | ~~`@fontsource-variable/crimson-pro`, `@fontsource-variable/quicksand`~~ | — | ✅ **DONE** (#679) | Deleted; they had 0 imports anywhere. |
 | `redux`, `@reduxjs/toolkit`, `redux-thunk` | **Keep** | — | Framework-agnostic; no change. |
@@ -199,7 +221,8 @@ can be deleted immediately, ahead of every phase in §9.
 
 ## 3. State ↔ view binding without `react-redux`
 
-**Keep** the Redux store exactly as-is (`configureStore` + `rootReducer` over 17 classic
+**Keep** the Redux store exactly as-is (`configureStore` + `rootReducer` — now 10 slices on
+RTK `createSlice` since #710, not the 17 classic
 switch reducers). Replace only the *binding layer* (`Provider` / `useSelector` /
 `useDispatch`). Because there are **zero `connect()` HOCs**, a single Lit **reactive
 controller** covers every one of the 323 hook sites (207 `useSelector` + 116
@@ -363,7 +386,7 @@ constraint validation, so for simple forms the controller can be skipped in favo
 > which WA form-associated elements call during Lit's update cycle. Any form conversion
 > inherits that stub for free; do not "fix" it back to a conditional guard.
 
-Effort: **M** (19 files, but the schemas already exist and the pattern is uniform). Fold
+Effort: **M** (**12** files, and the schemas already exist and the pattern is uniform). ⚠️ `FormController` is proven but not battle-tested at scale: its 2 production users are the Quick Config pair, and `TabsAccess.tsx` at 1,002 LOC is 3× anything it has carried. Expect to find gaps in the larger shapes and **file them rather than work around them** — that is what #885/#888 did, and it surfaced #887 and #890. Fold
 each form conversion into its report-02 component pass.
 
 ---
@@ -395,8 +418,8 @@ rendered by `FormsContainer.tsx`. It went further than the original sketch:
 
 1. ✅ **Test regressions fixed.** #668 added a fake-Monaco harness
    (`test/test-utils/monaco.ts`) plus a `queryCommandSupported` polyfill, and a full suite
-   for the element. The suite is green (747 tests) and `src/components/keep-elements` is at
-   **84.5 %** line coverage against an **80 %** gate (#686).
+   for the element. The suite is green (1709 tests) and `src/components/keep-elements` is at
+   **89.7 %** line coverage against an **85 %** gate (#880 raised it from #686's 80).
 2. ✅ **`prettier` moved to `dependencies`** (#673, report 00 P0-10 closed) — and made
    dynamic, which is what actually shrank the bundle. See §7.
 3. ✅ **`FormsContainer.tsx` points at `<KeepMonacoEditor>`** (#669). The `defineTheme` /
@@ -412,7 +435,7 @@ rendered by `FormsContainer.tsx`. It went further than the original sketch:
    consumer.
 6. ✅ **Made the Monaco import dynamic** (#693/#729) — the item this section carried as
    "the largest remaining single win". It was: the entry chunk fell **6,322.51 kB →
-   2,111.11 kB / 594.20 kB gzip**, a 66.6 % cut, with `editor.api2` (3,626.93 kB) and ~90
+   2,111.11 kB / 594.20 kB gzip** at the time, a 66.6 % cut, with `editor.api2` (3,626.93 kB) and ~90
    language chunks now fetched only when a Source tab opens.
 
 **Nothing in this section is open.** The one caveat worth carrying: this is deferral, not
@@ -421,23 +444,41 @@ downloads Monaco. What changed is that everyone else does not.
 
 ---
 
-## 6. Icons — replace `@mui/icons-material` + `react-icons` (+ `app-icons.ts`)
+## 6. Icons — ✅ CLOSED
 
-Owned by **report 03 §6.4**. There are **three** legacy icon systems to remove —
-`@mui/icons-material` (**41** files, 87 refs), `react-icons` (18 files), and
-`src/styles/app-icons.ts` (216 KB of base64 SVG data URIs, **19 importers**). ✅ The dead
-`src/styles/icons.json` was deleted in #679. Tracked as **#718** and **#731**.
+**Two of the three legacy icon systems are gone.** #718/#913 converted 115 sites across 43
+files and **uninstalled both packages**: `@mui/icons-material` and `react-icons` have **0**
+references anywhere in `src` and appear nowhere in `package.json`. `wa-icon` is used across
+32 modules, fed by `src/services/icon-library.ts`, and `test/services/icon-library.test.ts`
+fails on any glyph name not registered in `ICONS`.
 
-⚠️ **#731 is worth more than it was.** With Monaco split out (§5), `app-icons.ts`'s 216 KB
-is now roughly **a tenth** of the 2,111.11 kB entry chunk rather than a thirtieth.
+`@fortawesome/fontawesome-free` is a **keeper**, not a removal candidate: the registry
+imports its glyphs as `?url` SVGs and self-hosts them.
 
-**Correction since the last refresh:** `@fortawesome/fontawesome-free` is **no longer
-unimported**. #669 built `src/services/icon-library.ts` (76 lines), which registers a
-self-hosted WA icon library from 12 Font Awesome glyphs imported as `?url` SVGs. That is
-the target pattern, and it means the FA package is now a **keeper**, not a candidate for
-removal. All three legacy systems converge on `<wa-icon>` fed by that registry; the base64
-`app-icons.ts` registry should be folded into it. Apply the codemod during each component's
-report-02 pass so a view loses its React icons at the same time it loses its React shell.
+🟡 **What is left is `src/styles/app-icons.ts` — 216 KB of base64 SVG data URIs, 20
+importers (#731).** It was deliberately out of scope for #718 because **15 of its 19 render
+sites are `<img>`, not `wa-icon`**, so its conversion is not separable from the component
+pass. Measure its weight against the **eager closure** (887.5 kB raw), not the entry-chunk
+line.
+
+### Three findings from #718 worth not relearning
+
+1. **A live CDN dependency nobody knew about.** `<wa-page>`'s navigation toggle was fetching
+   `bars.svg` from `ka-f.fontawesome.com` on every authenticated screen. The `connect-src`
+   wildcard permitted it, so it neither failed nor reported — and the module's own comment
+   claimed the opposite. **A missing `library` attribute on `wa-icon` silently falls back to
+   the Font Awesome CDN.** Removing that was worth more than the codemod.
+2. **The bundle did not shrink the way the issue predicted.** MUI's icon factory
+   (`createSvgIcon`, 84.8 kB raw) left the eager closure, but the 44 bundled glyphs inline as
+   base64 `data:` URIs — so raw ended up **+19.5 kB** and gzip **+4.9 kB** against the
+   pre-codemod baseline. Still under budget. The real saving waits for `@mui/material` (#709).
+3. **MUI had been silently overriding the app's own icon size classes** since the day they
+   were written — `.MuiSvgIcon-root` and an app class are both specificity 0,1,0, and MUI's
+   Emotion styles inject last, so MUI won every tie. **Deleting MUI therefore changes icon
+   sizes whichever way you go**; honouring the long-dead classes shrinks some icons up to
+   42 %. That is a design decision, not a codemod's call. Also: `wa-icon`'s default canvas is
+   `fixed` — a 1.25em × 1em box, wider than the 1em × 1em the old sets drew — so adopting the
+   default would have widened ~115 sites by 25 % invisibly.
 
 ---
 
@@ -446,10 +487,14 @@ report-02 pass so a view loses its React icons at the same time it loses its Rea
 ### `src/index.tsx` → `src/index.ts`
 
 > ⚠️ **Name clash — `src/index.ts` already exists.** #707 created it for the appearance
-> boot code (previously an inline `<script>` in `index.html`, which the #685 CSP tightening
-> forbids). `index.html` loads **both** module scripts today. Pick a different name for the
-> app entry (`src/main.ts`) or fold the boot code into it deliberately; do not assume the
-> filename is free.
+> boot code (previously an inline `<script>` in `index.html`). `index.html` loads **both**
+> module scripts today. Pick a different name for the app entry (`src/main.ts`) or fold the
+> boot code into it deliberately; do not assume the filename is free.
+>
+> ⚠️ **And it must stay a module.** The #685 CSP tightening has now **landed** — both SPA
+> document routes send `script-src 'self'` with no `'unsafe-inline'` — so an inline
+> `<script>` in `index.html` is not merely discouraged, it will be blocked at runtime. Boot
+> code goes in a separate module, always.
 
 Replace `ReactDOM.createRoot(...).render(<Provider><App/></Provider>)` with a
 custom-element mount. Everything else (the CSS imports, theme init) stays. There is
@@ -507,8 +552,11 @@ slots host `keep-*`/Lit subtrees instead of React ones.
 
 | Chunk | Size | Gzip | When it loads |
 |---|---|---|---|
-| `dist/admin/assets/index-*.js` (entry) | **2,111.11 kB** | **594.20 kB** | always |
-| `index-*.css` | 198 kB | — | always |
+| **eager closure** (the number that matters) | **887.5 kB** | **243.7 kB** | always |
+| `index-*.js` (entry chunk alone — misleading) | 323.5 kB | — | always |
+| `KeepElements-*.js` | 332.2 kB | — | always |
+| `keep-button-*.js` | 244.0 kB | 63.6 kB | always |
+| `index-*.css` | 144.7 kB | 23.2 kB | always |
 | `editor.api2-*.js` (Monaco core) | **3,626.93 kB** | 926.82 kB | on first Source tab |
 | `editor.main-*.js` ×2 | 308.21 + 95.57 kB | — | with Monaco |
 | `babel-*.js` (prettier) | 316.53 kB | 82.45 kB | on first format |
@@ -516,9 +564,19 @@ slots host `keep-*`/Lit subtrees instead of React ones.
 | `standalone-*.js` (prettier) | 81.05 kB | 26.74 kB | on first format |
 | ~90 Monaco language chunks | 8–16 kB each | — | per language |
 
-The entry chunk has gone **6.94 MB → 6,322.51 kB → 2,111.11 kB** across the three
-refreshes. #673 did prettier (−608.01 kB); **#693/#729 did Monaco**, which is the −66.6 %
-step. Both use the same shape:
+⚠️ **Measure the eager closure, not the entry-chunk line.** The entry chunk reads 323.5 kB,
+but shared chunks stay eager — `KeepElements`, `keep-button` and the CSS all load on every
+page. The real figure is **887.5 kB raw / 243.7 kB gzip**, read from
+`dist/.vite/manifest.json` by `npm run bundle:budget`, against a budget of 901.2 / 245.9 —
+**13.7 kB raw / 2.2 kB gzip of room**. ⚠️ **raw headroom was widened 2 % → 3 % for the duration of #806** (a tight raw budget fails on migration churn, not on regressions); gzip stays at 2 %, so
+**gzip is now the sensitive half of the gate** and the one to watch: a conversion that grows
+gzip is a real regression, one that only grows raw usually is not. Quoting
+the entry-chunk line — as every previous revision of this report did — understates the eager
+weight by roughly 2.7×.
+
+The historic trend on the entry chunk was **6.94 MB → 6,322.51 kB → 2,111.11 kB → 323.5 kB**.
+#673 did prettier (−608.01 kB); **#693/#729 did Monaco** (−66.6 %); **#813 did route
+splitting**, which is what took it under 400 kB. All three use the same shape:
 
 ```ts
 const fetchPrettier = () => Promise.all([
@@ -613,11 +671,22 @@ during report 02; the last rename removes the final React import.
   rule set at that point if oxlint offers one; otherwise the TS + correctness categories
   already carry most of the value.
 - **Coverage gates:** `vitest.config.ts` now gates `src/components/keep-elements/**` at
-  **80 %** lines (#686 raised it from 70) against a measured **84.5 %** — so the headroom is
+  **85 %** lines (#880 raised it from #686's 80) against a measured **89.7 %** — so the headroom is
   ~4 points, not 14. Every element converted from a `.tsx` view enters that directory —
   **budget a test per element**, or the gate fails as the numerator stops keeping up. This
-  is the single most likely way P2 breaks CI. Global lines are gated at **30 %** and stand
-  at **34.72 %**; `src/services/**` gained its own 90 % gate.
+  is the single most likely way P2 breaks CI. Global lines are gated at **61 %** and stand
+  at **70.18 %**; there are now **14** per-path gates, not 4.
+
+  ⚠️ **Two ratchet hazards specific to P2**, both learned the hard way (report 01 §B3):
+
+  1. **When a conversion creates a new well-covered directory, add its gate in the same
+     PR.** #880 found three areas — `store/databases/**`, `src/router/**`,
+     `FormController` — that were well covered and **had no gate at all**. A directory
+     nobody lists is not a low floor, it is *no* floor, and a drift report cannot show you
+     a gap.
+  2. **`FormController.react.ts` is gated at 100/100/100/100 and is meant to be deleted**
+     during P4. Delete the threshold entry *with the file*; a floor on a path that no
+     longer exists protects nothing while looking like it does.
 
 ---
 
@@ -633,30 +702,45 @@ very end).
 |---|---|---|---|:---:|
 | **P−1 — Unblock** | Fix report 01 §0 (jsdom polyfill + Monaco test), move `prettier` to `dependencies`, make the Monaco import dynamic. | `npm run lint && npm run build && npm run test` all green. | **S** | ✅ **done** — #668/#673, and the dynamic Monaco import landed in #693/#729 |
 | **P−0.5 — Free deletion** | Drop `@monaco-editor/react`, `@monaco-editor/loader` and the `disabledpostinstall` script. | `npm ci && npm run build` still green. | **XS** | ✅ **done** — #675 |
-| **P0 — Foundations** | Add `store/store.ts` singleton + `StoreController`, `FormController`, custom router (§10). Typed `AppDispatch` first (report 00 P1-1 — still **94** `as any` dispatch casts, 0 `AppDispatch` in `src`; **#694**). | New primitives unit-tested; app still boots on React. | **M** | 🟡 partly done |
-| **P1 — Routing** | Replace `react-router-dom` with the chosen router (§10). Convert the `App.tsx`/`Views.tsx` route hosts (**9 live paths**), port the 14 `useNavigate`/13 `useLocation`/4 `useParams` sites and `SideNav.tsx`'s `NavLink`s, and decide the fate of the three empty `/groups`, `/people`, `/mail` shells. | `grep react-router-dom src` → empty; navigation + deep links work end-to-end. | **M** | 🔴 (**#716**) |
-| **P2 — Leaf components** | Per report 02, convert leaf views bottom-up: MUI→Lit/WebAwesome (02) **+** icons (03) **+** react-redux→StoreController (§3) **+** Formik→FormController (§4) in one pass per file. Rename `.tsx`→`.ts`. Add a test per new element. | Each converted subtree renders with no React import; `keep-elements` coverage gate stays green. | **L** (bulk) | 🔴 |
-| **P3 — Hard widgets** | ✅ date-pickers (#703) and tree-view (#704) done. 🔴 **DataGrid (5 files) remains** (report 02 §5.1, **#702**). Convert `FormsContainer.tsx` itself to a Lit element — the Monaco wiring inside it is ✅ done and now lazy. | Data-heavy views (schema/apps/people) work on Lit. | **Hard** | 🟡 2 of 3 done |
-| **P4 — Shell & entry** | ✅ `wa-page` shell landed (#707). 🔴 Remaining: `App.tsx`→`<app-root>`, `index.tsx`→`main.ts`, `index.html` mount, `AppShell` from React to Lit; delete `KeepElements.tsx`; drop `@lit/react` **and** the `WaPage` React wrapper. | App boots with no `ReactDOM`; `Provider` gone. | **M** | 🟡 shell done, mount not |
-| **P5 — Purge** | Replace the React SWC plugin **preserving its decorator options** (§2 caution), remove React types, drop the runtime deps; convert the **7** remaining `@testing-library/react` files; tighten CSP/tsconfig. ✅ `react-app-env.d.ts` already deleted (#677). | Definition of Done (§11) fully green. | **M** | 🔴 |
+| **P0 — Foundations** | Add `store/store.ts` singleton + `StoreController`, `FormController`, custom router (§10). Typed `AppDispatch` first (report 00 P1-1). | New primitives unit-tested; app still boots on React. | **M** | ✅ **DONE** — `StoreController` #798 (**11** users), `FormController` #807 (**2** users), typed dispatch #694 (**0** casts left). #885/#888 characterized `FormController` against the five real Formik shapes and found two real defects doing it (#887, #890) |
+| **P1 — Routing** | Replace `react-router-dom` with the in-repo router (§10). | `grep react-router-dom src` → empty; navigation + deep links work end-to-end. | **M** | ✅ **DONE** (#716) — `src/router/` is 2 files at **97.8 %** coverage; both route tables are now plain `RouteDef[]`. #813 added route-level code splitting on top, and the `/groups`, `/people`, `/mail` shells went with #770 |
+| **P2 — Leaf components** | Convert leaf views **one file at a time, not as four sweeps**: MUI→Lit/WA **+** react-redux→StoreController (§3) **+** Formik→FormController (§4) **+** Linaria→`static styles` **+** `.tsx`→`.ts` in a single commit per file. The icon axis is ✅ empty. Delete any `Keep*` wrapper whose last consumer the conversion removed. | Each converted file has **no** `react`/`react-redux`/`formik`/`@mui` import; `keep-elements` gate stays green. | **L** (bulk) | 🟡 **IN FLIGHT — the whole critical path** (**#806**). `.tsx` 125 → **86**; **79 files / 16,682 LOC** left, tiered A 18 / B 29 / C 19 / D 13 |
+| **P3 — Hard widgets** | ✅ **ALL CLEARED.** date-pickers (#703), tree-view (#704), and **DataGrid** — #771 built `keep-data-table` and migrated all six MUI `<Table>` screens, then #770 deleted the People/Groups screens and `@mui/x-data-grid` with them. Remaining: convert `FormsContainer.tsx` (804 lines) itself, tier C of #806. | Data-heavy views work on Lit. | **Hard** | ✅ **DONE** — no widget blocker remains |
+| **P4 — Shell & entry** | ✅ `wa-page` shell landed (#707); `index.tsx` boot code already moved into a real module (no inline script — CSP forbids one). 🔴 Remaining: `App.tsx` (137) → `<app-root>`, `AppShell.tsx` (248) React→Lit, `Views.tsx` (266), `index.tsx` (37), `router/react.tsx` (352); delete the 32 `@lit/react` wrappers + barrel; drop `@lit/react` **and** the ≥5 WA React wrappers (`WaPage`, `WaBreadcrumb`, `WaBreadcrumbItem`, `WaIcon`, `WaInput`). | App boots with no `ReactDOM`; `Provider` gone. | **M** | 🟡 shell done, mount not |
+| **P5 — Purge** | Replace the React SWC plugin **preserving its decorator options** (§2 caution), remove React types, drop the runtime deps; retire the **25** `@testing-library/react` files (most are characterization suites that die with their subjects); tighten tsconfig. ✅ `react-app-env.d.ts` deleted (#677); ✅ CSP already tightened (#685). | Definition of Done (§11) fully green. | **M** | 🔴 |
 
 ### Hard gates (must be true before proceeding)
-- **G0 (exit P−1):** ✅ **met at `fcab645`** — `npm run lint`, `npm run build` and
-  `npm run test` (70 files / 747 tests) all exit 0, plus a SonarQube quality-gate step
-  (#688). A red baseline makes every later gate unreadable; keep it green.
-- **G1 (exit P1):** no `react-router-dom` import anywhere; all deep links + `basename
-  '/admin/ui'` behaviour preserved.
-- **G2 (per P2 file):** the file has **no** `from 'react'`, `react-redux`, or `formik`
-  import, is renamed `.ts`, and any new element has a test.
+- **G0 (exit P−1):** ✅ **met at `0d5458c`** — `lint`, `typecheck`, `build`, `bundle:budget`
+  and `test` (133 files / 1709 tests) all exit 0, plus a SonarQube quality gate (#688).
+  ⚠️ **Keep it green, and note how cheaply it is lost:** two commits earlier one unused import
+  failed three gates at once, and because CI runs `lint → typecheck → build` **before** `test`,
+  the suite was never reached. A red baseline makes every later gate unreadable.
+- **G1 (exit P1):** ✅ **met** — no `react-router-dom` import anywhere; `src/router/` carries
+  the deep-link and `basename '/admin/ui'` behaviour, covered at 97.8 %.
+- **G2 (per P2 file):** the file has **no** `from 'react'`, `react-redux`, `formik` or
+  `@mui/` import, is renamed `.ts`, and any new element has a test:
+  ```
+  grep -n "from 'react'\|react-redux\|formik\|@mui/" src/path/to/File.ts   # must be empty
+  ```
+  plus `npm run lint`, `npm run typecheck` (`tsc -b` — `--noEmit` never looks at `test/`),
+  `npm run build` and the suite green. **A file that does not clear the grep is not
+  converted; it is half-converted**, which is worse than untouched because the next person
+  cannot tell which half is done.
+- **G2b (per P2 file):** if the conversion removed the last consumer of a `Keep*` wrapper,
+  the wrapper **and** its barrel line are deleted in the same commit.
+  `test/keep-element-wrappers.test.ts` enforces this.
 - **G3 (exit P4):** `grep -rn "react-dom" src` empty; `Provider`/`createRoot` gone.
 - **G4 (exit P5):** `package.json` has no `react`, `@mui/*`, `react-*`, `@emotion/*`,
   `formik`, `@lit/react`, `@monaco-editor/*`; `vite.config.mts` and `vitest.config.ts`
   still apply the Lit decorator options.
 
 ### Riskiest items (watch list)
-1. **`@mui/x-data-grid` (5 files)** — richest widget (sort/filter/paginate/selection).
-   **No WebAwesome equivalent exists in any tier**, so the choice is a third-party web
-   component grid or a custom Lit table (report 02 §5.1). **Highest risk; decide early,
+1. ~~**`@mui/x-data-grid` (5 files)**~~ — ✅ **RESOLVED.** The decision was a custom Lit
+   table: #771 built `keep-data-table` and migrated all six MUI `<Table>` screens, then #770
+   deleted the People/Groups screens and the package with them. This was the top risk on this
+   list for four revisions. Recorded because the resolution is the interesting part: **no
+   WebAwesome equivalent exists in any tier**, so the options were a third-party grid or
+   building one, and building one won. (Historic text follows.) **Was: highest risk; decide early,
    schedule early in P3.**
 2. **70 `react-redux` files / 290 hook sites** — low complexity, high volume. Risk is
    churn and merge conflicts, not difficulty. Mitigate by doing it inside the P2 per-file
@@ -667,7 +751,8 @@ very end).
    `@vitejs/plugin-react-swc` is removed without replacing `tsDecorators` +
    `useDefineForClassFields: false`. Class-field shadowing does not fail loudly; it just
    stops elements reacting. Covered by the 29 element test suites, which **are** green
-   (G0 met) and hold `keep-elements` at 84.5 % against an 80 % gate — a real detector.
+   (⚠️ G0 is currently **not** met — see §9) and hold `keep-elements` at 89.7 % against an
+   85 % gate — a real detector.
    **#747** proposes standard decorators + `accessor`, which removes the coupling entirely.
 4. **Routing** — **downgraded, and further de-risked.** Nested routes across 2 hosts + a
    `PrivateRoutes` guard + `basename`, but only **9 live paths** (§10), and #681 deleted the
@@ -696,8 +781,9 @@ very end).
   only after G2 holds for 100 % of files.
 
 ### Overall effort
-**L (multi-month).** Dominated by P2 volume (125 `.tsx`, 70 react-redux files) and the one
-remaining P3 hard widget. The plumbing this report owns (entry point, router,
+**M–L (weeks, not months).** P0, P1 and P3 are all ✅ done, and P2 is **79 files /
+16,682 LOC** with a per-file recipe and a per-file gate — so what is left is bounded and
+enumerated rather than estimated. The plumbing this report owns (entry point, router,
 StoreController, FormController, Monaco wrapper) is **M** and front-loaded — the Monaco
 piece is **done**, and the shell is now a web component (#707) even though its mount is
 still React.
@@ -790,12 +876,15 @@ still imported by `applications/FormDrawer.tsx`.)
 > nothing useful. Decide during P1 whether to restore the settings routes or remove the
 > navigation; do not port the bug into the new router.
 
-**Consequences for §9.** The P2 conversion surface is smaller than the 130-`.tsx` headline:
-at least 10 of those files are in unreachable subtrees. Decide their fate — delete or
-revive — **before** P2, so effort is not spent porting views nothing can reach.
+**Consequences for §9 — resolved.** The unreachable subtrees were dealt with rather than
+ported: #681 deleted `components/settings` (8 `.tsx`), #770 deleted the People/Groups screens
+and their `/groups`, `/people` route shells. The P2 surface is now the enumerated **79
+files** in #806, all of them reachable.
 
-> **Side benefit:** removing `react-router-dom` also clears the open high-severity
-> advisory tracked in report 00 P2-10 / report 05.
+> ✅ **Side benefit realised:** removing `react-router-dom` cleared the two open
+> high-severity advisories tracked in report 00 P2-10 / report 05. `npm audit` now reports
+> **0 vulnerabilities** — and it cleared them by *deleting* the package rather than bumping
+> it, which is the more durable fix.
 
 ---
 
@@ -804,19 +893,25 @@ revive — **before** P2, so effort is not spent porting views nothing can reach
 All must hold on the new stack:
 
 ```bash
-grep -rn "from 'react'"         src   # → (empty)          [97 files at fcab645]
+grep -rn "from 'react'"         src   # → (empty)   [101 at 0d5458c; 32 are wc shims]
 grep -rn "react-dom"            src   # → (empty)
-grep -rn "react-redux"          src   # → (empty)          [70 files]
-grep -rn "react-router-dom"     src   # → (empty)          [29 files]
-grep -rn "from 'formik'"        src   # → (empty)          [19 files]
-grep -rn "@mui/"                src   # → (empty)          [75 files]
-grep -rn "@lit/react"           src   # → (empty)          [1 file]
-grep -rn "webawesome/dist/react" src  # → (empty)          [1 file — the WaPage wrapper]
-grep -rn "react-icons"          src   # → (empty)          [18 files]
-find src -name '*.tsx'                # → (empty; all authoring files are .ts)  [125]
+grep -rn "react-redux"          src   # → (empty)   [51 files]
+grep -rn "from 'formik'"        src   # → (empty)   [12 files]
+grep -rn "@mui/"                src   # → (empty)   [43 files — #709]
+grep -rn "@lit/react"           src   # → (empty)   [32 wrappers + 1 barrel]
+grep -rn "webawesome/dist/react" src  # → (empty)   [≥5 — WaPage, WaBreadcrumb(+Item), WaIcon, WaInput]
+find src -name '*.tsx'                # → (empty; all authoring files are .ts)  [86]
+grep -rn "react-router"         src   # → ✅ (empty) since #716
+grep -rn "react-icons\|icons-material" src # → ✅ (empty) since #718/#913
+grep -rn "x-data-grid"          src   # → ✅ (empty) since #770
 grep -rn "@monaco-editor/"      src   # → ✅ only a code comment
 find src -name 'react-app-env.d.ts'   # → ✅ (empty) since #677
 ```
+
+⚠️ **Do not read the `from 'react'` count as 101 files of work.** 32 of them are the
+`@lit/react` wrapper shims, which hold no logic and are **deleted with their last consumer**
+rather than converted — so roughly a third of this gate closes as a side effect of P2/P4
+rather than as its own task. See the counting rule at the top of this report.
 
 - `package.json` `dependencies` contains **no** `react`, `react-dom`, `react-redux`,
   `react-router-dom`, `@lit/react`, `react-icons`, `@mui/*`, `@emotion/*`, `formik`;

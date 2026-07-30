@@ -1,150 +1,148 @@
-# #718 — consolidate the icon systems onto `wa-icon`
+# Refresh `docs/reports/` against `new_code` @ `0d5458c`
 
-Branch `feat/718-wa-icon-codemod`, based on `origin/new_code` @ `d4db66b`.
+Supersedes the #718 plan that used to live here — #718 shipped in PR #913 and the icon axis
+now measures 0/0. Its durable findings are in `tasks/lessons.md`.
 
-## Why this is being run as a sweep
+Scope agreed with the user: **all seven reports plus the README**, **full re-measure** —
+every metric re-measured on this commit, headers re-stamped, and a "what changed" table
+per report.
 
-The issue's own text and every earlier revision of `docs/reports/06-waves.md` say **not** to
-run this as a standalone codemod, because `track:icons` overlaps `track:views` and a sweep
-would fight the per-file component pass for the same files.
+## Drift being closed
 
-That objection was raised and the user chose the sweep anyway. It has since largely expired:
-`d4db66b` restructured the programme to **single-lane** — "lanes A, B and C are empty of open
-work", so there is no concurrent instance to collide with, and #718 is listed as one of the
-issues that "close *inside* #806". The remaining cost is that a file converted here will be
-converted again when #806 reaches it; the icon line of #806's per-file recipe simply becomes
-a no-op.
+| | Last stamp | Now |
+|---|---|---|
+| reports 00–05 | `fcab645`, 2026-07-28 | `0d5458c`, 2026-07-30 |
+| 06-waves | `9f568a8`, 2026-07-29 | `0d5458c`, 2026-07-30 |
+| commits | — | **321** since `fcab645` |
+| merged PRs | — | **99** (#753 → #922) |
 
-## Baseline on `d4db66b` (measured, not assumed)
+## Verified baseline on `5f0b913` (measured, not assumed)
 
 ```
-npm run lint          exit 0
-npm run build         exit 0
-npm run test          exit 0    121 files / 1523 tests, coverage 65.09 %
-npm run bundle:budget exit 0    868.6 kB raw / 238.9 kB gzip
-                                budget 892.5 / 245.9 — under by 23.9 kB raw / 7.0 kB gzip
+npm run lint          exit 1    ⚠️ 1 error  — unused import, Section.tsx:15
+npm run typecheck     exit 1    ⚠️ TS6133   — same line
+npm run build         exit 1    ⚠️ TS6133   — same line, tsc -b runs before vite
+npm test              exit 0    133 files / 1709 tests
+npm run bundle:budget exit 0    887.5 kB raw / 243.7 kB gzip (budget 892.5 / 245.9)
+                                ^ only measurable with the bad line deleted locally
+npm audit                       0 vulnerabilities
+coverage                        70.41 % stmt / 58.40 % branch / 72.80 % func / 70.12 % line
 ```
 
-The eager closure contains `createSvgIcon-*.js` at **84.8 kB raw / 28.4 kB gzip** — MUI's icon
-factory. This codemod should *shrink* the bundle rather than threaten the 2 % headroom.
+- `src`: 37,472 LOC over 162 `.ts` + 86 `.tsx`
+- dependencies **18** (was 26; `immer` dropped in `e27102f`), devDependencies 17, `overrides` **4** (was 9)
+- `react-router` / `react-router-dom` **gone** — in-repo router at `src/router/`
+- 50 registered `keep-*` custom elements (stack lines still say 25)
+- `@mui/material` 9.2.0 is the only MUI package left; 43 files import it
+- icons: `@mui/icons-material` 0, `react-icons` 0 — both absent from `package.json`
+- Formik: 12 real importers; `formik` + `yup` still installed
+- store: 146 `useSelector`/`useDispatch` sites across 54 files
+- `StoreController` 11 production users · `FormController` 2
+- `getTheme` down to 6 readers
+- type safety: 482 `: any`, 44 `as any`, 0 `@ts-ignore`, 12 `console.*`
 
-## Scope
+## Per-file checklist
 
-| System | Files | Action |
-|---|--:|---|
-| `@mui/icons-material` | 33 | convert to `wa-icon` |
-| `react-icons` | 18 | convert to `wa-icon` |
-| overlap | 8 | — |
-| **distinct** | **43** | |
+- [x] `README.md` — index, stamp, status block, snapshot table, go/no-go gates
+- [x] `00-code-quality.md` — stack line, P-item statuses, type-safety + security numbers
+- [x] `01-vitest-and-coverage.md` — suite size, thresholds, per-area coverage
+- [x] `02-react-to-lit-webawesome.md` — component inventory, element count, MUI surface
+- [x] `03-wa-page-and-design-tokens.md` — getTheme readers, token/hex claims, MUI theme layer
+- [x] `04-remove-react.md` — P0–P4 phases, tsx/React counts, dependency list, bundle
+- [x] `05-dependabot-triage.md` — npm audit (now 0), main-vs-new_code gap (479)
+- [x] `06-waves.md` — lane/wave status, gates, per-issue state
 
-Out of scope, deliberately: `src/styles/app-icons.ts` (issue **#731** — 15 of its 19 render
-sites are `<img>`, not `wa-icon`, so its conversion is not separable from the component pass)
-and the `.Mui*` half of `dark-mode.css` (issue **#709**).
+## House rules for this refresh
 
-## Constraints that gate this work
-
-- `npm run lint` / `build` / `test` / `bundle:budget` all pass — CI runs all four.
-- Coverage is enforced per directory: `components/keep-elements/**` and `services` at 90 %.
-- **No `style=` attributes** — production CSP sends `style-src-attr 'none'`;
-  `test/csp-inline-styles.test.ts` holds the count at zero.
-- `test/services/icon-library.test.ts` fails on any glyph name not registered in `ICONS`.
-  It scans for literal `<wa-icon>` tags and `icon="…"` props — **a new React wrapper is
-  invisible to it**, so the guard must be extended in the same task that introduces the
-  wrapper, not later.
-- Whole-line comments are stripped before those scans, but *trailing* comments are not, and
-  the per-file gates elsewhere are greps — so naming a removed package in prose keeps it
-  looking present.
-
-## Tasks
-
-- [ ] **1. The primitive.** A React `KeepIcon` that renders `wa-icon` with `library="fa"`
-      baked in, so the CDN fallback is structurally unreachable from a call site. Extend
-      `icon-library.test.ts` to scan `<KeepIcon name="…">` in the same commit.
-- [ ] **2. Register the glyphs.** Extend `ICONS` in `src/services/icon-library.ts` from 17 to
-      cover every name the mapping needs. Every name verified present in
-      `@fortawesome/fontawesome-free` before it is written down.
-- [ ] **3–N. Convert, in batches**, grouped by directory so each batch is independently
-      reviewable and testable. Batch boundaries set from the inventories.
-- [ ] **N+1. Drop the dependencies.** Remove `@mui/icons-material` and `react-icons` from
-      `package.json` once both greps return 0. Add a guard so they cannot come back.
-- [ ] **N+2. Verify.** All four gates, plus a browser pass — the suite runs with `css: false`
-      and cannot see an icon that renders at the wrong size, in the wrong colour, or not at all.
-
-## What the inventories changed
-
-**`react-icons`: 38 sites, 21 identifiers** (not the 16 a grep suggested — `MdRefresh`,
-`MdEdit`, `FaSort`, `BsThreeDots` and `FaRegFolderOpen` sit on import lines the first grep
-did not decompose). Zero `styled(Icon)` wrappers and zero icons passed as values: every one
-is inline JSX, so the conversion is mechanical and the hard cases are **props and CSS**, not
-indirection.
-
-- **`RxDividerVertical` is not an icon and gets no glyph.** Rendered, it is a 1×11 rounded
-  rect in a 15×15 box — a ~1.5 px rule. `AppItem.tsx:360` already draws that exact separator
-  as `<div className='short-vertical'/>` (`styles.css:618`, token-aware). Reusing it removes
-  5 sites and the whole `rx` pack without registering anything.
-- **Size cannot become an inline style.** 13 sites pass `size` in `em` and one passes
-  `size={20}`. `style=` is forbidden — production CSP sends `style-src-attr 'none'` and
-  `test/csp-inline-styles.test.ts` pins the count at zero — so every size lands as a class,
-  Linaria at the call site, never an attribute.
-- `color` is not an attribute on `wa-icon` (4 sites, one passing a `var()`) — it inherits
-  `currentColor`, so those become a colour rule on the class.
-- Three sites carry a duplicated `transform: translateY(29%)` alignment hack tuned to the old
-  glyphs' bounding boxes. Re-measure against `wa-icon`; do not copy.
-- `ColumnDetails.tsx:70` puts `onClick` on a bare icon with no button. That is a pre-existing
-  a11y defect owned by **#713** — preserve the behaviour here, do not silently fix or worsen it.
-- `ICONS` is a flat name→URL map, so one weight per name. No name currently needs both solid
-  and regular, but that is a property of today's mapping, not a guarantee.
-
-## Open questions resolved before starting
-
-`Album`, `Apps` and `Storage` have no obvious one-to-one Font Awesome equivalent. Each is
-resolved against its call-site context from the inventory, not guessed.
+1. **Measure, don't carry forward.** Every number re-derived on `5f0b913`.
+2. **Don't count React shims over web components** as remaining work — they are deletions.
+   34 files: 32 `keep-elements/react/*.ts` + the barrel + `commons/ZeroResultsWrapper.tsx`.
+3. **Report gate status honestly**, whichever way it points — including retracting the
+   red-gate finding once `0d5458c` fixed it, rather than leaving it in as filed.
+4. Historical columns stay as they were reported; only the "now" column is re-derived.
 
 ## Review
 
-**Done.** PR #913 into `new_code`, nine commits. 115 sites, 43 files, both packages
-uninstalled; `dependencies` 22 → 19.
+**Done.** All eight files re-stamped to `0d5458c` and re-measured, plus a raw bundle-budget
+widening (below).
+Verified: every markdown table has consistent column counts (0 mismatches), `<details>` tags
+balanced in every file, no `Refreshed 2026-07-28` left as a current stamp.
 
-| Gate | Result |
-|---|---|
-| `npm run lint` | exit 0 |
-| `npm run typecheck` | exit 0 |
-| `npm run build` | exit 0 |
-| `npm run test` | 131 files / 1697 tests |
-| `npm run bundle:budget` | 888.1 kB raw / 243.8 kB gzip — under by 4.3 / 2.1 |
+### What the re-measure actually found
 
-`new_code` itself is red (issue **#914**): PR #911 put `FormController.ts` under its
-coverage floor. This branch touches no store file, so it inherits that failure. Filed
-rather than fixed, to keep an icon codemod out of the store.
+Six items were **stale in a way that mattered**, not just numerically:
 
-### What actually mattered
+1. **Four of report 00's long-standing P1/P2 items had silently closed** — #694 (typed
+   dispatch: 153 → 44 `as any`, 94 → 0 dispatch casts), #710 (17 `switch` reducers → 0),
+   #711 (`databases/action.ts` 2,885 → 47 lines, 5.8 % → 84.4 % covered), #699 (`npm audit`
+   10 high → 0). Three of them were the report's own "worst tech debt" for four revisions.
+2. **#685 landed**, so the CSP compensating control that #684's security decision rested on
+   is now real. Both SPA document routes send `script-src 'self'`.
+3. **All 16 Dependabot alerts are now stale skew** — the two previously-live ones cleared by
+   opposite routes: `brace-expansion` got a published fix (5.0.8), and `react-router` was
+   cleared by #716 **deleting** the package rather than bumping it.
+4. **The icon axis is empty** — 0 references, both packages uninstalled (#718/#913). Report
+   03 §6.4 and report 04 §6 were both describing work that is done.
+5. **The DataGrid blocker resolved against its own recommendation.** Report 02 recommended a
+   third-party grid (AG Grid/RevoGrid); what shipped was a purpose-built `keep-data-table`
+   (#771), because the real usages were far smaller than a general-purpose grid.
+6. 🐛 **Report 06 claimed `wa-stack`/`wa-cluster`/`wa-grid` were "in use ✅" — they never
+   have been.** #765 is closed `COMPLETED` but only its *token audit* half shipped; the
+   layout half was deliberately dropped, and `git log -S'wa-cluster' -- src` returns nothing.
+   Corrected in reports 03 and 06 and in the README's snapshot and gates.
 
-**A live CDN dependency nobody knew about.** `<wa-page>`'s navigation toggle fetched
-`bars.svg` from `ka-f.fontawesome.com` on every authenticated screen. The `connect-src`
-wildcard permitted it, so it neither failed nor reported. The module's own comment claimed
-the opposite was true. Removing it is worth more than the codemod.
+### Corrections I had to make to my own first pass
 
-**The bundle did not shrink the way the issue predicted.** MUI's icon factory left the
-eager closure, but the 44 bundled glyphs inline as base64 `data:` URIs, so raw ended up
-+19.5 kB on the pre-codemod baseline and gzip +4.9. Still under budget. The real saving
-waits for `@mui/material` itself (#709).
+- Wrote `default-src 'self' data'` (typo) in the CSP block, and initially reported the
+  Shoelace-era dead-token defect as still open when it measures **0** — both fixed before the
+  file was finished. The lesson is the one already in `lessons.md`: measure, do not infer from
+  a token name.
+- My first big edit to report 00 left the *previous* refresh's three narrative subsections in
+  place below the new ones, duplicating ~65 lines. Deleted after checking the boundaries.
+- Used 89.1 % and 89.4 % interchangeably for `keep-elements` — they are the directory-only and
+  `/**`-glob figures respectively. Now labelled per use.
+- Broke two table rows in report 03 by dropping a column; caught by the table validator.
 
-**Four inventory errors, one shape.** Every one named a source line where the compiled
-selector said something else — a rule in a component the file never renders, a Linaria
-rule that nests into a descendant selector, two rules an `!important` elsewhere had
-already killed, and a dead block keyed on a class this repo's router never emits. A static
-scan cannot tell you which rule governs an icon. The compiled selector can.
+### The rebase, and what it cost
 
-**MUI had been overriding the app's own icon size classes** for as long as they existed.
-That turned a mechanical codemod into a design decision, and it needed the user, not me.
+Between measuring and committing, `origin/new_code` moved two commits — caught by the house
+rule "check `origin/new_code` before branching", which is the only reason it was not published
+wrong. Both commits invalidated findings:
+
+- **`0d5458c` removed the unused `Section.tsx:15` import**, so the red-gate finding that
+  opened all eight documents was **false by the time it would have been read**. Retracted
+  everywhere and withdrawn as report 00's P0-11, kept only as a one-paragraph note on *why*
+  the shape matters (CI runs `lint → typecheck → build` before `test`).
+- **`e27102f` dropped `immer` and four dead `overrides` entries** — both of which this refresh
+  had just *recommended*. Rewritten from recommendation to done; `redux` is still open.
+  Also `jsdom` 29.1.1 → 30.0.1, which shifted coverage by ~0.06 points.
+
+**Lesson:** a measurement is only valid for the commit it was taken on, and a long
+documentation task can outlive its own baseline. Re-measure after any rebase, and never
+publish a "current state" section without re-checking `origin` first.
+
+## Second task — raw bundle headroom 2 % → 3 %
+
+Requested explicitly, as a temporary migration accommodation.
+
+- `scripts/bundle-budget.mjs`: `HEADROOM` is now per-metric, `{ raw: 0.03, gzip: 0.02 }`.
+- `bundle-budget.json`: raw budget 892,471 → **901,221**; gzip unchanged; `headroom` field
+  becomes an object.
+- Effect: room over the current measurement goes **4.9 kB → 13.7 kB raw** (~2.8×, because the
+  stored `measured` baseline is deliberately older than the tree).
+- gzip deliberately left at 2 %, because raw is the metric #806 pushes on for reasons that are
+  not regressions — Linaria CSS is extracted at build time, Lit `static styles` ships inside
+  the JS chunk, and CSS compresses better than code. #718 landed at +19.5 kB raw / +4.9 kB
+  gzip. **So gzip is now the sensitive half of the gate.**
+- The `--update` ratchet still refuses to raise — verified it rejects the current larger
+  measurement and leaves the JSON untouched.
+- ⚠️ **Put raw back to `0.02` when #806 closes**, and re-baseline with `--update`. Recorded at
+  the constant, in the JSON shape, and in reports 00/01/04/06 + README.
 
 ### Left undone, deliberately
-
-- **~111 of 115 sites are unverified in a browser.** They sit behind a login this
-  environment cannot pass. Every glyph name is proven to resolve, but not one is proven to
-  be the right size in its real container, and `css: false` means the suite cannot say
-  either. This is the largest gap in the work.
-- `app-icons.ts` (#731) and the `.Mui*` half of `dark-mode.css` (#709) — out of scope.
-- `ColumnDetails`' bare `onClick` icon keeps its missing button: that a11y defect is #713's.
-- The solid `sun` reads as a settings gear at 24px. Registry supports a regular-weight
-  entry if wanted; it is a design call.
+- **Deep prose sections were re-scored, not rewritten.** Where a section's *analysis* still
+  holds and only its numbers had drifted, I updated the numbers and added a status line rather
+  than re-arguing the section. Historic option analyses (report 02 §5.1, report 05 Part 2) are
+  retained with an explicit note about which option actually won.
+- **No browser verification.** Every layout/colour claim carried forward from a previous
+  refresh is still browser-unverified, and `css: false` means the suite cannot check it.

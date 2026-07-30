@@ -4,78 +4,98 @@
 > there and are **not** repeated here. This report is scoped to the test toolchain and
 > coverage.
 
-> **Refreshed 2026-07-28** against branch `new_code` @ `fcab645`. Previous refreshes:
-> `e17010c` and `7594672` (both 2026-07-27); originally written 2026-07-24 as a
-> Jest→Vitest migration plan.
+> **Refreshed 2026-07-30** against branch `new_code` @ `0d5458c`. Previous refreshes:
+> `fcab645` (2026-07-28), `e17010c` and `7594672` (both 2026-07-27); originally written
+> 2026-07-24 as a Jest→Vitest migration plan.
 >
 > **Part A (the migration) is COMPLETE** — landed in `f7907a3` / PR #649, with the test
-> tree relocated in `4d7ab3b` / PR #663. **Part B Phase 1 (pure logic) is COMPLETE**;
-> Phase 3 (Lit elements) landed alongside the TypeScript conversion in PRs #652–#659 and
-> was finished off by PR #668.
+> tree relocated in `4d7ab3b` / PR #663. **Part B is now substantially complete too**:
+> Phase 1 (pure logic), Phase 2 (React components — 23 suites, up from 6) and Phase 3
+> (Lit elements) have all landed, and the thunk coverage that #690 opened was finished by
+> #801–#805.
 >
 > ✅ **The suite is GREEN on this branch.** `npm run test` exits 0 with
-> **70 files / 747 tests**, all thresholds met. See
+> **133 files / 1709 tests**, all thresholds met. See
 > [§0 Current status](#0-current-status--suite-is-green).
+
 
 ## TL;DR
 
 - **Jest is gone.** Vitest 4.1 runs on the same Vite plugin graph as the build
   (`@wyw-in-js` + `@vitejs/plugin-react-swc`), so Linaria `styled` components and the Lit
   decorators transform identically to `npm run build`.
-- **4 tests → 747 tests across 70 files** (was 636 / 63 at the last refresh). Global line
-  coverage went from ~0 % to **34.72 %**, with `src/utils` at **99.3 %**, `src/services`
-  at **96.8 %**, `src/components/keep-elements` at **84.5 %**, and every
-  `src/store/**/reducer.ts` at **100 %**.
-- **The coverage ratchet is real, enforced, and was raised once already** (#686 lifted the
-  `keep-elements` gate 70 → 80 after the element suites landed). Every gate passes with
-  headroom; the global floor at 30 % is now the stale one (§B3).
+- **4 tests → 1709 tests across 133 files** (was 747 / 70 at the last refresh — the suite
+  more than doubled in one refresh). Global line coverage went from ~0 % to **70.18 %**,
+  with `src/utils` at **99.3 %**, `src/router` at **97.8 %**, `src/services` at **96.1 %**,
+  `src/components/keep-elements` at **89.7 %**, `src/store/databases` at **84.4 %**, and
+  every `src/store/**/reducer.ts` at **100 %**.
+- **The ratchet grew from 4 per-directory gates to 14**, and the global floor was raised
+  30 % → **61 %**. #880 was the important one: it found that three well-covered areas had
+  **no gate at all** — a directory nobody lists is not a low floor, it is *no* floor, and
+  drift reporting cannot show you a gap (§B3).
 - **Monaco is tested twice, on purpose.** A fake-`monaco-editor` suite covers component
   behaviour; a second, deliberately tiny suite drives the **real** editor in jsdom to
   cover Monaco-internal invariants a fake cannot reach. The second one caught a
   dispose-ordering bug the fake suite passed straight through (§A10).
-- **A new test genre appeared this round: source-scanning tests.** `shell-dead-code.test.ts`,
-  `theme-selectors.test.ts` and `keep-theme.test.ts` parse source and CSS as *text* rather
-  than executing it, because `vitest.config.ts` runs with `css: false` and cannot see
-  styling at all. They are the only automated guard the token layer has (§B4).
-- Remaining work is **Phase 2 (React component tests, #691)**, thunk/action coverage
-  (**#690**), and raising the global floor. The toolchain questions this report opened are
-  all settled.
+- **Source-scanning tests are now an established genre, and load-bearing.**
+  `shell-dead-code.test.ts`, `theme-selectors.test.ts`, `keep-theme.test.ts`,
+  `csp-inline-styles.test.ts`, `csp-policy.test.ts`, `copyright-headers.test.ts`,
+  `bundle-budget.test.ts`, `decorator-config.test.ts`, `node-modules-root.test.ts`,
+  `people-groups-removed.test.ts` and `keep-element-wrappers.test.ts` parse source, CSS and
+  build output as *text* rather than executing it — because `vitest.config.ts` runs with
+  `css: false` and cannot see styling at all. They are the only automated guard several
+  whole subsystems have (§B4).
+- **What this suite still cannot do is see CSS.** `css: false` is the single largest gap in
+  the strategy, and it is the reason two painted-colour defects shipped and were found by
+  reading compiled values rather than by a test. Every layout or colour change needs a
+  browser pass.
+- Remaining work is raising floors as coverage grows, and the `src/components/**` long tail
+  at **29.6 %** — which #806 is converting out from under this report rather than testing
+  in place.
 
 ---
 
 ## 0. Current status — suite is GREEN
 
-`npm run test` on `new_code` @ `fcab645`:
+`npm run test` on `new_code` @ `0d5458c`:
 
 ```
- Test Files  70 passed (70)
-      Tests  747 passed (747)
-   Duration  9.91s
+ Test Files  133 passed (133)
+      Tests  1709 passed (1709)
+   Duration  16.43s
 ```
 
-Exit code **0**. No threshold breach, no suite fails to load.
+Exit code **0**. No threshold breach, no suite fails to load. 110 `.ts` suites + 23 `.tsx`.
 
-### 0.1 What changed since `e17010c`
+### 0.1 What changed since `fcab645`
 
-80 commits. Twelve new test files, three deleted, +1,896/−398 lines under `test/`:
+**319 commits, 99 merged PRs (#753–#922).** **75 new test files, 10 deleted**,
++16,175/−1,144 lines under `test/` — the largest single-refresh growth in the suite's
+history, and `vitest.config.ts` itself grew by 106 lines, almost all of it new gates and the
+reasoning behind them.
 
 | PR | What landed | Effect on this report |
 |---|---|---|
-| #689 | `test/test-utils/renderWithProviders.tsx`; the duplicated `createMockStore()` removed | closes **C5** |
-| #686 | Coverage ratchet raised to match measured coverage — `keep-elements` 70 → **80** | first ratchet *raise* in the program (§B3) |
-| #687 | `tsconfig` split so `npm run build` stops type-checking `test/` | closes **C8** |
-| #688 | SonarQube Cloud wired into `pr_check.yml` + `sonar.yml` | closes **C9** — `vitest-sonar-reporter` finally has a consumer |
-| #693/#729 | Monaco behind a dynamic `import()` | closes **C3**; entry chunk 6.32 MB → **2.11 MB** |
-| #678 | Duplicate `queryCommandSupported` polyfill deleted | closes **C13** |
-| #692/#738 | `teardownTimeout` capped so coverage stops adding ~9 s per run | partially addresses **C10** (§0.4) |
-| #704/#723 | `keep-tree` replaces MUI X tree view | `keep-tree.test.ts`, 152 lines |
-| #703/#739 | `keep-input-date` replaces `@mui/x-date-pickers` | `keep-input-date.test.ts` |
-| #742/#744 | WA validity styling keyed on `:state(user-invalid)` | `validity-states.test.ts`, 179 lines |
-| #743/#745/#748 | LoginPage drops MUI; login grid fixed | `LoginPage.layout.test.tsx` (9) + `LoginPage.validity.test.tsx` (6), 304 lines — takes the React-component suites from 4 files to **6** (§B2) |
-| #707 | `wa-page` shell | `app-shell.test.ts` (142) + `shell-dead-code.test.ts` (104) |
-| #708 | Token layer | `keep-theme.test.ts` (94) + `theme-selectors.test.ts` (99) |
-| #701 | Four `keep-button*` collapsed into one | **−3 test files**, `keep-button.test.ts` absorbed the cases |
-| #696 | Helpers moved to `src/utils/field-types.ts` | `field-types.test.ts` (70) |
+| #801–#805 | Thunk suites for the 13 modules #711 split `databases/action.ts` into | closes **#690**. `store/databases/**` went **5.8 % → 84.4 %** — the single largest coverage gain in the program |
+| #880 | Re-measured every floor **and found three areas with no gate at all** | the important ratchet PR: `store/databases/**`, `src/router/**` and `FormController` were well covered and **ungated**. Drift reporting cannot show you a gap (§B3) |
+| #820 | Earlier ratchet raise at `7ec97b1` (87 files / 996 tests) | intermediate step; superseded by #880 |
+| #716 | In-repo router replaces `react-router-dom` | `router/router.test.ts` (458) + `router/react.test.tsx` (598) — a new **97.8 %**-covered subsystem, initially ungated |
+| #813 | Route-level code splitting + prefetch contracts | extended the router suites; `bundle-budget.test.ts` became a real gate |
+| #807/#885/#888 | `FormController` + characterization against the five real Formik shapes | `FormController.test.ts` (412), `.form-shapes.test.ts` (421), `.react.test.tsx` (326). **The characterization found two real defects** — #887 double-submit re-entry and #890 a crashing validator read as "valid" |
+| #798 | `StoreController` | the other React-removal primitive; gated close to measurement |
+| #806's PRs (#835, #863, #865, #870, #876 …) | React leaves → Lit elements | ~25 new element suites; `keep-elements/**` 84.5 % → **89.7 %** across 54 files |
+| #884 | The unsaved-changes guard, which had **no tests** | `NavigationGuardContext.test.tsx` (475) at **100 %/100 %/100 %/100 %**, plus a new `components/navigation/**` gate |
+| #892–#900 | The Quick Config bug cluster, fixed and converted together | `keep-quick-config-form.test.ts` (536) — seven bugs, each with a regression test |
+| #710 | `createSlice` migration | reducer suites rewritten; still **100 %** lines |
+| #718/#913 | Icons → `wa-icon` | `KeepIcon.test.tsx`; `icon-library.test.ts` extended to scan React wrappers, which it was previously blind to |
+| #770 | People/Groups screens deleted with `@mui/x-data-grid` | `people-groups-removed.test.ts` — a guard against reintroduction |
+| CI | `typecheck` and `bundle:budget` added as gating steps | §0.3 — CI is now six gates, not four |
+
+**The pattern worth naming:** four of this refresh's PRs (#884, #880, #885, #892–#900)
+found real defects *while writing tests for code that already worked*. Two of them
+(#887, #890) were in `FormController`, which had 100 % coverage at the time and still
+harboured a double-submit and a crashing-validator-reads-as-valid bug. High coverage bought
+less than characterizing the real shapes did.
 
 ### 0.2 Every regression and nit this report has carried is now closed ✅
 
@@ -94,8 +114,10 @@ from 6,322.51 kB to **2,111.11 kB**. The setup stub stays anyway: it is cheap, a
 still covers the real-Monaco lifecycle suite, which *does* evaluate the bundle.
 
 **Regression 2 — the `keep-elements` coverage gate.** Fixed at `e17010c` by writing the
-missing test rather than excluding the file. The directory now sits at **84.5 %**, and
-#686 raised its gate from 70 to **80** so the headroom cannot silently be spent.
+missing test rather than excluding the file. The directory now sits at **89.1 %** across 54
+files (**89.7 %** for the gated `keep-elements/**` glob, which includes the `react/` subdir),
+and its gate has been raised twice more since — 70 → 80 (#686) → **85** (#880) — so
+the headroom cannot silently be spent.
 
 ### 0.4 The "Vite server won't exit" tail — halved, not fixed
 
@@ -108,15 +130,32 @@ Tests closed successfully but something prevents Vite server from exiting
 
 — so the underlying open handle is still there; what changed is that it no longer costs
 the full timeout. The issue stays open as **#692**. Practical impact today is a message,
-not a delay: the run above completed in 9.91 s wall-clock.
+not a delay: the run above completed in **16.43 s** wall-clock for 133 files / 1709 tests —
+so the suite roughly doubled in size for ~6 s of extra wall-clock, which is the ratio you
+want.
 
 ### 0.3 CI, as it runs today
 
 `.github/workflows/pr_check.yml`, Node 24:
 
 ```
-npm ci → npm run lint → npm run build → npm run test → publish coverage summary
+npm ci → npm run lint → npm run typecheck → npm run build → npm run bundle:budget
+       → npm run test → publish coverage summary → Sonar scan → quality gate
 ```
+
+**Two gates were added since the last refresh**, and both matter to this report:
+
+- **`npm run typecheck`** (`tsc -b`) runs *before* `build`. `build` is
+  `tsc -b tsconfig.app.json` — the app project only — so a type error under `test/` passes
+  the build and only `typecheck` catches it. Adding it closed a real hole: the test tree was
+  type-checked by nothing in CI between #687 and this change.
+- **`npm run bundle:budget`** gates the eager closure at 901.2 kB raw / 245.9 kB gzip.
+  ⚠️ **raw headroom was widened 2 % → 3 % for the duration of #806** (a tight raw budget fails on migration churn, not on regressions); gzip stays at 2 %.
+
+⚠️ **Both new gates precede `test`.** That ordering is deliberate — a type error should not
+wait behind a 16 s suite — but it means a failure in any of the first three makes CI report
+red **without ever running the suite**. `5f0b913` demonstrated it for exactly two commits: one
+unused import, three failing gates, and no test results at all. Green again as of `0d5458c`.
 
 The last step is new (#671). It runs with `if: always()`, so a *failing* run still
 reports its numbers, and pipes `coverage/coverage-summary.json` through `jq` into
@@ -126,14 +165,17 @@ time coverage has been visible on a PR without downloading an artifact — and i
 
 ---
 
-## Current state snapshot (verified 2026-07-28)
+## Current state snapshot (verified 2026-07-30)
 
 | Area | 2026-07-24 | **Today** | Source of truth |
 |---|---|---|---|
+| Test files / tests | 4 / 34 | **133 / 1709** (110 `.ts`, 23 `.tsx`) | `npm test` |
+| Global line coverage | ~0 % | **70.18 %** (3352/4776) | `coverage/coverage-summary.json` |
+| Per-path coverage gates | none | **14**, plus a global floor of 61/61/63/49 | `vitest.config.ts` |
 | Runner | Jest 30 | **Vitest 4.1.10** | `package.json` `test`, `vitest.config.ts` |
 | Transform | `ts-jest` **and** `@swc/jest` (redundant) | **Vite plugin graph** — `@wyw-in-js/vite` + `@vitejs/plugin-react-swc` | `vitest.config.ts` |
 | Decorators | n/a | `tsDecorators: true` + `useDefineForClassFields: false` (mirrors `vite.config.mts`) | `vitest.config.ts` |
-| Environment | `jest-environment-jsdom` | **`jsdom` 29.1.1**, `url: http://localhost/admin/ui` | `vitest.config.ts:31` |
+| Environment | `jest-environment-jsdom` | **`jsdom` 30.0.1**, `url: http://localhost/admin/ui` | `vitest.config.ts:31` |
 | ESM allow-list | `transformIgnorePatterns` | **not needed** — Vite transforms `node_modules` natively | — |
 | Asset/style mocks | `__mocks__/fileMock.js`, `styleMock.js` | **deleted** — `css: false` + Vite asset URLs | `vitest.config.ts` |
 | Setup file | `src/setupTests.ts` existed but was **never loaded** | **`test/setupTests.ts`, wired via `setupFiles`** | `vitest.config.ts` |
@@ -141,10 +183,8 @@ time coverage has been visible on a PR without downloading an artifact — and i
 | Test helpers | none | **`test/test-utils/lit.ts`**, **`monaco.ts`**, **`renderWithProviders.tsx`** (#689) | §A10 |
 | Sonar | `jest-sonar-reporter` | **`vitest-sonar-reporter` 3.0** → `coverage/sonar-report.xml` (CI only), **now consumed by a real scanner** (§C9) | `vitest.config.ts`, `sonar-project.properties` |
 | Coverage | Istanbul via `--coverage` | **`@vitest/coverage-v8`** → `text`, `lcov`, `html`, `json-summary` | `vitest.config.ts` |
-| Thresholds | none | **global floor + 4 per-directory gates**, all passing | `vitest.config.ts` |
-| Test files / tests | 4 / 34 | **70 / 747** | `npm test` |
-| Global line coverage | ~0 % | **34.72 %** | `coverage/coverage-summary.json` |
-| CI | `build` + `test` | **`lint` → `build` → `test` → `publish coverage summary` → `Sonar scan`** on Node 24 | `.github/workflows/pr_check.yml` |
+| Thresholds | none | **global floor + 14 per-path gates**, all passing | `vitest.config.ts` |
+| CI | `build` + `test` | **`lint` → `typecheck` → `build` → `bundle:budget` → `test` → `coverage summary` → `Sonar scan` → `quality gate`** on Node 24 | `.github/workflows/pr_check.yml` |
 
 ### Scripts as shipped
 
@@ -316,105 +356,131 @@ price for the only test in the tree that can catch this class of bug.
 
 ## B1. Where coverage actually stands
 
-`npm run test` at `fcab645`, all 70 files running:
+`npm run test` at `0d5458c`, all 133 files running:
 
 ```
-Statements   : 34.94 % ( 1705/4879 )
-Branches     : 32.46 % (  763/2350 )
-Functions    : 30.96 % (  379/1224 )
-Lines        : 34.72 % ( 1626/4682 )
+Statements   : 70.49 % ( 3627/5145 )
+Branches     : 58.44 % ( 1346/2303 )
+Functions    : 72.94 % ( 1081/1482 )
+Lines        : 70.18 % ( 3352/4776 )
 ```
 
 | Area | Lines | Status |
 |---|---|---|
-| `src/utils/**` | **99.3 %** (144/145) | ✅ Phase 1 complete — plus `field-types` (#696) |
-| `src/store/**/reducer.ts` | **100 %** (319/319) | ✅ Phase 1 complete — 17 reducers, table-driven, gate 95 % |
-| `src/services/**` | **96.8 %** (120/124) | ✅ all six services tested (#669, #670); gate 90 % added since |
-| `src/components/keep-elements/**` | **84.5 %** (523/619) | ✅ gate raised 70 → **80** (#686) |
-| `src/store/account` | **76.8 %** (96/125) | ✅ was 38.7 % — the thunk suite grew from 8 tests to a full failure-path sweep |
-| `src/components/forms` | 60.4 % (168/278) | `EditView` + `compare-form-names` |
-| `src/components/dialogs` | 30.0 % (12/40) | `UnsavedChangesDialog` |
-| `src/store/databases` | 22.0 % (240/1091) | 🟡 largest single gap — 2,885-line `action.ts` at **5.8 %** |
-| `src/components/**` (other React views) | 0.8 – 21 % | 🟡 **Phase 2 — the remaining gap (#691)** |
+| `src/store/**/reducer.ts` | **100 %** | ✅ 10 reducers, all on `createSlice` (#710), table-driven, gate 97 % |
+| `src/store/{access,consents}`, controllers, `hooks`, `store` | **100 %** | ✅ `StoreController`, `FormController`, `FormController.react` all at 100 % |
+| `src/components/navigation/**` | **100 %** (70/70) | ✅ was **4.3 %** — #884 gave the unsaved-changes guard its first tests, and found a real bug doing it |
+| `src/utils/**` | **99.3 %** (151/152) | ✅ Phase 1 complete |
+| `src/router/**` | **97.8 %** (179/183) | ✅ the in-repo router (#716, #813) — a subsystem that did not exist last refresh |
+| `src/services/**` | **96.1 %** (147/153) | ✅ gate 93 % |
+| `src/store/applications` | **94.5 %** (103/109) | ✅ was 24.6 % |
+| `src/components/keep-elements/**` | **89.7 %** (1079/1203) | ✅ gate raised 80 → **85** (#880); largest area in the tree now. The directory alone is 89.1 % (1042/1169); the glob adds the 34-line `react/` wrapper subdir at 100 % |
+| `src/store/databases` | **84.4 %** (878/1040) | ✅ **was 22.0 %** — #711's split + #801–#805's thunk suites. The largest single coverage gain in the program |
+| `src/store/account` | **78.3 %** (90/115) | ✅ |
+| `src/components/forms` | 63.8 % (173/271) | partially converted by #806 |
+| `src/components/database` | 35.3 % (72/204) | 🟡 the Quick Config pair converted (#892–#900); the rest is tier B/D |
+| `src` (shell) | 35.7 % (30/84) | 🟡 `AppShell.tsx` 10.3 %, `Views.tsx` 0 % — P4 of #806, and the one gap not queued for imminent deletion |
+| `src/components/{access,login,applications}` | 11–25 % | 🟡 queued for conversion by #806 — **testing in place is wasted work** |
+| `src/components/{schemas,scopes}` | **0 %** (140 lines) | 🟡 same; their card views already converted, these are the list shells |
 
 Per-directory line coverage, largest directories first:
 
 | Directory | Lines % | Lines |
 |---|---|---|
-| `src/store/databases` | 22.0 | 1091 |
-| `src/components/keep-elements` | **84.5** | 619 |
-| `src/components/access` | 4.5 | 466 |
-| `src/components/database` | 5.9 | 304 |
-| `src/components/forms` | 60.4 | 278 |
-| `src/components/commons` | 10.0 | 170 |
-| `src/utils` | **99.3** | 145 |
-| `src/components/login` | 14.0 | 136 |
-| `src/store/account` | **76.8** | 125 |
-| `src/components/people` | 0.8 | 124 |
-| `src/services` | **96.8** | 124 |
-| `src/store/applications` | 24.6 | 118 |
-| `src/components/groups` | 0.9 | 116 |
-| `src/store/people` | 20.7 | 92 |
-| `src/store/peopleSelector` | 15.6 | 90 |
-| `src/store/groups` | 17.9 | 84 |
-| `src/components/schemas` | 1.3 | 79 |
-| `src/components/navigation` | 4.3 | 69 |
-| `src/components/applications` | 20.9 | 67 |
-| `src/components/scopes` | 1.8 | 57 |
+| `src/components/keep-elements` | **89.1** | 1169 |
+| `src/store/databases` | **84.4** | 1040 |
+| `src/components/access` | 11.1 | 521 |
+| `src/components/forms` | 63.8 | 271 |
+| `src/components/database` | 35.3 | 204 |
+| `src/router` | **97.8** | 183 |
+| `src/services` | **96.1** | 153 |
+| `src/utils` | **99.3** | 152 |
+| `src/components/login` | 15.9 | 138 |
+| `src/store` (controllers, hooks, store) | **100.0** | 138 |
+| `src/store/account` | **78.3** | 115 |
+| `src/store/applications` | **94.5** | 109 |
+| `src` (shell: `App`, `AppShell`, `Views`) | 35.7 | 84 |
+| `src/components/schemas` | 0.0 | 82 |
+| `src/components/navigation` | **100.0** | 70 |
+| `src/components/scopes` | 0.0 | 58 |
+| `src/components/applications` | 25.0 | 52 |
+| `src/store/consents` | **100.0** | 39 |
+| `src/components/keep-elements/react` | **100.0** | 34 |
+| `src/styles` | **100.0** | 20 |
+| `src/store/access` | **100.0** | 18 |
 
-⚠️ **Read the +2.3 points carefully.** Executable lines fell 4,709 → **4,682** while
-covered lines rose 1,528 → **1,626**. So the gain is genuine — 98 newly covered lines —
-but part of the *percentage* comes from the denominator shrinking, as #681 deleted an
-unreachable screen, #701 collapsed four components into one, and #703/#704 replaced MUI
-subsystems with smaller elements that were tested on arrival. Note also that ~1,900 lines
-of new test code bought those 98 lines: much of this round's testing went into
-*source-scanning* suites (§B4) that assert on structure rather than executing it, and
-into deepening `store/account` from 38.7 % to 76.8 %. That is the expected shape when the
-work is a migration rather than a coverage push — but it means the ratchet, not the
-headline, is the number to watch.
+**The shape of the tree changed as much as the numbers did.** `keep-elements` overtook
+`store/databases` as the largest directory (1,169 lines vs 1,040) because #806 keeps moving
+React leaves into it — and it arrives *tested*, at 89.1 %. Nine directories from the previous
+table are simply gone: `components/people`, `components/groups`, `store/people`,
+`store/peopleSelector`, `store/groups` (all deleted by #770 with `@mui/x-data-grid`), and
+`components/commons` shrank to a `cardviews` remnant as #863–#876 converted it.
+
+⚠️ **This time the headline gain is real, and large.** Covered lines went 1,626 → **3,349**
+while executable lines went 4,682 → **4,776** — so 1,723 newly covered lines against a
+denominator that barely moved. That is the opposite of the last refresh, where most of the
++2.3 points came from the denominator shrinking. Two PR families account for it:
+#801–#805 (`store/databases` 22.0 % → 84.4 %, ~640 newly covered lines in one area) and
+#806's element conversions.
+
+**What is still uncovered is now almost entirely React views that are queued for deletion.**
+`components/access` (521 lines, 11.1 %), `components/schemas` and `components/scopes` (140
+lines, **0 %**), `components/login` (138, 15.9 %). Writing component tests for these is
+mostly wasted work — #806 converts them to Lit elements, and the element arrives with its
+own suite. That inverts the previous refresh's advice.
 
 Ranked by payoff ÷ effort, what remains:
 
 | Rank | Module(s) | Why | Test type | Effort |
 |---|---|---|---|---|
-| 1 | `src/store/databases/action.ts` (2,885, **5.8 %**) | by far the largest untested file in the tree; `store/databases` is 23 % of all executable lines. Note **#711** proposes splitting it — doing that first makes the tests smaller and better-targeted | unit w/ `fetch` mocks | **M–L** |
-| 2 | Remaining `src/store/*/action.ts` thunks (`people`, `peopleSelector`, `groups`, `applications`) | same shape as the `account/action.ts` suite, which is now the proven pattern — copy it. Tracked as **#690** | unit w/ mocks | M |
-| 3 | Presentational React components (`components/people`, `groups`, `schemas`, `scopes`, `navigation` — all <5 %) | RTL smoke renders; cheap per file, and `renderWithProviders()` now exists. Tracked as **#691** | component | M |
-| 4 | `src/components/access` (466 lines, 4.5 %) | `TabsAccess.tsx` alone is 1,007 lines and has one suite | component | M–L |
+| 1 | **Nothing in the store** | ✅ The store is done: `databases` 84.4 %, `applications` 94.5 %, `consents`/`access`/controllers 100 %, every reducer 100 %. #690's queue is empty | — | — |
+| 2 | `src/AppShell.tsx` (10.3 %) and `src/Views.tsx` (0 %) | the shell is the one *untested* area that is **not** queued for imminent deletion — P4 of #806 rewrites it, but not soon, and `app-shell.test.ts` only covers the dead-code guard | component + source-scan | M |
+| 3 | `keep-source.ts` (776 lines) | **excluded from the ratchet entirely** — covered at the API level only. The largest single blind spot left, and it is a Lit element, so it is not going away | extend existing suite | M–L |
+| 4 | `components/access` (521, 11.1 %) | ⚠️ **do not test in place.** `TabsAccess.tsx` alone is 1,002 lines and is tier D of #806; it gets a suite when it becomes an element | — (defer) | — |
 | 5 | `keep-monaco-editor.ts` residual | diff-mode paths and the prettier round-trip | extend existing suites | S |
 
 ## B2. Phased plan — status
 
-**Phase 1 — Pure logic.** ✅ **DONE.** `src/utils/*` + all 17 `src/store/*/reducer.ts`,
-plus `store/databases/scripts.ts`. Table-driven per reducer (unknown action → same state;
-each `case` → expected transition), exactly as sketched.
+**Phase 1 — Pure logic.** ✅ **DONE.** `src/utils/*` + all `src/store/*/reducer.ts` (now 10,
+on `createSlice` since #710) at **100 %** lines. Table-driven per reducer, exactly as
+sketched. ⚠️ One migration hazard worth recording: `createSlice` needs `extraReducers` for
+the shared `INIT_STATE` action, and a dispatch of a raw type string becomes a **silent
+no-op** rather than an error — the reducer tests are what caught that.
 
-**Phase 1b — Services.** ✅ **DONE** (#669, #670). Six suites, 74 tests, `src/services`
-at 96.8 % lines. These were rows 1, 2 and 4 of the previous refresh's payoff table and
-they landed as predicted — all pure or jsdom-friendly, all **S**.
+**Phase 1b — Services.** ✅ **DONE** (#669, #670). Six suites, `src/services` at **96.1 %**
+lines, gate 93 %.
 
-**Phase 1c — Thunks/actions.** 🟡 **STARTED — still one file, but a deep one.**
-`test/store/account/action.test.ts` grew this round (+209 lines) and took `store/account`
-from 38.7 % to **76.8 %**. It remains the only *action* suite in the tree, and the
-template for the 16 others: it enumerates every failure path of `renewToken` (4xx, 5xx,
-an HTML error page, a dropped connection, malformed JSON) rather than asserting one happy
-path, stubs only the parts of `Response` that `checkForResponse` touches, and silences the
-deliberate logging via `Logger.setLevel(Level.OFF)` so the suite output stays clean.
-Tracked as **#690**.
+**Phase 1c — Thunks/actions.** ✅ **DONE** (#801–#805). What was "still one file" last
+refresh is now the best-covered large area in the tree. #711 split the 2,885-line
+`databases/action.ts` into 13 per-concern modules and #801–#805 covered them: `store/databases`
+went **22.0 % → 84.4 %**, `store/applications` **24.6 % → 94.5 %**, `store/consents` and
+`store/access` to **100 %**. #690 is closed.
 
-**Phase 2 — React component tests.** 🟡 **STARTED.** Two developments since the last
-refresh. First, the blocker is gone: **`test/test-utils/renderWithProviders.tsx` now
-exists** (#689) and `createMockStore()` is no longer re-declared per suite — that was the
-"natural first move" the previous refresh identified, and it landed. Second, #745/#748 added
-`LoginPage.layout.test.tsx` (9 tests) and `LoginPage.validity.test.tsx` (6), taking the
-React-view suites from 4 files to **6**. Coverage of `components/login` is still only
-14 %, so this is a beachhead rather than a phase in progress. Tracked as **#691**.
+⚠️ **The lesson from these suites is that a thunk test must actually execute the thunk.** A
+test that dispatches into a recording mock and asserts the recorded action covers *nothing* —
+the thunk body never runs. And `apiRequestWithRetry` swallows programmer errors alongside
+network ones, so a `TypeError` inside a thunk can surface as a benign-looking failed request.
+Both traps produced green tests over untested code before they were caught.
 
-**Phase 3 — Web-component (Lit/WebAwesome) tests.** ✅ **DONE, and it went further than
-planned.** 29 suites in `test/components/keep-elements/` cover all 26 element modules
-(25 `@customElement` registrations plus the `keep-element` base), with `keep-monaco-editor`
-carrying two (§A10) and **two new cross-cutting suites** — `theme-selectors.test.ts` (#708)
-and `validity-states.test.ts` (#744) — asserting invariants across the whole directory
+**Phase 2 — React component tests.** ✅ **DONE, in the sense that matters.** **23 `.tsx`
+suites**, up from 6 — `LoginPage` alone has three (`.layout`, `.form`, `.validity`, 679 lines
+in `.form` alone), plus `TabsAccess`, `AppItem`, `AppsTable`, `EditView`, `ViewsTable`,
+`FormsTable`, `ConsentsTable`, `ConsentItem`, `AddImportDialog`, `NavigationGuardContext`
+and more. `renderWithProviders.tsx` (#689) is the shared harness.
+
+⚠️ **But #691's original goal has been overtaken by #806 and should not be pursued as
+written.** Its remaining targets — `components/access` at 11 %, `schemas`/`scopes` at 0 % —
+are React views scheduled for conversion to Lit elements, and an element arrives with its own
+suite. Writing RTL tests for them now buys coverage that is deleted with the file. The
+exception is a *characterization* suite written deliberately to pin behaviour **before** a
+conversion; #880 did exactly that for `BreadcrumbRouter`, and #885 for the five Formik shapes.
+That is the pattern to follow, not blanket smoke tests.
+
+**Phase 3 — Web-component (Lit/WebAwesome) tests.** ✅ **DONE, and it went much further than
+planned.** ~45 suites in `test/components/keep-elements/` cover **50** `@customElement`
+registrations across 54 modules, with `keep-monaco-editor` carrying two (§A10) and several
+cross-cutting suites — `theme-selectors.test.ts` (#708), `validity-states.test.ts` (#744) and
+`keep-element-wrappers.test.ts` (#806) — asserting invariants across the whole directory
 rather than per element. Backed by `test/test-utils/lit.ts`:
 
 ```ts
@@ -426,38 +492,78 @@ const el = await mountLit<KeepButton>('keep-button', { variant: 'brand' });
 The original guidance to *"assert on the light-DOM tag, not shadow content"* turned out to
 be **too conservative**: with the `attachInternals` stub installed unconditionally (A3),
 shadow-DOM assertions work fine in jsdom, and the element suites assert on shadow content
-directly. That is how the directory reached 84.5 % lines.
+directly. That is how the directory reached 89.1 % lines.
+
+⚠️ **One thing jsdom genuinely cannot do: form association.** `wa-*` form participation is
+untestable in this suite — the behaviour has to be split out and verified in a real browser.
+Do not write a jsdom test that appears to cover it.
 
 ## B3. The ratchet — as configured
 
+**The ratchet grew from 4 per-path gates to 14**, and the global floor from 30 % to 61 %:
+
 ```ts
 thresholds: {
-  lines: 30, statements: 30, functions: 27, branches: 28,   // global floor
-  'src/store/**/reducer.ts':         { lines: 95, statements: 95, functions: 90, branches: 88 },
-  'src/utils/**':                    { lines: 85, statements: 85, functions: 55, branches: 60 },
-  'src/components/keep-elements/**': { lines: 80, statements: 80, functions: 72, branches: 62 },
-  'src/services/**':                 { lines: 90, statements: 90, functions: 90, branches: 88 },
+  lines: 61, statements: 61, functions: 63, branches: 49,   // global floor
+  'src/store/**/reducer.ts':          { lines: 97, statements: 97, functions: 97, branches: 92 },
+  'src/store/access/action.ts':       { lines: 97, ... branches: 84 },
+  'src/store/consents/action.ts':     { lines: 97, ... branches: 67 },
+  'src/store/applications/action.ts': { lines: 90, ... branches: 68 },
+  'src/store/databases/**':           { lines: 81, ... branches: 64 },   // new (#880)
+  'src/store/StoreController.ts':     { lines: 97, ... branches: 95 },
+  'src/store/FormController.ts':      { lines: 97, ... branches: 95 },   // new (#880)
+  'src/store/FormController.react.ts':{ lines: 100, ... branches: 100 },
+  'src/store/store.ts':               { lines: 95, ... branches: 90 },
+  'src/router/**':                    { lines: 94, ... branches: 91 },   // new (#880)
+  'src/utils/**':                     { lines: 96, ... branches: 93 },
+  'src/components/keep-elements/**':  { lines: 85, ... branches: 68 },
+  'src/services/**':                  { lines: 93, ... branches: 91 },
+  'src/components/navigation/**':     { lines: 100, ... branches: 100 },  // new (#884)
 }
 ```
 
-✅ **#686 adopted the previous refresh's "next PR" row in full** — the global floor went
-20 → **30**, `keep-elements` 70 → **80**, and the missing `src/services` gate was added at
-**90**. That is the first time this report's recommendation was applied as written, and it
-is why the gap between configured and measured is now 2–5 points instead of 12–14.
+### #880 found the failure mode that drift reporting cannot show you
+
+Two separate problems, and **the second matters more**:
+
+- **Drift.** The global floor sat ~20 points under reality — #801–#805's thunk suites,
+  #806's element conversions and #807 had all landed behind it. Fixable by re-measuring.
+- **Gaps.** Three well-tested areas had **no gate at all**: `src/store/databases/**` (13
+  files, 84.4 %), `src/router/**` (97.8 %) and `src/store/FormController.ts` (100 %). **A
+  directory nobody lists is not a low floor — it is no floor**, and a drift report comparing
+  configured-vs-measured cannot surface it, because there is nothing to compare. All three
+  arrived *after* the previous ratchet PR wrote its list, which is exactly how it happens.
+
+The practical rule that follows: **when a new directory becomes well covered, add a gate in
+the same PR.** Re-measuring existing floors is the easy half.
 
 | Milestone | Global lines | `utils/**` | `store/**/reducer` | `keep-elements/**` | `services/**` |
 |---|---|---|---|---|---|
 | Configured at `e17010c` | 20 % | 85 % | 95 % | 70 % | — missing |
-| **Configured today** (#686) | **30 %** | 85 % | 95 % | **80 %** | **90 %** |
-| **Measured today** | **34.7 %** | **99.3 %** | **100 %** | **84.5 %** | **96.8 %** |
-| After thunk coverage (**#690**) | 40 % | 90 % | 95 % | 85 % | 90 % |
-| After Phase 2 (**#691**) | 50 % | 90 % | 95 % | 85 % | 90 % |
-| Steady state | +2 %/PR toward ~65 % | 90 % | 95 % | 90 % | 90 % |
+| Configured at `fcab645` (#686) | 30 % | 85 % | 95 % | 80 % | 90 % |
+| **Configured today** (#880) | **61 %** | **96 %** | **97 %** | **85 %** | **93 %** |
+| **Measured today** | **70.1 %** | **99.3 %** | **100 %** | **89.7 %** | **96.1 %** |
+| Steady state | +2 %/PR toward ~80 % | 96 % | 97 % | 90 % | 93 % |
 
-Remaining slack is small but real: `utils/**` is gated at 85 against a measured 99.3, and
-`store/**/reducer.ts` at 95 against a measured 100. Both could be tightened for free.
-The global floor at 30 vs 34.7 is the right kind of margin — close enough to catch a
-regression, loose enough that deleting a well-tested file does not fail CI.
+Branch floors deliberately keep ~4 points of slack and the rest ~3: branch counts move under
+ordinary refactoring (an added guard clause, a removed `default:` arm) in a way line counts do
+not.
+
+⚠️ **Two honesty notes on the gates.**
+
+1. **`keep-source.ts` (776 lines) is excluded from coverage entirely** — an interactive
+   tree/source editor whose exhaustive unit coverage in jsdom is impractical. It is the
+   largest blind spot in the tree, and it does not show up as a low number anywhere; it
+   shows up as an `exclude` entry. Covered at the API level by `keep-source.test.ts`.
+2. **`FormController.react.ts` is gated at 100/100/100/100 and is meant to be deleted.** The
+   config says so explicitly: delete the entry *with the file*, when the last `.tsx` consumer
+   becomes a Lit element. A floor on a path that no longer exists protects nothing while
+   looking like it does.
+
+A note on tightening floors that came out of #880's review: **restore the real pre-fix
+expression when checking whether a gate would have caught a regression** — deleting the fixed
+line is not the same mutation, and it can make a check look effective when it is not. And read
+the last uncovered branch rather than lowering a floor to meet it.
 
 A Sonar **Quality Gate on New Code** (e.g. "coverage on new code ≥ 80 %") would be the
 ideal enforcement for incoming work — it holds every PR to a high bar while the legacy
@@ -482,14 +588,15 @@ single untested file (which is precisely how the `keep-monaco-editor` gap was ca
 | **Monaco editor** | ✅ **handled, two ways** | `queryCommandSupported` polyfilled in setup; the behavioural suite mocks `monaco-editor` wholesale; the lifecycle suite runs the real thing on `test/test-utils/monaco.ts` stubs (§A10). The import is now **dynamic** (#729), so the React bridge no longer drags Monaco into every suite that touches it. `@monaco-editor/react` / `@monaco-editor/loader` were deleted from `package.json` in #675. |
 | **Real Monaco reports errors on a timer** | ✅ handled, non-obvious | `captureMonacoErrors()` hooks `process.on('uncaughtException')`, because Monaco's `ErrorHandler` rethrows inside `setTimeout` — `expect(…).not.toThrow()` cannot see it (§A10). |
 | **Redux store helper** | ✅ **DONE** (#689) | `test/test-utils/renderWithProviders.tsx` now sits alongside `lit.ts` and `monaco.ts`; the duplicated `createMockStore()` declarations in `EditView.test.tsx` and `TabsAccess.test.tsx` are gone. |
-| **react-router 7** | ✅ handled | `<MemoryRouter initialEntries={[…]}>` as before. |
+| ~~**react-router 7**~~ | ➖ **gone** | #716 replaced `react-router-dom` with the in-repo router at `src/router/`. Tests use its own harness; `router.test.ts` (458 lines) + `react.test.tsx` (598) cover it at **97.8 %**. |
 | **MUI 9 / Linaria** | ✅ handled | `matchMedia` stub in setup; `css: false` means no computed styles — assert on roles/text/`data-testid`. `wyw` stays in the plugin list so `styled` components remain real components. |
 | **`css: false` makes styling invisible** | 🟡 **structural, mitigated by a new test genre — and it has already cost us a bug** | This is why #708's tokenization has *no* runtime test: `getComputedStyle()` returns nothing useful and jsdom has no canvas backend to resolve `color-mix()`. The workaround that emerged is **source-scanning suites** — `keep-theme.test.ts` parses `keep-theme.css` as text and pins each token to `getTheme()`; `theme-selectors.test.ts` greps the element sources for `light-dark(` outside the editor-palette carve-out; `shell-dead-code.test.ts` asserts deleted shell code stays deleted. **They pin structure, not appearance.** 🐛 Worked example, found in this refresh: `validity-states.test.ts` (#744) asserts that the invalid-state rules use `:state(user-invalid)` and that the state flips correctly — and passes — while the colour those rules apply, `var(--wa-color-danger-600)`, names a token WA 3.10 does not define, with no fallback, so the border never paints. A structural test caught the dead selector and could not catch the dead value. See report 03 finding 11b. |
+| **`wa-*` form association** | 🔴 **not testable here** | jsdom cannot run form association at all, so `wa-*` form participation has no jsdom coverage. Split those assertions out and verify them in Chrome; do not write a jsdom test that *looks* like it covers them. |
 | **WebAwesome / Lit custom elements** | ✅ handled, with a twist | jsdom's own `attachInternals` is *incompatible* with WA form-associated elements, so the stub is installed **unconditionally** rather than conditionally. Registration still happens automatically on import. Shadow-DOM assertions are fine. |
 | **Popover / top layer** | ✅ handled | polyfilled in setup for `keep-alert`. |
 | **`beforeunload` / native events** | ✅ handled | `EditView.test.tsx` pattern ported unchanged. |
 | **jsdom `localStorage` timing** | ✅ handled | stubbed in setup because `store/styles/reducer.ts` reads it at import time. |
-| **Vite server won't exit** | 🟡 cosmetic, **cost removed** (#738) | The message still prints — `something prevents Vite server from exiting` — so the open handle is still there, but capping `teardownTimeout` took ~9 s off the coverage path. A full run is now 9.91 s wall-clock. Chase the handle with the `hanging-process` reporter when convenient; tracked as **#692**. |
+| **Vite server won't exit** | 🟡 cosmetic, **cost removed** (#738) | The message still prints — `something prevents Vite server from exiting` — so the open handle is still there, but capping `teardownTimeout` took ~9 s off the coverage path. A full run is **16.43 s** wall-clock for 133 files / 1709 tests. Chase the handle with the `hanging-process` reporter when convenient; tracked as **#692**. |
 | **Noisy stderr** | ➖ benign | Every Lit suite prints `Lit is in dev mode`, and Node prints an `ExperimentalWarning` about `localStorage` per worker. Neither affects results; both make a failing run harder to read. |
 
 ---
@@ -500,23 +607,25 @@ single untested file (which is precisely how the `keep-monaco-editor` gap was ca
 |---|---|---|---|
 | A1–A11 | Jest → Vitest migration (deps, config, setup, port 4 tests, flip script, purge Jest) | ✅ **DONE** (`f7907a3`, PR #649) | — |
 | A12 | Move tests to a top-level `test/` tree | ✅ **DONE** (`4d7ab3b`, PR #663) | — |
-| B1 | Phase 1 — `utils/*` + all 17 `store/*/reducer.ts` | ✅ **DONE** | — |
+| B1 | Phase 1 — `utils/*` + all `store/*/reducer.ts` (now 10, on `createSlice`) | ✅ **DONE** | — |
 | B2 | Phase 3 — element suites + `test/test-utils/lit.ts` | ✅ **DONE** (PRs #652–#659, completed by #668) | — |
 | B3 | Coverage thresholds + per-directory gates | ✅ **DONE** | — |
 | C1 | Polyfill `document.queryCommandSupported` in `test/setupTests.ts` | ✅ **DONE** (PR #668) | — |
-| C2 | Test `keep-monaco-editor.ts` — restores the `keep-elements` gate | ✅ **DONE** (PR #668; directory now 84.5 %) | — |
-| C4 | Test `src/services/**` | ✅ **DONE** (PRs #669, #670; 6 suites, 96.8 %) | — |
+| C2 | Test `keep-monaco-editor.ts` — restores the `keep-elements` gate | ✅ **DONE** (PR #668; directory now **89.1 %** across 54 files) | — |
+| C4 | Test `src/services/**` | ✅ **DONE** (PRs #669, #670; 6 suites, **96.1 %**) | — |
 | C11 | Publish the coverage summary to the CI job summary | ✅ **DONE** (PR #671) | — |
-| C3 | Make the Monaco import dynamic so the React bridge stays cheap | ✅ **DONE** (#693/#729) — entry chunk 6,322.51 kB → **2,111.11 kB** | — |
+| C3 | Make the Monaco import dynamic so the React bridge stays cheap | ✅ **DONE** (#693/#729). ⚠️ Measure the **eager closure**, not the entry-chunk line: 887.5 kB raw / 243.7 kB gzip, gated by `bundle:budget` | — |
 | C7 | Raise the ratchet to the §B3 "next PR" row | ✅ **DONE** (#686) — global 20→30, `keep-elements` 70→80, `services` gate added at 90 | — |
 | C5 | Extract `test/test-utils/renderWithProviders.tsx`; stop re-declaring `createMockStore()` | ✅ **DONE** (#689) | — |
 | C8 | Split `tsconfig` so `npm run build` stops type-checking `test/` | ✅ **DONE** (#687) — solution-style root referencing `tsconfig.app.json` (build) and `tsconfig.test.json` (typecheck) | — |
 | C9 | Resolve the dead Sonar reporting (§A4–A9) — wired a scanner into CI: `sonar-project.properties` + PR analysis in `pr_check.yml` + branch analysis in `sonar.yml`, skipping when `SONAR_TOKEN` is absent, gate report-only | ✅ **DONE** (#688) | — |
 | C13 | Delete the duplicated `queryCommandSupported` block in `test/setupTests.ts` | ✅ **DONE** (#678) | — |
-| **C12** | **Phase 1c — thunk tests for the remaining `store/*/action.ts`**, following `store/account/action.test.ts`. Consider doing **#711** (split `databases/action.ts`) first so the tests target modules rather than a 2,885-line file | 🟡 TODO (**#690**) | M–L |
-| **C6** | **Phase 2 — React component smoke tests**, starting with the presentational leaves (`people`, `groups`, `schemas`, `scopes`, `navigation`, all <5 %). `renderWithProviders()` removes the setup cost | 🟡 TODO (**#691**) | M |
+| C12 | Phase 1c — thunk tests for the remaining `store/*/action.ts` | ✅ **DONE** (#801–#805, after #711 split the file as this row advised). `store/databases` **22.0 % → 84.4 %**; #690 closed | — |
+| C6 | Phase 2 — React component tests | ✅ **23 suites** (was 6). ⚠️ **#691's remaining targets are superseded** — `people`/`groups` were deleted (#770); `schemas`/`scopes`/`access` are queued for conversion by #806 and an element arrives with its own suite. Write *characterization* suites before a conversion (#880, #885), not blanket smoke tests | — |
 | C14 | Define the Sonar **Quality Gate on New Code** in SonarQube Cloud and drop `continue-on-error`, so the gate blocks rather than reports | 🟡 TODO | S |
+| **C17** | **Cover the shell** — `AppShell.tsx` 10.3 %, `Views.tsx` 0 %. The only substantial untested area *not* queued for deletion | 🟡 TODO | M |
+| **C18** | **Decide about `keep-source.ts`** (776 lines, excluded from coverage outright). The largest blind spot in the tree, and it is a Lit element, so it is not going away | 🟡 TODO | M–L |
 | C10 | Find the handle that keeps the Vite server alive (`hanging-process` reporter); the ~9 s cost is gone but the message remains | 🟢 nice-to-have (**#692**) | S |
-| C15 | Tighten the two gates with free headroom: `utils/**` 85 → 95, `store/**/reducer.ts` 95 → 100 | 🟢 nice-to-have | **XS** |
+| C15 | Tighten the gates with free headroom | ✅ **DONE** (#880) — `utils/**` 85 → **96**, `store/**/reducer.ts` 95 → **97**, `keep-elements/**` 80 → **85**, global 30 → **61**, and four missing gates added | — |
 
 _For unrelated code-quality findings, see `reports/00-code-quality.md`._

@@ -3,16 +3,23 @@
 **The operational companion to reports 00–05.** Those six say *what* is wrong and *why*.
 This one says *who picks up what, in which order, and how they know they are done*.
 
-Measured against `new_code` @ `9f568a8`, 2026-07-29 (originally written at `7ec97b1` the same
-day; twelve PRs landed between the two, so the tables below have been re-measured).
+Measured against `new_code` @ `0d5458c`, 2026-07-30 (previous revisions: `db214a5` and
+`9f568a8` 2026-07-29, originally written at `7ec97b1`).
 
 ```
 npm run lint          exit 0
+npm run typecheck     exit 0
 npm run build         exit 0
-npm run test          exit 0    101 files, 1211 tests
-npm run bundle:budget exit 0    1769.9 kB raw / 437.9 kB gzip
-npm audit                       0 vulnerabilities
+npm run bundle:budget exit 0      887.5 kB raw / 243.7 kB gzip (budget 901.2 / 245.9)
+npm test              exit 0      133 files, 1709 tests, 70.18 % lines
+npm audit                         0 vulnerabilities
 ```
+
+✅ **The baseline is green — start from here.** ⚠️ Worth knowing how cheaply that is lost:
+`5f0b913`, two commits back, left one unused import in `Section.tsx` and it failed `lint`,
+`typecheck` **and** `build` at once. Because CI runs those three *before* `test`, the suite was
+never reached and the branch reported red without saying whether the tests passed. `0d5458c`
+removed the import.
 
 ---
 
@@ -58,20 +65,32 @@ labelled separately so the work stays visible, not so it can run concurrently.
 
 ## Where the programme stands
 
-**Measured on `new_code` @ `db214a5`, 2026-07-30.**
+**Measured on `new_code` @ `0d5458c`, 2026-07-30.**
 
-Nine tracked issues closed in a day: #691, #697, #710, #711, #715, #765, #771, #807, #813.
-**Lanes A, B and C are empty of open work.** Every open issue is either lane D or gated on it:
+Nine tracked issues closed in a day: #691, #697, #710, #711, #715, #765, #771, #807, #813 —
+and since then **#718 (icons) and #884, plus the whole Quick Config cluster
+(#892–#897, #900)**. **Lanes A, B and C are empty of open work.** Every open issue is either
+lane D or gated on it:
 
 | Open | What it really is |
 |---|---|
-| **#806** | the per-file pass — the spine |
-| #713 · #712 · #717 · #718 | lane D work under other labels; they close *inside* #806 |
-| #825 | the styling half of the same pass, minus the 22 MUI-free files |
-| **#709** | wave-3 gate — waits for `@mui/*` to leave 55 files |
-| **#719** | wave-3 capstone — waits for React to leave 71 files |
-| #786 | the `new_code` → `main` merge |
+| **#806** | the per-file pass — the spine. **79 files / 16,682 LOC** left |
+| #713 · #712 · #717 | lane D work under other labels; they close *inside* #806 |
+| ~~#718~~ | ✅ **closed** — 0 `@mui/icons-material` / `react-icons` references remain, both packages uninstalled (#913) |
+| #825 | the styling half of the same pass — `@linaria/react` is in **50** files |
+| **#709** | wave-3 gate — waits for `@mui/*` to leave **43** files |
+| **#719** | wave-3 capstone — waits for React to leave **69** files (101 raw, minus 32 wrapper shims) |
+| #786 | the `new_code` → `main` merge — `main` is now **479** commits behind |
 | #720 | the backlog index; mirrors this table |
+| #731 | `app-icons.ts` — 216 kB of base64, 20 importers. Not separable from the component pass: 15 of its 19 render sites are `<img>`, not `wa-icon` |
+
+⚠️ **New counting rule, and it changes the #719 row.** A file whose entire content is a React
+binding for a `keep-*` element is **not counted as remaining work** — it holds no logic and is
+*deleted with its last consumer*. That is **34 files**: the 32 wrappers under
+`keep-elements/react/`, the `KeepElements.tsx` barrel, and `commons/ZeroResultsWrapper.tsx`. So
+**32 of the 101 React importers close by deletion**, not conversion.
+`test/keep-element-wrappers.test.ts` fails if a wrapper outlives its consumer, which is why the
+orphan count is 0 rather than the 16 that had silently accumulated.
 
 So the four-lane structure has served its purpose and the programme is now **single-lane**. That
 changes two things: contention is the default rather than the exception, and there is no longer a
@@ -85,9 +104,25 @@ different **subtree** of #806.
   other side as a tier-A leftover (91 lines, Linaria only).
 - **#813 finished at 869.6 kB eager**, down 30.9 %, and re-baselined the budget to 2 % headroom.
   Eager source modules: 172 → **98**. Only one file in tier D is still eager (`Views.tsx`, P4),
-  so bundle contention has stopped being a scheduling input.
-- **#807 finished but is unproven.** `FormController` shipped with unit tests and has **zero
-  production users**. `StoreController` now has seven, all from #806's card-view slice.
+  so bundle contention has stopped being a scheduling input. **Now at 887.5 kB / 243.7 kB gzip
+  against a 901.2 / 245.9 budget — 13.7 kB raw / 2.2 kB gzip of room**. ⚠️ **raw headroom was widened 2 % → 3 % for the duration of #806** (a tight raw budget fails on migration churn, not on regressions); gzip stays at 2 % —
+  so **gzip is the half to watch**: a conversion that grows gzip is a real regression, one that
+  only grows raw usually is not. Put raw back to 0.02 when #806 closes.
+- **#807 is no longer unproven.** `FormController` now has **2 production users**
+  (`keep-quick-config-form.ts`, `keep-quick-config-drawer.ts`), converted out of tier D together
+  with their seven-bug cluster. `StoreController` has **11**. ⚠️ But it is not yet proven *at
+  scale*: `TabsAccess.tsx` at 1,002 LOC is 3× anything it has carried. Expect gaps in the larger
+  shapes and **file them rather than work around them** — #885/#888 did exactly that and found
+  #887 (double-submit re-entry) and #890 (a crashing validator read as "valid").
+- **#718 finished, and handed back nothing.** 115 sites, 43 files, both packages uninstalled;
+  `dependencies` 22 → **19**, now **18**. Two findings worth keeping: `<wa-page>`'s nav toggle had been
+  fetching `bars.svg` from the Font Awesome **CDN** on every authenticated screen (a missing
+  `library` attribute falls back silently, and `connect-src *` permitted it), and MUI's Emotion
+  styles had been overriding the app's own icon size classes since the day they were written — so
+  **removing MUI changes icon sizes whichever way you go**.
+- **The Quick Config pair converted and fixed together** (#892–#897, #900 — seven bugs). That is
+  the template for the rest of tier D: converting first would re-implement the bugs in Lit, and
+  fixing first in React would throw the fixes away.
 
 ---
 
@@ -148,35 +183,48 @@ retires as the components convert.
 
 ## Current surface
 
-| | Report 04 baseline | `7ec97b1` | `9f568a8` | **`db214a5`** |
+| | Report 04 baseline | `7ec97b1` | `db214a5` | **`0d5458c`** |
 |---|--:|--:|--:|--:|
-| `.tsx` files | 130 | 119 | 106 | **90** |
-| …importing React | 108 | 92 | 83 | **71** |
-| `useSelector`/`useDispatch` sites | 323 across 76 files | 176 across 63 | 157 across 64 | **155 across 57** |
-| files importing `@mui/*` | 82 | 69 | 68 | **55** |
-| `@mui/icons-material` / `react-icons` | 45 / 18 | 37 / 18 | 37 / 18 | **31 / 18** |
+| `.tsx` files | 130 | 119 | 90 | **86** (84 excl. wrapper shims) |
+| …importing React | 108 | 92 | 71 | **101 raw / 69 excl. shims** |
+| **files left in #806** | — | — | 90 | **79 / 16,682 LOC** |
+| `useSelector`/`useDispatch` sites | 323 across 76 files | 176 across 63 | 155 across 57 | **146 across 54** |
+| files importing `@mui/*` | 82 | 69 | 55 | **43** |
+| `@mui/icons-material` / `react-icons` | 45 / 18 | 37 / 18 | 31 / 18 | **0 / 0** ✅ — #718 |
 | `@mui/x-*` packages | 3 | 0 ✅ | 0 ✅ | **0** ✅ |
-| Formik files | 19 | 15 | 15 | **15** |
-| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | 1 / 1 | 1 / 1 | **1 / 1** — both `AppShell.tsx` |
+| Formik files | 19 | 15 | 15 | **12** |
+| `ThemeProvider` / `CssBaseline` mounts | 2 / 3 | 1 / 1 | 1 / 1 | **1 / 1** — both `AppShell.tsx` 🔴 #709 |
 | `store/databases/action.ts` | 2,883 lines | 2,926 | 47 | **47** ✅ — a barrel since #711 |
-| classic `switch` reducers / `createSlice` | 17 / 0 | 14 / 0 | 8 / 3 | **0 / 11** ✅ — #710 |
-| `createSelector` | 0 | 1 | 1 | **1** |
-| `wa-stack` / `wa-cluster` / `wa-grid` usages | 0 | 0 | 0 | **in use** ✅ — #765 |
-| `dependencies` | 32 | 24 | 22 | **22** |
-| `keep-*` elements | — | 27 | 37 | **49** |
-| tests | 53 files / 509 | 87 files / 996 | 101 / 1211 | **115 / 1521** ✅ |
+| classic `switch` reducers / `createSlice` | 17 / 0 | 14 / 0 | 0 / 11 | **0 / 17 modules, 10 slices** ✅ |
+| `createSelector` | 0 | 1 | 1 | **2** |
+| `as any` / `dispatch(… as any)` | — | — | — | **44 / 0** ✅ — #694 |
+| `@linaria/react` files | 69 | — | 51 | **50** |
+| `dependencies` | 32 | 24 | 22 | **18** |
+| `keep-*` elements | — | 27 | 49 | **50** |
+| `@lit/react` wrappers (deletions, not work) | — | — | — | **32**, 0 orphaned |
+| `StoreController` / `FormController` users | 0 / 0 | 0 / 0 | 7 / **0** | **11 / 2** ✅ |
+| tests | 53 files / 509 | 87 / 996 | 115 / 1521 | **133 / 1709, 70.18 %** ✅ |
+| eager bundle | — | — | 869.6 kB | **887.5 kB / 243.7 kB gzip** (budget 901.2 / 245.9) |
 | `npm audit` | 10 high | 0 ✅ | 0 ✅ | **0** ✅ |
+| `lint` / `typecheck` / `build` | — | ✅ | ✅ | ✅ **all exit 0** |
 
-Two rows are worth reading together. `.tsx` files fell 16 in a day while
-`useSelector`/`useDispatch` fell **two** — and both numbers are honest. The card-view slice
-replaced seven of those sites with `StoreController` and *deleted* six more outright (a prop that
-mirrored store state), but the remaining 155 sit overwhelmingly in **route components**, which
-cannot convert until the router does (#719). Expect this row to stay flat and then collapse at
-the end, not to track the file count.
+⚠️ **Three rows that will mislead you if read as progress bars.**
+
+1. **`useSelector`/`useDispatch` — 155 → 146 while `.tsx` went 90 → 86.** Honest, and expected:
+   the converted files were chosen for having *no* store access, and the remaining 146 sites sit
+   overwhelmingly in **route components**, which cannot convert until the shell does (P4/#719).
+   This row stays flat and then collapses at the end.
+2. **`…importing React` appears to have gone *up*, 71 → 101.** It did not — the row changed
+   meaning. 71 counted `.tsx` only; 101 counts `.ts` too, and **32 of those are the wrapper
+   shims** that close by deletion. Like-for-like the figure is **69**.
+3. **The eager bundle grew, 869.6 → 887.5 kB.** #718 is why: MUI's icon factory (84.8 kB) left
+   the closure, but the 44 bundled glyphs inline as base64 `data:` URIs, so raw ended up +19.5 kB
+   and gzip +4.9. Still under budget — but headroom is now **0.5 %**, not 2 %. **Measure before
+   converting an eager file.**
 
 Three Linaria-carrying modules were deleted with no replacement (`components/flex`,
 `SchemaStyles`, `ScopeStyles`) and three more turned out to have no importers at all, which is
-why `@linaria/react` fell 69 → **51** without a CSS-Modules sweep (#825).
+why `@linaria/react` fell 69 → **50** without a CSS-Modules sweep (#825).
 
 ---
 
@@ -209,8 +257,8 @@ right** — they share files.
 | Wave | A — store & data | B — design system | C — infra & tests | D — React removal |
 |---|---|---|---|---|
 | **0** — no deps | ✅ #800 → #792 | ✅ #807 · ✅ #771 · ✅ #765 | ✅ #691 (dropped) | ✅ **#806 tier A** (PR #835) |
-| **1** | ✅ #801 → #803 → #804 → #802 → #805 | ✅ | ✅ #813 | **#806 tiers B–C** — 74 files left · **#713** interleaved ← **here** |
-| **2** | ✅ #711 · ✅ #697 · ✅ #710 | ✅ | ✅ | **#806 tier D** — 16 files, unblocked · closes **#717** **#718** **#712** |
+| **1** | ✅ #801 → #803 → #804 → #802 → #805 | ✅ | ✅ #813 | **#806 tiers A–C** — 66 files left · **#713** interleaved ← **here** |
+| **2** | ✅ #711 · ✅ #697 · ✅ #710 | ✅ | ✅ #718 | **#806 tier D** — 13 files, unblocked *and proven* · closes **#717** **#712** |
 | **3** — gates | — | **#709** | merge `new_code` → `main` (PR #786) | **#719** capstone → closes **#720** |
 
 **Lane A is finished.** Every planned item in waves 0–2 is closed. All 11 reducers are
@@ -228,7 +276,8 @@ as the record of what each item was.
 
 **Lanes B and C are finished too.** #771 and #765 closed, so lane B holds only #709 — which
 cannot start until #806 empties `@mui/*` out of the components. #813 closed at 869.6 kB eager,
-down 30.9 %, with the budget re-baselined to 2 % headroom.
+down 30.9 %, with the budget re-baselined to 2 % headroom — **raw has since been widened to
+3 % for the duration of #806**; gzip is still 2 %.
 
 ~~**Lane A is a single file for waves 1–2.**~~ Obsolete: #711 split `store/databases/action.ts`
 into modules behind a barrel, and the file is now 47 lines.
@@ -241,15 +290,21 @@ by −0.3 kB.
 
 ### #806, by what is left
 
-| Tier | files | LOC | eager | shape |
-|---|--:|--:|--:|---|
-| **A leftovers** | 16 | 1,403 | 6 | the 4 contexts, `AppIcon`, 4 Linaria style modules, 2 P4 files |
-| **B** one axis | 33 | 5,446 | 8 | MUI *or* store |
-| **C** both | 25 | 5,774 | 5 | the bulk |
-| **D** Formik | 16 | 5,667 | 1 | only `Views.tsx` (P4) is eager |
+**Re-derived mechanically by axis on `0d5458c`** — not carried forward. Tier = Formik → D;
+MUI **and** store → C; exactly one → B; neither → A.
 
-Done: tier A (11 conversions, 3 deletions) plus the card-view subtree — both
-`commons/cardviews/displays/` families, their two shared children, and six Linaria style modules.
+| Tier | files | LOC | shape |
+|---|--:|--:|---|
+| **A** React only | 18 | 1,615 | 3 contexts, 4 Linaria style modules, `NavigationGuardContext` (**#884 now closed** — unblocked), the rest ready |
+| **B** one axis | 29 | 5,912 | MUI *or* store. 15 store-only, 14 MUI-only (4 of which are style modules — do them **last**) |
+| **C** both | 19 | 5,003 | the bulk of the real work |
+| **D** Formik | 13 | 4,152 | 12 Formik importers + `AppIcon` (parked here — it exposes `as?: React.ElementType`, which has no custom-element equivalent) |
+
+**Total: 79 files / 16,682 LOC.** Excludes the 6 P4 files (`App.tsx`, `AppShell.tsx`,
+`Views.tsx`, `index.tsx`, `router/react.tsx`, `KeepElements.tsx`) and the wrapper shims.
+
+Done since the last revision: the Quick Config pair (#892–#900, fixed *and* converted together),
+`QuickConfigView.tsx`, and `FileContentsTree.tsx` → `keep-file-contents-tree.ts`.
 
 ### The three subtrees left, and why to take them whole
 
@@ -263,10 +318,11 @@ feature**.
 | **`access/`** | ~4,000 | `TabsAccess.tsx` (1,008) | the deepest; holds `ModeCompare` (652), `Fields`, `AccessMode` |
 | **`forms/`** | ~3,500 | `FormsContainer.tsx` (805) | holds `DetailsSection` (696), `EditView` (626), the three tab views |
 
-Between them they hold most of the 55 files that gate #709.
+Between them they hold most of the **43** files that gate #709.
 
 **Take `FormController` off the critical path first.** It shipped in #807 with unit tests and has
-**zero production users**. Prove it on `applications/FormDrawer.tsx` (61 lines) and `AppStack.tsx`
+**2 production users** as of the Quick Config conversion — so it is proven, but not at scale.
+Continue on `applications/FormDrawer.tsx` (60 lines) and `AppStack.tsx`
 (66) before anything reaches `TabsAccess.tsx` at 1,008 — the same argument that put the first
 `StoreController` in a 52-line dialog rather than in `EditView`.
 
@@ -367,14 +423,33 @@ they belong to #771.
 No sorting and no selection anywhere in the six — zero `TableSortLabel`, zero `Checkbox`.
 Do not build features nothing uses.
 
-### B · #765 — `wa-stack` / `wa-cluster` / `wa-grid` — ✅ done
+### B · #765 — ✅ closed, but **only half of it was done** — read this before citing it
 
-**Zero usages today.** The one box #708 left unticked, carved out because it is layout
-adoption rather than tokenization. Pure additive work with no dependency.
+The issue is closed `COMPLETED`, and an earlier revision of this table recorded the layout
+utilities as "in use". **They are not.** Measured on `0d5458c`: **0** usages of `wa-stack`,
+`wa-cluster` or `wa-grid` anywhere in `src`, and `git log -S'wa-cluster' -- src` returns
+nothing — the strings have never existed in the tree.
 
-⚠️ `keep-tooltip.ts` still reads Shoelace-era token names, which fail *silently* — the
-fallback wins, so the code looks token-driven and is not. Fix those while you are in the
-element layer.
+| Half of #765 | Outcome |
+|---|---|
+| **Token audit** | ✅ **done.** 34 `--wa-*` tokens read by `src`, all 34 resolve, **0 undefined**. No `--sl-*` token anywhere. `keep-tooltip.ts`'s Shoelace-era names are gone — it reads `--keep-tooltip-surface`/`--keep-tooltip-on`/`--wa-font-size-s`. One real defect found and fixed in **#874**: `--wa-font-sans` does not exist (WA's family tokens are `--wa-font-family-{body,heading,code,longform}`), so the `inherit` fallback always won — the exact silent failure the issue was about. It caused no visual change, verified in a browser |
+| **Layout adoption** | ➖ **deliberately dropped.** 34 files in `keep-elements/` and 5 in `styles/` use hand-rolled `display: flex`/`grid`. Converting them means rendering WA layout elements inside 34 shadow roots with **no consumer asking for it**, and `css: false` means the suite cannot see any regression it causes — a large unverifiable change bought with churn |
+
+**The primitives cost nothing to adopt in *new* layout, which is where they should arrive.**
+File fresh if a concrete screen wants them; do not run it as a sweep.
+
+⚠️ **And record how the token audit had to be done, because static analysis failed twice.**
+A static scan reported **24** undefined tokens, including `--wa-font-size-m`, which resolves
+fine — it was reading `dist/styles/webawesome.css`, which declares only 21 tokens and
+`@import`s `themes/default.css` for the other 179. Fixing that got it to 6, still wrong:
+WebAwesome **generates** its colour steps rather than declaring them, so
+`--wa-color-danger-50` and friends were false positives. **The only reliable method is a
+browser**: enumerate every `var(--wa-*)` in `src`, load the real stylesheet stack, and read
+each through `getComputedStyle(document.documentElement)` — an empty string is undefined.
+
+**No CI guard was added, on purpose.** A guard with five false positives trains people to add
+allowlist entries and stop trusting it, which is worse than no guard. The reliable version
+needs a browser, which CI cannot run cheaply here.
 
 ### C · #691 — smoke tests for the React components — **decided: dropped**
 
@@ -428,7 +503,7 @@ assuming they are absent:
 - **Null response** — #800's contract; should already be fixed when you get here.
 - **`JSON.parse` on a non-JSON body.**
 
-### D · #806 tiers B–C — 74 files left, ~12,600 LOC
+### D · #806 tiers A–C — 66 files left, 12,530 LOC
 
 The bulk, and the next thing to pick up. Tier B is one axis (MUI *or* store); tier C is both.
 
@@ -536,7 +611,7 @@ defer it until after #806 and re-measure, or drop it. **Do not do it blind** —
 requires profiling a heavy screen before and after, and some of these will make no
 measurable difference.
 
-### D · #806 tier D — 16 Formik files, ~5,670 LOC
+### D · #806 tier D — 12 Formik files + `AppIcon`, 4,152 LOC
 
 Unblocked: #807 shipped `src/store/FormController.ts` with unit tests in PR #852. Includes
 `access/TabsAccess.tsx` (1,008 lines) and the four `applications/` forms.
@@ -555,7 +630,9 @@ from it, and its remaining matches are comments.
 **#717, #718 and #712 close here**, not by separate work:
 
 - **#717** (Formik → native + yup) *is* tier D.
-- **#718** (four icon systems → `wa-icon`) happens in every tier's per-file recipe. 37
+- ~~**#718**~~ ✅ **closed already** (#913) — the icon axis measures **0 / 0** and both packages
+  are uninstalled, so the icon line of the per-file recipe is now a guard for new call sites
+  rather than work. Historic note: it was 37
   files import `@mui/icons-material`, 18 import `react-icons`, `app-icons.ts` is behind a
   dynamic import since #794.
 - **#712** (oversized components) — extraction happens **as part of** each conversion, not
@@ -752,17 +829,27 @@ CSS-Modules conversion.
 
 ```
 npm run lint          # oxlint, gates CI at error
-npm run build         # tsc -b tsconfig.app.json && vite build — this is the typecheck
-npm run test          # vitest run --coverage
+npm run typecheck     # tsc -b — the ONLY thing that type-checks test/
+npm run build         # tsc -b tsconfig.app.json && vite build — app project only
 npm run bundle:budget # eager-closure size against bundle-budget.json (#813 / PR #834)
+npm run test          # vitest run --coverage
 ```
 
-All four run in `pr_check.yml` on Node 24, followed by a SonarQube Cloud scan and quality
-gate. Note `npm run build` *is* the typecheck — there is no separate `tsc` step in CI, so a
-type error surfaces as a build failure.
+All five run in `pr_check.yml` on Node 24, in that order, followed by a SonarQube Cloud scan
+and quality gate.
 
-**The bundle budget is a hard gate, and it is back to 2 % headroom.** #813 took the eager
-closure down 30.9 % and re-baselined it, so the 20 % tier A needed is gone. That is survivable
+⚠️ **`npm run build` is NOT the typecheck for tests** — that claim was true when this
+document was written and is not any more. `build` is `tsc -b tsconfig.app.json`, the **app
+project only**, so a type error under `test/` passes it and fails only `npm run typecheck`.
+Run `typecheck` after touching anything in `test/`, and add `--force` after editing a shared
+type.
+
+⚠️ **The first three gates run *before* `test`**, so if `lint`/`typecheck`/`build` fail, CI
+never reaches the suite — a red branch reports as red without ever telling you whether the
+tests pass.
+
+**The bundle budget is a hard gate — now 3 % raw / 2 % gzip.** #813 took the eager closure
+down 30.9 % and re-baselined it, so the 20 % tier A needed is gone. That is survivable
 for the rest of lane D for one reason worth knowing: **the growth only happens when you convert
 an eager file.** The card-view slice is entirely route-lazy and measured 1222.2 kB against a
 1222.5 kB baseline — no movement at all. Tier A's 23.4 kB came from converting shell files. The
@@ -770,17 +857,32 @@ mechanism, which still applies to any eager conversion: Linaria
 `styled` CSS is **extracted at build time** into the stylesheet, whereas Lit `static styles` is
 a template literal that ships **inside the JS chunk**. Every conversion therefore moves bytes
 out of `.css` and into the eager `.js`. The signature is raw growing several times faster than
-gzip, since CSS text compresses far better than code. Two things to know:
+gzip, since CSS text compresses far better than code.
 
-- `--update` refuses to *raise* the budget. A justified increase is a hand edit of
-  `bundle-budget.json`, so a reviewer sees it.
+⚠️ **That signature is exactly why raw was widened to 3 % and gzip was not.** A raw budget tight
+enough to catch a regression during a migration that legitimately adds raw bytes just fails on
+the migration — #718 landed at **+19.5 kB raw but only +4.9 kB gzip** for the same reason (44
+base64 glyphs). So during #806, **gzip is the sensitive half of the gate**: a conversion that
+grows gzip is a real regression; one that only grows raw usually is not. Put raw back to `0.02`
+in `scripts/bundle-budget.mjs` when #806 closes, and re-baseline with `--update`, which tightens
+both. Three things to know:
+
+- `--update` refuses to *raise* the budget, and it still does after the widening — it compares
+  against the stored `measured`, not the budget. A justified increase is a hand edit of
+  `bundle-budget.json` **and** `HEADROOM` in the script, so a reviewer sees both.
+- **The stored baseline is deliberately older than the tree.** `measured` is 875.0 kB while the
+  tree measures 887.5 kB, so the gate is holding a line set before #718 — which is why widening
+  raw to 3 % bought 13.7 kB of room rather than the ~8.7 kB the percentage alone implies.
 - Comments inside a `css` template are string content, so minifiers do not strip them and they
   ship. Roughly 6 kB of tier A's growth is prose. Hoisting long rationales into the class
   docblock, above `static styles`, is the cheap win when raw needs to come down.
 
-**Coverage is enforced, not advisory.** `vitest.config.ts` sets a global floor plus
-per-directory gates: `src/store/**/reducer.ts` at 95 %, `utils/**`, `components/keep-elements/**`,
-`services` at 90. A PR that drops a gated directory fails.
+**Coverage is enforced, not advisory.** `vitest.config.ts` sets a global floor of **61 %** plus
+**14** per-path gates — `src/store/**/reducer.ts` at 97 %, `utils/**` 96, `services/**` 93,
+`components/keep-elements/**` 85, `router/**` 94, `store/databases/**` 81, and the two
+controllers at 97. A PR that drops a gated directory fails. ⚠️ **When a conversion creates a new
+well-covered directory, add its gate in the same PR** — #880 found three areas that were well
+covered and had *no* gate at all, which drift reporting cannot surface.
 
 ---
 

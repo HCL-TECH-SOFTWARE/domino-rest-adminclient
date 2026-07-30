@@ -1,79 +1,85 @@
 # 05 — Dependency Vulnerability Triage & Remediation
 
 Generated 2026-07-24 · Remediation applied & verified 2026-07-25 on branch
-`fix/dependabot-alerts` · Re-audited 2026-07-27 on `7594672` and `e17010c` ·
-**Refreshed 2026-07-28 against `new_code` @ `fcab645`.**
+`fix/dependabot-alerts` · Re-audited 2026-07-27 on `7594672` and `e17010c` · Refreshed
+2026-07-28 on `fcab645` · **Refreshed 2026-07-30 against `new_code` @ `0d5458c`.**
 
-> ## ⚠️ Read this first — there are **two** vulnerability views and they disagree
+> ## ✅ `npm audit` is clean — and **all 16** Dependabot alerts are now branch skew
 >
 > | View | Computed on | Result |
 > |---|---|---|
 > | **GitHub Dependabot alerts** (the security tab) | default branch **`main`** | **16 open** — 2 critical, 8 high, 4 medium, 2 low |
-> | **`npm audit`** | this branch, **`new_code` @ `fcab645`** | **10 high**, 0 critical, 0 moderate, 0 low — 10 flagged *packages*, **2** root advisories |
+> | **`npm audit`** | this branch, **`new_code` @ `0d5458c`** | ✅ **0 vulnerabilities** |
 >
-> **The gap widened: `main` is now 160 commits behind `new_code`** (was 80).
-> `git rev-list --count origin/main..origin/new_code` = **160**; the reverse count is
-> **0** — `new_code` contains everything on `main`. Dependabot only ever scans the
-> **default branch**. The GitHub security tab therefore describes a lockfile that is
-> **not the one this branch ships**, and it is describing it more wrongly each week.
+> **The gap has widened again: `main` is now 479 commits behind `new_code`** (was 160, and
+> 80 before that). `git rev-list --count origin/main..origin/new_code` = **479**; the
+> reverse count is **0** — `new_code` contains everything on `main`. Dependabot only ever
+> scans the **default branch**. The GitHub security tab therefore describes a lockfile that
+> is **not the one this branch ships**, and it is describing it more wrongly every week.
 >
-> ### 14 of the 16 alerts are already fixed on `new_code`
+> ### The last two live advisories cleared this refresh
 >
-> Verified by resolving each advisory's range against the installed tree on this commit:
+> The previous refresh found 14 of 16 alerts stale and **2 genuinely live** (121
+> `brace-expansion`, 120 `react-router`). Both are now resolved, by opposite routes:
+>
+> - **121 — `brace-expansion` `<=5.0.7`.** The previous refresh called this "a wait, not a
+>   task", because no fix was published. The fix landed: `brace-expansion@5.0.8` is
+>   installed, and the `minimatch@^10.2.6` override carries it.
+> - **120 — `react-router` RSC-mode CSRF bypass.** Cleared by **deletion, not a bump**.
+>   #716 removed `react-router` and `react-router-dom` entirely and replaced them with a
+>   2-file in-repo router at `src/router/` (97.8 % covered). The package is not installed at
+>   any depth. That is the more durable fix — no future react-router advisory can apply to
+>   this app.
+>
+> ### Every alert, resolved against the installed tree on this commit
 >
 > | Alert(s) | Package | Vulnerable range | `main` has | `new_code` resolves | Live here? |
 > |---|---|---|---|---|:---:|
 > | 109, 110, 111 | happy-dom | `<15.10.2`, `<20.0.0`, `<20.8.9` | **10.8.0** | **20.11.1** | ❌ |
-> | 115, 116, 117, 118 | react-router | `<7.18.0` (×3), `>=7.0.0 <7.18.0` | **7.17.0** | **7.18.1** | ❌ |
+> | 115, 116, 117, 118, **120** | react-router | `<7.18.0` (×4), `>=7.12.0 <8.3.0` | **7.17.0** | ➖ **not installed** (#716) | ❌ |
 > | 119 | postcss | `<=8.5.17` | **8.5.15** | **8.5.23** | ❌ |
-> | 112 | brace-expansion | `>=2.0.0 <2.1.2` | 2.1.1 | **2.1.2** | ❌ |
-> | 108 | brace-expansion | `>=3.0.0 <5.0.7` | 5.0.5 | *(no 5.x copy)* | ❌ |
-> | 107, 113 | js-yaml | `<3.15.0` | 3.14.2 | *(only 4.3.0)* | ❌ |
+> | 108, **121** | brace-expansion | `>=3.0.0 <5.0.7`, `<=5.0.7` | 2.1.1 / 5.0.5 | **5.0.8** | ❌ |
+> | 112 | brace-expansion | `>=2.0.0 <2.1.2` | 2.1.1 | *(no 2.x copy)* | ❌ |
+> | 107, 113 | js-yaml | `<3.15.0` | 3.14.2 | **4.3.0** (+ a `^3.15.0` override under `@istanbuljs/load-nyc-config`) | ❌ |
 > | 114 | dompurify | `<=3.4.11` | 3.4.11 | **3.4.12** | ❌ |
-> | 105 | @babel/core | `<=7.29.0` | 7.29.0 | *(overridden `^7.29.6`)* | ❌ |
-> | **121** | **brace-expansion** | `<=5.0.7` | 2.1.1 | **2.1.2** | ✅ **yes** |
-> | **120** | **react-router** | `>=7.12.0 <8.3.0` | 7.17.0 | **7.18.1** | ✅ **yes** |
+> | 105 | @babel/core | `<=7.29.0` | 7.29.0 | ➖ **not installed** (overridden `^7.29.6`) | ❌ |
 >
-> Those last two are exactly the 2 root advisories `npm audit` reports, fanned out
-> across 10 packages. Neither is exposure:
+> **0 of 16 are live.** This is the first refresh at which the two views agree in substance:
+> `npm audit` reports nothing because there is nothing to report.
 >
-> - **121** is a build-time DoS in `brace-expansion`, reached through
->   `@linaria/react → @wyw-in-js/* → minimatch`. Never in the browser bundle. **No fix is
->   published for the 2.x line yet** — this is a wait, not a task.
-> - **120** is an **RSC-mode CSRF bypass**. This app does not use React Server
->   Components, and report 04 removes `react-router-dom` entirely (**#716**).
+> ### The two criticals never existed in the code being shipped
 >
-> ### The two criticals still do not exist in the code being shipped
+> Alerts **109**/**110** are `happy-dom` matched against **`main`'s `happy-dom@10.8.0`**.
+> `new_code` resolves **20.11.1**. Doubly non-urgent: `happy-dom` is not application code and
+> is not even the test environment here — Vitest runs on **jsdom** (`vitest.config.ts`). It
+> arrives via `@wyw-in-js/vite` and `vitest`, and never enters the browser bundle.
 >
-> Alerts **109**/**110** are `happy-dom` matched against **`main`'s `happy-dom@10.8.0`** —
-> read directly from `main`'s lockfile. `new_code` resolves **20.11.1**, which `npm audit`
-> does not flag. Doubly non-urgent: `happy-dom` is not application code and is not even the
-> test environment here — Vitest runs on **jsdom** (`vitest.config.ts`). It arrives via
-> `@wyw-in-js/vite` and `vitest`, and never enters the browser bundle.
->
-> **If you are reading the GitHub security tab: 14 of the 16 alerts are stale branch skew.
-> Merge `new_code` and they clear.**
+> **If you are reading the GitHub security tab: all 16 alerts are stale branch skew. Merge
+> `new_code` and every one of them clears.** That is now the entire remediation.
 
 > ## Status at a glance
 >
-> | | 2026-07-24 | `e17010c` | **`fcab645`** |
-> |---|---|---|---|
-> | GitHub Dependabot alerts (on `main`) | 9 | 9 | **16** — 7 new (115–121); **6 of the 7 are already fixed here**, one (121) is live |
-> | `main` behind `new_code` | — | 80 commits | **160 commits** |
-> | `npm audit` on this branch | 9 | 10 high, 0 critical | **10 high, 0 critical** — same count, **better composition** |
-> | Root advisories behind that count | — | 2 | **2** (`brace-expansion` build-time; `react-router` RSC-only) |
-> | Browser-reachable | 1 (DOMPurify, low) | 1 (`react-router`, mode unused) | **0 reachable** — the react-router advisory needs RSC |
-> | Overrides block | 9 entries, all load-bearing | 9 entries: 4 live, 5 dead | **9 entries** — re-audit, several now protect packages Jest took with it |
-> | `npm run lint` / `build` / `test` | — | ✅ / ✅ / ✅ | ✅ / ✅ / ✅ (747 tests) |
+> | | 2026-07-24 | `e17010c` | `fcab645` | **`0d5458c`** |
+> |---|---|---|---|---|
+> | GitHub Dependabot alerts (on `main`) | 9 | 9 | 16 | **16** — unchanged; **all now fixed here** |
+> | of those, live on this branch | — | 2 | 2 | ✅ **0** |
+> | `main` behind `new_code` | — | 80 commits | 160 | **479 commits** |
+> | `npm audit` on this branch | 9 | 10 high | 10 high, 0 critical | ✅ **0 vulnerabilities** |
+> | Root advisories behind that count | — | 2 | 2 | ✅ **0** |
+> | Browser-reachable | 1 (DOMPurify, low) | 1 | 0 | ✅ **0** |
+> | Overrides block | 9 entries, all load-bearing | 9: 4 live, 5 dead | 9 | ✅ **4 entries** — the dead ones deleted in `e27102f` |
+> | `npm run lint` / `build` / `test` | — | ✅ / ✅ / ✅ | ✅ / ✅ / ✅ | ✅ / ✅ / ✅ |
 >
-> **Bottom line, and it improved this round even though the number did not.** The
-> `react-router` picture got materially better: at `e17010c` the flagged advisory was one
-> of several, and the bump to **7.18.1** has since cleared the **unauthenticated
-> route-matching DoS** (`<7.18.0`) and the **open-redirect** (`<7.18.0`) — both of which
-> *would* have applied to this app. What remains is the RSC-mode CSRF bypass, which cannot
-> be reached here. The identical "10 high" headline hides a real reduction in exposure.
+> **Bottom line: the dependency-security work is done.** Two things closed it — a patch
+> finally shipping for `brace-expansion`, and #716 deleting `react-router` rather than
+> chasing its advisories. ✅ **The overrides audit is done too**: `e27102f` deleted the four
+> dead entries this report had recommended removing for three refreshes, leaving `yaml`,
+> `dompurify`, `jsdom` and `minimatch` — all four verified live.
 >
-> Tracked as **#699**.
+> **The only thing left is not a security task at all: merge `new_code` so the security tab
+> stops describing a lockfile nobody ships.**
+>
+> Tracked as **#699** — which can be closed.
 
 ---
 
@@ -190,24 +196,38 @@ patch each line *within its own major*. The trap still applies today — see §N
 | `npm test` | — | ✅ 4 suites / 34 tests |
 | lockfile size | — | −1,849 / +102 lines |
 
-**Still true on 2026-07-28 @ `fcab645`:** `happy-dom` resolves to a single patched
+**Still true on 2026-07-30 @ `0d5458c`:** `happy-dom` resolves to a single patched
 **20.11.1**; `dompurify` is **3.4.12**; `jsdom` is **29.1.1**; `js-yaml` is **4.3.0**;
-`brace-expansion` is **2.1.2**; `minimatch` is **9.0.9**; `postcss` is **8.5.23**;
-`react-router` is **7.18.1**; `@babel/core` is gone. None of the original 9 has returned to
-this branch. The suite has since grown to **70 test files / 747 tests**, all green.
+`brace-expansion` is **5.0.8**; `minimatch` is **10.2.6**; `postcss` is **8.5.23**;
+`@babel/core` is gone; and **`react-router` is gone entirely** (#716). None of the original 9
+has returned to this branch. The suite has since grown to **133 test files / 1709 tests**,
+all green.
 
 ---
 
-## Part 2 — Re-audit 2026-07-28 (10 high findings)
+## Part 2 — Re-audit 2026-07-30 (✅ clean)
 
-`npm audit` on `new_code` @ `fcab645` after a clean `npm ci`:
+`npm audit` on `new_code` @ `0d5458c` after a clean `npm ci`:
 
 ```
-10 high severity vulnerabilities   (0 critical, 0 moderate, 0 low)
+found 0 vulnerabilities
 ```
 
-Those 10 are **10 flagged packages tracing back to just 2 root advisories**: one
-`brace-expansion` DoS (8 packages) and one `react-router` RSC CSRF bypass (2 packages).
+**Both root advisories behind the previous "10 high" have cleared**, and the sections below
+are kept as the record of how — because the two routes were different and only one of them
+was the one this report predicted.
+
+| Root advisory | Previous status | Now | How |
+|---|---|---|---|
+| `brace-expansion` DoS (8 flagged packages) | 🟡 "a wait, not a task" — no 2.x fix published | ✅ cleared | The patch shipped. `brace-expansion@5.0.8` installed, carried by the `minimatch@^10.2.6` override |
+| `react-router` RSC CSRF bypass (2 packages) | 🟡 not reachable — RSC unused | ✅ cleared | **#716 deleted the package**, replacing it with `src/router/`. Not a bump — the dependency is gone at every depth |
+
+⚠️ **Note which prediction was right.** New-2 below argued that folding the `react-router`
+fix into #716's migration was "strictly better than doing it twice". That is what happened,
+and it is the more durable outcome: no future `react-router` advisory can apply to this app,
+whereas a bump would have left it exposed to the next one.
+
+### Historic detail (retained) — the clusters as they stood at `fcab645`
 
 ### New-1 · The `@wyw-in-js → minimatch → brace-expansion` cluster (8 of 10)
 
@@ -331,8 +351,11 @@ are now a refresh older.** The block below is the current `package.json` verbati
   `npm ls @babel/core` returns `(empty)` and `node_modules/@babel/core` does not exist.
   The pin applies to nothing. (This also makes alert **105** moot rather than patched.)
 
-**Recommendation (S, zero risk), now carried for a second refresh:** delete the five dead
-entries. Dead overrides are worse than clutter — they create false confidence that a class
+✅ **DONE — the recommendation this report carried for three refreshes has landed.**
+`e27102f` deleted `test-exclude`, `glob`, `@babel/core` and `@istanbuljs/load-nyc-config`
+from `overrides`. The block is now **4** entries — `yaml`, `dompurify`, `jsdom` (`^30.0.1`)
+and `minimatch` (`^10.2.6`) — and every one is live. The analysis below is retained as the
+record of how the dead ones were identified. Dead overrides are worse than clutter — they create false confidence that a class
 of problem is pinned when the pin no longer applies to anything, and `@babel/core` in
 particular reads as "alert 105 is handled" when in fact the package is simply gone. Fold
 this into **#699**.
@@ -341,25 +364,29 @@ this into **#699**.
 
 ```bash
 npm ci
-npm audit                 # 10 high: 8 build-time wyw/minimatch, 2 react-router
-npm run lint              # ✅ clean (oxlint, no findings)
-npm run build             # ✅ exit 0 — entry chunk 2,111.11 kB / 594.20 kB gzip
-npm run test              # ✅ exit 0 — 70 test files / 747 tests
+npm audit                 # ✅ found 0 vulnerabilities
+npm run lint              # ✅ exit 0
+npm run typecheck         # ✅ exit 0
+npm run build             # ✅ exit 0
+npm run test              # ✅ exit 0 — 133 test files / 1709 tests
+npm run bundle:budget     # ✅ 887.5 kB raw / 243.7 kB gzip
 gh api repos/HCL-TECH-SOFTWARE/domino-rest-adminclient/dependabot/alerts \
   --paginate -q '.[] | select(.state=="open")'   # 16 open — but computed on `main`
-git rev-list --count origin/main..origin/new_code   # 160
+git rev-list --count origin/main..origin/new_code   # 479
 ```
 
 ---
 
 ## Process recommendations
 
-- 🔴 **Fix the branch skew first — and it is more urgent than last time.** 14 of the 16
-  open alerts, including both criticals, are artifacts of `main` trailing `new_code` by
-  **160 commits** — double the skew of the previous refresh, with the alert count up from
-  9 to 16. Until `new_code` lands, the security tab reports on code nobody ships, and the
-  one genuinely live finding (alert **121**) is buried in fifteen stale ones. That is the
-  concrete cost of the skew: it is now actively hiding a real result.
+- 🔴 **Fix the branch skew — it is now the *only* remaining item, and the whole report
+  reduces to it.** **All 16** open alerts, including both criticals, are artifacts of `main`
+  trailing `new_code` by **479 commits** — triple the skew of the previous refresh. Until
+  `new_code` lands, the security tab reports entirely on code nobody ships. The previous
+  refresh's sharper complaint (that the skew was *hiding* a real finding) no longer applies,
+  because there is no longer a real finding to hide — but the inverse cost has grown: **16
+  open alerts on a repo with zero actual vulnerabilities** trains everyone to ignore the
+  security tab, which is the state in which a genuine alert gets missed.
   **There is no config workaround:** alerts are derived from the dependency graph, which
   GitHub builds from the **default branch**, so merging is the fix. What *can* be tuned is
   the update side — `.github/dependabot.yml` declares `npm`, `maven` and `github-actions`
