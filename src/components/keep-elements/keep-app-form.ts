@@ -84,6 +84,12 @@ const BUILT_IN_SCOPES = ['MAIL', '$DATA', '$DECRYPT'];
  * keeps the coupling alive through the type after removing it from the imports.
  * **`Kanban`'s own submit handler is now unreachable**, and goes when that file converts.
  *
+ * ### Add or Edit is derived from the row, not announced by the opener (#939)
+ *
+ * A seed carrying a client id is an edit and saves with `updateApp`; one without is an add and
+ * saves with `addApplication`. There is no mode property — see {@link editing} for the defect
+ * that made this the fix rather than a third call site.
+ *
  * ### Seeding: the drawer is reused, so `initialValues` arrives late and more than once
  *
  * One element serves both Add and Edit, and the row being edited is pushed in by a still-React
@@ -302,8 +308,14 @@ export default class AppForm extends KeepElement {
   });
 
   /**
-   * Whether this visit is an edit. Set by the React ancestors through a context, which no
-   * element can read — so it crosses as a property until they convert.
+   * **Not consulted. Kept only so the last React caller still compiles.**
+   *
+   * This was the Add-versus-Edit mode: a string one ancestor set to `'Edit'`, another to
+   * `'create'`, and a third — the list view's edit control, the only reachable way in — never
+   * set at all. See {@link editing} for what replaced it and why. `applications/FormDrawer.tsx`
+   * still passes it; the property goes when that file does.
+   *
+   * @deprecated #939 — the mode is derived from the row now. Setting this does nothing.
    */
   @property({ type: String }) accessor formContext = '';
 
@@ -372,6 +384,25 @@ export default class AppForm extends KeepElement {
     if (this.initialValues) this.form.setValues({ ...this.initialValues });
   }
 
+  /**
+   * Whether this visit is an edit (#939).
+   *
+   * Derived from the row, not declared beside it. The mode used to be a string that whoever
+   * opened the drawer was expected to set, which put the fact "this is an edit" somewhere
+   * other than the thing that makes it one — so a caller could open the drawer on an
+   * application and forget to say so. One of the three callers did exactly that, and it was
+   * the only one a user could reach: every edit from the list view saved as a create, which
+   * posts a second application with a fresh client id rather than updating the one on screen.
+   *
+   * The client id is the derivation because it is also what the update is addressed to: this
+   * reads `updateApp` exactly when there is something for `client_id` to be. A blank one is an
+   * add, which is the shape {@link INITIAL_VALUES} already has, and the only shape a seed for
+   * an add ever arrives in.
+   */
+  private get editing(): boolean {
+    return Boolean(this.form.values.appId);
+  }
+
   /** The scopes already chosen. Derived from form state — there is no second copy. */
   private get scopeValues(): string[] {
     const raw = this.form.values.appScope;
@@ -438,7 +469,7 @@ export default class AppForm extends KeepElement {
    */
   private save(values: AppFormValues): void {
     const payload = buildPayload(values);
-    if (this.formContext === 'Edit') {
+    if (this.editing) {
       this.drawer.dispatch(updateApp({ ...payload, client_id: values.appId }));
     } else {
       this.drawer.dispatch(addApplication(payload));
@@ -522,7 +553,7 @@ export default class AppForm extends KeepElement {
 
   render() {
     const { values } = this.form;
-    const editing = this.formContext === 'Edit';
+    const editing = this.editing;
     return html`
       <form class="panel-content" @submit=${(e: Event) => this.handleSubmitEvent(e)}>
         <h2 class="form-header">

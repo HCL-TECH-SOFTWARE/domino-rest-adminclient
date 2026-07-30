@@ -352,16 +352,15 @@ export const appItemStyles = css`
  *
  * ## Edit is reported, not performed
  *
- * The form's seed values still travel through the Formik object `Kanban` holds and
- * `FormDrawer` reads, which an element cannot touch. So the row computes the seed exactly as
- * it always did and hands it out as `app-edit`; the table passes it on and `Kanban` does the
- * two things it did before — set the values, open the drawer.
+ * The row computes the seed and hands it out as `app-edit`; the table passes it on and
+ * {@link ./keep-applications} does the two things it did before — keep the values, open the
+ * drawer.
  *
- * **This is where #939 will be fixed, and it is deliberately not fixed here.** The drawer
- * decides Add versus Edit from a `formContext` string that only the kanban card ever wrote,
- * so an edit opened from this row takes the create branch and saving duplicates the
- * application. The behaviour is reproduced exactly as it stands; the handler for this event
- * in `Kanban` is the one place that needs to say the drawer is opening on an existing row.
+ * **That seed is now also the mode (#939).** Add versus Edit used to be a separate string
+ * that whoever opened the drawer was expected to set, and this row — the only reachable way
+ * in — never set it, so an edit opened from here took the create branch and saving duplicated
+ * the application. {@link ./keep-app-form} derives it from the client id in these values
+ * instead, so there is nothing for this element to announce beyond the row itself.
  *
  * ## Two #844 fixes carried over
  *

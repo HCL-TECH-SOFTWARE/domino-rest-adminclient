@@ -88,13 +88,7 @@
     width: 100%;
     padding: 0;
     margin: 0;
-}
-
-.cursor-default {
-    cursor: default;
-}
-
-.cursor-pointer {
+}.cursor-pointer {
     cursor: pointer;
 }
 
@@ -116,14 +110,6 @@
 
 .color-hover {
     color: var(--hover-color);
-}
-
-.color-base {
-    color: var(--keep-text-brand);
-}
-
-.color-copyright {
-    color: var(--copyright-color);
 }
 
 .color-border {
@@ -254,10 +240,6 @@ body[data-theme="dark"] .color-text-disabled {
     width: 45%;
 }
 
-.w-60 {
-    width: 60%;
-}
-
 .w-90 {
     width: 90%;
 }
@@ -340,22 +322,10 @@ body[data-theme="dark"] .color-text-disabled {
     padding-left: 30px;
 }
 
-.pt-4 {
-    padding-top: 4px;
-}
-
 .pt-5 {
     padding-top: 5px;
 }.pt-30 {
     padding-top: 30px;
-}
-
-.pt-40 {
-    padding-top: 40px;
-}
-
-.pb-4 {
-    padding-bottom: 4px;
 }
 
 .pb-5 {
@@ -364,32 +334,12 @@ body[data-theme="dark"] .color-text-disabled {
 
 .pb-10 {
     padding-bottom: 10px;
-}.pb-40 {
-    padding-bottom: 40px;
-}
-
-.m-0 {
+}.m-0 {
     margin: 0;
-}
-
-.m-10 {
-    margin: 10px;
-}
-
-.mt-0 {
-    margin-top: 0;
 }
 
 .mt-5 {
     margin-top: 5px;
-}
-
-.mt-7 {
-    margin-top: 7px;
-}
-
-.mt-8 {
-    margin-top: 8px;
 }
 
 .mt-10 {
@@ -437,14 +387,6 @@ body[data-theme="dark"] .color-text-disabled {
 
 .gap-20 {
     gap: 20px;
-}
-
-.overflow-hidden {
-    overflow: hidden;
-}
-
-.text-ellipsis {
-    text-overflow: ellipsis;
 }.justify-center {
     justify-content: center;
 }
@@ -938,19 +880,7 @@ body[data-theme="dark"] .field-batch-delete-text {
  */
 .tabs-access-save-icon {
     font-size: 14.4px;
-}
-
-/*
- * The Save glyph's two colours, previously a conditional passed as a prop. The condition
- * is the same one the caption beside it switches on, but the values are not the caption's
- * color-text-primary / color-text-disabled pair — the disabled grey is #A7A8A9, which is
- * not --text-color-disabled — so both ends are restated here.
- */
-.tabs-access-save-icon-enabled {
-    color: var(--wa-color-text-normal);
-}
-
-.tabs-access-save-icon-disabled {
+}.tabs-access-save-icon-disabled {
     color: #A7A8A9;
 }
 
@@ -1264,14 +1194,7 @@ body[data-theme="dark"] .field-batch-delete-text {
     height: 35px;
     object-fit: contain;
     display: block;
-}/* Kanban.tsx */
-.kanban-div {
-    height: 46px;
-    width: 1px;
-    background-color: light-dark(#000, #3a3a4a);
-}
-
-/* CardViewOptions.tsx */
+}/* CardViewOptions.tsx */
 .multicard-view-container {
     width: 200px;
     height: 43px;
@@ -1307,77 +1230,17 @@ body[data-theme="dark"] .field-batch-delete-text {
  * call site carries size='xl' instead, which is what it renders at now.
  */
 
-/* FormsContainer.tsx */
-.forms-container-loading-container {
-    height: calc(100vh - 170px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-}
-
 /* ViewsTable.tsx */
 .views-table-question-circle {
     color: light-dark(#0f52ba, #008000);
 }
 
-/* LoginPage.tsx */
-.login-page-grid {
-    padding: 90px;
-    height: 100%;
-    background-color: var(--body-color);
-    color: var(--text-color-primary);
-}
-
-.login-castle-bg {
-    /* Width comes from the grid column in LoginPage's LoginLayout. The width/flex-basis/
-       max-width trio this replaces sized a flex child of the old MUI <Grid container>; as a
-       grid item those percentages would resolve against the column, not the viewport. */
-    height: 100vh;
-    background-color: light-dark(#fafafa, #212121);
-    /* Relative, so Vite rewrites it to the emitted asset URL. The absolute
-       '/img/castlebg.jpg' this replaces resolved only where the site root served
-       /img — true under `vite dev`, not under the packaged /admin mount. */
-    background-image: url('./castlebg.jpg');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-}
-
-.login-page-alert {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 9999;
-}
-
-.login-keep-button {
-    --keep-button-display: block;
-    --keep-button-width: 100%;
-}
-
-.login-submit-button {
-    --keep-button-display: block;
-    --keep-button-width: 100%;
-    margin-top: 30px;
-}
-
-.login-page-signup-text {
-    font-size: 14px;
-    cursor: pointer;
-    text-transform: none;
-}
-
-.login-page-signup-text:hover {
-    color: red;
-    text-decoration: underline;
-}
-
-.login-page-oidc-dropdown {
-    --keep-dropdown-display: inline-block;
-    --keep-dropdown-width: auto;
-}
+/*
+ * The login screen's seven rules are gone with it (#806 wave 6). `keep-login-page` is a
+ * shadow root, and a class rule in this sheet cannot reach into one — leaving them would
+ * have left seven selectors that look live and control nothing. `castlebg.jpg` stays put
+ * beside this file; the element imports it, so Vite still rewrites the URL.
+ */
 
 /* OptionList.tsx */
 .option-list-container-button {

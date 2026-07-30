@@ -133,26 +133,51 @@ const Views: React.FC = () => {
         redirectTo: '/',
       },
       {
+        /*
+         * The four routes below are Lit elements behind their `@lit/react` wrappers, the same
+         * shape as `/schema` above and `/apps/consents` below (#806 wave 6).
+         *
+         * Each is deep-imported from `keep-elements/react/<Name>` rather than through the
+         * `KeepElements` barrel, and none of these four wrappers has a barrel line. A route
+         * root pulled in through the barrel drags every other screen's element into this
+         * chunk, which is what #813 split them apart to stop.
+         *
+         * The wrappers exist only because `React.lazy` needs a module whose default export is
+         * a component, and because they are the last frame that can read the router and the
+         * route params. #926 tracks the Lit router controller that removes them.
+         */
         path: '/schema/:nsfPath/:dbName',
-        load: () => import('./components/forms/FormsContainer'),
+        load: () =>
+          import('./components/keep-elements/react/KeepFormsContainer').then((m) => ({
+            default: m.KeepFormsContainer,
+          })),
         guard,
         redirectTo: '/',
       },
       {
         path: '/schema/:nsfPath/:dbName/:formName/access',
-        load: () => import('./components/access/AccessMode'),
+        load: () =>
+          import('./components/keep-elements/react/KeepAccessMode').then((m) => ({
+            default: m.KeepAccessMode,
+          })),
         guard,
         redirectTo: '/',
       },
       {
         path: '/scope',
-        load: () => import('./components/scopes/ScopeLists'),
+        load: () =>
+          import('./components/keep-elements/react/KeepScopesList').then((m) => ({
+            default: m.KeepScopesList,
+          })),
         guard,
         redirectTo: '/',
       },
       {
         path: '/apps',
-        load: () => import('./components/applications/Applications'),
+        load: () =>
+          import('./components/keep-elements/react/KeepApplications').then((m) => ({
+            default: m.KeepApplications,
+          })),
         guard,
         redirectTo: '/',
       },

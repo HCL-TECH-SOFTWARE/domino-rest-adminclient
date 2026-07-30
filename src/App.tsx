@@ -17,7 +17,8 @@ import {
   setIdpLogin,
 } from './store/account/action';
 import { TokenProps } from './store/account/types';
-import CallbackPage from './components/login/CallbackPage';
+import AppShell from './AppShell';
+import { KeepCallbackPage } from './components/keep-elements/react/KeepCallbackPage';
 import { KeepPageLoading } from './components/keep-elements/react/KeepPageLoading';
 import { useAppDispatch } from './store/hooks';
 
@@ -74,6 +75,22 @@ const App: React.FC = () => {
   }, [dispatch]);
 
   /*
+   * Going home after a password login (#806 wave 6).
+   *
+   * `keep-login-page` cannot navigate: the router is published to React through context with
+   * no module-level instance and there is no Lit router controller yet (#926). It emits
+   * `login-success` instead — and unlike `/callback`, that page is behind a `load` route, so
+   * there is no prop to hand a callback to: `RouterOutlet` renders the lazy component with
+   * none. The event is composed and bubbling, so the document is where it can be caught, and
+   * `router` here is the only instance in the app.
+   */
+  useEffect(() => {
+    const goHome = () => router.navigate('/');
+    document.addEventListener('login-success', goHome);
+    return () => document.removeEventListener('login-success', goHome);
+  }, [router]);
+
+  /*
    * No <ThemeProvider>/<CssBaseline> here, deliberately (#743).
    *
    * They used to wrap this whole tree, but they were redundant everywhere except the login
@@ -114,15 +131,26 @@ const App: React.FC = () => {
       // specificity (see `matchRoutes`) — behind the catch-all it would never be reached.
       // It keeps `element:`: it is the OAuth redirect landing, so its chunk would be
       // fetched at the one moment the user is already waiting on a round trip.
-      { path: '/callback', element: <CallbackPage /> },
+      //
+      // `AppShell` wraps it here rather than inside the page, which is where the component
+      // this replaces put it. That is the one case where the shell is on screen with
+      // something other than the router behind it, and the shell is still React.
+      {
+        path: '/callback',
+        element: (
+          <AppShell>
+            <KeepCallbackPage onAuthenticated={() => router.navigate('/')} />
+          </AppShell>
+        ),
+      },
       {
         path: '*',
         load: authenticated
           ? () => import('./AppShell')
-          : () => import('./components/login/LoginPage'),
+          : () => import('./components/keep-elements/react/KeepLoginPage'),
       },
     ],
-    [authenticated],
+    [authenticated, router],
   );
 
   return valid ? (

@@ -30,7 +30,7 @@ const labelOf = (view: string) =>
 
 /**
  * The view picker beside the search bar on the schema and scope list screens. Tag:
- * `keep-card-view-options`. Exposed to React as `KeepCardViewOptions`.
+ * `keep-card-view-options`. No wrapper: both screens are Lit and compose it directly (#806).
  *
  * ## No router in here, and no location either
  *

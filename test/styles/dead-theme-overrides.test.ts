@@ -63,10 +63,22 @@ const isImported = (component: string): boolean => {
 
 describe('theme.ts component overrides', () => {
   it('finds the overrides to check', () => {
-    // Guards the regex above: a formatting change that stopped it matching would make
-    // every case below pass vacuously.
+    // Guards the regex above: a formatting change that stopped it matching would make the case
+    // below pass vacuously.
     expect(overrides.length).toBeGreaterThan(0);
-    expect(overrides).toContain('MuiButton');
+
+    // This used to also assert `toContain('MuiButton')`. That is the wrong shape for this
+    // particular guard, and #806 wave 6 proved it by deleting MuiButton — along with
+    // MuiCircularProgress and MuiTab — once the last screens importing them converted.
+    //
+    // Naming a specific override as the canary assumes one of them is permanent, and none is:
+    // the entire point of this file is that the map shrinks to nothing as MUI leaves. A canary
+    // guaranteed to be deleted turns a real guard into a recurring edit, and an assertion
+    // people are used to editing is one they will eventually edit for the wrong reason.
+    //
+    // What actually needs guarding is that the regex is still anchored to the right place, so
+    // that is what is asserted — the shape of the map it reads, not its contents.
+    expect(readFileSync(resolve(ROOT, THEME), 'utf8')).toMatch(/^\s{4}components:\s*\{/m);
   });
 
   it('overrides no component the app has stopped importing', () => {

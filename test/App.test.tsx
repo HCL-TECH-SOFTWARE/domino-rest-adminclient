@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { test, expect, vi } from 'vitest';
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import App from "../src/App";
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from "react-redux";
@@ -25,6 +25,16 @@ const mockFetch = (data: any) => vi.fn().mockImplementation(() =>
 // This copy was the old no-op shape, so keeping it would have re-blinded this file to every
 // WebAwesome validity state.
 
+/**
+ * The login screen's rendered text.
+ *
+ * Read out of the shadow root rather than through a text query: the page is `keep-login-page`
+ * now (#806 wave 6), and testing-library's queries only see the light DOM. The route is also
+ * code-split, so the element is absent until its chunk resolves — which is exactly the
+ * settling this `waitFor` is here to do.
+ */
+const loginPageText = () => document.querySelector('keep-login-page')?.shadowRoot?.textContent ?? '';
+
 test("renders home page", async () => {
   window.fetch = mockFetch({ ok: true, json: () => ({}) });
   const store = configureStore({ reducer: rootReducer });
@@ -34,7 +44,31 @@ test("renders home page", async () => {
   // Wait for async effects in LoginPage (getIdpList, getKeepIdpActive, canDoPasskey)
   // to settle before the test ends, avoiding "not wrapped in act(...)" warnings
   await waitFor(() => {
-    expect(screen.getByText(/log in with password/i)).toBeDefined();
+    expect(loginPageText()).toMatch(/log in with password/i);
+  });
+});
+
+test("goes home when the login page reports a success", async () => {
+  // #806 wave 6 · #926. `keep-login-page` cannot navigate — the router is published through
+  // React context with no module-level instance, and unlike `/callback` this route is behind
+  // a `load`, so `RouterOutlet` renders it with no props to hand a callback to. It emits
+  // `login-success` instead, and this listener is the only thing that turns that into a
+  // navigation: nothing else in the suite covers the join.
+  window.fetch = mockFetch({ ok: true, json: () => ({}) });
+  const store = configureStore({ reducer: rootReducer });
+  window.history.pushState(null, '', '/admin/ui/scope/whatever');
+
+  render(<Provider store={store}><App /></Provider>);
+  await waitFor(() => {
+    expect(loginPageText()).toMatch(/log in with password/i);
+  });
+
+  document
+    .querySelector('keep-login-page')!
+    .dispatchEvent(new CustomEvent('login-success', { bubbles: true, composed: true }));
+
+  await waitFor(() => {
+    expect(window.location.pathname).toBe('/admin/ui/');
   });
 });
 
@@ -61,7 +95,7 @@ test("injects no MUI document baseline on the login route", async () => {
 
   render(<Provider store={store}><App /></Provider>);
   await waitFor(() => {
-    expect(screen.getByText(/log in with password/i)).toBeDefined();
+    expect(loginPageText()).toMatch(/log in with password/i);
   });
 
   const baselineRules = [...document.querySelectorAll('style[data-emotion]')]
