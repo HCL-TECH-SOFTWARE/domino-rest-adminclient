@@ -9,13 +9,13 @@ import { useSelector } from 'react-redux';
 import { useParams } from '../../router/react';
 import { Button } from '@mui/material';
 import { AppState } from '../../store';
-import ViewSearch from './ViewSearch';
 import { handleDatabaseViews } from '../../store/databases/action';
 import { styled } from '@linaria/react';
 import { TopNavigator } from '../../styles/CommonStyles';
 import ViewsTable from './ViewsTable';
 import { Database } from '../../store/databases/types';
-import { KeepButton, KeepFormDialogHeader, KeepSwitch } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch } from '../keep-elements/KeepElements';
+import type { KeepSearchChangeDetail } from '../keep-elements/keep-search-input';
 import { useAppDispatch } from '../../store/hooks';
 
 const TabViewsContainer = styled.div`
@@ -90,7 +90,10 @@ interface TabViewsProps {
 }
 
 const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, schemaData, setSchemaData }) => {
-  const { views, folders } = useSelector((state: AppState) => state.databases);
+  // `scopePull` used to be selected a second time inside ViewSearch; it gates pointer input
+  // on the filter box while the list is still being pulled, and this component already
+  // holds the slice it comes from.
+  const { views, folders, scopePull } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useAppDispatch();
   const [searchKey, setSearchKey] = useState('');
@@ -179,8 +182,8 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showActive, views, updatedFolders])
 
-  const handleSearchView = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const key = e.target.value;
+  const handleSearchView = (e: CustomEvent<KeepSearchChangeDetail>) => {
+    const key = e.detail.value;
     setSearchKey(key);
 
     const filteredViews = lists.filter((data) => {
@@ -226,7 +229,12 @@ const TabViews : React.FC<TabViewsProps> = ({ setViewOpen, setOpenViewName, sche
   return (
     <TabViewsContainer>
       <TopNavigator>
-        <ViewSearch handleSearchView={handleSearchView} />
+        {/* No `value` — the element is deliberately uncontrolled; see KeepSearchInput. */}
+        <KeepSearchInput
+          placeholder="Search Views"
+          disabled={!scopePull}
+          onSearch={handleSearchView}
+        />
       </TopNavigator>
       <div className='flex flex-row justify-between'>
         <ButtonsPanel>

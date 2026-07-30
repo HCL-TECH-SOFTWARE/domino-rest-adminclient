@@ -22,8 +22,23 @@ vi.mock('../../../src/store/databases/action', () => ({
   handleDatabaseForms: vi.fn(() => ({ type: 'HANDLE_DATABASE_FORMS' })),
 }));
 
-vi.mock('../../../src/components/forms/ActivateMenu', () => ({
-  default: () => <span data-testid="activate-menu" />,
+// The per-row menu is `keep-activate-menu` now (#806). Its own behaviour is covered by
+// test/components/keep-elements/keep-activate-menu.test.ts; stubbing the wrapper keeps this
+// file about the table. Mocking the wrapper module rather than the barrel leaves
+// KeepDataTable, KeepTooltip and KeepButton real, which this file asserts through.
+// The stub still fires `onActivateForm`, because that prop *is* the render-site change: the
+// old component took a `toggleActivate` callback and called it with a form name it already
+// had, the element emits an event and the table reads `detail.formName` off it. A stub that
+// rendered nothing would leave that read untested, and getting it wrong is silent.
+vi.mock('../../../src/components/keep-elements/react/KeepActivateMenu', () => ({
+  KeepActivateMenu: ({ form, onActivateForm }: any) => (
+    <button
+      data-testid="activate-menu"
+      onClick={() =>
+        onActivateForm(new CustomEvent('activate-form', { detail: { formName: form.formName } }))
+      }
+    />
+  ),
 }));
 
 // Contact carries *two* modes on purpose. With one, `getByText('1')` cannot tell
@@ -51,6 +66,26 @@ const forms = [
 // — both would look identical if `schemaData.forms` started empty.
 const existingForm = { formName: 'Legacy', alias: 'lg', dbName: 'testdb', formModes: [{ modeName: 'default' }] };
 const schemaData = { forms: [existingForm] } as any;
+
+// Exactly what `toggleConfigure` (FormsTable.tsx) builds for a newly activated form. Shared
+// by the two paths that reach it — the activate dialog and the row menu — so both pin the
+// whole payload: a lookup bug that activates the wrong form, or one that drops or corrupts
+// `alias`/`formModes`, fails here where a bare `toHaveBeenCalled()` catches neither.
+const activatedForm = (formName: string, alias: string) => ({
+  formValue: formName,
+  formName,
+  alias,
+  formModes: [
+    {
+      modeName: 'default',
+      fields: [],
+      readAccessFormula: { formulaType: 'domino', formula: '@True' },
+      writeAccessFormula: { formulaType: 'domino', formula: '@True' },
+      deleteAccessFormula: { formulaType: 'domino', formula: '@False' },
+      computeWithForm: false,
+    },
+  ],
+});
 
 function renderFormsTable(list = forms, formList = ['Contact', 'Invoice']) {
   const setSchemaData = vi.fn();
@@ -131,23 +166,12 @@ describe('FormsTable — opening a form', () => {
     fireEvent.click(screen.getByTitle('Invoice'));
     fireEvent.click(screen.getByText('OK'));
 
-    // Pin exactly what `toggleConfigure` (FormsTable.tsx) builds and dispatches, so a
-    // lookup bug that activates the wrong form, or a payload that drops/corrupts
-    // `alias`/`formModes`, or replaces `schemaData.forms` instead of appending to it,
-    // would all fail this — a bare `toHaveBeenCalled()` catches none of them.
-    const formModeData = {
-      modeName: 'default',
-      fields: [],
-      readAccessFormula: { formulaType: 'domino', formula: '@True' },
-      writeAccessFormula: { formulaType: 'domino', formula: '@True' },
-      deleteAccessFormula: { formulaType: 'domino', formula: '@False' },
-      computeWithForm: false,
-    };
-    const newForm = { formValue: 'Invoice', formName: 'Invoice', alias: '', formModes: [formModeData] };
+    // The array pins that the new form is *appended* to schemaData.forms rather than
+    // replacing them, which an empty starting array could not distinguish.
     expect(handleDatabaseForms).toHaveBeenCalledWith(
       schemaData,
       'testdb',
-      [existingForm, newForm],
+      [existingForm, activatedForm('Invoice', '')],
       setSchemaData,
       'Invoice activated successfully.',
       expect.any(Function),
@@ -159,5 +183,25 @@ describe('FormsTable — opening a form', () => {
     fireEvent.click(screen.getByTitle('Invoice'));
     fireEvent.click(screen.getByText('Cancel'));
     expect(handleDatabaseForms).not.toHaveBeenCalled();
+  });
+});
+
+describe('FormsTable — the row menu', () => {
+  it('activates the form the menu names, and stays on the page', () => {
+    const { setSchemaData } = renderFormsTable();
+    // The second row, so a handler that ignored `detail.formName` and activated the first
+    // form it could find would fail here.
+    fireEvent.click(screen.getAllByTestId('activate-menu')[1]);
+
+    // Five arguments, not six: the missing navigate callback is what tells "activate and
+    // open the form" apart from "activate it in place", and this is the in-place path.
+    expect(handleDatabaseForms).toHaveBeenCalledWith(
+      schemaData,
+      'testdb',
+      [existingForm, activatedForm('Invoice', '')],
+      setSchemaData,
+      'Invoice activated successfully.',
+    );
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

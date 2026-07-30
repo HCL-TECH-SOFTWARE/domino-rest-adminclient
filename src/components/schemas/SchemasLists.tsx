@@ -15,15 +15,12 @@ import {
 } from '../../store/databases/action';
 import { TopContainer, FilterContainer, BlueSwitch } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
-import DatabaseSearch from '../database/DatabaseSearch';
 import APILoadingProgress from '../loading/APILoadingProgress';
-import { WrapperContainer } from '../commons/Wrappers';
 import { useLocation, useNavigate } from '../../router/react';
-import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import { toggleAlert } from '../../store/alerts/action';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
-import { KeepButton, KeepNetworkErrorDialog, KeepSchemasMultiView, KeepTooltip, KeepZeroResults } from '../keep-elements/KeepElements';
+import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepSchemasMultiView, KeepTooltip, KeepWrapperContainer, KeepZeroResults } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -180,7 +177,7 @@ const SchemasLists = () => {
   
   return (
     <SettingContext.Provider value={[context, setContext]}>
-      <WrapperContainer>
+      <KeepWrapperContainer>
           <>
             <TopContainer className='mt-15'>
               <span className="top-nav color-text-primary">
@@ -194,8 +191,18 @@ const SchemasLists = () => {
               </KeepButton>
             </TopContainer>
             <TopContainer className='mt-0'>
-              <DatabaseSearch handleSearchDatabase={handleSearchDatabase} changeSearchType={changeSearchType} searchType={searchType}/>
-              <CardViewOptions changeView={changeView} />
+              <KeepDatabaseSearch
+                searchType={searchType}
+                nameType="SCHEMA NAME"
+                disabled={!scopePull}
+                onSearchChange={(e) => handleSearchDatabase(e.detail.value)}
+                onSearchTypeChange={(e) => changeSearchType(e.detail.searchType)}
+              />
+              <KeepCardViewOptions
+                view={view}
+                disabled={!scopePull}
+                onViewChange={(e) => changeView(e.detail.view)}
+              />
             </TopContainer>
             <FilterContainer>
               <span className="medium-text flex items-center">
@@ -222,7 +229,7 @@ const SchemasLists = () => {
             <KeepNetworkErrorDialog />
             <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
           </>
-      </WrapperContainer>
+      </KeepWrapperContainer>
     </SettingContext.Provider>
   );
 };

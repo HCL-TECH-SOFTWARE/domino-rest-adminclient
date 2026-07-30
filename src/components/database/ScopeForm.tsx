@@ -14,7 +14,6 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import { Alert, AlertTitle } from '@mui/material';
 import { FormikProps } from 'formik';
-import SchemaContentsTree from './SchemaContentsTree';
 import { AppState } from '../../store';
 import { APP_ICON_NAMES } from '../../services/app-icons';
 import { AppIcon } from '../commons/AppIcon';
@@ -24,7 +23,12 @@ import {
   FormContentContainer,
   InputContainer,
 } from '../../styles/CommonStyles';
-import { KeepButton, KeepCheckbox } from '../keep-elements/KeepElements';
+import {
+  KeepButton,
+  KeepCheckbox,
+  KeepSchemaContentsTree,
+} from '../keep-elements/KeepElements';
+import type { KeepSchemaSelectDetail } from '../keep-elements/keep-schema-contents-tree';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -225,9 +229,11 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
           className='mt-8'
         />
         <SearchDatabaseContainer>
-          <SchemaContentsTree
-            setNsfPath={setNsfPath}
-            setSchemaName={setSchemaName}
+          <KeepSchemaContentsTree
+            onSchemaSelect={(event: CustomEvent<KeepSchemaSelectDetail>) => {
+              setNsfPath(event.detail.nsfPath);
+              setSchemaName(event.detail.schemaName);
+            }}
             contents={
               searchValue === ''
                 ? filterAvailableDatabases

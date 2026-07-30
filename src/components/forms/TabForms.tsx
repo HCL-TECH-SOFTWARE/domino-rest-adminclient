@@ -16,7 +16,6 @@ import { AppState } from "../../store";
 import { validateFormSchemaName } from "../../store/databases/scripts";
 import { styled } from '@linaria/react';
 import { TopNavigator } from "../../styles/CommonStyles";
-import FormSearch from "./FormSearch";
 import {
   addForm,
   handleDatabaseForms,
@@ -25,7 +24,7 @@ import {
 import FormsTable from "./FormsTable";
 import { toggleAlert } from "../../store/alerts/action";
 import { Database } from "../../store/databases/types";
-import { KeepButton, KeepFormDialogHeader, KeepSwitch } from "../keep-elements/KeepElements";
+import { KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch } from "../keep-elements/KeepElements";
 import { useAppDispatch } from '../../store/hooks';
 
 const ButtonsPanel = styled.div`
@@ -122,7 +121,10 @@ interface TabFormProps {
 }
 
 const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, formList }) => {
-  const { forms } = useSelector((state: AppState) => state.databases);
+  // databasePull gates the search box while the schema list is still being pulled. It used
+  // to be a second subscription inside FormSearch; it comes off the slice this already
+  // selects and is handed down, because the search element is a leaf now.
+  const { forms, databasePull } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const dispatch = useAppDispatch();
   const [searchKey, setSearchKey] = useState("");
@@ -167,8 +169,7 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   let { dbName, nsfPath } = useParams() as { dbName: string; nsfPath: string };
   const [resetAllForms, setResetAllForms] = useState(false);
   // Searching the forms based on entered searchKey values
-  const handleSearchDatabase = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const key = e.target.value;
+  const handleSearchDatabase = (key: string) => {
     setSearchKey(key);
     const filteredDatabases = forms.filter((form) => {
       return form.formName.toLowerCase().indexOf(key.toLowerCase()) !== -1;
@@ -301,7 +302,13 @@ const TabForms: React.FC<TabFormProps> = ({ setData, schemaData, setSchemaData, 
   return (
     <>
       <TopNavigator>
-        <FormSearch handleSearchDatabase={handleSearchDatabase} />
+        {/* No `value` — the field is uncontrolled and the wrapper would re-apply the prop
+            on every render of this component, clobbering what was being typed. */}
+        <KeepSearchInput
+          placeholder="Search Forms"
+          disabled={!databasePull}
+          onSearch={(e) => handleSearchDatabase(e.detail.value)}
+        />
         <KeepButton
           onClick={() => setCreateFormOpen(true)}
         >

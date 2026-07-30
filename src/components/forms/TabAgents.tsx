@@ -12,11 +12,11 @@ import Button from '@mui/material/Button';
 import { AppState } from '../../store';
 import { styled } from '@linaria/react';
 import { handleDatabaseAgents } from '../../store/databases/action';
-import AgentSearch from './AgentSearch';
 import { TopNavigator } from '../../styles/CommonStyles';
 import AgentsTable from './AgentsTable';
 import { Database } from '../../store/databases/types';
-import { KeepButton, KeepFormDialogHeader, KeepSwitch } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepSearchInput, KeepSwitch } from '../keep-elements/KeepElements';
+import type { KeepSearchChangeDetail } from '../keep-elements/keep-search-input';
 import { useAppDispatch } from '../../store/hooks';
 
 /**
@@ -74,7 +74,10 @@ interface TabAgentsProps {
 }
 
 const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
-  const { agents } = useSelector((state: AppState) => state.databases);
+  // `scopePull` used to be selected a second time inside AgentSearch; it gates pointer input
+  // on the filter box while the list is still being pulled, and this component already
+  // holds the slice it comes from.
+  const { agents, scopePull } = useSelector((state: AppState) => state.databases);
   const { activeAgents } = useSelector((state: AppState) => state.databases);
   const { loading } = useSelector((state: AppState) => state.dialog);
   const [filtered, setFiltered] = useState([...agents]);
@@ -87,8 +90,8 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
 
   const ref = useRef<HTMLDialogElement>(null);
 
-  const handleSearchAgent = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const key = e.target.value;
+  const handleSearchAgent = (e: CustomEvent<KeepSearchChangeDetail>) => {
+    const key = e.detail.value;
     setSearchKey(key);
 
     const filteredAgents = agents.filter((data) => {
@@ -142,7 +145,12 @@ const TabAgents: React.FC<TabAgentsProps> = ({ schemaData }) => {
   return (
     <>
       <TopNavigator>
-        <AgentSearch handleSearchAgent={handleSearchAgent} />
+        {/* No `value` — the element is deliberately uncontrolled; see KeepSearchInput. */}
+        <KeepSearchInput
+          placeholder="Search Agents"
+          disabled={!scopePull}
+          onSearch={handleSearchAgent}
+        />
       </TopNavigator>
       <ButtonsPanel>
         <Box>

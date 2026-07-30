@@ -12,7 +12,6 @@ import { useNavigate, useLocation } from '../../router/react';
 import { Menu, MenuItem } from '@mui/material';
 import { useFormik } from 'formik';
 import FieldDNDContainer from './FieldDndContainer';
-import AddModeDialog from './AddModeDialog';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import {
   testFormula,
@@ -22,7 +21,6 @@ import {
 } from '../../store/databases/action';
 import { AppState } from '../../store';
 import FormDrawer from '../applications/FormDrawer';
-import DeleteApplicationDialog from '../applications/DeleteApplicationDialog';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { toggleAlert } from '../../store/alerts/action';
 import {
@@ -30,7 +28,12 @@ import {
 } from '../../store/databases/scripts';
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import { Database } from '../../store/databases/types';
-import { KeepTooltip, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
+import {
+  KeepAddModeDialog,
+  KeepConfirmDeleteDialog,
+  KeepTooltip,
+  KeepUnsavedChangesDialog,
+} from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
@@ -920,14 +923,16 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                 Add Mode
               </span>
             </button>
-            <AddModeDialog
-              handleSave={handleSaveNewMode}
+            <KeepAddModeDialog
               open={newModeOpen}
-              handleTextChange={handleTextChange}
-              formError={formError}
-              handleClose={handleNewModeClose}
               clone={cloneMode}
               modeName={modes[currentModeIndex].modeName}
+              formError={formError}
+              // The element sends the text on `detail`; handleTextChange reads it off a
+              // target, so it is shaped back into one rather than changing the handler.
+              onModeNameChange={(e) => handleTextChange({ target: { value: e.detail } })}
+              onSave={handleSaveNewMode}
+              onClose={handleNewModeClose}
             />
             {modes[currentModeIndex].modeName !== 'default' && (
               <>
@@ -940,10 +945,10 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
                     Delete Mode
                   </span>
                 </button>
-                <DeleteApplicationDialog
-                  dialogTitle={deleteModeTitle}
-                  deleteMessage={deleteModeMessage}
-                  handleDelete={deleteMode}
+                <KeepConfirmDeleteDialog
+                  heading={deleteModeTitle}
+                  message={deleteModeMessage}
+                  onConfirm={deleteMode}
                 />
               </>
             )}

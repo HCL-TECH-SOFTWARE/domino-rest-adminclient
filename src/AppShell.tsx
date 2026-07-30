@@ -14,13 +14,14 @@ import './styles/app-shell.css';
 import Views from './Views';
 import theme from './theme';
 import ProfileMenuDialog from './components/sidenav/ProfileMenuDialog';
-import Notification from './components/alerts/Notification';
-import SideNav from './components/sidenav/SideNav';
 import ProfileMenu from './components/sidenav/ProfileMenu';
 import { KeepFooter } from './components/keep-elements/react/KeepFooter';
 import { KeepMobileHeader } from './components/keep-elements/react/KeepMobileHeader';
+import { KeepNotification } from './components/keep-elements/react/KeepNotification';
+import { KeepSideNav } from './components/keep-elements/react/KeepSideNav';
 import { KeepTooltip } from './components/keep-elements/react/KeepTooltip';
 import { KeepIcon } from './components/keep-elements/react/KeepIcon';
+import { useRouter } from './router/react';
 import { applyTheme } from './services/theme-service';
 import { AppState } from './store';
 import { getTheme, switchTheme } from './store/styles/action';
@@ -96,6 +97,9 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [collapsed, setCollapsed] = React.useState(true);
   const isMobile = useMobileView();
   const dispatch = useAppDispatch();
+  // Read, not subscribed: the instance is stable for the life of the app and only
+  // `keep-side-nav` needs it. Its own subscription is what re-renders it on navigation.
+  const router = useRouter();
 
   const { themeMode } = useSelector((state: AppState) => state.styles);
   const { authenticated } = useSelector((state: AppState) => state.account);
@@ -200,8 +204,15 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
           </KeepTooltip>
         </div>
 
+        {/*
+          `router` is passed down rather than reached for. `keep-side-nav` renders real anchors
+          — the unsaved-changes guard, modified clicks and route prefetching all depend on that
+          — so it needs the basename, the current pathname and `navigate`, and the one instance
+          lives in React context. See the element's class note; it goes away with #806's router
+          controller.
+        */}
         <div slot="navigation">
-          <SideNav expanded={expanded} />
+          <KeepSideNav expanded={expanded} router={router} />
         </div>
 
         <div slot="navigation-footer">
@@ -237,9 +248,9 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         )}
       </WaPage>
 
-      {/* Both sit outside the page element on purpose: the snackbar portals to
-          document.body and the footer is a fixed overlay. See the note above. */}
-      <Notification />
+      {/* Both sit outside the page element on purpose: the toast is fixed to the top of the
+          viewport and the footer is a fixed overlay. See the note above. */}
+      <KeepNotification />
       <KeepFooter />
     </ThemeProvider>
   );

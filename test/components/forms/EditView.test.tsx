@@ -12,24 +12,37 @@ import * as databasesActions from '../../../src/store/databases/action';
 
 // ---- Mocks ----
 
-// Mock ColumnDetails to render a minimal table for testing
-vi.mock('../../../src/components/forms/ColumnDetails', () => ({
-  default: function MockColumnDetails({ chosenColumns, handleEditColumn, setRemoveColumn }: any) {
+/**
+ * The column pane is `keep-column-details` since #806, so the stand-in replaces its
+ * `@lit/react` wrapper rather than a React module. Same minimal table as before; the two
+ * buttons now hand back real `CustomEvent`s, because that is what the wrapper delivers and
+ * a plain-argument mock would let a mis-read `event.detail` pass here.
+ */
+vi.mock('../../../src/components/keep-elements/react/KeepColumnDetails', () => ({
+  KeepColumnDetails: function MockColumnDetails({ columns, onColumnEdit, onColumnRemove }: any) {
     return (
       <div data-testid="column-details">
-        {chosenColumns.map((col: any) => (
+        {columns.map((col: any) => (
           <div key={col.name} data-testid={`column-${col.name}`}>
             <span data-testid={`name-${col.name}`}>{col.name}</span>
             <span data-testid={`ext-${col.name}`}>{col.externalName}</span>
             <button
               data-testid={`remove-${col.name}`}
-              onClick={() => setRemoveColumn(col.name)}
+              onClick={() =>
+                onColumnRemove(new CustomEvent('column-remove', { detail: { name: col.name } }))
+              }
             >
               Remove
             </button>
             <button
               data-testid={`edit-${col.name}`}
-              onClick={() => handleEditColumn(col, col.externalName + '_edited')}
+              onClick={() =>
+                onColumnEdit(
+                  new CustomEvent('column-edit', {
+                    detail: { column: col, externalName: col.externalName + '_edited' },
+                  }),
+                )
+              }
             >
               Edit
             </button>

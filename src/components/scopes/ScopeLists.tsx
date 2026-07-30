@@ -16,14 +16,11 @@ import { clearDBError,
 import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
-import DatabaseSearch from '../database/DatabaseSearch';
 import ScopeFormContainer from '../database/ScopeFormContainer';
 import APILoadingProgress from '../loading/APILoadingProgress';
-import { WrapperContainer } from '../commons/Wrappers';
-import CardViewOptions from '../commons/cardviews/CardViewOptions';
 import { useLocation, useNavigate } from '../../router/react';
 import { toggleAlert } from '../../store/alerts/action';
-import { KeepButton, KeepNetworkErrorDialog, KeepScopesMultiView } from '../keep-elements/KeepElements';
+import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepScopesMultiView, KeepWrapperContainer } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 const ScopeLists = () => {
@@ -120,7 +117,7 @@ const ScopeLists = () => {
 
   return (
     <SettingContext.Provider value={[context, setContext]}>
-      <WrapperContainer>
+      <KeepWrapperContainer>
           <>
             <TopContainer className='mt-15'>
               <span className="top-nav color-text-primary">
@@ -137,8 +134,18 @@ const ScopeLists = () => {
               </KeepButton>
             </TopContainer>
             <TopContainer className='mt-0'>
-              <DatabaseSearch handleSearchDatabase={handleSearchDatabase}  changeSearchType={changeSearchType}  searchType={searchType} />
-              <CardViewOptions changeView={changeView} />
+              <KeepDatabaseSearch
+                searchType={searchType}
+                nameType="SCOPE NAME"
+                disabled={!scopePull}
+                onSearchChange={(e) => handleSearchDatabase(e.detail.value)}
+                onSearchTypeChange={(e) => changeSearchType(e.detail.searchType)}
+              />
+              <KeepCardViewOptions
+                view={view}
+                disabled={!scopePull}
+                onViewChange={(e) => changeView(e.detail.view)}
+              />
             </TopContainer>
             {(databasePull || scopePull) && (
               <KeepScopesMultiView
@@ -157,7 +164,7 @@ const ScopeLists = () => {
             <KeepNetworkErrorDialog />
           </>
         {!(databasePull || scopePull) && <APILoadingProgress label="Scopes" />}
-      </WrapperContainer>
+      </KeepWrapperContainer>
     </SettingContext.Provider>
   );
 };

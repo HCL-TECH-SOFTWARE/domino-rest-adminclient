@@ -22,7 +22,6 @@ import {
 } from '../../store/databases/action';
 import { AccessContext } from './AccessContext';
 import { AppState } from '../../store';
-import GenericLoading from '../loading/GenericLoading';
 import ModeCompare from './ModeCompare';
 import { KeepButton, KeepNetworkErrorDialog, KeepPageLoading } from '../keep-elements/KeepElements';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
@@ -397,7 +396,10 @@ const AccessMode: React.FC = () => {
                   postSaveActionRef={postSaveActionRef}
                 />
               ) : (
-                <GenericLoading />
+                // `contained` keeps this inside .access-container. Without it the element
+                // is absolutely positioned and 100px taller than that box, so it would
+                // escape the panel and cover the page.
+                <KeepPageLoading contained message="Loading form modes" />
               )}
             </div>
           </AccessModeContainer>

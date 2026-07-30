@@ -12,11 +12,12 @@ import Fade from '@mui/material/Fade';
 import Collapse from '@mui/material/Collapse';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
 import { styled } from '@linaria/react';
-import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { TokenProps } from '../../store/account/types';
+import { useNavigate } from '../../router/react';
 import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
+import { KeepOptionList } from '../keep-elements/react/KeepOptionList';
 
 /**
  * Profile section rendered in the sidenav.
@@ -97,6 +98,18 @@ interface ProfileMenuProps {
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
   const { idpLogin } = useSelector((state: AppState) => state.account);
+  const navigate = useNavigate();
+
+  /**
+   * `keep-option-list` dispatches the logout thunk itself and then emits `logout`. The
+   * redirect stays here because the router is only reachable through React context — an
+   * element has no way to get at it (same shape as `keep-schemas-multi-view`). The element
+   * emits synchronously right after its dispatch, so the dispatch-then-navigate order the
+   * old inline `OptionList` had is unchanged.
+   */
+  const handleLogout = () => {
+    navigate('/');
+  };
 
   // Popper state - used only when the sidenav is collapsed. Clicking
   // the user icon reveals the Sign Out button in a floating menu.
@@ -166,8 +179,9 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
               drawn 24px and the 36px has never applied. On a wa-icon it would apply — as a
               36px canvas centred on a glyph still sized by font-size, i.e. empty space
               rather than a bigger icon. `size='xl'` is what reproduces the 24px. The rule
-              itself stays in `styles.css` for `OptionList`, where the class sits on a real
-              wrapper div and the box is genuine.
+              moved into `keep-option-list`'s own styles as `.icon-box`, where the class sat
+              on a real wrapper div and the box was genuine; the copy left in `styles.css`
+              now has no consumer.
 
               `label`: the icon is the whole of `IconWrapper`'s content and the wrapper is
               what handles the click, so without one the control has no accessible name.
@@ -211,7 +225,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
       >
         <Fade in={open} timeout={open ? OPEN_TRANSITION_MS : CLOSE_TRANSITION_MS}>
           <div className='flex justify-center'>
-            <OptionList toggleMenu={() => undefined} />
+            <KeepOptionList onLogout={handleLogout} />
           </div>
         </Fade>
       </Collapse>
@@ -240,7 +254,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
                     </span>
                   </ProfileInfo>
                 </PopperAvatarContainer>
-                <OptionList toggleMenu={setPopperOpen} />
+                <KeepOptionList onLogout={handleLogout} />
               </ProfileMenuCard>
             </Fade>
           </ClickAwayListener>
