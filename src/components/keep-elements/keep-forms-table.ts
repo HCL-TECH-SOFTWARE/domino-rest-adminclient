@@ -183,10 +183,17 @@ export default class FormsTable extends KeepElement {
         display: block;
       }
 
+      /*
+       * Stated outright rather than inherited. Measured in Chrome: inheriting it left the
+       * cells content-box, because the adopted table sheet sets the property on them
+       * directly and a declaration beats an inherited value whatever the parent chain says.
+       * The other three table elements state it and measure correctly; this one did not,
+       * and its fixed-width columns were the cell padding wider for it.
+       */
       *,
       *::before,
       *::after {
-        box-sizing: inherit;
+        box-sizing: border-box;
       }
 
       /* was the p-30 utility on the table element */
