@@ -34,9 +34,9 @@ The config.json file contains the configurations for Admin UI and the paths that
 
 ## 🌐 Lit Web Components
 
-We are now in the process of slowly migrating our current components to Lit 3.0 web components. To build a custom Lit element, please follow the following steps:
+Our current components are Lit 3.0 web components. To build a custom Lit element, please follow the following steps:
 
-1. Place your Lit element file in _src/components/lit-elements_. For example, we currently have Lit element with the tag name `lit-autocomplete`, under the class name `Autocomplete`.
+1. Place your Lit element file in _src/components/keep-elements_. For example, we currently have Lit element with the tag name `keep-autocomplete`, under the class name `Autocomplete`.
 
 ```javascript
 import { LitElement, html, css } from 'lit';
@@ -45,44 +45,12 @@ class Autocomplete extends LitElement {
   // definition of custom lit element goes here
 }
 
-customElements.define('lit-autocomplete', Autocomplete);
+customElements.define('keep-autocomplete', Autocomplete);
 
 export default Autocomplete;
 ```
 
-2. Add your Lit element's React counterpart in _src/components/lit-elements/LitElements.tsx_ using the `createComponent` method (see [documentation](https://lit.dev/docs/frameworks/react/#createcomponent) for details). For example:
 
-```typescript
-export const LitAutocomplete = createComponent({
-  tagName: 'lit-autocomplete',
-  elementClass: Autocomplete,
-  react: React
-});
-```
-
-3. From here, you will be able to import the Lit element in a component as another React component:
-
-```javascript
-import { LitAutocomplete } from '../lit-elements/LitElements';
-```
-
-### 🗝️ Accessing Values
-
-To access the Lit element's properties, create a reference using React's `useRef` hook and pass it onto the Lit element as a prop.
-
-```javascript
-const autocompleteRef = useRef<any>(null)
-<LitAutocomplete
-    ...options
-    ref={autocompleteRef}
-/>
-```
-
-The properties are accessible through the Lit element's shadow root.
-
-```javascript
-autocompleteRef.current.shadowRoot.querySelector('input');
-```
 
 ### 🎨 Icons
 
@@ -92,7 +60,7 @@ Shoelace has been deprecated in favour of Lit and Web Awesome
 Icons are Font Awesome glyphs served from this app, never from a CDN. Web Awesome's
 built-in resolver would fetch `<wa-icon name="…">` from `ka-f.fontawesome.com` at
 runtime, so `src/services/icon-library.ts` registers a `fa` library whose glyphs are
-bundled from the `@fortawesome/fontawesome-free` dependency instead.
+bundled from the `@fontawesome/fontawesome-free` dependency instead.
 
 To use an icon, reference it by its Font Awesome name through that library:
 
@@ -103,7 +71,7 @@ To use an icon, reference it by its Font Awesome name through that library:
 `KeepButton` takes the name directly:
 
 ```jsx
-<KeepButton icon="plus" onClick={handleAdd}>Add</KeepButton>
+<keep=button icon="plus" @click=${handleAdd}>Add</keep-button>
 ```
 
 Only the glyphs listed in `ICONS` are bundled — to add one, import its URL in
