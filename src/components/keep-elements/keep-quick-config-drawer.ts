@@ -38,6 +38,13 @@ import type QuickConfigForm from './keep-quick-config-form';
 @customElement('keep-quick-config-drawer')
 export default class QuickConfigDrawer extends KeepElement {
   static styles = css`
+    /* Restated inside the shadow root: the global reset does not cross the boundary. */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
     :host {
       display: contents;
     }

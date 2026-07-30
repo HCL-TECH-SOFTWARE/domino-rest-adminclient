@@ -92,6 +92,19 @@ export default class QuickConfigForm extends KeepElement {
   static styles = [
     appIconSkeletonStyles,
     css`
+      /* The global reset does not cross a shadow boundary, and this layout needs it: the two
+         columns are sized in percentages (40% + 55%) and both carry padding. Under
+         content-box that padding is added *outside* the percentage, so 95% + 50px overflows
+         the drawer and clips the right-hand fields. Measured in Chrome before restating it.
+
+         Element selectors and class selectors from styles.css stop at this boundary too;
+         only custom properties inherit through. */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
       /* Was the Forms styled.form. A real <form> is not used: nothing submits it, and the
          Add button drives FormController directly. */
       :host {
