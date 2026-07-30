@@ -4,12 +4,11 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useLocation } from '../../router/react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useSelector } from 'react-redux';
-import Fields from './Fields';
 import { AccessModeContainer } from './styles';
 import TabsAccess from './TabsAccess';
 import { Mode } from '../../store/databases/types';
@@ -23,8 +22,14 @@ import {
 import { resetAccessFields, setAccessFields } from '../../store/accessMode/action';
 import type { AccessModeState } from '../../store/accessMode/types';
 import { AppState } from '../../store';
-import ModeCompare from './ModeCompare';
-import { KeepButton, KeepNetworkErrorDialog, KeepPageLoading } from '../keep-elements/KeepElements';
+import {
+  KeepButton,
+  KeepFieldList,
+  KeepModeCompare,
+  KeepNetworkErrorDialog,
+  KeepPageLoading,
+} from '../keep-elements/KeepElements';
+import type { KeepFieldsAddDetail } from '../keep-elements/keep-field-list';
 import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -79,14 +84,47 @@ const AccessMode: React.FC = () => {
   const [fieldIndex, setFieldIndex] = useState(0)
 
   const { loading } = useSelector((state: AppState) => state.dialog);
-  const { loadedFields, newForm } = useSelector((state: AppState) => state.databases);
-  const forms: any[] = []
-  const allForms = (newForm.enabled && newForm.form) ? [...forms, newForm.form] : forms
+  // `loadedFields` used to be selected here only to be forwarded to the field palette,
+  // which never destructured it. The palette reads the store for what it actually shows.
+  const { newForm } = useSelector((state: AppState) => state.databases);
   const { nsfDesigns } = useSelector((state: AppState) => state.databases);
-  const [allModes, setAllModes] = useState(allForms.length > 0 ? allForms.filter((form) => form.formName === formName)[0].formModes : [])
+
+  /**
+   * The modes of the form this screen is editing. #928.
+   *
+   * Was a `useState` seeded from the fetched schema, with the guard on the wrong variable:
+   * it tested whether the *form list* had entries and then read `formModes` off whatever
+   * `filter(…)[0]` returned. On a cold load — a pasted URL, a bookmark, F5 — nothing has
+   * fetched that list yet, so the match was `undefined` (or matched a form with no
+   * `formModes` key) and `allModes` became `undefined`. Eight `allModes.length` reads follow,
+   * one of them in the render body, and there is no error boundary above this route, so the
+   * first of them blanked the whole app.
+   *
+   * Derived rather than stored, for two reasons. It is a pure function of data this
+   * component already has, so a copy in state can only ever be stale — which is exactly what
+   * the re-sync effect below existed to paper over. And a single `?? []` here is a guarantee
+   * for all eight readers, where `?? []` at each call site is eight chances to miss one.
+   */
+  const allModes: Array<Mode> = useMemo(() => {
+    const schemaForms = (schemaData.forms ?? []) as Array<any>;
+    const candidates = newForm.form ? [...schemaForms, newForm.form] : schemaForms;
+    const match = candidates.find((form: any) => form?.formName === formName);
+    return Array.isArray(match?.formModes) ? (match.formModes as Array<Mode>) : [];
+  }, [schemaData.forms, newForm.form, formName]);
+
   const currentDesign = nsfDesigns[nsfPath];
-  const fetchFieldsArray = currentDesign?.forms;
-  const [tabValue, setTabValue] = useState(0);
+  /**
+   * The NSF's design forms. Also `?? []`, and for the same reason (#928): `nsfDesigns` is
+   * only ever populated by the Forms tab's own effect, and this route is a sibling of that
+   * one rather than a child. Reached directly, `currentDesign` is `undefined`, and the two
+   * unguarded `fetchFieldsArray.length` reads — one in an effect, one in the render body —
+   * threw before `allModes` was ever consulted. Empty means "design not loaded", which the
+   * render already treats as "still loading".
+   */
+  const fetchFieldsArray: Array<any> = currentDesign?.forms ?? [];
+  // `tabValue` used to live here. It was handed to the field palette, which called its
+  // setter after a form was picked, and nothing in this file — or anywhere else — ever read
+  // it. All the setter bought was an extra render of the mode editor beside the palette.
   const [openModeCompare, setOpenModeCompare] = useState(false);
 
   // Use the shared navigation guard for unsaved-changes protection
@@ -121,71 +159,59 @@ const AccessMode: React.FC = () => {
     dispatch(fetchSchema(nsfPath, dbName, setSchemaData))
   }, [dispatch, nsfPath, dbName])
 
+  // Re-seed the shared field map from the mode the user is on whenever the schema comes back
+  // from the server — a save, a mode add, a mode delete. `allModes` is derived now, so this
+  // no longer has to recompute the form lookup, and the two reads it used to do unguarded
+  // (`filter(…)[0].formModes`, then `currentModes[currentModeIndex].fields`) are covered:
+  // an out-of-range mode index is a no-op rather than a crash. #928.
   useEffect(() => {
-    const forms = schemaData.forms
-    const allForms = newForm.form ? [...forms, newForm.form] : forms
-    setAllModes(allForms.length > 0 ? allForms.filter((form) => form.formName === formName)[0].formModes : [])
-    if (allModes.length > 0 && !newForm.enabled) {
-      const currentModes = allForms.filter((form) => form.formName === formName)[0].formModes || []
-      const chosenMode = currentModes[currentModeIndex]
-      const chosenFields = chosenMode.fields
-      const currentKey = Object.keys(state)[0]
-      setstate({
-        ...state,
-        [currentKey]: chosenFields,
-      })
-    }
+    if (allModes.length === 0 || newForm.enabled) return;
+    const chosenMode = allModes[currentModeIndex];
+    const currentKey = Object.keys(state)[0];
+    if (!chosenMode || currentKey === undefined) return;
+    setstate({
+      ...state,
+      [currentKey]: chosenMode.fields,
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schemaData, newForm.form, formName])
 
   useEffect(() => {
     function fetchSchemaFields() {
       setModeIndex(allModes.length - 1);
-      let modifiedAccessFields;
+      // The index of the mode named `default`, or the first mode when there is none. This
+      // was `findIndex(…) || 0`, which only looks like a fallback: `findIndex` answers -1
+      // when it finds nothing, and -1 is truthy, so `allModes[-1].fields` threw for any form
+      // whose default mode had been renamed or deleted. Same crash family as #928.
+      const defaultIndex = Math.max(
+        allModes.findIndex((mode: any) => mode.modeName === 'default'),
+        0
+      );
+      let modeIdx: number;
       if (allModes.length > modes.length && modes.length === 0) {
         // init state
-        let defaultIndex =
-          allModes.findIndex((mode: any) => mode.modeName === 'default') || 0;
-        setCurrentModeIndex(defaultIndex);
-        modifiedAccessFields = allModes[defaultIndex].fields.map(
-          (field: any) => ({
-            id: uuid(),
-            content: field.name,
-            ...field,
-          })
-        );
+        modeIdx = defaultIndex;
+        setCurrentModeIndex(modeIdx);
       } else if (allModes.length > modes.length) {
         // new mode added
-        setCurrentModeIndex(allModes.length - 1);
-        modifiedAccessFields = allModes[allModes.length - 1].fields.map(
-          (field: any) => ({
-            id: uuid(),
-            content: field.name,
-            ...field,
-          })
-        );
+        modeIdx = allModes.length - 1;
+        setCurrentModeIndex(modeIdx);
       } else if (allModes.length < modes.length) {
         // mode deleted
-        let defaultIndex =
-          allModes.findIndex((mode: any) => mode.modeName === 'default') || 0;
-        setCurrentModeIndex(defaultIndex);
-        modifiedAccessFields = allModes[defaultIndex].fields.map(
-          (field: any) => ({
-            id: uuid(),
-            content: field.name,
-            ...field,
-          })
-        );
+        modeIdx = defaultIndex;
+        setCurrentModeIndex(modeIdx);
       } else {
         // mode edited
-        modifiedAccessFields = allModes[currentModeIndex].fields.map(
-          (field: any) => ({
-            id: uuid(),
-            content: field.name,
-            ...field,
-          })
-        );
+        modeIdx = currentModeIndex;
       }
+      // `?? []` rather than a bare read: `currentModeIndex` is this component's own state and
+      // can outlive the mode it pointed at, so the "mode edited" branch above can address a
+      // mode the server has since removed.
+      const modifiedAccessFields = (allModes[modeIdx]?.fields ?? []).map((field: any) => ({
+        id: uuid(),
+        content: field.name,
+        ...field,
+      }));
       setModes(allModes);
 
       const newStates = [modifiedAccessFields];
@@ -377,19 +403,21 @@ const AccessMode: React.FC = () => {
             </KeepButton>
           </div>
           <AccessModeContainer>
+            {/*
+              Four of the nine props this used to pass were never destructured by the
+              component receiving them (`addField`, `fields`, `modes`, `tabValue`), and the
+              fifth — `setTabValue` — wrote a piece of state nothing in this file reads. The
+              `formName` ternary was dead too: this branch only renders when the design list
+              is non-empty, so the 'All Fields' arm was unreachable.
+            */}
             {!matches && (
-              <Fields
+              <KeepFieldList
                 schemaName={dbName}
                 nsfPath={nsfPath}
-                formName={
-                  fetchFieldsArray.length === 0 ? 'All Fields' : formName
+                formName={formName}
+                onFieldsAdd={(event: CustomEvent<KeepFieldsAddDetail>) =>
+                  moveTo(event.detail.items, 'read')
                 }
-                moveTo={moveTo}
-                addField={addField}
-                fields={loadedFields}
-                modes={modes}
-                tabValue={tabValue}
-                setTabValue={setTabValue}
               />
             )}
 
@@ -427,11 +455,17 @@ const AccessMode: React.FC = () => {
         <KeepPageLoading message={`Loading ${formName} Form Access Data`} />
       )}
       <KeepNetworkErrorDialog />
-      {!newForm.enabled && allModes.length > 0 && <ModeCompare 
+      {/*
+        The element takes the mode list rather than the whole schema: it used to dig the
+        same list out with `forms[getFormIndex(forms, formName)].formModes`, which is the
+        unguarded read this screen has now stopped making in three other places (#928).
+      */}
+      {!newForm.enabled && allModes.length > 0 && <KeepModeCompare
         open={openModeCompare}
-        handleClose={handleCloseModeCompare}
+        formName={formName}
+        modes={allModes}
         currentModeIndex={currentModeIndex}
-        schemaData={schemaData}
+        onClose={handleCloseModeCompare}
       />}
     </>
   );
