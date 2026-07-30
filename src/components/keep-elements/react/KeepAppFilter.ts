@@ -6,15 +6,13 @@
 
 import React from 'react';
 import { createComponent, type EventName } from '@lit/react';
-import OptionList, { type KeepOptionListLogoutDetail } from '../keep-option-list';
+import AppFilter, { type KeepAppFilterChangeDetail } from '../keep-app-filter';
 
-export const KeepOptionList = createComponent({
-  tagName: 'keep-option-list',
-  elementClass: OptionList,
+export const KeepAppFilter = createComponent({
+  tagName: 'keep-app-filter',
+  elementClass: AppFilter,
   react: React,
   events: {
-    // The element clears the session itself; the handler's job is the navigation it cannot
-    // reach from inside a custom element.
-    onLogout: 'logout' as EventName<CustomEvent<KeepOptionListLogoutDetail>>
+    onFilterChange: 'filter-change' as EventName<CustomEvent<KeepAppFilterChangeDetail>>
   }
 });

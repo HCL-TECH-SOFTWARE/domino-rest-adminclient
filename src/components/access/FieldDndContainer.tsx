@@ -9,11 +9,16 @@ import { TextField, Button } from '@mui/material';
 import { TabsProps } from '@mui/material/Tabs';
 import { WarningIcon } from '../../styles/CommonStyles';
 import { capitalizeFirst, insertCharacter } from '../../utils/common';
-import FieldContainer from './FieldContainer';
 import { Field } from '../../store/databases/types';
-import ScriptEditor from './ScriptEditor';
 import { toggleAlert } from '../../store/alerts/action';
-import { KeepButton, KeepCheckbox, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
+import {
+  KeepButton,
+  KeepCheckbox,
+  KeepFieldContainer,
+  KeepFormDialogHeader,
+  KeepScriptEditor,
+  KeepTooltip,
+} from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
@@ -318,14 +323,14 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
         {state[stateList[0]].length === 0 && <p className='small-text text-italic please-add-fields-text p-20 m-0'>Please add field/s...</p>}
       </div>
       <div className='flex flex-col full-width full-height gap-20'>
-        {editField && 
-          <FieldContainer 
-            item={editField} 
-            update={update} 
-            droppableIndex={stateList[0]} 
-            itemIndex={state[stateList[0]].findIndex((field: Field) => field.name === editField.name)} 
+        {editField &&
+          <KeepFieldContainer
+            item={editField}
+            droppableIndex={stateList[0]}
+            itemIndex={state[stateList[0]].findIndex((field: Field) => field.name === editField.name)}
             required={required}
-            setRequired={setRequired}
+            onFieldUpdate={(e) => update(e.detail.itemIndex, e.detail.droppableIndex, e.detail.item)}
+            onRequiredChange={(e) => setRequired(e.detail.required)}
         />}
         {!editField && <div className='p-0 field-config-field-container full-width'>
           <p className='field-config-field-setting'>Field Setting</p>
@@ -333,7 +338,13 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
             <p>No field found. Please select a field.</p>
           </div>
         </div>}
-        <ScriptEditor setScripts={setScripts} data={data} test={test} validationRules={validationRules} setValidationRules={setValidationRules} />
+        <KeepScriptEditor
+          data={data}
+          validationRules={validationRules}
+          onScriptsChange={(e) => setScripts(e.detail.scripts)}
+          onValidationRulesChange={(e) => setValidationRules(e.detail.rules)}
+          onTestFormulas={test}
+        />
       </div>
       <dialog className='dialog' ref={ref}>
         <div className='flex justify-between full-width'>

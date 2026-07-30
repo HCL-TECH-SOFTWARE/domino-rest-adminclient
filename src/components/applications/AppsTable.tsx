@@ -11,11 +11,10 @@ import { AppState } from '../../store';
 import { AppProp } from '../../store/applications/types';
 import AppItem from './AppItem';
 import { FormikProps } from 'formik';
-import AppFilterContainer from './AppFilterContainer';
 import { fetchMyApps } from '../../store/applications/action';
 import ZeroResultsWrapper from '../commons/ZeroResultsWrapper';
 import { useAppDispatch } from '../../store/hooks';
-import { KeepDataTable } from '../keep-elements/KeepElements';
+import { KeepAppFilter, KeepDataTable } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const Head = styled.thead`
@@ -256,11 +255,15 @@ const AppsTable: React.FC<AppsTableProps> = ({ filtersOn, setFiltersOn, reset, s
           </KeepDataTable>
         </ColumnLayout>
       }
-      <AppFilterContainer
+      {/* One event instead of two setters: the drawer publishes both filters together when
+          Show Results (or Reset) is pressed, so they can no longer land in separate renders. */}
+      <KeepAppFilter
         status={status}
-        setStatus={setStatus}
         appSecret={appSecret}
-        setAppSecret={setAppSecret}
+        onFilterChange={(e) => {
+          setStatus(e.detail.status);
+          setAppSecret(e.detail.appSecret);
+        }}
       />
     </>
   );

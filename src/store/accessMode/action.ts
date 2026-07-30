@@ -4,12 +4,10 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import React from 'react';
-import { createComponent } from '@lit/react';
-import TextFormArray from '../keep-textform-array';
-
-export const KeepTextformArray = createComponent({
-  tagName: 'keep-textform-array',
-  elementClass: TextFormArray,
-  react: React
-});
+/**
+ * `createSlice` generates both creators; this module exists so components import them from
+ * the same `store/<slice>/action` path every other slice uses.
+ *
+ * There are no thunks here. The slice holds screen state, not anything fetched.
+ */
+export { setAccessFields, resetAccessFields } from './reducer';

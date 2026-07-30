@@ -18,9 +18,9 @@ vi.mock('../../../src/components/applications/AppItem', () => ({
     </tr>
   ),
 }));
-vi.mock('../../../src/components/applications/AppFilterContainer', () => ({
-  default: () => <div data-testid="app-filters" />,
-}));
+// AppFilterContainer became the Lit element keep-app-filter (#806), which is rendered for
+// real here rather than mocked: it takes the applied filters as properties and reports a
+// decision as one `filter-change` event, so it costs this suite nothing but a closed drawer.
 vi.mock('../../../src/store/applications/action', () => ({
   fetchMyApps: vi.fn(() => ({ type: 'FETCH_MY_APPS' })),
 }));

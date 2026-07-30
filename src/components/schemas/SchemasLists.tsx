@@ -15,12 +15,11 @@ import {
 } from '../../store/databases/action';
 import { TopContainer, FilterContainer, BlueSwitch } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
-import APILoadingProgress from '../loading/APILoadingProgress';
 import { useLocation, useNavigate } from '../../router/react';
 import { toggleAlert } from '../../store/alerts/action';
 import AddImportDialog from '../database/AddImportDialog';
 import { setLoading } from '../../store/loading/action';
-import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepSchemasMultiView, KeepTooltip, KeepWrapperContainer, KeepZeroResults } from '../keep-elements/KeepElements';
+import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepPageLoading, KeepSchemasMultiView, KeepTooltip, KeepWrapperContainer, KeepZeroResults } from '../keep-elements/KeepElements';
 import { areArraysEqual } from '../../utils/common';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -225,7 +224,7 @@ const SchemasLists = () => {
                 onSchemaOpen={(e) => openSchema(e.detail.database)}
               />
             )}
-            {loading.status ? <APILoadingProgress label="Schemas" /> : results.length === 0 && <KeepZeroResults mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
+            {loading.status ? <KeepPageLoading contained pageHeight message="Schemas are loading. This may take a few seconds..." /> : results.length === 0 && <KeepZeroResults mainLabel=" Sorry, No result found" secondaryLabel={`What you search was unfortunately not found or doesn't exist.`} />}
             <KeepNetworkErrorDialog />
             <AddImportDialog open={addImportDialog} handleClose={handleCloseAddImport} />
           </>

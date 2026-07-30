@@ -20,7 +20,8 @@ import {
   addForm,
   fetchSchema,
 } from '../../store/databases/action';
-import { AccessContext } from './AccessContext';
+import { resetAccessFields, setAccessFields } from '../../store/accessMode/action';
+import type { AccessModeState } from '../../store/accessMode/types';
 import { AppState } from '../../store';
 import ModeCompare from './ModeCompare';
 import { KeepButton, KeepNetworkErrorDialog, KeepPageLoading } from '../keep-elements/KeepElements';
@@ -28,8 +29,18 @@ import { useNavigationGuard } from '../navigation/NavigationGuardContext';
 import { useAppDispatch } from '../../store/hooks';
 
 const AccessMode: React.FC = () => {
-  const [state, setstate] = useState({ [uuid()]: [] }) as any;
   const dispatch = useAppDispatch();
+
+  // Was `useState({ [uuid()]: [] })` behind an `AccessContext.Provider`. #806 decision 1
+  // (reports/04 §3) turns that context into a store slice, so the pair keeps its names and
+  // its shape and every call site below is unchanged — `setstate` just dispatches now.
+  //
+  // The selector returns the slice's own object, so it is reference-stable between writes;
+  // building one here would re-render on every unrelated store change.
+  const state = useSelector((appState: AppState) => appState.accessMode.fields);
+  const setstate = (next: AccessModeState['fields']) => {
+    dispatch(setAccessFields(next));
+  };
   const [modes, setModes] = useState<Array<Mode>>([]);
 
   // Refs so setPageIndex always reads the latest values, even when
@@ -97,6 +108,14 @@ const AccessMode: React.FC = () => {
   const setHasUnsavedChanges = (dirty: boolean) => {
     setDirty(dirty);
   };
+
+  // A `useState` initialiser ran once per mount; the slice outlives this component, so the
+  // reset has to be explicit. Without it the previous form's fields are still in the store
+  // when the next one mounts. First of the effects on purpose — the ones below populate the
+  // map, and this must not run after them.
+  useEffect(() => {
+    dispatch(resetAccessFields());
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchSchema(nsfPath, dbName, setSchemaData))
@@ -343,7 +362,7 @@ const AccessMode: React.FC = () => {
   })
 
   return (
-    <AccessContext.Provider value={[state, setstate]}>
+    <>
       {fetchFieldsArray.length > 0 ? (
         <div>
           <div className='header-container'>
@@ -414,7 +433,7 @@ const AccessMode: React.FC = () => {
         currentModeIndex={currentModeIndex}
         schemaData={schemaData}
       />}
-    </AccessContext.Provider>
+    </>
   );
 };
 
