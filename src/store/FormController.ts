@@ -22,10 +22,19 @@ export interface FormControllerOptions<T extends object> {
  *
  * Deliberately small — see the design spec for the list of Formik features nothing in
  * this codebase uses, and which therefore do not exist here.
+ *
+ * ### Error timing
+ *
+ * A field reports itself on its own blur (`handleBlur`) or on the first submit attempt,
+ * whichever comes first. That is what the Formik markup in these files *described* and never
+ * did: none of the 15 wired `handleBlur`, so `touched` only ever flipped on submit and every
+ * message waited for the Add button. Wiring `@blur` is per-field work in the converted
+ * element; the primitive side is `touched` + `handleBlur` + `validateField`.
  */
 export class FormController<T extends object> implements ReactiveController {
   private _values: T;
   private _errors: Record<string, string> = {};
+  private _touched: Record<string, boolean> = {};
   private _submitted = false;
   private _submitting = false;
   private _inFlight?: Promise<void>;
@@ -88,6 +97,7 @@ export class FormController<T extends object> implements ReactiveController {
   reset(): void {
     this._values = { ...this.options.initialValues };
     this._errors = {};
+    this._touched = {};
     this._submitted = false;
     this._submitting = false;
     // Frees the form for a new submit even mid-flight, which is what `addSchema`'s
@@ -98,16 +108,35 @@ export class FormController<T extends object> implements ReactiveController {
     this.host.requestUpdate();
   }
 
-  /** Field messages. Empty until `submit()` has run at least once. */
+  /**
+   * Field messages. A field appears here once it has been validated and failed — on its own
+   * blur, or on a submit attempt, whichever comes first. Untouched fields are absent, so
+   * `errors.x` alone never shows a message for a field the user has not reached yet.
+   */
   get errors(): Readonly<Partial<Record<string, string>>> {
     return this._errors;
   }
 
   /**
-   * Whether `submit()` has been called.
+   * Which fields the user has finished with — set by `handleBlur`, and set for every field
+   * by a submit attempt, mirroring Formik's `SUBMIT_ATTEMPT` reducer.
    *
-   * This is what the 15 files' `formik.touched` actually meant: `handleBlur` was wired
-   * nowhere, so "touched" only ever became true on a submit attempt. Named honestly here.
+   * **This is the display gate:** `touched.x && errors.x`. `errors` is already per-field
+   * (see above), so the gate is belt-and-braces for a blur-driven error — but it is load
+   * bearing after `setValue` clears an error while the field stays touched, and it is the
+   * flag a form needs to re-validate on input once a field has been visited.
+   *
+   * The 15 Formik files could not use it: `handleBlur` was wired nowhere in any of them, so
+   * their `touched.x` only ever became true on submit and `submitted` was the honest name for
+   * what they meant. Converted forms wire `@blur` and get the behaviour the markup implied.
+   */
+  get touched(): Readonly<Partial<Record<string, boolean>>> {
+    return this._touched;
+  }
+
+  /**
+   * Whether `submit()` has been called. Prefer `touched.x && errors.x` for a field message;
+   * this is for form-level state ("show the summary", "the user has tried once").
    */
   get submitted(): boolean {
     return this._submitted;
@@ -133,6 +162,49 @@ export class FormController<T extends object> implements ReactiveController {
    * immediately with `errors` still empty from the unfinished first run, and a dialog doing
    * `await submit(); if (no errors) close()` would close over a POST still in flight.
    */
+  /**
+   * Mark a field finished-with and validate it. Wire this to an input's blur:
+   *
+   * ```ts
+   * @blur=${() => void this.form.handleBlur('schemaName')}
+   * ```
+   *
+   * The returned promise is there so a test can await it; template handlers discard it. It
+   * rejects only if the schema itself crashed — see `validateField`.
+   */
+  handleBlur(path: string): Promise<void> {
+    this._touched = { ...this._touched, [path]: true };
+    this.host.requestUpdate();
+    return this.validateField(path);
+  }
+
+  /**
+   * Re-check one field and update only its message, leaving every other entry in `errors`
+   * alone. Does not mark anything touched — `handleBlur` does that.
+   *
+   * The **whole** schema runs, not just this field's rules, because a `.test()` may read a
+   * sibling field or state outside the form (the "unique schema name" rule reads both). Only
+   * `path`'s result is kept. That costs one extra pass per blur and buys correctness for
+   * cross-field rules, which is the trade every one of the five real forms needs.
+   *
+   * Rejects if the schema crashed, for #890's reason: a validator that threw has told us
+   * nothing about this field, so clearing its error would be a lie. The existing entry is
+   * left as it was.
+   */
+  async validateField(path: string): Promise<void> {
+    const found = await this.validate();
+    const message = found[path];
+    if (message === undefined) {
+      if (!(path in this._errors)) return;
+      const { [path]: _removed, ...rest } = this._errors;
+      this._errors = rest;
+    } else {
+      if (this._errors[path] === message) return;
+      this._errors = { ...this._errors, [path]: message };
+    }
+    this.host.requestUpdate();
+  }
+
   submit(): Promise<void> {
     if (this._inFlight) return this._inFlight;
     this._inFlight = this.run(this._generation);
@@ -145,6 +217,16 @@ export class FormController<T extends object> implements ReactiveController {
     this.host.requestUpdate();
     try {
       this._errors = await this.validate();
+      // Every field counts as touched once the user has pressed submit, so the whole error
+      // map becomes visible at once. Formik did this in its SUBMIT_ATTEMPT reducer
+      // (`touched: setNestedObjectValues(state.values, true)`) and forms rely on it: a
+      // required field the user never focused has to report itself on the first press.
+      //
+      // Error paths are unioned in, not just the value keys, because a nested rule reports a
+      // dotted path (`additionalModes.odata`) that no top-level key would cover.
+      this._touched = { ...this._touched };
+      for (const key of Object.keys(this._values)) this._touched[key] = true;
+      for (const key of Object.keys(this._errors)) this._touched[key] = true;
       if (Object.keys(this._errors).length > 0) return;
       await this.options.onSubmit(this._values);
     } finally {

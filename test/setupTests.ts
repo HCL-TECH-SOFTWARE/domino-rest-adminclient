@@ -88,6 +88,18 @@ if (!HTMLElement.prototype.showPopover) {
   };
 }
 
+// jsdom does not implement the Web Animations API. Web Awesome's show/hide helpers call
+// `getAnimations()` from a requestAnimationFrame callback to wait out a transition, so any
+// test that *opens* a wa-drawer or wa-dialog raised an unhandled TypeError from a timer —
+// outside any test's stack, which is why it surfaced as "Vitest caught N unhandled errors"
+// rather than a failure. An empty list is the truthful answer here: nothing animates in jsdom,
+// so the helpers proceed immediately.
+if (!Element.prototype.getAnimations) {
+  Element.prototype.getAnimations = function () {
+    return [];
+  };
+}
+
 // jsdom implements neither of the deprecated execCommand APIs. monaco-editor's clipboard
 // contribution (clipboard/browser/clipboard.js) calls queryCommandSupported at MODULE
 // scope to decide whether to register its paste command, so merely importing anything

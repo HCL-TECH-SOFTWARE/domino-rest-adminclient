@@ -66,3 +66,4 @@ export { KeepSchemasDefaultView } from './react/KeepSchemasDefaultView';
 export { KeepSchemasStacksView } from './react/KeepSchemasStacksView';
 export { KeepSchemasAlphabeticalView } from './react/KeepSchemasAlphabeticalView';
 export { KeepSchemasMultiView } from './react/KeepSchemasMultiView';
+export { KeepQuickConfigDrawer } from './react/KeepQuickConfigDrawer';
