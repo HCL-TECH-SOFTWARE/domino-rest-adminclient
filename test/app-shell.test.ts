@@ -122,7 +122,10 @@ describe('AppShell on wa-page (#707)', () => {
   it('leaves the deleted scaffolding deleted', () => {
     expect(existsSync(resolve(ROOT, 'src/components/home/HomeElement.tsx'))).toBe(false);
     expect(existsSync(resolve(ROOT, 'src/components/sidenav/MobileSidebar.tsx'))).toBe(false);
-    const sidenav = read('src/components/sidenav/SideNav.tsx');
+    // The sidenav became `keep-side-nav` in #806; the deletions it must not resurrect are the
+    // same ones, so the scan follows the file rather than being dropped with it.
+    const sidenav = read('src/components/keep-elements/keep-side-nav.ts');
+    expect(existsSync(resolve(ROOT, 'src/components/sidenav/SideNav.tsx'))).toBe(false);
     for (const gone of ['SideNavContainer', 'AppContainer', 'RightPanel', 'toggle-button']) {
       expect(code(sidenav) + code(shell), `${gone} is back`).not.toContain(gone);
     }
