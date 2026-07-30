@@ -6,17 +6,19 @@
 
 import React from 'react';
 import { createComponent, type EventName } from '@lit/react';
-import SingleField, { type KeepFieldAddDetail } from '../keep-single-field';
+import ConsentsTable, {
+  type KeepConsentsTableFiltersOnDetail,
+  type KeepConsentsTableResetDetail,
+} from '../keep-consents-table';
 
-/**
- * Rendered by `access/Fields.tsx`, which still owns `moveTo`. The element never writes the
- * store; fold `field-add` back through the callback the list already had.
- */
-export const KeepSingleField = createComponent({
-  tagName: 'keep-single-field',
-  elementClass: SingleField,
+export const KeepConsentsTable = createComponent({
+  tagName: 'keep-consents-table',
+  elementClass: ConsentsTable,
   react: React,
   events: {
-    onFieldAdd: 'field-add' as EventName<CustomEvent<KeepFieldAddDetail>>,
+    onFiltersOnChange: 'filters-on-change' as EventName<
+      CustomEvent<KeepConsentsTableFiltersOnDetail>
+    >,
+    onResetChange: 'reset-change' as EventName<CustomEvent<KeepConsentsTableResetDetail>>,
   },
 });

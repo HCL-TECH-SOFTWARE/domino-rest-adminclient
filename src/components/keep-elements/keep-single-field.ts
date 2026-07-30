@@ -28,8 +28,10 @@ const KIND_TEXT: Record<string, string> = {
 
 /**
  * One row of the "show fields from …" list on the schema-management screen: a field the
- * user can add to the mode being edited. Tag: `keep-single-field`. Exposed via
- * `KeepElements.tsx` as `KeepSingleField`.
+ * user can add to the mode being edited. Tag: `keep-single-field`.
+ *
+ * No React wrapper: `keep-field-list` is the only thing that renders these, and it is a Lit
+ * element, so it uses the tag directly and imports this module for registration.
  *
  * Replaces `components/access/SingleFieldContainer.tsx`.
  *
@@ -47,9 +49,10 @@ const KIND_TEXT: Record<string, string> = {
  * every time a field is added. Same reasoning as the "only dispatches" case: no
  * subscription, no controller.
  *
- * The row does not write, either. It emits `field-add` and `Fields.tsx` — still React —
- * folds it back through the `moveTo` it already had, so ownership of the write stays in one
- * place instead of being split between a parent and a leaf.
+ * The row does not write, either. It emits `field-add`, `keep-field-list` gathers that into
+ * its own `fields-add`, and the access screen folds it back through the `moveTo` it already
+ * had — so ownership of the write stays in one place instead of being split between a
+ * parent and a leaf.
  *
  * @fires field-add - `CustomEvent<KeepFieldAddDetail>`, unless the field is already in the
  *   mode or the row is `disabled`.

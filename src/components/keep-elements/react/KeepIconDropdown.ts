@@ -5,12 +5,14 @@
  * ========================================================================== */
 
 import React from 'react';
-import { createComponent } from '@lit/react';
-import InputDate from '../keep-input-date';
+import { createComponent, type EventName } from '@lit/react';
+import IconDropdown, { type KeepIconSelectDetail } from '../keep-icon-dropdown';
 
-export const KeepInputDate = createComponent({
-  tagName: 'keep-input-date',
-  elementClass: InputDate,
+export const KeepIconDropdown = createComponent({
+  tagName: 'keep-icon-dropdown',
+  elementClass: IconDropdown,
   react: React,
-  events: { onDateChange: 'date-change' }
+  events: {
+    onIconSelect: 'icon-select' as EventName<CustomEvent<KeepIconSelectDetail>>
+  }
 });

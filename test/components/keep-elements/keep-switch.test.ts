@@ -30,10 +30,21 @@ describe('keep-switch', () => {
     expect(el.shadowRoot!.querySelector('slot')).toBeTruthy();
   });
 
-  it('invokes the onToggle callback on a wa-change event', async () => {
+  it('invokes the onToggle callback on the change event wa-switch actually emits', async () => {
+    // Was `new Event('wa-change')`, hand-written to match a binding that was itself wrong —
+    // so it passed while every "Show Active" filter in the app silently did nothing. Web
+    // Awesome prefixes only events with no native equivalent; `wa-switch` emits plain
+    // `change`. Binding to the prefixed name again fails this test.
+    const cb = vi.fn();
+    const el = await mountLit<Switch>(TAG, { onToggle: cb });
+    waSwitch(el).dispatchEvent(new Event('change'));
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores the prefixed name, so a regression cannot pass by dispatching it', async () => {
     const cb = vi.fn();
     const el = await mountLit<Switch>(TAG, { onToggle: cb });
     waSwitch(el).dispatchEvent(new Event('wa-change'));
-    expect(cb).toHaveBeenCalledTimes(1);
+    expect(cb).not.toHaveBeenCalled();
   });
 });

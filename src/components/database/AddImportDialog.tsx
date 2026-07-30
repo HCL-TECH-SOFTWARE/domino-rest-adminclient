@@ -10,11 +10,16 @@ import { AppState } from '../../store';
 import { TextField } from '@mui/material';
 import { addSchema } from '../../store/databases/action';
 import { Autocomplete } from '@mui/material';
-import { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
-import { IconDropdown } from '../commons/IconDropdown';
+import { DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { KeepAutocomplete, KeepButton, KeepFormDialogHeader } from '../keep-elements/KeepElements';
+import {
+  KeepAutocomplete,
+  KeepButton,
+  KeepFormDialogHeader,
+  KeepIconDropdown,
+} from '../keep-elements/KeepElements';
+import type { KeepIconSelectDetail } from '../keep-elements/keep-icon-dropdown';
 import { useAppDispatch } from '../../store/hooks';
 
 interface AddImportDialogProps {
@@ -32,8 +37,6 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
 
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
   const [nsfPath, setNsfPath] = useState('');
   const [iconName, setIconName] = useState('beach');
   
@@ -220,21 +223,12 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
     formik.resetForm()
   }
 
-  const handleSelectIcon = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseIconMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleMenuItemClick = (
-    _event: React.MouseEvent<HTMLElement>,
-    index: number
-  ) => {
-    setSelectedIndex(index);
-    setAnchorEl(null);
-    setIconName(APP_ICON_NAMES[index]);
+  // The picker is an element now, so it reports the name it was asked to show rather than an
+  // index into the name list. The separate `selectedIndex` that used to travel with it is
+  // gone: it was a second source of truth for the same fact, and the two disagreed from the
+  // first render — it started at 1 (`barcode_scanner`) while the icon shown was `beach`.
+  const handleIconSelect = (event: CustomEvent<KeepIconSelectDetail>) => {
+    setIconName(event.detail.iconName);
   };
 
   const handleSchemaNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -346,15 +340,7 @@ const AddImportDialog: React.FC<AddImportDialogProps> = ({
           <div className='import-icon-schema-container'>
             <text className='medium-text'>Icon</text>
             <div className='import-icon-dropdown-container'>
-              <IconDropdown
-                handleSelectIcon={handleSelectIcon}
-                displayIconName={iconName}
-                anchorEl={anchorEl}
-                handleClose={handleCloseIconMenu}
-                selectedIndex={selectedIndex}
-                handleMenuItemClick={handleMenuItemClick}
-                size={45}
-              />
+              <KeepIconDropdown iconName={iconName} onIconSelect={handleIconSelect} />
             </div>
           </div>
           <div className='import-schema-name-container'>

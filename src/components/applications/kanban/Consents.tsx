@@ -6,12 +6,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@linaria/react';
-import ConsentsTable from './ConsentsTable';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 import { deleteConsent, toggleDeleteConsent } from '../../../store/consents/action';
 import { toggleConsentsDrawer } from '../../../store/drawer/action';
-import { KeepButton, KeepFormDialogHeader, KeepZeroResults } from '../../keep-elements/KeepElements';
+import {
+  KeepButton,
+  KeepConsentsTable,
+  KeepFormDialogHeader,
+  KeepZeroResults,
+} from '../../keep-elements/KeepElements';
 import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../../store/hooks';
 const ConsentsContainer = styled.div`
@@ -158,12 +162,12 @@ const Consents: React.FC<ConsentsProps> = ({ handleClose, dialog }) => {
           Reset
         </button>
       </OptionsBar>
-      {consents.length > 0 ? <ConsentsTable
+      {consents.length > 0 ? <KeepConsentsTable
         expand={expand}
         filtersOn={filtersOn}
-        setFiltersOn={setFiltersOn}
+        onFiltersOnChange={(e) => setFiltersOn(e.detail.filtersOn)}
         reset={resetFilters}
-        setReset={setResetFilters}
+        onResetChange={(e) => setResetFilters(e.detail.reset)}
       /> : <KeepZeroResults
             mainLabel="Sorry, no consents found"
             secondaryLabel={`What you search was unfortunately not found or doesn't exist.`}

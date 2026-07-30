@@ -11,8 +11,22 @@ import { KeepElement } from './keep-element';
 
 /**
  * Thin wrapper around `<wa-switch>`.
- * Tag: `keep-switch`. Exposes a single `onToggle` callback wired to the inner
- * switch's `wa-change` event.
+ * Tag: `keep-switch`. Exposes a single `onToggle` callback wired to the inner switch's
+ * `change` event.
+ *
+ * ## The event is `change`, not `wa-change`
+ *
+ * This was bound to `wa-change` and had been dead for as long as it has shipped: the switch
+ * flipped visually and the callback never ran. Web Awesome prefixes only the events that have
+ * no native equivalent — `wa-invalid` is prefixed, `change`, `input`, `focus` and `blur` are
+ * not — and `wa-switch` documents plain `change`.
+ *
+ * Every consumer is a "Show Active" filter (the Forms, Views and Agents tabs), so all three
+ * filters silently did nothing. Verified in a browser before and after: the inner control
+ * reports `checked === true` after a click either way, which is why it looked fine.
+ *
+ * The test that covered this dispatched `new Event('wa-change')` by hand, so it passed against
+ * the broken binding. It now dispatches what `wa-switch` actually emits.
  */
 @customElement('keep-switch')
 export default class Switch extends KeepElement {
@@ -42,7 +56,7 @@ export default class Switch extends KeepElement {
 
   render() {
     return html`
-      <wa-switch @wa-change=${this.onToggle}>
+      <wa-switch @change=${this.onToggle}>
         <slot></slot>
       </wa-switch>
     `;

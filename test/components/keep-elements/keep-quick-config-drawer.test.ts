@@ -149,6 +149,8 @@ describe('keep-quick-config-drawer', () => {
   });
 
   it('the form Close button closes the drawer and clears the error', async () => {
+    // Only the immediate effect of the Close event. Whether the drawer *stays* closed is a
+    // separate question, and one this test cannot see — see "the hide round trip" below.
     const el = await mount();
     await open(el);
     await raise(el, 'Server said no');
@@ -189,5 +191,146 @@ describe('keep-quick-config-drawer', () => {
     closeFn();
     await settle(el);
     expect(store.getState().drawer.quickConfigDrawer).toBe(false);
+  });
+
+  /**
+   * The full hide round trip: the panel actually opens, actually hides, and the
+   * `wa-after-hide` that Web Awesome fires when it has finished hiding actually comes back.
+   *
+   * None of that happens in the tests above, and the reason is worth stating because it hid a
+   * real bug. `test/setupTests.ts` stubs the dialog methods jsdom does not implement as
+   * no-ops, so the inner dialog never reports itself open — and Web Awesome's `open` watcher
+   * only hides the drawer when the dialog *is* open. With the stub in place the whole
+   * hide-and-notify path is unreachable, and every close in this file looks like a single
+   * clean toggle.
+   *
+   * The two replacements below are enough to make it real: the dialog's own `open` is a
+   * reflected attribute, so setting it is the part of `showModal`/`close` that the drawer
+   * reads. Restored afterwards, because the no-op stubs are what the rest of the suite
+   * expects.
+   */
+  describe('the hide round trip', () => {
+    const original = {
+      showModal: HTMLDialogElement.prototype.showModal,
+      close: HTMLDialogElement.prototype.close,
+    };
+
+    beforeEach(() => {
+      HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
+        this.open = true;
+      };
+      HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
+        this.open = false;
+      };
+    });
+
+    afterEach(() => {
+      HTMLDialogElement.prototype.showModal = original.showModal;
+      HTMLDialogElement.prototype.close = original.close;
+    });
+
+    const waDrawer = (el: QuickConfigDrawer) =>
+      drawer(el).shadowRoot!.querySelector('wa-drawer') as HTMLElement & { open: boolean };
+
+    /**
+     * Web Awesome waits out the hide animation before it notifies, and it does that by
+     * checking `getAnimations()` from a `requestAnimationFrame` callback — so the round trip
+     * needs a real frame, not just a drained microtask queue. Two, to also cover the extra
+     * show/hide the unguarded code sets off.
+     */
+    const flushHide = async (el: QuickConfigDrawer) => {
+      for (let i = 0; i < 2; i++) {
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => resolve());
+        });
+        await settle(el);
+      }
+    };
+
+    it('really opens the panel', async () => {
+      // The premise of everything below: if this fails, the rest are vacuous.
+      const el = await mount();
+      await open(el);
+      await flushHide(el);
+      expect(waDrawer(el).open).toBe(true);
+    });
+
+    it('the form Close button leaves the drawer closed', async () => {
+      // The bug this block exists for. `close()` clears the flag, Web Awesome hides the panel
+      // because of it, and the hide notification arrives back here — where an unguarded
+      // handler toggled the flag a second time and reopened the drawer, empty.
+      const el = await mount();
+      await open(el);
+      await flushHide(el);
+
+      form(el).dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+      await flushHide(el);
+
+      expect(store.getState().drawer.quickConfigDrawer).toBe(false);
+      expect(waDrawer(el).open).toBe(false);
+    });
+
+    it('a save that closes the drawer leaves it closed', async () => {
+      // The quick-config thunk clears the flag itself on success, so a successful Add is the
+      // same programmatic close arriving from outside the element. Dispatched directly rather
+      // than through the thunk: the toggle is the only part of it this element can see.
+      const el = await mount();
+      await open(el);
+      await flushHide(el);
+
+      store.dispatch(toggleQuickConfigDrawer());
+      await flushHide(el);
+
+      expect(store.getState().drawer.quickConfigDrawer).toBe(false);
+      expect(waDrawer(el).open).toBe(false);
+    });
+
+    it('Escape still closes the drawer and clears the flag', async () => {
+      // The other half of the guard, and the half that must not regress: a dismissal the
+      // store does not know about yet hides the panel first and notifies afterwards, so the
+      // flag is still up when the notification lands and one toggle is exactly right.
+      const el = await mount();
+      await open(el);
+      await flushHide(el);
+
+      await raise(el, 'Server said no');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await flushHide(el);
+
+      expect(store.getState().drawer.quickConfigDrawer).toBe(false);
+      expect(store.getState().databases.dbError).toBe(false);
+      expect(waDrawer(el).open).toBe(false);
+    });
+
+    it("the drawer's own close button does the same", async () => {
+      const el = await mount();
+      await open(el);
+      await flushHide(el);
+
+      const closeButton = waDrawer(el).shadowRoot!.querySelector(
+        'wa-button[part="close-button"]',
+      ) as HTMLElement;
+      expect(closeButton).toBeTruthy();
+      closeButton.click();
+      await flushHide(el);
+
+      expect(store.getState().drawer.quickConfigDrawer).toBe(false);
+      expect(waDrawer(el).open).toBe(false);
+    });
+
+    it('reopens normally after a programmatic close', async () => {
+      // A guard that got stuck would show up here rather than above: the flag has to be free
+      // to go back up on the next trigger press.
+      const el = await mount();
+      await open(el);
+      await flushHide(el);
+      form(el).dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+      await flushHide(el);
+
+      await open(el);
+      await flushHide(el);
+      expect(store.getState().drawer.quickConfigDrawer).toBe(true);
+      expect(waDrawer(el).open).toBe(true);
+    });
   });
 });

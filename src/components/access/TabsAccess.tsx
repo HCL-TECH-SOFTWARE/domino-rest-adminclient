@@ -11,7 +11,6 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from '../../router/react';
 import { Menu, MenuItem } from '@mui/material';
 import { useFormik } from 'formik';
-import FieldDNDContainer from './FieldDndContainer';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import {
   testFormula,
@@ -31,6 +30,7 @@ import { Database } from '../../store/databases/types';
 import {
   KeepAddModeDialog,
   KeepConfirmDeleteDialog,
+  KeepModeFields,
   KeepTooltip,
   KeepUnsavedChangesDialog,
 } from '../keep-elements/KeepElements';
@@ -976,20 +976,26 @@ const TabsAccess: React.FC<TabsAccessProps> = ({
           </div>
         </TabsContainer>
         <div className='flex flex-col access-load-tab-container'>
-          <FieldDNDContainer
-            remove={remove}
-            update={update}
+          {/* `addField` stays a callback because it answers synchronously — it returns the
+              reason a name was rejected, which the element renders inline. Everything else
+              is one-way, so it goes down as a property and comes back as an event.
+              The `scripts` cast on the way back is the optionality gap: the element types
+              every script setting optional because a mode may not carry all of them, while
+              this state was inferred from a literal where all eight are present. */}
+          <KeepModeFields
             state={state}
             addField={addField}
-            data={scripts}
-            setScripts={setScripts}
-            test={test}
+            scripts={scripts}
             required={required}
-            setRequired={setRequired}
             validationRules={validationRules}
-            setValidationRules={setValidationRules}
             fieldIndex={fieldIndex}
-            setFieldIndex={setFieldIndex}
+            onFieldsRemove={(e) => remove(0, e.detail.fields)}
+            onFieldIndexChange={(e) => setFieldIndex(e.detail.fieldIndex)}
+            onFieldUpdate={(e) => update(e.detail.itemIndex, e.detail.droppableIndex, e.detail.item)}
+            onRequiredChange={(e) => setRequired(e.detail.required)}
+            onScriptsChange={(e) => setScripts(e.detail.scripts as typeof scripts)}
+            onValidationRulesChange={(e) => setValidationRules(e.detail.rules)}
+            onTestFormulas={test}
           />
         </div>
       </TabNavigator>

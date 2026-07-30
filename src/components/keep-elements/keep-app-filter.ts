@@ -12,8 +12,7 @@ import { KeepElement } from './keep-element';
 import { StoreController } from '../../store/StoreController';
 import { toggleAppFilterDrawer } from '../../store/drawer/action';
 import { fetchMyApps } from '../../store/applications/action';
-import './keep-drawer';
-import './keep-button';
+import './keep-filter-drawer';
 
 /** The value every filter starts at, and the value Reset returns it to. */
 const ALL = 'All';
@@ -97,21 +96,23 @@ const SECTIONS: readonly FilterSection[] = [
  * — the original tried to and could not: the ref it focused was never attached to an element,
  * so it was always null.
  *
- * ## What the shadow boundary cost
+ * ## What the shadow boundary cost, and where it went
  *
  * All of it. Four Linaria blocks (`DrawerFormContainer`, `FilterContainer`, `Section`,
  * `ButtonsContainer`) and eight utility classes from `styles.css` reached these nodes through
  * the light DOM as class selectors, and a class selector does not cross a shadow boundary.
- * They are restated below, reading `--wa-*` custom properties — which do cross, and stay
- * mode-aware — wherever the original used a literal.
+ *
+ * The panel, the column, the sections, the rules and the footer are the same in the consents
+ * filter, so they now live once in {@link ../keep-filter-drawer} and this element supplies
+ * only its body. What is left below is what is genuinely this drawer's: the two radio groups.
  */
 @customElement('keep-app-filter')
 export default class AppFilter extends KeepElement {
   static styles = css`
     /*
      * The page's border-box reset is a universal selector in WebAwesome's wa-native layer,
-     * and a universal selector does not cross a shadow boundary. Without it the divider's
-     * padding would be added to its height rather than counted inside it.
+     * and a universal selector does not cross a shadow boundary. The shell restates it for
+     * its own nodes; the sections and rules below are in *this* root, so they need it here.
      */
     *,
     *::before,
@@ -121,39 +122,6 @@ export default class AppFilter extends KeepElement {
 
     :host {
       display: contents;
-    }
-
-    /* DrawerFormContainer, plus the w-35vw utility that every call site passed with it. */
-    .drawer-form {
-      display: flex;
-      flex-direction: column;
-      width: 35vw;
-      height: 100%;
-      max-height: 100vh;
-      overflow: hidden;
-    }
-
-    @media only screen and (max-width: 768px) {
-      .drawer-form {
-        width: 100vw;
-      }
-    }
-
-    /* FilterContainer. Its .title rule is dropped: nothing in the markup ever had it. */
-    .filter {
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      gap: 10px;
-    }
-
-    /* Section. Its .header, .text, .toggle-area and .scope-group rules are dropped for the
-       same reason — they belong to the consents filter, which shares the block verbatim. */
-    .section {
-      padding-top: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
 
     /*
@@ -175,31 +143,6 @@ export default class AppFilter extends KeepElement {
     wa-radio-group::part(form-control-input) {
       gap: 0;
       padding: 0;
-    }
-
-    /*
-     * The divider was an hr carrying divider, pt-5, pb-10, mb-10 and no-background. The
-     * visible line is not the utility's own background — no-background is declared later in
-     * the sheet and cancels it — but the border-bottom WebAwesome's wa-native layer puts on
-     * every hr, which is a bare element selector and so does not cross the boundary either.
-     * Restated with the same token, which keeps it mode-aware.
-     */
-    .divider {
-      width: 100%;
-      height: 1px;
-      padding: 5px 0 10px;
-      margin: 0 0 10px;
-      border: none;
-      border-bottom: solid var(--wa-border-width-s) var(--wa-color-surface-border);
-      background: none;
-    }
-
-    /* ButtonsContainer. */
-    .buttons {
-      display: flex;
-      justify-content: flex-end;
-      padding-top: 20px;
-      gap: 20px;
     }
   `;
 
@@ -277,8 +220,19 @@ export default class AppFilter extends KeepElement {
     event.stopPropagation();
   }
 
+  /**
+   * The shell's three events are this element's internals — it turns them into a store
+   * dispatch and, sometimes, a `filter-change`, which is its whole outbound contract. They
+   * are composed, so each handler stops the one that brought it here rather than letting a
+   * `filter-apply` nobody can interpret escape into the host page.
+   */
+  private _stop(event: Event): void {
+    event.stopPropagation();
+  }
+
   /** Show Results: refresh the list, publish the draft, close. */
-  private _apply(): void {
+  private _apply(event: Event): void {
+    this._stop(event);
     this.drawer.dispatch(fetchMyApps());
     this.emit<KeepAppFilterChangeDetail>('filter-change', { ...this.draft });
     this.drawer.dispatch(toggleAppFilterDrawer());
@@ -288,25 +242,25 @@ export default class AppFilter extends KeepElement {
    * Reset: clear both filters and close. It deliberately does *not* refetch — the original
    * did not either, and the table re-filters the apps it already has.
    */
-  private _reset(): void {
+  private _reset(event: Event): void {
+    this._stop(event);
     const cleared: KeepAppFilterChangeDetail = { status: ALL, appSecret: ALL };
     this.draft = cleared;
     this.emit<KeepAppFilterChangeDetail>('filter-change', { ...cleared });
     this.drawer.dispatch(toggleAppFilterDrawer());
   }
 
-  /** Cancel: close and publish nothing. The draft is re-seeded on the next open. */
-  private _close(): void {
-    this.drawer.dispatch(toggleAppFilterDrawer());
-  }
-
   /**
-   * Escape, the overlay and the drawer's own close button all end here. Guarded, because
-   * the drawer also finishes hiding after {@link _apply}, {@link _reset} and
-   * {@link _close} have already cleared the flag — toggling again would re-open it.
+   * Cancel: close and publish nothing. The draft is re-seeded on the next open.
+   *
+   * Escape, the overlay and the drawer's own close button arrive here too — the shell reports
+   * all four the same way, because they mean the same thing. Guarded, because the drawer also
+   * finishes hiding after {@link _apply}, {@link _reset} and a Cancel have already cleared the
+   * flag, and toggling again would re-open it.
    */
-  private _handleHide(): void {
-    if (this.drawer.value) this._close();
+  private _cancel(event: Event): void {
+    this._stop(event);
+    if (this.drawer.value) this.drawer.dispatch(toggleAppFilterDrawer());
   }
 
   private _renderSection(section: FilterSection) {
@@ -328,28 +282,24 @@ export default class AppFilter extends KeepElement {
   }
 
   render() {
+    // The trailing rule is the body's, not the shell's: it separates the last section from
+    // the footer, and the consents filter deliberately has no such rule.
     return html`
-      <keep-drawer label="Filter" ?open=${this.drawer.value} .closeFn=${() => this._handleHide()}>
-        <div class="drawer-form">
-          <div class="filter">
-            ${SECTIONS.map(
-              (section, index) => html`
-                ${index === 0 ? nothing : html`<hr class="divider" />`}${this._renderSection(
-                  section,
-                )}
-              `,
-            )}
-            <hr class="divider" />
-            <div class="buttons">
-              <keep-button variant="neutral" appearance="outlined" @click=${() => this._reset()}>
-                Reset
-              </keep-button>
-              <keep-button variant="danger" @click=${() => this._close()}>Cancel</keep-button>
-              <keep-button @click=${() => this._apply()}>Show Results</keep-button>
-            </div>
-          </div>
-        </div>
-      </keep-drawer>
+      <keep-filter-drawer
+        label="Filter"
+        ?open=${this.drawer.value}
+        resettable
+        @filter-apply=${this._apply}
+        @filter-reset=${this._reset}
+        @filter-cancel=${this._cancel}
+      >
+        ${SECTIONS.map(
+          (section, index) => html`
+            ${index === 0 ? nothing : html`<hr class="divider" />`}${this._renderSection(section)}
+          `,
+        )}
+        <hr class="divider" />
+      </keep-filter-drawer>
     `;
   }
 }
