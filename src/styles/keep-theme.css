@@ -191,19 +191,41 @@
      * The two halves of --base-color (#765).
      *
      * `styles.css` used one token for two opposite roles: a *text* colour
-     * (`.color-base`) and a *surface* fill that carries 24px white text
-     * (`.background-keep-base`, `.app-form-header`, `.scope-form-header`). A single
-     * value cannot be tuned for both — darker helps the text role and hurts the
-     * white-on-brand role — which is why the old comment there said no step was ideal.
-     *
-     * Both start at exactly what --base-color already resolved to, so this split is a
-     * no-op today. The point is that they can now move independently:
+     * (`.color-base`) and a *surface* fill that carries white text
+     * (`.background-keep-base`, `.app-form-header`, `.scope-form-header`,
+     * `.drawer-available-databases-text`). A single value cannot be tuned for both —
+     * darker helps the text role and hurts the white-on-brand role — which is why the
+     * old comment there said no step was ideal.
      *
      *   role                         light           dark            contrast
      *   text on surface              brand-40        brand-60        6.36 / 5.11
-     *   white text on the fill       brand-40        brand-60        6.36 / 3.21
+     *   white text on the fill       brand-40        brand-40        6.36 / 4.90
      *
-     * (White-on-fill only has to clear 3.0 — it is 24px, WCAG "large text".)
+     * ### The fill must clear 4.5, not 3.0 (#910)
+     *
+     * This table used to say the fill role only had to clear 3.0, "because it is 24px,
+     * WCAG large text". Three of its four consumers are 24px; the fourth,
+     * `.drawer-available-databases-text`, is **18px at weight 400**. WCAG 2.1 large text
+     * is ≥18pt (24px), or ≥14pt (18.66px) bold — so 18px/400 is normal text and needs
+     * 4.5:1. At the old dark value (brand-60) it measured **3.21** and failed 1.4.3.
+     *
+     * The dark half therefore reads brand-40, not brand-60. White text over the ramp,
+     * measured:
+     *
+     *   step       light   dark
+     *   brand-60    3.90   3.21   <- old dark value, fails
+     *   brand-50    4.67   3.95   fails in dark
+     *   brand-40    6.36   4.90   <- both clear 4.5
+     *   brand-30    8.73   7.10
+     *
+     * **Web Awesome's own guaranteed pair does not solve this here.** The obvious fix is
+     * `--wa-color-brand-fill-loud` with `--wa-color-brand-on-loud`, which WA designs to be
+     * contrast-safe. That holds in WA's default theme because there `fill-loud` is brand-50
+     * in *both* modes. This file overrides the brand ramp per mode (see the two ramp blocks),
+     * so `fill-loud` resolves to two different colours here and the dark one is 3.95 — still
+     * short of 4.5. Overriding a ramp silently voids the guarantee built on top of it.
+     *
+     * `test/styles/keep-theme.test.ts` now computes this rather than trusting the comment.
      */
     --keep-text-brand: var(--wa-color-brand-40);
     --keep-surface-brand: var(--wa-color-brand-40);
@@ -347,10 +369,15 @@
     --keep-surface-highlight: #3a3a5a;
     --keep-surface-header: #252535;
 
-    /* Both halves of the former --base-color read -60 in dark, which is what it
-       already resolved to. See the light block for the contrast table. */
+    /* The text half reads -60: it is brand-coloured text on a dark surface, where a
+       lighter step is what gives contrast.
+
+       The surface half reads **-40**, not -60. It is the opposite role — a fill carrying
+       white text — so it needs a *darker* step, and -60 gave white only 3.21:1 against the
+       18px consumer's 4.5 requirement (#910). -40 gives 4.90. See the light block for the
+       measured ramp and why brand-fill-loud is not the answer here. */
     --keep-text-brand: var(--wa-color-brand-60);
-    --keep-surface-brand: var(--wa-color-brand-60);
+    --keep-surface-brand: var(--wa-color-brand-40);
 
     /* #4a4a4a is what keep-tooltip.ts's `isDark` branch already used. */
     --keep-tooltip-surface: #4a4a4a;

@@ -130,6 +130,81 @@ describe('keep-theme.css — the brand ramp is the only purple (#765)', () => {
   });
 });
 
+describe('keep-theme.css — white-on-brand clears WCAG AA in both modes (#910)', () => {
+  /*
+   * `--keep-surface-brand` is a fill that carries white text, at four sites. Three are
+   * 24px; `.drawer-available-databases-text` is **18px at weight 400**, which WCAG 2.1
+   * counts as normal text (large is ≥18pt/24px, or ≥14pt/18.66px bold). So the pair has to
+   * clear **4.5:1**, not the 3.0 the old comment in keep-theme.css claimed.
+   *
+   * It did not: the dark half read brand-60 and measured 3.21. This computes the number
+   * from the stylesheet instead of trusting a comment, because the comment was wrong for
+   * as long as it existed and nothing could tell.
+   */
+  const lightBlock = CSS.slice(CSS.indexOf(':root'), CSS.indexOf(':root.wa-dark'));
+  const darkRoot = CSS.slice(CSS.indexOf(':root.wa-dark'));
+
+  /** Relative luminance per WCAG 2.1, from a #rrggbb string. */
+  const luminance = (hex: string) => {
+    const n = hex.replace('#', '');
+    const [r, g, b] = [0, 2, 4]
+      .map((i) => parseInt(n.slice(i, i + 2), 16) / 255)
+      .map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+
+  const contrastWithWhite = (hex: string) => {
+    const lo = luminance(hex);
+    return (1.05) / (lo + 0.05);
+  };
+
+  /**
+   * Resolve a ramp step to a hex. The dark block overrides only some steps, so an
+   * unresolved one falls back to the light declaration, exactly as the cascade does.
+   *
+   * Throws rather than expects, so the return type is a plain `string` — an `expect` does
+   * not narrow `string | undefined`, and threading the union through the arithmetic below
+   * would obscure it.
+   */
+  const resolveStep = (block: string, step: string): string => {
+    const hex = declared(block, step) ?? declared(lightBlock, step);
+    if (!hex || !/^#[0-9a-f]{6}$/.test(hex)) {
+      throw new Error(`could not resolve ${step} to a hex (got ${String(hex)})`);
+    }
+    return hex;
+  };
+
+  /** Follow `--keep-surface-brand` to the ramp step it names, and that step to a hex. */
+  const resolveSurfaceBrand = (mode: 'light' | 'dark') => {
+    const block = mode === 'dark' ? darkRoot : lightBlock;
+    const decl = /--keep-surface-brand:\s*var\((--wa-color-brand-[0-9]+)\)/.exec(block);
+    if (!decl) throw new Error(`${mode}: --keep-surface-brand is not a brand ramp step`);
+    return { step: decl[1], hex: resolveStep(block, decl[1]) };
+  };
+
+  for (const mode of ['light', 'dark'] as const) {
+    it(`white text on the brand fill clears 4.5:1 in ${mode} mode`, () => {
+      const { step, hex } = resolveSurfaceBrand(mode);
+      const ratio = contrastWithWhite(hex);
+      expect(
+        ratio,
+        `${mode}: --keep-surface-brand is ${step} (${hex}), giving white text ` +
+          `${ratio.toFixed(2)}:1. The 18px consumer needs 4.5:1 — pick a darker ramp step.`,
+      ).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+
+  it('the surface half is a darker step than the text half in dark mode', () => {
+    // The two roles pull in opposite directions, which is the whole reason #765 split them.
+    // Pinning the direction stops a future edit from collapsing them back onto one step.
+    const surface = resolveSurfaceBrand('dark');
+    const textDecl = /--keep-text-brand:\s*var\((--wa-color-brand-[0-9]+)\)/.exec(darkRoot);
+    if (!textDecl) throw new Error('dark: --keep-text-brand is not a brand ramp step');
+    const textHex = resolveStep(darkRoot, textDecl[1]);
+    expect(luminance(surface.hex)).toBeLessThan(luminance(textHex));
+  });
+});
+
 describe('dark-mode.css — element styling belongs in the element (#765)', () => {
   /*
    * dark-mode.css used to restate, from the document, what 15 element rules
