@@ -12,7 +12,6 @@ import database from './appdev.jpg';
 import databaseDev from './databasedev.jpg';
 import apps from './apps.jpg';
 import consents from './consents.jpg';
-import keepBlockDiagram from './keepblockdiagram.svg';
 import { databases, apps as app } from '../../sidenav/Routes';
 import { AppState } from '../../../store';
 import { showPages } from '../../../store/account/action';
