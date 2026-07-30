@@ -226,3 +226,134 @@ describe('FormController — validation', () => {
     expect(el.form.submitting).toBe(false);
   });
 });
+
+/**
+ * #887 — one write per press.
+ *
+ * `submit()` used to run its whole body on every call, so a double-clicked Save dispatched a
+ * mutating thunk twice: for `addSchema` and `addApplication` that is two creates, not an
+ * idempotent retry. A disabled button cannot be the defence, because the second click can land
+ * before the re-render that disables it.
+ */
+describe('FormController — submit is not re-entrant', () => {
+  /** A macrotask, which drains every pending microtask — so no test here counts await ticks. */
+  const flush = () => new Promise<void>((resolve) => { setTimeout(resolve, 0); });
+
+  /** A host whose `onSubmit` blocks until the returned `release` for that call is invoked. */
+  const gatedHost = (tag: string) => {
+    const releases: Array<() => void> = [];
+    const onSubmit = vi.fn(() => new Promise<void>((r) => { releases.push(r); }));
+    class H extends LitElement {
+      form = new FormController<Values>(this, { initialValues: INITIAL, onSubmit });
+    }
+    customElements.define(tag, H);
+    return { el: new H(), onSubmit, releases };
+  };
+
+  it('calls onSubmit once when submitted twice concurrently', async () => {
+    const { el, onSubmit, releases } = gatedHost('reentry-once-host');
+    const first = el.form.submit();
+    const second = el.form.submit();
+    await flush();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    releases[0]();
+    await Promise.all([first, second]);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('hands the second caller the in-flight promise, so awaiting it means the submit finished', async () => {
+    // Not an early `return`: that would resolve the second caller immediately with `errors`
+    // still empty from the unfinished first run, and a dialog doing
+    // `await submit(); if (no errors) close()` would close over a POST still in flight.
+    const { el, releases } = gatedHost('reentry-same-promise-host');
+    const first = el.form.submit();
+    expect(el.form.submit()).toBe(first);
+
+    let secondSettled = false;
+    const second = el.form.submit().then(() => { secondSettled = true; });
+    await flush();
+    expect(secondSettled).toBe(false);
+
+    releases[0]();
+    await Promise.all([first, second]);
+    expect(secondSettled).toBe(true);
+  });
+
+  it('accepts a fresh submit once the first has settled', async () => {
+    const { el, onSubmit, releases } = gatedHost('reentry-reopens-host');
+    const first = el.form.submit();
+    await flush();
+    releases[0]();
+    await first;
+
+    const again = el.form.submit();
+    expect(again).not.toBe(first);
+    await flush();
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+    releases[1]();
+    await again;
+    expect(el.form.submitting).toBe(false);
+  });
+
+  it('does not latch when validation fails', async () => {
+    // Validation failing returns early, before onSubmit — the guard has to clear on that path
+    // too, or a form with one invalid field could never be submitted again.
+    const onSubmit = vi.fn();
+    class H extends LitElement {
+      form = new FormController<Values>(this, { initialValues: INITIAL, schema: twoFieldSchema, onSubmit });
+    }
+    customElements.define('reentry-invalid-host', H);
+    const el = new H();
+    await el.form.submit();
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    el.form.setValue('name', 'ok');
+    el.form.setValue('count', 3);
+    await el.form.submit();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not latch when onSubmit rejects, and both callers see the rejection', async () => {
+    const onSubmit = vi.fn().mockRejectedValue(new Error('nope'));
+    class H extends LitElement {
+      form = new FormController<Values>(this, { initialValues: INITIAL, onSubmit });
+    }
+    customElements.define('reentry-rejecting-host', H);
+    const el = new H();
+    const first = el.form.submit();
+    const second = el.form.submit();
+    await expect(first).rejects.toThrow('nope');
+    await expect(second).rejects.toThrow('nope');
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+
+    // A failed write must be retryable.
+    await expect(el.form.submit()).rejects.toThrow('nope');
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+  });
+
+  it('lets a run abandoned by reset settle without disturbing the run that replaced it', async () => {
+    // Not hypothetical: `addSchema` invokes its `resetCallback` after the POST resolves
+    // (`store/databases/schemas.ts`), so a converted `onSubmit` that awaits that dispatch gets
+    // reset() *mid-flight* — and reset() deliberately frees the form. Without the generation
+    // guard, the abandoned run's `finally` would then clear the new run's flags and reopen
+    // re-entry for the next click, in the one form where a double create is worst.
+    const { el, onSubmit, releases } = gatedHost('reentry-reset-host');
+    const abandoned = el.form.submit();
+    await flush();
+    el.form.reset();
+    expect(el.form.submitting).toBe(false);
+
+    const current = el.form.submit();
+    await flush();
+    expect(onSubmit).toHaveBeenCalledTimes(2);
+
+    releases[0]();
+    await abandoned;
+    expect(el.form.submitting).toBe(true);
+    expect(el.form.submit()).toBe(current);
+
+    releases[1]();
+    await current;
+    expect(el.form.submitting).toBe(false);
+  });
+});

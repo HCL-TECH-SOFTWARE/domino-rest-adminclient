@@ -28,6 +28,9 @@ export class FormController<T extends object> implements ReactiveController {
   private _errors: Record<string, string> = {};
   private _submitted = false;
   private _submitting = false;
+  private _inFlight?: Promise<void>;
+  /** Bumped by anything that frees the form, so a run settling late cannot clobber a newer one. */
+  private _generation = 0;
 
   constructor(
     private readonly host: ReactiveControllerHost,
@@ -87,6 +90,11 @@ export class FormController<T extends object> implements ReactiveController {
     this._errors = {};
     this._submitted = false;
     this._submitting = false;
+    // Frees the form for a new submit even mid-flight, which is what `addSchema`'s
+    // `resetCallback` does from inside a converted `onSubmit`. The abandoned run is still
+    // running; `_generation` is what stops it clearing the next run's flags when it settles.
+    this._inFlight = undefined;
+    this._generation += 1;
     this.host.requestUpdate();
   }
 
@@ -111,7 +119,27 @@ export class FormController<T extends object> implements ReactiveController {
     return this._submitting;
   }
 
-  async submit(): Promise<void> {
+  /**
+   * Validate, then hand the values to `onSubmit`. One write per press (#887).
+   *
+   * **A second call while the first is in flight returns the first's promise** rather than
+   * running the body again. All five form owners dispatch a mutating thunk from `onSubmit`,
+   * and for `addSchema` and `addApplication` that is a *create* — a double-clicked Save was
+   * two rows. `submitting` cannot be the caller's defence: the second click can land before
+   * the re-render that would disable the button.
+   *
+   * Returning the in-flight promise rather than an early `return`, so `await submit()` means
+   * "the submit finished" for every caller. Ignoring the second call instead would resolve it
+   * immediately with `errors` still empty from the unfinished first run, and a dialog doing
+   * `await submit(); if (no errors) close()` would close over a POST still in flight.
+   */
+  submit(): Promise<void> {
+    if (this._inFlight) return this._inFlight;
+    this._inFlight = this.run(this._generation);
+    return this._inFlight;
+  }
+
+  private async run(generation: number): Promise<void> {
     this._submitted = true;
     this._submitting = true;
     this.host.requestUpdate();
@@ -122,8 +150,15 @@ export class FormController<T extends object> implements ReactiveController {
     } finally {
       // `finally`, not a trailing statement: validation failing, or onSubmit rejecting,
       // must not leave the form stuck submitting with its buttons disabled.
-      this._submitting = false;
-      this.host.requestUpdate();
+      //
+      // Guarded by generation, because `reset()` mid-flight already freed the form and a
+      // newer run may own these flags by now. Clearing them unconditionally would reopen the
+      // re-entry hole this method exists to close — one door further along.
+      if (generation === this._generation) {
+        this._submitting = false;
+        this._inFlight = undefined;
+        this.host.requestUpdate();
+      }
     }
   }
 

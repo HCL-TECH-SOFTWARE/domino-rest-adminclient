@@ -193,6 +193,30 @@ describe('FormController against the five real forms', () => {
     expect(el.renders).toBeGreaterThan(before);
   });
 
+  it('a double-clicked save is one write, not two', async () => {
+    // Was the gap this file recorded, fixed in #887: peak concurrency was 2, so every one of the
+    // five form owners turned a double click into two dispatches of a mutating thunk -- two
+    // *creates* for addSchema and addApplication. `submitting` was never the caller's defence,
+    // because the second click can land before the re-render that would disable the button.
+    let running = 0;
+    let peak = 0;
+    let calls = 0;
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: async () => {
+        calls += 1;
+        running += 1;
+        peak = Math.max(peak, running);
+        await Promise.resolve();
+        running -= 1;
+      },
+    });
+    await Promise.all([form.submit(), form.submit()]);
+    expect(peak).toBe(1);
+    expect(calls).toBe(1);
+  });
+
   // ---- gaps, recorded rather than worked around -------------------------------------------
 
   it('GAP: has no per-field touched, so errors can only appear after a submit', async () => {
@@ -221,27 +245,4 @@ describe('FormController against the five real forms', () => {
     expect(typeof el.form.setValue).toBe('function');
   });
 
-  it('GAP: submit is not guarded against re-entry', async () => {
-    // A double-clicked save button calls onSubmit twice. `submitting` is exposed so a caller
-    // can disable the button, but nothing enforces it, and the second click can land before the
-    // re-render that would disable it. All five form owners dispatch a mutating thunk from
-    // onSubmit, so this is two writes -- two *creates* for addSchema and addApplication.
-    //
-    // Filed as #887. This test asserts the behaviour as it stands so the change is visible; it
-    // has to be inverted by whichever commit adds the guard.
-    let running = 0;
-    let peak = 0;
-    const el = await mountLit<FormHost>('test-form-host');
-    const form = new FormController<SchemaForm>(el, {
-      initialValues: INITIAL,
-      onSubmit: async () => {
-        running += 1;
-        peak = Math.max(peak, running);
-        await Promise.resolve();
-        running -= 1;
-      },
-    });
-    await Promise.all([form.submit(), form.submit()]);
-    expect(peak).toBe(2);
-  });
 });
