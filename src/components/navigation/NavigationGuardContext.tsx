@@ -49,7 +49,8 @@ interface Props {
  * 1. **Hard navigation** (address-bar change, refresh, tab close) →
  *    `beforeunload` event.
  * 2. **In-app anchor links** (`<NavLink>`, `<Link>`) → captured with a
- *    document-level click listener in the *capture* phase.
+ *    document-level click listener in the *capture* phase. Anchors inside a
+ *    component's shadow root count: see the `composedPath()` note below.
  * 3. **Browser back / forward** → `popstate` event.
  *
  * Programmatic `navigate()` calls (e.g. in the breadcrumb component) are
@@ -122,10 +123,24 @@ export const NavigationGuardProvider: React.FC<Props> = ({
     const handler = (e: MouseEvent) => {
       if (!isDirtyRef.current) return;
 
-      // Walk up from the click target to find the nearest <a>
-      const anchor = (e.target as HTMLElement).closest('a[href]');
+      // The nearest <a> the click actually passed through. `composedPath()` rather than
+      // `closest()` because `e.target` is **retargeted to the host** for anything inside a
+      // shadow root, and `closest()` then walks light-DOM ancestors that hold no anchor: the
+      // handler returned here and navigation proceeded with the user's work discarded, with no
+      // error and nothing to notice (#884). The path is ordered target-outward, so `find`
+      // gives the nearest anchor, which is what `closest()` meant.
+      //
+      // A *closed* shadow root is still invisible — `composedPath()` stops at one, and no
+      // traversal gets past it. Nothing here uses one; Lit and Web Awesome both open theirs.
+      const anchor = e.composedPath().find(
+        (node): node is HTMLAnchorElement =>
+          node instanceof HTMLAnchorElement && node.hasAttribute('href'),
+      );
       if (!anchor) return;
 
+      // The attribute, not `anchor.href`: the resolved property is absolute
+      // ("http://host/scope"), which the `startsWith('http')` test below would read as an
+      // external link and wave through — and the basename stripping wants the attribute form.
       const href = anchor.getAttribute('href');
       if (
         !href ||
@@ -136,7 +151,9 @@ export const NavigationGuardProvider: React.FC<Props> = ({
         return; // external / mail / hash links — let them through
       }
 
-      // Prevent React Router (and the browser) from navigating
+      // Stop the browser navigating, and the Link's own onClick handler from running —
+      // this listener is on the capture phase precisely so it decides first. (react-router
+      // was removed in #716; the in-repo router is what handles the click otherwise.)
       e.preventDefault();
       e.stopPropagation();
 
