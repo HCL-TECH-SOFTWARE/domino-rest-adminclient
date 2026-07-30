@@ -17,7 +17,6 @@ import Menu from '@mui/material/Menu';
 import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import StorageIcon from '@mui/icons-material/Storage';
 import { Alert, AlertTitle } from '@mui/material';
-import { FormikProps } from 'formik';
 import FileContentsTree from './FileContentsTree';
 import { AppState } from '../../store';
 import { APP_ICON_NAMES } from '../../services/app-icons';
@@ -32,6 +31,8 @@ import { KeepButton } from '../keep-elements/react/KeepButton';
 import { KeepCheckbox } from '../keep-elements/react/KeepCheckbox';
 import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 import { useAppDispatch } from '../../store/hooks';
+import type { FormController } from '../../store/FormController';
+import type { QuickConfigValues } from './QuickConfigFormContainer';
 
 const Forms = styled.form`
   display: flex;
@@ -71,30 +72,27 @@ const SearchDatabaseContainer = styled(Paper)`
 `;
 
 interface QuickConfigProps {
-  path: {
-    nsfPath: string;
-    setNsfPath: (path: string) => void;
-  };
-  selectedIcon: {
-    icon: string;
-    setIcon: (icon: string) => void;
-  };
-  formik: FormikProps<any>;
-  isDisabled : boolean;
-  setIsDisabled: any;
+  /**
+   * The form the container owns. Was `formik: FormikProps<any>` (#717).
+   *
+   * `nsfPath` and the selected icon arrived as their own `path` and `selectedIcon` prop pairs,
+   * each duplicating a field that was also in `formik.values`. Both are fields on this
+   * controller now, so the props are gone with them (#894, #897).
+   */
+  form: FormController<QuickConfigValues>;
+  isDisabled: boolean;
+  setIsDisabled: (disabled: boolean) => void;
 }
 
 const QuickConfigForm: React.FC<QuickConfigProps> = ({
-  path: { nsfPath, setNsfPath },
-  selectedIcon: { icon, setIcon },
-  formik,
+  form,
   isDisabled,
   setIsDisabled,
 }) => {
-  const { availableDatabases, scopes } = useSelector(
-    (state: AppState) => state.databases
-  );
-  const { dbError, dbErrorMessage, databases } = useSelector(
+  // One subscription, not two. This read `state.databases` twice in a row, and neither selector
+  // narrowed — both returned the whole slice, so every change anywhere in the busiest slice in
+  // the app re-rendered this component twice over (#895).
+  const { availableDatabases, scopes, dbError, dbErrorMessage, databases } = useSelector(
     (state: AppState) => state.databases
   );
   const [schemas, setSchemas] = useState([]) as any;
@@ -114,19 +112,17 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   }, [databases]);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
 
   const handleSelectIcon = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuItemClick = (
-    _event: React.MouseEvent<HTMLElement>,
-    index: number
-  ) => {
-    setSelectedIndex(index);
+  // Takes the name, not the list index. The index only existed to look the name back up in
+  // APP_ICON_NAMES, and a separate `selectedIndex` state then had to agree with it — it was
+  // seeded to 1 while the initial icon was 'beach', so the menu highlighted the wrong entry.
+  const handleMenuItemClick = (iconName: string) => {
     setAnchorEl(null);
-    setIcon(APP_ICON_NAMES[index]);
+    form.setValue('iconName', iconName);
   };
 
   const handleClose = () => {
@@ -134,20 +130,33 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
   };
 
   const handleAdd = () => {
-    const schemaName = formik.values.schemaName;
-    const nsfPath = formik.values.nsfPath;
+    const { schemaName, nsfPath, scopeName } = form.values;
     if (schemas.includes(nsfPath + ":" + schemaName)) {
       setSchemaNameError('The schema name already exists in this database.');
+    } else if (scopes.some((scope) => scope.apiName === scopeName)) {
+      setScopeNameError('The name already exists.');
     } else {
-      const find = scopes.find((scope) => {
-        return (scope.apiName === formik.values.scopeName);
-      });
-      if (find) {
-        setScopeNameError('The name already exists.');
-      } else {
-        formik.submitForm();
-      }
+      form.submit();
     }
+  }
+
+  /**
+   * Enter in any field, which had never worked (#896).
+   *
+   * `onSubmit` was wired to `formik.handleSubmit` and nothing could ever reach it: the only
+   * control that submits is the Add `KeepButton`, which is not form-associated and whose
+   * `<wa-button>` sits in a shadow root, so it never appears in `form.elements`. The hidden
+   * native button below is what gives the form a submitter — the same fix #809 needed on the
+   * login page.
+   *
+   * Routed through `handleAdd` rather than straight to `form.submit()`, so Enter and the button
+   * take the same path: same uniqueness checks, same validation. Wiring the submit event to
+   * `submit()` would let Enter skip the duplicate-name checks the button honours.
+   */
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (isDisabled) return; // mirrors the Add button, which is disabled until something changes
+    handleAdd();
   }
 
   const handleSearchValue = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,43 +174,46 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
     });
     setFiltered(filteredData);
   };
-  
+
   const handleClearIcon = () => {
     setSearchValue('');
     setHideClearIcon(true);
   };
 
+  /** Schema and scope names are stored lowercase and alphanumeric, so the field enforces it. */
+  const sanitize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  // These used to mutate `e.target.value` and hand the event to `formik.handleChange`, which
+  // read `name` off the element. The controller takes the field and the value directly, so the
+  // event no longer has to be edited on its way through.
   const handleSchemaNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    e.target.value = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    formik.handleChange(e);
+    form.setValue('schemaName', sanitize(e.target.value));
     setSchemaNameError('');
     setIsDisabled(false);
   };
   const handleScopeNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    e.target.value = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    formik.handleChange(e);
+    form.setValue('scopeName', sanitize(e.target.value));
     setScopeNameError('');
     setIsDisabled(false);
   };
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsDisabled(false);
-    formik.handleChange(e);
+    form.setValue('description', e.target.value);
   };
   const resetForm = () => {
-    formik.resetForm();
-    setNsfPath('');
-    setIcon('beach');
+    // `reset()` restores nsfPath and iconName too, which needed their own resets while they
+    // were React state alongside the form.
+    form.reset();
     dispatch(clearDBError());
     dispatch(toggleQuickConfigDrawer());
     setIsDisabled(true);
   };
   const listType = 'Databases';
   const itemType = 'Schema';
+  const { nsfPath, iconName } = form.values;
 
   return (
-    <Forms onSubmit={formik.handleSubmit}>
+    <Forms onSubmit={handleSubmit}>
       <FileStructure>
         <span className="drawer-available-databases-text">
           {`Available ${listType}`}
@@ -211,6 +223,11 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           fullWidth
           value={searchValue}
           onChange={handleSearchValue}
+          // The search box is inside the form but not part of the schema, and the form now has
+          // a submitter — so without this, Enter here would try to create the schema.
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.preventDefault();
+          }}
           className='mt-8'
           id={`Search ${listType}`}
           slotProps={{
@@ -231,7 +248,7 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         />
         <SearchDatabaseContainer>
           <FileContentsTree
-            setNsfPath={setNsfPath}
+            setNsfPath={(path: string) => form.setValue('nsfPath', path)}
             contents={
               searchValue === ''
                 ? availableDatabases
@@ -260,15 +277,17 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         <InputContainer className='mt-5'>
           <span className='color-text-primary font-15'>{`Database: ${nsfPath}`}</span>
         </InputContainer>
-        {!nsfPath && formik.touched.schemaName ? (
+        {/* Was gated on `touched.schemaName` while showing `errors.nsfPath`, and tested the
+            prop rather than the error — so it could render the string "undefined" (#893). */}
+        {form.submitted && form.errors.nsfPath ? (
             <span className='color-text-danger small-text'>
-              {`${formik.errors.nsfPath}`}
+              {form.errors.nsfPath}
             </span>
           ) : null}
         <InputContainer className='mt-5'>
           <TextField
             onChange={handleSchemaNameChange}
-            value={formik.values.schemaName}
+            value={form.values.schemaName}
             name="schemaName"
             color="primary"
             id={`${itemType} Name`}
@@ -276,9 +295,11 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             variant='standard'
             fullWidth
           />
-          {formik.errors.schemaName && formik.touched.schemaName ? (
+          {/* `submitted` rather than `touched`: Formik only ever set `touched` on a submit
+              attempt here, because handleBlur was wired nowhere. Same moment, honest name. */}
+          {form.submitted && form.errors.schemaName ? (
             <span className='color-text-danger small-text'>
-              {`${formik.errors.schemaName}`}
+              {form.errors.schemaName}
             </span>
           ) : (schemaNameError ? (
             <span className='color-text-danger small-text'>
@@ -293,12 +314,12 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             label="Scope Name"
             color="primary"
             onChange={handleScopeNameChange}
-            value={formik.values.scopeName}
+            value={form.values.scopeName}
             variant='standard'
           />
-          {formik.errors.scopeName && formik.touched.scopeName ? (
+          {form.submitted && form.errors.scopeName ? (
             <span className='color-text-danger small-text'>
-              {`${formik.errors.scopeName}`}
+              {form.errors.scopeName}
             </span>
           ) : (scopeNameError ? (
             <span className='color-text-danger small-text'>
@@ -313,12 +334,12 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             label="Description"
             color="primary"
             onChange={handleDescriptionChange}
-            value={formik.values.description}
+            value={form.values.description}
             variant='standard'
           />
-          {formik.errors.description && formik.touched.description ? (
+          {form.submitted && form.errors.description ? (
             <span className='color-text-danger small-text'>
-              {`${formik.errors.description}`}
+              {form.errors.description}
             </span>
           ) : null}
         </InputContainer>
@@ -333,11 +354,11 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             className="icon-select flex gap-5 small-text w-fit"
           >
             <AppIcon
-              name={icon}
+              name={iconName}
               className="quick-config-icon-image"
               alt="db-icon"
             />
-            <span>{icon}</span>
+            <span>{iconName}</span>
             <ChevronDown className='big-text' />
           </Button>
           <Menu
@@ -348,19 +369,19 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
             onClose={handleClose}
             disablePortal={true}
           >
-            {APP_ICON_NAMES.map((iconName, index) => (
+            {APP_ICON_NAMES.map((name) => (
               <MenuItem
-                key={iconName}
-                selected={index === selectedIndex}
-                onClick={(event) => handleMenuItemClick(event, index)}
+                key={name}
+                selected={name === iconName}
+                onClick={() => handleMenuItemClick(name)}
               >
                 <div className='flex items-center gap-5'>
                   <AppIcon
-                    name={iconName}
+                    name={name}
                     className="quick-config-icon-image"
                     alt="db-icon"
                   />
-                  {iconName}
+                  {name}
                 </div>
               </MenuItem>
             ))}
@@ -368,8 +389,8 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
         </InputContainer>
         <div className="flex flex-row items-center gap-2">
           <KeepCheckbox
-            checked={formik.values.isActive}
-            onChange={(e) => formik.setFieldValue('isActive', (e.target as any).checked)}
+            checked={form.values.isActive}
+            onChange={(e) => form.setValue('isActive', (e.target as any).checked)}
             size='m'
           />
           <span>Active</span>
@@ -378,31 +399,20 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           <span className="small-text color-text-primary full-width">
             Additional Modes
           </span>
+          {/* Odata and DQL were each rendered twice — four checkboxes, two duplicate pairs
+              bound to the same two values, so nothing could catch it: they stayed in sync and
+              the payload was right. Only the drawer looked wrong (#892). */}
           <div className='pl-10'>
             <KeepCheckbox
-              checked={formik.values.additionalModes.odata}
-              onChange={(e) => formik.setFieldValue('additionalModes.odata', (e.target as any).checked)}
+              checked={form.values.additionalModes.odata}
+              onChange={(e) => form.setValue('additionalModes.odata', (e.target as any).checked)}
             />
             <span>Odata</span>
           </div>
           <div className='pl-10'>
             <KeepCheckbox
-              checked={formik.values.additionalModes.dql}
-              onChange={(e) => formik.setFieldValue('additionalModes.dql', (e.target as any).checked)}
-            />
-            <span>DQL</span>
-          </div>
-          <div className='pl-10'>
-            <KeepCheckbox
-              checked={formik.values.additionalModes.odata}
-              onChange={(e) => formik.setFieldValue('additionalModes.odata', (e.target as any).checked)}
-            />
-            <span>Odata</span>
-          </div>
-          <div className='pl-10'>
-            <KeepCheckbox
-              checked={formik.values.additionalModes.dql}
-              onChange={(e) => formik.setFieldValue('additionalModes.dql', (e.target as any).checked)}
+              checked={form.values.additionalModes.dql}
+              onChange={(e) => form.setValue('additionalModes.dql', (e.target as any).checked)}
             />
             <span>DQL</span>
           </div>
@@ -414,12 +424,16 @@ const QuickConfigForm: React.FC<QuickConfigProps> = ({
           >
             Close
           </KeepButton>
-          <KeepButton 
+          <KeepButton
             disabled={isDisabled}
             className='quarter-width'
             onClick={handleAdd}>
             Add
           </KeepButton>
+          {/* The form's only submitter, so Enter in a field reaches `handleSubmit` (#896).
+              `hidden` keeps it out of the layout but leaves it in `form.elements`, which is
+              what implicit submission looks through; `disabled` would remove it. */}
+          <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
         </section>
       </FormContentContainer>
     </Forms>
