@@ -18,27 +18,26 @@
  * chunk the whole set is wanted anyway. **Modules on the eager path import from
  * `./react/<Name>` directly**, and `test/bundle-budget.test.ts` plus the budget gate are
  * what keep it that way.
+ *
+ * There are fewer wrappers than elements, and that is the healthy direction. A wrapper
+ * exists only to let *React* render a `keep-*` element; an element reached only from
+ * another element's Lit template needs none. So when #806 converts the last React
+ * consumer of an element, the wrapper and its line here go with it —
+ * `test/keep-element-wrappers.test.ts` fails if they do not.
  */
 
 export { KeepAutocomplete } from './react/KeepAutocomplete';
-export { KeepSourceTree } from './react/KeepSourceTree';
 export { KeepSource } from './react/KeepSource';
-export { KeepTextform } from './react/KeepTextform';
 export { KeepTip } from './react/KeepTip';
 export { KeepTextformArray } from './react/KeepTextformArray';
-export { KeepDialogContent } from './react/KeepDialogContent';
-export { KeepDialogHeader } from './react/KeepDialogHeader';
-export { KeepDialogActions } from './react/KeepDialogActions';
 export { KeepButton } from './react/KeepButton';
 export { KeepInputDate } from './react/KeepInputDate';
 export { KeepDropdown } from './react/KeepDropdown';
 export { KeepAppStatus } from './react/KeepAppStatus';
 export { KeepApiErrorDialog } from './react/KeepApiErrorDialog';
-export { KeepDefaultCard } from './react/KeepDefaultCard';
 export { KeepAlert } from './react/KeepAlert';
 export { KeepDrawer } from './react/KeepDrawer';
 export { KeepSwitch } from './react/KeepSwitch';
-export { KeepNsfCard } from './react/KeepNsfCard';
 export { KeepTooltip } from './react/KeepTooltip';
 export { KeepCheckbox } from './react/KeepCheckbox';
 export { KeepTree } from './react/KeepTree';
@@ -47,8 +46,6 @@ export { KeepMonacoEditor } from './react/KeepMonacoEditor';
 export { KeepFooter } from './react/KeepFooter';
 export { KeepPageLoading } from './react/KeepPageLoading';
 export { KeepZeroResults } from './react/KeepZeroResults';
-export { KeepScopesDefaultView } from './react/KeepScopesDefaultView';
-export { KeepScopesCardsView } from './react/KeepScopesCardsView';
 export { KeepHomepage } from './react/KeepHomepage';
 export { KeepMobileHeader } from './react/KeepMobileHeader';
 export { KeepPageRouters } from './react/KeepPageRouters';
@@ -57,12 +54,5 @@ export { KeepUnsavedChangesDialog } from './react/KeepUnsavedChangesDialog';
 export { KeepFormDialogHeader } from './react/KeepFormDialogHeader';
 export { KeepNetworkErrorDialog } from './react/KeepNetworkErrorDialog';
 export { KeepDeleteDialog } from './react/KeepDeleteDialog';
-export { KeepSlimDatabaseCard } from './react/KeepSlimDatabaseCard';
-export { KeepScopesAlphabeticalView } from './react/KeepScopesAlphabeticalView';
-export { KeepScopesStacksView } from './react/KeepScopesStacksView';
 export { KeepScopesMultiView } from './react/KeepScopesMultiView';
-export { KeepSchemasCardsView } from './react/KeepSchemasCardsView';
-export { KeepSchemasDefaultView } from './react/KeepSchemasDefaultView';
-export { KeepSchemasStacksView } from './react/KeepSchemasStacksView';
-export { KeepSchemasAlphabeticalView } from './react/KeepSchemasAlphabeticalView';
 export { KeepSchemasMultiView } from './react/KeepSchemasMultiView';

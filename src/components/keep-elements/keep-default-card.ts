@@ -12,7 +12,8 @@ import { appIconSkeleton, appIconSkeletonStyles } from './app-icon-skeleton';
 
 /**
  * Card summarising a single Keep entity (schema/scope/…) built on `<wa-card>`.
- * Tag: `keep-default-card`. Exposed via `KeepElements.tsx` as `KeepDefaultCard`.
+ * Tag: `keep-default-card`. Reached only from `keep-schemas-cards-view` and
+ * `keep-scopes-cards-view`, both Lit — so it has no `@lit/react` wrapper, and needs none.
  */
 @customElement('keep-default-card')
 export default class DefaultCard extends KeepElement {
