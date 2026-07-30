@@ -12,68 +12,6 @@ import * as databasesActions from '../../../src/store/databases/action';
 
 // ---- Mocks ----
 
-// Heavy child component mocks
-vi.mock('../../../src/components/access/FieldDndContainer', () => ({
-  default: function MockFieldDNDContainer(props: any) {
-    return (
-      <div data-testid="field-dnd">
-        <button
-          data-testid="change-scripts"
-          onClick={() =>
-            props.setScripts({
-              ...props.data,
-              computeWithForm: !props.data.computeWithForm,
-            })
-          }
-        >
-          Toggle computeWithForm
-        </button>
-        <button
-          data-testid="revert-scripts"
-          onClick={() =>
-            props.setScripts({ ...props.data })
-          }
-        >
-          Revert Scripts
-        </button>
-        <button
-          data-testid="change-required"
-          onClick={() =>
-            props.setRequired([...(props.required || []), 'NewField'])
-          }
-        >
-          Add Required
-        </button>
-        <button
-          data-testid="revert-required"
-          onClick={() =>
-            props.setRequired(props.required?.filter((r: string) => r !== 'NewField') || [])
-          }
-        >
-          Revert Required
-        </button>
-        <button
-          data-testid="change-validation"
-          onClick={() =>
-            props.setValidationRules({ ...props.validationRules, test: 'rule' })
-          }
-        >
-          Add Validation
-        </button>
-        <button
-          data-testid="revert-validation"
-          onClick={() => {
-            const { test: _, ...rest } = props.validationRules || {};
-            props.setValidationRules(rest);
-          }}
-        >
-          Revert Validation
-        </button>
-      </div>
-    );
-  },
-}));
-
 vi.mock('../../../src/components/applications/FormDrawer', () => ({
   default: function MockFormDrawer() {
     return <div data-testid="form-drawer" />;
@@ -104,9 +42,75 @@ vi.mock('../../../src/store/alerts/action', () => ({
  * the `KeepElements` bridge rather than their own modules. Only those exports are replaced —
  * spreading the original keeps every other `Keep*` wrapper this file renders real. These tests
  * are about TabsAccess's behaviour, so plain divs are still the right stand-ins.
+ *
+ * `KeepModeFields` joined them when `access/FieldDndContainer.tsx` became `keep-mode-fields`:
+ * the stand-in moved from its own `vi.mock` of that module into this map. It renders the same
+ * six buttons and carries the same six edits, reshaped from callback props into the element's
+ * events — which is the only difference the conversion makes to this file.
  */
 vi.mock('../../../src/components/keep-elements/KeepElements', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/components/keep-elements/KeepElements')>()),
+  KeepModeFields: function MockModeFields(props: any) {
+    return (
+      <div data-testid="field-dnd">
+        <button
+          data-testid="change-scripts"
+          onClick={() =>
+            props.onScriptsChange({
+              detail: {
+                scripts: { ...props.scripts, computeWithForm: !props.scripts.computeWithForm },
+              },
+            })
+          }
+        >
+          Toggle computeWithForm
+        </button>
+        <button
+          data-testid="revert-scripts"
+          onClick={() => props.onScriptsChange({ detail: { scripts: { ...props.scripts } } })}
+        >
+          Revert Scripts
+        </button>
+        <button
+          data-testid="change-required"
+          onClick={() =>
+            props.onRequiredChange({ detail: { required: [...(props.required || []), 'NewField'] } })
+          }
+        >
+          Add Required
+        </button>
+        <button
+          data-testid="revert-required"
+          onClick={() =>
+            props.onRequiredChange({
+              detail: { required: props.required?.filter((r: string) => r !== 'NewField') || [] },
+            })
+          }
+        >
+          Revert Required
+        </button>
+        <button
+          data-testid="change-validation"
+          onClick={() =>
+            props.onValidationRulesChange({
+              detail: { rules: { ...props.validationRules, test: 'rule' } },
+            })
+          }
+        >
+          Add Validation
+        </button>
+        <button
+          data-testid="revert-validation"
+          onClick={() => {
+            const { test: _, ...rest } = props.validationRules || {};
+            props.onValidationRulesChange({ detail: { rules: rest } });
+          }}
+        >
+          Revert Validation
+        </button>
+      </div>
+    );
+  },
   KeepUnsavedChangesDialog: function MockUnsavedChangesDialog({
     open,
     onSave,
@@ -301,7 +305,7 @@ describe('TabsAccess — Form Schema dirty tracking', () => {
       act(() => { vi.advanceTimersByTime(600); });
       setHasUnsavedChanges.mockClear();
 
-      // Toggle computeWithForm via the mocked FieldDndContainer
+      // Toggle computeWithForm via the mocked KeepModeFields
       fireEvent.click(screen.getByTestId('change-scripts'));
 
       // The useEffect should fire and mark dirty

@@ -17,7 +17,7 @@ import type {
 const TAG = 'keep-field-container';
 
 /**
- * `FieldDndContainer` always hands over a field that has been through its own normalising
+ * `keep-mode-fields` always hands over a field that has been through its own normalising
  * pass, so this is the realistic shape: a scalar string field in a read mode.
  */
 const scalarField = (): KeepFieldItem => ({
