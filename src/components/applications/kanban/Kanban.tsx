@@ -7,13 +7,10 @@
 import React, { useState, useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { Dialog } from '@mui/material';
 import { styled } from '@linaria/react';
 import {
   deleteApplication,
-  addApplication,
-  updateApp,
   fetchMyApps,
 } from '../../../store/applications/action';
 import { AppState } from '../../../store';
@@ -25,9 +22,14 @@ import { toggleAppFilterDrawer, toggleApplicationDrawer } from '../../../store/d
 import { TopContainer } from '../../../styles/CommonStyles';
 import { fetchUsers } from '../../../store/access/action';
 import { getConsents } from '../../../store/consents/action';
-import AppsTable from '../AppsTable';
-import { KeepButton, KeepConfirmDeleteDialog, KeepConsents } from '../../keep-elements/KeepElements';
+import {
+  KeepAppsTable,
+  KeepButton,
+  KeepConfirmDeleteDialog,
+  KeepConsents,
+} from '../../keep-elements/KeepElements';
 import { useAppDispatch } from '../../../store/hooks';
+import type { KeepAppItemEditDetail } from '../../keep-elements/keep-app-item';
 
 const AppContainer = styled.div`
   overflow-y: auto;
@@ -58,13 +60,6 @@ const OptionsContainer = styled.section`
   gap: 20px;
 `
 
-const ApplicationFormSchema = Yup.object().shape({
-  appName: Yup.string().trim().required('Application Name is Required.'),
-  appCallbackUrlsStr: Yup.string().required('At least one URL is required.'),
-  appStartPage: Yup.string().required('Startup page is required.'),
-  appScope: Yup.string().required('Scope is required.'),
-});
-
 const Kanban: React.FC = () => {
   const { appPull } = useSelector((selector: AppState) => selector.apps);
   const { permissions } = useSelector(
@@ -73,15 +68,12 @@ const Kanban: React.FC = () => {
   const permissionCreate = permissions.createDbMapping;
   const [selected, setSelected] = useState('');
   const dispatch = useAppDispatch();
-  const [formContext, setFormContext] = useContext(AppFormContext) as any;
+  const [, setFormContext] = useContext(AppFormContext) as any;
   const icon = useState('beach')[0];
   const deleteAppTitle: string = 'Delete Application';
   const deleteAppMessage: string =
     'Are you sure you want to delete this Application?';
   const [consentDialogOpen, setConsentDialogOpen] = useState(false)
-
-  const [filtersOn, setFiltersOn] = useState(false)
-  const [reset, setReset] = useState(false)
 
   const openDeleteDialog = (appId: string) => {
     dispatch(toggleDeleteDialog());
@@ -99,7 +91,23 @@ const Kanban: React.FC = () => {
     dispatch(deleteApplication(selected));
   };
 
-  // Submit Form
+  /**
+   * The Application form's values, and nothing else.
+   *
+   * This object is not a form any more. `keep-app-form` owns the fields, the validation and
+   * the save; what survives here is the transport `FormDrawer` reads to seed it — the row's
+   * values pushed in by {@link handleAppEdit}, cleared by {@link createAction}.
+   *
+   * Its `onSubmit` used to hold the `updateApp`/`addApplication` branch, and that copy became
+   * unreachable when wave 4 (#936) moved the save into the element: nothing in `src` calls
+   * `handleSubmit` or `submitForm` on it, and the form the user types into is not bound to it.
+   * Deleted rather than left in place, so there is one save path rather than two. The property
+   * itself stays because `useFormik` requires it.
+   *
+   * The `validationSchema` went with it, for the same reason and from the same commit: #936
+   * moved those four rules into `keep-app-form`, which declares them again and is the only
+   * thing that runs them. Nothing here validates anything.
+   */
   const formik = useFormik({
     initialValues: {
       appId: '',
@@ -113,35 +121,28 @@ const Kanban: React.FC = () => {
       appIcon: icon,
       usePkce: false,
     },
-    // No `validate` here. It was `() => { dispatch(clearAppError()) }` — a dispatch hook
-    // wearing a validator's name, clearing a field nothing sets (#869). Same shape as the
-    // one #743 removed from LoginPage. `validationSchema` below is the real validation.
-    validationSchema: ApplicationFormSchema,
-
-    onSubmit: (values) => {
-      var appCallbackUrlsStr = values.appCallbackUrlsStr.split(/\n/);
-      appCallbackUrlsStr = appCallbackUrlsStr.filter((urlStr:string) => urlStr.trim() !== '');
-      var appContactsStr = values.appContactsStr.split(/\n/);
-      appContactsStr = appContactsStr.filter((contactStr:string) => contactStr.trim() !== '');
-      const apiPayload = {
-        client_name: values.appName.trim(),
-        description: values.appDescription === null ? '' : values.appDescription,
-        redirect_uris: appCallbackUrlsStr,
-        client_uri: values.appStartPage,
-        scope: values.appScope,
-        logo_uri: values.appIcon,
-        status: values.appStatus ? 'isActive' : 'disabled',
-        contacts: appContactsStr,
-        token_endpoint_auth_method: values.usePkce ? 'none' : 'client_secret_basic'
-      };
-
-      if (formContext === 'Edit') {
-        dispatch(updateApp({...apiPayload, client_id: values.appId}));
-      } else {
-        dispatch(addApplication(apiPayload));
-      }
-    },
+    // Required by useFormik and never reached — see the block comment above.
+    onSubmit: () => {},
   });
+
+  /**
+   * A row asked to be edited: seed the form with its values and open the drawer.
+   *
+   * Both halves are what `AppItem` did itself before the conversion, in this order.
+   *
+   * **#939 belongs here.** The drawer decides Add versus Edit from the `formContext` string,
+   * and this path — the only reachable edit entry point — never sets it, so a save from here
+   * takes the create branch and duplicates the application. Reproduced exactly rather than
+   * fixed, because the fix is a behavioural change that issue owns. When it is taken, this is
+   * the one place that has to say the drawer is opening on an existing row; the issue argues
+   * for deriving the mode from the presence of these values rather than adding a third
+   * `setFormContext` call site, and this handler is where that presence is known.
+   */
+  const handleAppEdit = (event: CustomEvent<KeepAppItemEditDetail>) => {
+    formik.setValues(event.detail.values);
+    dispatch(toggleApplicationDrawer());
+  };
+
   /**
    * createAction is called when the Create Application button is clicked
    * to open the Create form
@@ -192,13 +193,9 @@ const Kanban: React.FC = () => {
           </OptionsContainer>
         </TopContainer>
         <AppStackContainer>
-          <AppsTable
-            filtersOn={filtersOn}
-            setFiltersOn={setFiltersOn}
-            reset={reset}
-            setReset={setReset}
-            deleteApplication={openDeleteDialog}
-            formik={formik}
+          <KeepAppsTable
+            onAppEdit={handleAppEdit}
+            onAppDelete={(event) => openDeleteDialog(event.detail.appId)}
           />
         </AppStackContainer>
         <KeepConfirmDeleteDialog

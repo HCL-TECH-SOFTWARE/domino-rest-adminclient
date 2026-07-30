@@ -65,13 +65,6 @@ const theme = (
           }
         },
       },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            backgroundColor: currentTheme.secondary,
-          },
-        },
-      },
       MuiCircularProgress: {
         styleOverrides: {
           colorPrimary: {

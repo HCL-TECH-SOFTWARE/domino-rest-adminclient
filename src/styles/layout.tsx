@@ -20,25 +20,6 @@ export const FormContainer = styled.div`
   }
 `;
 
-export const StackContainer = styled.div`
-  display: flex;
-  padding: 0 0px;
-  flex-direction: column;
-  margin: 2% 2%;
-
-  .heading {
-    font-size: 16px;
-    font-weight: 500;
-    margin: 3px 0;
-    margin-right: 5px;
-  }
-`;
-
-export const Flex = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`;
-
 export const StackCards = styled.div`
   width: 100%;
   height: calc(100vh - 190px);
@@ -138,29 +119,6 @@ export const PanelContent = styled.form`
   padding: 20px 0;
 `;
 
-export const Header = styled.div`
-  display: flex;
-  align-items: center;
-  flex: 1;
-  width: 100%;
-
-  .appIcon {
-    background: var(--wa-color-brand-50);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    margin-right: 5px;
-
-    svg {
-      font-size: 20px;
-    }
-  }
-`;
-
 export const MainPanel = styled.div`
   padding-left: 35px;
   margin: 0px;
@@ -181,46 +139,6 @@ export const Alias = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`;
-
-export const Footer = styled.div`
-  display: flex;
-  align-items: center;
-
-  .heading {
-    font-weight: 300;
-    font-size: var(--wa-font-size-m);
-    margin-right: 5px;
-  }
-
-  .app-secret {
-    font-size: var(--wa-font-size-m);
-    cursor: pointer;
-  }
-`;
-
-/*
- * AppCard's hover action rail, and its only consumer.
- *
- * The selector was svg, which reached the graphic MUI drew straight into the light DOM.
- * wa-icon draws its graphic inside a shadow root, so an svg selector out here matches
- * nothing any more and all four glyphs would have fallen back to the card's own type.
- * Retargeted to the custom element, which is where every one of these declarations
- * belongs anyway: wa-icon takes its box from font-size, and cursor and float apply to the
- * host rather than to the graphic.
- *
- * 18px is what this rule has always delivered here — a descendant selector outranks
- * MuiSvgIcon's 24px default, unlike the bare app classes elsewhere in this migration. So
- * these four sites keep their size and take no size prop; a wa-size-* token would sit in
- * @layer wa-utilities and lose to this rule regardless.
- */
-export const Action = styled.div`
-  wa-icon {
-    font-size: 18px;
-    cursor: pointer;
-    margin: 0 3px;
-    float: right;
-  }
 `;
 
 export const ActionButtonBar = styled.div`

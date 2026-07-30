@@ -128,10 +128,10 @@ export default class QuickConfigForm extends KeepElement {
       /* The banner over the database tree.
 
          Global classes do not cross a shadow boundary, so every rule this element used is
-         restated here. The originals are still in styles.css because ScopeForm.tsx uses
-         them; they are deliberately not named in these comments, because the dead-selector
-         guard scans source text and a mention here would keep a rule alive after its last
-         real user was converted. */
+         restated here. The originals used to stay in styles.css for the React ScopeForm;
+         #806 wave 5 converted it and swept them. Rules are still deliberately not named in
+         these comments — the dead-selector guard scans source text, so a mention here would
+         keep a rule looking alive after its last real user was converted. */
       .available-databases-text {
         color: var(--wa-color-brand-on-loud, #fff);
         font-size: 18px;
@@ -168,7 +168,8 @@ export default class QuickConfigForm extends KeepElement {
         overflow-y: auto;
       }
 
-      /* The form's title bar. Original rule left in styles.css for ScopeForm.tsx. */
+      /* The form's title bar. The original global rule was swept in #806 wave 5, when the
+         last React consumer converted; this copy is now the only one. */
       .form-header {
         display: flex;
         align-items: center;

@@ -13,7 +13,6 @@ import {
 } from '../../../src/components/keep-elements/keep-data-table.styles';
 import '../../../src/components/keep-elements/keep-data-table';
 import type DataTable from '../../../src/components/keep-elements/keep-data-table';
-import { KeepDataTable } from '../../../src/components/keep-elements/KeepElements';
 
 /** Mount the element with a real table slotted into it. */
 async function mountTable(props: Partial<DataTable> = {}): Promise<DataTable> {
@@ -273,9 +272,15 @@ describe('keep-data-table pagination navigation', () => {
   });
 });
 
-describe('KeepDataTable React wrapper', () => {
-  it('is exported and wraps the keep-data-table tag', () => {
-    expect(KeepDataTable).toBeTruthy();
+/*
+ * The `KeepDataTable` wrapper is gone. Its last React consumer was `AppsTable.tsx`, which
+ * #806 wave 5 converted to `keep-apps-table` — a Lit parent, which writes the tag into its
+ * own template and imports the element module for registration. What the wrapper assertion
+ * was really guarding is that the tag is registered by importing the element, and that is
+ * what is left.
+ */
+describe('keep-data-table registration', () => {
+  it('registers the custom element', () => {
     expect(customElements.get('keep-data-table')).toBeTruthy();
   });
 });

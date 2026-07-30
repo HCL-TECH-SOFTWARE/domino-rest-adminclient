@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
-import { useParams } from '../../router/react';
+import { useNavigate, useParams } from '../../router/react';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -15,10 +15,10 @@ import Tab from '@mui/material/Tab';
 import {
   SET_ACTIVEVIEWS,
   SET_ACTIVEAGENTS,
+  type Database,
 } from '../../store/databases/types';
 import { AppState } from '../../store';
 import { getDatabaseIndex } from '../../store/databases/scripts';
-import DetailsSection from './DetailsSection';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import {
   setForms,
@@ -33,13 +33,10 @@ import {
   fetchFolders,
  } from '../../store/databases/action';
 import { getToken } from '../../store/account/action';
-import TabForms from './TabForms';
-import TabViews from './TabViews';
-import TabAgents from './TabAgents';
 import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
-import { KeepButton, KeepEditView, KeepErrorWrapper, KeepFormDialogHeader, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
+import { KeepAgentsTab, KeepButton, KeepDetailsSection, KeepEditView, KeepErrorWrapper, KeepFormDialogHeader, KeepFormsTab, KeepMonacoEditor, KeepSource, KeepViewsTab } from '../keep-elements/KeepElements';
 import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
@@ -147,6 +144,10 @@ const FormsContainer = () => {
     dbName: string;
   };
 
+  // `keep-forms-tab` reports a finished, encoded path rather than navigating itself, so the
+  // last React frame above it still owns the router.
+  const navigate = useNavigate();
+
   const [isFetch, setIsFetch] = useState(false);
   const [isFetchedViews, setIsFetchedViews] = useState(false);
   const [isFetchedAgents, setIsFetchedAgents] = useState(false);
@@ -158,7 +159,16 @@ const FormsContainer = () => {
   const dispatch = useAppDispatch();
   const setData = useState<Array<string>>([])[1];
   const { themeMode } = useSelector((state: AppState) => state.styles);
-  const [schemaData, setSchemaData] = useState({
+  /*
+   * Annotated rather than inferred. Left bare, `owners: []` and the four other empty arrays
+   * infer as `never[]`, so assigning a real `Database` into this state is a type error — which
+   * is what the typed `schema-change` events surfaced. The three older `setSchemaData` call
+   * sites did not catch it only because their event detail is still `any`.
+   *
+   * The literal below already satisfies `Database`, so this narrows nothing; it just stops the
+   * state's type being an accident of its initial value.
+   */
+  const [schemaData, setSchemaData] = useState<Database>({
     '@unid': "",
     apiName: "",
     schemaName: "",
@@ -592,7 +602,13 @@ const FormsContainer = () => {
         {isFetch ? (
           <>
             <Details>
-              <DetailsSection dbName={dbName} nsfPathProp={nsfPathDecode} schemaData={schemaData} setSchemaData={setSchemaData} />
+              {/* `nsfPathProp` is gone: the component destructured it and never read it. */}
+              <KeepDetailsSection
+                dbName={dbName}
+                schemaData={schemaData}
+                scopes={scopes}
+                onSchemaChange={(event) => setSchemaData(event.detail.schemaData)}
+              />
             </Details>
             <Stack>
               <Tabs 
@@ -614,15 +630,30 @@ const FormsContainer = () => {
               </Tabs>
 
               <TabPanel  value={value} index={0}>
-                <TabForms setData={setData} schemaData={schemaData} setSchemaData={setSchemaData} formList={nsfForms} />
+                {/* `nsfPath` is the raw param on purpose — the element encodes it itself,
+                    matching what TabForms' own `useParams` handed it. */}
+                <KeepFormsTab
+                  dbName={dbName}
+                  nsfPath={nsfPath}
+                  formList={nsfForms}
+                  schemaData={schemaData}
+                  setData={setData}
+                  onNavigate={(event) => navigate(event.detail.path)}
+                  onSchemaChange={(event) => setSchemaData(event.detail.schemaData)}
+                />
               </TabPanel>
               <TabPanel value={value} index={1}>
-                <TabViews 
+                {/* The `key` stays: it is what resets the uncontrolled search box when the
+                    schema changes, exactly as before. */}
+                <KeepViewsTab
                   key={`${schemaData.schemaName}-${schemaData.nsfPath}`}
-                  setViewOpen={setViewOpen}
-                  setOpenViewName={setOpenViewName}
                   schemaData={schemaData}
-                  setSchemaData={setSchemaData}
+                  dbName={dbName}
+                  onViewOpen={(event) => {
+                    if (event.detail.active) setOpenViewName(event.detail.viewName);
+                    setViewOpen(event.detail.active);
+                  }}
+                  onSchemaChange={(event) => setSchemaData(event.detail.schemaData)}
                 />
                 <KeepEditView
                   open={viewOpen}
@@ -636,7 +667,9 @@ const FormsContainer = () => {
                 />
               </TabPanel>
               <TabPanel value={value} index={2}>
-                <TabAgents schemaData={schemaData} />
+                {/* `dbName` replaces the `useParams()` the tab used to make itself — without
+                    it the activation thunk addresses the wrong database. */}
+                <KeepAgentsTab schemaData={schemaData} dbName={dbName} />
               </TabPanel>
               <TabPanel value={value} index={3}>
                 <TopNavigator />

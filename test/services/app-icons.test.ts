@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, renderHook } from '@testing-library/react';
 import {
   APP_ICON_NAMES,
   DEFAULT_APP_ICON_NAME,
@@ -16,7 +15,6 @@ import {
   isAppIconName,
   loadAppIcons,
   resetAppIconsForTest,
-  useAppIcons,
 } from '../../src/services/app-icons';
 
 /**
@@ -27,7 +25,6 @@ import {
  */
 describe('app-icons service', () => {
   afterEach(() => {
-    cleanup();
     resetAppIconsForTest();
     vi.restoreAllMocks();
   });
@@ -96,54 +93,18 @@ describe('app-icons service', () => {
   });
 
   /*
-   * The subscription half of the service, and its failure path.
+   * A `describe('the subscription seam')` stood here, driving `useAppIcons()` through
+   * `renderHook`. Both are gone in #806 wave 5, and the order matters:
    *
-   * These were covered only through `components/commons/AppIcon.test.tsx` until #806 turned
-   * that component into `keep-app-icon`. The element does not use the hook — a Lit element
-   * has its own reactivity — but `useAppIcons()` is *not* dead: `ScopeFormContainer` and
-   * `DetailsSection` are still React and still call it. Deleting the component's test
-   * therefore took the service's coverage with it, which is what CI caught.
+   * The hook was added to *this* file one wave earlier, when converting `AppIcon` deleted the
+   * component test that had been its only cover and dropped `src/services/**` under its gate.
+   * Wave 5 then converted the hook's last two callers — `ScopeFormContainer` and
+   * `DetailsSection` — so the hook itself became unreachable and was deleted, taking the
+   * subscriber set and the last `from 'react'` in `src/services/` with it.
    *
-   * Tested here rather than through whichever component happens to call it, because that is
-   * how it came to be covered by accident in the first place.
+   * So these assertions are not being dropped to make a gate go green; the code they exercised
+   * no longer exists. What replaced it is the promise every converted element already awaits —
+   * `loadAppIcons()` — which the tests above cover directly, including the concurrent-caller
+   * and cached-resolution paths that the subscribe path used to reach incidentally.
    */
-  describe('the subscription seam', () => {
-    // `subscribe` is module-private and only reachable through the hook, so the hook is what
-    // is driven here — which is also how the two remaining React callers reach it.
-    it('returns an empty map on first render, then the payloads once the chunk lands', async () => {
-      expect(appIconsLoaded()).toBe(false);
-
-      const { result } = renderHook(() => useAppIcons());
-      expect(result.current).toEqual({});
-
-      await act(async () => {
-        await loadAppIcons();
-      });
-
-      expect(appIconsLoaded()).toBe(true);
-      expect(result.current[DEFAULT_APP_ICON_NAME]).toBeTruthy();
-    });
-
-    it('kicks off the load itself, without anyone calling loadAppIcons', async () => {
-      // Subscribing is a reason to fetch: a component that reads icons should not also have
-      // to remember to warm them. Awaited inside `act` because the chunk landing notifies
-      // subscribers, which is a React state update.
-      const { result } = renderHook(() => useAppIcons());
-
-      await act(async () => {
-        await vi.waitFor(() => expect(appIconsLoaded()).toBe(true));
-      });
-
-      expect(result.current[DEFAULT_APP_ICON_NAME]).toBeTruthy();
-    });
-
-    it('unsubscribes on unmount, so a landed chunk cannot update a gone component', async () => {
-      const { unmount } = renderHook(() => useAppIcons());
-      unmount();
-
-      // The load still completes; the point is that nothing throws and no update is attempted
-      // against the unmounted tree.
-      await expect(loadAppIcons()).resolves.toBeTypeOf('object');
-    });
-  });
 });
