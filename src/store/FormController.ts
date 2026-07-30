@@ -149,20 +149,6 @@ export class FormController<T extends object> implements ReactiveController {
   }
 
   /**
-   * Validate, then hand the values to `onSubmit`. One write per press (#887).
-   *
-   * **A second call while the first is in flight returns the first's promise** rather than
-   * running the body again. All five form owners dispatch a mutating thunk from `onSubmit`,
-   * and for `addSchema` and `addApplication` that is a *create* — a double-clicked Save was
-   * two rows. `submitting` cannot be the caller's defence: the second click can land before
-   * the re-render that would disable the button.
-   *
-   * Returning the in-flight promise rather than an early `return`, so `await submit()` means
-   * "the submit finished" for every caller. Ignoring the second call instead would resolve it
-   * immediately with `errors` still empty from the unfinished first run, and a dialog doing
-   * `await submit(); if (no errors) close()` would close over a POST still in flight.
-   */
-  /**
    * Mark a field finished-with and validate it. Wire this to an input's blur:
    *
    * ```ts
@@ -205,6 +191,20 @@ export class FormController<T extends object> implements ReactiveController {
     this.host.requestUpdate();
   }
 
+  /**
+   * Validate, then hand the values to `onSubmit`. One write per press (#887).
+   *
+   * **A second call while the first is in flight returns the first's promise** rather than
+   * running the body again. All five form owners dispatch a mutating thunk from `onSubmit`,
+   * and for `addSchema` and `addApplication` that is a *create* — a double-clicked Save was
+   * two rows. `submitting` cannot be the caller's defence: the second click can land before
+   * the re-render that would disable the button.
+   *
+   * Returning the in-flight promise rather than an early `return`, so `await submit()` means
+   * "the submit finished" for every caller. Ignoring the second call instead would resolve it
+   * immediately with `errors` still empty from the unfinished first run, and a dialog doing
+   * `await submit(); if (no errors) close()` would close over a POST still in flight.
+   */
   submit(): Promise<void> {
     if (this._inFlight) return this._inFlight;
     this._inFlight = this.run(this._generation);
