@@ -11,13 +11,15 @@ import { KeepElement } from './keep-element';
 /**
  * Full-column loading state: four pulsing dots over a caption.
  *
- * Two layouts, selected by the `contained` property:
+ * Three layouts, selected by the `contained` and `pageHeight` properties:
  *
  *   - default — a page-level overlay: absolutely positioned, `100vh - 100px` tall. This is
  *     what the route fallbacks in `App.tsx` / `Views.tsx` and the applications list use.
  *   - `contained` — normal flow, filling its parent box. This is the shape the old
  *     `GenericLoading` had, and it is what a loading state nested inside an already-laid-out
  *     panel needs; the overlay variant would escape that panel and cover the page.
+ *   - `contained page-height` — normal flow, but sized from the viewport because the parent
+ *     has no height of its own to fill. This is the shape the old `APILoadingProgress` had.
  *
  * Three values below are carried over from the Linaria original **unchanged and on purpose**,
  * so that this conversion is behaviour-preserving. All three are lane B's to fix, not this
@@ -67,6 +69,27 @@ export default class PageLoading extends KeepElement {
     :host([contained]) {
       position: static;
       height: 100%;
+    }
+
+    /*
+     * The page-height modifier covers the third kind of parent: one with no definite height
+     * of its own. An auto-height flex column (the consents dialog) or a fit-content list (the
+     * edit-view column bar) resolves the percentage above to auto, and a zero flex-basis
+     * contributes nothing either, so the box collapses onto the dots and the indicator crowds
+     * the top of the panel instead of sitting in the middle of it. 100vh - 170px is the
+     * page-body height the rest of the app uses for exactly this — see
+     * keep-schema-contents-tree, which met the same problem inside its own shadow root.
+     *
+     * A minimum rather than the fixed height the original carried, for the same reason that
+     * element gives: identical whenever this is the only thing in the box, which is the only
+     * time it is on screen, and it cannot clip a parent that turns out taller.
+     *
+     * Deliberately not applied to a bare contained instance. The access panel is
+     * 100vh - 200px, i.e. 30px shorter than this, so an unconditional minimum would hand that
+     * panel a scrollbar it does not have today.
+     */
+    :host([contained][page-height]) {
+      min-height: calc(100vh - 170px);
     }
 
     .dots {
@@ -158,6 +181,14 @@ export default class PageLoading extends KeepElement {
    * Reflected because the two layouts are selected entirely in `static styles`.
    */
   @property({ type: Boolean, reflect: true }) accessor contained = false;
+
+  /**
+   * Take the page-body height instead of the parent's, for a `contained` instance whose
+   * parent has none to give. A modifier on `contained`: on its own it does nothing, because
+   * the overlay variant is already sized from the viewport. Reflected for the same reason.
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'page-height' })
+  accessor pageHeight = false;
 
   render() {
     // The dots are decorative; the caption carries the information. `role="status"` has an

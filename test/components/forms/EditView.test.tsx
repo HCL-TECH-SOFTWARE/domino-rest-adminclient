@@ -89,11 +89,12 @@ vi.mock('../../../src/utils/api-retry', () => ({
   ),
 }));
 
-vi.mock('../../../src/components/loading/APILoadingProgress', () => ({
-  default: function MockAPILoadingProgress() {
-    return <div>Loading...</div>;
-  },
-}));
+/*
+ * The `APILoadingProgress` stand-in that used to sit here is gone with the component: #806
+ * folded it into `keep-page-loading`, so the column pane's loading state is now a custom
+ * element that renders in jsdom on its own. It arrives through the `KeepElements` bridge
+ * mocked below, whose `importOriginal` spread keeps it real. No test here asserts on it.
+ */
 
 /**
  * #806 turned the dialog into `keep-unsaved-changes-dialog`, so it now arrives through the

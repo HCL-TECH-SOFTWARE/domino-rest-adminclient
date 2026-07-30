@@ -8,11 +8,10 @@ import * as React from 'react';
 import { styled } from '@linaria/react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
-import APILoadingProgress from '../../loading/APILoadingProgress';
 import { Consent } from '../../../store/consents/types';
 import ConsentItem from './ConsentItem';
 import ConsentFilterContainer from '../../consents/ConsentFilterContainer';
-import { KeepDataTable } from '../../keep-elements/KeepElements';
+import { KeepDataTable, KeepPageLoading } from '../../keep-elements/KeepElements';
 import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 
 const Head = styled.thead`
@@ -281,7 +280,13 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
   return (
     <>
         {consentsLoading || usersLoading ? 
-          <APILoadingProgress label="Users and Consents" />
+          // The consents container is an auto-height flex column, so `pageHeight` is what
+          // keeps this the full-page box it was rather than a strip at the top.
+          <KeepPageLoading
+            contained
+            pageHeight
+            message="Users and Consents are loading. This may take a few seconds..."
+          />
           :
           <ColumnLayout>
             <KeepDataTable

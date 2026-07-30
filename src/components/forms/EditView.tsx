@@ -14,10 +14,9 @@ import { Database, SET_ACTIVEVIEWS } from '../../store/databases/types';
 import { checkIcon } from '../../styles/scripts';
 import { DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
 import { setLoading } from '../../store/loading/action';
-import APILoadingProgress from '../loading/APILoadingProgress';
 import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import { KeepButton, KeepFormDialogHeader, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
+import { KeepButton, KeepFormDialogHeader, KeepPageLoading, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { KeepColumnDetails } from '../keep-elements/react/KeepColumnDetails';
 import type {
@@ -550,7 +549,20 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               <text className='add-all-text'>Add All</text>
             </div>
             <div className='all-columns-list'>
-              {loading.status ? <div className="all-columns-list-item"><APILoadingProgress label="Columns" /></div> :
+              {/*
+                * `.all-columns-list` is `height: fit-content`, so the contained variant has no
+                * parent height to fill and `pageHeight` is what keeps this the full-column box
+                * it was. The `.all-columns-list-item` wrapper it used to sit in is gone with
+                * it: that class exists to make a *clickable* column row, and it was handing a
+                * loading state a pointer cursor and a hover affordance it never honoured.
+                */}
+              {loading.status ? (
+                <KeepPageLoading
+                  contained
+                  pageHeight
+                  message="Columns are loading. This may take a few seconds..."
+                />
+              ) :
                 fetchedColumns.map((column: any, index: any) => (
                   <div key={index}>
                     <hr className='m-0' />

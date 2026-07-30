@@ -126,4 +126,48 @@ describe('keep-page-loading', () => {
       expect(styles.match(/background:\s*white/g)).toHaveLength(1);
     });
   });
+
+  describe('page-height modifier', () => {
+    it('takes its height from the parent by default', async () => {
+      const el = await mountLit<PageLoading>(TAG, { contained: true });
+      expect(el.pageHeight).toBe(false);
+      expect(el.hasAttribute('page-height')).toBe(false);
+    });
+
+    it('reflects `pageHeight` to a dash-cased attribute, because the layout is pure CSS', async () => {
+      const el = await mountLit<PageLoading>(TAG, { contained: true, pageHeight: true });
+      expect(el.hasAttribute('page-height')).toBe(true);
+
+      el.pageHeight = false;
+      await el.updateComplete;
+      expect(el.hasAttribute('page-height')).toBe(false);
+    });
+
+    it('reads the attribute back as a boolean', async () => {
+      const el = await mountLit<PageLoading>(TAG);
+      el.setAttribute('page-height', '');
+      await el.updateComplete;
+      expect(el.pageHeight).toBe(true);
+    });
+
+    it('falls back to the page-body height for a parent that has none', () => {
+      const styles = PageLoading.styles.toString();
+      // `height: 100%` resolves to `auto` against an auto-height parent — the consents
+      // dialog's flex column and the edit-view column bar's `height: fit-content` list —
+      // and `flex-basis: 0` contributes nothing either, so the box collapses onto the dots.
+      // This minimum is the whole reason `APILoadingProgress` could be folded in here.
+      expect(styles).toMatch(
+        /:host\(\[contained\]\[page-height\]\)\s*\{[^}]*min-height:\s*calc\(100vh - 170px\)/,
+      );
+    });
+
+    it('leaves a plain contained instance sized by its parent', () => {
+      const styles = PageLoading.styles.toString();
+      // The access panel is `height: calc(100vh - 200px)`, 30px shorter than the minimum
+      // above, so an unconditional minimum would hand it a scrollbar. There must be exactly
+      // one page-body minimum in the sheet and it must carry both attributes.
+      expect(styles).not.toMatch(/:host\(\[contained\]\)\s*\{[^}]*min-height/);
+      expect(styles.match(/min-height/g)).toHaveLength(1);
+    });
+  });
 });

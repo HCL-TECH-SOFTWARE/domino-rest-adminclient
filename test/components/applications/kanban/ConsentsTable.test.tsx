@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { renderWithProviders } from '../../../test-utils/renderWithProviders';
 import { headerLabels, nav, rangeText, setRowsPerPage } from '../../../test-utils/tables';
+import { deepQuery } from '../../../test-utils/shadow';
 import ConsentsTable from '../../../../src/components/applications/kanban/ConsentsTable';
 
 vi.mock('../../../../src/components/applications/kanban/ConsentItem', () => ({
@@ -73,11 +74,36 @@ function renderConsentsTable(preloadedState: Record<string, unknown> = {}) {
 const visibleUsers = () =>
   screen.queryAllByTestId('consent-row').map((r) => r.querySelector('td')!.textContent);
 
+/**
+ * The loading state is `<keep-page-loading>` since #806, so its caption lives in a shadow
+ * root that Testing Library's `screen` queries do not enter, and Lit's first update is async.
+ * `performUpdate()` is synchronous — the same accommodation `AgentsTable.test.tsx` makes —
+ * so this stays a synchronous read of the text the user actually sees.
+ */
+const loadingCaption = () => {
+  const el = deepQuery('keep-page-loading');
+  if (!el) return null;
+  (el as unknown as { performUpdate: () => void }).performUpdate();
+  return el.shadowRoot!.querySelector('p[role="status"]')!.textContent;
+};
+
 describe('ConsentsTable — loading', () => {
   it('replaces the table while consents load', () => {
     renderConsentsTable({ loading: { consentsLoading: true, usersLoading: false } });
     expect(document.querySelector('table')).toBeNull();
-    expect(screen.getByText(/Users and Consents are loading/)).toBeInTheDocument();
+    expect(loadingCaption()).toMatch(/Users and Consents are loading/);
+  });
+
+  // Both layout flags are booleans crossing the React wrapper as properties, and both are
+  // reflected because the layout is selected purely in the element's stylesheet. A flag that
+  // failed to cross would leave the box absolutely positioned over the options bar, or
+  // collapsed onto the dots — neither of which the caption assertion above would notice.
+  it('lays the loading state out in flow at the page-body height', () => {
+    renderConsentsTable({ loading: { consentsLoading: true, usersLoading: false } });
+    const el = deepQuery('keep-page-loading')!;
+    (el as unknown as { performUpdate: () => void }).performUpdate();
+    expect(el.hasAttribute('contained')).toBe(true);
+    expect(el.hasAttribute('page-height')).toBe(true);
   });
 
   it('replaces the table while users load', () => {
