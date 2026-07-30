@@ -1,155 +1,182 @@
 # Code Quality & Cross-Cutting Risk Report
 
 **Project:** `@hcl-software/domino-rest-adminclient` (HCL Domino REST API Admin UI)
-**Stack:** React 19.2 SPA on a `<wa-page>` shell · React-Redux + classic thunks · react-router v7 · MUI 9 · Linaria · WebAwesome 3.10 + 25 TypeScript Lit elements · Monaco 0.55 (lazy) · Vite 8 · **Vitest 4** · TypeScript 7 · oxlint · SonarQube Cloud · Node ≥ 24
+**Stack:** React 19.2 SPA on a `<wa-page>` shell · Redux Toolkit `createSlice` + typed thunks · **in-repo router** (`src/router/`, no react-router) · MUI 9 (`@mui/material` only) · Linaria · WebAwesome 3.10 + **50 TypeScript Lit elements** · Monaco 0.55 (lazy) · Vite 8 · **Vitest 4** · TypeScript 7 · oxlint · SonarQube Cloud · Node ≥ 24
 **Scope:** Cross-cutting quality, security, type-safety, and maintainability. Does **not** cover the deep-dives owned by the sibling reports — Vitest/coverage (report 01), React→Lit/WA component migration (02), wa-page/design-tokens (03), remove-react (04), Dependabot triage (05) — which are referenced where relevant.
 
-> **Refreshed 2026-07-28** against branch `new_code` @ `fcab645`. Previous refreshes:
-> `e17010c` and `7594672` (both 2026-07-27); originally written 2026-07-24. Every number
-> below was re-measured on this commit; every P-item carries a verified status.
+> **Refreshed 2026-07-30** against branch `new_code` @ `0d5458c`. Previous refreshes:
+> `fcab645` (2026-07-28), `e17010c` and `7594672` (both 2026-07-27); originally written
+> 2026-07-24. Every number below was re-measured on this commit; every P-item carries a
+> verified status.
 
 ---
 
-## What changed since `e17010c`
+## ✅ Every gate is green
 
-80 commits, 34 merged PRs (#723–#767). **The P0 queue is now genuinely empty** — the last
-open item, P0-1 token storage, was decided and closed rather than deferred. Two of the
-program's three foundation epics (#705/#706 brand tokens, #708 tokenization) landed in
-full, and the bundle finally moved by a factor rather than a percentage.
+On `0d5458c`:
 
-| Item | Then (`e17010c`) | Now (`fcab645`) | Where |
+| Gate | Result |
+|---|---|
+| `npm run lint` | ✅ exit 0 |
+| `npm run typecheck` | ✅ exit 0 |
+| `npm run build` | ✅ exit 0 |
+| `npm run bundle:budget` | ✅ exit 0 — 887.5 kB raw / 243.7 kB gzip against 901.2 / 245.9 |
+| `npm test` | ✅ exit 0 — **133 files / 1709 tests**, 70.18 % lines |
+| `npm audit` | ✅ **0 vulnerabilities** |
+
+> **One finding retracted from a draft of this refresh.** Measured on `5f0b913` (two commits
+> earlier), `lint`, `typecheck` and `build` all exited 1 on a single unused `keepBlockDiagram`
+> import at `Section.tsx:15` — the first red baseline in this report's history. **`0d5458c`
+> removed the import.** The finding is closed, and the P0 it was filed as has been withdrawn
+> rather than carried.
+>
+> It is still worth the sentence it takes to record *why* it mattered: CI runs
+> `lint → typecheck → build` **before** `test`, so one unused import made every other gate in
+> the repo unreadable and would have given any branch cut from that commit a red CI it did not
+> cause.
+
+---
+
+## What changed since `fcab645`
+
+**319 commits, 99 merged PRs (#753–#922)** — by far the largest delta between refreshes.
+**Four of this report's long-standing P1/P2 items closed**, three of them the ones it had
+been calling its own worst tech debt for four revisions: the `as any` dispatch sprawl, the
+classic-Redux reducers, and the 2,885-line God action file. The security P0's compensating
+control also finally landed.
+
+| Item | Then (`fcab645`) | Now (`0d5458c`) | Where |
 |---|---|---|---|
-| **P0-1 token storage** | 🟡 the one open P0, deferred on an API decision | ✅ **DECIDED & CLOSED** — *"status quo + compensating controls (CSP tightening)"* | #684 |
-| **P2-3 code splitting** | 🟡 6,322.51 kB / 1,703.85 kB gzip | ✅ **2,111.11 kB / 594.20 kB gzip** — **−66.6 %**; Monaco split to a lazy 3.6 MB chunk | #693, #729 |
-| **P1-6 `@ts-ignore`** | 🟡 1 occurrence masking a type gap | ✅ **DONE** — 0 `@ts-ignore`, 0 `@ts-expect-error`, 0 `@ts-nocheck` | #695 |
-| **P2-1 CRA leftovers** | 🟡 `src/react-app-env.d.ts` still present | ✅ **DONE** — deleted; the asset shims live in `vite-env.d.ts` | #677 |
-| **P2-6 layering leak** | 🟡 `store/` imported upward from `components/` | ✅ **DONE** — helpers moved to `src/utils/field-types.ts`; **0** upward imports | #696 |
-| **P2-7 stale TODOs** | 🟡 5, incl. two disabled routes | ✅ **DONE** — **2** left, both deliberate and annotated | #698, #681 |
-| **P2-9 dead dependencies** | 🔴 `@monaco-editor/{react,loader}` + `disabledpostinstall` | ✅ **DONE** — all three deleted | #675 |
-| **Sonar** | 🟡 `coverage/sonar-report.xml` emitted for **no consumer** | ✅ **WIRED** — `sonar-project.properties` + a scan and quality-gate step in `pr_check.yml`, plus branch analysis in `sonar.yml` | #688 |
-| **P1-4 God files** | 🟡 `CommonStyles.tsx` 936 lines, 2nd largest | ✅ **partly** — split into 6 feature files + a 20-line barrel; off the list | #708 |
-| **Silent `catch`** | 🟡 1 undocumented | ✅ **0** — every remaining empty catch carries a reason | #683 |
-| **`npm test`** | ✅ 63 files / 636 tests, 32.44 % | ✅ **70 files / 747 tests, 34.72 %** | #689, #690, #737 |
-| **MUI X surface** | 3 packages (data-grid, date-pickers, tree-view) | 🟡 **1** — `@mui/x-data-grid` only, 5 files | #703/#739, #704/#723 |
-| **Icons** | 🟡 38 `IMG_DIR` refs outstanding | ✅ **1** (a doc comment) — every icon resolves through `library="fa"` | #700, #725, #730 |
-| **App shell** | `HomeElement` flex/`calc()` scaffolding | ✅ **`<wa-page>`** — `AppShell.tsx`; the duplicated mobile sidebar deleted | #707 |
+| **P1-1 untyped dispatch** | 🔴 the top P1 — **153** `as any`, **94** of them `dispatch(… as any)` | ✅ **DONE** — **44** `as any`, **0** dispatch casts; `useAppDispatch` at 82 sites | #694 |
+| **P1-2 classic Redux** | 🟡 17 hand-written `switch(action.type)` reducers | ✅ **DONE** — **0** `switch` reducers; **17** modules on `createSlice` across 10 slices | #710 |
+| **P1-3 God action file** | 🟡 `store/databases/action.ts` at **2,885** lines, 5.8 % covered | ✅ **DONE** — **47** lines; split into 13 per-concern modules at **84.4 %** lines | #711, #801–#805 |
+| **P0-2 CSP** | 🔴 `script-src 'unsafe-inline'` on both SPA document routes | ✅ **DONE** — both routes now `script-src 'self'` + `style-src-attr 'none'` + `report-uri` | #685 |
+| **P2-3 route splitting** | 🟡 **0** `React.lazy`/`Suspense` | ✅ **DONE** — the in-repo router builds a memoised `React.lazy` per `load` route | #813, #716 |
+| **P2-10 `npm audit`** | 🟡 **10 high**, 0 critical | ✅ **0 vulnerabilities** | #699 |
+| **Icons** | 🟡 `@mui/icons-material` + `react-icons`, 43 files | ✅ **GONE** — 0 references in `src`, both uninstalled | #718, #913 |
+| **react-router** | 2 open advisories, `react-router@7.18.1` installed | ✅ **REMOVED** — replaced by `src/router/` (2 files, **97.8 %** covered) | #716 |
+| **MUI X surface** | 🟡 **1** — `@mui/x-data-grid`, 5 files | ✅ **GONE** — People/Groups screens deleted with it | #770 |
+| **Dependencies** | 21 deps / 17 devDeps | ✅ **18** / 17 — and `overrides` 9 → **4** | #718, #770, #826, `e27102f` |
+| **Lit layer** | 25 elements, 25 `@lit/react` wrappers, 84.5 % lines | ✅ **50** elements, **32** wrappers, **89.7 %** lines | #806 and its PRs |
+| **`npm test`** | ✅ 70 files / 747 tests, 34.72 % | ✅ **133 files / 1709 tests, 70.18 %** | #801–#805, #880 |
+| **Inline `style=`** | 🟡 20 attributes in `keep-*` shadow roots | ✅ **0** — the 3 textual matches left are doc comments | #765 |
+| **`lint`/`typecheck`/`build`** | ✅ all exit 0 | ✅ all exit 0 | — |
 
-### The last security P0 is closed by decision, not by code
+### The security P0's compensating control has landed
 
-P0-1 (plaintext access **and** refresh JWTs in `localStorage`) was the one item this report
-has carried open since 2026-07-24, deferred because it needed an API-contract decision
-rather than a code sweep. That decision was made on #684: **status quo, with CSP tightening
-as the compensating control.**
+The last refresh closed P0-1 (JWTs in `localStorage`) on the strength of "status quo +
+compensating controls (CSP tightening)", and then flagged that the control did not yet
+exist: `/admin/ui` and `/admin/ui/*` — the only two routes that serve the SPA document —
+were the only two carrying `script-src 'unsafe-inline'`.
 
-That is a legitimate resolution — the threat model is "any XSS on the origin steals the
-session", and a policy that forbids inline script is a direct mitigation of the delivery
-mechanism. But it makes **#685 load-bearing rather than housekeeping**: the compensating
-control only compensates if the shipped policy is actually tight, and today it is not.
+**Both are now `script-src 'self'`.** Verified in `jar/config/config.json`: each of the two
+document profiles reads
 
-In `jar/config/config.json`, the two routes that serve the SPA document — `/admin/ui` and
-`/admin/ui/*` — are exactly the two that carry **`script-src 'unsafe-inline'`**. The asset
-routes (`/admin/*`, `/monaco-editor-core/*`) are already `script-src 'self'`. So the
-directive is relaxed precisely where the XSS sink is.
-
-**And it no longer needs to be.** The built `dist/index.html` on this commit contains **no
-inline `<script>` body at all** — one `<script type="module" crossorigin src=…>` and one
-stylesheet link — because #707 PR 1/3 moved the appearance boot code into `src/index.ts` as
-a real module. Dropping `'unsafe-inline'` from those two profiles is now a config edit with
-a verifiable precondition, not a refactor. That single change is what converts the #684
-decision from a promise into a control. See P0-2.
-
-### One new defect found while re-measuring: the invalid-input styling never paints
-
-`@awesome.me/webawesome@3.10.0` defines colour steps **`05…95` only** — verified against the
-installed package. Yet **14 fallback-less reads of three-digit Shoelace-era steps** remain,
-and they are concentrated in the rules that colour form validation:
-
-```css
-wa-input:state(user-invalid)::part(base) {
-  border-color: var(--wa-color-danger-600);                     /* undefined */
-  box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-300);
-}
+```
+default-src 'self' data:; script-src 'self'; style-src-attr 'none'; style-src-elem 'self';
+font-src 'self' data:; img-src 'self' data:; worker-src 'self' blob:;
+connect-src 'self' data: *; report-uri /api/csp-violation-report
 ```
 
-`keep-input-text.ts:31-32`, `keep-input-password.ts:20-21`, `keep-overrides.css:26-27`, and
-six danger/success rules in `keep-source.ts:279-304`. A `var()` on an undefined custom
-property **with no fallback** is invalid at computed-value time, so the whole declaration is
-dropped — **the red error border does not render.**
+So the #684 decision is a real control rather than a promise. Two residual notes, neither
+a P0:
 
-This is the second half of the bug #744 fixed. That PR corrected the *selector*
-(`:state(user-invalid)` rather than the `data-user-invalid` attribute WA 3.10 never sets)
-and added `validity-states.test.ts`, which asserts the selector and the state transitions.
-With `css: false` the suite cannot assert a painted colour, so the dead *value* survived the
-fix to the dead *selector*. Report 03 finding 11b; fold the fix into #765.
+- **The asset route is now the loosest profile.** `/admin/*` still carries
+  `style-src 'self' 'unsafe-inline'` — the legacy combined directive, not the split
+  `style-src-attr`/`style-src-elem` pair the document routes use. It serves no HTML
+  document, so it is not an XSS sink, but the inversion is worth knowing: the tight profile
+  is the one on the SPA, and the loose one is on the assets. It used to be the reverse.
+- **`connect-src` keeps its `*`.** Deliberate — the admin UI talks to whatever Domino host
+  it is served from, which is not known at build time.
 
-### The bundle claim from the last refresh was too pessimistic
+### The invalid-input styling defect found last refresh is fixed
 
-The previous revision reported the entry chunk at 6,322.51 kB and called the remaining
-eager weight "Monaco, MUI, MUI X and WebAwesome", listing Monaco lazy-loading as future
-work. #693/#729 did it: `keep-monaco-editor.ts` now reaches the editor through a dynamic
-`import()`, and Monaco leaves the entry chunk entirely — `editor.api2` is a **3,626.93 kB**
-chunk fetched only when a Source tab opens. The entry chunk is **2,111.11 kB / 594.20 kB
-gzip**, a **66.6 %** reduction, across 103 output chunks.
+The last refresh reported 14 fallback-less reads of three-digit Shoelace-era colour steps
+(`--wa-color-danger-600`, `-300`) in the form-validation rules, which are undefined in WA
+3.10 — a `var()` on an undefined custom property with no fallback is invalid at
+computed-value time, so the whole declaration was dropped and the red error border never
+painted.
 
-The honest caveat: total shipped bytes barely moved. This is deferral, not deletion, and
-the app still has **0** `React.lazy`/`Suspense` — the split came from module-level dynamic
-imports inside two Lit elements, not from route splitting. What changed is that a user who
-never opens a schema no longer pays for Monaco.
+**Re-measured on this commit: 0 bare `var(--wa-color-*-NNN)` reads across `src`.** The only
+two textual matches of a three-digit step left are prose comments in `keep-theme.css:304`
+and `dark-mode.css:15`, both of which exist precisely to record that those names were never
+valid. The `:state(user-invalid)` rules in `keep-source.ts` and `keep-overrides.css` now
+read defined tokens.
 
-Everything else below (`as any` sprawl, legacy Redux, the 2,885-line God action file, no
-i18n) is **unchanged and still open**.
+The caveat that made this bug possible has **not** changed: the suite runs with
+`css: false`, so no test asserts a painted colour, and the fix is verified by reading the
+compiled values rather than by a regression test. Report 03 finding 11b.
+
+Everything the last refresh listed as "unchanged and still open" — `as any` sprawl, legacy
+Redux, the God action file — **has closed.** What remains open is the scale items: no i18n,
+the oversized components (**#712**'s technique, executed per-file inside **#806**), and the
+`light-dark()` residue in the CSS (**131** literals, down from 229).
 
 ---
 
 ## Executive Summary
 
-- ✅ **The P0 queue is empty, and this time without an asterisk.** P0-4, 5, 6, 7, 8, 9, 10
-  are done; P0-2 was withdrawn as a mis-diagnosis; and **P0-1 was decided and closed**
-  (#684) rather than carried. `npm run lint`, `npm run build` and `npm run test` all exit 0
-  on `fcab645`. The one thing that decision now depends on is the #685 CSP edit — see
-  above.
-- ✅ **The bundle moved by a factor.** The entry chunk is **2,111.11 kB (594.20 kB gzip)**,
-  down from 6,322.51 kB / 1,703.85 kB — a **66.6 %** cut, because Monaco now loads through
-  a dynamic `import()` (#693, #729) and leaves in its own 3.6 MB chunk. 103 output chunks.
-  Caveat: this is deferral, not deletion, and there are still **0** `React.lazy`/`Suspense`
-  sites — MUI, MUI X DataGrid and WebAwesome remain eager.
-- ✅ **Static analysis is now three-layered.** `oxlint` (clean, `correctness: error`,
-  `no-console: error`) gates `pr_check` before build and test; `tsc -b` with
-  `noUnusedLocals`/`noUnusedParameters`; and **SonarQube Cloud** analysis with a quality
-  gate (#688) — which finally gives `coverage/sonar-report.xml` a consumer after it was
-  emitted into the void for months.
-- ✅ **The type escape hatches are closed except one.** **0** `@ts-ignore`,
-  `@ts-expect-error` and `@ts-nocheck` (#695); **0** undocumented silent `catch` (#683);
-  **0** `console.*` outside `log-service.ts`; **0** upward `store → components` imports
-  (#696).
-- ✅ **The Lit layer is typed and now load-bearing.** 25 custom elements in TypeScript on a
-  shared `KeepElement` base with a typed `emit()`, wrapped by 25 `@lit/react` adapters, at
-  **84.5 %** line coverage. Three MUI subsystems have been replaced outright by elements
-  from this layer: the Monaco editor, the tree view (#704) and the date picker (#703).
-- ✅ **The styling layer has a single source of truth.** #705/#706 collapsed four brand
-  purples into one WA brand scale, and #708 pinned the semantic surface/text tokens and
-  pointed both the `keep-*` elements and the Linaria layer at them. `getTheme()` is down
-  from **22 readers to 4**, and the per-instance `theme` prop plumbing is gone. See
-  report 03.
-- **`strict: true` is still quietly undermined.** **153** `as any` casts, **94** of them
-  `dispatch(someThunk() as any)` — essentially unchanged, and now the largest single
-  tech-debt item in the report.
-- **Redux is still high-boilerplate legacy style.** `@reduxjs/toolkit` is installed but
-  only `configureStore` is used; 17 hand-written `switch`-on-`action.type` reducers;
-  **zero** memoized selectors across 178 `useSelector` sites.
-- **A 2,885-line God action file** (`src/store/databases/action.ts`) still dominates the
-  store; 600–1,000-line God components follow. `CommonStyles.tsx` has left this list.
-- **`npm audit` reports 10 high, 0 critical** — 8 in the build-time
-  `brace-expansion → minimatch → @wyw-in-js/* → @linaria/react` chain, plus
-  `react-router`/`-dom` for an RSC-mode CSRF bypass this app cannot reach. ⚠️ **The GitHub
-  security tab disagrees**, because Dependabot scans the default branch `main`, which is
-  now **160 commits behind** `new_code`. Its 2 criticals are `happy-dom` — `new_code`
-  resolves `20.11.1`, which `npm audit` does not flag. See report 05.
+- ✅ **Every gate is green** — `lint`, `typecheck`, `build`, `bundle:budget`, `test` and
+  `npm audit` all pass on `0d5458c`.
+- ✅ **The P0 queue is genuinely empty, control and all.** P0-4 through P0-10 are done;
+  **P0-1 was decided and closed** (#684); and **P0-2 — the CSP edit that decision rested
+  on — has landed** (#685). Both SPA document routes now send `script-src 'self'`,
+  `style-src-attr 'none'` and a `report-uri`. The compensating control is real.
+- ✅ **`strict: true` is no longer undermined.** #694 typed the store's dispatch:
+  `as any` fell **153 → 44**, and `dispatch(someThunk() as any)` went **94 → 0**.
+  `useAppDispatch` is used at 82 sites. What is left is 44 scattered casts with no single
+  systematic source — this is no longer the largest tech-debt item in the report, and for
+  four revisions it was.
+- ✅ **Redux is modern.** #710 finished the `createSlice` migration: **0**
+  `switch(action.type)` reducers remain, and **17** modules across 10 slices are on
+  `createSlice`. #711 split the God action file — `store/databases/action.ts` went
+  **2,885 → 47** lines across 13 per-concern modules, and #801–#805 covered them to
+  **84.4 %** lines against the 5.8 % the last refresh recorded.
+- ✅ **The test suite grew past the point of being a formality.** **133 files / 1709
+  tests**, **70.18 %** line coverage — up from 70 / 747 / 34.72 %. Store reducers are at
+  **100 %** lines, `src/utils` 99.3 %, `src/router` 97.8 %, `src/services` 96.1 %,
+  `keep-elements/**` 89.7 %.
+- ✅ **Route splitting landed, so the bundle story is no longer "deferral only".** The
+  in-repo router builds a memoised `React.lazy` per `load` route (#813, #716) — the
+  **0** `React.lazy`/`Suspense` this report has reported since 2026-07-24 is finally
+  non-zero. The eager closure is **887.5 kB raw / 243.7 kB gzip** against a 901.2 / 245.9
+  budget, with Monaco (`editor.api2`, 3,626.9 kB) and the four Monaco workers fetched on
+  demand across 137 JS chunks.
+- ✅ **Three dependency families left the tree.** `react-router`/`-dom` (#716, replaced by
+  `src/router/`), `@mui/x-data-grid` (#770, with the People/Groups screens), and both icon
+  packages (#718/#913). `dependencies` is **18**, down from 21 — and from 32 two refreshes
+  ago. `@mui/material` is the only MUI package left.
+- ✅ **`npm audit` is clean.** **0 vulnerabilities**, down from 10 high. The
+  `brace-expansion → minimatch → @wyw-in-js/*` build-time chain cleared, and the two
+  `react-router` advisories became inapplicable when the package was removed. ⚠️ **The
+  GitHub security tab still disagrees** — Dependabot scans `main`, now **479 commits
+  behind** `new_code`. See report 05.
+- ✅ **The Lit layer is the majority of the UI now, not an annex.** **50** registered custom
+  elements in TypeScript on a shared `KeepElement` base with a typed `emit()`, at **89.7 %**
+  line coverage. The `@lit/react` adapters are down to **32** and shrinking — they are
+  deletions, not work (see the counting rule in #806).
+- ✅ **Static analysis is three-layered** — `oxlint` (`correctness: error`,
+  `no-console: error`), `tsc -b` with `noUnusedLocals`/`noUnusedParameters`, and SonarQube
+  Cloud with a quality gate (#688). Note that layers one and two are what caught the red
+  gate above; they are working exactly as intended.
+- ✅ **The type and error escape hatches stay closed.** **0** `@ts-ignore` /
+  `@ts-expect-error` / `@ts-nocheck`; **0** undocumented silent `catch`; **0** `console.*`
+  outside `log-service.ts`; **0** upward `store → components` imports; **0** real inline
+  `style=` attributes; **0** `dangerouslySetInnerHTML`.
+- **Two selector items remain, one barely.** `createSelector` is at **2** uses (was 0)
+  against **137** `useSelector` sites — so memoization exists but is not yet the norm. Still
+  tracked as #697.
+- **The oversized components are the surviving God-file problem.**
+  `access/TabsAccess.tsx` (1,002), `forms/FormsContainer.tsx` (804),
+  `store/databases/types.ts` (778), `keep-elements/keep-source.ts` (776),
+  `login/LoginPage.tsx` (774). The store half of this item is fully resolved.
+- **No i18n** — unchanged, and the largest untouched item in the report.
 
-**Overall remediation effort: ~M–L.** With P0 clear, the top of the queue is the #685 CSP
-edit (now S-sized and unblocked, and the thing P0-1's closure rests on), then P1-1 (typed
-dispatch — mechanical, and it makes report 04's migration easier). The Redux modernization
-and God-file breakup remain the L-sized long tail.
+**Overall remediation effort: ~S–M**, down from M–L. Delete the unused import; after that
+the open queue is genuinely nice-to-have. The three L-sized items this report has carried
+since 2026-07-24 — typed dispatch, Redux modernization, the God action file — are all done.
+What remains is #712's component breakup (executed per-file inside **#806**, not as a
+sweep), #697's selectors, and the i18n decision.
 
 ---
 
@@ -166,22 +193,23 @@ Status legend: 🔴 open & urgent · 🟡 open, partially addressed · ✅ done 
 | P0-5 | ✅ **DONE** | ~~Silent `catch {}`~~ | `src/components/forms/FormsContainer.tsx` | The bare catch wrapped the form-name sort. One design element with no `@name` made `undefined.toLowerCase()` throw out of the comparator, `Array#sort` propagated it, and the swallowed error left the **entire** form list in API order. | Replaced by an exported total comparator (`compareFormNames`) that cannot throw — removing the failure rather than logging it. Also fixes the old comparator never returning 0 for equal names. | — |
 | P0-6 | ✅ **DONE** | ~~`console.*` shipped to prod~~ | was 89 statements across 18 files | Noise and auth-flow information leakage. | **0** remain outside `log-service.ts`; oxlint `no-console: "error"` with `overrides` disabling it only for the facade and `test/**`. Auth-flow tracing was mapped to `debug`, not `info`, so it stays out of a production console by default. Two calls the previous count missed: `pkce.js` is a `.js` file that `--include=*.ts*` greps skipped, and `api-retry.ts` logged the same string twice either side of a `notify()`. | — |
 | <a id="p0-7"></a>P0-7 | ✅ **DONE** | ~~Test suite fails to load~~ | `test/setupTests.ts` | `KeepElements.tsx` imports the Monaco element, dragging the `monaco-editor` ESM bundle into jsdom at import time; it probes `document.queryCommandSupported`, which jsdom lacks. | Polyfilled in `test/setupTests.ts`. Suite loads; `npm run test` exits 0. | — |
-| <a id="p0-8"></a>P0-8 | ✅ **DONE** | ~~Coverage ratchet breached~~ | `vitest.config.ts` thresholds | `keep-monaco-editor.ts` joined `keep-elements/` untested, dragging the directory to 60.3 % against its 70 % gate. | `keep-monaco-editor.test.ts` added (#668). Directory is now **84.5 %** lines, and #686 raised the gate 70 → **80** so the headroom cannot be silently spent. See report 01 for the two-suite strategy that emerged here. | — |
+| <a id="p0-8"></a>P0-8 | ✅ **DONE** | ~~Coverage ratchet breached~~ | `vitest.config.ts` thresholds | `keep-monaco-editor.ts` joined `keep-elements/` untested, dragging the directory to 60.3 % against its 70 % gate. | `keep-monaco-editor.test.ts` added (#668). The `keep-elements/**` glob is now **89.7 %** lines (the directory alone, 54 files, is 89.1 %), and the gate has been raised twice more since — 70 → 80 (#686) → **85** (#880) — so the headroom cannot be silently spent. See report 01 for the two-suite strategy that emerged here. | — |
 | <a id="p0-9"></a>P0-9 | ✅ **DONE** | ~~WebAwesome base path pinned to an uninstalled version~~ | was `src/index.tsx:19` and `keep-source.ts:341` | Both calls were **inert**: in WA 3.x `getBasePath()` feeds only the autoloader, and this app imports each of the 18 components it uses explicitly. Being inert is how the skew survived a major upgrade. Worse than reported — `index.tsx` passed a *file* where a directory belongs, and `keep-source.ts` mutated the global from a **component constructor**. | Both deleted; nothing left to point at. Guarded by two source scans in `icon-library.test.ts` (no `webawesome@x.y.z` literal, no `setBasePath(` call), verified against a deliberate reintroduction. | — |
 | <a id="p0-10"></a>P0-10 | ✅ **DONE** | ~~Runtime code imports a devDependency~~ | `keep-monaco-editor.ts` | `prettier/standalone` + 2 plugins imported at module scope while `prettier` sat in `devDependencies` — any `npm ci --omit=dev` breaks the build. | Moved to `dependencies` **and** switched to a memoised dynamic `import()`, since it is only reached when `language === 'javascript'`. Entry chunk −614.87 kB (−8.9 %); prettier splits into `babel` 316.53 / `estree` 210.43 / `standalone` 81.05 kB, on demand. | — |
-| P0-2 | 🔴 **now the top P0** (#685) | **The production CSP is looser than the P0-1 decision assumes** | `jar/config/config.json`; `vite.config.mts:57` (dev, report-only) | Originally filed as "no CSP is sent" — that wording was wrong (one *is* sent, from this repo) and stays withdrawn. What is left is real and has been **promoted**, because #684 closed P0-1 on the strength of "CSP tightening" as the compensating control. Two concrete gaps: **(a)** `/admin/ui` and `/admin/ui/*` — the only two routes that serve the SPA document — carry `script-src 'unsafe-inline'`, while the asset routes are already `'self'`; **(b)** every profile sets `style-src-attr 'none'` while **20** inline `style="…"` attributes ship, now all inside `keep-*` shadow roots (10 files). | **(a) is a config edit with a verified precondition:** the built `dist/index.html` has *no* inline `<script>` body on this commit, so `'unsafe-inline'` can be dropped from both profiles without a code change. **(b)** needs the 20 attributes converted to static classes or `styleMap` first, then the directive verified rather than assumed. Also worth testing the dev report-only header actually fires. | S–M |
+| P0-2 | ✅ **DONE** (#685) | ~~**The production CSP is looser than the P0-1 decision assumes**~~ | `jar/config/config.json` | Both gaps are closed. **(a)** `/admin/ui` and `/admin/ui/*` now send `script-src 'self'` — the `'unsafe-inline'` that sat on exactly the two SPA-document routes is gone, so the #684 compensating control is real rather than nominal. Both profiles also carry `style-src-attr 'none'`, `style-src-elem 'self'` and `report-uri /api/csp-violation-report`. **(b)** the 20 inline `style="…"` attributes are gone: **0** real occurrences in `src` (the 3 textual matches left are doc comments in `keep-element.ts` explaining which Lit binding forms survive the directive). | **Two residual notes, neither a P0.** `/admin/*` — the asset route — is now the *loosest* profile at `style-src 'self' 'unsafe-inline'`, using the legacy combined directive rather than the split pair; it serves no HTML document so it is not an XSS sink, but the tight/loose relationship is the reverse of what it was. And `connect-src` keeps its `*` deliberately: the admin UI talks to whatever Domino host serves it, unknown at build time. | — |
+| P0-11 | ✅ **WITHDRAWN — fixed upstream** | ~~**Three gates fail on one unused import**~~ | was `src/components/home/sections/Section.tsx:15` | `import keepBlockDiagram from './keepblockdiagram.svg'` was never read, and failed `lint`, `typecheck` **and** `build` — the last because `tsc -b tsconfig.app.json` runs before `vite build`, so no `dist` was produced at all. Introduced by `5f0b913` ("UI tweaks") and **removed by `0d5458c`** two commits later, so it was the top of this queue for exactly two commits. | — . Recorded because the *shape* recurs: CI runs `lint → typecheck → build` before `test`, so a single unused import makes every other gate unreadable and hands a red CI to any branch cut from that commit. | — |
 
 ### P1 — Maintainability
 
 | # | Status | What | Where | Why it matters | Fix | Effort |
 |---|:---:|------|-------|----------------|-----|--------|
-| P1-1 | 🔴 **now the top P1** | **Untyped thunk dispatch → 94 `dispatch(… as any)`** (of 153 total `as any`) | store slices consumed everywhere; heaviest in `src/components/forms` and `access` | Each cast erases type-checking of action payloads at the call site; `strict` gives false confidence. With `@ts-ignore` now at zero (P1-6), this is the **only** remaining systematic type escape hatch in the tree. | Export typed `AppDispatch`/`useAppDispatch` from the store (RTK `ThunkDispatch`); replace the casts. Doing this **before** report 04's `StoreController` migration makes that swap mechanical. Tracked as **#694**. | M |
-| P1-2 | 🟡 unchanged | **RTK installed, classic Redux used** — 17 `switch(action.type)` reducers + string action-type constants | `src/store/*/reducer.ts`, `src/store/*/types.ts`; `src/store/index.ts`, `src/index.tsx` | High boilerplate, manual `immer produce`, easy to drift; the toolkit that eliminates it is already a dependency. **Mitigating factor: the reducers are now at 100 % line coverage**, so a `createSlice` migration is far safer than it was. | Migrate slices to `createSlice`/`createAsyncThunk` incrementally, smallest first, leaning on the reducer tests as the parity net. Coordinate with report 04. Tracked as **#710**. | L |
-| P1-3 | 🟡 unchanged | **God action file — 2,885 lines** | `src/store/databases/action.ts` | Single-file bottleneck for merges, review, comprehension; mixes schemas, scopes, forms, views, agents, formula results. Its own line coverage is **5.8 %**, against 100 % for the reducer beside it. | Split by concern into a `databases/` sub-folder of thunks. Tracked as **#711**. | L |
-| P1-4 | 🟡 **improved** | **Oversized components** | `access/TabsAccess.tsx` (1,007), `forms/FormsContainer.tsx` (807), `store/databases/types.ts` (764), `access/ModeCompare.tsx` (759), `keep-elements/keep-source.ts` (751), `login/LoginPage.tsx` (736), `forms/DetailsSection.tsx` (692), `keep-elements/keep-monaco-editor.ts` (672), `forms/EditView.tsx` (623) | Hard to test/reason about; concentrates state + view + side effects. | ✅ **`styles/CommonStyles.tsx` is off this list** — #708 split its 936 lines into six per-feature modules (`layout`, `search`, `cards`, `dialog`, `sidenav`, `forms`) behind a 20-line re-export barrel, so the 46 importing modules needed no edit. The rest is unchanged; tracked as **#712**. | L |
-| P1-5 | 🟡 unchanged | **No memoized selectors** — `createSelector` used 0×, 178 inline `useSelector` sites (was 207) | across components | Inline object/array selectors return new references each render → avoidable re-renders. The count fell with the dead-screen deletions, not with any change in approach. | Introduce RTK `createSelector` for derived/object-returning selectors. Tracked as **#697**. | M |
+| P1-1 | ✅ **DONE** (#694) | ~~**Untyped thunk dispatch → 94 `dispatch(… as any)`**~~ | was store slices consumed everywhere | The store now exports a typed `AppDispatch` and `useAppDispatch` (RTK `ThunkDispatch`), used at **82** sites. `dispatch(… as any)` is at **0**, and total `as any` fell **153 → 44** — the remaining casts are scattered and have no single systematic source, so `strict: true` is no longer being undercut wholesale. Doing this before #806's `StoreController` migration was the right order: the swap is mechanical because the dispatch type already lines up. | — | — |
+| P1-2 | ✅ **DONE** (#710) | ~~**RTK installed, classic Redux used** — 17 `switch(action.type)` reducers~~ | `src/store/*/reducer.ts` | **0** `switch(action.type)` reducers remain. **17** modules across the 10 slices are on `createSlice`, and the reducers sit at **100 %** line / 95.5 % branch coverage — the parity net the last refresh identified as the precondition is what made this safe. `immer` is now a dependency with **0** direct importers (RTK bundles it); worth dropping. | — | — |
+| P1-3 | ✅ **DONE** (#711, #801–#805) | ~~**God action file — 2,885 lines**~~ | `src/store/databases/` | Split into **13** per-concern modules (`schemas`, `scopes`, `forms`, `views`, `agents`, `formulas`, `fields`, `folders`, `scripts`, `databases`, `shared`, plus `types` and `reducer`). `action.ts` is now **47** lines. The directory went from **5.8 %** line coverage to **84.4 %**, and #880 gave it a coverage floor it had never had — the largest body of store logic in the tree was ungated until then. | — | — |
+| P1-4 | 🟡 **the surviving God-file problem** | **Oversized components** | `access/TabsAccess.tsx` (1,002), `forms/FormsContainer.tsx` (804), `store/databases/types.ts` (778), `keep-elements/keep-source.ts` (776), `login/LoginPage.tsx` (774), `forms/DetailsSection.tsx` (725), `keep-elements/keep-monaco-editor.ts` (677), `keep-elements/keep-quick-config-form.ts` (658), `access/ModeCompare.tsx` (651), `store/databases/forms.ts` (623), `forms/EditView.tsx` (623) | Hard to test/reason about; concentrates state + view + side effects. | The **store** half of this item is resolved (P1-3). What is left is components. `styles/CommonStyles.tsx` (936 → 20, #708) and `store/databases/action.ts` (2,885 → 47, #711) have both left the list. ⚠️ **Two entries are now Lit elements, not React** — `keep-source.ts` and `keep-quick-config-form.ts` — so this is not purely a migration artefact; converting a file does not by itself make it small. Tracked as **#712**, executed **per-file inside #806** rather than as a sweep. | L |
+| P1-5 | 🟡 **barely moved** | **Almost no memoized selectors** — `createSelector` used **2×**, **137** inline `useSelector` sites (was 0 of 178) | across components | Inline object/array selectors return new references each render → avoidable re-renders. Memoization now exists but is not the norm. The site count fell with #806's conversions, not with a change in approach — and it will keep falling for that reason, so do not read it as progress on *this* item. | Introduce RTK `createSelector` for derived/object-returning selectors. Overlaps #806: a file converting to `StoreController` is the natural moment. Tracked as **#697**. | M |
 | P1-6 | ✅ **DONE** (#695) | ~~**`@ts-ignore` masking a real type gap**~~ | was `src/store/databases/action.ts` | The single suppression is gone, and nothing replaced it: **0** `@ts-ignore`, **0** `@ts-expect-error`, **0** `@ts-nocheck` across `src`. | — | — |
-| P1-7 | ✅ **DONE** | ~~27 Lit components authored in plain JS~~ | now `src/components/keep-elements/*.ts` | **25** elements (26 `.ts` files — the extra is the `KeepElement` base) are TypeScript with `@customElement`/`@property`/`@state`/`@query` and a typed `emit()` helper; `KeepElements.tsx` exports 25 matching `@lit/react` wrappers. The count fell from 26 because #701 collapsed four `keep-button*` variants into one, while #703 and #704 added `keep-input-date` and `keep-tree`. SWC is configured with `tsDecorators` + `useDefineForClassFields:false` in **both** `vite.config.mts` and `vitest.config.ts` — a required pairing (decorated class fields would otherwise shadow Lit's reactive accessors); moving to standard decorators + `accessor` is tracked as **#747**. | — | — |
+| P1-7 | ✅ **DONE** | ~~27 Lit components authored in plain JS~~ | now `src/components/keep-elements/*.ts` | **50** registered elements (54 `.ts` files in the directory) are TypeScript with `@customElement`/`@property`/`@state`/`@query` and a typed `emit()` helper — up from 25, because #806's per-file pass has been converting React leaves into elements all refresh. The `@lit/react` adapters are down to **32** and live one-per-file under `keep-elements/react/` (#813 split them out of the barrel for bundle reasons); `KeepElements.tsx` is now a 59-line re-export barrel. ⚠️ **Those 32 wrappers are not remaining work** — each is one `createComponent` call that dies with its last React consumer, and `test/keep-element-wrappers.test.ts` fails if one outlives it. SWC is configured with `tsDecorators` + `useDefineForClassFields:false` in **both** `vite.config.mts` and `vitest.config.ts` — a required pairing (decorated class fields would otherwise shadow Lit's reactive accessors); moving to standard decorators + `accessor` is tracked as **#747**. | — | — |
 | P1-8 | ✅ **DONE** | ~~ESLint rules actively weakened~~ | `.oxlintrc.json`, `tsconfig.json` | `correctness: error`, `no-unused-vars: error` with the `^_` ignore convention; `noUnusedLocals` and `noUnusedParameters` are `true`. Lint is clean and gates CI. | — | — |
 | <a id="p1-9"></a>P1-9 | ✅ **DONE** (#687) | ~~**`tsconfig.json` includes `test/` but the build config does not distinguish it**~~ | `tsconfig.json`, `tsconfig.app.json`, `tsconfig.test.json` | `npm run build` is now `tsc -b tsconfig.app.json && vite build` and sees `src` only; a type error in `test/**` no longer fails a production build. `npm run typecheck` (`tsc -b`) still covers both. | Root `tsconfig.json` is solution-style (`files: []` + references) so editors keep full IntelliSense on `test/**`. A `references`-based split was not possible: `noEmit: true` on the app project makes TS reject it with `TS6310`. | S |
 
@@ -191,51 +219,71 @@ Status legend: 🔴 open & urgent · 🟡 open, partially addressed · ✅ done 
 |---|:---:|------|-------|----------------|-----|--------|
 | P2-1 | ✅ **DONE** (#677) | ~~**Dead CRA leftovers**~~ | removed: `config/**` (6 files), `babel.config.js`, `jest.config.ts`, `__mocks__/**`, `public/index.html`, `Jenkinsfile`, `package.json` `proxy`/`homepage`/`eslintConfig`/`jestSonar`, and finally `src/react-app-env.d.ts` | The last file declared CRA `process.env` types plus asset-module shims. It is gone and `tsc -b` stays green; `src/vite-env.d.ts` carries the Vite equivalents. Three `.d.ts` files remain in `src`, all current (`vite-env`, `vitest`, `styles`). | — | — |
 | P2-2 | 🟡 unchanged | **No i18n** — all strings hardcoded English | throughout components | Blocks localization. | If localization is a goal, introduce a library; otherwise document as intentional. | L (if pursued) |
-| P2-3 | 🟡 **much improved** | **No *route* splitting** — still 0 `React.lazy`/`Suspense` | `src/App.tsx`, `src/Views.tsx` | Entry chunk is **2,111.11 kB (594.20 kB gzip)**, down from 6,322.51 kB / 1,703.85 kB — **−66.6 %** across 103 chunks. #693/#729 moved Monaco behind a dynamic `import()` in `keep-monaco-editor.ts`, so `editor.api2` (3,626.93 kB) and ~90 language chunks now load only when a Source tab opens; Prettier's three chunks (#673) work the same way. Remaining eager weight: MUI, MUI X DataGrid, WebAwesome, and the 216 KB base64 `app-icons.ts` registry. | The two cheap wins are done. What is left is genuinely route-level: `React.lazy` on the DataGrid-heavy screens, and a decision on `app-icons.ts` (**#731**). Overlaps report 04's bundle work. | M |
+| P2-3 | ✅ **DONE** (#813, #716) | ~~**No *route* splitting** — 0 `React.lazy`/`Suspense`~~ | `src/router/react.tsx`, `src/Views.tsx` | Route splitting landed. `RouterOutlet` builds one `React.lazy` per `load` route and **memoises them on the route table's identity** — the table has to stay memoised or `lazy()` returns a fresh component every render and remounts the screen. `guard` is checked before the lazy element renders, and creating a `lazy()` does not call `load`, so a guarded route does not fetch its chunk. `Views.tsx` additionally mounts `KeepQuickConfigDrawer` lazily **on first open rather than while open**, because `wa-drawer`'s close is animated and unmounting on the flag clearing would skip both the animation and the out-of-drawer error alert. | ⚠️ **Measure the eager closure, not the entry-chunk line.** The entry chunk is 323.5 kB, but shared chunks stay eager: the real figure is **887.5 kB raw / 243.7 kB gzip** from `dist/.vite/manifest.json`, against a 901.2 / 245.9 budget — **13.7 kB raw / 2.2 kB gzip** of room. `npm run bundle:budget` is the gate. ⚠️ **raw headroom was widened 2 % → 3 % for the duration of #806** (a tight raw budget fails on migration churn, not on regressions); gzip stays at 2 % — **put raw back to 0.02 when #806 closes**. Monaco (`editor.api2`, 3,626.9 kB) plus four workers and Prettier's three chunks load on demand, across 137 JS chunks. Remaining eager weight is MUI and WebAwesome; `app-icons.ts` is **#731**. | — |
 | P2-4 | 🟡 unchanged | **A11y gaps** | across `.tsx` | Screen-reader/keyboard gaps. | Add `alt` text; oxlint has no `jsx-a11y` equivalent today — consider `eslint-plugin-jsx-a11y` as a second, non-gating pass, or defer until the WA migration (WA components ship their own a11y). | M |
 | P2-5 | ✅ **DONE** | ~~Duplicate Jest config~~ | — | Jest is gone; one `vitest.config.ts` is the single source of truth. See report 01. | — | — |
 | P2-6 | ✅ **DONE** (#696) | ~~**Store→component import (layering leak)**~~ | was `src/store/databases/action.ts:74` → `components/access/functions` | `convert2FieldType` and `convertDesignType2Format` now live in `src/utils/field-types.ts`. **0** imports from `src/store/**` into `src/components/**` remain. | — | — |
 | P2-7 | ✅ **DONE** (#698, #681) | ~~**Stale `TODO`s** (5) incl. disabled features~~ | now 2, both deliberate | The unreachable `/settings/account` route and its screen were deleted (#681); the Mail/Dashboard comment was rewritten to state the LABS-1214 dependency explicitly rather than pose as a TODO. The two remaining markers are `src/index.ts` ("simplify after wa transition to wa-dark") and an annotated non-TODO in `sidenav/Routes.ts`. The secret-overwrite warning became its own issue, **#740**. | — | — |
-| P2-8 | 🟡 improved | **Mixed / redundant dependencies** | `package.json` (**21** deps, **17** devDeps; was 32/17) | Removed since the last refresh: `@monaco-editor/{react,loader}`, `@mui/x-date-pickers`, `@mui/x-tree-view`, both `@fontsource-variable` fonts. `@emotion/react` + `@emotion/styled` retained (MUI peer; **0** direct imports, verified). ✅ **Both dead-weight candidates are now resolved:** `dayjs` went with the picker (#703) and is neither declared nor installed — the only textual match left is a comment in `keep-input-date.ts`; and `events` was dropped in **#826** — `token-emitter.ts` uses `EventTarget` + `CustomEvent`, guarded by `test/utils/no-events-polyfill.test.ts`. Worth watching: `typescript@7.0.2`, `immer@11.1.15`, `monaco-editor@0.55.1` as a direct dependency. `immer` and `redux` are arguably redundant now that RTK bundles both, but each has real importers — see #710. | Keep `@emotion` only as the MUI peer; converge styling on Linaria + WA tokens (report 03). | S |
+| P2-8 | 🟡 improved again | **Mixed / redundant dependencies** | `package.json` (**18** deps, **17** devDeps; was 21/17, and 32/17 two refreshes ago) | Removed since the last refresh: `react-router` + `react-router-dom` (#716 — replaced by the 2-file in-repo router at **97.8 %** coverage), `@mui/x-data-grid` (#770, deleted with the People/Groups screens), `@mui/icons-material` + `react-icons` (#718/#913). `@emotion/react` + `@emotion/styled` retained as the MUI peer — **0** direct imports, verified. ✅ **`immer` was dropped in `e27102f`**, exactly as the previous revision of this row recommended — **0** direct importers in `src`, and #710's `createSlice` migration means RTK's bundled copy serves. ⚠️ **`redux@5.0.1` is still declared and is in the same position**: 0 direct importers, superseded by `@reduxjs/toolkit`. Same one-line PR. `overrides` also went 9 → **4** in the same commit, deleting the four dead entries report 05 had flagged for three refreshes. `@mui/material@9.2.0` is the only MUI package left, in **43** files (**#709**). Worth watching: `typescript@7.0.2`, `monaco-editor@0.55.1` as a direct dependency. | Drop `redux` (`immer` is done); keep `@emotion` only as the MUI peer, and it leaves with MUI (#709). | S |
 | <a id="p2-9"></a>P2-9 | ✅ **DONE** (#675) | ~~**Two dead dependencies + an obsolete script**~~ | was `@monaco-editor/loader`, `@monaco-editor/react`, and the `disabledpostinstall` script | All three deleted. `monaco-editor@0.55.1` remains as a direct dependency and is the only Monaco package left; the sole textual match for `@monaco-editor` in `src` is an explanatory comment in `keep-monaco-editor.ts`. | — | — |
-| <a id="p2-10"></a>P2-10 | 🟡 unchanged in count, better in substance | **10 high-severity `npm audit` findings** (0 critical) | 8 in `@linaria/react` → `@wyw-in-js/*` → `minimatch` → `brace-expansion` (build-time DoS); 2 in `react-router`/`react-router-dom` | The build-time chain is not browser-reachable. The `react-router` picture *improved* even though the number did not: `react-router@7.18.1` is now installed, which clears the **unauthenticated route-matching DoS** (`< 7.18.0`) and the **open-redirect** (`< 7.18.0`) advisories that would have applied to this app. What still shows is the RSC-mode CSRF bypass — RSC is not used here. ⚠️ **Do not compare this to the GitHub security tab** — Dependabot scans `main`, now **160 commits behind**, and reports 2 `happy-dom` criticals that `new_code` resolved at `20.11.1`. | Bump `@wyw-in-js/vite` when a patched `minimatch` lands. Tracked as **#699**; see report 05. | S–M |
+| <a id="p2-10"></a>P2-10 | ✅ **DONE** (#699) | ~~**10 high-severity `npm audit` findings**~~ | — | **`npm audit` reports 0 vulnerabilities on this commit.** Both halves cleared: the build-time `@linaria/react → @wyw-in-js/* → minimatch → brace-expansion` DoS chain resolved to patched versions, and the two `react-router` advisories became inapplicable when #716 **removed the package** rather than bumping it. ⚠️ **Do not compare this to the GitHub security tab** — Dependabot only ever scans the default branch `main`, now **479 commits behind** `new_code` (was 160). Its findings describe a lockfile this branch does not ship, and the gap is widening. | — | see report 05 |
 | <a id="p2-11"></a>P2-11 | ✅ **DONE** (#676) | ~~**`npm run build` mutates a tracked source file**~~ | `vite.config.mts` (`stampBuildVersion()`); `updateBuildVersion.js` deleted | The JSDOM round-trip that reformatted `index.html` on every build is gone. A `transformIndexHtml` plugin injects the `admin-ui-daily-build-version` meta tag into the *output* instead, in dev and build alike, from the same `REACT_APP_ADMIN_UI_BUILD_VERSION`-or-timestamp source as before. `index.html` is byte-identical after a build (verified by hash) and has been restored to readable formatting. | Neither option originally listed was quite right: writing to `dist/` cannot work, because Vite regenerates `dist/index.html` from the source entry. | S |
 
 ---
 
 ## Metrics
 
-Measured on `new_code` @ `fcab645` with `grep -r` over `src/` (occurrence counts unless
+Measured on `new_code` @ `0d5458c` with `grep -r` over `src/` (occurrence counts unless
 stated). Earlier columns are previous revisions of this report, for trend only — grep
 methods were not identical across revisions, so treat small deltas as noise.
 
-| Metric | 2026-07-24 | `7594672` | `e17010c` | **`fcab645`** |
+| Metric | 2026-07-24 | `e17010c` | `fcab645` | **`0d5458c`** |
 |--------|---|---|---|---|
-| Source files | 135 `.tsx`, 75 `.ts`, ~27 plain-JS Lit | 130 `.tsx`, 103 `.ts` | 130 `.tsx`, 105 `.ts` | **125 `.tsx`, 107 `.ts`, 3 `.d.ts`, 1 `.js`** |
-| Total source LOC (ts/tsx/js) | ~38,700 | ~38,100 | ~38,368 | **~37,435** |
-| Test files / tests | 4 / 34 | 53 / 509 | 63 / 636 | **70 / 747** (report 01) |
-| Line coverage | ~0 % | ~26.8 % | 32.44 % | **34.72 %** |
-| `as any` casts | 151 (97 dispatch) | 154 (95) | 154 (95) | **153** (94 dispatch) |
-| `@ts-ignore` | 1 | 1 | 1 | **0** ✅ (`@ts-expect-error`/`@ts-nocheck`: 0) |
-| `console.*` outside the facade | 80 | 76 | 0 | **0** ✅ |
-| Undocumented silent `catch` | 3 | 1 | 1 | **0** ✅ — the four empty catches left all carry a stated reason |
-| `localStorage`/`sessionStorage` refs | 40 | 50 | 42 | **40** |
+| Source files | 135 `.tsx`, 75 `.ts`, ~27 plain-JS Lit | 130 `.tsx`, 105 `.ts` | 125 `.tsx`, 107 `.ts`, 3 `.d.ts`, 1 `.js` | **86 `.tsx`, 162 `.ts`, 3 `.d.ts`, 1 `.js`** |
+| Total source LOC (ts/tsx/js) | ~38,700 | ~38,368 | ~37,435 | **37,472** |
+| Test files / tests | 4 / 34 | 63 / 636 | 70 / 747 | **133 / 1709** (report 01) |
+| Line coverage | ~0 % | 32.44 % | 34.72 % | **70.18 %** ✅ |
+| `as any` casts | 151 (97 dispatch) | 154 (95) | 153 (94) | **44 (0 dispatch)** ✅ #694 |
+| `switch(action.type)` reducers | 17 | 17 | 17 | **0** ✅ #710 (17 `createSlice` modules) |
+| `@ts-ignore` | 1 | 1 | 0 | **0** ✅ (`@ts-expect-error`/`@ts-nocheck`: 0) |
+| `console.*` outside the facade | 80 | 0 | 0 | **0** ✅ (2 textual matches, both comments) |
+| Undocumented silent `catch` | 3 | 1 | 0 | **0** ✅ |
+| `localStorage`/`sessionStorage` refs | 40 | 42 | 40 | **40** |
 | `dangerouslySetInnerHTML` | 0 | 0 | 0 | **0** (good) |
+| Inline `style=` attributes | not measured | not measured | 20 | **0** ✅ (3 textual matches, all doc comments) |
 | Hardcoded secrets | none | none | none | **none** — API URLs relative/proxied (`src/config.dev.ts`) |
-| `TODO/FIXME/HACK/XXX` | 5 | 5 | 5 | **2** (both deliberate) |
-| `createSelector` | 0 (of 224 `useSelector`) | 0 (of 207) | 0 (of 207) | **0** (of **178**) |
-| `React.lazy`/`Suspense` | 0 | 0 | 0 | **0** |
-| Lint / static analysis | none | oxlint 1.75, gates `pr_check` | + `no-console: error` | **oxlint 1.75 + SonarQube Cloud scan & quality gate** ✅ |
-| Production entry chunk | not measured | 6.94 MB / 1.88 MB gzip | 6,322.51 kB / 1,703.85 kB | **2,111.11 kB / 594.20 kB gzip** ✅ |
-| Entry CSS | not measured | not measured | not measured | **198 kB** (`index-*.css`) |
-| `npm audit` | 9 (report 05) | 10 high | 10 high, 0 critical | **10 high, 0 critical** |
-| `IMG_DIR` icon refs | not measured | not measured | 38 (+8 `<wa-icon src=…>`) | **1** ✅ (a doc comment in `icon-library.ts`) — report 02 |
-| MUI import sites | not measured | not measured | 82 files (175 / 99 / 5) | **75 files** (149 `@mui/material`, 87 icons, 5 X-DataGrid) |
-| `light-dark()` literals outside `keep-*` | not measured | not measured | not measured | **229** (56 in 21 `.tsx`/`.ts`, 109 in `dark-mode.css`, 64 in `styles.css`) — report 03 |
+| `TODO/FIXME/HACK/XXX` | 5 | 5 | 2 | **2** (both deliberate) |
+| `createSelector` | 0 (of 224 `useSelector`) | 0 (of 207) | 0 (of 178) | **2** (of **137**) |
+| `React.lazy`/`Suspense` | 0 | 0 | 0 | **in use** ✅ #813 — one memoised `lazy()` per `load` route |
+| Lint / static analysis | none | oxlint + `no-console: error` | oxlint 1.75 + SonarQube Cloud | **same — and currently failing**, 1 error |
+| `lint` / `typecheck` / `build` | — | exit 0 | exit 0 | ✅ **exit 0** |
+| Eager bundle closure | not measured | not measured | not measured | **887.5 kB raw / 243.7 kB gzip** (budget 901.2 / 245.9 — raw headroom temporarily 3 %) |
+| Entry chunk (not the closure) | not measured | 6,322.51 kB | 2,111.11 kB / 594.20 kB gzip | **323.5 kB** — misleading alone, see P2-3 |
+| Entry CSS | not measured | not measured | 198 kB | **144.7 kB** |
+| Output chunks | not measured | not measured | 103 | **137 JS + 15 CSS** |
+| `npm audit` | 9 (report 05) | 10 high | 10 high, 0 critical | **0 vulnerabilities** ✅ |
+| `dependencies` / `devDependencies` | 32 / 17 | 32 / 17 | 21 / 17 | **18 / 17** |
+| MUI import sites | not measured | 82 files (175 / 99 / 5) | 75 files (149 / 87 / 5) | **43 files, 84 sites** — `@mui/material` only |
+| Icon-package files | not measured | 38 `IMG_DIR` refs | 1 | **0** ✅ both packages uninstalled |
+| Registered `keep-*` elements | ~27 (plain JS) | 25 | 25 | **50** ✅ |
+| `@lit/react` wrappers | — | 25 | 25 | **32** — deletions, not work (#806) |
+| `light-dark()` literals | not measured | not measured | 229 | **131** (16 in `.ts`/`.tsx`, 84 `dark-mode.css`, 23 `styles.css`, 8 `keep-theme.css`) |
 
-**Largest files (LOC):** `store/databases/action.ts` 2,885 · `components/access/TabsAccess.tsx` 1,007 · `components/forms/FormsContainer.tsx` 807 · `store/databases/types.ts` 764 · `components/access/ModeCompare.tsx` 759 · `components/keep-elements/keep-source.ts` 751 · `components/login/LoginPage.tsx` 736 · `components/forms/DetailsSection.tsx` 692 · `components/keep-elements/keep-monaco-editor.ts` 672 · `store/databases/reducer.ts` 625 · `components/forms/EditView.tsx` 623.
+**Largest files (LOC):** `components/access/TabsAccess.tsx` 1,002 · `components/forms/FormsContainer.tsx` 804 · `store/databases/types.ts` 778 · `components/keep-elements/keep-source.ts` 776 · `components/login/LoginPage.tsx` 774 · `components/forms/DetailsSection.tsx` 725 · `components/keep-elements/keep-monaco-editor.ts` 677 · `components/keep-elements/keep-quick-config-form.ts` 658 · `components/access/ModeCompare.tsx` 651 · `store/databases/forms.ts` 623 · `components/forms/EditView.tsx` 623.
 
-`styles/CommonStyles.tsx` left this list entirely: 936 → **20** lines (#708).
+Two files left this list outright: `store/databases/action.ts` 2,885 → **47** (#711) and
+`styles/CommonStyles.tsx` 936 → **20** (#708). ⚠️ **The list is no longer React-only** —
+`keep-source.ts` (776) and `keep-quick-config-form.ts` (658) are Lit elements. Converting a
+file does not make it small; #712's extraction technique applies to elements too.
+
+### A note on the source-file counts
+
+`.tsx` fell 125 → 86 while `.ts` rose 107 → 162, and total LOC is flat at ~37,400. That is
+#806 working as designed: files are being converted from React to Lit, not deleted, so the
+work shows up as a migration between the two columns rather than as a shrinking tree. **Do
+not read flat LOC as "nothing happened."** Report 04 owns the per-tier detail, and its
+counting rule matters here: 32 of the 162 `.ts` files are `@lit/react` wrappers that hold no
+logic and are removed with their last consumer.
 
 ---
 
@@ -245,47 +293,62 @@ methods were not identical across revisions, so treat small deltas as noise.
   with `correctness: error`; `tsc -b` with `noUnusedLocals`/`noUnusedParameters`; and a
   SonarQube Cloud scan plus quality gate. `pr_check` runs `lint → build → test → sonar` on
   Node 24, and the Sonar steps skip cleanly on fork PRs where no token exists.
-- **A real regression net exists.** 747 tests, **100 %** line coverage on every store
-  reducer, 99.3 % on `src/utils`, 96.8 % on `src/services`, 84.5 % on `keep-elements/**`,
-  and per-directory coverage gates in `vitest.config.ts` that fail CI on regression — the
-  gates caught P0-8 exactly as designed, and CI publishes a coverage summary to the Actions
-  job summary (#671).
+- **A real regression net exists, and it more than doubled this refresh.** **1709 tests**
+  across 133 files at **70.18 %** lines — **100 %** on every store reducer, 99.3 % on
+  `src/utils`, 97.8 % on `src/router`, 96.1 % on `src/services`, 89.7 % on
+  `keep-elements/**`, 84.4 % on `store/databases/**`. Per-directory gates in
+  `vitest.config.ts` fail CI on regression, and #880 closed the more dangerous failure
+  mode: **three well-covered areas had no gate at all** (`store/databases/**`,
+  `src/router/**`, `FormController`). A directory nobody lists is not a low floor, it is no
+  floor — and drift reporting cannot show you a gap. CI publishes a coverage summary to the
+  Actions job summary (#671).
 - **The `Logger` facade is enforced.** `src/services/log-service.ts` is the only place in
   `src` that may call `console.*`, and oxlint holds that line. A documented convention
   that the toolchain enforces is worth more than a stricter one that it does not.
 - `strict: true`, `isolatedModules`, `noFallthroughCasesInSwitch`,
-  `forceConsistentCasingInFileNames` all on — a solid TS baseline that the `as any`
-  sprawl (P1-1) undercuts rather than a weak config. With `@ts-ignore` at zero, P1-1 is
-  now the *only* thing undercutting it.
-- **The Lit layer is a genuine asset**: 25 typed elements, one shared base class, one
-  `@lit/react` adapter file, and a documented event contract — and it has now retired three
-  MUI subsystems outright (Monaco wrapper, tree view, date picker). Report 04's "delete the
-  bridge" step gets easier every time an element lands.
+  `forceConsistentCasingInFileNames` all on — and as of #694 the baseline is no longer
+  undercut by anything systematic. `@ts-ignore` is at zero and the dispatch casts are gone;
+  the 44 remaining `as any` are scattered rather than a pattern.
+- **The Lit layer is a genuine asset, and now the majority of the UI**: **50** typed
+  elements, one shared base class with a typed `emit()`, per-element `@lit/react` adapters,
+  and a documented event contract. It has retired MUI's Monaco wrapper, tree view, date
+  picker, data grid and table outright. Report 04's "delete the bridge" step gets easier
+  every time an element lands — and `test/keep-element-wrappers.test.ts` now guarantees the
+  bridge files cannot accumulate as orphans, which is how 16 of them had quietly done.
+- **The store is exemplary rather than a liability.** 10 slices on `createSlice`, a typed
+  `AppDispatch`, 13 per-concern thunk modules where a 2,885-line file used to be, 100 %
+  reducer coverage, and two framework-agnostic controllers (`StoreController`,
+  `FormController`) that let Lit elements read the store without React. All three of this
+  report's long-standing store complaints closed in one refresh.
 - **The styling layer has one source of truth.** `src/styles/keep-theme.css` defines the
   brand ramp and the semantic surface/text tokens for both modes; the `keep-*` elements and
   the Linaria layer both read `var(--wa-*)` rather than carrying their own hexes. See
   report 03.
 - No `dangerouslySetInnerHTML`; no hardcoded secrets; API base URLs relative and proxied.
-- Dependency-risk mitigation in place via `overrides` and Dependabot (report 05).
-- Store cleanly sliced by domain (17 well-separated feature folders) even though the
-  reducer *style* is legacy — and now fully covered by tests.
+- Dependency-risk mitigation in place via `overrides` and Dependabot (report 05) — and
+  `npm audit` is now clean on this branch.
+- Store cleanly sliced by domain (10 well-separated feature folders), now on RTK
+  `createSlice` and fully covered by tests.
 
 ---
 
 ## Cross-references (not duplicated here)
 
 - **Report 01** — Vitest/coverage: the migration is complete and the suite is green at
-  70 files / 747 tests. Also documents the two-suite Monaco strategy (fake for behaviour,
-  real for library invariants) that came out of closing P0-8, and the Sonar reporter that
-  now has a consumer.
-- **Report 02** — the `keep-*` element inventory (P1-7, done) and the remaining
-  MUI→WebAwesome component migration. The icon work is finished; MUI X DataGrid (5 files,
-  **#702**) is the one blocking component decision left.
-- **Report 03** — now largely delivered: #705/#706 (brand tokens), #708 (semantic tokens,
-  the `keep-*` elements, the Linaria layer, radius/typography, the `CommonStyles.tsx`
-  split) and #707 (the `wa-page` shell). What remains is the `light-dark()` residue in
-  `dark-mode.css`/`styles.css`, the layout utilities (**#765**), and this report's P0-2.
-- **Report 04** — Redux modernization (P1-2), the bundle work (P2-3, which delivered), and
-  the MUI theme layer that `AppShell.tsx` still mounts (**#709**).
-- **Report 05** — Dependabot triage, and the `main`-vs-`new_code` branch skew — now **160
-  commits** — that makes the GitHub security tab overstate what is actually shipping.
+  **133 files / 1709 tests, 70.18 %**. Also documents the two-suite Monaco strategy (fake
+  for behaviour, real for library invariants) that came out of closing P0-8, the Sonar
+  reporter, and the **no-gate** failure mode #880 fixed.
+- **Report 02** — the `keep-*` element inventory (P1-7, done — now **50** elements) and the
+  remaining MUI→WebAwesome component migration. The icon work and MUI X are both finished;
+  what is left is `@mui/material` in **43** files, owned by **#709** and executed per-file
+  inside **#806**.
+- **Report 03** — largely delivered: #705/#706 (brand tokens), #708 (semantic tokens, the
+  `keep-*` elements, the Linaria layer, radius/typography, the `CommonStyles.tsx` split) and
+  #707 (the `wa-page` shell). What remains is the `light-dark()` residue — **131** literals,
+  down from 229 — and the layout utilities (**#765**). This report's P0-2 has landed.
+- **Report 04** — the React-removal capstone. P1-2's Redux modernization and P2-3's bundle
+  work both delivered; the remaining surface is the per-file leaf pass (**#806**, 79 files)
+  and the MUI theme layer `AppShell.tsx` still mounts (**#709**).
+- **Report 05** — Dependabot triage. `npm audit` is at **0** on this branch, while the
+  `main`-vs-`new_code` skew has grown to **479 commits**, so the GitHub security tab
+  describes a lockfile that has not shipped for weeks.

@@ -2,35 +2,50 @@
 
 **Scope:** Map every React component under `src/components/**` (plus top-level `App.tsx`, `Views.tsx`, `Footer.tsx`) to a migration target: an existing hand-written `keep-*` component, a real WebAwesome `wa-*` component, a **new** Lit component to author, or **KEEP** (leave on React/MUI for now).
 
-> **Refreshed 2026-07-28** against branch `new_code` @ `fcab645`. Previous refreshes:
-> `e17010c` and `7594672` (both 2026-07-27); originally written 2026-07-24, when the Lit
-> layer was 27 untyped `.js` files under `lit-elements/`.
+> **Refreshed 2026-07-30** against branch `new_code` @ `0d5458c`. Previous refreshes:
+> `fcab645` (2026-07-28), `e17010c` and `7594672` (both 2026-07-27); originally written
+> 2026-07-24, when the Lit layer was 27 untyped `.js` files under `lit-elements/`.
 >
-> **Phase 0 (Foundation) is COMPLETE.** All elements are TypeScript with decorators on a
-> shared base class, renamed `lit-*` → `keep-*`, each with a unit test — and the last
-> outstanding Phase-0 item, collapsing the four button components, **landed in #701**.
+> **Phase 0 (Foundation) is COMPLETE**, and the migration it enabled is now the majority of
+> the work: the Lit layer has grown **25 → 50 registered elements** across 54 modules, at
+> **89.7 %** line coverage.
 >
-> **Three MUI subsystems have now been replaced by `keep-*` elements**, not just one:
-> the Monaco editor (#669), the **MUI X tree view** → `keep-tree` (#704/#723), and the
-> **MUI X date picker** → `keep-input-date` (#703/#739). `@mui/x-date-pickers` and
-> `@mui/x-tree-view` are gone from `package.json`; `@mui/x-data-grid` is the only MUI X
-> package left, in 5 files.
+> ### ✅ Every MUI blocker in this report is closed
 >
-> **The `wa-page` shell landed** (#707/#767). `AppShell.tsx` replaces `HomeElement`'s flex
-> scaffolding and `RightPanel`'s `calc()` arithmetic; the duplicated `MobileSidebar` is
-> deleted rather than ported. Report 03 owns the detail.
+> | Subsystem | Replaced by | Where |
+> |---|---|---|
+> | Monaco editor | `keep-monaco-editor` | #669 |
+> | MUI X tree view | `keep-tree` | #704/#723 |
+> | MUI X date picker | `keep-input-date` on `wa-input[type=date]` | #703/#739 |
+> | **MUI X DataGrid + all six MUI `<Table>` screens** | **`keep-data-table`** | **#771** |
+> | the four icon systems | `wa-icon` + a self-hosted FA registry | **#718/#913** |
+>
+> **`@mui/x-data-grid` is gone** — #771 built `keep-data-table` and migrated all six MUI
+> `<Table>` screens, then #770 deleted the People/Groups screens and the package with them.
+> That was the one blocking decision this report carried for four revisions, and **the
+> resolution was to build rather than buy**: there is no WebAwesome data grid in any tier, so
+> the options were a third-party web-component grid or a custom Lit table, and the custom
+> table won.
+>
+> **`@mui/material` is the only MUI package left**, in **43** files (was 60) — owned by
+> **#709**, executed per-file inside **#806**.
 >
 > **Two mapping facts** (re-verified against the installed `@awesome.me/webawesome@3.10.0`):
-> - ✅ **`<wa-page>` is FREE**, not Pro — and it is now in production use, which settles
->   the question empirically as well as by inspection.
-> - 🔴 **There is no WebAwesome data grid in _any_ tier.** The date-picker half of this
->   gap was closed by authoring `keep-input-date` on `wa-input[type=date]`; the DataGrid
->   half is the one blocking decision left (§5.1, **#702**).
+> - ✅ **`<wa-page>` is FREE**, not Pro — in production use since #707/#767.
+> - ➖ **There is no WebAwesome data grid in any tier.** Still true; no longer blocking.
 >
-> **One standing claim retracted:** §2.1 used to say `src/index.tsx` "sets the asset base
-> path". The two `setBasePath()` calls were **deleted** in PR #673 and must not come back
-> — in WebAwesome 3.x the base path feeds only the autoloader, which this app never uses.
-> See §2.1.
+> ### Two standing claims retracted
+>
+> 1. §2.1 used to say `src/index.tsx` "sets the asset base path". The two `setBasePath()`
+>    calls were **deleted** in PR #673 and must not come back — in WebAwesome 3.x the base
+>    path feeds only the autoloader, which this app never uses. See §2.1.
+> 2. ⚠️ **A `keep-*` element does not need a React wrapper to exist.** The 32 `@lit/react`
+>    adapters under `keep-elements/react/` exist only so *React JSX* can render an element;
+>    one reached solely from another element's Lit template needs none. So the wrapper count
+>    being lower than the element count (32 vs 50) is the **healthy** direction, and a wrapper
+>    whose last React consumer converts is **deleted**, not migrated.
+>    `test/keep-element-wrappers.test.ts` enforces that — 16 had silently accumulated as
+>    orphans before anyone counted.
 
 **Companion reports (cross-reference):**
 - `reports/03-wa-page-and-design-tokens.md` — layout primitives → `wa-*` CSS utilities, theming, design tokens, dark mode, CSP. All "layout only" and "token/theme" concerns are deferred there.
@@ -53,8 +68,8 @@
 | §5.5 | Icons off absolute asset paths | ✅ **DONE, verified** — `IMG_DIR` is down to **1** textual match, a doc comment in `icon-library.ts`. Every icon resolves through the self-hosted `library="fa"` | #700, #725, #730 |
 | §6.5 | Move ad-hoc dark-mode overrides to a token layer | ✅ **DONE for the element layer** — #708 replaced 93 `light-dark()` literals across 11 elements with `var(--wa-color-*)`, and deleted the `:host-context` dark overrides that existed because `color-scheme` does not inherit reliably through a shadow boundary (custom properties do). What remains inside `keep-*` is the deliberate editor-palette carve-out. The **Linaria/CSS** side is report 03's | #708, report 03 |
 | §2.5 | Centralise the theme carriers | ✅ **DONE** — `theme-service.ts` remains the single writer for `wa-dark`, `colorScheme` and `body.dataset.theme`, and #708 removed the *reason* components used to care: no component now reads a theme value at all | #669, #708 |
-| — | **App shell on `wa-page`** | ✅ **DONE** — `AppShell.tsx` maps the app's regions onto `wa-page` slots. `HomeElement`'s `AppContainer`, `RightPanel`'s `calc(100% - 241px|50px)` and the duplicated `MobileSidebar` are deleted, not ported | #707/#751/#767 |
-| §5.1 | Decide the DataGrid strategy | 🔴 **STILL OPEN** — now the *only* blocking component decision in this report. 5 files, `@mui/x-data-grid@9.10.1` | **#702** |
+| — | **App shell on `wa-page`** | ✅ **DONE** — `AppShell.tsx` maps the app's regions onto `wa-page` slots. `HomeElement`'s `AppContainer`, `RightPanel`'s `calc(100% - 241px\|50px)` and the duplicated `MobileSidebar` are deleted, not ported | #707/#751/#767 |
+| §5.1 | Decide the DataGrid strategy | ✅ **DONE** — decided **build, not buy**: #771 authored `keep-data-table` and migrated all six MUI `<Table>` screens; #770 then deleted the People/Groups screens and `@mui/x-data-grid` with them | #771, #770 |
 
 ### 0.2 Where raw `wa-*` markup lives — a claim that got better
 
@@ -73,16 +88,16 @@ to be un-picked from JSX.
 
 | §  | Item | Status | Where |
 |----|------|:---:|---|
-| §6.1 | Author elements in TypeScript with `lit` decorators | ✅ **DONE** — all 25 elements, `@customElement`/`@property`/`@state`/`@query` | PRs #652–#659 |
+| §6.1 | Author elements in TypeScript with `lit` decorators | ✅ **DONE** — all **50** elements, `@customElement`/`@property`/`@state`/`@query` | PRs #652–#659 and #806's |
 | §6.7 | Shared base class | ✅ **DONE** — `KeepElement` (`keep-element.ts`) with a typed, composed `emit()` | `88a47bd` |
 | §6.4 | Consistent event contract | ✅ **DONE** — `emit()` dispatches `bubbles: true, composed: true`; `KeepElements.tsx` maps `events` for `KeepCheckbox` and `KeepMonacoEditor` | `88a47bd` |
 | §6.3 | Single global `webawesome.css` import | ✅ **DONE** — exactly one import, in `src/index.tsx`; components import only the `wa-*` element modules they render | PRs #652–#659 |
 | §6.6 | Predictable registration | ✅ **DONE** — one file per tag, self-registering via `@customElement`; 24 of the 25 re-exported through `KeepElements.tsx` (`keep-schema-status` is internal by design) |  |
 | §6.x | Naming | ✅ **DONE** — `lit-elements/` → `keep-elements/`, `lit-*` → `keep-*`, `LitElements.tsx` → `KeepElements.tsx`, `lit-overrides.css` → `keep-overrides.css` | `8ea711b`, PR #666 |
-| — | Test coverage for the element layer | ✅ **DONE** — 29 suites under `test/components/keep-elements/` (25 elements + the base class + a Monaco lifecycle suite + two cross-cutting suites), `test/test-utils/lit.ts` (`mountLit`/`cleanupLit`); shadow-DOM assertions work. The directory sits at **84.5 % line coverage** against an **80 %** gate | report 01 §B2 |
+| — | Test coverage for the element layer | ✅ **DONE** — ~45 suites under `test/components/keep-elements/` (50 elements + the base class + a Monaco lifecycle suite + several cross-cutting suites), `test/test-utils/lit.ts` (`mountLit`/`cleanupLit`); shadow-DOM assertions work. The glob sits at **89.7 % line coverage** against an **85 %** gate | report 01 §B2 |
 | §6.2 | Collapse `lit-button*` into one component | ✅ **DONE** (#701) — `keep-button-yes`/`-no`/`-neutral` deleted; `keep-button` carries the variants | — |
 | §6.5 | Move ad-hoc dark-mode overrides to a token layer | ✅ **DONE for `keep-*`** (#708) — the `#f4e9ff` `::part` override is gone with the buttons it belonged to; 93 `light-dark()` literals became `var(--wa-color-*)`. The residue outside the element layer is report 03's | report 03 |
-| §7 P0 | Decide the DataGrid + date-picker strategy | 🟡 **half done** — date picker solved by `keep-input-date` (#703). DataGrid still open (**#702**) | §5.1 |
+| §7 P0 | Decide the DataGrid + date-picker strategy | ✅ **DONE** — date picker by `keep-input-date` (#703), DataGrid by `keep-data-table` (#771) | §5.1 |
 | — | `copyable-text.js` | ✅ **REMOVED** as dead code (`f14aff6`); `wa-copy-button` is the path if copy UX returns | — |
 | — | `home/About.tsx` | ✅ **REMOVED** (`757e657`) — drop from the inventory | — |
 | — | `src/custom-elements.d.ts` | ✅ **REMOVED** — stale JSX intrinsic tags (`app-status`, `drawer-container`) dropped; typing now comes from each element's `HTMLElementTagNameMap` augmentation | `88a47bd`, `8ea711b` |
@@ -102,7 +117,8 @@ foundation is finished; the volume work is next.
 - **125 React `.tsx` files** (was 130); **60** import `@mui/material`, **41** import
   `@mui/icons-material`, **18** use `react-icons`, **19** use Formik, **70** touch
   `react-redux`. Counted across all of `src`, MUI is imported in **75 files**:
-  **149** `@mui/material` references, **87** `@mui/icons-material`, **5** `@mui/x-data-grid`.
+  **84** `@mui/material` references across **43** files; `@mui/icons-material` and
+  `@mui/x-data-grid` are **gone**.
 - **25 TypeScript Lit elements** in `src/components/keep-elements/` (26 modules — the
   extra is the `KeepElement` base), **24** wrapped for React via `@lit/react`'s
   `createComponent` in `KeepElements.tsx`. Most wrap a `wa-*` element internally. Every
@@ -125,17 +141,19 @@ foundation is finished; the volume work is next.
   inputs, checkbox, switch, select, dialog, drawer, tabs, tooltip, card, dropdown/menu,
   alert→callout, spinner, breadcrumb, tree, divider, avatar, badge, radio, textarea,
   **page**).
-- **The hard cases are down to one.** `<wa-page>` is free *and now in production use*.
-  **Monaco is done** (authored, tested, wired, dynamically imported, and it grew a Diff
-  view the React wrapper never had). The **date picker** was solved by authoring
-  `keep-input-date` on `wa-input[type=date]` rather than buying or importing anything, and
-  the **tree view** by `keep-tree` on `<wa-tree>`. That leaves **MUI X DataGrid** (5 files)
-  as the single blocking component decision — **#702**. Formik (19 files) is unchanged: a
-  state library, not a widget, and its own issue (**#717**).
+- **The hard cases are all done.** `<wa-page>` is free *and in production use*. **Monaco**
+  is authored, tested, wired, dynamically imported, and grew a Diff view the React wrapper
+  never had. The **date picker** was solved by authoring `keep-input-date` on
+  `wa-input[type=date]`, the **tree view** by `keep-tree` on `<wa-tree>`, and the
+  **DataGrid** by `keep-data-table` (#771) — the last of them. Every one was solved by
+  *authoring an element*, not by buying a tier or importing a third-party widget; that is the
+  single most useful pattern this report established. Formik is **12** files (was 19) and is
+  a state library rather than a widget — `FormController` (#807) replaced it, with its own
+  issue (**#717**).
 - **Consistency debt is paid.** The four-way button duplication (#701), the per-element
-  hardcoded colours (#708) and the `IMG_DIR` icon paths (#700/#730) are all closed. What
-  is left in this area is not consistency but *volume*: 60 `.tsx` files importing
-  `@mui/material`, and 3 icon systems still to converge (**#718**).
+  hardcoded colours (#708), the `IMG_DIR` icon paths (#700/#730) and **all four icon
+  systems** (#718/#913) are closed. What is left in this area is not consistency but
+  *volume*: **43** files importing `@mui/material` (**#709**).
 
 ---
 
@@ -304,7 +322,7 @@ formatting helpers), which is the evidence behind §5.1 and §5.2.
 | `ClickAwayListener`/`Fade`/`Slide`/`Collapse` | built-in WA dismissal + `wa-animation`/CSS | Free/CSS | Dropdown/popover handle outside-click & transitions natively. |
 | `InputAdornment` | `wa-input` `start`/`end` slots | Free | Search fields, password toggles. |
 | `DatePicker`/`LocalizationProvider` (`@mui/x-date-pickers`) | **No WA equivalent, any tier** | **None** | See §5.2. `AppFilterContainer`, `ConsentFilterContainer`. (`wa-time-input` exists — time only.) |
-| `DataGrid` (`@mui/x-data-grid`) | **No WA equivalent, any tier** | **None** | See §5.1 — biggest risk. |
+| ~~`DataGrid`~~ | **No WA equivalent, any tier** | ✅ **`keep-data-table`** | Authored in #771; package deleted in #770. Was the biggest risk in this report. |
 | Monaco `Editor` (`@monaco-editor/react`) | **`keep-monaco-editor`** ✅ authored **and wired** | Custom | See §5.3. `@monaco-editor/react` has **zero imports left in `src`**; the package is now a dead dependency. |
 | Formik (`formik`) | **Not a widget** — form-state strategy | Custom | See §5.4. 19 files. |
 
@@ -419,9 +437,8 @@ Target key: **[wa]** = replace with a `wa-*` (§3) · **[keep]** = an existing `
 |---|---|---|---|
 | `groups/Groups.tsx` · `groups/GroupForm.tsx` | stay (DataGrid) | L each | §5.1. |
 | `people/People.tsx` | stay | M | Page. |
-| `people/PeopleCRUD.tsx` | stay (DataGrid) | L | DataGrid + Formik. |
-| `people/PeopleForm.tsx` | wa (`wa-input`, password toggle) | M | Formik. |
-| `peopleSelector/GroupMembers.tsx` · `PeopleSelector.tsx` | stay (DataGrid) | L each | §5.1. |
+| ~~`people/PeopleCRUD.tsx`~~ · ~~`people/PeopleForm.tsx`~~ | ➖ **deleted** (#770) | — | The whole People/Groups domain went with `@mui/x-data-grid`. `test/people-groups-removed.test.ts` guards against reintroduction. |
+| ~~`peopleSelector/GroupMembers.tsx`~~ · ~~`PeopleSelector.tsx`~~ | ➖ **deleted** (#770) | — | — |
 
 ### header/ · sidenav/ · navigation/ · routers/
 | React file | Target | Effort | Notes |
@@ -457,7 +474,7 @@ Target key: **[wa]** = replace with a `wa-*` (§3) · **[keep]** = an existing `
 | `wrapper/ErrorWrapper.tsx` | stay | S | Error boundary (React-specific API). |
 | `flex/index.tsx` | css | S | → report 03. |
 
-### Existing Lit inventory (25 elements — reference)
+### Existing Lit inventory (**50** elements — reference; the list below is the 25 as of `fcab645`)
 
 `keep-alert` · `keep-api-error-dialog` · `keep-app-status` · `keep-autocomplete` ·
 `keep-button` · `keep-checkbox` · `keep-default-card` · `keep-dialog-actions` ·
@@ -485,12 +502,27 @@ it is rendered from inside `keep-nsf-card`'s template and never crosses the brid
 
 ## 5. Hard cases — no free WebAwesome equivalent
 
-### 5.1 MUI X **DataGrid** (`@mui/x-data-grid`) — HIGHEST RISK
+### 5.1 MUI X **DataGrid** — ✅ RESOLVED (was HIGHEST RISK)
 
-**Files (5, unchanged):** `groups/Groups.tsx`, `groups/GroupForm.tsx`,
-`people/PeopleCRUD.tsx`, `peopleSelector/GroupMembers.tsx`,
-`peopleSelector/PeopleSelector.tsx`. Uses `DataGrid`, `GridCellParams`, `GridApi` —
-sorting, selection, cell rendering, pagination.
+**✅ Resolved by (B) — a custom Lit grid — plus deletion.** #771 authored `keep-data-table`
+and migrated the six MUI `<Table>` screens onto it. The five DataGrid screens
+(`groups/Groups.tsx`, `groups/GroupForm.tsx`, `people/PeopleCRUD.tsx`,
+`peopleSelector/GroupMembers.tsx`, `peopleSelector/PeopleSelector.tsx`) were **deleted**
+in #770 rather than migrated — they were gated on LABS-1214 and unreachable — taking
+`@mui/x-data-grid` with them.
+
+⚠️ **Note which option won, against this section's own recommendation.** The text below
+called (A) *"the leading candidate"* and (C) *"the recommended interim"*. What actually
+happened was (B): the usages turned out to be moderate enough that a purpose-built
+`keep-data-table` beat adding AG Grid, and it avoided both a new dependency and a CSP
+review. Option (B) was costed here at **L+** and that estimate was fair — it was a real
+piece of work — but "grids are notoriously easy to under-estimate" did not bite, because the
+grid this app needed was much smaller than a general-purpose one.
+
+The original analysis follows, retained as the record.
+
+**Files (5, as of `fcab645`):** uses `DataGrid`, `GridCellParams`, `GridApi` — sorting,
+selection, cell rendering, pagination.
 
 > **Correction (2026-07-27):** the previous revision listed *"(A) Buy WebAwesome Pro Data
 > Grid"* as the best-fit option. **That option does not exist.** WebAwesome 3.10 ships no
@@ -508,11 +540,15 @@ sorting, selection, cell rendering, pagination.
   grid decision lands. **Still the recommended interim**, and the reason `@mui/material`
   will outlive most other MUI usage.
 
-**Risk:** this decision gates the people/groups domain and is now — with the tree view and
-date picker both solved — **the single largest blocker to dropping `react`/`react-dom`**
-(report 04). It is also the last reason `@mui/x-*` exists in `package.json` at all. Decide
+**Risk (historic):** this decision gated the people/groups domain and was — with the tree
+view and date picker both solved — the single largest blocker to dropping `react`/`react-dom`
+(report 04), and the last reason `@mui/x-*` existed in `package.json`. Decide
 early even though you migrate it late; (A) and (B) have very different dependency and CSP
-implications. Tracked as **#702**.
+implications. ✅ **Resolved: built rather than bought.** #771 authored `keep-data-table` and
+migrated all six MUI `<Table>` screens onto it; #770 then deleted the People/Groups screens and
+the package. Two of the six came back to #806 for their *other* axes — `AppsTable.tsx` (Formik +
+store, tier D) and `ConsentsTable.tsx` (store, tier B) — and `AgentsTable.tsx` came out
+Linaria-only as a tier-A leftover. The section below is retained as the record of the decision.
 
 ### 5.2 MUI X **Date Pickers** (`@mui/x-date-pickers`) — ✅ SOLVED
 
@@ -645,7 +681,7 @@ submission + `yup`. Do **not** port Formik into Lit. `useFormik` appears in 8 fi
 
 The debt catalogue from the original report, re-scored:
 
-1. ✅ **Types.** All 25 elements are TypeScript with decorators. The SWC config
+1. ✅ **Types.** All **50** elements are TypeScript with decorators. The SWC config
    (`tsDecorators: true` + `useDefineForClassFields: false`) is mirrored in
    `vite.config.mts` and `vitest.config.ts` — **keep these in sync**; divergence
    reintroduces Lit's class-field-shadowing bug silently. Moving to standard decorators +
@@ -718,7 +754,7 @@ last.**
 - [x] Unit tests for every element.
 - [x] **Collapse `keep-button*` into one component** (§6.2) — #701.
 - [x] **Decide the date-picker approach** (§5.2) — #703, authored as `keep-input-date`.
-- [ ] **Decide the DataGrid strategy** (§5.1) — the one item that did not close. **#702**
+- [x] ✅ **Decide the DataGrid strategy** (§5.1) — closed: built `keep-data-table` (#771)
 
 ### Phase 0.5 — Pay off the Monaco commit — ✅ COMPLETE
 - [x] Polyfill `document.queryCommandSupported` in `test/setupTests.ts` (PR #668).
@@ -776,27 +812,34 @@ last.**
       `CircularProgress` → `wa-spinner`.
 - [x] Native `wa-input type="date"` → `AppFilterContainer`, `ConsentFilterContainer` —
       ✅ #703/#739, via `keep-input-date`. **(§5.2)**
-- [ ] DataGrid screens per the chosen strategy → `Groups`, `GroupForm`, `PeopleCRUD`,
-      `GroupMembers`, `PeopleSelector`. **(§5.1, #702)**
+- [x] DataGrid screens → ✅ `keep-data-table` (#771) for the six MUI `<Table>` screens; the
+      five People/Groups screens were **deleted outright** (#770) rather than migrated, because
+      they were gated on LABS-1214 and reachable from nothing. **(§5.1)**
 - [x] App shell on `wa-page` — ✅ #707/#767 (`AppShell.tsx`).
 - [ ] Routers and the `ThemeProvider`/`CssBaseline` that `AppShell.tsx` still mounts —
       final sequencing in **report 04** (**#709**, **#716**).
 
 **Dependency notes:** Phase 5 depends on Phase 2 (controls) + Phase 3 (dialogs/drawers).
-Phase 6 is independent of the rest but gated by the one remaining Phase 0 decision (#702).
+Phase 6 is independent of the rest, and **no longer gated** — the last Phase 0 decision closed
+with #771.
 Layout and token conversions run in parallel throughout per **report 03** — whose token
 work is now largely delivered, so the ordering constraint that governed the last two
 refreshes ("collapse the buttons before tokenizing") has been discharged.
 
-**Where to start now.** Phase 0 is closed except #702, and Phase 0.5 is closed outright.
+**Where to start now.** Phase 0 and Phase 0.5 are both closed outright. The remaining work is
+**#806**'s per-file pass — 79 files / 16,682 LOC, tiered by axis — and then **#709**.
 The highest-value next moves are, in order:
 
-1. **Decide #702 (DataGrid).** It gates 5 screens, the whole people/groups domain, the last
-   `@mui/x-*` package, and report 04's ability to drop React. Decide it even though the
-   migration lands late.
-2. **Phase 1 + Phase 3** in parallel — both are volume work over presentational leaves and
-   overlays, both low-risk, and both now benefit from a token layer that already resolves
-   correctly inside shadow roots.
-3. **#718 (icons)** — three icon systems (`@mui/icons-material` 40 files, `react-icons` 18,
-   the 216 KB base64 `app-icons.ts`) are still the largest single source of MUI imports.
-   Converging them on `wa-icon` removes a dependency *and* entry-chunk weight.
+1. **Take a #806 subtree, whole.** Convert by *subtree* rather than by tier — a view's
+   children are usually one tier up from it, so **importer order beats tier order inside a
+   feature**. One commit per file, and the per-file gate
+   (`grep -n "from 'react'\|react-redux\|formik\|@mui/"` empty) is non-negotiable: a file
+   that does not clear it is half-converted, which is worse than untouched.
+2. **Delete the wrapper when its last consumer goes.** If a conversion removes the last
+   React consumer of a `Keep*` element, delete `keep-elements/react/<Name>.ts` and its barrel
+   line **in the same commit**. Read the wrapper's `events:` map first — it records the
+   custom-event → prop-name mapping (`onCardOpen: 'card-open'`) your Lit call site needs as
+   `@card-open=${…}`.
+3. **#731 (`app-icons.ts`)** — 216 kB of base64 across 20 importers, the largest single
+   remaining chunk of avoidable eager weight. Not separable from the component pass: **15 of
+   its 19 render sites are `<img>`, not `wa-icon`**.

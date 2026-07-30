@@ -1,9 +1,12 @@
 {
-  "raw": 892471,
+  "raw": 901221,
   "gzip": 245892,
   "measured": {
     "raw": 874971,
     "gzip": 241070
   },
-  "headroom": 0.02
+  "headroom": {
+    "raw": 0.03,
+    "gzip": 0.02
+  }
 }
