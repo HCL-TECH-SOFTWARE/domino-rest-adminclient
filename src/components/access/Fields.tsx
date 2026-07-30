@@ -10,14 +10,14 @@ import { useSelector } from 'react-redux';
 import { MenuItem, CircularProgress, Select } from '@mui/material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import SingleFieldContainer from './SingleFieldContainer';
 import { AppState } from '../../store';
 import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
 import { fullEncode } from '../../utils/common';
 import { FormSearchContainer, SearchContainer, SearchInput } from '../../styles/CommonStyles';
-import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepSingleField, KeepTooltip } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
+import type { KeepFieldAddDetail } from '../keep-elements/keep-single-field';
 import { useAppDispatch } from '../../store/hooks';
 
 const FieldContainer = styled.div`
@@ -300,7 +300,11 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
   const currentActiveFields = activeFields.filter((item) => item.formName === currentFormValue);
   const [fieldsDisplayed, setFieldsDisplayed] = useState(currentActiveFields);
 
-  const noFieldObj = { item: { content: 'No Field Available' } };
+  // Was `{ item: { content: 'No Field Available' } }` — nested one level too deep, so the
+  // row it produced had no content, no format and no kind. `capitalizeFirst(undefined)` and
+  // `undefined.kind.length` both threw, which meant a form with zero fields did not render
+  // an empty-state row: it took the whole screen down.
+  const noFieldObj = { content: 'No Field Available' };
 
   useEffect(() => {
     const currentActiveFields = activeFields.filter((item) => item.formName === currentFormValue);
@@ -414,9 +418,11 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
                             !item.content.startsWith("@") &&
                             !item.content.startsWith("~#") &&
                             !item.content.startsWith("Formula") && (
-                              <SingleFieldContainer
+                              <KeepSingleField
                                 key={`${item.content}-${index}`}
-                                moveTo={moveTo}
+                                onFieldAdd={(event: CustomEvent<KeepFieldAddDetail>) =>
+                                  moveTo([event.detail.item], 'read')
+                                }
                                 item={{
                                   name: item.content,
                                   ...item,
@@ -425,11 +431,11 @@ const Fields: React.FC<FieldsProps> = ({ moveTo, schemaName, nsfPath, formName, 
                             )
                         )
                       ) : (
-                        <SingleFieldContainer
-                          key="0"
-                          moveTo={() => {}}
-                          item={noFieldObj}
-                        />
+                        // No handler and `disabled`: the placeholder is a message, not an
+                        // offer. It used to be given a no-op moveTo, which is the same
+                        // intent minus the add button and its "Add No Field Available to
+                        // this mode" label.
+                        <KeepSingleField key="0" disabled item={noFieldObj} />
                       )}
                     </FieldList>
                   </ListItemField>

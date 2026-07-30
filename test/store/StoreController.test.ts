@@ -191,10 +191,13 @@ describe('the store singleton', () => {
   // `dbSetting` was here until #853. It is deliberately not replaced by a smaller
   // assertion: this list failing is the point, so that adding or dropping a slice is a
   // decision someone records rather than a diff nobody notices.
+  //
+  // `accessMode` arrived with #806: it is the former `AccessContext`, converted to a slice
+  // rather than to a `@lit/context` provider (reports/04 §3).
   it('mounts every reducer in the root reducer', () => {
     expect(Object.keys(store.getState()).sort()).toEqual(
       [
-        'account', 'alert', 'apps', 'consents', 'databases', 'dialog',
+        'accessMode', 'account', 'alert', 'apps', 'consents', 'databases', 'dialog',
         'drawer', 'loading', 'styles', 'users',
       ].sort(),
     );
