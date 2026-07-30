@@ -17,7 +17,7 @@ import { KeepElement } from './keep-element';
  */
 @customElement('keep-homepage')
 export default class Homepage extends KeepElement {
-  static styles = css`
+  static readonly styles = css`
     /* was HomepageContainer, a styled.div - hence display: block */
     :host {
       display: block;

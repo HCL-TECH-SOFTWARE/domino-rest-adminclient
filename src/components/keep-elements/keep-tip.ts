@@ -53,7 +53,7 @@ import { KeepElement } from './keep-element';
  */
 @customElement('keep-tip')
 export default class Tip extends KeepElement {
-  static styles = css`
+  static readonly styles = css`
     :host {
       /* The positioning context the caller's stretched-link ::after resolves against. */
       position: relative;
@@ -91,6 +91,7 @@ export default class Tip extends KeepElement {
      */
     wa-card {
       --wa-panel-border-radius: var(--wa-border-radius-l);
+      margin: var(--wa-spacing-l);
       border-color: var(--wa-color-neutral-border-normal);
       box-shadow: var(--wa-shadow-l);
       display: flex;
