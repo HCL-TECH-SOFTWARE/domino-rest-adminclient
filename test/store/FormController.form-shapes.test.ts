@@ -344,6 +344,69 @@ describe('FormController against the five real forms', () => {
     expect(form.touched.schemaName).toBe(true);
   });
 
+  it('clears a message a cross-field change fixed, and removes only that key', async () => {
+    /*
+     * This is what running the *whole* schema on every `validateField` is for, and it was the
+     * one path in the method nothing reached.
+     *
+     * `setValue` already drops the edited field's own message (see 'clears a field error as
+     * soon as that field is edited'), so `validateField`'s removal branch is only reachable
+     * when what fixed the field was something *else* — a sibling, or state the rule closes
+     * over. 'clears a blurred field error on the next blur, once fixed' reads as though it
+     * covers this and does not: `setValue` had already removed the entry, so `validateField`
+     * took its `path in this._errors` early return and passed for the wrong reason.
+     *
+     * Here nothing about `schemaName`'s value changes — the database it is checked for
+     * uniqueness against does. That is `AddImportDialog`'s real rule.
+     */
+    let nsfPath = 'demo.nsf';
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: { ...INITIAL, schemaName: 'taken' },
+      onSubmit: () => {},
+      schema: schemaFor(['demo.nsf:taken'], () => nsfPath),
+    });
+    await form.submit();
+    expect(form.errors.schemaName).toContain('already exists');
+    expect(form.errors.description).toBeDefined();
+
+    nsfPath = 'other.nsf';
+    await form.validateField('schemaName');
+
+    expect(form.errors.schemaName).toBeUndefined();
+    // The reason it removes one key rather than reassigning the map: a blur on a field that
+    // now passes must not clear the messages on every field the user has not reached.
+    expect(Object.keys(form.errors)).toEqual(['description']);
+  });
+
+  it('does not re-render when a re-validated field fails the same way', async () => {
+    // A field can be blurred repeatedly without being fixed — tabbing back and forth. The
+    // message is unchanged, so there is nothing to render, and the identity check is what
+    // keeps a Lit host from being asked anyway.
+    //
+    // 'ab' fails `min(3)` and nothing else, so the message is a single deterministic string.
+    // An empty value would fail `required` too, and yup does not promise which of the two
+    // lands in `inner` first — see 'reports a field on its own blur'.
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: { ...INITIAL, schemaName: 'ab', description: 'ok' },
+      onSubmit: () => {},
+      schema: schemaFor([], () => ''),
+    });
+    await form.validateField('schemaName');
+    await el.updateComplete;
+
+    const message = form.errors.schemaName;
+    expect(message).toBe('Schema name should contain at least 3 characters.');
+    const renders = el.renders;
+
+    await form.validateField('schemaName');
+    await el.updateComplete;
+
+    expect(form.errors.schemaName).toBe(message);
+    expect(el.renders).toBe(renders);
+  });
+
   // ---- gaps, recorded rather than worked around -------------------------------------------
 
   it('GAP: no handleChange, so each field needs its own listener', async () => {
