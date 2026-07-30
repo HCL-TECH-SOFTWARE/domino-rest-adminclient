@@ -52,11 +52,10 @@ export default class Dropdown extends KeepElement {
 
   render() {
     return html`
-      <wa-dropdown>
+      <wa-dropdown @wa-select=${this.handleSelect}>
         <wa-button appearance="filled" slot="trigger" with-caret>${this.selected}</wa-button>
         ${this.choices.map(
-          (choice) =>
-            html`<wa-dropdown-item @click=${() => this.changeSelected(choice)}>${choice}</wa-dropdown-item>`,
+          (choice) => html`<wa-dropdown-item value=${choice}>${choice}</wa-dropdown-item>`,
         )}
       </wa-dropdown>
     `;
@@ -64,6 +63,23 @@ export default class Dropdown extends KeepElement {
 
   firstUpdated() {
     this.selected = this.choices[0];
+  }
+
+  /**
+   * One listener on the dropdown, not a `@click` per item (#925).
+   *
+   * Web Awesome synthesises a `click` on an item only for *pointer* selection, so a per-item
+   * click handler is dead for anyone driving the menu with the arrow keys and Enter — the
+   * menu opened, moved and closed, and the selection never changed. `wa-select` is emitted by
+   * `makeSelection`, which both paths go through, and it carries the chosen item.
+   *
+   * Stopped here because the event is `composed`: `selected` is this element's whole outbound
+   * contract and a stray `wa-select` in the host document is not part of it.
+   */
+  private handleSelect(event: Event) {
+    event.stopPropagation();
+    const { item } = (event as CustomEvent<{ item: { value: string } }>).detail;
+    this.changeSelected(item.value);
   }
 
   changeSelected(choice: string) {

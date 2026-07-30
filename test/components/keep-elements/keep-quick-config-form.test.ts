@@ -520,6 +520,88 @@ describe('keep-quick-config-form', () => {
     expect(el.shadowRoot!.querySelector('.icon-select')!.textContent).toContain('binoculars');
   });
 
+  // ---- #925 -----------------------------------------------------------------------------------
+
+  /**
+   * The icon menu had two independent reasons to be keyboard-dead, and the binding was only
+   * the second of them.
+   *
+   * `wa-dropdown` collects its items with
+   * `defaultSlot.assignedElements({ flatten: true }).filter(el => el.localName === 'wa-dropdown-item')`
+   * — *top-level* assigned nodes. The 86 icons used to sit inside a `<div class="icon-menu">`
+   * that carried the scroll box, so the only assigned element was the div and `getItems()`
+   * answered an empty array: the arrow keys had nothing to move through. Measured in Chrome
+   * against this exact markup — ArrowDown on the open menu left focus on the trigger.
+   *
+   * The scroll box is `wa-dropdown::part(menu)` now. This asserts the structural half, since
+   * the parent of each item is the property `assignedElements` actually depends on.
+   */
+  it('keeps every icon a direct child of the dropdown, where wa-dropdown looks for items', async () => {
+    const el = await mount();
+    const items = Array.from(el.shadowRoot!.querySelectorAll('wa-dropdown-item'));
+    expect(items.length).toBeGreaterThan(1);
+    const parents = new Set(items.map((item) => item.parentElement!.localName));
+    expect(parents, 'a wrapper element hides the items from getItems()').toEqual(
+      new Set(['wa-dropdown']),
+    );
+  });
+
+  it('picking an icon by keyboard updates the trigger and the form value', async () => {
+    const el = await mount();
+    el.shadowRoot!.querySelector('wa-dropdown')!.dispatchEvent(
+      new CustomEvent('wa-select', {
+        detail: { item: { value: 'binoculars', checked: false } },
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      }),
+    );
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('.icon-select')!.textContent).toContain('binoculars');
+  });
+
+  it('does not let the composed wa-select escape into the host document', async () => {
+    const el = await mount();
+    const leaked = vi.fn();
+    document.body.addEventListener('wa-select', leaked);
+
+    el.shadowRoot!.querySelector('wa-dropdown')!.dispatchEvent(
+      new CustomEvent('wa-select', {
+        detail: { item: { value: 'binoculars', checked: false } },
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(leaked).not.toHaveBeenCalled();
+    document.body.removeEventListener('wa-select', leaked);
+  });
+
+  /**
+   * `makeSelection` toggles `checked` on a `type="checkbox"` item before it emits, which is the
+   * wrong verb for a single-select list: re-picking the icon the form already holds would untick
+   * it, and Lit would not put it back — its `?checked=${iconName === values.iconName}` binding
+   * sees no change to commit.
+   */
+  it('leaves the current icon ticked when it is picked again', async () => {
+    const el = await mount();
+    const item = { value: 'beach', checked: true };
+    // What Web Awesome hands us after its own toggle has already run.
+    item.checked = false;
+    el.shadowRoot!.querySelector('wa-dropdown')!.dispatchEvent(
+      new CustomEvent('wa-select', {
+        detail: { item },
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      }),
+    );
+    await el.updateComplete;
+    expect(item.checked).toBe(true);
+    expect(el.shadowRoot!.querySelector('.icon-select')!.textContent).toContain('beach');
+  });
+
   // ---- #895 -----------------------------------------------------------------------------------
 
   it('filters the database list from one subscription', async () => {

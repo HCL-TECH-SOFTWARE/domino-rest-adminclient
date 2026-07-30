@@ -232,18 +232,34 @@ export default class SourceTree extends KeepElement {
     .key-value-container {
       position: relative;
     }
+    /*
+     * The row's context-menu trigger. #925.
+     *
+     * These rules used to name the wa-icon, which carried slot="trigger" while sitting
+     * *inside* the wa-button — so it was assigned to no slot at all and never rendered, and
+     * the wa-button fell into the dropdown's default slot, i.e. into the menu. The row had no
+     * trigger: the menu could only be opened by right-clicking a value, and object and array
+     * rows, which carry no contextmenu handler, could not open it by any means. The slot is
+     * on the button now and these rules follow it.
+     *
+     * Hidden with opacity, not display:none, so the trigger keeps a box and stays in the tab
+     * order — a display-none trigger cannot take focus, so :focus-within could never fire to
+     * reveal it. That is necessary for reaching the menu from the keyboard but not sufficient:
+     * wa-tree still claims the keys. See the note on handleMenuSelect and #940.
+     *
+     * The wa-dropdown rule that stood here was dead twice over: it set no position, and
+     * wa-dropdown is display:contents (measured: a 0x0 host box), so it has nothing to
+     * offset. The trigger is the only box in the pair.
+     */
     .key-value-container .icon-button {
       position: absolute;
       top: -40%;
       right: -4%;
-      display: none;
+      opacity: 0;
     }
-    .key-value-container:hover .icon-button {
-      display: block;
-    }
-    wa-dropdown {
-      top: -40%;
-      right: -4%;
+    .key-value-container:hover .icon-button,
+    .key-value-container:focus-within .icon-button {
+      opacity: 1;
     }
 
     .object-array-container {
@@ -254,10 +270,11 @@ export default class SourceTree extends KeepElement {
       position: absolute;
       top: -40%;
       right: -30%;
-      display: none;
+      opacity: 0;
     }
-    .object-array-container:hover .icon-button {
-      display: block;
+    .object-array-container:hover .icon-button,
+    .object-array-container:focus-within .icon-button {
+      opacity: 1;
     }
 
     dialog {
@@ -411,23 +428,23 @@ export default class SourceTree extends KeepElement {
                   @contextmenu="${this.handleRightClick}"
                 >
               `}
-              <wa-dropdown>
-                <wa-button>
-                  <wa-icon appearance="filled" class="icon-button" slot="trigger" library="${FA_LIBRARY}" name="square-caret-down" label="Context Menu"></wa-icon>
+              <wa-dropdown @wa-select="${(e: Event) => this.handleMenuSelect(e, key, value, fullPath)}">
+                <wa-button slot="trigger" class="icon-button" appearance="plain" size="small">
+                  <wa-icon appearance="filled" library="${FA_LIBRARY}" name="square-caret-down" label="Context Menu"></wa-icon>
                 </wa-button>
-                <wa-dropdown-item @click="${(e: Event) => this.handleClickAdd(e)}">
+                <wa-dropdown-item value="add">
                   Add
                   <wa-icon slot="prefix" library="${FA_LIBRARY}" name="circle-plus"></wa-icon>
                 </wa-dropdown-item>
-                <wa-dropdown-item ?disabled=${isObjectOrArray} @click="${isObjectOrArray ? null : (e: Event) => {this.handleClickEdit(e, key, value)}}">
+                <wa-dropdown-item value="edit" ?disabled=${isObjectOrArray}>
                   Edit
                   <wa-icon slot="prefix" library="${FA_LIBRARY}" name="pencil"></wa-icon>
                 </wa-dropdown-item>
-                <wa-dropdown-item ?disabled=${!isObjectOrArray} @click="${isObjectOrArray ? (e: Event) => {this.handleClickDuplicate(e, fullPath, key, value)} : null}">
+                <wa-dropdown-item value="duplicate" ?disabled=${!isObjectOrArray}>
                   Duplicate
                   <wa-icon slot="prefix" library="${FA_LIBRARY}" name="copy"></wa-icon>
                 </wa-dropdown-item>
-                <wa-dropdown-item @click="${() => this.handleClickRemove(key, this.editedContent, fullPath)}">
+                <wa-dropdown-item value="remove">
                   Remove
                   <wa-icon slot="prefix" library="${FA_LIBRARY}" name="trash"></wa-icon>
                 </wa-dropdown-item>
@@ -482,6 +499,56 @@ export default class SourceTree extends KeepElement {
         </wa-tree>
       </main>
     `;
+  }
+
+  /**
+   * The context menu's selection. One listener on the dropdown rather than a `@click` per
+   * item (#925).
+   *
+   * Web Awesome only synthesises a `click` on an item for *pointer* selection, so every entry
+   * in this menu was dead for anyone driving it with the arrow keys and Enter. `wa-select` is
+   * emitted by `makeSelection`, which both the pointer and the keyboard path go through, and
+   * it skips disabled items before emitting, so `Edit` and `Duplicate` now honour their
+   * `?disabled` instead of relying on the `null` handler the template used to swap in.
+   *
+   * `event.target` is the `wa-dropdown`, which is inside the row's `wa-tree-item`, so the
+   * handlers below still find their dialog with the same `closest()` walk. Stopped here
+   * because `wa-select` is composed and would otherwise surface in the host document.
+   *
+   * ### This menu is still not keyboard-operable, and the reason is upstream (#940)
+   *
+   * `wa-tree` binds `keydown` to a div in its own shadow root and claims Enter, Space, the
+   * four arrows, Home and End for tree navigation whenever focus is anywhere inside it —
+   * `preventDefault()` first, so Enter on our trigger never becomes the click that opens the
+   * menu. It excuses only `input` and `textarea` in the composed path, which is why the leaf
+   * value fields still work. It also *throws* on Enter here: it looks up `activeItem` with
+   * `items.findIndex((item) => item.matches(':focus'))`, gets -1 when focus is on a control
+   * *within* an item, and reads `activeItem.disabled` off `undefined`.
+   *
+   * Containing it from this side is not possible as things stand: `wa-dropdown` listens for
+   * its own arrow keys on `document`, i.e. past `wa-tree` on the bubble path, so a
+   * `stopPropagation()` early enough to spare the tree also starves the menu. The fix is to
+   * stop nesting the dropdown inside the tree item — one menu at the component level, opened
+   * against the active row — which is a reshape of this element rather than a binding change.
+   * Measured in Chrome; see #940.
+   */
+  handleMenuSelect(e: Event, key: string, value: any, fullPath: string) {
+    e.stopPropagation();
+    const { item } = (e as CustomEvent<{ item: { value: string } }>).detail;
+    switch (item.value) {
+      case 'add':
+        this.handleClickAdd(e);
+        break;
+      case 'edit':
+        this.handleClickEdit(e, key, value);
+        break;
+      case 'duplicate':
+        this.handleClickDuplicate(e, fullPath, key, value);
+        break;
+      case 'remove':
+        this.handleClickRemove(key, this.editedContent, fullPath);
+        break;
+    }
   }
 
   handleClickAdd(e: Event) {
