@@ -2,6 +2,36 @@
 
 Patterns worth not relearning. Newest first.
 
+## A closed issue is not evidence the work shipped
+
+Refreshing `docs/reports/` found **#765 closed `COMPLETED`**, and report 06 recording its
+deliverable as "in use ✅". Measured: **0** usages of `wa-stack` / `wa-cluster` / `wa-grid` in
+`src`, and `git log -S'wa-cluster' -- src` returns nothing — the strings have never existed in
+the tree. The issue had two halves; the token audit shipped and the layout adoption was
+deliberately dropped in a closing comment, which the status table then flattened into "done".
+
+The same shape, inverted, appeared four times in the same refresh: report 00's P1-1, P1-2, P1-3
+and P2-10 were all marked open while the work had **already landed** under a different PR.
+
+**Rule:** for any status claim, verify against the tree, not the tracker.
+`git log -S'<token>' -- src` distinguishes "removed" from "never existed" — a plain grep
+returning 0 cannot. And when an issue has two halves, read its closing comment before citing
+it; `stateReason: COMPLETED` covers a partial delivery.
+
+## A refresh must re-derive, not re-narrate
+
+Two failures while rewriting the reports, both mine:
+
+- Reported the dead-`--wa-color-danger-600` defect as still open because the previous revision
+  said so. It measures **0** — fixed since. I had carried a *narrative* forward while
+  re-measuring everything around it.
+- Left the previous refresh's three narrative subsections in place below the new ones, so the
+  document argued both states at once for ~65 lines.
+
+**Rule:** when a document has a "what changed since X" section, the old one is *replaced*, not
+appended to — and every ⚠️/🔴 claim gets re-measured even when only the number looks stale.
+Check section headers after a large edit (`grep -n '^#'`) to catch orphaned blocks.
+
 ## A static inventory cannot tell you which CSS rule governs an element
 
 During #718 a written inventory of "CSS at risk" was wrong **four times**, always the same

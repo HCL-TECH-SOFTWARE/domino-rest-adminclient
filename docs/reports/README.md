@@ -8,65 +8,126 @@ operational companion that turns them into assignable work.
 > 👉 **If you have been handed a wave to implement, go straight to
 > [06-waves.md](./06-waves.md).** Reports 00–05 say what is wrong and why; 06 says who picks
 > up what, in which order, and how they know they are done. It is measured against
-> `new_code` @ `7ec97b1` and supersedes any earlier wave table.
+> `new_code` @ `0d5458c` and supersedes any earlier wave table.
 
-**Originally generated 2026-07-24. Refreshed 2026-07-28** against branch `new_code` @
-`fcab645` (previous refreshes: `e17010c`, `7594672`) — every metric re-measured, every
-checklist item re-scored, and the dependency and CSP claims re-verified against the
+**Originally generated 2026-07-24. Refreshed 2026-07-30** against branch `new_code` @
+`0d5458c` (previous refreshes: `fcab645`, `e17010c`, `7594672`) — every metric re-measured,
+every checklist item re-scored, and the dependency and CSP claims re-verified against the
 installed `@awesome.me/webawesome@3.10.0` and the tracked `jar/config/config.json`.
 
 > **Status:** these are **analysis/planning documents**. Each report opens with a "what
 > changed" table and ends with a phased, effort-tagged (S/M/L) checklist.
 
-## ✅ The branch is green, the P0 queue is empty, and two foundation epics landed
+## ✅ The branch is green, and every gate passes
 
-On `fcab645`:
+On `0d5458c`:
 
 ```
-npm run lint    exit 0
-npm run build   exit 0    entry chunk 2,111.11 kB / 594.20 kB gzip   (was 6,322.51 / 1,703.85)
-npm run test    exit 0    70 files, 747 tests, 34.72 % lines
+npm run lint          exit 0
+npm run typecheck     exit 0
+npm run build         exit 0
+npm run bundle:budget exit 0       887.5 kB raw / 243.7 kB gzip  (budget 901.2 / 245.9)
+npm test              exit 0       133 files, 1709 tests, 70.18 % lines
+npm audit                          0 vulnerabilities
 ```
 
-The last open P0 — **JWT access + refresh tokens in `localStorage`** — was **decided and
-closed** (#684): *status quo, with CSP tightening as the compensating control.* That is a
-legitimate resolution, and it makes one thing load-bearing:
+CI runs all five in `pr_check.yml` on Node 24, in that order, plus a SonarQube scan and
+quality gate.
 
-> 🔴 **#685 is now the top item in the program.** The shipped policy in
-> `jar/config/config.json` still allows `script-src 'unsafe-inline'` on exactly the two
-> routes that serve the SPA document, while the asset routes are already `'self'` — so the
-> directive is relaxed precisely where the XSS sink is. **It no longer needs to be:** the
-> built `dist/index.html` on this commit contains no inline `<script>` body at all, because
-> #707 moved the appearance boot code into `src/index.ts`. Dropping `'unsafe-inline'` is a
-> config edit with a verified precondition. Until it lands, the #684 decision rests on a
-> control that is not yet in place.
+> **Note for anyone reading a draft of this refresh dated earlier today.** It opened by
+> reporting three red gates on `5f0b913` — an unused `keepBlockDiagram` import in
+> `Section.tsx:15` that failed `lint`, `typecheck` and `build`. **`0d5458c` removed it**, so
+> that finding is closed and has been struck from the reports rather than carried.
 
-## ⚠️ The GitHub security tab is now actively misleading
+## ✅ The P0 queue is empty, and this time the control exists
 
-Dependabot scans the **default branch `main`**, which is **160 commits behind** `new_code`
-(was 80). It reports **16 open alerts**; **14 of them are already fixed here**, including
-both criticals (`happy-dom`, resolved at `20.11.1`) and four of the five new `react-router`
-advisories (resolved at `7.18.1`).
+**#685 landed.** The last refresh flagged that #684 had closed the JWT-in-`localStorage` P0
+on the strength of "CSP tightening as the compensating control", while the shipped policy
+still allowed `script-src 'unsafe-inline'` on exactly the two routes serving the SPA
+document. Both now send `script-src 'self'`, plus `style-src-attr 'none'`,
+`style-src-elem 'self'` and `report-uri /api/csp-violation-report`. The compensating control
+is real rather than promised.
 
-Exactly **one** finding is live on this branch: a build-time `brace-expansion` DoS
-(alert 121) with no published fix on the 2.x line. It is currently buried in fifteen stale
-ones — which is the concrete cost of the skew. Details in [report 05](./05-dependabot-triage.md).
+Two residual notes, neither a P0: the **asset** route `/admin/*` is now the *loosest* profile
+(`style-src 'self' 'unsafe-inline'`, the legacy combined directive) — the inverse of how it
+used to be; and `connect-src` keeps its `*` deliberately, because the admin UI talks to
+whatever Domino host serves it.
+
+## ✅ Four long-standing tech-debt items closed at once
+
+Report 00 had been calling these its own worst debt for four revisions:
+
+| Was | Now | Where |
+|---|---|---|
+| **153** `as any`, **94** of them `dispatch(… as any)` | **44**, **0** dispatch casts | #694 |
+| **17** hand-written `switch(action.type)` reducers | **0** — 17 `createSlice` modules over 10 slices | #710 |
+| `store/databases/action.ts` at **2,885** lines, 5.8 % covered | **47** lines, 13 modules, **84.4 %** covered | #711, #801–#805 |
+| **10 high** `npm audit` findings | ✅ **0 vulnerabilities** | #699, #716 |
+
+## ⚠️ The GitHub security tab is now purely noise
+
+Dependabot scans the **default branch `main`**, which is **479 commits behind** `new_code`
+(was 160, and 80 before that). It reports **16 open alerts** — and **all 16 are now fixed
+here**, including both criticals (`happy-dom`, resolved at `20.11.1`).
+
+The two that were genuinely live last refresh both cleared, by opposite routes: the
+`brace-expansion` DoS got a published fix (**5.0.8** installed), and the `react-router`
+advisory was cleared by **deleting the package** (#716 replaced it with a 2-file in-repo
+router at 97.8 % coverage) rather than bumping it.
+
+**`npm audit` on this branch reports 0 vulnerabilities.** 16 open alerts against a tree with
+zero actual vulnerabilities trains everyone to ignore the security tab, which is the state in
+which a real alert gets missed. Merging `new_code` is the entire remaining remediation.
+Details in [report 05](./05-dependabot-triage.md).
 
 ## The reports
 
 | # | Report | Scope | Status |
 |---|--------|-------|--------|
-| 00 | [Code quality & issues](./00-code-quality.md) | Cross-cutting quality/risk: security, lint & Sonar, `as any`, legacy Redux, God files, bundle | ✅ **P0 queue empty** — P0-1 *decided*, not deferred; P0-2 (CSP) promoted to top |
-| 01 | [Vitest migration & coverage](./01-vitest-and-coverage.md) | Jest→Vitest, then coverage starting with pure reducers/utils | ✅ **COMPLETE and green** — 4 → **747 tests**, 34.72 %; ratchet raised (#686) |
-| 02 | [React → Lit / WebAwesome](./02-react-to-lit-webawesome.md) | Component inventory → `wa-*` / `keep-*` / new Lit / keep; the hard cases | ✅ **Phase 0 COMPLETE**; three MUI subsystems retired; one decision left (#702) |
-| 03 | [wa-page & design tokens](./03-wa-page-and-design-tokens.md) | App shell on `wa-page` + WA tokens, Linaria tokenization, stripping Material Design | ✅ **DELIVERED** — shell and token layer both shipped; a documented tail remains |
-| 04 | [Remove React](./04-remove-react.md) | Capstone: routing, `react-redux`→Lit controllers, Formik, entry point, sequencing | 🟡 React surface untouched (on plan); 3 React-coupled deps deleted; bundle −66.6 % |
-| 05 | [Dependency triage](./05-dependabot-triage.md) | Dependabot alerts, `npm audit` re-audit, and the `main`-vs-`new_code` branch skew | ✅ **`npm audit` clean** — 0 vulnerabilities as of `7ec97b1` (#793, #797) |
-| 06 | [**Wave execution plan**](./06-waves.md) | Lanes, waves, dependency graph, per-issue entry points, house rules, traps | 🟢 **Live** — the pickup document. Wave 0 is four independent starts |
+| 00 | [Code quality & issues](./00-code-quality.md) | Cross-cutting quality/risk: security, lint & Sonar, `as any`, legacy Redux, God files, bundle | ✅ **P0 queue empty**, CSP control landed (#685); 4 long-standing P1/P2 items closed |
+| 01 | [Vitest migration & coverage](./01-vitest-and-coverage.md) | Jest→Vitest, then coverage starting with pure reducers/utils | ✅ **COMPLETE and green** — 4 → **1709 tests**, **70.18 %**; 14 per-path gates (#880) |
+| 02 | [React → Lit / WebAwesome](./02-react-to-lit-webawesome.md) | Component inventory → `wa-*` / `keep-*` / new Lit / keep; the hard cases | ✅ **Every MUI blocker closed** — DataGrid solved by building `keep-data-table` (#771). 50 elements |
+| 03 | [wa-page & design tokens](./03-wa-page-and-design-tokens.md) | App shell on `wa-page` + WA tokens, Linaria tokenization, stripping Material Design | ✅ **DELIVERED** — shell, tokens and icons all shipped; a `light-dark()` tail remains |
+| 04 | [Remove React](./04-remove-react.md) | Capstone: routing, `react-redux`→Lit controllers, Formik, entry point, sequencing | 🟡 **Now executing, not planning.** P0/P1/P3 ✅; **39 views converted**; P2 is 79 files left |
+| 05 | [Dependency triage](./05-dependabot-triage.md) | Dependabot alerts, `npm audit` re-audit, and the `main`-vs-`new_code` branch skew | ✅ **Done** — 0 vulnerabilities, 0 of 16 alerts live. Just merge `new_code` |
+| 06 | [**Wave execution plan**](./06-waves.md) | Lanes, waves, dependency graph, per-issue entry points, house rules, traps | 🟢 **Live** — the pickup document. **Single-lane now**: #806 is the whole critical path |
 
-## What changed since the last refresh (`e17010c` → `fcab645`)
+## The one number that matters
 
-80 commits, 34 merged PRs (#723–#767). The theme of this round is **the foundation being
+**#806 — the per-file leaf pass — is the only thing on the critical path.** Nothing feeds it;
+#709, #719 and #786 all wait on it.
+
+| | Report 04 baseline | `fcab645` | **`0d5458c`** |
+|---|--:|--:|--:|
+| `.tsx` files | 130 | 125 | **86** |
+| files left in the pass | — | — | **79 / 16,682 LOC** |
+| files importing `@mui/*` | 82 | 75 | **43** |
+| `useSelector`/`useDispatch` sites | 323 | 178 | **146** |
+| Formik files | 19 | 19 | **12** |
+| registered `keep-*` elements | — | 25 | **50** |
+
+⚠️ **Two counting rules, or these numbers will mislead you.**
+
+1. **A React shim over a web component is not remaining work.** 34 files — the 32
+   `@lit/react` wrappers, their barrel, and one re-export — hold no logic and are *deleted
+   with their last consumer*. **32 of the tree's 101 React importers are these shims.**
+2. **`useSelector`/`useDispatch` will stay flat and then collapse.** The converted files were
+   chosen for having no store access; the remaining 146 sites sit overwhelmingly in route
+   components that cannot convert until the shell does (P4). Not a progress bar.
+
+## What changed in this refresh (`fcab645` → `0d5458c`)
+
+**319 commits, 99 merged PRs (#753–#922)** — by far the largest delta between refreshes, and
+the round in which **the programme stopped planning and started executing**. Report 04 had
+opened every previous revision with "no React view has been removed yet"; 39 have now been
+converted. Every remaining blocker in reports 02, 03 and 04 closed, and report 05's work is
+finished outright. The full per-report detail is in each document's own "what changed" table;
+the headlines are in the sections above.
+
+<details>
+<summary>The previous refresh (`e17010c` → `fcab645`), kept for the record</summary>
+
+80 commits, 34 merged PRs (#723–#767). The theme of that round was **the foundation being
 spent**: report 03 went from a plan to a delivered phase, and the bundle moved by a factor
 rather than a percentage.
 
@@ -147,6 +208,8 @@ rather than a percentage.
   `react-icons` (18), and the 216 KB base64 registry `src/styles/app-icons.ts`. With Monaco
   split out, `app-icons.ts` is now ~10 % of the entry chunk rather than ~3 %.
 
+</details>
+
 ## How they fit together
 
 ```
@@ -175,66 +238,98 @@ rather than a percentage.
 
 ## 🚦 Go/No-Go gates & top cross-cutting risks
 
-1. 🔴 **The CSP edit is the compensating control for a closed security P0.** #684 accepted
-   plaintext JWTs in `localStorage` on the strength of CSP tightening. The shipped policy
-   does not yet deliver it: `script-src 'unsafe-inline'` on both SPA routes, and
-   `style-src-attr 'none'` against 20 live inline `style="…"` attributes. The first half is
-   now a config-only fix. **#685** — *reports 00, 03*
-2. 🔴 **MUI X DataGrid has no WebAwesome equivalent in any tier** (5 files). The last
-   blocking component decision, and the last `@mui/x-*` package. The real choice is a
-   third-party web-component grid (AG Grid / RevoGrid) vs. a custom Lit table vs. keeping
-   MUI DataGrid on an island longest. **#702** — *reports 02, 04*
-3. 🔴 **The token sweep is half done and looks finished.** The keystone is in place, but
-   **229 `light-dark()` literals** remain outside the element layer — 109 of them in
-   `dark-mode.css`, which is still 469 lines of hand-written `.Mui*` overrides. Sequence its
-   deletion with #709, not ahead of it. **#765** — *report 03*
-4. 🔴 **`@vitejs/plugin-react-swc` cannot simply be deleted** in report 04's purge phase.
+1. ✅ **All gates green.** An earlier draft of this refresh reported three red gates on
+   `5f0b913` from one unused import; `0d5458c` removed it. Recorded only because the shape
+   recurs: CI runs `lint → typecheck → build` before `test`, so one unused import makes every
+   other gate unreadable. — *report 00*
+2. ✅ **The CSP compensating control has landed.** #684 accepted plaintext JWTs in
+   `localStorage` on the strength of CSP tightening, and **#685 delivered it**: both SPA
+   document routes now send `script-src 'self'`, `style-src-attr 'none'`, `style-src-elem
+   'self'` and a `report-uri`, and the 20 inline `style="…"` attributes are gone (**0** real
+   occurrences). — *reports 00, 03*
+3. ✅ **MUI X DataGrid is resolved — by building, not buying.** #771 authored
+   `keep-data-table` and migrated all six MUI `<Table>` screens; #770 deleted the
+   People/Groups screens and `@mui/x-data-grid` with them. Worth recording that this report
+   recommended a third-party grid and the custom table won: the usages were far smaller than a
+   general-purpose grid. — *reports 02, 04*
+4. 🟡 **The token sweep is smaller but still looks finished when it is not.** **131
+   `light-dark()` literals** remain (down from 229) — 84 of them in `dark-mode.css`, now 395
+   lines. **54 of its 75 selectors contain `.Mui`**, so it is two jobs: that half is deleted by
+   **#709**, the rest retires per file inside **#806**. Plus **256** raw hex literals in
+   `.ts`/`.tsx`. — *report 03*
+5. ⚠️ **#765 closed with its layout half deliberately dropped.** `wa-stack` / `wa-cluster` /
+   `wa-grid` adoption is **zero** and the strings have never existed in `src`. Do not cite
+   #765 as evidence they are in use. The primitives should arrive in *new* layout. — *report 03*
+6. 🔴 **`@vitejs/plugin-react-swc` cannot simply be deleted** in report 04's purge phase.
    It is what applies `tsDecorators` + `useDefineForClassFields: false` to all TypeScript —
    remove it without replacing that configuration and every Lit element silently stops
    reacting (class-field shadowing). **#747** removes the coupling. — *report 04 §2*
-5. ⚠️ **The suite cannot see styling.** `vitest.config.ts` runs with `css: false` and jsdom
+7. ⚠️ **The suite cannot see styling — and this has now cost two shipped bugs.**
+   `vitest.config.ts` runs with `css: false` and jsdom
    has no canvas backend, so every guard on the token layer is a *source-scanning* test that
    pins structure, not appearance. **A green suite is not evidence that a visual change
    looks right**, and most screens sit behind login — budget a human click-through in both
    colour modes for anything touching report 03. — *reports 01 §B4, 03 §7*
-6. ✅ ~~`<wa-page>` is Pro~~ · ✅ ~~Static analysis is off~~ · ✅ ~~The suite is red~~ —
-   all resolved.
+8. ✅ ~~`<wa-page>` is Pro~~ · ✅ ~~Static analysis is off~~ · ✅ ~~MUI X DataGrid~~ ·
+   ✅ ~~The icon systems~~ · ✅ ~~`npm audit`~~ · ✅ ~~Untyped dispatch~~ ·
+   ✅ ~~Classic Redux~~ · ✅ ~~The God action file~~ — all resolved.
 
 ## Current-state snapshot (grounding numbers)
 
-Measured on `new_code` @ `fcab645`. Figures vary slightly by grep method; treat small
+Measured on `new_code` @ `0d5458c`. Figures vary slightly by grep method; treat small
 deltas as noise.
 
-| Metric | 2026-07-24 | `7594672` | `e17010c` | **`fcab645`** |
+| Metric | 2026-07-24 | `e17010c` | `fcab645` | **`0d5458c`** |
 |---|---|---|---|---|
-| Source files (`.tsx` / `.ts`) | ~135 / ~75 | 130 / 103 | 130 / 105 | **125 / 107** |
-| `.tsx` importing React | ~109 | 107 | 108 | **97** |
-| Files importing `@mui/material` | ~72–84 | 69 | 69 | **60 `.tsx`** (75 files import some `@mui/*`) |
-| `@mui/icons-material` / `react-icons` | 47 / 18 files | 45 / 18 | 45 / 18 | **41 / 18** |
-| MUI X packages | 3 | 3 | 3 | **1** — `@mui/x-data-grid`, 5 files |
-| Redux call sites (`useSelector`/`useDispatch`) | ~344 across ~85 files | 323 across 77 | 323 across 76 | **290 across 69** (still **zero `connect()` HOCs**) |
-| Linaria files / `styled.` blocks | ~70 / — | 69 / 198 | 69 / 198 | **68 / 175** |
-| `getTheme()` readers | 31 | 22 | 22 | **4** ✅ |
-| `--wa-*` references / files | — | — | 110 | **382 across 67** |
-| `light-dark()` outside `keep-*` | — | — | — | **229** (109 in `dark-mode.css`) |
-| Hand-written Lit components | 24 plain-JS `.js` | 26 TypeScript | 26 TypeScript | **25 elements**, one base class, one bridge (24 wrappers) |
-| `ThemeProvider` / `CssBaseline` mounts | — | 2 / 3 | 2 / 3 | **1 / 1** (both in `AppShell.tsx`) |
+| Source files (`.tsx` / `.ts`) | ~135 / ~75 | 130 / 105 | 125 / 107 | **86 / 162** |
+| React importers (`.ts`+`.tsx`) | ~109 | 108 | 97 | **101 raw / 69 excl. wrapper shims** |
+| Files importing `@mui/material` | ~72–84 | 69 | 60 `.tsx` (75 any `@mui/*`) | **43** — the only MUI package left |
+| `@mui/icons-material` / `react-icons` | 47 / 18 files | 45 / 18 | 41 / 18 | ✅ **0 / 0** — both uninstalled |
+| MUI X packages | 3 | 3 | 1 | ✅ **0** |
+| Redux call sites (`useSelector`/`useDispatch`) | ~344 across ~85 | 323 across 76 | 290 across 69 | **146 across 54** (still **zero `connect()` HOCs**) |
+| `dispatch(… as any)` | 97 | 95 | 94 | ✅ **0** |
+| `switch(action.type)` reducers / `createSlice` | 17 / 0 | 17 / 0 | 17 / 0 | ✅ **0 / 17 modules, 10 slices** |
+| Linaria files / `styled.` blocks | ~70 / — | 69 / 198 | 68 / 175 | **50 / 148** |
+| `getTheme()` readers | 31 | 22 | 4 | **6** |
+| `--wa-*` references / files | — | 110 | 382 across 67 | **504 across 67**; 34 tokens read, **all resolve** |
+| `light-dark()` literals | — | — | 229 (109 in `dark-mode.css`) | **131** (84 in `dark-mode.css`, now 395 lines) |
+| `wa-stack`/`wa-cluster`/`wa-grid` | 0 | 0 | 0 | **0** — ⚠️ #765's layout half was **dropped**, not adopted |
+| Hand-written Lit components | 24 plain-JS `.js` | 26 TypeScript | 25 elements, 24 wrappers | **50 elements**, one base class, **32** wrappers (0 orphaned) |
+| `ThemeProvider` / `CssBaseline` mounts | — | 2 / 3 | 1 / 1 | **1 / 1** (both `AppShell.tsx`) 🔴 #709 |
+| Router | `react-router-dom` v7 | v7.18.1, 31 files | v7.18.1, 29 files | ✅ **removed** — in-repo `src/router/`, 2 files, 97.8 % covered |
 | WebAwesome version | 3.6.0 | 3.10.0 | 3.10.0 | **3.10.0**, `wa-page` **in production** |
-| **Test files / tests** | 4 / 34 | 53 / 509 | 63 / 636 | **70 / 747** ✅ |
-| Line coverage | ≈0 % | 26.5 % | 32.4 % | **34.72 %** (utils 99.3, services 96.8, reducers 100, keep-elements 84.5) |
-| `as any` (dispatch-thunk subset) | 151 (97) | 154 (95) | 154 (95) | **153 (94)** |
-| `@ts-ignore` / silent `catch` / `console.*` | 1 / 3 / 80 | 1 / 1 / 76 | 1 / 1 / 0 | **0 / 0 / 0** ✅ |
-| Static analysis | none | oxlint, gates CI | + `no-console` | **oxlint + SonarQube Cloud gate** ✅ |
-| Production entry chunk | not measured | 6.94 MB / 1.88 MB gzip | 6,322.51 kB / 1,703.85 kB | **2,111.11 kB / 594.20 kB gzip** ✅ |
-| `npm audit` | 9 alerts | 10 high | 10 high, 0 critical | **10 high, 0 critical, 0 browser-reachable** |
-| Dependabot alerts on `main` / skew | — | 9 / — | 9 / 80 commits | **16 / 160 commits** ⚠️ |
-| Largest files | `store/databases/action.ts` 2,953 | 2,882 | 2,883 | `store/databases/action.ts` **2,885**; `TabsAccess.tsx` 1,007; `FormsContainer.tsx` 807 — `CommonStyles.tsx` **off the list** |
+| **Test files / tests** | 4 / 34 | 63 / 636 | 70 / 747 | **133 / 1709** ✅ |
+| Line coverage | ≈0 % | 32.4 % | 34.72 % | **70.18 %** (utils 99.3, router 97.8, services 96.1, reducers 100, keep-elements 89.4, store/databases 84.4) |
+| Coverage gates | none | global + 4 | global + 4 | **global 61 % + 14 per-path** (#880) |
+| `as any` (whole `src`) | 151 | 154 | 153 | **44** |
+| `@ts-ignore` / silent `catch` / `console.*` / inline `style=` | 1 / 3 / 80 / — | 1 / 1 / 0 / — | 0 / 0 / 0 / 20 | ✅ **0 / 0 / 0 / 0** |
+| Static analysis | none | oxlint + `no-console` | oxlint + SonarQube gate | **same — and currently failing**, 1 error |
+| Eager bundle closure | not measured | not measured | not measured | **887.5 kB / 243.7 kB gzip** (budget 901.2 / 245.9 — raw headroom temporarily **3 %** for #806, gzip 2 %) |
+| Entry chunk (misleading alone) | not measured | 6,322.51 kB | 2,111.11 kB | **323.5 kB** |
+| `dependencies` / `devDependencies` | 32 / 17 | 32 / 17 | 21 / 17 | **18 / 17** |
+| `npm audit` | 9 alerts | 10 high | 10 high, 0 reachable | ✅ **0 vulnerabilities** |
+| Dependabot alerts on `main` / skew | — | 9 / 80 commits | 16 / 160 commits | **16 / 479 commits** ⚠️ — but **0 live here** |
+| Largest files | `store/databases/action.ts` 2,953 | 2,883 | 2,885 | `TabsAccess.tsx` **1,002**; `FormsContainer.tsx` 804; `store/databases/types.ts` 778 — `action.ts` **47** and `CommonStyles.tsx` **20**, both off the list |
+
+⚠️ **`.tsx` fell 125 → 86 while `.ts` rose 107 → 162, and total LOC is flat at ~37,400.**
+That is #806 working as designed: files are *converted* from React to Lit, not deleted, so the
+work shows as a migration between the two columns rather than a shrinking tree. Flat LOC does
+not mean nothing happened.
+
+⚠️ **Two entries in "largest files" are Lit elements, not React** — `keep-source.ts` (776) and
+`keep-quick-config-form.ts` (658). Converting a file does not make it small; #712's extraction
+technique applies to elements too.
 
 ## Suggested execution order
 
-**Superseded by [06 — Wave execution plan](./06-waves.md).** Items 2, 3 and most of 5 below
-have since landed (#788/#795 CSP, #774 DataGrid, #797 router, #798 StoreController); item 1
-is now PR #786 and is tracked as a Wave 3 gate. Go to report 06 for the current ordering.
+**Superseded by [06 — Wave execution plan](./06-waves.md).** **Items 2–5 have all landed**
+(#788/#795 CSP, #771/#770 DataGrid, #716 router, #798 `StoreController`, #807
+`FormController`, #718 icons, #710/#711 the store, #690/#801–#805 thunk coverage). Item 1 —
+merge `new_code` → `main` — is still open as PR **#786** and is a Wave 3 gate; the skew is now
+**479 commits**. Go to report 06 for the current ordering.
+
+**The short version of the current order:** take a #806 subtree (whole, not by tier), then
+#709, then #719.
 
 <details>
 <summary>The 2026-07-28 ordering, kept for the record</summary>
