@@ -7,7 +7,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TextField, Button } from '@mui/material';
 import { TabsProps } from '@mui/material/Tabs';
-import AddIcon from '@mui/icons-material/Add';
 import { WarningIcon } from '../../styles/CommonStyles';
 import { capitalizeFirst, insertCharacter } from '../../utils/common';
 import FieldContainer from './FieldContainer';
@@ -15,6 +14,7 @@ import { Field } from '../../store/databases/types';
 import ScriptEditor from './ScriptEditor';
 import { toggleAlert } from '../../store/alerts/action';
 import { KeepButton, KeepCheckbox, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 interface TabsPropsFixed extends Omit<TabsProps, "onChange"> {
   state: any;
@@ -194,7 +194,7 @@ const FieldDNDContainer: React.FC<TabsPropsFixed> = ({
             <button title="Add Custom Field" className='field-list-icon-button'
               onClick={handleAddField}
             >
-              <AddIcon className='add-icon' />
+              <KeepIcon name='plus' label='Add Custom Field' size='xl' className='add-icon' />
             </button>
         </div>
         {customFieldError && 

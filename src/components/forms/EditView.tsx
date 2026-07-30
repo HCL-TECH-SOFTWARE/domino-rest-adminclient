@@ -16,12 +16,10 @@ import { checkIcon } from '../../styles/scripts';
 import { DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
 import { setLoading } from '../../store/loading/action';
 import APILoadingProgress from '../loading/APILoadingProgress';
-import { FiSave, FiPlusSquare, FiRefreshCcw, FiPlus } from 'react-icons/fi';
-import { BsCheck2Circle } from 'react-icons/bs';
-import { IoMdClose } from 'react-icons/io';
 import { fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { KeepButton, KeepFormDialogHeader, KeepUnsavedChangesDialog } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { getLogger } from '../../services/log-service';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -522,7 +520,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
     <>
       <dialog ref={editRef} className='dialog edit-view-dialog'>
         <button className='edit-view-close-button' onClick={handleClickClose}>
-          <IoMdClose size="1em" />
+          <KeepIcon name='xmark' label='Close' />
         </button>
         <div className='edit-view-title-container'>
           <text className='text-bold color-text-primary'>{`Edit ${viewName} Columns`}</text>
@@ -531,7 +529,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               className='edit-view-button edit-view-reset'
               onClick={handleClickReset}
             >
-              <FiRefreshCcw />
+              <KeepIcon name='arrows-rotate' />
               <text className='color-text-primary small-text'>
                 Reset
               </text>
@@ -541,7 +539,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
               onClick={handleClickSave} 
               disabled={new Set(chosenColumns.map((column) => column.externalName)).size === chosenColumns.length ? false : true}
             >
-              <FiSave />
+              <KeepIcon name='floppy-disk' />
               <text className='small-text edit-view-save-text'>
                 Save
               </text>
@@ -551,7 +549,7 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
         <div className='dialog-content flex-row mt-20'>
           <div className='column-bar-container'>
             <div className='flex flex-row add-all-container' onClick={handleClickAddAll}>
-              <div className='add-all-icon'><FiPlus size={'1.2em'} /></div>
+              <div className='add-all-icon'><KeepIcon name='plus' /></div>
               <text className='add-all-text'>Add All</text>
             </div>
             <div className='all-columns-list'>
@@ -575,8 +573,8 @@ const EditViewDialog: React.FC<EditViewDialogProps> = ({
                       <div className='inline-block'>
                         <div className='all-columns-icon'>
                           {chosenColumns.map((column) => {return column.name}).includes(column.name) ? 
-                            <BsCheck2Circle className='all-columns-check-icon' /> : 
-                            ( (column === hoveredColumn) && <FiPlusSquare/> )}
+                            <KeepIcon name='circle-check' className='all-columns-check-icon' /> :
+                            ( (column === hoveredColumn) && <KeepIcon name='square-plus' /> )}
                         </div>
                       </div>
                     </div>

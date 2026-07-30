@@ -10,12 +10,12 @@ import Popper from '@mui/material/Popper';
 import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
-import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import { styled } from '@linaria/react';
 import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { TokenProps } from '../../store/account/types';
 import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const ProfileMenuCard = styled(Paper)`
   padding: 30px 30px 30px 30px;
@@ -79,10 +79,29 @@ const ProfileMenu = () => {
         placement="right"
         content="Profile"
       >
-        <UserIcon
-          className='profile-menu-user-icon profile-menu-dialog-user cursor-pointer'
+        {/*
+          The mobile header's copy of the profile control. Same glyph and same sizing story
+          as ProfileMenu: `.profile-menu-user-icon` declared a 36px width and height that
+          MUI's own 1em outranked, so this has always drawn 24px, and on a wa-icon the class
+          would have produced a 36px canvas around an unchanged glyph. Dropped, and
+          `size='xl'` reproduces the 24px. `.profile-menu-dialog-user` (the 8px left margin)
+          and `.cursor-pointer` both apply to the host element and are kept.
+
+          `label` because the icon *is* the control here — there is no wrapping button and
+          no adjacent text.
+
+          `data-testid="profileIcon"` is gone with the element that carried it. KeepIcon's
+          prop surface is name/label/size/canvas/className/onClick by design, and nothing in
+          the suite reads that hook; the sibling implementation in ProfileMenu.tsx puts the
+          same testid on its wrapper div, which is where one would go back if it is wanted.
+          `label` gives the same element an accessible name to query by in the meantime.
+        */}
+        <KeepIcon
+          name='circle-user'
+          label='Profile'
+          size='xl'
+          className='profile-menu-dialog-user cursor-pointer'
           onClick={handleClick}
-          data-testid="profileIcon"
         />
       </KeepTooltip>
       <Popper open={open} anchorEl={anchorEl} placement="bottom-end" transition>

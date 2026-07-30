@@ -5,13 +5,12 @@
  * ========================================================================== */
 
 import React, { useContext } from 'react';
-import AddIcon from '@mui/icons-material/Add';
 import { styled } from '@linaria/react';
 
 import { AccessContext } from './AccessContext';
 import { capitalizeFirst } from '../../utils/common';
-import { InfoOutlined } from '@mui/icons-material';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const ButtonAdd = styled.button`
   border: 0;
@@ -64,7 +63,7 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
         className="add-field"
         aria-describedby="popper-item"
       >
-        <AddIcon />
+        <KeepIcon name='plus' label={`Add ${item.content} to this mode`} size='xl' />
       </ButtonAdd>
       <div className='flex flex-1 flex-col'>
         <span className="small-text color-text-primary">
@@ -79,7 +78,7 @@ const SingleFieldContainer: React.FC<SingleFieldContainerProps> = ({
           content={`This field is ${item.kind in kindReadableText ? kindReadableText[item.kind as keyof typeof kindReadableText] : item.kind}`}
           className='add-field'
         >
-          <InfoOutlined />
+          <KeepIcon name='circle-info' size='xl' />
         </KeepTooltip>
       }
     </div>

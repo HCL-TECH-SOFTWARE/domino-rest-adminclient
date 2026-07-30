@@ -8,12 +8,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BlueSwitch, DeleteIcon, SearchInput } from '../../styles/CommonStyles';
 import { styled } from '@linaria/react';
 import { useLocation } from '../../router/react';
-import SearchIcon from '@mui/icons-material/Search';
 import { getFieldIndex, getFormIndex, getFormModeIndex } from '../../store/databases/scripts';
 import { isFieldEqual, isFormulaEqual, isKeyEqual } from './mode-diff';
 import { Database, Field, Mode } from '../../store/databases/types';
 import { Box, MenuItem, Select } from '@mui/material';
 import { KeepButton, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const ModeCardsContainer = styled.div`
   padding: 0;
@@ -368,7 +368,7 @@ const ModeCompare: React.FC<ModeCompareProps> = ({ open, handleClose, currentMod
           <div className='flex flex-col full-width justify-between items-center'>
             <div className="flex flex-row pb-10">
               <div className="flex items-center p-0 full-width mode-compare-search-bar">
-                <SearchIcon color="primary" className="mode-compare-search-icon" />
+                <KeepIcon name="magnifying-glass" size="xl" className="mode-compare-search-icon" />
                 <SearchInput
                   onChange={handleSearchField}
                   type="text"

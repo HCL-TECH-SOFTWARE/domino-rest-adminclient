@@ -11,9 +11,9 @@ import { AppState } from '../../store';
 import { toggleConsentsDrawer } from '../../store/drawer/action';
 import { BlueSwitch, DrawerFormContainer, StyledRadio } from '../../styles/CommonStyles';
 import { Box, FormControlLabel, RadioGroup } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@linaria/react';
 import { KeepButton, KeepCheckbox, KeepInputDate, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 /**
@@ -165,8 +165,14 @@ const ConsentFilterContainer: React.FC<ConsentFilterContainerProps> = ({
           <div className='flex flex-col p-20'>
             <div className='full-width flex justify-end'>
               <KeepTooltip content="Close" placement='bottom'>
-                <CloseIcon
-                  cursor="pointer"
+                {/* size='xl': nothing sizes this glyph. .close-icon has no rule inside
+                    DrawerFormContainer, so it kept MUI's 24px default. The icon is the
+                    whole control, hence the label. cursor="pointer" was an SVG
+                    presentation attribute and is now a declaration on .close-icon. */}
+                <KeepIcon
+                  name="xmark"
+                  label="Close"
+                  size="xl"
                   className="close-icon float-right"
                   onClick={() => dispatch(toggleConsentsDrawer())}
                 />

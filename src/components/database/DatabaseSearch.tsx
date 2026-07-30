@@ -6,13 +6,10 @@
 
 import React, { useState }  from 'react';
 import { IconButton } from '@mui/material';
-import ClearIcon from '@mui/icons-material/Clear'
-import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';
 import { useLocation } from '../../router/react';
 import { AppState } from '../../store';
 import { Button, Menu, MenuItem } from '@mui/material';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Divider from '@mui/material/Divider';
 import {
   FormSearchContainer,
@@ -20,6 +17,7 @@ import {
   SearchInput
 } from '../../styles/CommonStyles';
 import { KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 interface DatabaseSearchProps {
   handleSearchDatabase: (e: any) => void;
@@ -84,7 +82,12 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
             onClick={handleClick}
         >
           <span className='medium-text'>{searchType}</span>
-          <ArrowDropDownIcon className='database-search-dropdown-arrow' />
+          {/* The .database-search-dropdown-arrow class is gone along with its rule: it
+              declared width/height rather than font-size, MuiSvgIcon's own 1em box beat
+              it, and applied to wa-icon it would have drawn a 50x40 canvas around an
+              unchanged glyph. size='xl' reproduces the 24px this caret renders at today.
+              No label: the button's search-type text names it. */}
+          <KeepIcon name='caret-down' size='xl' />
         </Button>
         <Menu
             id="simple-menu"
@@ -102,7 +105,7 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
             ))}
         </Menu> 
         <Divider orientation="vertical" flexItem />
-        <SearchIcon color="primary" className="search-icon" />
+        <KeepIcon name="magnifying-glass" className="search-icon" />
         <SearchInput
           onChange={handleSearchInput}
           className='color-text-primary'
@@ -118,7 +121,10 @@ const DatabaseSearch: React.FC<DatabaseSearchProps> = ({
               aria-label="clear search bar"
               onClick={handleClearIcon}
             >
-              <ClearIcon color="primary" className="clear-icon" />
+              {/* No size: .clear-icon in FormSearchContainer sets font-size 19px, and a
+                  wa-size-* token could not override it from @layer wa-utilities. No
+                  label either — the IconButton already carries aria-label. */}
+              <KeepIcon name="xmark" className="clear-icon" />
             </IconButton>
           </KeepTooltip>
         }

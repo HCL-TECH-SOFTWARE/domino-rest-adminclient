@@ -11,10 +11,8 @@ import { Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import { toggleAlert } from '../../store/alerts/action';
-import { FiEdit2 } from 'react-icons/fi';
-import { AiOutlineQuestionCircle } from 'react-icons/ai';
-import { FaRegFolderOpen } from "react-icons/fa";
 import { KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 const StatusHeader = styled.div`
@@ -30,15 +28,16 @@ const StatusHeader = styled.div`
     align-items: center;
     gap: 4px;
   }
-
-  .status-icon {
-    display: inline-block;
-    vertical-align: middle;
-  }
 `
 
 const EditIcon = styled.div`
   cursor: pointer;
+
+  /* Was FiEdit2 size='1.5em'. wa-icon takes its box from font-size, not width, so the
+     same relative measure has to be spelled as a font-size here. */
+  .edit-icon {
+    font-size: 1.5em;
+  }
 `
 
 const ViewNameDisplay = styled.div`
@@ -46,6 +45,11 @@ const ViewNameDisplay = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+
+  /* Was FaRegFolderOpen size='1.2em'. */
+  .folder-icon {
+    font-size: 1.2em;
+  }
 `
 
 const AliasContainer = styled.span`
@@ -94,7 +98,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
               <StatusHeader>
                 <div>
                   <KeepTooltip content={`Activate the Views that should be accessible\nvia rest API`} placement='bottom' without-arrow>
-                    <div>Status <AiOutlineQuestionCircle className='status-icon' /></div>
+                    <div>Status <KeepIcon name='circle-question' /></div>
                   </KeepTooltip>
                 </div>
               </StatusHeader>
@@ -106,7 +110,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
             <tr key={view.viewName}>
               <th scope="row" {...colWidth('50px')}>
                 <EditIcon onClick={() => {handleClickViewName(view.viewName, view.viewActive)}}>
-                  <Button title={view.viewName} disabled={loading}><FiEdit2 size='1.5em' /></Button>
+                  <Button title={view.viewName} disabled={loading}><KeepIcon name='pencil' className='edit-icon' /></Button>
                 </EditIcon>
               </th>
               <td {...colWidth('550px')}>
@@ -114,7 +118,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                   {folderNames.includes(view.viewName) &&
                     <KeepTooltip content={`${view.viewName} is a folder.`}>
                       <span>
-                        <FaRegFolderOpen size='1.2em' />
+                        <KeepIcon name='folder-open' className='folder-icon' />
                       </span>
                     </KeepTooltip>
                   }
@@ -125,7 +129,7 @@ const ViewsTable: React.FC<ViewsTableProps> = ({ views, toggleActive, toggleInac
                     {' '}
                     <KeepTooltip content={`A change was made in this view.`} placement='bottom'>
                       <span>
-                        <AiOutlineQuestionCircle className='views-table-question-circle' />
+                        <KeepIcon name='circle-question' className='views-table-question-circle' />
                       </span>
                     </KeepTooltip>
                   </span>

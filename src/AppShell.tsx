@@ -9,10 +9,6 @@ import { useSelector } from 'react-redux';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import WaPage from '@awesome.me/webawesome/dist/react/page/index.js';
-import CollapseMenuIcon from '@mui/icons-material/ChevronLeftRounded';
-import ExpandMenuIcon from '@mui/icons-material/ChevronRightRounded';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 import './App.css';
 import './styles/app-shell.css';
 import Views from './Views';
@@ -24,6 +20,7 @@ import ProfileMenu from './components/sidenav/ProfileMenu';
 import { KeepFooter } from './components/keep-elements/react/KeepFooter';
 import { KeepMobileHeader } from './components/keep-elements/react/KeepMobileHeader';
 import { KeepTooltip } from './components/keep-elements/react/KeepTooltip';
+import { KeepIcon } from './components/keep-elements/react/KeepIcon';
 import { applyTheme } from './services/theme-service';
 import { AppState } from './store';
 import { getTheme, switchTheme } from './store/styles/action';
@@ -183,7 +180,22 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
             placement="right"
           >
             <button type="button" className="nav-theme-toggle" onClick={toggleTheme}>
-              {themeMode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
+              {/*
+                No `size` on either arm. `.nav-theme-toggle svg` in `styles/app-shell.css`
+                set 20px, and a descendant selector outranks `.MuiSvgIcon-root`, so 20px is
+                what this glyph renders today rather than MUI's 24px default; the rule is
+                retargeted to `wa-icon` there and keeps sizing it. A `size` prop would have
+                been silently inert against it anyway.
+
+                `label` because the glyph is the button's only content — the icon shows the
+                current mode, so the accessible name states the action instead, matching the
+                tooltip above it word for word.
+              */}
+              {themeMode === 'dark' ? (
+                <KeepIcon name="moon" label="Switch to Light Mode" />
+              ) : (
+                <KeepIcon name="sun" label="Switch to Dark Mode" />
+              )}
             </button>
           </KeepTooltip>
         </div>
@@ -206,7 +218,21 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
             aria-expanded={!collapsed}
             onClick={() => setCollapsed((value) => !value)}
           >
-            {collapsed ? <ExpandMenuIcon /> : <CollapseMenuIcon />}
+            {/*
+              The modules were ChevronRightRounded and ChevronLeftRounded; the
+              Expand/Collapse aliases described the action, not the glyph. Font Awesome has
+              no rounded variant, so these are the square-ended chevrons.
+
+              No `size`: `.nav-collapse-toggle svg` set 19px and outranked `.MuiSvgIcon-root`
+              the same way, so 19px is the current rendering and the retargeted rule keeps
+              it. No `label` either — the button already carries an aria-label that switches
+              with the state, and a second name on the icon would only compete with it.
+            */}
+            {collapsed ? (
+              <KeepIcon name="chevron-right" />
+            ) : (
+              <KeepIcon name="chevron-left" />
+            )}
           </button>
         )}
       </WaPage>

@@ -8,7 +8,7 @@ import { Button, Menu, MenuItem } from '@mui/material';
 import { APP_ICON_NAMES } from '../../services/app-icons';
 import { AppIcon } from './AppIcon';
 import { InputContainer } from '../../styles/CommonStyles';
-import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import React from 'react';
 
 type IconDropdownProps = {
@@ -45,7 +45,10 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
                 <span className='icon-dropdown-span'>
                     {displayIconName.toLowerCase()}
                 </span>
-                <ChevronDown className='big-text' />
+                {/* No size: .big-text sets font-size 18px, and a wa-size-* token could not
+                    override it from @layer wa-utilities. The glyph is the KeyboardArrowDown
+                    module, whatever the local alias said. */}
+                <KeepIcon name='chevron-down' className='big-text' />
             </Button>
             <Menu
                 id="lock-menu"

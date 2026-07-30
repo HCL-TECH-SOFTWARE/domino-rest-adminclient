@@ -5,7 +5,6 @@
  * ========================================================================== */
 
 import React from 'react';
-import SearchIcon from '@mui/icons-material/Search';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../store';
 import {
@@ -13,6 +12,7 @@ import {
   SearchContainer,
   SearchInput,
 } from '../../styles/CommonStyles';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 interface ViewSearchProps {
   handleSearchView: (e: any) => void;
@@ -26,7 +26,7 @@ const ViewSearch: React.FC<ViewSearchProps> = ({ handleSearchView }) => {
       className={`${scopePull ? 'pointer-auto' : 'pointer-none'}`}
     >
       <SearchContainer>
-        <SearchIcon color="primary" className="search-icon" />
+        <KeepIcon name="magnifying-glass" className="search-icon" />
         <SearchInput
           onChange={handleSearchView}
           className='color-text-primary'

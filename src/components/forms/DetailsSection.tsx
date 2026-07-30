@@ -8,11 +8,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 import { useSelector } from 'react-redux';
 import { styled } from '@linaria/react';
-import Check from '@mui/icons-material/CheckCircle';
-import False from '@mui/icons-material/Block';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
-import ChevronDown from '@mui/icons-material/KeyboardArrowDown';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { AppState } from '../../store';
@@ -23,11 +20,9 @@ import { Database } from '../../store/databases/types';
 import Button from '@mui/material/Button';
 import { updateSchema } from '../../store/databases/action';
 import { BlueSwitch, InputContainer, SchemaIconStatus } from '../../styles/CommonStyles';
-import { FiEdit } from 'react-icons/fi';
 import { Box } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { KeepButton, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 interface DetailsSectionProps {
@@ -107,7 +102,22 @@ const Config = styled.div`
     margin-right: 10px;
   }
 
-  svg {
+  /*
+   * The selector was svg, which reached the graphic MUI drew straight into the light DOM.
+   * wa-icon draws its graphic inside a shadow root, so an svg selector out here matches
+   * nothing any more and every checkbox glyph would have fallen back to the ambient type.
+   *
+   * It is a descendant selector, so it outranks MuiSvgIcon's 24px default — unlike the bare
+   * app classes elsewhere in this migration, these glyphs have always rendered at the size
+   * written here. They keep it and take no size prop; a wa-size-* token would sit in
+   * @layer wa-utilities and lose to this rule regardless.
+   *
+   * Scope note: this reaches only the ten CheckCircle/Block glyphs, because every one of
+   * them sits inside a Config. The inventory read it as covering all fourteen icons in the
+   * file; the chevron, the two expanders and the edit pencil are outside every Config and
+   * are sized by their own call sites.
+   */
+  wa-icon {
     font-size: var(--wa-font-size-m);
   }
 
@@ -124,10 +134,23 @@ const Config = styled.div`
 `;
 
 const EditIcon = styled.div`
+  /*
+   * display: inline-block is dropped rather than carried over, as .status-icon's was in
+   * 72a0c1f: an outer class outranks wa-icon's own :host rule, so it would have replaced
+   * the element's inline-flex / align-items:center and its tuned vertical-align of
+   * -0.125em, decentring the glyph inside the .api-name flex row.
+   *
+   * No font-size here and no size prop at the call site: the Feather glyph this replaces
+   * drew at 1em and .api-name above sets 20px, so the inherited value already reproduces
+   * what shipped.
+   *
+   * cursor, left and color are untouched. left is dead (nothing sets position) and blue is
+   * off the token ramp, but both predate this codemod and changing either would be a
+   * visual edit smuggled in under an icon conversion.
+   */
   .icon {
     cursor: pointer;
     left: 15vw;
-    display: inline-block;
     color: blue;
   }
 `;
@@ -370,7 +393,9 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
           className="details-section-icon-dropdown"
           alt="db-icon"
         />
-        <ChevronDown className='big-text color-text-primary' />
+        {/* No size: .big-text sets font-size 18px, which is what this class always meant
+            and what a wa-size-* token could not override from @layer wa-utilities. */}
+        <KeepIcon name='chevron-down' className='big-text color-text-primary' />
       </Button>
       <Menu id="lock-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose} disablePortal>
         {APP_ICON_NAMES.map((iconName, index) => (
@@ -457,7 +482,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
             onClick={() => {
               setEditOpen(true);
             }}>
-            <FiEdit className="icon" />
+            <KeepIcon name="pen-to-square" label="Edit Schema" className="icon" />
           </EditIcon>
         </span>
         <span className="api-nsf">
@@ -479,12 +504,12 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
               (!viewMore ? (
                 <Expander onClick={() => setViewMore(true)}>
                   View More
-                  <ExpandMoreIcon />
+                  <KeepIcon name="chevron-down" size="xl" />
                 </Expander>
               ) : (
                 <Expander onClick={() => setViewMore(false)}>
                   View Less
-                  <ExpandLessIcon />
+                  <KeepIcon name="chevron-up" size="xl" />
                 </Expander>
               ))}
           </div>
@@ -514,7 +539,12 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
                     </text>
                   </div>
                   <div className='details-section-checkbox-container'>
-                    {dqlAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                    {/* The two glyphs come from the module paths, not the old local names:
+                        Check was CheckCircle and False was Block, so circle-check and ban.
+                        No label on any of the five pairs — MUI rendered them aria-hidden
+                        and nothing here is a control, so adding an accessible name would be
+                        an a11y change riding along inside an icon codemod. */}
+                    {dqlAccess ? <KeepIcon name="circle-check" className="checkbox" /> : <KeepIcon name="ban" className="checkbox unchecked" />}
                   </div>
                 </div>
               </Config>
@@ -528,7 +558,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
                     </KeepTooltip>
                   </div>
                   <div className='details-section-checkbox-container'>
-                    {openAccess ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                    {openAccess ? <KeepIcon name="circle-check" className="checkbox" /> : <KeepIcon name="ban" className="checkbox unchecked" />}
                   </div>
                 </div>
               </Config>
@@ -540,7 +570,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
                     </text>
                   </div>
                   <div className='details-section-checkbox-container'>
-                    {allowCode ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                    {allowCode ? <KeepIcon name="circle-check" className="checkbox" /> : <KeepIcon name="ban" className="checkbox unchecked" />}
                   </div>
                 </div>
               </Config>
@@ -552,7 +582,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
                     </text>
                   </div>
                   <div className='details-section-checkbox-container'>
-                    {requireRevisionToUpdate ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                    {requireRevisionToUpdate ? <KeepIcon name="circle-check" className="checkbox" /> : <KeepIcon name="ban" className="checkbox unchecked" />}
                   </div>
                 </div>
               </Config>
@@ -564,7 +594,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
                     </text>
                   </div>
                   <div className='details-section-checkbox-container'>
-                    {(prohibitRefresh === undefined || prohibitRefresh === null) ? <Check className="checkbox" /> : prohibitRefresh ? <Check className="checkbox" /> : <False className="checkbox unchecked" />}
+                    {(prohibitRefresh === undefined || prohibitRefresh === null) ? <KeepIcon name="circle-check" className="checkbox" /> : prohibitRefresh ? <KeepIcon name="circle-check" className="checkbox" /> : <KeepIcon name="ban" className="checkbox unchecked" />}
                   </div>
                 </div>
               </Config>

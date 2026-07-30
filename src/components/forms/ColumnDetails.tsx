@@ -7,8 +7,8 @@
 import * as React from 'react';
 import { styled } from '@linaria/react';
 import { TextField } from '@mui/material';
-import { RiDeleteBinLine } from 'react-icons/ri';
 import { KeepDataTable } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const ColumnDetailsContainer = styled.div`
   box-sizing: border-box;
@@ -23,6 +23,9 @@ const ColumnDetailsContainer = styled.div`
   .delete-icon {
     cursor: pointer;
     margin-left: 30px;
+    /* Was RiDeleteBinLine size={"1.3em"}. wa-icon takes its box from font-size, not
+       width, so the same relative measure has to be spelled as a font-size here. */
+    font-size: 1.3em;
   }
 `
 
@@ -67,7 +70,9 @@ const ColumnDetails: React.FC<ColumnDetailsProps> = ({
           <tbody>
             {chosenColumns.map((column) => (
               <tr key={column.name}>
-                <td><RiDeleteBinLine size={"1.3em"} className='delete-icon' onClick={() => setRemoveColumn(column.name)} /></td>
+                {/* No button wrapper and no accessible name: a pre-existing a11y defect
+                    owned by #713, preserved verbatim rather than fixed in passing. */}
+                <td><KeepIcon name='trash' className='delete-icon' onClick={() => setRemoveColumn(column.name)} /></td>
                 <td>{column.name}</td>
                 <td><TextField hiddenLabel fullWidth
                   error={column.error ? (column.error === null ? false : true) : false}

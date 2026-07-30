@@ -12,8 +12,8 @@ import APILoadingProgress from '../../loading/APILoadingProgress';
 import { Consent } from '../../../store/consents/types';
 import ConsentItem from './ConsentItem';
 import ConsentFilterContainer from '../../consents/ConsentFilterContainer';
-import { FaSort } from "react-icons/fa";
 import { KeepDataTable } from '../../keep-elements/KeepElements';
+import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 
 const Head = styled.thead`
   border-bottom: 1px solid var(--wa-color-surface-border);
@@ -305,7 +305,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                             onClick={handleSortUsers}
                             className='no-background no-border cursor-pointer m-0 p-0'
                           >
-                            <FaSort />
+                            <KeepIcon name='sort' label='Sort by user' />
                           </button>
                         </span>
                         <input type='text' placeholder='Search User' value={user} onChange={(e) => setUser(e.target.value)} className='search-bar' />
@@ -319,7 +319,7 @@ const ConsentsTable: React.FC<ConsentsTableProps> = ({ expand, filtersOn, setFil
                             onClick={handleSortAppNames}
                             className='no-background no-border cursor-pointer m-0 p-0'
                           >
-                            <FaSort />
+                            <KeepIcon name='sort' label='Sort by app name' />
                           </button>
                         </span>
                         <input type='text' placeholder='Search App Name' value={appName} onChange={(e) => setAppName(e.target.value)} className='search-bar' />

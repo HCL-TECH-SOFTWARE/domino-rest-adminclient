@@ -10,10 +10,6 @@ import keepLogo from '../../assets/KeepNewIcon.png';
 import { AppState } from '../../store';
 import { getIdpList, getKeepIdpActive, login, set401Error, setCurrentIdp, setLoginError } from '../../store/account/action';
 import { styled } from '@linaria/react';
-// The theme toggle used @mui/icons-material's LightMode/DarkMode. `react-icons` was already
-// a dependency of this file (FiInfo), so switching to its equivalents drops MUI without
-// introducing a new pattern. Both icon sets are due to be replaced by `<wa-icon>` in #718.
-import { FiInfo, FiMoon, FiSun } from 'react-icons/fi';
 import React, { useEffect, useRef, useState } from 'react';
 import { WebAuthn } from './KeepWebAuthN';
 import { toggleAlert } from '../../store/alerts/action';
@@ -24,6 +20,11 @@ import { KeepAlert } from '../keep-elements/react/KeepAlert';
 import { KeepApiErrorDialog } from '../keep-elements/react/KeepApiErrorDialog';
 import { KeepButton } from '../keep-elements/react/KeepButton';
 import { KeepDropdown } from '../keep-elements/react/KeepDropdown';
+// This page draws two icons — the theme toggle and the passkey hint — and both come from
+// KeepIcon, the single wa-icon entry point for .tsx (#718). They had passed through two
+// third-party icon packages before that; neither is imported here any more, and the glyphs
+// resolve against the self-hosted Font Awesome library that services/icon-library registers.
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
 // WebAwesome's own React binding, as `AppShell.tsx` already does for `wa-page`.
 //
@@ -121,6 +122,9 @@ const PasskeySignUpContainer = styled.div`
     transform: translateY(18%);
     cursor: pointer;
     color: var(--wa-color-text-quiet);
+    /* Was FiInfo size="1.5em". wa-icon takes its box from font-size, not width, so the
+       same relative measure has to be spelled as a font-size here. */
+    font-size: 1.5em;
   }
 
   .passkey-icon:hover {
@@ -601,12 +605,16 @@ const LoginPage = () => {
     AlertManager.resetAlert()
   }, [])
 
+  // The glyph is the toggle's only content, so it carries the button's accessible name.
+  // Reusing the tooltip's own wording keeps the two from drifting apart.
+  const themeToggleLabel = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+
   return (
     <LoginLayout>
       <ThemeToggleSlot>
-        <KeepTooltip content={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="right">
+        <KeepTooltip content={themeToggleLabel} placement="right">
           <LoginThemeToggle onClick={toggleTheme}>
-            {isDark ? <FiMoon className='huge-text' /> : <FiSun className='huge-text' />}
+            <KeepIcon name={isDark ? 'moon' : 'sun'} label={themeToggleLabel} className='huge-text' />
           </LoginThemeToggle>
         </KeepTooltip>
       </ThemeToggleSlot>
@@ -745,7 +753,7 @@ const LoginPage = () => {
                       Sign up with Passkey
                     </span>
                     <a href="https://passkey.org" target="_blank" rel="noreferrer">
-                      <FiInfo className="passkey-icon" size="1.5em" />
+                      <KeepIcon name='circle-info' label='What is a passkey?' className='passkey-icon' />
                     </a>
                   </button>
                 </PasskeySignUpContainer>

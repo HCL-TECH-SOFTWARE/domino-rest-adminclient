@@ -7,8 +7,8 @@
 import * as React from 'react';
 import { styled } from '@linaria/react';
 import ActivateSwitch from './ActivateSwitch';
-import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { KeepDataTable, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 const StatusHeader = styled.div`
   cursor: default;
@@ -22,11 +22,6 @@ const StatusHeader = styled.div`
     display: inline-flex;
     align-items: center;
     gap: 4px;
-  }
-
-  .status-icon {
-    display: inline-block;
-    vertical-align: middle;
   }
 `
 
@@ -64,7 +59,7 @@ const AgentsTable: React.FC<AgentsTableProps> = ({ agents, toggleActive, toggleI
               <StatusHeader>
                 <div>
                   <KeepTooltip content={`Activate the Agents that should be accessible\nvia rest API`} placement='bottom' without-arrow>
-                    <div>Status <AiOutlineQuestionCircle className='status-icon' /></div>
+                    <div>Status <KeepIcon name='circle-question' /></div>
                   </KeepTooltip>
                 </div>
               </StatusHeader>

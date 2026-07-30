@@ -5,11 +5,6 @@
  * ========================================================================== */
 
 import React, { useState, useRef, useContext, useEffect } from 'react';
-import EditIcon from '@mui/icons-material/Edit';
-import ApplicationIcon from '@mui/icons-material/Apps';
-import GenerateIcon from '@mui/icons-material/RotateLeft';
-import RemoveIcon from '@mui/icons-material/Delete';
-import SecurityIcon from '@mui/icons-material/Security';
 import { FormikProps } from 'formik';
 import { styled } from '@linaria/react';
 import Button from '@mui/material/Button';
@@ -27,6 +22,7 @@ import {
   InputContainer
 } from '../../../styles/CommonStyles';
 import { KeepButton, KeepTooltip } from '../../keep-elements/KeepElements';
+import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../../store/hooks';
 
 const AppImage = styled.img`
@@ -175,7 +171,10 @@ const AppCard: React.FC<AppCardProps> = ({
           {
             item.appHasSecret ? (
               <KeepTooltip content="This application has an application secret configured">
-                <SecurityIcon />
+                <KeepIcon
+                  name="shield-halved"
+                  label="This application has an application secret configured"
+                />
               </KeepTooltip>
             ) : (
               ''
@@ -186,19 +185,21 @@ const AppCard: React.FC<AppCardProps> = ({
             onKeyDown={(e) => {handleKeyPress(e, () => {deleteApplication(item.appId)})}}
             onFocus={() => {setShowActions(false)}}
           >
-            <RemoveIcon onClick={() => deleteApplication(item.appId)} />
+            <KeepIcon name="trash" label="Delete" onClick={() => deleteApplication(item.appId)} />
           </KeepTooltip>
           <KeepTooltip 
             content="Edit" 
             onKeyDown={(e) => {handleKeyPress(e, () => {viewEdit()})}}
           >
-            <EditIcon onClick={viewEdit} />
+            <KeepIcon name="pencil" label="Edit" onClick={viewEdit} />
           </KeepTooltip>
           <KeepTooltip
             content={item.appHasSecret ? 'Regenerate Application Secret' : 'Generate Application Secret'}
             onKeyDown={(e) => {handleKeyPress(e, handleGenerate)}}
           >
-            <GenerateIcon
+            <KeepIcon
+              name="rotate-left"
+              label={item.appHasSecret ? 'Regenerate Application Secret' : 'Generate Application Secret'}
               onClick={handleGenerate}
               className="generate"
             />
@@ -211,7 +212,7 @@ const AppCard: React.FC<AppCardProps> = ({
               alt="db-icon"
               className='color-hover'
               as={AppImage}
-              fallback={<ApplicationIcon className='app-card-app-icon' />}
+              fallback={<KeepIcon name='table-cells-large' size='xl' className='app-card-app-icon' />}
             />
           </Icon>
           <KeepTooltip content={item.appName}>

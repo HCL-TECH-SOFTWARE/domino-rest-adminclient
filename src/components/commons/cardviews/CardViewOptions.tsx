@@ -7,7 +7,7 @@
 import React, { useState }  from 'react';
 import { Button, Menu, MenuItem } from '@mui/material';
 import { useLocation } from '../../../router/react';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { KeepIcon } from '../../keep-elements/react/KeepIcon';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store';
 
@@ -51,7 +51,9 @@ const CardViewOptions: React.FC<CardViewOptionsProps> = ({ changeView }) => {
           onClick={handleClick}
        >
         <span>{view === "nsf" ? view.toUpperCase() : view.charAt(0).toUpperCase() + view.slice(1)} View</span>
-        <ArrowDropDownIcon className='color-text-primary' />
+        {/* .color-text-primary is a colour class only — nothing sizes this glyph, so it
+            kept MUI's 24px default and takes size='xl', the nearest token. */}
+        <KeepIcon name='caret-down' size='xl' className='color-text-primary' />
       </Button>
       <Menu
           id="simple-menu"

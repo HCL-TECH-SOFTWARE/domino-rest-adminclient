@@ -854,8 +854,16 @@ body[data-theme="dark"] .field-batch-delete-text {
     height: 100%;
 }
 
+/*
+ * The colour was MUI's color="primary", i.e. theme.palette.primary.main, which theme.ts
+ * binds to getTheme(mode).textColorPrimary — the value keep-theme.css pins
+ * --wa-color-text-normal to in both modes. wa-icon has no color attribute and paints from
+ * currentColor, so the token has to be declared here. No font-size: the glyph was an
+ * unsized MUI SvgIcon (24px), and it carries size="xl" at the call site instead.
+ */
 .mode-compare-search-icon {
     margin-right: 10px;
+    color: var(--wa-color-text-normal);
 }
 
 .mode-compare-card-container {
@@ -1021,6 +1029,42 @@ body[data-theme="dark"] .field-batch-delete-text {
     font-size: 16px;
     margin-right: 5px;
     padding: 0;
+}
+
+/*
+ * The Delete Mode glyph. Its colour was MUI's color='primary', i.e.
+ * theme.palette.primary.main, which theme.ts binds to getTheme(mode).textColorPrimary —
+ * the value keep-theme.css pins --wa-color-text-normal to in both modes. wa-icon has no
+ * color attribute and paints from currentColor, so it has to be a declaration. It cannot
+ * be inherited the way the Clone and Add glyphs beside it inherit theirs: this is the one
+ * button in the row whose class list omits color-text-primary.
+ */
+.tabs-access-delete-icon {
+    color: var(--wa-color-text-normal);
+}
+
+/*
+ * The Save glyph, which sat at 0.9em where the other three in this row sit at 1em. That
+ * em resolved against the 16px .tabs-access-action-icon sets on the very same element, so
+ * the glyph drew at 14.4px. Written as an em here it would resolve against the button
+ * instead and land somewhere else, so the product is spelled out.
+ */
+.tabs-access-save-icon {
+    font-size: 14.4px;
+}
+
+/*
+ * The Save glyph's two colours, previously a conditional passed as a prop. The condition
+ * is the same one the caption beside it switches on, but the values are not the caption's
+ * color-text-primary / color-text-disabled pair — the disabled grey is #A7A8A9, which is
+ * not --text-color-disabled — so both ends are restated here.
+ */
+.tabs-access-save-icon-enabled {
+    color: var(--wa-color-text-normal);
+}
+
+.tabs-access-save-icon-disabled {
+    color: #A7A8A9;
 }
 
 .access-load-tab-container {
@@ -1403,6 +1447,9 @@ body[data-theme="dark"] .add-import-svg-icon {
     margin-right: 2%;
     display: inline-block;
     transform: translateY(4%);
+    /* Was FiPlus size={'1.2em'}. wa-icon takes its box from font-size, not width, so the
+       same relative measure has to be spelled as a font-size on this wrapper. */
+    font-size: 1.2em;
 }
 
 .add-all-text {
@@ -1491,6 +1538,20 @@ body[data-theme="dark"] .add-import-svg-icon {
 
 .script-editor-help-icon {
     color: #2d91e3;
+}
+
+/*
+ * The "Test Formulas" play glyph. Renamed from the bare `.action-icon` it used to carry,
+ * which matched no rule anywhere and sat one letter away from `.tabs-access-action-icon`.
+ *
+ * The colour was MUI's color='primary', i.e. theme.palette.primary.main, which theme.ts
+ * binds to getTheme(mode).textColorPrimary — the value keep-theme.css pins
+ * --wa-color-text-normal to in both modes. wa-icon has no color attribute and paints from
+ * currentColor, so it has to be a declaration. No font-size: the glyph was an unsized MUI
+ * SvgIcon (24px) and carries size='xl' at the call site instead.
+ */
+.script-editor-action-icon {
+    color: var(--wa-color-text-normal);
 }
 
 .script-editor-access-container {
@@ -1617,10 +1678,14 @@ body[data-theme="dark"] .add-import-svg-icon {
     padding-right: 5px;
 }
 
-.database-search-dropdown-arrow {
-    width: 50px;
-    height: 40px;
-}
+/*
+ * .database-search-dropdown-arrow is gone with the icon set that ignored it. It declared
+ * width: 50px; height: 40px on the search-type caret, which MuiSvgIcon's own width: 1em;
+ * height: 1em outranked by injection order, so the caret has always drawn at 24px square.
+ * wa-icon would have honoured it — but as a 50x40 canvas centred around a glyph that
+ * takes its size from font-size, i.e. a wider button gap rather than a bigger caret. The
+ * call site carries size='xl' instead, which is what it renders at now.
+ */
 
 /* FormsContainer.tsx */
 .forms-container-loading-container {
@@ -1704,7 +1769,18 @@ body[data-theme="dark"] .add-import-svg-icon {
     font-weight: 700;
 }
 
-/* ProfileMenu.tsx */
+/*
+ * OptionList.tsx — the fixed box the Sign Out glyph sits in.
+ *
+ * Named for ProfileMenu.tsx, which no longer carries it. Both profile components used to
+ * put this class on the icon element itself, where the width and height were dead: MUI's
+ * own `width: 1em; height: 1em` on `.MuiSvgIcon-root` has the same specificity and was
+ * injected later, so those icons drew 24px and never 36px. On a wa-icon the declarations
+ * would have started applying — as a 36px canvas around a glyph still sized by font-size,
+ * which is padding, not a bigger icon — so the class was dropped from both and the icons
+ * carry size='xl' instead (#718). Here it is on a real wrapper div and the 36px box is
+ * genuine, so the rule stays.
+ */
 .profile-menu-user-icon {
     width: 36px;
     height: 36px;

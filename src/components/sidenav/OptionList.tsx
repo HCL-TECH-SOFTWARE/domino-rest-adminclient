@@ -5,10 +5,10 @@
  * ========================================================================== */
 
 import React from 'react';
-import LogoutIcon from '@mui/icons-material/ExitToApp';
 import { logout } from '../../store/account/action';
 import { styled } from '@linaria/react';
 import { useNavigate } from '../../router/react';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
 const OptionListContainer = styled.div`
@@ -41,7 +41,11 @@ const OptionList: React.FC<OptionListProps> = () => {
         onClick={logoutUser}
       >
         <div className='profile-menu-user-icon'>
-          <LogoutIcon className='mt-5' />
+          {/* The glyph is the ExitToApp module; the LogoutIcon alias named nothing real.
+              size='xl': .mt-5 is a margin, and .profile-menu-user-icon sizes the 36px box
+              around the glyph rather than the glyph, so nothing set a font-size here and
+              the icon drew MUI's 24px default. No label — "SIGN OUT" is right beside it. */}
+          <KeepIcon name='right-from-bracket' size='xl' className='mt-5' />
         </div>
         <span className='small-text'>SIGN OUT</span>
       </button>

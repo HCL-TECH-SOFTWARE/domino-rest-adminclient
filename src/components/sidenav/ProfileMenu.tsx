@@ -6,7 +6,6 @@
 
 import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import UserIcon from '@mui/icons-material/AccountCircleOutlined';
 import Popper from '@mui/material/Popper';
 import Paper from '@mui/material/Paper';
 import Fade from '@mui/material/Fade';
@@ -17,6 +16,7 @@ import OptionList from './OptionList';
 import { AppState } from '../../store';
 import { TokenProps } from '../../store/account/types';
 import { KeepTooltip } from '../keep-elements/react/KeepTooltip';
+import { KeepIcon } from '../keep-elements/react/KeepIcon';
 
 /**
  * Profile section rendered in the sidenav.
@@ -156,7 +156,23 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ open }) => {
             onClick={handleIconClick}
             data-testid="profileIcon"
           >
-            <UserIcon className='profile-menu-user-icon' />
+            {/*
+              The glyph is the AccountCircleOutlined module, solid here because the bundled
+              library carries one weight per name.
+
+              `.profile-menu-user-icon` is dropped from the element rather than carried
+              over. It declares `width: 36px; height: 36px`, which MUI's own `width: 1em`
+              on `.MuiSvgIcon-root` outranked by injection order, so this icon has always
+              drawn 24px and the 36px has never applied. On a wa-icon it would apply — as a
+              36px canvas centred on a glyph still sized by font-size, i.e. empty space
+              rather than a bigger icon. `size='xl'` is what reproduces the 24px. The rule
+              itself stays in `styles.css` for `OptionList`, where the class sits on a real
+              wrapper div and the box is genuine.
+
+              `label`: the icon is the whole of `IconWrapper`'s content and the wrapper is
+              what handles the click, so without one the control has no accessible name.
+            */}
+            <KeepIcon name='circle-user' label='Profile' size='xl' />
           </IconWrapper>
         </KeepTooltip>
 
