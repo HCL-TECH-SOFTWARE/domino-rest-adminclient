@@ -6,13 +6,15 @@
 
 import React from 'react';
 import { createComponent, type EventName } from '@lit/react';
-import IconDropdown, { type KeepIconSelectDetail } from '../keep-icon-dropdown';
+import AddImportDialog, {
+  type KeepAddImportDialogCloseDetail,
+} from '../keep-add-import-dialog';
 
-export const KeepIconDropdown = createComponent({
-  tagName: 'keep-icon-dropdown',
-  elementClass: IconDropdown,
+export const KeepAddImportDialog = createComponent({
+  tagName: 'keep-add-import-dialog',
+  elementClass: AddImportDialog,
   react: React,
   events: {
-    onIconSelect: 'icon-select' as EventName<CustomEvent<KeepIconSelectDetail>>
-  }
+    onDialogClose: 'dialog-close' as EventName<CustomEvent<KeepAddImportDialogCloseDetail>>,
+  },
 });
