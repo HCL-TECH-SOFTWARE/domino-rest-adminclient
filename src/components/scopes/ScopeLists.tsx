@@ -16,10 +16,9 @@ import { clearDBError,
 import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
-import ScopeFormContainer from '../database/ScopeFormContainer';
 import { useLocation, useNavigate } from '../../router/react';
 import { toggleAlert } from '../../store/alerts/action';
-import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepPageLoading, KeepScopesMultiView, KeepWrapperContainer } from '../keep-elements/KeepElements';
+import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepPageLoading, KeepScopeFormContainer, KeepScopesMultiView, KeepWrapperContainer } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 const ScopeLists = () => {
@@ -158,8 +157,14 @@ const ScopeLists = () => {
                 animations. Conditional mounting was causing the
                 drawer to vanish instantly on close instead of
                 animating out. The drawer manages its own open state
-                via the redux `visible` flag. */}
-            <ScopeFormContainer database={selectedScope} isEdit={isEdit} permissions={permissions}/>
+                via the redux `visible` flag.
+
+                `permissions` is no longer passed down: it came from the
+                store, and the element reads it there. A prop that
+                mirrors store state is the wrapper hazard — @lit/react
+                re-applies every prop on every render with no dirty
+                check. */}
+            <KeepScopeFormContainer database={selectedScope} isEdit={isEdit} />
             <KeepNetworkErrorDialog />
           </>
         {!(databasePull || scopePull) && <KeepPageLoading contained pageHeight message="Scopes are loading. This may take a few seconds..." />}

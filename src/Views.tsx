@@ -123,8 +123,12 @@ const Views: React.FC = () => {
     return [
       { path: '/', load: () => import('./components/home/HomePage'), guard, redirectTo: '/' },
       {
+        /* A Lit element behind its wrapper, like `/apps/consents` below (#806). */
         path: '/schema',
-        load: () => import('./components/schemas/SchemasLists'),
+        load: () =>
+          import('./components/keep-elements/react/KeepSchemasList').then((m) => ({
+            default: m.KeepSchemasList,
+          })),
         guard,
         redirectTo: '/',
       },
@@ -154,10 +158,10 @@ const Views: React.FC = () => {
       },
       {
         /*
-         * The only route whose view is a Lit element (#806). `React.lazy` needs a module
-         * whose default export is a component, so the route points at the element's
-         * `@lit/react` wrapper rather than at `keep-consents-container` itself — the same
-         * shape the quick-config drawer above is loaded with.
+         * A route whose view is a Lit element (#806), as `/schema` above is. `React.lazy`
+         * needs a module whose default export is a component, so the route points at the
+         * element's `@lit/react` wrapper rather than at `keep-consents-container` itself —
+         * the same shape the quick-config drawer above is loaded with.
          */
         path: '/apps/consents',
         load: () =>

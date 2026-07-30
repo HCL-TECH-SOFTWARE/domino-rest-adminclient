@@ -236,21 +236,9 @@ body[data-theme="dark"] .color-text-disabled {
 
 .full-width {
     width: 100%;
-}
-
-.min-width-85 {
-    min-width: 85px;
-}
-
-.w-30px {
+}.w-30px {
     width: 30px;
-}
-
-.w-35px {
-    width:35px;
-}
-
-.w-35vw {
+}.w-35vw {
     width: 35vw;
 }
 
@@ -284,13 +272,7 @@ body[data-theme="dark"] .color-text-disabled {
 
 .h-30px {
     height: 30px;
-}
-
-.h-10vh {
-    height: 10vh;
-}
-
-.flex {
+}.flex {
     display: flex;
 }
 
@@ -358,10 +340,6 @@ body[data-theme="dark"] .color-text-disabled {
     padding-left: 30px;
 }
 
-.pt-2 {
-    padding-top: 2px;
-}
-
 .pt-4 {
     padding-top: 4px;
 }
@@ -374,10 +352,6 @@ body[data-theme="dark"] .color-text-disabled {
 
 .pt-40 {
     padding-top: 40px;
-}
-
-.pb-2 {
-    padding-bottom: 2px;
 }
 
 .pb-4 {
@@ -428,13 +402,7 @@ body[data-theme="dark"] .color-text-disabled {
 
 .mt-20 {
     margin-top: 20px;
-}
-
-.mb-0 {
-    margin-bottom: 0;
-}
-
-.mb-5 {
+}.mb-5 {
     margin-bottom: 5px;
 }
 
@@ -445,21 +413,9 @@ body[data-theme="dark"] .color-text-disabled {
 
 .mb-30 {
     margin-bottom: 30px;
-}
-
-.ml-10 {
-    margin-left: 10px;
-}
-
-.mr-5 {
+}.mr-5 {
     margin-right: 5px;
-}
-
-.mr-15 {
-    margin-right: 15px;
-}
-
-.gap-2 {
+}.gap-2 {
     gap: 2px;
 }
 
@@ -489,13 +445,7 @@ body[data-theme="dark"] .color-text-disabled {
 
 .text-ellipsis {
     text-overflow: ellipsis;
-}
-
-.justify-start {
-    justify-content: flex-start;
-}
-
-.justify-center {
+}.justify-center {
     justify-content: center;
 }
 
@@ -1080,76 +1030,7 @@ body[data-theme="dark"] .field-batch-delete-text {
 
 .forms-table-diamond-marker {
     transform: translateY(-7%);
-}
-
-/* DetailsSection.tsx */
-.details-section-textarea {
-    font-size: 16px;
-    border-color: light-dark(#b8b8b8, #121212);
-    border-radius: 5px;
-    padding: 16px 14px;
-    width: 100%;
-    height: 20vh;
-    resize: none;
-    margin-top: 5px;
-}
-
-.details-section-textarea:disabled {
-    background-color: light-dark(#f5f5f5, #1e1e2e);
-    color: var(--text-color-primary);
-}
-
-.details-section-config-container {
-    display: flex;
-    width: 100%;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10%;
-}
-
-.details-section-config-row {
-    width: 40%;
-}
-
-.details-section-config-name {
-    display: flex;
-    flex-wrap: wrap;
-    width: 95%;
-    max-width: calc(100% - 12px);
-}
-
-.details-section-config-unchecked {
-    color: var(--hint-text-color);
-}
-
-.details-section-checkbox-container {
-    width: 5%;
-}
-
-.details-section-formula-box {
-    overflow-x: hidden;
-    max-width: 100%;
-}
-
-.details-section-config {
-    margin: 0 0 0 0;
-}
-
-.details-section-icon-dropdown {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    display: block;
-}
-
-.details-section-icon-container {
-    position: relative;
-    display: inline-block;
-    width: 90px;
-    height: 90px;
-}
-
-/* EditView.tsx */
+}/* EditView.tsx */
 .edit-view-dialog {
     height: 90vh;
     width: 95vw;
@@ -1378,52 +1259,12 @@ body[data-theme="dark"] .field-batch-delete-text {
     padding: 10px;
     border-radius: 5px;
     background: var(--keep-surface-brand);
-}
-
-.scope-form-header {
-    color: #fff;
-    font-size: 24px;
-    padding: 20px;
-    border-radius: 5px;
-    background: var(--keep-surface-brand);
-    width: 100%;
-}
-
-.scope-form-text-schema {
-    color: var(--text-color-primary);
-    display: flex;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-}
-
-.quick-config-icon-image {
+}.quick-config-icon-image {
     width: 35px;
     height: 35px;
     object-fit: contain;
     display: block;
-}
-
-.schema-icon-in-use {
-    width: 14px;
-    height: 14px;
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiM4MkRDNzMiLz4KPC9zdmc+Cg==');
-}
-
-.schema-icon-not-in-use {
-    width: 14px;
-    height: 14px;
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiNENjQ2NkYiLz4KPC9zdmc+Cg==");
-}
-
-/* AppCard.tsx */
-.app-card-app-icon {
-    background: var(--body-color);
-    color: var(--hover-color);
-    height: 40;
-    width: 40;
-}
-
-/* Kanban.tsx */
+}/* Kanban.tsx */
 .kanban-div {
     height: 46px;
     width: 1px;

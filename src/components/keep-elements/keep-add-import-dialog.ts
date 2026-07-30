@@ -84,8 +84,11 @@ const FORMULA_ENGINES: ReadonlyArray<{ value: string; label: string }> = [
 
 /**
  * "Add New Schema": choose between importing a schema from a `.json` file and creating one by
- * hand, then fill in the form and save. Tag: `keep-add-import-dialog`. Exposed to React as
- * `KeepAddImportDialog`, because its only consumer — the schema list page — is still React.
+ * hand, then fill in the form and save. Tag: `keep-add-import-dialog`.
+ *
+ * It had an `@lit/react` wrapper until #806 wave 5 converted the schema list page — its only
+ * consumer — to `keep-schemas-list`. The wrapper went with it; the element is now reached
+ * from a Lit template, which is also what registers it.
  *
  * @fires dialog-close - the user closed the dialog, or a save was dispatched. The parent owns
  *   the open flag and has to lower it.

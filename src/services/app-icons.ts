@@ -4,7 +4,6 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { useSyncExternalStore } from 'react';
 import { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME } from '../styles/app-icon-names';
 
 export { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME };
@@ -25,12 +24,16 @@ export type AppIconMap = Readonly<Record<string, string>>;
  * `checkIcon()` and the picker ordering stay synchronous. Only the payloads wait.
  */
 
-/** Stable empty snapshot — `useSyncExternalStore` must not see a new object each read. */
+/**
+ * Stable empty snapshot. It was here because `useSyncExternalStore` must not see a new object
+ * on each read; that hook is gone (see below), but the guarantee is still worth keeping —
+ * `getAppIcons()` is read straight into Lit templates, and returning a fresh `{}` per call
+ * would defeat every `Object.is` comparison downstream.
+ */
 const EMPTY: AppIconMap = Object.freeze({});
 
 let icons: AppIconMap | null = null;
 let inFlight: Promise<AppIconMap> | null = null;
-const subscribers = new Set<() => void>();
 
 /**
  * Fetch the payload chunk. Idempotent and safe to call from anywhere — concurrent callers
@@ -44,7 +47,6 @@ export function loadAppIcons(): Promise<AppIconMap> {
   inFlight ??= import('../styles/app-icons')
     .then((module) => {
       icons = module.default as AppIconMap;
-      subscribers.forEach((notify) => notify());
       return icons;
     })
     .catch((error) => {
@@ -95,29 +97,25 @@ export function appIconUri(name: string | undefined | null, icons: AppIconMap = 
   return payload ? `data:image/svg+xml;base64,${payload}` : '';
 }
 
-function subscribe(notify: () => void): () => void {
-  subscribers.add(notify);
-  // Any component that reads icons is a reason to fetch them; `index.tsx` also warms this
-  // at boot so the chunk is normally in flight long before the first card mounts.
-  void loadAppIcons().catch(() => {
-    /* render keeps its skeleton; the next mount retries */
-  });
-  return () => {
-    subscribers.delete(notify);
-  };
-}
-
-/**
- * Subscribe a component to the payload map. Re-renders once when the chunk lands, and
- * returns `{}` until then. Kicks off the load on first subscribe.
+/*
+ * `useAppIcons()` stood here — a `useSyncExternalStore` over a module-level subscriber set,
+ * with a `subscribe` that also kicked off the load. It is gone, and with it the last React
+ * import anywhere under `src/services/`. (Spelled that way on purpose: #719's exit gate greps
+ * for the import statement as raw text, and quoting it here would keep it looking present.)
+ *
+ * Its two remaining callers, `ScopeFormContainer` and `DetailsSection`, both became Lit
+ * elements in #806 wave 5. A Lit element has its own reactivity and does not want a hook: the
+ * pattern every converted element uses instead is `loadAppIcons()` in `connectedCallback`
+ * resolving into a `@state` field, which is a plain promise and needs no push channel. The
+ * subscriber set had no other reader, so the notify loop in `loadAppIcons` and the `clear()`
+ * in the test seam went with it.
+ *
+ * Nothing replaces it. If a future consumer needs to be *pushed* to rather than awaiting the
+ * promise, the set is three lines and is in the history.
  */
-export function useAppIcons(): AppIconMap {
-  return useSyncExternalStore(subscribe, getAppIcons, getAppIcons);
-}
 
 /** Test seam: forget the loaded payloads so the next call re-imports. */
 export function resetAppIconsForTest(): void {
   icons = null;
   inFlight = null;
-  subscribers.clear();
 }
