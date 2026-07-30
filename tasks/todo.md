@@ -1,150 +1,106 @@
-# #718 — consolidate the icon systems onto `wa-icon`
+# #806 — per-file leaf-component migration pass
 
-Branch `feat/718-wa-icon-codemod`, based on `origin/new_code` @ `d4db66b`.
+Branch `worktree-fluttering-skipping-fairy`, based on `new_code` @ `0d5458c`.
 
-## Why this is being run as a sweep
+Baseline at `0d5458c`: `npm run lint` **0** · `npm run typecheck` **0**.
+The red gate #806 warns about — the unused `keepBlockDiagram` import in
+`home/sections/Section.tsx:15` — was **already cleared** by `0d5458c` ("removed obsolte
+entries"). Nothing to fix before taking the first file.
 
-The issue's own text and every earlier revision of `docs/reports/06-waves.md` say **not** to
-run this as a standalone codemod, because `track:icons` overlaps `track:views` and a sweep
-would fight the per-file component pass for the same files.
+The worktree needed `npm ci` of its own: 39 test files failed with
+`Denied ID …node_modules…?url` because Node resolved packages from the main checkout, one
+level above Vite's root. Installing inside the worktree is the fix (guarded by
+`test/node-modules-root.test.ts`).
 
-That objection was raised and the user chose the sweep anyway. It has since largely expired:
-`d4db66b` restructured the programme to **single-lane** — "lanes A, B and C are empty of open
-work", so there is no concurrent instance to collide with, and #718 is listed as one of the
-issues that "close *inside* #806". The remaining cost is that a file converted here will be
-converted again when #806 reaches it; the icon line of #806's per-file recipe simply becomes
-a no-op.
+## Agreed operating rules for this run
 
-## Baseline on `d4db66b` (measured, not assumed)
+| Decision | Choice |
+|---|---|
+| Scope | leaf waves across tiers A+B+C, ~30 files; stops before tier D and the route roots |
+| Gate cadence | one commit per file; full lint/typecheck/build/suite at each **wave boundary** |
+| PRs | one PR per wave, against `new_code`, "contributes to #806" |
+| Browser pass | Chrome DevTools over each wave's reachable screens, light **and** dark |
+| Tests | converted with the file — assertions carried over, never dropped |
 
-```
-npm run lint          exit 0
-npm run build         exit 0
-npm run test          exit 0    121 files / 1523 tests, coverage 65.09 %
-npm run bundle:budget exit 0    868.6 kB raw / 238.9 kB gzip
-                                budget 892.5 / 245.9 — under by 23.9 kB raw / 7.0 kB gzip
-```
+Concurrency: up to 12 agents in this one worktree. Agents run only their own vitest file plus
+the grep gate; the orchestrator owns git and runs the real gate.
 
-The eager closure contains `createSvgIcon-*.js` at **84.8 kB raw / 28.4 kB gzip** — MUI's icon
-factory. This codemod should *shrink* the bundle rather than threaten the 2 % headroom.
+**Known risk to the browser pass:** the #718 run recorded that ~111 of its 115 icon sites
+were unverifiable because they "sit behind a login this environment cannot pass". Reachability
+is therefore tested at the wave 1 boundary rather than assumed, and whatever cannot be reached
+is named per-screen in the PR instead of being quietly skipped.
 
-## Scope
+## Re-derived tiers at `0d5458c` (mechanical, by axis)
 
-| System | Files | Action |
-|---|--:|---|
-| `@mui/icons-material` | 33 | convert to `wa-icon` |
-| `react-icons` | 18 | convert to `wa-icon` |
-| overlap | 8 | — |
-| **distinct** | **43** | |
+Tier A 13 / 1,308 · B 42 / 7,562 · C 22 / 5,978 · D 12 / 4,063 — counted before excluding the
+P4 shell (`App.tsx`, `AppShell.tsx`, `Views.tsx`, `index.tsx`, `router/react.tsx`), the store
+modules, and the already-converted `keep-*.ts` elements that the axis filter also matches.
 
-Out of scope, deliberately: `src/styles/app-icons.ts` (issue **#731** — 15 of its 19 render
-sites are `<img>`, not `wa-icon`, so its conversion is not separable from the component pass)
-and the `.Mui*` half of `dark-mode.css` (issue **#709**).
+Route roots reached only through `Views.tsx`'s `import()` calls — `HomePage`, `SchemasLists`,
+`FormsContainer`, `AccessMode`, `ScopeLists`, `Applications`, `ConsentsContainer`, and
+`LoginPage` via `App.tsx` — look consumer-less to a static import graph but are **not** dead.
+Deliberately out of this run: they are route roots and serialise badly.
 
-## Constraints that gate this work
+---
 
-- `npm run lint` / `build` / `test` / `bundle:budget` all pass — CI runs all four.
-- Coverage is enforced per directory: `components/keep-elements/**` and `services` at 90 %.
-- **No `style=` attributes** — production CSP sends `style-src-attr 'none'`;
-  `test/csp-inline-styles.test.ts` holds the count at zero.
-- `test/services/icon-library.test.ts` fails on any glyph name not registered in `ICONS`.
-  It scans for literal `<wa-icon>` tags and `icon="…"` props — **a new React wrapper is
-  invisible to it**, so the guard must be extended in the same task that introduces the
-  wrapper, not later.
-- Whole-line comments are stripped before those scans, but *trailing* comments are not, and
-  the per-file gates elsewhere are greps — so naming a removed package in prose keeps it
-  looking present.
+## Wave 0 — dead code
 
-## Tasks
+Zero importers anywhere in `src`, `test` or `scripts`. Precedent is the tier A spec §1.2,
+which deleted three zero-importer files on the same reasoning ("converting code nothing
+renders is wasted work carried forward").
 
-- [ ] **1. The primitive.** A React `KeepIcon` that renders `wa-icon` with `library="fa"`
-      baked in, so the CDN fallback is structurally unreachable from a call site. Extend
-      `icon-library.test.ts` to scan `<KeepIcon name="…">` in the same commit.
-- [ ] **2. Register the glyphs.** Extend `ICONS` in `src/services/icon-library.ts` from 17 to
-      cover every name the mapping needs. Every name verified present in
-      `@fortawesome/fontawesome-free` before it is written down.
-- [ ] **3–N. Convert, in batches**, grouped by directory so each batch is independently
-      reviewable and testable. Batch boundaries set from the inventories.
-- [ ] **N+1. Drop the dependencies.** Remove `@mui/icons-material` and `react-icons` from
-      `package.json` once both greps return 0. Add a guard so they cannot come back.
-- [ ] **N+2. Verify.** All four gates, plus a browser pass — the suite runs with `css: false`
-      and cannot see an icon that renders at the wrong size, in the wrong colour, or not at all.
+- [ ] `src/components/applications/AppSearch.tsx` (36) — #806 lists this tier A "ready";
+      deleting rather than converting is a deliberate deviation, called out in the PR
+- [ ] `src/components/dialogs/DropdownFormulaEngine.tsx` (39)
+- [ ] `src/components/schemas/SchemaStyles.tsx` (118) — referenced only by prose, in two
+      `keep-schemas-*.ts` doc comments
 
-## What the inventories changed
+`src/components/mail/Mail.tsx` is **not** in this list. It is referenced only inside a JSX
+comment in `Views.tsx` (parked pending LABS-1214, #698), but #806 tier A asks for it to be
+converted, so it converts in wave 1.
 
-**`react-icons`: 38 sites, 21 identifiers** (not the 16 a grep suggested — `MdRefresh`,
-`MdEdit`, `FaSort`, `BsThreeDots` and `FaRegFolderOpen` sit on import lines the first grep
-did not decompose). Zero `styled(Icon)` wrappers and zero icons passed as values: every one
-is inline JSX, so the conversion is mechanical and the hard cases are **props and CSS**, not
-indirection.
+## Wave 1 — leaves, 12 agents
 
-- **`RxDividerVertical` is not an icon and gets no glyph.** Rendered, it is a 1×11 rounded
-  rect in a 15×15 box — a ~1.5 px rule. `AppItem.tsx:360` already draws that exact separator
-  as `<div className='short-vertical'/>` (`styles.css:618`, token-aware). Reusing it removes
-  5 sites and the whole `rx` pack without registering anything.
-- **Size cannot become an inline style.** 13 sites pass `size` in `em` and one passes
-  `size={20}`. `style=` is forbidden — production CSP sends `style-src-attr 'none'` and
-  `test/csp-inline-styles.test.ts` pins the count at zero — so every size lands as a class,
-  Linaria at the call site, never an attribute.
-- `color` is not an attribute on `wa-icon` (4 sites, one passing a `var()`) — it inherits
-  `currentColor`, so those become a colour rule on the class.
-- Three sites carry a duplicated `transform: translateY(29%)` alignment hack tuned to the old
-  glyphs' bounding boxes. Re-measure against `wa-icon`; do not copy.
-- `ColumnDetails.tsx:70` puts `onClick` on a bare icon with no button. That is a pre-existing
-  a11y defect owned by **#713** — preserve the behaviour here, do not silently fix or worsen it.
-- `ICONS` is a flat name→URL map, so one weight per name. No name currently needs both solid
-  and regular, but that is a property of today's mapping, not a guarantee.
+Each cluster is a file plus its consumers, chosen so no two clusters touch the same file.
 
-## Open questions resolved before starting
+- [ ] A1 `home/sections/Tip.tsx` + `Section.tsx` + `HomePage.tsx` (whole home subtree)
+- [ ] A2 `commons/Wrappers.tsx` (→ consumers `SchemasLists`, `ScopeLists`)
+- [ ] A3 `mail/Mail.tsx`
+- [ ] B1 `forms/ColumnDetails.tsx` (→ `EditView`)
+- [ ] B2 `access/AddModeDialog.tsx` (→ `TabsAccess`)
+- [ ] B3 `login/CallbackPage.tsx` (→ `App.tsx`, import line only)
+- [ ] B4 `loading/APILoadingProgress.tsx` + `loading/GenericLoading.tsx` (5 + 1 consumers)
+- [ ] B5 `applications/DeleteApplicationDialog.tsx` (→ `TabsAccess`, `Kanban`)
+- [ ] B6 `forms/FormSearch.tsx` + `ViewSearch.tsx` + `AgentSearch.tsx` (near-identical trio)
+- [ ] B7 `sidenav/OptionList.tsx` (→ `ProfileMenu`, `ProfileMenuDialog`)
+- [ ] B8 `database/SchemaContentsTree.tsx` (→ `ScopeForm`)
+- [ ] C1 `commons/cardviews/CardViewOptions.tsx` (→ `SchemasLists`, `ScopeLists`)
+- [ ] C2 `alerts/Notification.tsx` (→ `AppShell`)
 
-`Album`, `Apps` and `Storage` have no obvious one-to-one Font Awesome equivalent. Each is
-resolved against its call-site context from the inventory, not guessed.
+## Wave 2 — mid clusters
+
+- [ ] `forms/ActivateSwitch.tsx` + `AgentsTable.tsx` + `ViewsTable.tsx` (shared dependency)
+- [ ] `forms/ActivateMenu.tsx` (→ `FormsTable`)
+- [ ] `applications/kanban/ConsentItem.tsx` + `consents/ConsentFilterContainer.tsx`
+      (both feed `ConsentsTable`)
+- [ ] `access/FieldContainer.tsx` + `access/ScriptEditor.tsx` (both feed `FieldDndContainer`)
+- [ ] `sidenav/SideNav.tsx` (leaf, → `AppShell`)
+- [ ] `sidenav/ProfileMenu.tsx` + `ProfileMenuDialog.tsx` (need `OptionList` from wave 1)
+- [ ] `applications/AppFilterContainer.tsx` (→ `AppsTable`)
+- [ ] `database/DatabaseSearch.tsx` (→ `SchemasLists`, `ScopeLists`)
+- [ ] `access/SingleFieldContainer.tsx` (→ `Fields`; depends on `AccessContext`)
+- [ ] `navigation/NavigationGuardContext.tsx` + `routers/BreadcrumbRouter.tsx`
+      (context → store slice, per decision 1)
+
+## Wave 3 — large single-consumer files
+
+- [ ] `access/ModeCompare.tsx` (651) · `forms/EditView.tsx` (623) ·
+      `applications/kanban/ConsentsTable.tsx` (380) · `access/FieldDndContainer.tsx` (370) ·
+      `access/Fields.tsx` (447) · `forms/DetailsSection.tsx` (725) ·
+      `forms/FormsTable.tsx` (335) · `forms/TabForms/TabViews/TabAgents`
+
+---
 
 ## Review
 
-**Done.** PR #913 into `new_code`, nine commits. 115 sites, 43 files, both packages
-uninstalled; `dependencies` 22 → 19.
-
-| Gate | Result |
-|---|---|
-| `npm run lint` | exit 0 |
-| `npm run typecheck` | exit 0 |
-| `npm run build` | exit 0 |
-| `npm run test` | 131 files / 1697 tests |
-| `npm run bundle:budget` | 888.1 kB raw / 243.8 kB gzip — under by 4.3 / 2.1 |
-
-`new_code` itself is red (issue **#914**): PR #911 put `FormController.ts` under its
-coverage floor. This branch touches no store file, so it inherits that failure. Filed
-rather than fixed, to keep an icon codemod out of the store.
-
-### What actually mattered
-
-**A live CDN dependency nobody knew about.** `<wa-page>`'s navigation toggle fetched
-`bars.svg` from `ka-f.fontawesome.com` on every authenticated screen. The `connect-src`
-wildcard permitted it, so it neither failed nor reported. The module's own comment claimed
-the opposite was true. Removing it is worth more than the codemod.
-
-**The bundle did not shrink the way the issue predicted.** MUI's icon factory left the
-eager closure, but the 44 bundled glyphs inline as base64 `data:` URIs, so raw ended up
-+19.5 kB on the pre-codemod baseline and gzip +4.9. Still under budget. The real saving
-waits for `@mui/material` itself (#709).
-
-**Four inventory errors, one shape.** Every one named a source line where the compiled
-selector said something else — a rule in a component the file never renders, a Linaria
-rule that nests into a descendant selector, two rules an `!important` elsewhere had
-already killed, and a dead block keyed on a class this repo's router never emits. A static
-scan cannot tell you which rule governs an icon. The compiled selector can.
-
-**MUI had been overriding the app's own icon size classes** for as long as they existed.
-That turned a mechanical codemod into a design decision, and it needed the user, not me.
-
-### Left undone, deliberately
-
-- **~111 of 115 sites are unverified in a browser.** They sit behind a login this
-  environment cannot pass. Every glyph name is proven to resolve, but not one is proven to
-  be the right size in its real container, and `css: false` means the suite cannot say
-  either. This is the largest gap in the work.
-- `app-icons.ts` (#731) and the `.Mui*` half of `dark-mode.css` (#709) — out of scope.
-- `ColumnDetails`' bare `onClick` icon keeps its missing button: that a11y defect is #713's.
-- The solid `sun` reads as a settings gear at 24px. Registry supports a regular-weight
-  entry if wanted; it is a design call.
+_(filled in as waves land)_
