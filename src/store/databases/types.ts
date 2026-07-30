@@ -165,7 +165,16 @@ export interface Scope {
 }
 
 export interface DBState {
-  databases: Array<Database>;
+  /**
+   * The schema list. `Database` above is the *full* record, fetched one at a time for the
+   * schema detail page and passed around as a prop; this slice only ever holds the summary
+   * the lists render from, which `addSchema` pushes into and `deleteSchema` splices out of.
+   *
+   * There used to be a second field here, `databases: Array<Database>`, that no reducer
+   * anywhere wrote — `[]` from `initialState` for the life of the session. Two components
+   * read it for the "this schema name is already taken in this database" rule, so that rule
+   * could not fire in either of them (#905). Both now read this field.
+   */
   databasesOverview: Array<DatabaseOverview>;
   nsfDesigns: any;
   availableDatabases: AvailableDatabases[];

@@ -60,7 +60,6 @@ import {
 // The reducer's initialState is not exported, so we mirror it here. It doubles
 // as the strong assertion target for the "unknown action" and INIT_STATE cases.
 const expectedInitial: DBState = {
-  databases: [],
   databasesOverview: [],
   nsfDesigns: {},
   availableDatabases: [],

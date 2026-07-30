@@ -24,7 +24,6 @@ import {
 import { getDatabaseIndex, getScopeIndex } from './scripts';
 
 const initialState: DBState = {
-  databases: [],
   databasesOverview: [],
   nsfDesigns: {},
   availableDatabases: [],
