@@ -443,17 +443,6 @@ export default class AddImportDialog extends KeepElement {
   /** Set when a chosen file is not a schema. See the note on `.import-error`. */
   @state() private accessor importError = '';
 
-  /**
-   * Fields an imported file carried that this form does not own.
-   *
-   * The original spread the whole parsed file into the form's values and then spread those
-   * values into the request body, so anything the export contained travelled through untouched.
-   * That still holds — these go into the body underneath the form's own values — but they are
-   * kept out of the form, where they would be validated, marked touched and rendered against
-   * fields that do not exist.
-   */
-  private importedExtras: Record<string, unknown> = {};
-
   /** One subscription for the whole slice, on purpose — see the class docblock. */
   private readonly db = new StoreController(this, (state) => state.databases);
 
@@ -578,16 +567,21 @@ export default class AddImportDialog extends KeepElement {
    */
   private buildPayload(values: SchemaFormValues): Record<string, unknown> {
     return {
-      ...this.importedExtras,
+      ...this.form.extras,
       ...values,
       apiName: values.schemaName,
       icon: appIconPayload(values.iconName),
     };
   }
 
-  /** Clears the form and the leftovers from an import together, so neither outlives the other. */
+  /**
+   * Clears the form and the leftovers from an import together, so neither outlives the other.
+   *
+   * The import leftovers are not cleared here any more: they live on the controller now, and
+   * `reset()` clears them with everything else (#947). Remembering to do it by hand was the
+   * half of a private bag that is easy to get wrong, which is why #935 asked for the slot.
+   */
   private resetForm(): void {
-    this.importedExtras = {};
     this.importError = '';
     this.form.reset();
   }
@@ -662,9 +656,19 @@ export default class AddImportDialog extends KeepElement {
   /**
    * Split a parsed file into the fields the form owns and everything else.
    *
-   * `setValues` merges where the original replaced the values object wholesale. That is the
-   * better half of the difference: a file missing a key left it `undefined` before and the
-   * request body carried the hole; here it keeps its initial value.
+   * The owned half is written with `replaceValues` over `INITIAL_VALUES`, which keeps the good
+   * half of the original difference — a file missing a key left it `undefined` before, and the
+   * request body carried the hole, where here it takes its initial value — while making this
+   * import self-contained (#947).
+   *
+   * `setValues` merged into whatever the form already held, which is correct today only because
+   * of what the callers happen to do: the Import button lives in the chooser, the chooser only
+   * renders while `formOpen` is false, and `handleBack()` is the sole way back to it and resets.
+   * A second import therefore cannot inherit the first one's fields — but nothing here said so,
+   * and the next path into this form would have had to know. Naming `INITIAL_VALUES` states it.
+   *
+   * The unowned half goes to `form.setExtras`, which the controller clears on `reset()`. It used
+   * to be a private bag on this class, cleared by hand alongside `form.reset()`.
    */
   private applyImportedSchema(parsed: unknown): void {
     // Arrays are excluded as well as primitives: a JSON array parses fine and would be walked
@@ -682,8 +686,8 @@ export default class AddImportDialog extends KeepElement {
     }
 
     this.importError = '';
-    this.importedExtras = extras;
-    this.form.setValues(known as Partial<SchemaFormValues>);
+    this.form.setExtras(extras);
+    this.form.replaceValues({ ...INITIAL_VALUES, ...known } as SchemaFormValues);
     this.formOpen = true;
   }
 

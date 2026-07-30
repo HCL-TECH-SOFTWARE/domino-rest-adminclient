@@ -535,6 +535,61 @@ describe('keep-add-import-dialog', () => {
     expect(submitted[0].payload.formAccessModes).toEqual({ default: 'rw' });
   });
 
+  /**
+   * The import replaces the values over `INITIAL_VALUES` rather than merging into whatever the
+   * form held (#947).
+   *
+   * Called directly, and deliberately: this is **not** reachable through the UI, because the
+   * Import button lives in the chooser, the chooser only renders while `formOpen` is false, and
+   * `handleBack()` — the sole route back to it — resets. So the merge was correct, but only
+   * because of what its callers happen to do, and nothing in the import path said so. These pin
+   * that it is now correct on its own, which is the whole point of the change.
+   */
+  describe('an import does not depend on a caller having reset first', () => {
+    const importDirectly = async (el: AddImportDialog, parsed: unknown) => {
+      (el as unknown as { applyImportedSchema(parsed: unknown): void }).applyImportedSchema(parsed);
+      await el.updateComplete;
+    };
+
+    it('does not keep a field the second file omits', async () => {
+      const el = await mount();
+      await importDirectly(el, {
+        schemaName: 'first',
+        description: 'from the first file',
+        nsfPath: 'demo.nsf',
+      });
+      expect(descriptionField(el).value).toBe('from the first file');
+
+      await importDirectly(el, { schemaName: 'second', nsfPath: 'demo.nsf' });
+
+      expect(nameField(el).value).toBe('second');
+      expect(descriptionField(el).value).toBe('');
+    });
+
+    // Passes against the old private bag too — that assigned rather than merged, so the unowned
+    // keys never accumulated. Kept as a control on `setExtras` keeping the same promise: if it
+    // ever started merging, the values half above would still pass and only this would catch it.
+    it('does not accumulate the unowned keys either', async () => {
+      const el = await mount();
+      await importDirectly(el, {
+        schemaName: 'first',
+        description: 'from a file',
+        nsfPath: 'demo.nsf',
+        formAccessModes: { default: 'rw' },
+      });
+      await importDirectly(el, {
+        schemaName: 'second',
+        description: 'from a file',
+        nsfPath: 'demo.nsf',
+        agents: ['one'],
+      });
+      await save(el);
+
+      expect(submitted[0].payload.agents).toEqual(['one']);
+      expect(submitted[0].payload.formAccessModes).toBeUndefined();
+    });
+  });
+
   it('leaves a key the file omits at its initial value rather than sending a hole', async () => {
     const el = await mount();
     await chooseFile(
