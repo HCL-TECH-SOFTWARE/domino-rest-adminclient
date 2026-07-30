@@ -39,8 +39,7 @@ import TabAgents from './TabAgents';
 import { TopNavigator } from '../../styles/CommonStyles';
 import { Dispatch } from 'redux';
 import { TopContainer } from '../../styles/CommonStyles';
-import EditViewDialog from './EditView';
-import { KeepButton, KeepErrorWrapper, KeepFormDialogHeader, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
+import { KeepButton, KeepEditView, KeepErrorWrapper, KeepFormDialogHeader, KeepMonacoEditor, KeepSource } from '../keep-elements/KeepElements';
 import { isTextualView } from '../keep-elements/keep-source-header';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
@@ -625,16 +624,15 @@ const FormsContainer = () => {
                   schemaData={schemaData}
                   setSchemaData={setSchemaData}
                 />
-                <EditViewDialog
+                <KeepEditView
                   open={viewOpen}
                   dbName={dbName}
                   nsfPathProp={nsfPath}
-                  handleClose={handleCloseEditView}
                   viewName={openViewName}
                   scopes={scopes}
-                  setOpen={setViewOpen}
                   schemaData={schemaData}
-                  setSchemaData={setSchemaData}
+                  onClose={handleCloseEditView}
+                  onSchemaChange={(event) => setSchemaData(event.detail.schemaData)}
                 />
               </TabPanel>
               <TabPanel value={value} index={2}>
