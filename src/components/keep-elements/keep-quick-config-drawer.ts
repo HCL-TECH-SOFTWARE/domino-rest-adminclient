@@ -100,13 +100,37 @@ export default class QuickConfigDrawer extends KeepElement {
     this.drawer.dispatch(toggleQuickConfigDrawer());
   }
 
+  /**
+   * Everything that finishes hiding the drawer arrives here, and the guard is what tells two
+   * different things apart.
+   *
+   * `keep-drawer` calls this from `wa-after-hide`, which Web Awesome fires whenever the panel
+   * has finished hiding — **including when the hide was our own doing**. Setting `open` to
+   * false runs the same watcher that Escape and the close button run, so a close we asked for
+   * comes back to us as a hide notification a frame later. Unguarded, that second visit
+   * toggles the flag a second time: the form's Close button, and a successful save (the
+   * quick-config thunk clears the flag itself), both closed the drawer and then reopened it,
+   * empty, because `updated` re-runs the clear-and-focus on the way back up.
+   *
+   * So: if the flag is still up, this hide came from the user dismissing the panel and the
+   * store has to catch up. If it is already down, the close has already been accounted for and
+   * there is nothing left to do. Same shape, and the same reason, as `keep-app-filter`.
+   *
+   * Only the programmatic route was affected. Escape and the drawer's own close button hide
+   * the panel *first* and notify afterwards, so the flag was still up when they arrived and
+   * one toggle was correct.
+   */
+  private handleHide(): void {
+    if (this.drawer.value) this.close();
+  }
+
   render() {
     const { dbError, dbErrorMessage } = this.db.value;
     return html`
       <keep-drawer
         label="Quick Config"
         ?open=${this.drawer.value}
-        .closeFn=${() => this.close()}
+        .closeFn=${() => this.handleHide()}
       >
         <div class="drawer-form">
           <keep-quick-config-form @close=${() => this.close()}></keep-quick-config-form>
