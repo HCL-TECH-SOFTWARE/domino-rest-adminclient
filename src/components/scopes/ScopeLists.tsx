@@ -17,10 +17,9 @@ import { FETCH_AVAILABLE_DATABASES } from '../../store/databases/types';
 import { TopContainer } from '../../styles/CommonStyles';
 import { SettingContext } from '../database/settings/SettingContext';
 import ScopeFormContainer from '../database/ScopeFormContainer';
-import APILoadingProgress from '../loading/APILoadingProgress';
 import { useLocation, useNavigate } from '../../router/react';
 import { toggleAlert } from '../../store/alerts/action';
-import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepScopesMultiView, KeepWrapperContainer } from '../keep-elements/KeepElements';
+import { KeepButton, KeepCardViewOptions, KeepDatabaseSearch, KeepNetworkErrorDialog, KeepPageLoading, KeepScopesMultiView, KeepWrapperContainer } from '../keep-elements/KeepElements';
 import { useAppDispatch } from '../../store/hooks';
 
 const ScopeLists = () => {
@@ -163,7 +162,7 @@ const ScopeLists = () => {
             <ScopeFormContainer database={selectedScope} isEdit={isEdit} permissions={permissions}/>
             <KeepNetworkErrorDialog />
           </>
-        {!(databasePull || scopePull) && <APILoadingProgress label="Scopes" />}
+        {!(databasePull || scopePull) && <KeepPageLoading contained pageHeight message="Scopes are loading. This may take a few seconds..." />}
       </KeepWrapperContainer>
     </SettingContext.Provider>
   );

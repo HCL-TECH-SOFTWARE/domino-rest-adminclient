@@ -242,10 +242,6 @@ body[data-theme="dark"] .color-text-disabled {
     width: 100%;
 }
 
-.no-min-width {
-    min-width: 0;
-}
-
 .min-width-85 {
     min-width: 85px;
 }
@@ -513,10 +509,6 @@ body[data-theme="dark"] .color-text-disabled {
 
 .z-2 {
     z-index: 2;
-}
-
-.z-1300 {
-    z-index: 1300;
 }
 
 .justify-start {
