@@ -195,17 +195,24 @@ describe('FormController against the five real forms', () => {
 
   // ---- gaps, recorded rather than worked around -------------------------------------------
 
-  it('GAP: has no per-field touched, so errors can only appear after a submit', async () => {
+  it('has no per-field touched, which is what the four forms already do', async () => {
     const el = await mountLit<FormHost>('test-form-host');
     const form = new FormController<SchemaForm>(el, {
       initialValues: INITIAL,
       onSubmit: () => {},
       schema: schemaFor([], () => ''),
     });
-    // Formik's `!!errors.x && touched.x` guard exists because errors are computed eagerly and
-    // must be hidden until the user has been near the field. Here they are computed *at
-    // submit*, so the guard collapses to `errors.x` — but it also means a converted form shows
-    // nothing until the first submit attempt, where Formik showed it on blur.
+    // This was recorded as a GAP, on the grounds that a converted form would show nothing until
+    // the first submit "where Formik showed it on blur". **Formik never showed it on blur here.**
+    // `handleBlur` is wired nowhere in `src` — 17 reads of `errors.x && touched.x` across
+    // ScopeForm, QuickConfigForm, AddImportDialog and AppForm, and not one `onBlur` on a field.
+    // The only other path to `touched` is Formik's SUBMIT_ATTEMPT reducer, which marks every
+    // field at once (`formik.esm.js:321`, `setNestedObjectValues(state.values, true)`).
+    //
+    // So `errors.x && touched.x` already means "after a submit attempt", and `submitted` is the
+    // faithful equivalent, not a regression. The real difference is narrower: Formik's
+    // `validateOnChange` re-runs the schema per keystroke, so post-submit an error tracks each
+    // character, where `setValue` here clears the field's error until the next `submit()`.
     expect(form.errors).toEqual({});
     expect('touched' in form).toBe(false);
     await form.submit();
@@ -221,20 +228,22 @@ describe('FormController against the five real forms', () => {
     expect(typeof el.form.setValue).toBe('function');
   });
 
-  it('GAP: submit is not guarded against re-entry', async () => {
-    // A double-clicked save button calls onSubmit twice. `submitting` is exposed so a caller
-    // can disable the button, but nothing enforces it, and the second click can land before the
-    // re-render that would disable it. All five form owners dispatch a mutating thunk from
-    // onSubmit, so this is two writes -- two *creates* for addSchema and addApplication.
+  it('ignores a second submit while the first is in flight', async () => {
+    // Was "GAP: submit is not guarded against re-entry", asserting `peak === 2` deliberately so
+    // the change would be visible. #887 added the guard, so this is the inversion it asked for.
     //
-    // Filed as #887. This test asserts the behaviour as it stands so the change is visible; it
-    // has to be inverted by whichever commit adds the guard.
+    // A disabled submit button cannot do this job: the second click of a fast double click lands
+    // before the re-render that would disable it. Every form owner dispatches a mutating thunk
+    // from onSubmit, so unguarded this is two writes -- two *creates* for addSchema and
+    // addApplication.
     let running = 0;
     let peak = 0;
+    let calls = 0;
     const el = await mountLit<FormHost>('test-form-host');
     const form = new FormController<SchemaForm>(el, {
       initialValues: INITIAL,
       onSubmit: async () => {
+        calls += 1;
         running += 1;
         peak = Math.max(peak, running);
         await Promise.resolve();
@@ -242,6 +251,43 @@ describe('FormController against the five real forms', () => {
       },
     });
     await Promise.all([form.submit(), form.submit()]);
-    expect(peak).toBe(2);
+    expect(peak).toBe(1);
+    // `calls` as well as `peak`: peak alone would also pass if the guard *serialised* the two
+    // rather than dropping the second, and those differ by one POST.
+    expect(calls).toBe(1);
+  });
+
+  it('accepts a further submit once the first has settled', async () => {
+    // The guard must not latch. `submitting` is cleared in a `finally`, so a form whose first
+    // save failed server-side has to be resubmittable -- otherwise the fix for a double write
+    // becomes a form that can only ever be sent once.
+    let calls = 0;
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: async () => {
+        calls += 1;
+      },
+    });
+    await form.submit();
+    await form.submit();
+    expect(calls).toBe(2);
+    expect(form.submitting).toBe(false);
+  });
+
+  it('does not latch after onSubmit rejects', async () => {
+    let calls = 0;
+    const el = await mountLit<FormHost>('test-form-host');
+    const form = new FormController<SchemaForm>(el, {
+      initialValues: INITIAL,
+      onSubmit: async () => {
+        calls += 1;
+        throw new Error('server said no');
+      },
+    });
+    await expect(form.submit()).rejects.toThrow('server said no');
+    expect(form.submitting).toBe(false);
+    await expect(form.submit()).rejects.toThrow('server said no');
+    expect(calls).toBe(2);
   });
 });

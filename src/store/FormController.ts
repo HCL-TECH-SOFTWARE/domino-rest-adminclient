@@ -111,7 +111,23 @@ export class FormController<T extends object> implements ReactiveController {
     return this._submitting;
   }
 
+  /**
+   * Validate, then hand the values to `onSubmit`. A second call while the first is still in
+   * flight is **ignored** (#887).
+   *
+   * The guard is here rather than in the callers because a disabled submit button cannot do
+   * this job: the second click of a fast double click lands before the re-render that would
+   * disable it. Every form owner dispatches a mutating thunk from `onSubmit` — for
+   * `addSchema` and `addApplication` an unguarded double submit is two *creates*, not an
+   * idempotent retry.
+   *
+   * Ignored, not queued, and the promise resolves immediately rather than tracking the
+   * in-flight run: a caller that awaits `submit()` twice gets no signal that its second call
+   * did nothing. That is the accepted cost of the one-line form — see #887 option 2 for the
+   * alternative, which nothing has yet needed.
+   */
   async submit(): Promise<void> {
+    if (this._submitting) return;
     this._submitted = true;
     this._submitting = true;
     this.host.requestUpdate();
