@@ -16,7 +16,6 @@ import { Alert, AlertTitle } from '@mui/material';
 import { FormikProps } from 'formik';
 import { AppState } from '../../store';
 import { APP_ICON_NAMES } from '../../services/app-icons';
-import { AppIcon } from '../commons/AppIcon';
 import { checkIcon } from '../../styles/scripts';
 import { toggleDrawer } from '../../store/drawer/action';
 import {
@@ -24,6 +23,7 @@ import {
   InputContainer,
 } from '../../styles/CommonStyles';
 import {
+  KeepAppIcon,
   KeepButton,
   KeepCheckbox,
   KeepSchemaContentsTree,
@@ -395,13 +395,25 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
                 MuiSvgIcon's own width: 1em outranked by injection order, so this glyph
                 has always drawn 24px square. wa-icon would have honoured the 35px as a
                 canvas around a graphic still sized by font-size — empty space rather
-                than a bigger icon. size='xl' is what reproduces the 24px. */}
-            <AppIcon
+                than a bigger icon. size='xl' is what reproduces the 24px.
+
+                It is slotted now, so it stays in this document's light DOM and its
+                classes still reach it. The span is required: the icon wrapper forwards a
+                fixed set of props and would drop a `slot` attribute silently.
+
+                mr-15 goes with the conversion. quick-config-icon-image now sizes the host
+                rather than the image, so the glyph sits in a 35px box in both states —
+                which is what the 15px margin beside a 24px glyph was approximating. Left
+                on, the margin would overflow that fixed box and change nothing. */}
+            <KeepAppIcon
               name={icon}
               className="quick-config-icon-image"
               alt="db-icon"
-              fallback={<KeepIcon name='database' size='xl' className='mr-15' />}
-            />
+            >
+              <span slot="fallback">
+                <KeepIcon name='database' size='xl' />
+              </span>
+            </KeepAppIcon>
             {checkIcon(icon) ? icon : ''}
             {/* No size: .big-text sets font-size 18px, which a wa-size-* token could not
                 override from @layer wa-utilities. */}
@@ -423,7 +435,7 @@ const ScopeForm: React.FC<ScopeFormProps> = ({
                 className='flex gap-5'
               >
                 <>
-                  <AppIcon
+                  <KeepAppIcon
                     name={iconName}
                     className="quick-config-icon-image"
                     alt="db-icon"

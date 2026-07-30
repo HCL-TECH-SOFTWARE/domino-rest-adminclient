@@ -8,13 +8,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@linaria/react';
 import { Box } from '@mui/material';
 import { AppFormProp, AppProp } from '../../store/applications/types';
-import { AppIcon } from '../commons/AppIcon';
 import { generateSecret } from '../../store/applications/action';
 import { toggleAlert } from '../../store/alerts/action';
 import { DeleteIcon } from '../../styles/CommonStyles';
 import { FormikProps } from 'formik';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
-import { KeepAppStatus, KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepAppIcon, KeepAppStatus, KeepButton, KeepTooltip } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -56,6 +55,23 @@ const Row = styled.tr`
   /* Was MdEdit size={20}, i.e. a 20px SVG box. wa-icon sizes from font-size. */
   .edit-icon {
     font-size: 20px;
+  }
+
+  /* Was AppImage, a styled image handed to the icon component's element-override prop.
+     That prop is gone with the conversion: the icon is a custom element now and its
+     image lives in a shadow root, where no class from this stylesheet reaches it. The
+     element exposes the image as a part, which is the one hook that does cross.
+     width is stated because the element's own rule stretches the image to the host, and
+     here the host is unsized — the height and the picture's own ratio decide the box, as
+     they did when these declarations sat on the image itself. The grey plate is carried
+     over unchanged; it is a literal, not a token, so it does not follow the theme. */
+  keep-app-icon::part(icon) {
+    margin-top: 8px;
+    background: #D9D9D9;
+    border-radius: 8px;
+    padding: 6px;
+    width: auto;
+    height: 40px;
   }
 
   .delete-icon {
@@ -108,14 +124,6 @@ const OptionsContainer = styled(Box)`
     flex-direction: row;
     gap: 10px;
 `
-
-const AppImage = styled.img`
-  margin-top: 8px;
-  background: #D9D9D9;
-  border-radius: 8px;
-  padding: 6px;
-  height: 40px !important;
-`;
 
 interface AppItemProps {
   app: AppProp;
@@ -261,11 +269,10 @@ const AppItem: React.FC<AppItemProps> = ({
                 </td>
                 <td className='app-name'>
                   <AppNameContainer>
-                    <AppIcon
+                    <KeepAppIcon
                         name={app.appIcon}
                         alt="db-icon"
                         className='color-hover'
-                        as={AppImage}
                     />
                     <div className='flex flex-col gap-2'>
                         <span className='small-text'>{app.appName}</span>

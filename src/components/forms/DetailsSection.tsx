@@ -14,14 +14,13 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { AppState } from '../../store';
 import { APP_ICON_NAMES, DEFAULT_APP_ICON_NAME, appIconPayload, useAppIcons } from '../../services/app-icons';
-import { AppIcon } from '../commons/AppIcon';
 import { checkIcon } from '../../styles/scripts';
 import { Database } from '../../store/databases/types';
 import Button from '@mui/material/Button';
 import { updateSchema } from '../../store/databases/action';
 import { BlueSwitch, InputContainer, SchemaIconStatus } from '../../styles/CommonStyles';
 import { Box } from '@mui/material';
-import { KeepButton, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
+import { KeepAppIcon, KeepButton, KeepFormDialogHeader, KeepTooltip } from '../keep-elements/KeepElements';
 import { KeepIcon } from '../keep-elements/react/KeepIcon';
 import { useAppDispatch } from '../../store/hooks';
 
@@ -388,7 +387,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
   const IconDropDown = (
     <InputContainer>
       <Button aria-controls="icons-menu" aria-haspopup="true" onClick={handleSelectIcon} className="icon-select">
-        <AppIcon
+        <KeepAppIcon
           name={displayIconName}
           className="details-section-icon-dropdown"
           alt="db-icon"
@@ -401,7 +400,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
         {APP_ICON_NAMES.map((iconName, index) => (
           <MenuItem key={iconName} selected={index === selectedIndex} onClick={(event) => handleMenuItemClick(event, index)}>
             <div className='flex gap-5 items-center'>
-              <AppIcon
+              <KeepAppIcon
                 name={iconName}
                 className="quick-config-icon-image"
                 alt="db-icon"
@@ -415,7 +414,7 @@ const DetailsSection: React.FC<DetailsSectionProps> = ({ dbName, schemaData, set
   );
 
   const SchemaIcon = (
-    <AppIcon
+    <KeepAppIcon
       name={iconName}
       className="details-section-icon-dropdown"
       alt="db-icon"
