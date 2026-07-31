@@ -133,6 +133,29 @@ describe('icon-library', () => {
   });
 
   /**
+   * The glyphs staged for #946's sweep of hand-drawn `<svg>`.
+   *
+   * Named rather than left to the generic "every icon maps to a non-empty URL" check above,
+   * because these are the one group in the registry with **no call site yet** — so that check
+   * is the only thing standing between them and a typo'd or renamed Font Awesome file, and it
+   * would report `undefined` for a name nobody has written in markup anywhere. Listing them
+   * also makes the set greppable from the issue.
+   *
+   * Delete this with the entries if #946 is abandoned.
+   */
+  it('bundles the glyphs staged for the inline-svg sweep', () => {
+    for (const name of [
+      'angles-left',
+      'angles-right',
+      'circle-exclamation',
+      'circle-play',
+      'filter',
+    ]) {
+      expect(ICONS[name], `"${name}" is staged for #946 but not bundled`).toBeTruthy();
+    }
+  });
+
+  /**
    * #718 consolidated four icon systems onto `wa-icon`. Two of them are now uninstalled,
    * and this is what keeps them uninstalled: re-adding either is a one-line import that
    * would otherwise pass every other check in the repo.
