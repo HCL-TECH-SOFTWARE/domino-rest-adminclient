@@ -105,7 +105,11 @@ describe('shell dead code stays removed (#707)', () => {
   });
 
   it('leaves Views without a props interface', () => {
-    const views = SOURCES.find(({ file }) => file === 'src/Views.tsx')!;
-    expect(code(views.text)).not.toMatch(/interface ViewsProps/);
+    // `Views.tsx` became `keep-views.ts` in #719 P4. Repointed rather than dropped: the dead
+    // `open` prop this guards against is a shape, not a file, and a Lit element can grow a
+    // `@property` chain nobody reads just as easily as a React component could.
+    const views = SOURCES.find(({ file }) => file === 'src/components/keep-elements/keep-views.ts');
+    expect(views, 'the main region moved again — repoint this guard').toBeDefined();
+    expect(code(views!.text)).not.toMatch(/interface ViewsProps|accessor open\b/);
   });
 });

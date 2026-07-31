@@ -143,7 +143,7 @@ export const fetchScopes = () => {
         dispatch(setPullScope(true));
       }
     } catch (e: any) {
-      // Reports rather than propagates. Both callers in Views.tsx dispatch this
+      // Reports rather than propagates. Both callers in keep-views dispatch this
       // fire-and-forget with no .catch, so rethrowing surfaced as an unhandled
       // rejection and the user saw nothing at all -- the `if (err) throw err`
       // that used to sit here fired on every path, making the dispatch below it

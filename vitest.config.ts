@@ -169,16 +169,11 @@ export default defineConfig({
         // sibling's numbers exactly — which is what the paragraph above always intended.
         'src/store/StoreController.ts': { lines: 97, statements: 97, functions: 97, branches: 95 },
         'src/store/FormController.ts': { lines: 97, statements: 97, functions: 97, branches: 95 },
-        // The React host for FormController (#717), measured at 100/100/100/100. Gated at the
-        // measurement rather than a few points under, because it is a bridge that 15 tier-D
-        // conversions call, and the two things it exists to get right — one controller instance
-        // across renders, and fresh `onSubmit`/`schema` closures on every submit — both fail
-        // *silently*. A stale closure is a save that writes the wrong thing, only sometimes.
-        //
-        // **Delete this entry with the file.** `FormController.react.ts` goes when the last
-        // `.tsx` consumer becomes a Lit element; a floor on a path that no longer exists
-        // protects nothing while looking like it does.
-        'src/store/FormController.react.ts': { lines: 100, statements: 100, functions: 100, branches: 100 },
+        // `FormController.react.ts` was gated here at 100/100/100/100, with a note saying to
+        // delete the entry with the file. #719 did: the adapter existed to let a `.tsx` drop
+        // Formik without also converting to Lit, it served exactly one pair of files for about
+        // half an hour before they converted, and it has had no consumer since. #717 closed
+        // with Formik gone from the tree, so it had no future users either.
         // store.ts is one `configureStore` call: 100 % lines, and *zero* functions and
         // zero branches to count. Those two floors are vacuous — left where they are
         // rather than raised to imply a measurement that does not exist.

@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import WaPage from '@awesome.me/webawesome/dist/react/page/index.js';
 import './App.css';
 import './styles/app-shell.css';
-import Views from './Views';
+import { KeepViews } from './components/keep-elements/react/KeepViews';
 import { KeepProfileMenu } from './components/keep-elements/react/KeepProfileMenu';
 import { KeepProfileMenuDialog } from './components/keep-elements/react/KeepProfileMenuDialog';
 import { KeepFooter } from './components/keep-elements/react/KeepFooter';
@@ -40,8 +40,8 @@ import { useAppDispatch } from './store/hooks';
  *     where the `calc(100vh - 23px)` in this app's ~20 page-level rules comes from. Slotting
  *     it would add a grid row and change every one of them. It stays a fixed overlay outside
  *     the page element.
- *   - `subheader`. The obvious tenant is `PageRouters`, but it renders inside `Views`'
- *     `NavigationGuardProvider` and needs the router context; hoisting it is its own change.
+ *   - `subheader`. The obvious tenant is the breadcrumb strip, but it is rendered by
+ *     `keep-views` inside that element's shadow root; hoisting it is its own change.
  *
  * The React subtrees inside each slot are untouched: `wa-page` slots light DOM, so the
  * reconciler and the Redux tree inside them keep working. Only the outer scaffolding
@@ -236,7 +236,12 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
           <KeepProfileMenu expanded={expanded} onLogout={handleLogout} />
         </div>
 
-        {children ?? <Views />}
+        {/*
+          `keep-views` since #719 P4 — the main region, its route table and the outlet under it
+          are all Lit now. This is the one `@lit/react` wrapper left in the region, and it
+          exists only because this file is still React; it goes when the shell does.
+        */}
+        {children ?? <KeepViews />}
 
         {!isMobile && (
           <button

@@ -52,12 +52,13 @@ const VIEW_QUERY = '?view=';
  * this screen has no "only show configured" filter row, because there is no scope-level
  * equivalent of the schemas screen's scopes toggle. Nothing was dropped to get here.
  *
- * ## It is reached through a wrapper, because a route root has to be a component
+ * ## The route mounts this module directly
  *
- * `Views.tsx` hands each route a `load()` and the outlet wraps it in a lazy boundary, which
- * needs a module whose default export is a component — so the route cannot point at an
- * element module. It points at `keep-elements/react/KeepScopesList` instead, the same shape
- * the schemas route, the consents route and the quick-config drawer already use.
+ * It used to be reached through `keep-elements/react/KeepScopesList`, because `Views.tsx`
+ * wrapped every route in a lazy boundary that needs a module whose default export is a
+ * *component* — and an element module's is a class. #719 P4 made the outlet a Lit element, so
+ * `keep-views` names the tag and imports this module for its registration alone. That wrapper
+ * is deleted.
  *
  * ## The router comes from a controller
  *
@@ -76,7 +77,7 @@ const VIEW_QUERY = '?view=';
  * slice is a stable object between changes and so safe under the controller's `Object.is`
  * rule.
  *
- * There is no fetch on connect, because there never was one: `Views.tsx` refetches the scopes
+ * There is no fetch on connect, because there never was one: `keep-views` refetches the scopes
  * whenever `scopePull` is down and the URL needs them, which is also what makes Refresh below
  * work — it lowers the flag and that effect answers.
  *
@@ -240,7 +241,7 @@ export default class ScopesList extends KeepElement {
    * Refresh drops both pull flags and asks for the schemas again.
    *
    * The scopes are not refetched from here and never were: lowering `scopePull` is what
-   * `Views.tsx` watches, and it issues that fetch. The available-database list is emptied with
+   * `keep-views` watches, and it issues that fetch. The available-database list is emptied with
    * a raw action type, one of the handful the databases reducer still matches as a literal
    * string for exactly this call site.
    */

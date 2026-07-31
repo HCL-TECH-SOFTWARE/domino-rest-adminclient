@@ -30,7 +30,7 @@ const read = (path: string) => readFileSync(resolve(ROOT, path), 'utf8');
 
 const shell = read('src/AppShell.tsx');
 const shellCss = read('src/styles/app-shell.css');
-const views = read('src/Views.tsx');
+const views = read('src/components/keep-elements/keep-views.ts');
 const mobileHeader = read('src/components/keep-elements/keep-mobile-header.ts');
 const globalCss = read('src/styles/styles.css');
 /** The footer's own copy of the breakpoint since #806 moved it out of the global sheet. */
@@ -78,7 +78,7 @@ describe('AppShell on wa-page (#707)', () => {
     // The third statement of the breakpoint used to sit in styles.css, next to the footer's
     // global rules. #806 moved the footer into a shadow root, so its media query moved with
     // it — global CSS does not cross a shadow boundary.
-    for (const [label, css] of [['app-shell.css', shellCss], ['Views.tsx', views], ['keep-footer.ts', footerElement]] as const) {
+    for (const [label, css] of [['app-shell.css', shellCss], ['keep-views.ts', views], ['keep-footer.ts', footerElement]] as const) {
       expect(css, `${label} lost its (width < ${px}px) query`).toMatch(
         new RegExp(`\\(width < ${px}px\\)`),
       );

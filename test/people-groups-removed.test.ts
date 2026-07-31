@@ -142,9 +142,14 @@ describe('People and Groups stay removed (#770)', () => {
   it('leaves /mail commented out, and says why', () => {
     // /mail was disabled by the same commit but is blocked on LABS-1214 (#698), not on
     // #770 — so it stays, and the note has to keep saying so.
-    const views = read('src/Views.tsx');
+    const views = read('src/components/keep-elements/keep-views.ts');
     expect(views).toMatch(/LABS-1214/);
     expect(views).toMatch(/\/mail/);
-    expect(code(views), '/people or /groups routing is back').not.toMatch(/path="\/(people|groups)"/);
+    // Both spellings: the JSX `path="/people"` the routes had under react-router, and the
+    // `path: '/people'` a route object in `keep-views` would use. Checking only the first would
+    // have gone quietly vacuous the moment the route table stopped being JSX.
+    expect(code(views), '/people or /groups routing is back').not.toMatch(
+      /path\s*[:=]\s*['"]?\/(people|groups)\b/,
+    );
   });
 });
