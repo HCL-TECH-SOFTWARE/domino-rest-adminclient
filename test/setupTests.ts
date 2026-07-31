@@ -8,8 +8,11 @@
 // (Under the old Jest config this file existed but was never loaded, so the
 // stubs below were copy-pasted into individual test files. They now live here.)
 
-// jest-dom matchers, registered against Vitest's `expect`.
-import '@testing-library/jest-dom/vitest';
+// No jest-dom. It was imported here to register its matcher set globally, and across 189
+// test files exactly six assertions ever used one — `toBeDisabled` and `toBeEnabled`, all
+// in `keep-apps-table.test.ts`, all on native buttons where the matcher reduces to reading
+// `.disabled`. Eight packages and a global import for that; the assertions read the
+// property directly now. See #825's gate for the same shape of decision.
 import { afterEach, beforeEach, vi } from 'vitest';
 import { TextEncoder, TextDecoder } from 'node:util';
 import { Router, memoryHistory } from '../src/router/router';

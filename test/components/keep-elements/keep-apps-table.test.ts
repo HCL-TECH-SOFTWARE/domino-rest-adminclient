@@ -235,19 +235,23 @@ describe('keep-apps-table', () => {
       expect(visibleNames(el)[0]).toBe('App01');
     });
 
+    // `deepButton` resolves `button[aria-label=…]`, so these are native buttons and
+    // `.disabled` is the property the user agent acts on. That is what jest-dom's
+    // toBeDisabled read here too — it walks ancestors for a disabled fieldset and checks
+    // aria-disabled, neither of which is in play for a pagination button in a shadow root.
     it('disables first and previous on page one', async () => {
       await mount();
-      expect(nav.first()).toBeDisabled();
-      expect(nav.prev()).toBeDisabled();
-      expect(nav.next()).toBeEnabled();
+      expect(nav.first().disabled).toBe(true);
+      expect(nav.prev().disabled).toBe(true);
+      expect(nav.next().disabled).toBe(false);
     });
 
     it('disables next and last on the final page', async () => {
       const el = await mount();
       await click(el, nav.last());
-      expect(nav.next()).toBeDisabled();
-      expect(nav.last()).toBeDisabled();
-      expect(nav.prev()).toBeEnabled();
+      expect(nav.next().disabled).toBe(true);
+      expect(nav.last().disabled).toBe(true);
+      expect(nav.prev().disabled).toBe(false);
     });
 
     it('shows every app when the page size is All', async () => {
