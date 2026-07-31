@@ -23,6 +23,11 @@ import { join, resolve } from 'node:path';
  * so the next person styling a screen matches or duplicates a name that controls nothing.
  * That will keep happening: #709, #717, #718 and #771 each delete more screens.
  *
+ * #930 then removed 147 rules in one pass and took the sheet from 1316 lines to 425. That is
+ * not a backlog this guard let build up — it is the guard's own two blind spots, both closed
+ * below. Read those two notes before adding a rule here: a check that passes for the wrong
+ * reason is worse than no check, because it is also a claim.
+ *
  * Scope is deliberately this one sheet. It is the hand-written component-class sheet, so
  * every name in it should appear in source.
  *
@@ -45,6 +50,25 @@ const walk = (dir: string): string[] =>
 const SELF = 'test/styles/dead-selectors.test.ts';
 
 /**
+ * Comments are not source (#930).
+ *
+ * Every converted element documents where its rules came from, in a note that reads "was
+ * .script-editor-container" — and naming the class in that prose was enough to keep the rule
+ * looking alive. The guard therefore had a false negative that *grew with every wave*: 44
+ * rules when #930 was opened, 147 by the time it was done, because waves 7 and 8 converted the
+ * six largest elements and each conversion note named every class it replaced.
+ *
+ * The `code()` spelling is the one `app-shell.test.ts`, `mui-removed.test.ts`,
+ * `csp-inline-styles.test.ts`, `validity-states.test.ts` and `wa-usage.test.ts` already share.
+ *
+ * This does not weaken the over-accepting rule below. That rule is about *code*: a class can
+ * reach an element by too many routes to parse for, so any appearance in code counts. A
+ * comment is not one of those routes.
+ */
+const code = (text: string) =>
+  text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+/**
  * Source is searched as raw text rather than parsed. A class reaches an element through
  * `className`, a template literal, `classList.add`, a Lit template or a `styled` block, and
  * a parser tuned to one of those would miss the rest. Substring matching over-accepts, and
@@ -54,12 +78,30 @@ const SELF = 'test/styles/dead-selectors.test.ts';
 const SOURCE = ['src', 'test']
   .flatMap((dir) => walk(resolve(ROOT, dir)))
   .filter((file) => /\.(tsx?|html)$/.test(file) && !file.endsWith(SELF))
-  .map((file) => readFileSync(file, 'utf8'))
+  .map((file) => code(readFileSync(file, 'utf8')))
   .join('\n');
 
-/** Top-level class rules — `.foo {` at column 0. */
+/**
+ * Every class named in any selector, at any nesting depth.
+ *
+ * This used to be `^\.name {` — a class rule starting at column 0 — which was a second blind
+ * spot, and one earlier deletion passes created themselves. Removing a rule and leaving its
+ * closing brace glued to the next selector produces `}.w-35vw {`, and six such rules were
+ * invisible to the scan. Three more were descendant rules (`body[data-theme="dark"]
+ * .color-text-disabled`) or carried an attribute (`.add-mode-dialog-container[open]`), which
+ * that pattern also could not see.
+ *
+ * Comments are stripped first so a class named only inside one does not register as defined
+ * either — `.color-base` is named in a `:root` note and has no rule.
+ */
 const selectors = (css: string) =>
-  [...css.matchAll(/^\.([a-zA-Z][a-zA-Z0-9_-]*)\s*\{/gm)].map((match) => match[1]);
+  [
+    ...new Set(
+      [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]*)\{/g)].flatMap((match) =>
+        [...match[1].matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g)].map((name) => name[1]),
+      ),
+    ),
+  ];
 
 describe('styles.css carries no rule nothing applies', () => {
   const css = readFileSync(resolve(ROOT, 'src/styles/styles.css'), 'utf8');
@@ -70,14 +112,15 @@ describe('styles.css carries no rule nothing applies', () => {
     //
     // The number is deliberately far below the current count and must stay that way. It was
     // 300, then 200, then 150, moved each time by a wave of #806 legitimately deleting rules;
-    // 196 remain as of wave 6 and they will keep falling until the last screen converts. A
-    // threshold that has to be re-set whenever the thing it measures changes on purpose is not
-    // a guard, it is a chore — and one that trains people to edit floors, which is how a real
-    // ratchet gets quietly lowered later.
+    // #930 took it to 50 in one pass and they will keep falling until the last screen converts.
+    // A threshold that has to be re-set whenever the thing it measures changes on purpose is
+    // not a guard, it is a chore — and one that trains people to edit floors, which is how a
+    // real ratchet gets quietly lowered later.
     //
     // The failure this catches is a parse returning nothing, so it is caught just as well at 20
-    // as at 150, and 20 needs no further edits. The same reasoning removed the aggregate floor
-    // in `type-selectors.test.ts`; this is the per-sheet form of it.
+    // as at 150, and 20 has needed no edit across three waves that moved every other number
+    // here. The same reasoning removed the aggregate floor in `type-selectors.test.ts`; this is
+    // the per-sheet form of it.
     expect(selectors(css).length).toBeGreaterThan(20);
     expect(SOURCE.length).toBeGreaterThan(100_000);
   });
