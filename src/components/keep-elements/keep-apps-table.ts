@@ -448,8 +448,7 @@ export default class AppsTable extends KeepElement {
         <table aria-label="applications table">
           <thead>
             <tr>
-              <!-- The launch column, which has no name to give. Left empty, as it was. -->
-              <th class="launch" scope="col"></th>
+              <th class="launch" scope="col"><span class="visually-hidden">Open app</span></th>
               <th class="app-name text" scope="col">
                 <div class="full-width flex flex-col gap-3">
                   <span class="small-text text-bold flex items-center gap-3">
@@ -494,7 +493,7 @@ export default class AppsTable extends KeepElement {
                   <input type="text" class="search-bar hidden" aria-hidden="true" tabindex="-1" />
                 </div>
               </th>
-              <th class="icons" scope="col"></th>
+              <th class="icons" scope="col"><span class="visually-hidden">Actions</span></th>
             </tr>
           </thead>
           <tbody>

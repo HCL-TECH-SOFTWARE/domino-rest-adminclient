@@ -832,6 +832,7 @@ export default class AddImportDialog extends KeepElement {
             >${this.importing ? 'Import Into Database' : 'Database'}</span
           >
           <keep-autocomplete
+            label=${this.importing ? 'Import Into Database' : 'Database'}
             .options=${this.db.value.availableDatabases.map((database) => database.title)}
             .initialOption=${values.nsfPath}
             ?error=${!!nsfPathError}

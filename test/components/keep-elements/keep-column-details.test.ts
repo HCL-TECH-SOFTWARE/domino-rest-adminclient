@@ -73,7 +73,11 @@ describe('keep-column-details — structure', () => {
 
   it('labels the columns', async () => {
     const el = await mount();
-    expect(headerLabels(el)).toEqual(['', 'Column Name', 'External Name']);
+          // The control column's header is named rather than blank (#713). It was empty, so a
+      // screen reader moving across the header row announced nothing for it and the cells
+      // under it had no column name to be associated with. The name is visually hidden — the
+      // column still looks unlabelled, which is the design.
+expect(headerLabels(el)).toEqual(['Actions', 'Column Name', 'External Name']);
   });
 
   it('names the table for assistive tech', async () => {

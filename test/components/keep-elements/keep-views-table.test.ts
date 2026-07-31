@@ -97,9 +97,13 @@ describe('keep-views-table', () => {
       expect(bodyRows(el)).toHaveLength(0);
     });
 
-    it('labels the columns, with a blank cell above the edit buttons', async () => {
+    it('labels the columns, including a hidden name above the edit buttons', async () => {
       const el = await mount();
-      expect(headerLabels(el)).toEqual(['', 'View Name', 'Alias', 'Status']);
+      // The control column's header is named rather than blank (#713). It was empty, so a
+      // screen reader moving across the header row announced nothing for it and the cells
+      // under it had no column name to be associated with. The name is visually hidden — the
+      // column still looks unlabelled, which is the design.
+      expect(headerLabels(el)).toEqual(['Actions', 'View Name', 'Alias', 'Status']);
     });
 
     it('marks the header cells as column headers', async () => {

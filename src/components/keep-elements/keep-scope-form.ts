@@ -754,12 +754,16 @@ export default class ScopeForm extends KeepElement {
         </div>
 
         <div class="checkbox-row">
+          <!-- The caption is slotted, not a sibling (#713). Next to the control it named
+               nothing: a wa-checkbox renders its real input inside its own shadow root and
+               wires only its label slot into it, so the span beside it was invisible to
+               assistive tech and the control announced as an unlabelled checkbox. This is
+               what keep-app-form already does. -->
           <keep-checkbox
             size="m"
             ?checked=${values.isActive}
             @change=${(e: Event) => this.setValue('isActive', this.checkedOf(e))}
-          ></keep-checkbox>
-          <span>Active</span>
+          >Active</keep-checkbox>
         </div>
 
         <div class="actions">

@@ -262,7 +262,7 @@ export default class ColumnDetails extends KeepElement {
         <table aria-label="edit columns table">
           <thead>
             <tr>
-              <th class="col-actions" scope="col"></th>
+              <th class="col-actions" scope="col"><span class="visually-hidden">Actions</span></th>
               <th class="col-name" scope="col">Column Name</th>
               <th class="col-external" scope="col">External Name</th>
             </tr>

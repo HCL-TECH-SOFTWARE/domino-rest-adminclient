@@ -209,7 +209,14 @@ export default class SourceContents extends KeepElement {
     return html`
         <header>
             <section class="view-switcher">
-                <select @change="${this.handleDropdownChange}" .value="${this.selectedOption}">
+                <!-- aria-label, not a visible one: the control sits alone in the header
+                     bar and its options say what it does, but a select still needs a name
+                     of its own (WCAG 4.1.2) — it had none at all. #713 -->
+                <select
+                  aria-label="Source view"
+                  @change="${this.handleDropdownChange}"
+                  .value="${this.selectedOption}"
+                >
                     <option value="tree">Tree View</option>
                     <option value="text">Text View</option>
                     <option value="diff">Diff View</option>

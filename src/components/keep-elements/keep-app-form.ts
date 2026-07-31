@@ -586,7 +586,11 @@ export default class AppForm extends KeepElement {
             )}
           </div>
           <div class="scope-field">
-            <keep-autocomplete id="scope-input" .options=${this.scopeOptions}></keep-autocomplete>
+            <keep-autocomplete
+              id="scope-input"
+              label="Scope"
+              .options=${this.scopeOptions}
+            ></keep-autocomplete>
             <keep-button icon="plus" @click=${() => this.addScope()}>
               <span class="visually-hidden">Add scope</span>
             </keep-button>
@@ -609,6 +613,7 @@ export default class AppForm extends KeepElement {
         <small>App Icons</small>
         <keep-autocomplete
           class="icon-select"
+          label="App Icon"
           .options=${APP_ICON_NAMES}
           .icons=${this.icons}
           .selectedOption=${values.appIcon}
