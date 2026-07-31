@@ -7,6 +7,103 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
+/** The appearance boot module, as a Rollup input name and as a source path. */
+const APPEARANCE_BOOT = { name: 'appearance-boot', path: 'src/appearance-boot.ts' };
+
+/**
+ * Gives `src/appearance-boot.ts` its own `<script>` tag in the built HTML (#987).
+ *
+ * The module writes the theme class from `localStorage` and has to land before the first
+ * paint, which is why #707 made it a second module script rather than folding it into the app
+ * entry. **That never worked in a build.** Vite emits **one entry chunk per HTML page**
+ * regardless of how many `<script type="module" src>` tags it finds — measured both ways, and
+ * moving the tag between `<head>` and `<body>` changes not one byte of the output. So the
+ * 300-byte boot was concatenated into the ~90 kB app chunk and could not run until all of it
+ * had arrived. The ordering *within* the chunk was right, which is why nothing looked wrong.
+ *
+ * Declaring the module as a second Rollup input (below) splits the code out but is not enough
+ * on its own: with no tag of its own it becomes a *static import* of the app chunk, so the
+ * browser still has to fetch and parse ~90 kB before it can discover it. The tag is the point.
+ *
+ * `head-prepend`, so it precedes the entry script Vite injects into `<head>`. Both are
+ * `type="module"` and therefore deferred, so document order is execution order.
+ *
+ * It is a tag and not an inline block because the production CSP sends `script-src 'self'`
+ * (#752); `test/csp-policy.test.ts` pins that directive.
+ */
+function appearanceBootScript(): Plugin {
+  let base = '/';
+  return {
+    name: 'keep-appearance-boot-script',
+    configResolved(config) {
+      base = config.base;
+    },
+    transformIndexHtml: {
+      // `post`, so `ctx.bundle` is populated — the hashed filename is only known once the
+      // chunks exist. In dev there is no bundle and the source path is served as-is.
+      order: 'post',
+      handler(_html, ctx) {
+        if (!ctx.bundle) {
+          return [
+            {
+              tag: 'script',
+              attrs: { type: 'module', src: `${base}${APPEARANCE_BOOT.path}` },
+              injectTo: 'head-prepend'
+            }
+          ];
+        }
+
+        const chunk = bootChunk(ctx.bundle);
+        /*
+         * Preload what the boot imports, or the head start is spent on a second round trip.
+         *
+         * The chunk is ~80 bytes and imports `services/theme-service`, which Rollup emits as
+         * its own small chunk because the shell imports it too. Without these links the
+         * browser has to fetch the boot, parse it, discover the import and fetch again — one
+         * sequential RTT in front of the very write this is here to bring forward. Vite emits
+         * the same links for the entry it injects itself; ours is injected, so it does not.
+         */
+        return [
+          ...(chunk.imports ?? []).map((file) => ({
+            tag: 'link',
+            attrs: { rel: 'modulepreload', crossorigin: true, href: `${base}${file}` },
+            injectTo: 'head-prepend' as const
+          })),
+          {
+            tag: 'script',
+            attrs: { type: 'module', crossorigin: true, src: `${base}${chunk.fileName}` },
+            injectTo: 'head-prepend' as const
+          }
+        ];
+      }
+    }
+  };
+
+  /**
+   * The emitted boot entry chunk.
+   *
+   * Throws rather than skipping the tag. A missing tag is invisible — the app boots, every test
+   * passes, and the only symptom is a flash of the light theme on a dark-mode load, which is
+   * exactly the bug this exists to prevent.
+   */
+  function bootChunk(bundle: Record<string, unknown>): { fileName: string; imports?: string[] } {
+    const chunk = Object.values(bundle).find(
+      (output): output is { type: string; isEntry: boolean; name: string; fileName: string; imports?: string[] } => {
+        const candidate = output as { type?: string; isEntry?: boolean; name?: string };
+        return candidate.type === 'chunk' && !!candidate.isEntry && candidate.name === APPEARANCE_BOOT.name;
+      }
+    );
+    if (!chunk) {
+      throw new Error(
+        `No "${APPEARANCE_BOOT.name}" entry chunk in the bundle. It is declared in ` +
+          'build.rollupOptions.input; if that entry was renamed or removed, this plugin has ' +
+          'no tag to inject and the theme flash (#987, #707) comes back silently.'
+      );
+    }
+    return chunk;
+  }
+}
+
 /**
  * Injects `<meta name="admin-ui-daily-build-version">` into the served/built HTML.
  *
@@ -38,6 +135,7 @@ function stampBuildVersion(): Plugin {
 export default defineConfig({
   plugins: [
     stampBuildVersion(),
+    appearanceBootScript(),
     // The `wyw` (Linaria) plugin used to sit here, ahead of `react()`. It is gone with the
     // last `styled` block (#825) — nothing under `src` imports `@linaria/*` any more, and
     // the elements' `css` comes from `lit`.
@@ -91,7 +189,22 @@ export default defineConfig({
      * verbatim. It leaks nothing the asset filenames do not already, and the alternative —
      * a second throwaway build just to produce it — doubles CI build time.
      */
-    manifest: true
+    manifest: true,
+    /*
+     * Two entries, and `index.html` no longer declares the second one as a script tag —
+     * `appearanceBootScript()` injects that. Naming the module here is what makes Rollup emit
+     * it as its own ~300-byte entry chunk instead of concatenating it into the app's.
+     *
+     * The pair is not a duplication: with the tag gone from the HTML, nothing in the app graph
+     * imports this module, so its code appears exactly once. Verified by grepping the entry
+     * chunk for the appearance write — zero matches.
+     */
+    rollupOptions: {
+      input: {
+        index: 'index.html',
+        [APPEARANCE_BOOT.name]: APPEARANCE_BOOT.path
+      }
+    }
   },
   server: {
     headers: {
