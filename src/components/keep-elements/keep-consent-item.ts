@@ -112,6 +112,24 @@ export const consentItemStyles = css`
   keep-consent-item .chevron {
     font-size: var(--wa-font-size-xl);
   }
+
+  /*
+   * Hide the collapsed detail row (#976).
+   *
+   * Stated explicitly rather than left to the user-agent [hidden] rule. That rule is
+   * enough today — measured in Chrome with this declaration deleted, and the row still
+   * collapses to nothing — and it is not something to depend on. The page restores
+   * [hidden] in keep-overrides.css precisely because Web Awesome's native layer styles
+   * bare elements from an author layer and every author declaration outranks a user-agent
+   * one. Neither of those sheets crosses into this shadow root, so what stands between the
+   * empty band coming back and not is that nobody has yet restated a bare tr rule in the
+   * table's own styles — where table, thead, tbody and th are all already restated, for
+   * exactly the reason that they do not cross either. An author rule at 0,1,1 in the same
+   * root as the tr cannot be beaten by one at 0,0,1.
+   */
+  keep-consent-item tr[hidden] {
+    display: none;
+  }
 `;
 
 /**
@@ -295,12 +313,16 @@ export default class ConsentItem extends KeepElement {
         </td>
       </tr>
       <!--
-        The detail row is always present, empty when collapsed, because it always was: the
-        transition it used to hold collapsed its own contents to nothing and left the row and
-        its cell standing, padding and all. Removing it here would tighten every row in the
-        table by the cell's own 40px, which is a layout change nobody asked this pass for.
+        The detail row stays in the table when collapsed and is hidden rather than dropped,
+        so aria-controls above resolves in both states. It is not *rendered* when collapsed
+        (#976): the conversion kept it standing with its cell's 20px block padding intact,
+        because the transition it replaced collapsed its own contents and left the row
+        behind — so every closed consent was followed by a 41px empty band with a border of
+        its own, and a list of three read as three rows already opened onto nothing. The
+        conversion note said tightening the table was "a layout change nobody asked this
+        pass for", which was true of that pass and is what this issue asks for.
       -->
-      <tr id=${this.detailsId}>
+      <tr id=${this.detailsId} ?hidden=${!this.showDetails}>
         <td colspan="5">
           ${this.showDetails
             ? html`
