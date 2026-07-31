@@ -30,27 +30,21 @@
   --button-hover-color: var(--wa-color-brand-50);
   --dialog-header-color: light-dark(var(--wa-color-brand-20), var(--wa-color-brand-60));
   --dialog-title-color: #e0e0e0;
-  --badge-color-background: light-dark(var(--wa-color-brand-20), var(--wa-color-brand-60));
-  /* --base-color served two opposite roles at once — a text colour (.color-base)
-     and a surface fill carrying 24px white text (.background-keep-base and the
-     three *-header rules). #765 split them into --keep-text-brand and
+  /* --base-color served two opposite roles at once — a text colour and a surface fill
+     carrying 24px white text. #765 split them into --keep-text-brand and
      --keep-surface-brand in keep-theme.css, which is where the contrast table now
      lives. Both resolve to what --base-color already did, so nothing moved; they
      can simply be tuned apart now.
      This alias stays so any stylesheet or markup still saying --base-color keeps
-     working, and points at the surface half — every remaining consumer is a fill. */
+     working, and points at the surface half. Both of the rules it names above are gone
+     with #930, along with --badge-color and --badge-color-background, whose only reader
+     was the .background-badge rule deleted there. */
   --base-color: var(--keep-surface-brand);
-  --badge-color: #fff;
   --icon-color: var(--wa-color-text-loud);
   --hint-text-color: light-dark(#808080, #a9a9a9);
   --active-indicator-color: light-dark(#0fa068, #52c999);
   --inactive-indicator-color: light-dark(#8291a0, #707e8a);
   --copyright-color: var(--wa-color-text-quiet);
-}
-
-/* Generic */
-.tiny-text {
-    font-size: 12px;
 }
 
 .text-13 {
@@ -70,30 +64,16 @@
     font-size: 18px;
 }
 
-.large-text {
-    font-size: 20px;
-}
-
-.text-transform-none {
-    text-transform: none;
-}
-
 .divider {
     height: 1px;
     background: #cbcbcb;
     width: 100%;
     padding: 0;
     margin: 0;
-}.cursor-pointer {
+}
+
+.cursor-pointer {
     cursor: pointer;
-}
-
-.pointer-auto {
-    pointer-events: auto;
-}
-
-.pointer-none {
-    pointer-events: none;
 }
 
 .color-text-primary {
@@ -124,28 +104,8 @@
     text-wrap: wrap;
 }
 
-.background-badge {
-    background: var(--badge-color-background);
-}
-
-.background-keep-base {
-    background: var(--keep-surface-brand);
-}
-
 body[data-theme="dark"] .color-text-primary {
     color: #e0e0e0;
-}
-
-.color-text-danger {
-    color: var(--text-color-danger);
-}
-
-.color-text-disabled {
-    color: var(--text-color-disabled);
-}
-
-body[data-theme="dark"] .color-text-disabled {
-    color: #8d8d8d;
 }
 
 .dialog {
@@ -208,54 +168,16 @@ body[data-theme="dark"] .color-text-disabled {
     color: var(--text-color-primary);
 }
 
-.quarter-width {
-    width: 25%;
-}
-
-.half-width {
-    width: 50%;
-}
-
 .full-width {
     width: 100%;
-}.w-30px {
+}
+
+.w-30px {
     width: 30px;
-}.w-35vw {
-    width: 35vw;
 }
 
-.w-50vw {
-    width: 50vw;
-}
-
-.w-40 {
-    width: 40%;
-}
-
-.w-45 {
-    width: 45%;
-}
-
-.w-90 {
-    width: 90%;
-}
-
-.w-fit {
-    width: fit-content;
-}
-
-.full-height {
-    height: 100%;
-}
-
-.h-30px {
-    height: 30px;
-}.flex {
+.flex {
     display: flex;
-}
-
-.flex-flow-row-wrap {
-    flex-flow: row wrap;
 }
 
 .inline-block {
@@ -266,10 +188,6 @@ body[data-theme="dark"] .color-text-disabled {
     display: relative;
 }
 
-.flex-row {
-    flex-direction: row;
-}
-
 .flex-col {
     flex-direction: column;
 }
@@ -278,86 +196,15 @@ body[data-theme="dark"] .color-text-disabled {
     flex-wrap: wrap;
 }
 
-.flex-1 {
-    flex: 1;
-}
-
 .p-0 {
     padding: 0;
 }
 
-.p-16 {
-    padding: 16px;
-}
-
-.p-20 {
-    padding: 20px;
-}
-
-.p-30 {
-    padding: 30px;
-}
-
-.pr-0 {
-    padding-right: 0;
-}
-
-.pr-30 {
-    padding-right: 30px;
-}
-
-.pl-0 {
-    padding-left: 0;
-}
-
-.pl-20 {
-    padding-left: 20px;
-}
-
-.pl-30 {
-    padding-left: 30px;
-}
-
-.pt-5 {
-    padding-top: 5px;
-}.pt-30 {
-    padding-top: 30px;
-}
-
-.pb-5 {
-    padding-bottom: 5px;
-}
-
-.pb-10 {
-    padding-bottom: 10px;
-}.m-0 {
+.m-0 {
     margin: 0;
 }
 
-.mt-5 {
-    margin-top: 5px;
-}
-
-.mt-15 {
-    margin-top: 15px;
-}
-
-.mt-20 {
-    margin-top: 20px;
-}.mb-5 {
-    margin-bottom: 5px;
-}
-
-.mb-10 {
-    margin-bottom: 10px;
-}
-
-
-.mb-30 {
-    margin-bottom: 30px;
-}.mr-5 {
-    margin-right: 5px;
-}.gap-2 {
+.gap-2 {
     gap: 2px;
 }
 
@@ -365,58 +212,12 @@ body[data-theme="dark"] .color-text-disabled {
     gap: 3px;
 }
 
-.gap-5 {
-    gap: 5px;
-}
-
-.gap-10 {
-    gap: 10px;
-}
-
-.gap-16 {
-    gap: 16px;
-}
-
-.gap-20 {
-    gap: 20px;
-}.justify-center {
-    justify-content: center;
-}
-
-.justify-between {
-    justify-content: space-between;
-}
-
-.justify-end {
-    justify-content: flex-end;
-}
-
 .items-center {
     align-items: center;
 }
 
-.text-center {
-    text-align: center;
-}
-
 .text-bold {
     font-weight: bold;
-}
-
-.text-italic {
-    font-style: italic;
-}
-
-.weight-300 {
-    font-weight: 300;
-}
-
-.weight-400 {
-    font-weight: 400;
-}
-
-.weight-500 {
-    font-weight: 500;
 }
 
 .transparent {
@@ -474,11 +275,6 @@ body[data-theme="dark"] .color-text-disabled {
     color: var(--wa-color-text-normal);
 }
 
-.small-icon {
-    width: 15px;
-    height: 15px;
-}
-
 /* AccessMode.tsx */
 .access-container {
     flex: 1;
@@ -492,388 +288,9 @@ body[data-theme="dark"] .color-text-disabled {
     height: calc(100vh - 200px);
 }
 
-/* FieldContainer.tsx */
-.config-field-container {
-    border-radius: 5px;
-    border: 1px solid var(--wa-color-surface-border);
-    background: var(--wa-color-surface-default);
-    padding: 0 0 15px 0;
-    width: 100%;
-}
-
-.item-name-container {
-    width: 30%;
-    font-size: 14px;
-    padding: 24px 24px 0 24px;
-}
-
-.field-item-title {
-    font-size: 12px;
-    font-weight: 400;
-    color: light-dark(#6c6c6c, #b0b0b0);
-}
-
-.field-item-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--wa-color-text-normal);
-}
-
-.field-setting-text {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--wa-color-text-normal);
-    width: 100%;
-    padding: 0 20px;
-}
-
-.field-setting-details-container {
-    padding: 10px 20px 0 20px;
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: 8px;
-}
-
-.field-name-input {
-    width: 50%;
-    font-size: 14px;
-}
-
-.field-type-text-field {
-    width: 50%;
-    z-index: 0;
-}
-
-.field-access-input {
-    width: 50%;
-}
-
-.multi-value-container {
-    display: flex;
-    align-items: center;
-}
-
-.required-pill-container {
-    display: flex;
-    align-items: center;
-}
-
-.field-batch-delete-button {
-    background-color: transparent;
-    width: fit-content;
-    padding: 10px;
-    display: flex;
-    justify-content: end;
-    align-items: end;
-}
-
-.batch-delete-cancel-button {
-    text-transform: none;
-    font-weight: 400;
-    color: var(--wa-color-text-normal);
-    text-overflow: ellipsis;
-}
-
 /* FieldDndContainer.tsx */
 .add-icon {
     margin: 0 5px;
-}
-
-.selected-fields-container {
-    border-radius: 5px;
-    border: 1px solid var(--wa-color-surface-border);
-    background: var(--wa-color-surface-default);
-}
-
-.field-batch-delete-container {
-    padding: 0 11px;
-    max-width: 100%;
-    flex-wrap: wrap;
-}
-
-.field-batch-delete-text {
-    text-transform: none;
-    font-size: 12px;
-    font-weight: 400;
-    color: #aa1f51;
-    text-overflow: ellipsis;
-}
-
-.please-add-fields-text {
-    font-weight: 400;
-    padding: 20px;
-    color: var(--wa-color-text-normal);
-}
-
-body[data-theme="dark"] .field-batch-delete-text {
-    color: #e06385;
-}
-
-.field-list-container {
-    overflow-y: auto;
-    overflow-x: clip;
-}
-
-.field-list-custom-item {
-    justify-content: space-between !important;
-    padding: 10px 20px;
-    cursor: pointer;
-
-    &:hover {
-        background: light-dark(#d7e0f3, #353548);
-    }
-}
-
-.field-list-field-info {
-    width: 60%;
-    text-overflow: ellipsis;
-}
-
-.field-list-field-name {
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--wa-color-text-normal);
-}
-
-.field-list-field-metadata {
-    font-size: 12px;
-    white-space: nowrap;
-    text-align: left;
-}
-
-.field-config-field-container {
-    border-radius: 5px;
-    border: 1px solid var(--wa-color-surface-border);
-    background: var(--wa-color-surface-default);
-    height: 45%;
-}
-
-.field-config-field-setting {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--wa-color-text-normal);
-    width: 100%;
-    padding: 10px 20px 0 20px;
-    height: 15%;
-}
-
-.field-select-message-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 85%;
-}
-
-.remove-field-warning-icon {
-    width: 30px;
-    height: 30px;
-}
-
-.field-list-icon-button {
-    border: 0;
-    background: none;
-    user-select: none;
-    cursor: pointer;
-    color: var(--wa-color-text-normal);
-}
-
-/* Fields.tsx */
-.fields-dropdown-header {
-    justify-content: center;
-}
-
-.fields-displayed-container {
-    overflow-y: scroll;
-}
-
-.fields-dropdown-div {
-    padding: 0 23.5px;
-}
-
-/* ModeCompare.tsx */
-/*
- * The colour was MUI's color="primary", i.e. theme.palette.primary.main, which theme.ts
- * binds to getTheme(mode).textColorPrimary — the value keep-theme.css pins
- * --wa-color-text-normal to in both modes. wa-icon has no color attribute and paints from
- * currentColor, so the token has to be declared here. No font-size: the glyph was an
- * unsized MUI SvgIcon (24px), and it carries size="xl" at the call site instead.
- */
-.mode-compare-card-container {
-    display: flex;
-    padding-top: 9px;
-    padding-bottom: 20px;
-}
-
-.empty-mode-card-container {
-    display: flex;
-    width: 42.5%;
-    justify-content: end;
-    padding-right: 20px;
-    padding-top: 10px;
-}
-
-.mode-compare-normal-font {
-    font-style: normal;
-}
-
-.mode-compare-delete-container {
-    display: flex;
-    width: calc(50% + 103px);
-    justify-content: end;
-}
-
-.mode-compare-delete-adjacent {
-    width: 103px;
-    height: 7px;
-    border-radius: 50px;
-    background: #fff;
-}
-
-.mode-compare-divider {
-    height: 1px;
-    background: #000;
-}
-
-.mode-compare-formulas-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    align-content: center;
-}
-
-.mode-compare-formulas-content {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 8px 0;
-}
-
-.diff-formulas-container {
-    width: 15px;
-}
-
-.mode-compare-formula-name {
-    color: light-dark(#323a3d, #7d939a);
-}
-
-.compare-diff-values-indicator {
-    width: 8px;
-    height: 8px;
-    color: #c3335f;
-    display: block;
-    margin: auto 0;
-}
-
-.compare-filled-card-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 8px 0;
-}
-
-.mode-compare-indicators-container {
-    width: 15px;
-}
-
-.mode-compare-search-bar {
-    border: 1px solid #9a9a9a;
-    padding: 0 17px;
-    border-radius: 10px;
-    width: 50%;
-    margin-left: 25%;
-    background: var(--wa-color-surface-raised);
-}
-
-/* AddModeDialog.tsx */
-.add-mode-dialog-container {
-    border: 1px solid light-dark(transparent, #3a3a4a);
-    border-radius: 10px;
-    width: 30%;
-    height: fit-content;
-    background: var(--wa-color-surface-raised);
-    color: var(--wa-color-text-normal);
-    flex-direction: column;
-    gap: 30px;
-}
-
-.add-mode-dialog-container[open] {
-    display: flex;
-}
-
-.add-mode-content-container {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-}
-
-/* TabsAccess.tsx */
-.mode-buttons {
-    background: none;
-    border: none;
-    margin: 5;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-.access-change-mode-button {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    justify-content: left !important;
-    text-transform: none !important;
-}
-
-.access-actions-container {
-    flex: 1 0 0%;
-    display: flex;
-    padding: 0 20px;
-    justify-content: flex-end;
-    gap: 20px;
-}
-
-.tabs-access-save-button {
-    background: none;
-    border: none;
-}
-
-.tabs-access-action-icon {
-    font-size: 16px;
-    margin-right: 5px;
-    padding: 0;
-}
-
-/*
- * The Delete Mode glyph. Its colour was MUI's color='primary', i.e.
- * theme.palette.primary.main, which theme.ts binds to getTheme(mode).textColorPrimary —
- * the value keep-theme.css pins --wa-color-text-normal to in both modes. wa-icon has no
- * color attribute and paints from currentColor, so it has to be a declaration. It cannot
- * be inherited the way the Clone and Add glyphs beside it inherit theirs: this is the one
- * button in the row whose class list omits color-text-primary.
- */
-.tabs-access-delete-icon {
-    color: var(--wa-color-text-normal);
-}
-
-/*
- * The Save glyph, which sat at 0.9em where the other three in this row sit at 1em. That
- * em resolved against the 16px .tabs-access-action-icon sets on the very same element, so
- * the glyph drew at 14.4px. Written as an em here it would resolve against the button
- * instead and land somewhere else, so the product is spelled out.
- */
-.tabs-access-save-icon {
-    font-size: 14.4px;
-}.tabs-access-save-icon-disabled {
-    color: #A7A8A9;
-}
-
-.access-load-tab-container {
-    height: 92%;
 }
 
 /* AppItem.tsx */
@@ -887,7 +304,6 @@ body[data-theme="dark"] .field-batch-delete-text {
     display: flex;
 }
 
-/* DeleteDialog.tsx */
 /* SingleFieldContainer.tsx */
 .item-container {
     display: flex;
@@ -926,115 +342,6 @@ body[data-theme="dark"] .field-batch-delete-text {
     border-color: #4099ff;
 }
 
-/* ActivateMenu.tsx */
-.activate-menu-container {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    align-items: center;
-}
-
-.active-menu-button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-/* FormsTable.tsx */
-.table-cell-activate-menu {
-    white-space: nowrap;
-    width: 200px;
-}
-
-.forms-table-diamond-marker {
-    transform: translateY(-7%);
-}/* EditView.tsx */
-.edit-view-dialog {
-    height: 90vh;
-    width: 95vw;
-    left: 2.5vw;
-    border-radius: 10px;
-    overflow-y: hidden;
-}
-
-.edit-view-title-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-top: 35px;
-    padding-right: 35px;
-    padding-left: 35px;
-}
-
-.edit-view-buttons-container {
-    display: flex;
-    width: fit-content;
-    justify-content: flex-end;
-    gap: 15px;
-    align-items: center;
-}
-
-.edit-view-button {
-    text-transform: none;
-    border: 1px solid;
-    border-radius: 5px;
-    line-height: 19px;
-    font-size: 14px;
-    color: var(--text-color-primary);
-    display: flex;
-    gap: 5px;
-}
-
-.edit-view-reset {
-    background: var(--wa-color-surface-raised);
-
-    &:hover {
-        background: light-dark(#f5f5f5, #353548);
-    }
-}
-
-.edit-view-save {
-    background: var(--button-primary-color);
-    color: #fff;
-    border: none;
-
-    &:hover {
-        background: var(--button-hover-color);
-    }
-
-    &:disabled {
-        background: var(--button-secondary-color);
-        color: #fff;
-        cursor: not-allowed;
-    }
-}
-
-.column-bar-container {
-    box-sizing: border-box;
-    width: 20%;
-    max-height: 100%;
-    margin-left: 2%;
-    overflow-y: auto;
-    overflow-x: auto;
-    background: transparent;
-    border: 1px solid var(--wa-color-surface-border);
-    border-radius: 10px;
-}
-
-.add-all-container {
-    height: 10%;
-    text-align: right;
-    align-items: center;
-    padding-right: 6%;
-    padding-left: 6%;
-    line-height: 6;
-    vertical-align: middle;
-    color: var(--keep-text-brand);
-    cursor: pointer;
-    justify-content: flex-end;
-}
-
 .add-all-icon {
     margin-right: 2%;
     display: inline-block;
@@ -1048,213 +355,15 @@ body[data-theme="dark"] .field-batch-delete-text {
     color: var(--keep-text-brand);
 }
 
-.all-columns-list {
-    height: fit-content;
-}
-
-.all-columns-list-item {
-    padding: 20px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.all-columns-added-column {
-    background: light-dark(#d7e0f3, #353548);
-}
-
-.all-columns-column-info {
-    width: 90%;
-    gap: 5px;
-}
-
-.all-columns-column-name {
-    line-height: 19px;
-    flex: 0 0 auto;
-    font-size: 15px;
-}
-
-.all-columns-column-details {
-    display: block;
-    white-space: pre-wrap;
-    line-height: 17px;
-    color: var(--wa-color-text-quiet);
-}
-
-.all-columns-icon {
-    flex: 0 0 auto;
-    font-size: 18px;
-    margin: 0;
-}
-
-.all-columns-check-icon {
-    color: light-dark(#087251, #66bfa4);
-}
-
-/* The footer moved into keep-footer.ts (#806 tier A); its rules live in that element's
-   `static styles` because global CSS does not cross a shadow boundary. */
-
-/* ScriptEditor.tsx */
-.script-editor-container {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    border-radius: 5px;
-    border: 1px solid var(--wa-color-surface-border);
-    padding: 5px 20px;
-    gap: 16px;
-    background-color: var(--wa-color-surface-default);
-}
-
-.script-editor-settings-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0;
-}
-
-.script-editor-settings-text {
-    font-size: 14px;
-    font-weight: 700;
-    padding: 0;
-}
-
-.script-editor-formulas-container {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 16px;
-}
-
 .script-editor-help-icon {
     color: #2d91e3;
 }
 
-/*
- * The "Test Formulas" play glyph. Renamed from the bare `.action-icon` it used to carry,
- * which matched no rule anywhere and sat one letter away from `.tabs-access-action-icon`.
- *
- * The colour was MUI's color='primary', i.e. theme.palette.primary.main, which theme.ts
- * binds to getTheme(mode).textColorPrimary — the value keep-theme.css pins
- * --wa-color-text-normal to in both modes. wa-icon has no color attribute and paints from
- * currentColor, so it has to be a declaration. No font-size: the glyph was an unsized MUI
- * SvgIcon (24px) and carries size='xl' at the call site instead.
- */
-.script-editor-action-icon {
-    color: var(--wa-color-text-normal);
-}
-
-.script-editor-access-container {
-    border: 1px solid var(--wa-color-surface-border);
-    border-radius: 10px;
-    width: 45%;
-}
-
-.script-editor-formula-line {
-    padding: 5px 0;
-}
-
-.script-editor-compute-text {
-    font-size: 15px;
-}
-
-/* AppForm.tsx */
-.app-form-header {
-    color: #fff;
-    font-size: 24px;
-    padding: 20px;
-    height: 70px;
-    border-radius: 5px;
-}
-
-/* SchemasAlphabeticalView.tsx */
-/* QuickConfigForm */
-.drawer-available-databases-text {
-    color: #fff;
-    font-size: 18px;
-    padding: 10px;
-    border-radius: 5px;
-    background: var(--keep-surface-brand);
-}.quick-config-icon-image {
+.quick-config-icon-image {
     width: 35px;
     height: 35px;
     object-fit: contain;
     display: block;
-}/* CardViewOptions.tsx */
-.multicard-view-container {
-    width: 200px;
-    height: 43px;
-    display: flex;
-    justify-content: center;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    margin-left: 15px;
-    font-size: 14px;
-    background: var(--body-color);
-}
-
-/* DatabaseSearch.tsx */
-.database-search-container-button {
-    text-transform: none;
-    width: 255px;
-    min-width: 191px;
-    height: 100%;
-    white-space: nowrap;
-    color: var(--hint-text-color);
-    font-size: 16px;
-    justify-content: space-between;
-    padding-left: 25px;
-    padding-right: 5px;
-}
-
-/*
- * .database-search-dropdown-arrow is gone with the icon set that ignored it. It declared
- * width: 50px; height: 40px on the search-type caret, which MuiSvgIcon's own width: 1em;
- * height: 1em outranked by injection order, so the caret has always drawn at 24px square.
- * wa-icon would have honoured it — but as a 50x40 canvas centred around a glyph that
- * takes its size from font-size, i.e. a wider button gap rather than a bigger caret. The
- * call site carries size='xl' instead, which is what it renders at now.
- */
-
-/* ViewsTable.tsx */
-.views-table-question-circle {
-    color: light-dark(#0f52ba, #008000);
-}
-
-/*
- * The login screen's seven rules are gone with it (#806 wave 6). `keep-login-page` is a
- * shadow root, and a class rule in this sheet cannot reach into one — leaving them would
- * have left seven selectors that look live and control nothing. `castlebg.jpg` stays put
- * beside this file; the element imports it, so Vite still rewrites the URL.
- */
-
-/* OptionList.tsx */
-.option-list-container-button {
-    width: 181px;
-    height: 42px;
-    border-radius: 20px;
-    background: #aa1f51;
-    color: #fff;
-    font-weight: 700;
-}
-
-/*
- * OptionList.tsx — the fixed box the Sign Out glyph sits in.
- *
- * Named for ProfileMenu.tsx, which no longer carries it. Both profile components used to
- * put this class on the icon element itself, where the width and height were dead: MUI's
- * own `width: 1em; height: 1em` on `.MuiSvgIcon-root` has the same specificity and was
- * injected later, so those icons drew 24px and never 36px. On a wa-icon the declarations
- * would have started applying — as a 36px canvas around a glyph still sized by font-size,
- * which is padding, not a bigger icon — so the class was dropped from both and the icons
- * carry size='xl' instead (#718). Here it is on a real wrapper div and the 36px box is
- * genuine, so the rule stays.
- */
-.profile-menu-user-icon {
-    width: 36px;
-    height: 36px;
 }
 
 /* ProfileMenuDialog.tsx */
