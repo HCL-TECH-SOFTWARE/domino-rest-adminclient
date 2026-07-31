@@ -6,6 +6,8 @@
 
 import { css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 import { adoptTableStyles } from './keep-data-table.styles';
 
@@ -106,6 +108,11 @@ export default class DataTable extends KeepElement {
       cursor: default;
       opacity: 0.4;
     }
+
+    /* wa-icon takes its box from font-size, not width; 18px is what the SVGs drew at. */
+    .nav wa-icon {
+      font-size: 18px;
+    }
   `;
 
   /**
@@ -175,20 +182,20 @@ export default class DataTable extends KeepElement {
   private renderNav() {
     const atStart = this.page <= 0;
     const atEnd = this.page >= this.lastPage;
-    const button = (label: string, disabled: boolean, page: number, path: string) => html`
+    // Was four Material paths inlined as `d` strings (#946). The glyph names carry the same
+    // meaning and the double-chevrons are what the bar-plus-chevron pair was drawing.
+    const button = (label: string, disabled: boolean, page: number, icon: string) => html`
       <button aria-label=${label} ?disabled=${disabled} @click=${() => this.goToPage(page)}>
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-          <path d=${path} fill="currentColor"></path>
-        </svg>
+        <wa-icon library=${FA_LIBRARY} name=${icon} canvas="auto" aria-hidden="true"></wa-icon>
       </button>
     `;
 
     return html`
       <div class="nav">
-        ${button('First Page', atStart, 0, 'M18.41 16.59 13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z')}
-        ${button('Previous Page', atStart, this.page - 1, 'M15.41 16.59 10.83 12l4.58-4.59L14 6l-6 6 6 6z')}
-        ${button('Next Page', atEnd, this.page + 1, 'M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z')}
-        ${button('Last Page', atEnd, this.lastPage, 'M5.59 7.41 10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z')}
+        ${button('First Page', atStart, 0, 'angles-left')}
+        ${button('Previous Page', atStart, this.page - 1, 'chevron-left')}
+        ${button('Next Page', atEnd, this.page + 1, 'chevron-right')}
+        ${button('Last Page', atEnd, this.lastPage, 'angles-right')}
       </div>
     `;
   }

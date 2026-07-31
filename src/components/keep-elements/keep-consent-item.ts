@@ -246,6 +246,9 @@ export default class ConsentItem extends KeepElement {
         <keep-tooltip
           content=${remaining > 0 && remaining <= DAY ? 'Expiring in less than a day' : ''}
         >
+          <!-- A status dot, left as inline SVG on purpose (#946): a filled circle has no
+               name in any icon set, so wa-icon would cost a registry entry and a
+               font-size to draw one path. -->
           <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 9 9" fill="none">
             <circle cx="4.5" cy="4.5" r="4.5" fill=${fill}></circle>
           </svg>

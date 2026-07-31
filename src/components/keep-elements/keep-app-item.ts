@@ -270,6 +270,26 @@ export const appItemStyles = css`
     width: 100%;
   }
 
+  /*
+   * The launch disc. #946.
+   *
+   * 40px because that is what the SVG it replaces was drawn at, and wa-icon takes its box
+   * from font-size rather than width. The two colours were interpolated into a fill attribute
+   * per call; they live here now because the production CSP sends style-src-attr 'none' and
+   * would drop an interpolated style attribute outright (#685).
+   */
+  keep-app-item .launch-disc {
+    font-size: 40px;
+  }
+
+  keep-app-item .launch-disc.live {
+    color: #5e1ebe;
+  }
+
+  keep-app-item .launch-disc.inactive {
+    color: #a5afbe;
+  }
+
   keep-app-item .w-30px {
     width: 30px;
   }
@@ -537,28 +557,29 @@ export default class AppItem extends KeepElement {
     this.emit<KeepAppItemDeleteDetail>('app-delete', { appId: this.app.appId });
   }
 
-  /** The launch disc, in the brand colour when it is live and grey when it is not. */
-  private static disc(fill: string) {
+  /**
+   * The launch disc — the brand colour when the app is live, grey when it is not.
+   *
+   * Was 40x40 of hand-drawn path data: a disc filled with the colour and a *white* triangle
+   * over it (#946). A registered circle-play is a single colour, so the triangle is a
+   * knock-out rather than white. On the card surface those look the same; against anything
+   * else the hole shows the surface through. Taken deliberately — one weight and one registry
+   * beats a two-tone graphic that only matches on one background.
+   *
+   * The colour arrives as a class rather than the interpolated `fill` it replaces, because
+   * the production CSP sends style-src-attr 'none': an interpolated style attribute is
+   * dropped, which is the failure #685 was filed for. The two hex values move into the
+   * stylesheet with it.
+   */
+  private static disc(state: 'live' | 'inactive') {
     return html`
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-        <rect width="40" height="40" fill="transparent"></rect>
-        <path
-          d="M20.0007 36.6666C29.2054 36.6666 36.6673 29.2047 36.6673 19.9999C36.6673 10.7952 29.2054 3.33325 20.0007 3.33325C10.7959 3.33325 3.33398 10.7952 3.33398 19.9999C3.33398 29.2047 10.7959 36.6666 20.0007 36.6666Z"
-          fill=${fill}
-          stroke=${fill}
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        ></path>
-        <path
-          d="M16.666 13.3333L26.666 19.9999L16.666 26.6666V13.3333Z"
-          fill="white"
-          stroke="white"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        ></path>
-      </svg>
+      <wa-icon
+        class="launch-disc ${state}"
+        library=${FA_LIBRARY}
+        name="circle-play"
+        canvas="auto"
+        aria-hidden="true"
+      ></wa-icon>
     `;
   }
 
@@ -572,7 +593,7 @@ export default class AppItem extends KeepElement {
             aria-label=${`Launch ${app.appName}`}
             @click=${this.launch}
           >
-            ${AppItem.disc('#5E1EBE')}
+            ${AppItem.disc('live')}
           </button>
         </keep-tooltip>
       `;
@@ -581,7 +602,7 @@ export default class AppItem extends KeepElement {
       return html`
         <keep-tooltip content="This application is inactive.">
           <span role="img" aria-label="This application is inactive."
-            >${AppItem.disc('#A5AFBE')}</span
+            >${AppItem.disc('inactive')}</span
           >
         </keep-tooltip>
       `;

@@ -281,6 +281,9 @@ export default class ActivateMenu extends KeepElement {
     //    while its flag stayed set, so the menu could not reopen it.
     return html`
       <span class="status ${this.active ? 'on' : ''}">
+        <!-- A status dot, left as inline SVG on purpose (#946): a filled circle has no
+             name in any icon set, so wa-icon would cost a registry entry and a
+             font-size to draw one path. -->
         <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
           <circle cx="4" cy="5" r="4" fill="currentColor"></circle>
         </svg>

@@ -7,6 +7,8 @@
 import { html, css } from 'lit';
 import type { PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 /**
@@ -145,14 +147,19 @@ export default class Autocomplete extends KeepElement {
      * rotation was interpolated, and the production CSP sends style-src-attr 'none', which
      * blocks Lit from applying an interpolated style — so the caret never turned. #685.
      */
+    /*
+     * The rotation is inverted from what stood here, and deliberately (#946). The polygon
+     * this replaces drew an *upward* triangle, so the closed state rotated it 180deg to point
+     * down and the open state undid that. A registered caret-down already points down, so the
+     * resting state needs no transform and it is the open state that turns.
+     */
     .caret {
-      width: 12px;
-      height: 12px;
-      transform: rotate(180deg);
+      font-size: 12px;
+      transition: transform 0.2s ease;
     }
 
     .caret.open {
-      transform: rotate(0deg);
+      transform: rotate(180deg);
     }
 
     /* Option and selection icons; these were inline sizes on the <img> elements. */
@@ -163,9 +170,11 @@ export default class Autocomplete extends KeepElement {
       margin-right: 8px;
     }
 
+    /* wa-icon takes its box from font-size, not width. The cross was drawn in #808283;
+       currentColor picks up the field's own text colour instead, which is what every other
+       control in this element already does. */
     .clear-icon {
-      width: 15px;
-      height: 15px;
+      font-size: 15px;
     }
 
     .option-row {
@@ -225,22 +234,19 @@ export default class Autocomplete extends KeepElement {
             <section class="button-container">
               ${this.selectedOption !== '' ? html`
                 <button @click="${this._handleClearInput}">
-                  <svg class="clear-icon" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="10" y1="10" x2="40" y2="40" stroke="#808283" stroke-width="5" />
-                    <line x1="10" y1="40" x2="40" y2="10" stroke="#808283" stroke-width="5" />
-                  </svg>
+                  <wa-icon class="clear-icon" library=${FA_LIBRARY} name="xmark" canvas="auto" aria-hidden="true"></wa-icon>
                 </button>
             ` : html``}
             </section>
             <section class="button-container">
               <button @click="${this._toggleDropdown}">
-                <svg
+                <wa-icon
                   class="caret ${this.showDropdown ? 'open' : ''}"
-                  viewBox="0 0 50 50"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <polygon points="25,10 45,40 5,40" fill="#808283" />
-                </svg>
+                  library=${FA_LIBRARY}
+                  name="caret-down"
+                  canvas="auto"
+                  aria-hidden="true"
+                ></wa-icon>
               </button>
             </section>
           </section>

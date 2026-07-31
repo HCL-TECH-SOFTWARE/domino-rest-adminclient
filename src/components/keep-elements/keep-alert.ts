@@ -10,6 +10,7 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/callout/callout.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 /**
@@ -104,13 +105,12 @@ export default class Alert extends KeepElement {
       background: color-mix(in srgb, currentColor 12%, transparent);
     }
 
-    .close-btn svg {
-      width: 14px;
-      height: 14px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2.5;
-      stroke-linecap: round;
+    /* Was a 14px cross drawn from two <line>s at stroke-width 2.5. A registered xmark is
+       solid, so the stroke properties go with the path data, and wa-icon takes its box from
+       font-size rather than width. #946 */
+    .close-btn wa-icon {
+      font-size: 14px;
+      color: currentColor;
     }
 
     /* Give the callout message room so it never slides under the X button.
@@ -251,10 +251,7 @@ export default class Alert extends KeepElement {
           aria-label="Dismiss notification"
           @click=${this._onClose}
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <line x1="2" y1="2" x2="14" y2="14"/>
-            <line x1="14" y1="2" x2="2"  y2="14"/>
-          </svg>
+          <wa-icon library=${FA_LIBRARY} name="xmark" canvas="auto" aria-hidden="true"></wa-icon>
         </button>
       </div>
     `;

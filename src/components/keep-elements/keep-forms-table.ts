@@ -72,6 +72,8 @@ const STATUS_HELP = `Activate the Forms that should be accessible\nvia rest API`
 
 /** The purple lozenge marking a form that exists only in the schema. Decorative. */
 const DIAMOND = html`
+  <!-- A 4-point diamond, left as inline SVG on purpose (#946): it is a shape rather than a
+       glyph, with no name in any icon set. -->
   <svg width="8" height="8" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"></polygon>
   </svg>
