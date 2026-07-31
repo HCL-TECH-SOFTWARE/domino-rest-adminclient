@@ -50,8 +50,28 @@ const SUCCESS = 'Successfully authenticated! You can now access Admin UI.';
 @customElement('keep-callback-page')
 export default class CallbackPage extends KeepElement {
   static styles = css`
+    /*
+     * Centred in the main region rather than sitting at its top-left (#961). This screen is
+     * two lines of status text on an otherwise empty page — the one route where the shell is
+     * up with something other than the router behind it — so the top-left corner reads as an
+     * unstyled fragment rather than a deliberate state.
+     *
+     * The height is the same expression ViewContainer uses in Views.tsx: viewport, less the
+     * header region wa-page measures into --header-height, less the 23px keep-footer bar.
+     * Both sit outside wa-page's own grid rows, which is why this cannot be a percentage.
+     *
+     * The 23px is subtracted unconditionally, where Views.tsx drops it below 768px because
+     * the footer overlay is hidden there. Restating the breakpoint here to recover 23px on a
+     * centred box would move the text by half of that, and would add a fourth place that has
+     * to be kept in step with it — see the breakpoint test in test/app-shell.test.ts.
+     */
     :host {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      min-height: calc(100vh - var(--header-height, 0px) - 23px);
+      padding: 40px 20px;
     }
 
     /* The document reset stops at the shadow boundary and this box carries padding. */
@@ -62,18 +82,21 @@ export default class CallbackPage extends KeepElement {
     }
 
     /* Was a flex column built from four utility classes: padding reset to zero, then 40px
-       back on the block edges, and a gap between the two lines. */
+       back on the block edges, and a gap between the two lines. The block padding moved to
+       :host, which is what now owns the spacing from the edges of the region. */
     section {
       display: flex;
       flex-direction: column;
-      padding: 40px 0;
+      align-items: center;
+      text-align: center;
       gap: 10px;
     }
 
     /* Was the float, the 24px text utility and the primary text colour. The literal behind
-       that colour class is per-mode and does not reach in here; the token is mode-aware. */
+       that colour class is per-mode and does not reach in here; the token is mode-aware.
+       The float is dropped: it positioned this line against a full-width block, and the
+       block is now a centred column, so it has nothing left to do. */
     .title {
-      float: left;
       font-size: 24px;
       color: var(--wa-color-text-normal);
     }
