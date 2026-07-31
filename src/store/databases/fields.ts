@@ -10,7 +10,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleErrorDialog } from '../dialog/action';
 import { convert2FieldType, convertDesignType2Format } from '../../utils/field-types';
-import { fullEncode } from '../../utils/common';
+import { encodeQueryValue, fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log } from './shared';
 import { setActiveForm, setLoadedForm } from './forms';
@@ -59,7 +59,7 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
       // Encode the form name
       const encodedFormName = fullEncode(formName);
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/design/${designType}/${encodedFormName}?nsfPath=${encodeQueryValue(nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
@@ -141,7 +141,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
   return async (dispatch: AppDispatch) => {
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/design/itemdefinitions?nsfPath=${encodeQueryValue(nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',

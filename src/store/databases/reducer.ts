@@ -335,7 +335,10 @@ export const databasesSlice = createSlice({
      * statement of this rule at the one call site that does not read a route param directly.
      *
      * Note that the *fetch* wants the opposite: `nsfPath` goes into a query string, so it
-     * must be encoded there. The two are not interchangeable, which is the trap — see #978.
+     * must be encoded there. The two are not interchangeable, which is the trap. #978 settled
+     * it the only way that keeps this key intact — the value stays decoded everywhere it is
+     * held or passed, and `encodeQueryValue` is applied where the URL is built, never before.
+     * A caller that encodes on the way *in* poisons this cache as well as the request.
      */
     addNsfDesign(state, action: PayloadAction<{ nsfPath: string; nsfDesign: any }>) {
       state.nsfDesigns[action.payload.nsfPath] = {

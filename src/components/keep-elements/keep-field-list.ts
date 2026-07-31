@@ -19,7 +19,6 @@ import { FA_LIBRARY } from '../../services/icon-library';
 import { StoreController } from '../../store/StoreController';
 import { setLoading } from '../../store/loading/action';
 import { fetchFields, getAllFieldsByNsf } from '../../store/databases/action';
-import { fullEncode } from '../../utils/common';
 import type { AccessField } from '../../store/accessMode/types';
 import type { KeepFieldAddDetail } from './keep-single-field';
 import type { KeepSearchChangeDetail } from './keep-search-input';
@@ -275,7 +274,15 @@ export default class FieldList extends KeepElement {
   /** The schema (configuration) name — `dbName` at the call site. */
   @property({ type: String }) accessor schemaName = '';
 
-  /** The NSF this schema configures. Encoded again for every request. */
+  /**
+   * The NSF this schema configures, **decoded** — the same spelling the design cache is keyed
+   * on, which {@link designForms} looks up directly.
+   *
+   * It used to be `fullEncode`d on the way into each of the two field thunks, which then
+   * interpolated it raw. That put one value in two shapes in one element: decoded for the
+   * cache read, encoded for the request. #978 moved the encoding to where the URL is built,
+   * so both readings of this property are now the same string.
+   */
   @property({ type: String }) accessor nsfPath = '';
 
   /** The form the access screen is editing. Seeds the picker. */
@@ -421,14 +428,14 @@ export default class FieldList extends KeepElement {
     this.lastFetch = signature;
 
     if (!known) {
-      this.activeFields.dispatch(getAllFieldsByNsf(fullEncode(this.nsfPath)));
+      this.activeFields.dispatch(getAllFieldsByNsf(this.nsfPath));
       this.activeFields.dispatch(setLoading({ status: false }));
     } else if (this.designForms.length > 0 && !!this.formName && !enabled) {
       this.activeFields.dispatch(
-        fetchFields(this.schemaName, fullEncode(this.nsfPath), this.formName, this.formName, 'forms'),
+        fetchFields(this.schemaName, this.nsfPath, this.formName, this.formName, 'forms'),
       );
     } else if (!enabled) {
-      this.activeFields.dispatch(getAllFieldsByNsf(fullEncode(this.nsfPath)));
+      this.activeFields.dispatch(getAllFieldsByNsf(this.nsfPath));
     }
   }
 
@@ -436,12 +443,12 @@ export default class FieldList extends KeepElement {
   private async loadForm(option: FormOption): Promise<void> {
     this.activeFields.dispatch(setLoading({ status: true }));
     if (option.name === ALL_FIELDS) {
-      await this.activeFields.dispatch(getAllFieldsByNsf(fullEncode(this.nsfPath)));
+      await this.activeFields.dispatch(getAllFieldsByNsf(this.nsfPath));
     } else {
       await this.activeFields.dispatch(
         fetchFields(
           this.schemaName,
-          fullEncode(this.nsfPath),
+          this.nsfPath,
           option.name,
           option.externalName,
           option.designType as string,
@@ -465,7 +472,7 @@ export default class FieldList extends KeepElement {
   private async handleRefresh(): Promise<void> {
     this.activeFields.dispatch(setLoading({ status: true }));
     await this.activeFields.dispatch(
-      fetchFields(this.schemaName, fullEncode(this.nsfPath), this.formName, this.formName, 'forms'),
+      fetchFields(this.schemaName, this.nsfPath, this.formName, this.formName, 'forms'),
     );
     this.activeFields.dispatch(setLoading({ status: false }));
   }

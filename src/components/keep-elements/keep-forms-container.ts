@@ -36,6 +36,7 @@ import {
 import { getToken } from '../../store/account/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
+import { encodeQueryValue } from '../../utils/common';
 import { RouterController } from '../../router/RouterController';
 import type { KeepErrorStatus } from './keep-error-wrapper';
 import { isTextualView } from './keep-source-header';
@@ -699,7 +700,7 @@ export default class FormsContainer extends KeepElement {
   private async pullSubForms(): Promise<void> {
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/subforms?nsfPath=${this.nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/designlist/subforms?nsfPath=${encodeQueryValue(this.nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
@@ -727,7 +728,7 @@ export default class FormsContainer extends KeepElement {
       const allForms: Array<any> = [];
 
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${this.nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${encodeQueryValue(this.nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
@@ -749,7 +750,7 @@ export default class FormsContainer extends KeepElement {
       try {
         const configured = await apiRequestWithRetry(() =>
           fetch(
-            `${SETUP_KEEP_API_URL}/schema?nsfPath=${this.nsfPath}&configName=${this.dbName}`,
+            `${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(this.nsfPath)}&configName=${encodeQueryValue(this.dbName)}`,
             {
               headers: {
                 Authorization: `Bearer ${getToken()}`,

@@ -37,7 +37,17 @@ type KeepFieldsAddDetail =
   import('../../../src/components/keep-elements/keep-field-list').KeepFieldsAddDetail;
 
 const TAG = 'keep-field-list';
-const NSF = 'demo.nsf';
+
+/**
+ * In a directory on purpose (#978).
+ *
+ * This element holds one NSF path and used to read it two ways: `designs.value?.[nsfPath]` for
+ * the design cache, which is keyed on the decoded path, and `fullEncode(nsfPath)` for the two
+ * field thunks, which then interpolated that into a URL. Both readings agree for a flat name,
+ * so with `demo.nsf` here every assertion below passed either way and the disagreement was
+ * invisible. A `/` is the cheapest character that tells the two apart.
+ */
+const NSF = 'subdir/demo.nsf';
 const SCHEMA = 'demo';
 const FORM = 'Contact';
 

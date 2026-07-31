@@ -10,13 +10,14 @@ import { getToken } from '../account/action';
 import { toggleUsersLoading } from '../loading/action';
 import { setUsers } from './reducer';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { encodeQueryValue } from '../../utils/common';
 import { getLogger } from '../../services/log-service';
 
 const log = getLogger('store/access');
 
 export function fetchUsers (startsWith?: string) {
   const callUrl = startsWith?.length === 0 ? `${ADMIN_KEEP_API_URL}/access/users` : 
-                  startsWith ? `${ADMIN_KEEP_API_URL}/access/users?startsWith=${startsWith}` : `${ADMIN_KEEP_API_URL}/access/users`;
+                  startsWith ? `${ADMIN_KEEP_API_URL}/access/users?startsWith=${encodeQueryValue(startsWith)}` : `${ADMIN_KEEP_API_URL}/access/users`;
   return async (dispatch: Dispatch) => {
     dispatch(toggleUsersLoading());
     try {

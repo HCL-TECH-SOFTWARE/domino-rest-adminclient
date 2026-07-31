@@ -8,6 +8,7 @@ import { Dispatch } from 'redux';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { encodeQueryValue } from '../../utils/common';
 import { log } from './shared';
 import { setFolders as setFoldersAction } from './reducer';
 
@@ -22,7 +23,7 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/designlist/folders?nsfPath=${encodeQueryValue(nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',

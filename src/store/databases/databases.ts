@@ -13,7 +13,7 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
-import { AlertManager } from '../../utils/common';
+import { AlertManager, encodeQueryValue } from '../../utils/common';
 import { getAppIcons, loadAppIcons } from '../../services/app-icons';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
@@ -349,7 +349,7 @@ export const fetchDBConfig = (config: string) => {
     dispatch(setApiLoading(true));
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/scope?dataSource=${config}`, {
+        fetch(`${SETUP_KEEP_API_URL}/scope?dataSource=${encodeQueryValue(config)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',

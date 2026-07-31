@@ -11,7 +11,7 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
-import { fullEncode } from '../../utils/common';
+import { encodeQueryValue, fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
 import { isActiveAgent } from './agents';
@@ -33,7 +33,7 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/views?nsfPath=${nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/designlist/views?nsfPath=${encodeQueryValue(nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
@@ -159,7 +159,7 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
       dispatch(setApiLoading(true));
       try {
         let { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(newSchemaData.nsfPath)}&configName=${encodeQueryValue(newSchemaData.schemaName)}`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${getToken()}`,
@@ -250,7 +250,7 @@ async function saveViewDetails(currentView: any, nsfPath: string, active: boolea
 async function getViewDesign(viewName: string, nsfPath: string, isFolder: boolean) {
   const { data } = await apiRequestWithRetry(() =>
     fetch(
-      `${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${fullEncode(nsfPath)}`,
+      `${SETUP_KEEP_API_URL}/design/${isFolder ? 'folders' : 'views'}/${fullEncode(viewName)}?nsfPath=${encodeQueryValue(nsfPath)}`,
       {
         method: 'GET',
         headers: {
@@ -323,7 +323,7 @@ export const processViewsAgents = (
   return async (dispatch: Dispatch) => {
     try {
       let { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${dbName}`, {
+        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(nsfPath)}&configName=${encodeQueryValue(dbName)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             'Content-Type': 'application/json',

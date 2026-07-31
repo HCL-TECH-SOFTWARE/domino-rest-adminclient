@@ -12,6 +12,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { encodeQueryValue } from '../../utils/common';
 import { log, setDBError, clearDBError } from './shared';
 import { addActiveAgent, deleteActiveAgent, setAgents as setAgentsAction, updateAgent } from './reducer';
 
@@ -26,7 +27,7 @@ export const fetchAgents = (dbName: string, nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/designlist/agents?nsfPath=${encodeQueryValue(nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
@@ -188,7 +189,7 @@ export const updateAgents = (schemaData: Database, agentsData: any, dbName: stri
       dispatch(setApiLoading(true));
       try {
         const { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(newSchemaData.nsfPath)}&configName=${encodeQueryValue(newSchemaData.schemaName)}`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${getToken()}`,
