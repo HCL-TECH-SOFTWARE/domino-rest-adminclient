@@ -1277,3 +1277,39 @@ body[data-theme="dark"] .field-batch-delete-text {
        57px rail and the mobile drawer both need to share. */
 }
 
+/* ==========================================================================
+   Carried over from dark-mode.css, which is deleted (#924, #959).
+
+   By the end that file was 182 lines and 22 selectors, and all but these two
+   groups were unreachable:
+
+     - #969 removed its 53 `.Mui*` selectors when the last MUI package went.
+     - Most of the rest name classes that moved into a keep-* element's shadow
+       root during #806, which a light-DOM rule cannot cross. Only five `.tsx`
+       files render anything now.
+     - Seven declarations were `light-dark(inherit, …)`, which is invalid —
+       `inherit` is a CSS-wide keyword, not a valid component value inside a
+       function, so the declaration was dropped at parse time (#924).
+     - Its `body[data-theme="dark"]` block had never applied either: a stray
+       U+FEFF sat in front of the selector, which made it invalid and took the
+       whole block with it.
+
+   These two still match light DOM, so they move rather than go.
+   ========================================================================== */
+
+/* The document's own scrollbars. Nothing else styles them, and they sit outside
+   every shadow root, so this is the only place they can be set. */
+body[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #1e1e2e;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3a3a5a;
+}
+
+/* `styles.css` styles no bare `a`, so without this the router's `Link`
+   (`router/react.tsx`) — the one real `<a>` left in light DOM — falls back to the
+   user agent's blue on a dark surface. */
+body[data-theme="dark"] a {
+  color: inherit;
+}

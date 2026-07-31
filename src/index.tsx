@@ -7,7 +7,6 @@
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import './styles/styles.css';
-import './styles/dark-mode.css';
 import { Provider } from 'react-redux';
 import App from './App';
 import '@awesome.me/webawesome/dist/styles/webawesome.css';
