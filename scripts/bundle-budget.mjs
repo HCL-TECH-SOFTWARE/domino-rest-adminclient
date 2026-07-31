@@ -102,27 +102,23 @@ const kb = (n) => `${(n / 1000).toFixed(1)} kB`;
  * bump, far narrower than the class of regression this exists to catch. The `KeepElements`
  * barrel alone accounts for 613.6 kB.
  *
- * ## Why raw is 3 % and gzip is still 2 %
+ * ## Raw was 3 % for the duration of #806, and is back to 2 %
  *
- * **Raw was widened from 2 % to 3 % for the duration of #806** — a deliberate, temporary
- * loosening, to be tightened again when the per-file pass finishes.
+ * Raw was the metric that migration pushed on, for reasons that had nothing to do with a
+ * regression: converting a React view to a Lit element moves its markup from JSX into a
+ * `static styles` + `html` template, and #718 inlined 44 icon glyphs as base64 `data:` URIs.
+ * Both add *raw* bytes that gzip absorbs almost completely — the icon codemod landed at
+ * **+19.5 kB raw but only +4.9 kB gzip**. A raw budget tight enough to catch a real
+ * regression during a migration that legitimately adds raw bytes just fails on the migration.
  *
- * The reason is that raw is the metric #806 pushes on, and it does so for reasons that have
- * nothing to do with a regression. Converting a React view to a Lit element moves its markup
- * from JSX into a `static styles` + `html` template, and #718 inlined 44 icon glyphs as
- * base64 `data:` URIs — both add *raw* bytes that gzip absorbs almost completely. That is why
- * the icon codemod landed at **+19.5 kB raw but only +4.9 kB gzip**. A raw budget tight
- * enough to catch a real regression during a migration that legitimately adds raw bytes just
- * fails on the migration.
+ * gzip stayed at 2 % throughout, precisely because it was the metric that did *not* move for
+ * those reasons, so it remained the sensitive half of the gate.
  *
- * gzip stays at 2 % precisely because it is the metric that does *not* move for those
- * reasons, so it remains the sensitive half of the gate. A change that grows gzip is still
- * caught at the old tolerance.
- *
- * ⚠️ **This is a migration accommodation, not a new normal. Put raw back to 0.02 when #806
- * closes** — and re-baseline with `--update` at that point, which will tighten both.
+ * The note here said to put raw back "when #806 closes", and #719 half 2 is where that
+ * happens: there is no `.tsx` under `src` any more, so no view can convert and add raw bytes
+ * again. Re-baselined in the same change, as that note also required.
  */
-const HEADROOM = { raw: 0.03, gzip: 0.02 };
+const HEADROOM = { raw: 0.02, gzip: 0.02 };
 
 const withHeadroom = (measured) => ({
   raw: Math.ceil(measured.raw * (1 + HEADROOM.raw)),

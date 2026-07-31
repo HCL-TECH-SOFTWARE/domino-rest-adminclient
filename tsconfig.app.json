@@ -15,6 +15,14 @@
 // This file is `noEmit: true`, so it only ever type-checks. The runtime-authoritative
 // decorator setting lives in the bundler configs (`vite.config.mts`, `vitest.config.ts`),
 // which must select SWC's `decoratorVersion: '2022-03'`; SWC does not read tsconfig.json.
+//
+// ## No `jsx`
+//
+// `"jsx": "react-jsx"` was here until #719 removed React. Dropping it is not tidying: with
+// no setting, a `.tsx` file fails to compile outright ("Cannot use JSX unless the --jsx flag
+// is provided"), which is a stronger guarantee than the source scan in
+// `test/react-removed.test.ts` and arrives at the point someone writes the file rather than
+// when the suite next runs.
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -31,7 +39,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
     "module": "ESNext",
     "moduleDetection": "force",
     "moduleResolution": "bundler",

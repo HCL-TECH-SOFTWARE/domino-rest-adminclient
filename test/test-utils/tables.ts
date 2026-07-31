@@ -4,7 +4,13 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { fireEvent, screen, within } from '@testing-library/react';
+/*
+ * `@testing-library/dom`, not `/react`. All three are DOM Testing Library's own exports —
+ * the React package only re-exported them — and #719 removed React from the repository, so
+ * the re-export is the only thing that would have kept `@testing-library/react` (and with it
+ * `react` and `react-dom`) installed. Same functions, one dependency less.
+ */
+import { fireEvent, screen, within } from '@testing-library/dom';
 import { deepButton, deepQuery, deepQueryAll } from './shadow';
 
 /**

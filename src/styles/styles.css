@@ -60,9 +60,18 @@
     color: var(--text-color-primary);
 }
 
-.big-text {
-    font-size: 18px;
-}
+/*
+ * `.big-text` was here. #806 moved its last five call sites into shadow roots — the schemas and
+ * scopes views, the app filter and the consent filter each restate `font-size: 18px` in their
+ * own `static styles`, and their notes say so — which left the rule reaching nothing in `src`.
+ *
+ * It survived the #930 sweep because `dead-selectors.test.ts` counts `test/` as source, and
+ * `KeepIcon.test.tsx` passed `className: 'big-text'` to prove the wrapper forwarded a class.
+ * #719 deleted that wrapper and its test, so the last thing naming the class went with it.
+ *
+ * A rule kept alive only by its own test is the CSS form of the argument the wrapper guard made
+ * about components: the test was exercising something no screen renders.
+ */
 
 .divider {
     height: 1px;

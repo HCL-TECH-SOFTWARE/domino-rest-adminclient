@@ -13,9 +13,28 @@
  *
  * The breakpoint is written out as `768px` in the media queries below instead of a custom
  * property, because a custom property cannot be used in a media condition. It must stay
- * equal to `MOBILE_BREAKPOINT_PX` in `src/AppShell.tsx`, which feeds `mobile-breakpoint`;
+ * equal to `MOBILE_BREAKPOINT_PX` in `keep-app-shell.ts`, which feeds `mobile-breakpoint`;
  * `test/app-shell.test.ts` fails if the two drift.
+ *
+ * This is a document-scope sheet and stays one, even though the shell is a Lit element as of
+ * #719 — `keep-app-shell` renders into the light DOM precisely so that these rules, Web
+ * Awesome's `native.css` button styling and four utility classes from `styles.css` all keep
+ * reaching the markup below. The element's class note has the full argument.
  */
+
+/*
+ * No box of its own. An unknown element is `display: inline` by default, so without this
+ * `wa-page` would sit inside an inline box rather than being a child of the mount point, as it
+ * was when React rendered it. `display: contents` takes the host out of the box tree and
+ * leaves the geometry exactly as it was.
+ *
+ * `keep-app` needs the same rule and does *not* get it here — this sheet ships in the shell's
+ * chunk, and `keep-app` is on screen before that chunk exists (the login route never loads
+ * it). Its copy is in `index.css`, which the entry imports.
+ */
+keep-app-shell {
+  display: contents;
+}
 
 wa-page {
   /*

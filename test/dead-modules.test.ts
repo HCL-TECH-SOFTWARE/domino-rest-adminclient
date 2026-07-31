@@ -43,12 +43,16 @@ const ROOT = resolve(process.cwd());
 const SRC = join(ROOT, 'src');
 
 /**
- * Both entry points, because `index.html` loads two module scripts. `src/index.ts` is the
- * appearance boot code from #707 — it runs before React renders to avoid a theme flash, and
- * it is imported by nothing, which is exactly what an entry point looks like to this walk.
- * Omitting it would report it, and everything only it reaches, as dead.
+ * Both entry points, because `index.html` loads two module scripts. `appearance-boot.ts` is
+ * the theme-flash guard from #707 — it is imported by nothing, which is exactly what an entry
+ * point looks like to this walk, so omitting it would report it and everything only it reaches
+ * as dead.
+ *
+ * The pair swapped names in #719: the app entry was `index.tsx` and the boot was `index.ts`.
+ * They stay two source modules — the build merges them into one chunk either way, but the
+ * split is what keeps the appearance write ahead of the framework inside it.
  */
-const ENTRIES = ['src/index.tsx', 'src/index.ts'];
+const ENTRIES = ['src/index.ts', 'src/appearance-boot.ts'];
 
 /**
  * Unreachable on purpose. Each needs a reason and, where the resolution is known, the issue

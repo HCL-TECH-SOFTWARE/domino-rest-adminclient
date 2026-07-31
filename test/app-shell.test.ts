@@ -28,21 +28,80 @@ import { resolve } from 'node:path';
 const ROOT = process.cwd();
 const read = (path: string) => readFileSync(resolve(ROOT, path), 'utf8');
 
-const shell = read('src/AppShell.tsx');
+/** `src/AppShell.tsx` until #719 half 2 converted it; the stylesheet did not move with it. */
+const SHELL_FILE = 'src/components/keep-elements/keep-app-shell.ts';
+
+const shell = read(SHELL_FILE);
 const shellCss = read('src/styles/app-shell.css');
 const views = read('src/components/keep-elements/keep-views.ts');
 const mobileHeader = read('src/components/keep-elements/keep-mobile-header.ts');
 const globalCss = read('src/styles/styles.css');
+const entry = read('src/index.ts');
 /** The footer's own copy of the breakpoint since #806 moved it out of the global sheet. */
 const footerElement = read('src/components/keep-elements/keep-footer.ts');
 
-/** Block comments dropped, so prose about a name is not mistaken for a use of it. */
-const code = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+/**
+ * Comments dropped, so prose about a name is not mistaken for a use of it.
+ *
+ * HTML comments are stripped alongside the JavaScript ones since the shell became a Lit
+ * element: its markup is a template literal, so the notes *inside* the markup are `<!-- -->`
+ * blocks. Without this the `data-toggle-nav` case below fails on the sentence explaining why
+ * that attribute must never appear — a guard failing on its own rationale.
+ */
+const code = (text: string) =>
+  text
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 describe('AppShell on wa-page (#707)', () => {
   it('renders wa-page and nothing else as the shell', () => {
-    expect(shell).toMatch(/from '@awesome\.me\/webawesome\/dist\/react\/page/);
-    expect(code(shell)).toMatch(/<WaPage/);
+    // A bare side-effect import now, not a default: `wa-page` is registered by loading the
+    // module, where the React build exported a component to render.
+    expect(code(shell)).toMatch(/^import '@awesome\.me\/webawesome\/dist\/components\/page\/page\.js';$/m);
+    expect(code(shell)).toMatch(/<wa-page/);
+  });
+
+  it('renders into the light DOM, where its stylesheets can reach it', () => {
+    /*
+     * The one element in the tree with no shadow root, and the reason is not style: three
+     * separate sheets address this markup from document scope, and none of them crosses a
+     * shadow boundary.
+     *
+     *   - `app-shell.css`, below, for `wa-page` and the three `nav-*` children;
+     *   - Web Awesome's `native.css`, which styles bare `<button>` from `@layer wa-native` —
+     *     the logo and the appearance toggle take their `height` from it and override only
+     *     padding, border and background;
+     *   - `styles.css`, for `medium-text`, `color-text-primary`, `text-bold` on the wordmark
+     *     and `side-nav-logo-img` on the logo.
+     *
+     * Give this element a shadow root and all three stop applying at once, with nothing in
+     * this suite able to see it — the file runs with `css: false` and jsdom has no layout.
+     * `keep-app` is checked too: a shadow root *above* the shell puts its markup out of reach
+     * just as effectively.
+     */
+    const app = read('src/components/keep-elements/keep-app.ts');
+    for (const [label, source] of [['keep-app-shell', shell], ['keep-app', app]] as const) {
+      expect(
+        code(source),
+        `${label} no longer renders into the light DOM — app-shell.css, WebAwesome's ` +
+          'native.css button styling and four utility classes in styles.css all stop reaching ' +
+          'the shell the moment it has a shadow root, and nothing here can see that happen.',
+      ).toMatch(/createRenderRoot\(\)\s*:\s*HTMLElement\s*\{\s*return this;/);
+    }
+
+    // And the sheet stays a document sheet, imported by the element rather than inlined into
+    // a `static styles` block that could not reach `wa-page`'s slotted light DOM children.
+    expect(code(shell)).toMatch(/import '\.\.\/\.\.\/styles\/app-shell\.css'/);
+  });
+
+  it('keeps the shell stylesheet out of the entry chunk (#974)', () => {
+    // `app-shell.css` is imported by the shell element, which is only ever reached through a
+    // dynamic import — so it ships in the shell's chunk. Importing it from the entry would put
+    // it back on the critical path for visitors who never authenticate, which is the same
+    // mistake #974 records for the shell module itself.
+    expect(code(entry)).not.toMatch(/app-shell\.css/);
+    expect(code(entry)).not.toMatch(/keep-app-shell/);
   });
 
   it('maps every region it claims to use onto a real wa-page slot', () => {
@@ -67,11 +126,11 @@ describe('AppShell on wa-page (#707)', () => {
     // they have to repeat the number. Disagreement is invisible until the viewport sits in
     // the gap: a menu column with no menu in it, or a header bar with no room for one.
     const declared = shell.match(/MOBILE_BREAKPOINT_PX = (\d+)/);
-    expect(declared, 'AppShell no longer declares MOBILE_BREAKPOINT_PX').not.toBeNull();
+    expect(declared, 'the shell no longer declares MOBILE_BREAKPOINT_PX').not.toBeNull();
     const px = declared![1];
 
     expect(code(shell)).toContain(`(width < ${'${MOBILE_BREAKPOINT_PX}'}px)`);
-    expect(code(shell)).toContain('mobileBreakpoint={`${MOBILE_BREAKPOINT_PX}px`}');
+    expect(code(shell)).toContain('mobile-breakpoint="${MOBILE_BREAKPOINT_PX}px"');
 
     // Same form as wa-page's own `@media screen and (width < ${breakpoint})`, so the two
     // agree on which side of the boundary pixel falls.
@@ -97,8 +156,9 @@ describe('AppShell on wa-page (#707)', () => {
   });
 
   it('drives the rail from a class the stylesheet actually reads', () => {
-    // The collapse state crosses from TSX to CSS by name only; nothing else links them.
-    expect(code(shell)).toMatch(/className=\{collapsed \? 'nav-collapsed' : undefined\}/);
+    // The collapse state crosses from the template to the CSS by name only; nothing else
+    // links them.
+    expect(code(shell)).toMatch(/class=\$\{collapsed \? 'nav-collapsed' : ''\}/);
     expect(shellCss).toMatch(/wa-page\.nav-collapsed\s*\{[^}]*--menu-width:\s*57px/);
     expect(shellCss).toMatch(/^wa-page\s*\{[^}]*--menu-width:\s*242px/m);
   });

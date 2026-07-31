@@ -81,7 +81,9 @@ describe('copyright headers (#762)', () => {
     // and it goes stale every time files are added or deleted (#770 removed 19).
     expect(IN_SCOPE.filter((f) => f.startsWith('src/')).length).toBeGreaterThan(100);
     expect(IN_SCOPE.filter((f) => f.startsWith('test/')).length).toBeGreaterThan(50);
-    expect(IN_SCOPE).toContain('src/App.tsx');
+    // Named as a canary rather than for its own sake. It was `src/App.tsx` until #719 deleted
+    // the last React component; the entry point is the file least likely to move next.
+    expect(IN_SCOPE).toContain('src/index.ts');
     expect(IN_SCOPE).toContain('test/copyright-headers.test.ts');
     expect(IN_SCOPE).toContain('index.html');
   });

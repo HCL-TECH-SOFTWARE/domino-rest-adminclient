@@ -17,8 +17,21 @@
     <title>HCL Domino Rest API</title>
   </head>
   <body>
+    <!--
+      Two module scripts, and this order is load-bearing: `appearance-boot` writes the theme
+      class from localStorage, and the app entry below pulls the whole framework in behind it.
+      Note the build merges the pair into one chunk and moves it to <head> — the ordering
+      survives that, the head start does not. See appearance-boot.ts, which measures it.
+
+      Neither can be inline: the production CSP sends `script-src 'self'` (#752).
+    -->
+    <script type="module" src="/src/appearance-boot.ts"></script>
+    <!--
+      The application root. `<div id="root">` until #719 half 2, when the last React component
+      became `keep-app` — a custom element needs no mount call, so the entry below registers
+      the tag and the browser upgrades this.
+    -->
+    <keep-app></keep-app>
     <script type="module" src="/src/index.ts"></script>
-    <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>
