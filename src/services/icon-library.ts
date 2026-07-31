@@ -32,6 +32,8 @@
 import { registerIconLibrary } from '@awesome.me/webawesome/dist/components/icon/library.js';
 import { getLogger } from './log-service.js';
 
+import anglesLeft from '@fortawesome/fontawesome-free/svgs/solid/angles-left.svg?url';
+import anglesRight from '@fortawesome/fontawesome-free/svgs/solid/angles-right.svg?url';
 import arrowsRotate from '@fortawesome/fontawesome-free/svgs/solid/arrows-rotate.svg?url';
 import ban from '@fortawesome/fontawesome-free/svgs/solid/ban.svg?url';
 import bars from '@fortawesome/fontawesome-free/svgs/solid/bars.svg?url';
@@ -43,7 +45,9 @@ import chevronRight from '@fortawesome/fontawesome-free/svgs/solid/chevron-right
 import chevronUp from '@fortawesome/fontawesome-free/svgs/solid/chevron-up.svg?url';
 import circleCheck from '@fortawesome/fontawesome-free/svgs/solid/circle-check.svg?url';
 import circleDot from '@fortawesome/fontawesome-free/svgs/solid/circle-dot.svg?url';
+import circleExclamation from '@fortawesome/fontawesome-free/svgs/solid/circle-exclamation.svg?url';
 import circleInfo from '@fortawesome/fontawesome-free/svgs/solid/circle-info.svg?url';
+import circlePlay from '@fortawesome/fontawesome-free/svgs/solid/circle-play.svg?url';
 import circlePlus from '@fortawesome/fontawesome-free/svgs/solid/circle-plus.svg?url';
 import circleQuestion from '@fortawesome/fontawesome-free/svgs/solid/circle-question.svg?url';
 import circleUser from '@fortawesome/fontawesome-free/svgs/solid/circle-user.svg?url';
@@ -54,6 +58,7 @@ import download from '@fortawesome/fontawesome-free/svgs/solid/download.svg?url'
 import ellipsis from '@fortawesome/fontawesome-free/svgs/solid/ellipsis.svg?url';
 import envelope from '@fortawesome/fontawesome-free/svgs/solid/envelope.svg?url';
 import file from '@fortawesome/fontawesome-free/svgs/solid/file.svg?url';
+import filter from '@fortawesome/fontawesome-free/svgs/solid/filter.svg?url';
 import folder from '@fortawesome/fontawesome-free/svgs/solid/folder.svg?url';
 import folderOpen from '@fortawesome/fontawesome-free/svgs/solid/folder-open.svg?url';
 import floppyDisk from '@fortawesome/fontawesome-free/svgs/solid/floppy-disk.svg?url';
@@ -94,8 +99,22 @@ const log = getLogger('services/icon-library');
  * survive as string literals and {@link FaIconName} can be derived from them. {@link ICONS}
  * below is the same object under the widened type, which is what the resolver and the
  * guards in `test/services/icon-library.test.ts` index by an arbitrary string.
+ *
+ * ### Five entries here have no call site yet (#946)
+ *
+ * `angles-left`, `angles-right`, `circle-exclamation`, `circle-play` and `filter` are staged
+ * for the sweep that replaces the app's hand-drawn `<svg>` glyphs — the sites are listed on
+ * that issue. They are registered first so each call-site change is a one-line swap that can
+ * be looked at in a browser on its own, rather than one sweep mixing registration with
+ * fourteen size-and-colour judgements.
+ *
+ * **Nothing guards against them staying unused.** `icon-library.test.ts` checks that every
+ * name the markup asks for is registered, not the reverse, so an entry that never gains a call
+ * site will sit here indefinitely. If #946 is abandoned, delete these five with it.
  */
 const BUNDLED = {
+  'angles-left': anglesLeft,
+  'angles-right': anglesRight,
   'arrows-rotate': arrowsRotate,
   ban,
   bars,
@@ -107,7 +126,9 @@ const BUNDLED = {
   'chevron-up': chevronUp,
   'circle-check': circleCheck,
   'circle-dot': circleDot,
+  'circle-exclamation': circleExclamation,
   'circle-info': circleInfo,
+  'circle-play': circlePlay,
   'circle-plus': circlePlus,
   'circle-question': circleQuestion,
   'circle-user': circleUser,
@@ -118,6 +139,7 @@ const BUNDLED = {
   ellipsis,
   envelope,
   file,
+  filter,
   folder,
   'folder-open': folderOpen,
   'floppy-disk': floppyDisk,
