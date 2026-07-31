@@ -205,6 +205,28 @@ describe('keep-homepage', () => {
     });
   });
 
+  describe('the tile row', () => {
+    /**
+     * The space between tiles is a gap on the row, not two touching card margins (#963).
+     *
+     * As margins it was `--wa-space-l` on each of two neighbours, so the real separation was
+     * 48px and nothing that named it said 48. Measured in Chrome at 1440px: 48px before,
+     * 24px after, with the tiles absorbing the difference. `css: false` means nothing here
+     * can see that, so what is pinned is the shape that produces it — the gap exists on the
+     * row, and the inline margin that used to stand in for it is gone from the tile.
+     */
+    it('separates the tiles with a gap on the row rather than card margins', () => {
+      expect(Homepage.styles.toString()).toMatch(
+        /\.features\s*\{[^}]*gap:\s*var\(--wa-space-l\)/
+      );
+    });
+
+    it('drops the justify-content that had nothing left to distribute', () => {
+      // The tiles are `flex: 1`, so they already consume the row; `space-between` was inert.
+      expect(Homepage.styles.toString()).not.toContain('space-between');
+    });
+  });
+
   it('carries no rule for the section-title class, which nothing ever had', () => {
     // It was in the styled block this element replaced, matching a class no element in the
     // screen carried — so it has never rendered anything.

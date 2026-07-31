@@ -189,6 +189,20 @@ describe('keep-tip', () => {
       expect(el.shadowRoot!.querySelector('.tile')).toBeTruthy();
     });
 
+    it('carries no inline margin, so the row owns the space between tiles', () => {
+      /**
+       * #963. The gap between two tiles used to be two of these margins touching, so the
+       * real separation was 2 x --wa-space-l and no declaration said 48px. It is a `gap` on
+       * `.features` in keep-homepage now, which states it once where the row is laid out.
+       *
+       * The block margin stays — that is this tile's own breathing room above and below,
+       * not spacing between siblings. Asserted as the full shorthand rather than just the
+       * absence of a horizontal value, since `margin: var(--wa-space-l)` would satisfy a
+       * looser check and is exactly what this guards against.
+       */
+      expect(ruleBody('wa-card')).toMatch(/margin:\s*var\(--wa-space-l\) 0;/);
+    });
+
     it('rings the hit area on keyboard focus rather than the text', async () => {
       await mount();
 
