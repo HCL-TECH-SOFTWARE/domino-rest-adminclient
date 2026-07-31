@@ -7,6 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanupLit, mountLit } from '../../test-utils/lit';
 import { Router, memoryHistory } from '../../../src/router/router';
+import { setRouterForTest } from '../../../src/router/instance';
 import { store } from '../../../src/store/store';
 import { setNavItems } from '../../../src/store/account/reducer';
 import { setPullDatabase } from '../../../src/store/databases/reducer';
@@ -40,13 +41,18 @@ const BASE = '/admin/ui';
  * `SideNav.tsx` had no test of its own, so nothing was carried over. What is asserted here is
  * the behaviour the framework list, the router's nav link and four stylesheet rules used to
  * supply between them.
+ *
+ * The router is installed on the module singleton rather than handed to the element (#709).
+ * It still has to be built here rather than left to `setupTests.ts`, because these assertions
+ * read hrefs and the global one carries no basename — `setRouterForTest` disposes whatever it
+ * replaces, and the global `afterEach` disposes this one.
  */
 describe('keep-side-nav', () => {
   let router: Router;
   let dispatched: unknown[];
 
   beforeEach(() => {
-    router = new Router({ base: BASE, history: memoryHistory(['/']) });
+    router = setRouterForTest(new Router({ base: BASE, history: memoryHistory(['/']) }));
     dispatched = [];
     store.dispatch(setNavItems({ databases: false, apps: false }));
     store.dispatch(setPullDatabase(false));
@@ -54,7 +60,6 @@ describe('keep-side-nav', () => {
 
   afterEach(() => {
     cleanupLit();
-    router.dispose();
     vi.restoreAllMocks();
   });
 
@@ -67,8 +72,7 @@ describe('keep-side-nav', () => {
     }) as any);
   };
 
-  const mount = (props: Partial<SideNav> = {}) =>
-    mountLit<SideNav>(TAG, { router, ...props } as Partial<SideNav>);
+  const mount = (props: Partial<SideNav> = {}) => mountLit<SideNav>(TAG, props);
 
   /** A store dispatch reaches the element through `StoreController.requestUpdate()`. */
   const settle = async (el: SideNav) => {
@@ -127,14 +131,29 @@ describe('keep-side-nav', () => {
   });
 
   it('writes hrefs through the router, basename included', async () => {
+    // Nothing is passed in: the element reaches the module singleton through its own
+    // controller (#709). Two tests used to cover the property being absent — an href that
+    // fell back to the bare path, and a click that did nothing — and both branches are
+    // deleted rather than moved, because `RouterController` always has a router to read and
+    // there is no longer a reachable state in which it does not.
     const el = await mount();
     expect(linkTo(el, '/')).toBeTruthy();
     expect(links(el).every((a) => a.getAttribute('href')!.startsWith(BASE))).toBe(true);
   });
 
-  it('falls back to the bare path when it has no router', async () => {
-    const el = await mountLit<SideNav>(TAG);
-    expect(links(el)[0].getAttribute('href')).toBe('/');
+  it('takes no router property — that was the last one in the app (#709)', () => {
+    // A property would be re-applied by `@lit/react` on every shell render with no dirty
+    // check, and would fight the controller's own subscription. The guard is on the element
+    // rather than on the shell because the shell is where it would be *passed*, and a
+    // property nothing sets is invisible there.
+    // `expanded` is the control: it proves both probes can see a property that is declared,
+    // so the two negatives below are not the reactive-property machinery being invisible to
+    // them. Without it this case passes on any typo.
+    expect('expanded' in SideNav.prototype).toBe(true);
+    expect(SideNav.elementProperties.has('expanded')).toBe(true);
+
+    expect('router' in SideNav.prototype).toBe(false);
+    expect(SideNav.elementProperties.has('router')).toBe(false);
   });
 
   it('marks the current route with aria-current, and only that one', async () => {
@@ -229,13 +248,6 @@ describe('keep-side-nav', () => {
     event.preventDefault();
     linkTo(el, '/').dispatchEvent(event);
     expect(router.location().pathname).toBe('/');
-  });
-
-  it('does nothing on click when it has no router', async () => {
-    const el = await mountLit<SideNav>(TAG);
-    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
-    links(el)[0].dispatchEvent(event);
-    expect(event.defaultPrevented).toBe(false);
   });
 
   it('prefetches a route chunk after the hover-intent delay, and not before', async () => {

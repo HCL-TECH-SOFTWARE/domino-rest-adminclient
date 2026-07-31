@@ -51,17 +51,13 @@ const SHEETS = ['src/styles/styles.css', 'src/styles/keep-overrides.css'];
  * `css: false`), so each needs its own browser check.
  */
 const ALLOWED: Record<string, string> = {
-  // Both duplicated inside keep-default-card.ts's static styles, like `img` was. `<text>`
-  // is not an HTML element; the app uses it as a bare tag in JSX and Lit templates, so
-  // these do reach something — AddImportDialog's option titles, among others.
-  text: 'duplicated in keep-default-card.ts; reaches <text> tags across the app',
-  'text, strong': 'duplicated in keep-default-card.ts; reaches <text>/<strong> app-wide',
-  // Reaches Section.tsx's `<section className="diagram">` on the homepage, where
-  // `overflow: hidden` and `white-space: nowrap` are unlikely to be wanted.
-  section: 'duplicated in keep-default-card.ts; reaches Section.tsx’s diagram <section>',
-  // Dead rather than harmful: every wa-card in the tree is inside a keep-* shadow root
-  // (keep-tip, keep-default-card), so this reaches nothing at all.
-  'wa-card': 'reaches no element — every wa-card in the tree is inside a shadow root',
+  // `<text>` is not an HTML element; the app uses it as a bare tag in Lit templates, so this
+  // does reach something — the add/import dialog's option titles, among others.
+  text: 'reaches <text> tags across the app',
+  // `text, strong`, `section` and `wa-card` were here until #806 wave 8. Each had become a
+  // rule reaching nothing — their last light-DOM targets moved into shadow roots — and each
+  // was deleted from the sheet, so listing them here would now be describing rules that do
+  // not exist. The honesty case below is what stops that happening silently again.
 };
 
 /**
@@ -101,6 +97,27 @@ describe('document-scope sheets add no new bare type selector (#907)', () => {
     // people to move floors.
     for (const { path, selectors } of sheets) {
       expect(selectors.length, `no top-level rules parsed out of ${path}`).toBeGreaterThan(20);
+    }
+  });
+
+  /**
+   * An allowlist entry for a selector no sheet defines any more is stale, and stale silently:
+   * the ratchet below only ever *consults* the list, so a leftover entry costs nothing and
+   * reads as current. Three accumulated that way before #806 wave 8 removed the rules they
+   * described, and nothing failed.
+   *
+   * Same check `test/dead-modules.test.ts` carries over its own allowlist, and for the same
+   * reason — a list of exceptions nobody is forced to revisit becomes folklore.
+   */
+  it('keeps the allowlist honest', () => {
+    const defined = new Set(sheets.flatMap(({ selectors }) => selectors));
+
+    for (const [selector, reason] of Object.entries(ALLOWED)) {
+      expect(
+        defined.has(selector),
+        `ALLOWED lists \`${selector}\`, which no sheet defines any more — drop the entry`,
+      ).toBe(true);
+      expect(reason.length, `ALLOWED entry for \`${selector}\` needs a real reason`).toBeGreaterThan(15);
     }
   });
 

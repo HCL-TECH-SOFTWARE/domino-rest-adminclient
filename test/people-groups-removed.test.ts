@@ -23,7 +23,7 @@ import { join, resolve } from 'node:path';
  *
  *   - `sidenav/Routes.ts`      the route metadata
  *   - `keep-elements/keep-side-nav.ts`  the `navitems.users` / `navitems.groups` link blocks
- *   - `home/sections/Section.tsx`  the People Management tile
+ *   - `keep-elements/keep-homepage.ts`  the People Management tile
  *
  * A source scan because there is nothing left to render. Deleted code has no behaviour to
  * assert on, and the thing worth preventing is a *reintroduction* — which review does not
@@ -95,11 +95,12 @@ describe('People and Groups stay removed (#770)', () => {
     // The actual 2024 regression: the links outlived their routes. Each of these three
     // files could bring one back on its own.
     expect(code(read('src/components/sidenav/Routes.ts'))).not.toMatch(/'\/people'|'\/groups'/);
-    // `sidenav/SideNav.tsx` became `keep-elements/keep-side-nav.ts` in #806. The link blocks
-    // moved with it, so the guard follows the code and not the path.
+    // `sidenav/SideNav.tsx` became `keep-elements/keep-side-nav.ts` in #806, and
+    // `home/sections/Section.tsx` folded into `keep-elements/keep-homepage.ts` in wave 8.
+    // The link blocks moved with them, so the guard follows the code and not the path.
     const navFiles = [
       'src/components/keep-elements/keep-side-nav.ts',
-      'src/components/home/sections/Section.tsx',
+      'src/components/keep-elements/keep-homepage.ts',
     ];
     for (const file of navFiles) {
       expect(code(read(file)), `${file} still gates on a removed flag`).not.toMatch(

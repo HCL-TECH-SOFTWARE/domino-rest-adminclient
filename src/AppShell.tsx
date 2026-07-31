@@ -6,13 +6,10 @@
 
 import React, { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useSelector } from 'react-redux';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import WaPage from '@awesome.me/webawesome/dist/react/page/index.js';
 import './App.css';
 import './styles/app-shell.css';
 import Views from './Views';
-import theme from './theme';
 import { KeepProfileMenu } from './components/keep-elements/react/KeepProfileMenu';
 import { KeepProfileMenuDialog } from './components/keep-elements/react/KeepProfileMenuDialog';
 import { KeepFooter } from './components/keep-elements/react/KeepFooter';
@@ -21,10 +18,10 @@ import { KeepNotification } from './components/keep-elements/react/KeepNotificat
 import { KeepSideNav } from './components/keep-elements/react/KeepSideNav';
 import { KeepTooltip } from './components/keep-elements/react/KeepTooltip';
 import { KeepIcon } from './components/keep-elements/react/KeepIcon';
-import { useRouter } from './router/react';
+import { getRouter } from './router/instance';
 import { applyTheme } from './services/theme-service';
 import { AppState } from './store';
-import { getTheme, switchTheme } from './store/styles/action';
+import { switchTheme } from './store/styles/action';
 import keepLogo from './assets/KeepNewIcon.png';
 import { useAppDispatch } from './store/hooks';
 
@@ -47,8 +44,23 @@ import { useAppDispatch } from './store/hooks';
  *     `NavigationGuardProvider` and needs the router context; hoisting it is its own change.
  *
  * The React subtrees inside each slot are untouched: `wa-page` slots light DOM, so the
- * reconciler, the Redux tree and the MUI components inside them all keep working. Only the
- * outer scaffolding changed.
+ * reconciler and the Redux tree inside them keep working. Only the outer scaffolding
+ * changed.
+ *
+ * ## There is no theme provider here any more (#709)
+ *
+ * This component mounted the app's last `ThemeProvider` and its last global-baseline
+ * component, both from Material UI, and `theme.ts` existed only to feed them. All three are
+ * gone. The provider had nothing left to theme — its override map emptied out over #806
+ * waves 5 to 7 as the last screens importing those components converted — and the baseline
+ * was a *duplicate* of Web Awesome's `native.css`, not an addition to it: the same
+ * `box-sizing`, the same zeroed margins, the same font smoothing. It only appeared to be
+ * load-bearing because its Emotion styles were injected last and unlayered, so they won over
+ * `native.css` in `@layer wa-native` at every declaration the two shared.
+ *
+ * Removing it therefore does not remove a baseline, it stops one baseline masking another.
+ * The measured differences are listed in the PR; each is Web Awesome's own value taking
+ * effect where a Material UI copy of it used to sit on top.
  */
 
 /**
@@ -97,13 +109,8 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [collapsed, setCollapsed] = React.useState(true);
   const isMobile = useMobileView();
   const dispatch = useAppDispatch();
-  // Read, not subscribed: the instance is stable for the life of the app. `keep-side-nav`
-  // takes it as a property (its own subscription is what re-renders it on navigation), and
-  // the sign-out handler below navigates with it.
-  const router = useRouter();
 
   const { themeMode } = useSelector((state: AppState) => state.styles);
-  const { authenticated } = useSelector((state: AppState) => state.account);
 
   /*
    * The rail is a desktop affordance. On mobile the nav lives in `wa-page`'s drawer, where
@@ -112,11 +119,6 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
    * viewport and back.
    */
   const expanded = isMobile || !collapsed;
-
-  const currentTheme = useMemo(
-    () => theme(authenticated, getTheme, themeMode),
-    [authenticated, themeMode]
-  );
 
   // Sync Redux themeMode with localStorage (e.g. after login page toggle)
   useEffect(() => {
@@ -140,18 +142,19 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
    * The redirect half of signing out (#806).
    *
    * `keep-option-list` clears the session and emits `logout`; the event is composed, so it
-   * crosses the profile elements' shadow roots and arrives on their wrappers. The navigation
-   * has to happen out here because the router is only reachable through React — the same
-   * reason `keep-side-nav` takes the instance as a property. It moves onto the element when
-   * the Lit router controller lands (#926).
+   * crosses the profile elements' shadow roots and arrives on their wrappers, and the
+   * navigation happens here because that is where the handler is bound.
+   *
+   * `getRouter()` rather than `useRouter()`: since #926 the router is a module singleton, so
+   * reading it is not a hook and the callback has no dependency on it. The same change is
+   * what let `keep-side-nav` stop taking the instance as a property.
    */
   const handleLogout = useCallback(() => {
-    router.navigate('/');
-  }, [router]);
+    getRouter().navigate('/');
+  }, []);
 
   return (
-    <ThemeProvider theme={currentTheme}>
-      <CssBaseline />
+    <>
       <WaPage
         mobileBreakpoint={`${MOBILE_BREAKPOINT_PX}px`}
         /*
@@ -219,14 +222,14 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </div>
 
         {/*
-          `router` is passed down rather than reached for. `keep-side-nav` renders real anchors
-          — the unsaved-changes guard, modified clicks and route prefetching all depend on that
-          — so it needs the basename, the current pathname and `navigate`, and the one instance
-          lives in React context. See the element's class note; it goes away with #806's router
-          controller.
+          `expanded` is the only property left. `router` used to come down here too, because
+          `keep-side-nav` renders real anchors — the unsaved-changes guard, modified clicks and
+          route prefetching all depend on that — and the one instance lived in React context.
+          #926 made it a module singleton with a reactive controller over it, so the element
+          reads it itself; this was the last property-passed router in the app.
         */}
         <div slot="navigation">
-          <KeepSideNav expanded={expanded} router={router} />
+          <KeepSideNav expanded={expanded} />
         </div>
 
         <div slot="navigation-footer">
@@ -266,7 +269,7 @@ const AppShell: React.FC<AppShellProps> = ({ children }) => {
           viewport and the footer is a fixed overlay. See the note above. */}
       <KeepNotification />
       <KeepFooter />
-    </ThemeProvider>
+    </>
   );
 };
 

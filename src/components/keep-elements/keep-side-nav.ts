@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css, nothing, type PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { html, css, nothing } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { KeepElement } from './keep-element';
 import './keep-tooltip';
@@ -16,7 +16,7 @@ import { fetchKeepDatabases } from '../../store/databases/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import { StoreController } from '../../store/StoreController';
 import { appRoutes as routes, apps, databases, settings, type NavRoute } from '../sidenav/Routes';
-import type { Router } from '../../router/router';
+import { RouterController } from '../../router/RouterController';
 
 /**
  * The route list in `wa-page`'s `navigation` slot. Tag: `keep-side-nav`.
@@ -29,14 +29,13 @@ import type { Router } from '../../router/router';
  * `::part(menu)` in `styles/app-shell.css`. It survives only so the separator above the first
  * item can differ between the 57px rail and the open menu, which is what it did before.
  *
- * ## The router arrives as a property, because there is still no controller for it
+ * ## It reads the router itself
  *
- * `Router` (`router/router.ts`) is deliberately framework-free and says a Lit reactive
- * controller will subscribe to it when the views convert. That controller does not exist, and
- * the one live instance is created in `App.tsx` and handed out through React context, so an
- * element cannot reach it on its own. Every other converted element has answered this by
- * emitting an event and letting the still-React parent navigate — which does not work here,
- * because these are **real anchors** and three things depend on that:
+ * This element took `router` as a property until #709, because the one live instance was
+ * created in `App.tsx` and published through React context with nothing an element could
+ * reach. Emitting a navigation event and letting the still-React parent navigate — the answer
+ * every other converted element gave — does not work here, because these are **real anchors**
+ * and three things depend on that:
  *
  *   1. `NavigationGuardContext` catches in-app navigation with a document-level capture
  *      listener that looks for an `<a href>` on the composed path. Without an anchor the
@@ -45,9 +44,17 @@ import type { Router } from '../../router/router';
  *      href needs the router's basename.
  *   3. Hover prefetching of the route chunk (#813) is a `Router.prefetch` call.
  *
- * So the shell passes the instance down instead. That is the smallest thing that keeps all
- * three, and when the reactive controller lands this element is its first customer: delete the
- * property, the subscription and the two helpers below.
+ * #926 made the router a module singleton with a `RouterController` over it, so all three are
+ * kept while the property, its `subscribe`/`unsubscribe` pair, the `willUpdate` hook that
+ * existed only to notice the property arriving, and the "no router in scope" branch in every
+ * helper below are gone — the last of those being unreachable now rather than merely
+ * untested. `keep-breadcrumb-router` went through the same collapse first; this element was
+ * the last property-passed router in the app, so `AppShell` stops calling `useRouter()` with
+ * it.
+ *
+ * The pathname is selected out of the location rather than taken whole, for the reason
+ * `RouterController` documents: the rail is a function of the path alone, so a sibling
+ * recording a view preference in the query string must not re-render it.
  *
  * ## Four rules in the old stylesheet were dead, and this element does not reproduce dead rules
  *
@@ -254,8 +261,8 @@ export default class SideNav extends KeepElement {
   /** True when the menu shows its labels; false for the 57px rail. */
   @property({ type: Boolean }) accessor expanded = false;
 
-  /** The app's one {@link Router}. See the class note for why it comes down as a property. */
-  @property({ attribute: false }) accessor router: Router | null = null;
+  /** The path the current-item highlight is computed from. See the class note. */
+  private readonly route = new RouterController(this, (location) => location.pathname);
 
   /**
    * Which entries the deployment's `adminui.json` turns on. The shell has no selector for this,
@@ -264,28 +271,11 @@ export default class SideNav extends KeepElement {
    */
   private readonly navitems = new StoreController(this, (state) => state.account.navitems);
 
-  @state() private accessor pathname = '';
-
-  private routerUnsubscribe?: () => void;
-
   private prefetchTimer?: ReturnType<typeof setTimeout>;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    if (this.router && !this.routerUnsubscribe) this.watchRouter();
-  }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.routerUnsubscribe?.();
-    this.routerUnsubscribe = undefined;
     this.cancelPrefetch();
-  }
-
-  protected willUpdate(changed: PropertyValues): void {
-    // `@lit/react` assigns properties from a layout effect, i.e. after the element is already
-    // connected, so the router is not there yet when `connectedCallback` runs.
-    if (changed.has('router')) this.watchRouter();
   }
 
   /** Was the mount effect. Publishes which nav entries this deployment allows. */
@@ -293,32 +283,21 @@ export default class SideNav extends KeepElement {
     store.dispatch(showPages());
   }
 
-  private watchRouter(): void {
-    this.routerUnsubscribe?.();
-    this.routerUnsubscribe = undefined;
-    const router = this.router;
-    if (!router) return;
-    this.pathname = router.location().pathname;
-    this.routerUnsubscribe = router.subscribe(() => {
-      this.pathname = router.location().pathname;
-    });
-  }
-
   /**
    * "The current path is at or below `to`", so `/schema/orders.nsf/Alpha` keeps Schemas lit.
    * `/` is exact, or it would match everything. Same rule the router's own nav link applies.
    */
   private isCurrent(uri: string): boolean {
-    if (uri === '/') return this.pathname === uri;
-    return this.pathname === uri || this.pathname.startsWith(`${uri}/`);
+    const pathname = this.route.value;
+    if (uri === '/') return pathname === uri;
+    return pathname === uri || pathname.startsWith(`${uri}/`);
   }
 
   private href(uri: string): string {
-    return this.router?.href(uri) ?? uri;
+    return this.route.href(uri);
   }
 
   private onLinkClick(event: MouseEvent, uri: string): void {
-    if (!this.router) return;
     // Anything that is not a plain left-click belongs to the browser: modified clicks open tabs
     // and windows, and swallowing them would break that.
     if (
@@ -332,14 +311,14 @@ export default class SideNav extends KeepElement {
       return;
     }
     event.preventDefault();
-    this.router.navigate(uri);
+    this.route.navigate(uri);
   }
 
   private startPrefetch(uri: string): void {
-    if (this.prefetchTimer !== undefined || !this.router || !prefetchIsWelcome()) return;
+    if (this.prefetchTimer !== undefined || !prefetchIsWelcome()) return;
     this.prefetchTimer = setTimeout(() => {
       this.prefetchTimer = undefined;
-      this.router?.prefetch(uri);
+      this.route.prefetch(uri);
     }, PREFETCH_INTENT_MS);
   }
 

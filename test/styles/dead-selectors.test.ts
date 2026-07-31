@@ -24,9 +24,15 @@ import { join, resolve } from 'node:path';
  * That will keep happening: #709, #717, #718 and #771 each delete more screens.
  *
  * Scope is deliberately this one sheet. It is the hand-written component-class sheet, so
- * every name in it should appear in source. `dark-mode.css` is mostly `.Mui*-root`
- * overrides — names MUI generates at runtime and no source file ever spells — and would
- * need an allowlist longer than the check.
+ * every name in it should appear in source.
+ *
+ * `dark-mode.css` was excluded because it was mostly `.Mui*-root` overrides — names MUI
+ * generated at runtime and no source file ever spelled — so it would have needed an
+ * allowlist longer than the check. That reason is spent: #709 deleted all 53 of those rules
+ * with the framework, and what remains is a short list of hand-written class rules of the
+ * same kind this scan already reads. Widening to it is a real change and not a free one — some
+ * names look dead at a glance, and the caution below about deleting a live rule applies to
+ * every one of them — so it is left as its own piece of work rather than folded in here.
  */
 
 const ROOT = resolve(process.cwd());

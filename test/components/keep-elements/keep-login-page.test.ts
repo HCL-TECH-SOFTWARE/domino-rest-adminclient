@@ -997,18 +997,12 @@ describe('keep-login-page keeps its dependencies out', () => {
 
   const PAGES = ['keep-login-page.ts', 'keep-callback-page.ts'];
 
-  const walk = (dir: string, match: RegExp): string[] =>
-    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) return walk(path, match);
-      return match.test(entry.name) ? [path] : [];
-    });
-
-  const sourcesUnder = (dir: string) =>
-    walk(resolve(ROOT, 'src', dir), /\.tsx?$/).map((file) => ({
-      file: file.slice(ROOT.length + 1),
-      text: readFileSync(file, 'utf8'),
-    }));
+  /*
+   * A recursive `walk` and a `sourcesUnder` helper stood here to feed the two app-wide MUI
+   * ratchets at the bottom of this describe. Both ratchets moved to
+   * `test/styles/mui-removed.test.ts` with #709, and nothing else in this file reads more
+   * than the two pages named above.
+   */
 
   it('finds the converted pages', () => {
     // A bad path would make every assertion below vacuously pass.
@@ -1063,27 +1057,15 @@ describe('keep-login-page keeps its dependencies out', () => {
   });
 
   /*
-   * The two app-wide Material UI ratchets that lived in the layout suite. They are not about
-   * this screen — they happened to be asserted from it, and deleting that file would have
-   * deleted them.
+   * Two app-wide Material UI ratchets used to sit here — "exactly one CssBaseline mount" and
+   * "theme.ts has a single importer". They were kept in this file because they had been
+   * asserted from the layout suite and deleting that file would have deleted them; they were
+   * never about this screen.
+   *
+   * #709 took both to zero: `AppShell.tsx` was the one mount and the one importer, and
+   * `theme.ts` is deleted. A ratchet phrased as "exactly one" fails at the moment its
+   * migration finishes, so neither is edited down — both are restated at zero, and as a
+   * statement about the framework rather than about a count, in
+   * `test/styles/mui-removed.test.ts`.
    */
-  it('leaves exactly one CssBaseline mount in the app', () => {
-    const mounts = sourcesUnder('.')
-      .filter(({ text }) => /<CssBaseline\s*\/>/.test(code(text)))
-      .map(({ file }) => file)
-      .sort();
-    expect(mounts).toEqual(['src/AppShell.tsx']);
-  });
-
-  it('leaves theme.ts with a single importer', () => {
-    // One importer left means one ThemeProvider left; when this reaches zero, theme.ts can be
-    // deleted outright.
-    const importers = sourcesUnder('.')
-      .filter(
-        ({ file, text }) =>
-          file !== 'src/theme.ts' && /from '\.{1,2}(\/\.\.)*\/theme'/.test(code(text)),
-      )
-      .map(({ file }) => file);
-    expect(importers).toEqual(['src/AppShell.tsx']);
-  });
 });

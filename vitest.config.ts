@@ -198,8 +198,19 @@ export default defineConfig({
         // 100/100/100/100. Gated close to the measurement for the same reason the two
         // controllers above are: it is one small file, its failure mode is silent — the dialog
         // simply stops appearing — and what it protects is the user's unsaved work in the
-        // access-mode editor. #806 adds consumers to it rather than removing them.
-        'src/components/navigation/**': { lines: 97, statements: 97, functions: 97, branches: 95 },
+        // access-mode editor.
+        //
+        // The path is the file, not `src/components/navigation/**`, because #806 wave 8
+        // converted it to `keep-navigation-guard` and deleted that directory. The entry is
+        // re-pointed rather than dropped: `keep-elements/**` above would otherwise take over at
+        // 85/85/84/68, quietly lowering this floor by twelve points on the one file here whose
+        // regression nobody would see. It still measures 100 across the board.
+        'src/components/keep-elements/keep-navigation-guard.ts': {
+          lines: 97,
+          statements: 97,
+          functions: 97,
+          branches: 95,
+        },
       },
     },
   },
