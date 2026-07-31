@@ -88,6 +88,49 @@ describe('keep-alert', () => {
     expect(wrapper(el).classList.contains('visible')).toBe(true);
   });
 
+  // ---- #952 ---------------------------------------------------------------------------------
+
+  /**
+   * The element used to move itself to `document.body` on first show, "so we're not trapped
+   * inside another component's shadow tree". Both remaining call sites render it from a Lit
+   * template, and a template holds a `ChildPart` bracketing the nodes it produced — relocating
+   * one of those from inside the element's own `updated()` is what broke the React consumer in
+   * #902, aimed at a different renderer.
+   *
+   * The Popover API already does the job the move was there for: `show()` promotes the element
+   * into the top layer, out of every ancestor's clipping and stacking context. Measured in
+   * Chrome, nested two shadow roots deep inside a 200x60 `overflow: hidden` box with a modal
+   * `<dialog>` open — it paints at the top right, above the backdrop, unclipped.
+   */
+  it('stays where its parent put it when shown', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const el = document.createElement(TAG) as Alert;
+    host.appendChild(el);
+    await el.updateComplete;
+
+    el.show('Nested toast', 'danger', 5000);
+    await el.updateComplete;
+
+    expect(el.parentElement, 'the alert reparented itself out of its host').toBe(host);
+    host.remove();
+  });
+
+  it('stays where its parent put it when auto-shown by a message change', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const el = document.createElement(TAG) as Alert;
+    host.appendChild(el);
+    await el.updateComplete;
+
+    el.message = 'Raised declaratively';
+    await el.updateComplete;
+    await el.updateComplete;
+
+    expect(el.parentElement).toBe(host);
+    host.remove();
+  });
+
   it('waits for the close animation, then emits a composed alert-closed event', async () => {
     const el = await mountLit<Alert>(TAG, { message: 'Boom', variant: 'danger' });
     await el.updateComplete;

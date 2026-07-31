@@ -334,7 +334,19 @@ describe('keep-forms-container', () => {
       });
     });
 
-    it('survives a request that fails with something that is not a JSON body', async () => {
+    /**
+     * A thrown `TypeError` from `fetch` becomes `networkFailure`, whose `data` is
+     * `{ status: 0, message }` — and `pullForms` re-throws that as `JSON.stringify(data)`. So
+     * the body reaching `reportError` *is* JSON, and 0 is what it says.
+     *
+     * This asserted **200** until #949 was fixed, and passed for a bad reason: `notify()` threw
+     * `TypeError: Cannot read properties of null (reading 'style')` on the detached singleton
+     * alert, that TypeError escaped `apiRequestWithRetry`'s catch block in place of the API
+     * error, and `reportError` could not parse it — so the default 200 survived untouched.
+     * The error reporter was destroying the error it was reporting, which is exactly what
+     * #949 is about. Now the real status arrives.
+     */
+    it('records the network failure a non-JSON fetch error is turned into', async () => {
       respond = () => {
         throw new TypeError('Failed to fetch');
       };
@@ -347,9 +359,10 @@ describe('keep-forms-container', () => {
         expect(shadow(el).querySelector('wa-tab-group')).toBeTruthy();
       });
       const wrapper = shadow(el).querySelector('keep-error-wrapper') as HTMLElement & {
-        errorStatus: { status: number };
+        errorStatus: { status: number; statusText: string };
       };
-      expect(wrapper.errorStatus.status).toBe(200);
+      expect(wrapper.errorStatus.status).toBe(0);
+      expect(wrapper.errorStatus.statusText).toBe('Failed to fetch');
     });
   });
 

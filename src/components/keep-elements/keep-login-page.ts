@@ -10,6 +10,7 @@ import * as Yup from 'yup';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import './keep-alert';
+import type Alert from './keep-alert';
 import './keep-api-error-dialog';
 import './keep-button';
 import './keep-dropdown';
@@ -442,6 +443,11 @@ export default class LoginPage extends KeepElement {
 
   @query('#login-error-dialog') private accessor errorDialog!: ApiErrorDialog | null;
 
+  @query('keep-alert') private accessor loginAlert!: Alert | null;
+
+  /** Previous error flag, so the toast is raised on the edge rather than on every render. */
+  private wasErrored = false;
+
   private readonly keepAuthenticator = new WebAuthn({
     callbackPath: '/api/webauthn-v1/callback',
     registerPath: '/api/webauthn-v1/register',
@@ -498,6 +504,12 @@ export default class LoginPage extends KeepElement {
 
   protected updated(changed: PropertyValues): void {
     if (changed.has('isDark')) applyAppearance(this.isDark ? 'dark' : 'light');
+
+    // Rising edge only: show() restarts the dismiss timer, so raising on every render would
+    // hold the toast open for as long as the error flag stayed up. #952.
+    const { error, errorMessage } = this.account.value;
+    if (error && !this.wasErrored) this.loginAlert?.show(errorMessage ?? '', 'danger');
+    this.wasErrored = error;
   }
 
   /**
@@ -740,7 +752,6 @@ export default class LoginPage extends KeepElement {
   }
 
   render() {
-    const { error, errorMessage } = this.account.value;
     const isHttps = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '') === 'https';
     // The glyph is the toggle's only content, so it carries the button's accessible name.
     // Reusing the tooltip's wording keeps the two from drifting apart.
@@ -766,13 +777,11 @@ export default class LoginPage extends KeepElement {
             <h1>HCL Domino REST API</h1>
           </div>
           <div class="column">
-            ${error
-              ? html`<keep-alert
-                  variant="danger"
-                  heading="Error logging in!"
-                  .message=${errorMessage ?? ''}
-                ></keep-alert>`
-              : nothing}
+            <!-- Unconditional and driven through show(), not a conditional part with a
+                 message binding (#952). keep-alert used to move itself into document.body on
+                 first show, which is what kept the toast readable after the part went away;
+                 it stays where it is put now, so the part has to. -->
+            <keep-alert heading="Error logging in!"></keep-alert>
 
             <section class="modes">
               <keep-button
