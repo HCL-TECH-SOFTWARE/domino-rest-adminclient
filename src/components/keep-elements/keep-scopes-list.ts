@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css, nothing, type PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { html, css, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
 import { StoreController } from '../../store/StoreController';
 import {
@@ -17,7 +17,7 @@ import {
 import { FETCH_AVAILABLE_DATABASES, type Scope } from '../../store/databases/types';
 import { toggleDrawer } from '../../store/drawer/action';
 import { toggleAlert } from '../../store/alerts/action';
-import type { Router } from '../../router/router';
+import { RouterController } from '../../router/RouterController';
 import type { ScopeRow } from './keep-scope-form';
 import type { KeepScopeOpenDetail } from './keep-scopes-default-view';
 import type { KeepViewChangeDetail } from './keep-card-view-options';
@@ -59,12 +59,14 @@ const VIEW_QUERY = '?view=';
  * element module. It points at `keep-elements/react/KeepScopesList` instead, the same shape
  * the schemas route, the consents route and the quick-config drawer already use.
  *
- * ## The router arrives as a property
+ * ## The router comes from a controller
  *
- * That wrapper is also the one place that can reach the router: it is created in `App.tsx`
- * and published through context with no module-level instance, and there is still no Lit
- * reactive controller for it (#926). So {@link router} is handed down, and the one navigation
- * this screen owns — recording the chosen view in the query string — goes through it.
+ * The wrapper used to be the one place that could reach the router: it was created in
+ * `App.tsx` and published through context, so it read it and handed it down as a property.
+ * #926 made the router a module singleton with a `RouterController` over it, so this screen
+ * reaches it itself and the wrapper is now nothing but the `createComponent` call. The one
+ * navigation this screen owns — recording the chosen view in the query string — goes through
+ * {@link route}.
  *
  * ## Store access
  *
@@ -166,12 +168,13 @@ export default class ScopesList extends KeepElement {
   `;
 
   /**
-   * The app's single `Router`. Handed down by the wrapper — see the class note.
+   * The app's router (#926).
    *
-   * Nullable because the element is constructible without one; the one navigation below is
-   * guarded, so an element mounted bare renders and filters and simply does not navigate.
+   * Selects the pathname rather than the whole location, because this screen writes its own
+   * view key into the query string: with the default selector that write would re-render the
+   * element a second time for a value it already holds.
    */
-  @property({ attribute: false }) accessor router: Router | null = null;
+  private readonly route = new RouterController(this, (location) => location.pathname);
 
   /** The whole `databases` slice: scopes, both pull flags and the permissions. */
   private readonly db = new StoreController(this, (state) => state.databases);
@@ -191,15 +194,13 @@ export default class ScopesList extends KeepElement {
   /** Whether the drawer is editing that row or creating a new scope. */
   @state() private accessor isEdit = false;
 
-  /** The URL is read for the view key exactly once, when the router first arrives. */
-  private viewReadFromUrl = false;
+  connectedCallback(): void {
+    super.connectedCallback();
 
-  protected willUpdate(changed: PropertyValues): void {
-    // The wrapper sets `router` after construction, so this cannot live in connectedCallback.
-    if (!changed.has('router') || this.viewReadFromUrl || !this.router) return;
-    this.viewReadFromUrl = true;
-
-    const { search } = this.router.location();
+    // Before the first render, so the chosen view is never painted wrong and corrected. This
+    // was a `willUpdate` guarded on the router property arriving, which is a race the
+    // controller removes: the location is readable the moment the element exists.
+    const { search } = this.route.location;
     const displayType = search.split(VIEW_QUERY)[1];
     if (search && displayType) this.view = displayType;
   }
@@ -291,10 +292,7 @@ export default class ScopesList extends KeepElement {
     const { view } = event.detail;
     // Recorded in the query string so the choice survives a reload, as before. The element
     // keeps its own `view` rather than re-reading the URL — see keep-card-view-options.
-    const router = this.router;
-    if (router) {
-      router.navigate({ pathname: router.location().pathname, search: `${VIEW_QUERY}${view}` });
-    }
+    this.route.navigate({ pathname: this.route.value, search: `${VIEW_QUERY}${view}` });
     this.view = view;
   }
 

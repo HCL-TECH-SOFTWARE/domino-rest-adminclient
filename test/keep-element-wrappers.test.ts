@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 /**
@@ -90,9 +90,24 @@ describe('@lit/react wrappers have live consumers (#806, #719 P4)', () => {
   });
 
   it('exports every wrapper from the barrel, or not at all', () => {
-    // The barrel is the import path ~50 route-local modules use. A wrapper missing from it
-    // is reachable only by deep import, which is the eager-path convention (#813) — so this
-    // asserts the reverse direction only: the barrel must not name a file that is gone.
+    /*
+     * The barrel is gone as of #806 wave 7, and its absence is the success condition rather
+     * than a gap in this check.
+     *
+     * It existed as the import path ~50 route-local modules shared. #813 split the wrappers
+     * into one file each precisely so that a module naming one did not drag the rest into its
+     * chunk, and every consumer has since moved to a deep import — the last was `HomePage.tsx`,
+     * a *route root*, which through the barrel was pulling four other route roots and their
+     * whole screens into the `/` chunk.
+     *
+     * So this is skipped rather than deleted, and skipped rather than rewritten to assert the
+     * file is absent. If someone reintroduces a barrel, the check that its exports all resolve
+     * is worth having again immediately, and it is easier to un-skip a check than to notice a
+     * missing one. The orphan check below is the one that carries the weight either way, and
+     * it does not depend on a barrel existing.
+     */
+    if (!existsSync(BARREL)) return;
+
     const barrel = readFileSync(BARREL, 'utf8');
     const exported = [...barrel.matchAll(/from '\.\/react\/(\w+)'/g)].map((match) => match[1]);
     const names = new Set(WRAPPERS.map(({ name }) => name));

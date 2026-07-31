@@ -9,6 +9,7 @@ import { render, type RenderOptions, type RenderResult } from '@testing-library/
 import { configureStore, type Store } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { Router, memoryHistory } from '../../src/router/router';
+import { setRouterForTest } from '../../src/router/instance';
 import { RouterProvider } from '../../src/router/react';
 
 /**
@@ -45,17 +46,20 @@ export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper
    */
   preloadedState?: Record<string, unknown>;
   /**
-   * Wrap in a memory-backed router at this entry. Omit for components that never touch
-   * the router — an unnecessary router changes what `useLocation`-style hooks see, and
-   * the hooks throw without one, which is how a suite finds out it needed this.
+   * Put the tree in a `<RouterProvider>` at this entry. Omit for components that never touch
+   * the router — an unnecessary provider changes what `useLocation`-style hooks see, and the
+   * hooks throw without one, which is how a suite finds out it needed this.
+   *
+   * It does **not** control whether a router exists: since #926 one is always installed as
+   * the module singleton (see below). This only decides whether *React* can see it.
    */
   route?: string;
 }
 
 export interface RenderWithProvidersResult extends RenderResult {
   store: Store;
-  /** The memory router, when `route` was given — so a test can assert where it went. */
-  router?: Router;
+  /** The memory router this render is bound to — so a test can assert where it went. */
+  router: Router;
 }
 
 export function renderWithProviders(
@@ -65,12 +69,24 @@ export function renderWithProviders(
   const state = { ...DEFAULT_STATE, ...preloadedState };
   const store = configureStore({ reducer: staticReducers(state) });
 
-  // No basename: tests address routes the way the app's own tables do, base-relative.
-  const router = route === undefined ? undefined : new Router({ history: memoryHistory([route]) });
+  /*
+   * One memory router per render, installed as the app's singleton for the duration of the
+   * test (#926) and torn down by the global `afterEach` in `setupTests.ts`.
+   *
+   * It is built even when `route` was not given, and that is a tightening rather than a
+   * loosening. A Lit element carrying a `RouterController` reaches the singleton whether or
+   * not the React frame around it asked for a provider — so without this it would fall back
+   * to a browser-backed router over jsdom's *shared* `window.location`, and a navigation in
+   * one test would still be the current URL in the next. `'/'` is the same entry the address
+   * bar starts at, so nothing a test already asserts changes.
+   *
+   * No basename: tests address routes the way the app's own tables do, base-relative.
+   */
+  const router = setRouterForTest(new Router({ history: memoryHistory([route ?? '/']) }));
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <Provider store={store}>
-      {router ? <RouterProvider router={router}>{children}</RouterProvider> : children}
+      {route === undefined ? children : <RouterProvider router={router}>{children}</RouterProvider>}
     </Provider>
   );
 

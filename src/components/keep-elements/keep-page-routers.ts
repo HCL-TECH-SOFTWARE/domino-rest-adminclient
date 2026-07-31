@@ -11,8 +11,9 @@ import { KeepElement } from './keep-element';
 /**
  * The breadcrumb strip above the page, hidden on mobile.
  *
- * Its child (`BreadcrumbRouter`) still imports MUI, redux and the navigation-guard context, so
- * it is slotted in from `Views.tsx` rather than converted here.
+ * Its one child is `keep-breadcrumb-router`, converted in #806 wave 7 and still slotted in from
+ * `Views.tsx` — this element stays a slot host until that file is rewritten, at which point the
+ * pair collapses into one.
  *
  * The Linaria block also carried a `.arrow-left { width: 70px }` rule. Nothing in the tree has
  * ever had that class, so it is dropped rather than moved - which is fortunate, because a rule

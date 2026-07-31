@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css, nothing, type PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { html, css, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 import { v4 as uuid } from 'uuid';
 import './keep-access-tabs';
 import './keep-button';
@@ -15,8 +15,7 @@ import './keep-network-error-dialog';
 import './keep-page-loading';
 import { KeepElement } from './keep-element';
 import { StoreController } from '../../store/StoreController';
-import { matchPath } from '../../router/router';
-import type { Router } from '../../router/router';
+import { RouterController } from '../../router/RouterController';
 import type { Database, Mode } from '../../store/databases/types';
 import {
   cacheFormFields,
@@ -80,13 +79,14 @@ const EMPTY_SCHEMA: Database = {
  * explicit rather than a `useState` initialiser: without it, the previous form's fields are
  * still in the store when the next one mounts.
  *
- * ## The router arrives as a property
+ * ## The router comes from a controller
  *
- * `Router` is deliberately framework-free and there is no Lit controller for it yet (#926),
- * so the app's one instance comes down from `react/KeepAccessMode.ts` — the last React frame
- * above this screen, and the same shape `KeepSchemasList` uses for `/schema`. Everything
- * derived from the URL is derived here and handed down; `keep-access-tabs` takes the router
- * itself only because creating a form navigates away from this page.
+ * The app's one instance used to come down from `react/KeepAccessMode.ts`, the last React
+ * frame above this screen, because `Router` is deliberately framework-free and had no Lit
+ * binding. #926 gave it one, so {@link route} reaches it directly and the wrapper is now
+ * nothing but the `createComponent` call. Everything derived from the URL is still derived
+ * here and handed down; `keep-access-tabs` has its own controller, because creating a form
+ * navigates away from this page.
  *
  * ## #928, and why the mode list is derived
  *
@@ -172,8 +172,13 @@ export default class AccessMode extends KeepElement {
   /** `newForm` and `nsfDesigns`, so one subscription rather than two projections. */
   private readonly db = new StoreController(this, (state) => state.databases);
 
-  /** The app's one {@link Router}. See the class note on why it comes down as a property. */
-  @property({ attribute: false }) accessor router: Router | null = null;
+  /**
+   * The app's router (#926). The three route names below are read out of it.
+   *
+   * Selects the pathname: the query string plays no part on this screen, so the default
+   * whole-location selector would re-render it for a change it cannot see.
+   */
+  private readonly route = new RouterController(this, (location) => location.pathname);
 
   /** The schema this form belongs to, as last fetched or last written. */
   @state() private accessor schemaData: Database = EMPTY_SCHEMA;
@@ -192,9 +197,6 @@ export default class AccessMode extends KeepElement {
   /** True below the narrow breakpoint, where the field palette is not shown. */
   @state() private accessor narrow = false;
 
-  /** The current pathname, kept in step with the router so the route names stay right. */
-  @state() private accessor pathname = '';
-
   /**
    * A dialog `keep-access-tabs` wants opened after the next save.
    *
@@ -202,8 +204,6 @@ export default class AccessMode extends KeepElement {
    * the element that stashed the intent is not the element that acts on it.
    */
   @state() private accessor postSaveAction: 'add' | 'clone' | null = null;
-
-  private routerUnsubscribe?: () => void;
 
   private readonly narrowQuery = window.matchMedia(NARROW);
 
@@ -241,14 +241,11 @@ export default class AccessMode extends KeepElement {
     this.accessFields.dispatch(resetAccessFields());
     this.narrow = this.narrowQuery.matches;
     this.narrowQuery.addEventListener('change', this.handleNarrowChange);
-    if (this.router) this.watchRouter();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.narrowQuery.removeEventListener('change', this.handleNarrowChange);
-    this.routerUnsubscribe?.();
-    this.routerUnsubscribe = undefined;
   }
 
   /**
@@ -259,10 +256,7 @@ export default class AccessMode extends KeepElement {
    * so the first frame the user sees is the one carrying the fetched schema. None of them can
    * re-enter: their dependency lists are checked first, and no sync writes its own inputs.
    */
-  protected willUpdate(changed: PropertyValues): void {
-    // The React bridge assigns properties from a layout effect, i.e. after the element is
-    // already connected, so the router is not there yet when `connectedCallback` runs.
-    if (changed.has('router')) this.watchRouter();
+  protected willUpdate(): void {
     this.syncSchema();
     this.reseedFromSchema();
     this.syncModeFields();
@@ -272,24 +266,13 @@ export default class AccessMode extends KeepElement {
     this.narrow = event.matches;
   };
 
-  private watchRouter(): void {
-    this.routerUnsubscribe?.();
-    this.routerUnsubscribe = undefined;
-    const router = this.router;
-    if (!router) return;
-    this.pathname = router.location().pathname;
-    this.routerUnsubscribe = router.subscribe(() => {
-      this.pathname = router.location().pathname;
-    });
-  }
-
   /* ---------------------------------------------------------------- *
    *  Derived from the route and the store                              *
    * ---------------------------------------------------------------- */
 
   /** Route names, read through the pattern so a malformed escape decodes to itself. */
   private get params(): { nsfPath: string; dbName: string; formName: string } {
-    const matched = matchPath(ACCESS_ROUTE, this.pathname) ?? {};
+    const matched = this.route.params(ACCESS_ROUTE) ?? {};
     return {
       nsfPath: matched.nsfPath ?? '',
       dbName: matched.dbName ?? '',
@@ -348,7 +331,9 @@ export default class AccessMode extends KeepElement {
 
   /** Fetch the schema whenever the database or the schema in the URL changes. */
   private syncSchema(): void {
-    if (!this.pathname) return;
+    // A pathname that is not this route names no schema to fetch. It used to be spelled
+    // "the router has not arrived yet"; the controller means it never has not.
+    if (this.route.params(ACCESS_ROUTE) === null) return;
     const { nsfPath, dbName } = this.params;
     if (!this.depsChanged('schema', [nsfPath, dbName])) return;
     void this.db.dispatch(fetchSchema(nsfPath, dbName, this.handleSchemaData));
@@ -382,10 +367,10 @@ export default class AccessMode extends KeepElement {
    * renamed); an added mode goes to the end; an edit stays put.
    */
   private syncModeFields(): void {
-    if (!this.pathname) return;
+    if (this.route.params(ACCESS_ROUTE) === null) return;
     const { dbName, formName } = this.params;
     const allModes = this.allModes;
-    if (!this.depsChanged('modeFields', [this.pathname, allModes, dbName, formName])) return;
+    if (!this.depsChanged('modeFields', [this.route.value, allModes, dbName, formName])) return;
 
     if (this.designForms.length === 0) {
       this.db.dispatch(setLoadedFields(formName, []));
@@ -536,7 +521,6 @@ export default class AccessMode extends KeepElement {
         .nsfPath=${nsfPath}
         .schemaName=${dbName}
         .formName=${formName}
-        .router=${this.router}
         .addField=${this.addField}
         .postSaveAction=${this.postSaveAction}
         @fields-remove=${(event: CustomEvent<KeepFieldsRemoveDetail>) =>

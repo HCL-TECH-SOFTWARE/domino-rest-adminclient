@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { html, css, nothing, type PropertyValues } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
 import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
 import '@awesome.me/webawesome/dist/components/tab/tab.js';
@@ -36,7 +36,7 @@ import {
 import { getToken } from '../../store/account/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
-import type { Router } from '../../router/router';
+import { RouterController } from '../../router/RouterController';
 import type { KeepErrorStatus } from './keep-error-wrapper';
 import { isTextualView } from './keep-source-header';
 import type SourceContents from './keep-source-header';
@@ -57,6 +57,9 @@ import './keep-source-header';
 import './keep-views-tab';
 
 const log = getLogger('components/keep-elements/keep-forms-container');
+
+/** The route this screen is the root of. Its two names are all it reads from the URL. */
+const ROUTE = '/schema/:nsfPath/:dbName';
 
 /** The four panels, in the order the strip lists them. */
 const FORMS_TAB = 'forms';
@@ -194,17 +197,21 @@ function loadConfiguredForms(
  * module. It points at `keep-elements/react/KeepFormsContainer` instead, the same shape
  * `/schema` and `/apps/consents` already use.
  *
- * ## The router and the route params arrive as properties
+ * ## The router and the route params come from a controller
  *
- * That wrapper is also the only place that can reach either. The router is created in
- * `App.tsx` and published through context with no module-level instance, and the matched
- * params are published through a second context that only the outlet writes — there is still
- * no Lit reactive controller for either (#926). So {@link router}, {@link nsfPath} and
- * {@link dbName} are handed down, exactly as `keep-schemas-list` takes its router.
+ * The wrapper used to be the only place that could reach either: the router was created in
+ * `App.tsx` and published through context, and the matched params through a second context
+ * that only the outlet writes. #926 made the router a module singleton with a
+ * `RouterController` over it, and that controller matches a pattern itself — so
+ * {@link nsfPath} and {@link dbName} are read off {@link ROUTE} here rather than handed down,
+ * and the wrapper is now nothing but the `createComponent` call.
+ *
+ * The values are the same ones the outlet published, decoded by the same `matchPath`.
  *
  * One navigation crosses this boundary: `keep-forms-tab` emits `form-navigate` carrying a
  * finished, already-encoded path, and it is handed straight to the router. That contract is
- * why the element below passes {@link nsfPath} down **raw** — the tab encodes it itself.
+ * why the element below passes {@link nsfPath} down as the route captured it — the tab
+ * encodes it itself.
  *
  * ## Store access
  *
@@ -449,22 +456,23 @@ export default class FormsContainer extends KeepElement {
   ];
 
   /**
-   * The app's single `Router`. Handed down by the wrapper — see the class note.
+   * The app's router (#926) — this screen's own two route names come out of it.
    *
-   * Nullable because the element is constructible without one; the one navigation below is
-   * guarded, so an element mounted bare renders and simply does not navigate.
+   * Selects the pathname: the query string plays no part on this screen, so the default
+   * whole-location selector would re-render it for a change it cannot see.
    */
-  @property({ attribute: false }) accessor router: Router | null = null;
+  private readonly route = new RouterController(this, (location) => location.pathname);
 
   /**
-   * The route's NSF path, **raw**: this is the value the outlet captured, and it is handed to
-   * `keep-forms-tab` unchanged because that element encodes it itself when it builds the paths
-   * it reports upward.
+   * The route's NSF path, as {@link ROUTE} captured it. Handed to `keep-forms-tab` unchanged
+   * because that element encodes it itself when it builds the paths it reports upward.
+   *
+   * State written from the route in `willUpdate`, not a getter over it — see the note there.
    */
-  @property({ type: String, attribute: 'nsf-path' }) accessor nsfPath = '';
+  @state() private accessor nsfPath = '';
 
   /** The route's schema name. Every child that addresses a schema needs it explicitly. */
-  @property({ type: String, attribute: 'db-name' }) accessor dbName = '';
+  @state() private accessor dbName = '';
 
   /** The schema this screen edits. Replaced wholesale by every child's `schema-change`. */
   @state() accessor schemaData: Database = EMPTY_SCHEMA;
@@ -580,6 +588,25 @@ export default class FormsContainer extends KeepElement {
   }
 
   protected willUpdate(changed: PropertyValues): void {
+    /*
+     * The two route names, read off the URL where the `@lit/react` wrapper used to set them
+     * as properties (#926).
+     *
+     * Reactive state written here rather than a pair of getters, for two reasons. A write in
+     * `willUpdate` joins the update already in flight, so `changed` reports it and the
+     * edge-triggered check below is the one this file has always used. And **a location that
+     * is not this route leaves them alone**: navigating away happens one frame before the
+     * outlet unmounts this element, and a getter would blank the names for that frame — which
+     * is a folder fetch with no arguments here and an empty schema name in four children.
+     *
+     * Before the `hasUpdated` guard, because `firstUpdated` fetches with both of them.
+     */
+    const matched = this.route.params(ROUTE);
+    if (matched) {
+      this.nsfPath = matched.nsfPath;
+      this.dbName = matched.dbName;
+    }
+
     // Nothing below applies to the first pass: every field it would write already holds the
     // value that pass computes, and the fetches it would repeat are issued in firstUpdated.
     if (!this.hasUpdated) return;
@@ -847,7 +874,7 @@ export default class FormsContainer extends KeepElement {
    */
   private readonly handleFormNavigate = (event: Event): void => {
     const { path } = (event as CustomEvent<KeepFormsTabNavigateDetail>).detail;
-    this.router?.navigate(path);
+    this.route.navigate(path);
   };
 
   private readonly handleViewOpen = (event: Event): void => {

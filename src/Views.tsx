@@ -10,7 +10,7 @@ import { RouterOutlet, useLocation, type RouteDef } from './router/react';
 import { useSelector } from 'react-redux';
 import { AppState } from './store';
 import { setLoading } from './store/loading/action';
-import BreadcrumbRouter from './components/routers/BreadcrumbRouter';
+import { KeepBreadcrumbRouter } from './components/keep-elements/react/KeepBreadcrumbRouter';
 import { KeepPageLoading } from './components/keep-elements/react/KeepPageLoading';
 import { KeepPageRouters } from './components/keep-elements/react/KeepPageRouters';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
@@ -138,13 +138,15 @@ const Views: React.FC = () => {
          * shape as `/schema` above and `/apps/consents` below (#806 wave 6).
          *
          * Each is deep-imported from `keep-elements/react/<Name>` rather than through the
-         * `KeepElements` barrel, and none of these four wrappers has a barrel line. A route
-         * root pulled in through the barrel drags every other screen's element into this
-         * chunk, which is what #813 split them apart to stop.
+         * `KeepElements` barrel. A route root pulled in through the barrel drags every other
+         * screen's element into this chunk, which is what #813 split them apart to stop.
          *
-         * The wrappers exist only because `React.lazy` needs a module whose default export is
-         * a component, and because they are the last frame that can read the router and the
-         * route params. #926 tracks the Lit router controller that removes them.
+         * The wrappers now exist for one reason only: `React.lazy` needs a module whose
+         * default export is a component, and an element module's default export is a class.
+         * They used to be the last frame that could read the router and the route params too
+         * — #926 landed `RouterController`, so each of these four is a bare `createComponent`
+         * call and the elements reach the URL themselves. The wrappers go when `RouterOutlet`
+         * does (#719 P4), because a Lit outlet can mount the element directly.
          */
         path: '/schema/:nsfPath/:dbName',
         load: () =>
@@ -282,7 +284,7 @@ const Views: React.FC = () => {
       */}
       <NavigationGuard basename="/admin/ui" />
       <KeepPageRouters>
-        <BreadcrumbRouter />
+        <KeepBreadcrumbRouter />
       </KeepPageRouters>
       <RouterOutlet routes={routes} fallback={<KeepPageLoading message="loading view" />} />
 

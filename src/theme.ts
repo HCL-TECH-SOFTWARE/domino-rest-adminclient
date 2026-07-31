@@ -59,23 +59,12 @@ const theme = (
       // wave 5. `test/styles/dead-theme-overrides.test.ts` is what reports each one — an
       // override for a component nothing imports costs nothing at runtime and reads, to the
       // next person, as the place where that component is themed.
-      MuiSwitch: {
-        styleOverrides: {
-          switchBase: {
-            color: 'white',
-            '&$checked' : {
-              color: '#3874cb',
-              '& + $track':{
-                opacity: 1,
-                backgroundColor: '#9cbae5',
-              }
-            },
-            '&$checked + $track': {
-              backgroundColor: 'black',
-            },
-          }
-        }
-      }
+      //
+      // MuiSwitch was the last of them, and it went in wave 7 with `styles/forms.tsx` — the
+      // only file that still imported a switch from that framework. The map is empty now, so
+      // the palette above is the whole of what this theme does; the object stays because the
+      // test anchors its scan on it, and because emptying it is the observable end state of
+      // #709 rather than a step to hide.
     },
   });
 };

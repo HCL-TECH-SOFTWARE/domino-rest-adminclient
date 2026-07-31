@@ -74,10 +74,6 @@
     font-size: 20px;
 }
 
-.huge-text {
-    font-size: 24px;
-}
-
 .text-transform-none {
     text-transform: none;
 }
@@ -342,10 +338,6 @@ body[data-theme="dark"] .color-text-disabled {
     margin-top: 5px;
 }
 
-.mt-10 {
-    margin-top: 10px;
-}
-
 .mt-15 {
     margin-top: 15px;
 }
@@ -480,10 +472,6 @@ body[data-theme="dark"] .color-text-disabled {
 .icon-select {
     text-transform: capitalize;
     color: var(--wa-color-text-normal);
-}
-
-.float-left {
-    float: left;
 }
 
 .small-icon {

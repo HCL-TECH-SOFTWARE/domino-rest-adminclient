@@ -10,6 +10,7 @@ import App from "../src/App";
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from "react-redux";
 import { rootReducer } from "../src/store";
+import { resetRouterForTest } from "../src/router/instance";
 
 const mockFetch = (data: any) => vi.fn().mockImplementation(() =>
   Promise.resolve({
@@ -49,14 +50,18 @@ test("renders home page", async () => {
 });
 
 test("goes home when the login page reports a success", async () => {
-  // #806 wave 6 · #926. `keep-login-page` cannot navigate — the router is published through
-  // React context with no module-level instance, and unlike `/callback` this route is behind
-  // a `load`, so `RouterOutlet` renders it with no props to hand a callback to. It emits
-  // `login-success` instead, and this listener is the only thing that turns that into a
-  // navigation: nothing else in the suite covers the join.
+  // #806 wave 6. `keep-login-page` emits `login-success` rather than navigating itself, and
+  // App's document listener is the only thing that turns that into a navigation: nothing else
+  // in the suite covers the join.
+  //
+  // The one test in the suite that wants the *real* address bar, so it opts out of the memory
+  // router `setupTests.ts` installs for every test (#926) and lets `getRouter()` build the
+  // browser-backed one. What is asserted below — that the basename is reapplied on the way
+  // out — is a property of that router and of nothing else.
   window.fetch = mockFetch({ ok: true, json: () => ({}) });
   const store = configureStore({ reducer: rootReducer });
   window.history.pushState(null, '', '/admin/ui/scope/whatever');
+  resetRouterForTest();
 
   render(<Provider store={store}><App /></Provider>);
   await waitFor(() => {

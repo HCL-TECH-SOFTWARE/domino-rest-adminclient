@@ -12,6 +12,7 @@ import { addForm, addNsfDesign } from '../../../src/store/databases/reducer';
 import { setApiLoading } from '../../../src/store/dialog/reducer';
 import { setAccessFields } from '../../../src/store/accessMode/action';
 import { Router, memoryHistory } from '../../../src/router/router';
+import { setRouterForTest } from '../../../src/router/instance';
 import '../../../src/components/keep-elements/keep-access-mode';
 import type AccessMode from '../../../src/components/keep-elements/keep-access-mode';
 
@@ -34,14 +35,18 @@ import type AccessMode from '../../../src/components/keep-elements/keep-access-m
  * unconditionally would satisfy every "does not blank-screen" assertion.
  */
 
-/** The schema `fetchSchema` hands back. Reassigned per test, read inside the mock. */
-const fixture = vi.hoisted(() => ({ schema: { forms: [] as any[] } }));
+/**
+ * The schema `fetchSchema` hands back, and how many times it was asked for. Reassigned per
+ * test, read inside the mock.
+ */
+const fixture = vi.hoisted(() => ({ schema: { forms: [] as any[] }, fetches: 0 }));
 
 vi.mock('../../../src/store/databases/action', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/store/databases/action')>()),
   // Synchronous, so the "schema has arrived" render is the one under test rather than
   // something a test has to wait for.
   fetchSchema: (_nsfPath: string, _dbName: string, setSchemaData: (data: any) => void) => {
+    fixture.fetches += 1;
     setSchemaData(fixture.schema);
     return { type: 'NOOP' };
   },
@@ -67,7 +72,14 @@ const mode = (modeName: string, fields: any[] = [{ name: 'FirstName' }]) => ({
   validationRules: [],
 });
 
-const router = (entry = ROUTE) => new Router({ history: memoryHistory([entry]) });
+/**
+ * Put the app's router at `entry` for this test (#926).
+ *
+ * The screen reads its three route names through a `RouterController` over the module
+ * singleton now, so a route is installed rather than passed in as a property.
+ */
+const atRoute = (entry = ROUTE) =>
+  setRouterForTest(new Router({ history: memoryHistory([entry]) }));
 
 const pageLoading = (el: AccessMode) => el.shadowRoot!.querySelector('keep-page-loading');
 const fieldList = (el: AccessMode) => el.shadowRoot!.querySelector('keep-field-list');
@@ -92,6 +104,7 @@ describe('keep-access-mode', () => {
   beforeEach(() => {
     store.dispatch({ type: INIT_STATE });
     fixture.schema = { forms: [] };
+    fixture.fetches = 0;
   });
 
   afterEach(() => {
@@ -99,8 +112,10 @@ describe('keep-access-mode', () => {
     store.dispatch({ type: INIT_STATE });
   });
 
-  const mount = (props: Partial<AccessMode> = {}) =>
-    mountLit<AccessMode>(TAG, { router: router(), ...props } as Partial<AccessMode>);
+  const mount = (props: Partial<AccessMode> = {}) => {
+    atRoute();
+    return mountLit<AccessMode>(TAG, props as Partial<AccessMode>);
+  };
 
   it('registers the custom element', () => {
     expect(customElements.get(TAG)).toBeTruthy();
@@ -166,9 +181,17 @@ describe('keep-access-mode', () => {
       expect(tabs(el)!.modes).toHaveLength(2);
     });
 
-    it('does not blank when there is no router at all', async () => {
+    /*
+     * Was "does not blank when there is no router at all", which pinned the nullable `router`
+     * property's guard. The property is gone (#926) and the controller always has a router, so
+     * the surviving hazard is a router pointing somewhere this screen does not match: the
+     * three route names are then empty, and the screen must show its loading state rather than
+     * fetch a schema called nothing. `setupTests.ts` leaves every test at `/`.
+     */
+    it('does not blank, and fetches nothing, when the URL is not this route', async () => {
       const el = await mountLit<AccessMode>(TAG);
       expect(pageLoading(el)).toBeTruthy();
+      expect(fixture.fetches).toBe(0);
     });
   });
 
