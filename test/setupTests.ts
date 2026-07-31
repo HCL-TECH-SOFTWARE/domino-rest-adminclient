@@ -189,6 +189,50 @@ if (typeof globalThis.localStorage === 'undefined' || globalThis.localStorage ==
   });
 }
 
+/**
+ * Two shims for one Web Awesome 3.11.0 feature: `RenderedWatcher`.
+ *
+ * WA 3.11.0 gave the overlay components a guard against third-party CSS hiding an open
+ * modal — a cookie-banner blocker, say — which would otherwise leave the page scroll-locked
+ * and inert. `WaDrawer.firstUpdated` starts a `RenderedWatcher`, which asks
+ * `getClientRects().length > 0` on the next frame and suspends the modal if the answer is
+ * no. Both halves of that need help here.
+ *
+ * **`ResizeObserver`** — jsdom implements none, and the watcher constructs one unguarded, so
+ * every drawer reaching its first update threw `ReferenceError` from inside a Lit update.
+ * That surfaces as an unhandled rejection rather than a failure: 85 of them on the upgrade,
+ * in suites that still reported as passing. It is inert on purpose — nothing here can
+ * produce a real measurement with `css: false` and no layout engine, and a stub reporting a
+ * 0x0 box would invite assertions on a size that means nothing.
+ *
+ * **`getClientRects`** — the part that actually decides behaviour. jsdom returns an empty
+ * list for every element, always, so the watcher's own `requestAnimationFrame` check
+ * concludes "not rendered" for a drawer that just opened, and WA correctly-by-its-own-logic
+ * tears the modal back down: `removeOpenListeners()` unregisters the dismissible and drops
+ * the Escape handler. Every drawer test that dismisses by Escape or by a close button then
+ * fails, describing a bug that does not exist outside jsdom.
+ *
+ * Returning one rect is the closer approximation of the two, and it makes jsdom
+ * self-consistent: `getBoundingClientRect()` there already reports a zero-sized rect rather
+ * than nothing at all. It asserts only "this element is in the render tree", which is true
+ * of anything a test has mounted. It does not make geometry testable — that is still
+ * browser work, see the note at the top of `test/app-shell.test.ts`.
+ */
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof globalThis.ResizeObserver;
+}
+
+if (typeof Element !== 'undefined' && document.createElement('div').getClientRects().length === 0) {
+  Element.prototype.getClientRects = function getClientRects(this: Element) {
+    const rect = this.getBoundingClientRect();
+    return Object.assign([rect], { item: (i: number) => (i === 0 ? rect : null) }) as unknown as DOMRectList;
+  };
+}
+
 // MUI reads matchMedia on mount.
 if (!window.matchMedia) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({

@@ -93,7 +93,11 @@ describe('WebAwesome usage in the Keep elements', () => {
   it('reads WebAwesome metadata rather than a hand-written list', () => {
     // If either source stops parsing, every case below passes vacuously.
     expect(Object.keys(partsByTag).length).toBeGreaterThan(20);
-    expect(partsByTag['wa-card']).toEqual(new Set(['media', 'header', 'body', 'footer']));
+    // `actions` joined the other four when Web Awesome went to 3.11.0. Still pinned as an
+    // exact set rather than relaxed to a subset check: the point of the canary is that it
+    // notices metadata changing shape, so an upgrade adding a part *should* stop here and
+    // be looked at once.
+    expect(partsByTag['wa-card']).toEqual(new Set(['media', 'header', 'body', 'footer', 'actions']));
     expect(waTokens.size).toBeGreaterThan(200);
     expect(elementSources.length).toBeGreaterThan(20);
   });
