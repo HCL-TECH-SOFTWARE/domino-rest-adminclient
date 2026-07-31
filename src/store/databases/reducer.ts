@@ -318,6 +318,25 @@ export const databasesSlice = createSlice({
     clearForms(state) {
       state.forms = [];
     },
+    /**
+     * The design-list cache, keyed by NSF path.
+     *
+     * **The key is the decoded path.** This is the single definition of that (#933); every
+     * writer and reader is expected to match it, and none of them may key by the encoded
+     * form. A percent-encoded key and a decoded one are different strings, so a mismatch is
+     * not a crash — it is a lookup that misses after a *successful* fetch, leaving the
+     * reader on its empty-state branch with no error anywhere to explain it.
+     *
+     * It already holds, and the router is why: `matchPath` runs `safeDecode` over every
+     * captured segment, so a route param is decoded before any element sees it. That covers
+     * `keep-access-mode`, which reads through `params`, and `keep-forms-tab`, which is handed
+     * the container's captured value. `keep-forms-container` decodes a second time for its
+     * own writes — the identity for every path this app can produce, kept as the explicit
+     * statement of this rule at the one call site that does not read a route param directly.
+     *
+     * Note that the *fetch* wants the opposite: `nsfPath` goes into a query string, so it
+     * must be encoded there. The two are not interchangeable, which is the trap — see #978.
+     */
     addNsfDesign(state, action: PayloadAction<{ nsfPath: string; nsfDesign: any }>) {
       state.nsfDesigns[action.payload.nsfPath] = {
         ...state.nsfDesigns[action.payload.nsfPath],

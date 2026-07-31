@@ -97,7 +97,19 @@ export const handleDatabaseForms = (
     dispatch(updateForms(schemaData, dbName, formToUpdate, setSchemaData, successMsg, successCallback));
   };
 };
-export const pullForms = (nsfPath: string, _dbName: string, _setData: React.Dispatch<React.SetStateAction<string[]>>) => {
+/**
+ * Fetch an NSF's design list and cache it under `nsfDesigns[nsfPath]`.
+ *
+ * `nsfPath` must be the **decoded** path — see the note on `addNsfDesign` in the reducer for
+ * why, and for what goes wrong when a caller passes the encoded one.
+ *
+ * `_dbName` and `_setData` are both ignored. `_setData` is optional because it is a React
+ * `useState` setter this thunk has never called, and #933 added a third caller that is a Lit
+ * element with no such thing to hand it; requiring it would mean inventing an empty function
+ * to satisfy a parameter nothing reads. Removing the pair outright is #977 — it is left here
+ * because the existing callers, and a test, still pass them.
+ */
+export const pullForms = (nsfPath: string, _dbName: string, _setData?: React.Dispatch<React.SetStateAction<string[]>>) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
