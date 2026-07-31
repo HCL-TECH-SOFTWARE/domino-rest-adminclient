@@ -259,14 +259,31 @@
      *
      * Measured in Chrome against the app's own surfaces:
      *
-     *   step        hex       on #ffffff   on #1e1e2e
-     *   danger-50   #dc3146      4.59         3.57
-     *   danger-60   #f3676c      3.01         5.44
-     *   success-50  #00883c      4.58         3.58
-     *   success-60  #00ac49      3.00         5.47
+     *   step        hex       #ffffff  #f5f5f5   #1e1e2e  #181825
+     *   danger-40   #b30532     7.03     6.45        —        —
+     *   danger-50   #dc3146     4.59     4.20      3.57     3.82
+     *   danger-60   #f3676c     3.01     2.76      5.44     5.82
+     *   success-40  #036730     7.03     6.45        —        —
+     *   success-50  #00883c     4.58     4.20      3.58     3.83
+     *   success-60  #00ac49     3.00     2.75      5.47     5.85
      *
-     * So light mode takes -50 and dark takes -60, and both ends clear AA. The
-     * colour ramps themselves are mode-invariant — only which step you read
+     * **Four backgrounds, not two, and that is what #944 was about.** The original
+     * pair was chosen against `#ffffff` and `#1e1e2e` — the two `surface-default`
+     * tokens — where -50 measured 4.59 and cleared AA honestly. But these are page
+     * text colours and plenty of consumers sit on the *page*, which is `#f5f5f5`
+     * light and `#181825` dark (`getTheme().bodyColor`). On `#f5f5f5`, -50 is
+     * **4.20** and fails AA for normal text by a small but real margin.
+     *
+     * So light takes **-40**, which clears 4.5 on both light backgrounds (6.45 on
+     * the page, 7.03 on a white card) rather than only on the lighter one. Dark
+     * stays at -60: 5.82/5.85 on the page and 5.44/5.47 on a raised surface, both
+     * clear. A step is only safe if it passes against the *darker* of the two light
+     * backgrounds and the *lighter* of the two dark ones.
+     *
+     * Higher step = lighter, throughout. #944 suggested moving light to `-70` to
+     * make it darker; that is the wrong direction — -70 measures 2.21 on the page.
+     *
+     * The colour ramps themselves are mode-invariant — only which step you read
      * changes — which is why this needs a token rather than a `light-dark()`.
      *
      * Borders do not need their own token: --wa-color-danger-fill-loud resolves to
@@ -274,8 +291,8 @@
      * non-text. WA's --wa-color-danger-border-loud does not — it reads danger-60 in
      * light (3.01, borderline) and danger-40 in dark (2.33, fails).
      */
-    --keep-color-danger-text: var(--wa-color-danger-50);
-    --keep-color-success-text: var(--wa-color-success-50);
+    --keep-color-danger-text: var(--wa-color-danger-40);
+    --keep-color-success-text: var(--wa-color-success-40);
 
     /*
      * Tooltip chrome (#765).
