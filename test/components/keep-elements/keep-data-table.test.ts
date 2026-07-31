@@ -173,7 +173,21 @@ describe('keep-data-table pagination footer', () => {
   it('renders an option per rowsPerPageOptions entry, labelling -1 as All', async () => {
     const el = await mountTable({ paginated: true, count: 42 });
     const labels = Array.from(select(el).options).map((o) => o.textContent!.trim());
-    expect(labels).toEqual(['5', '10', '25', 'All']);
+    expect(labels).toEqual(['10', '25', '50', '100', 'All']);
+  });
+
+  /**
+   * The default has to be one of the offered options (#955).
+   *
+   * The `<select>` matches on value, so a default the list does not carry leaves the control
+   * displaying the *first* option while `rowsPerPage` says something else — the user sees 10
+   * and gets 5, with nothing on screen disagreeing. That is why the two defaults moved
+   * together, and why both consumers keeping their own copy moved with them.
+   */
+  it('offers its own default, so the select and the property agree', async () => {
+    const el = await mountTable({ paginated: true, count: 42 });
+    expect(el.rowsPerPageOptions).toContain(el.rowsPerPage);
+    expect(select(el).value).toBe(String(el.rowsPerPage));
   });
 
   it('emits rows-per-page-change on selection', async () => {
