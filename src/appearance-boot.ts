@@ -11,27 +11,30 @@
  * and the colour scheme are on the document before Lit, the store or the router have been
  * evaluated. Without it a dark-mode session paints light first and then corrects itself.
  *
- * ## What the split does and does not buy, measured
+ * ## It has its own chunk and its own tag, which took a build change (#987)
  *
- * `npm run build` **merges both module scripts into one entry chunk** and hoists it into
- * `<head>` — `dist/index.html` carries a single `<script type="module">`, not two. That is
- * Vite's behaviour for multiple module scripts on one page and it is not new: the same is true
- * of the build on `new_code` before #719, where the pair were `index.ts` and `index.tsx`.
+ * `index.html` deliberately does **not** declare a `<script>` tag for this module. Vite emits
+ * **one entry chunk per HTML page** however many `<script type="module" src>` tags it finds, so
+ * a tag here was concatenated into the ~90 kB app chunk — measured, and moving the tag between
+ * `<head>` and `<body>` changed not one byte of output. The ordering *inside* that chunk was
+ * right (this module's body sat at byte ~2.4k, ahead of Lit and the store), which is why it
+ * looked fine, but the write could not happen until all ~90 kB had arrived.
  *
- * Inside that chunk the ordering *is* preserved. Rollup emits entries depth-first in
- * declaration order, so this module's body is the first thing after the preload helper —
- * measured at byte ~2.4k of an 89 kB chunk, ahead of everything the app entry pulls in. So the
- * "before the framework" half of the guarantee holds in production.
+ * It is now a Rollup input in its own right and the `appearanceBootScript()` plugin in
+ * `vite.config.mts` injects the tag at the top of `<head>`, with a `modulepreload` for its one
+ * dependency. The emitted chunk is **81 bytes**. On a Slow 3G profile it completes at ~4.05s
+ * against ~5.14s for the app entry.
  *
- * The "before the render-blocking stylesheets" half does not: nothing can execute until the
- * whole 89 kB chunk has arrived, and the stylesheets may well have landed first. That half has
- * only ever held under `vite dev`, which serves the two source modules as two requests. Making
- * it true of the build needs a separate Rollup input — a build-config change with its own
- * verification, so **#987** rather than smuggled in here.
+ * ## Honest scope: no flash was reproducible either way
  *
- * Keeping the file separate is therefore not a no-op: it is what preserves the ordering above,
- * and it is the seam that a fix would use. Folding it into `index.ts` would put the write
- * after every static import in that module, which is the whole framework.
+ * Measured on Slow 3G against both builds, the appearance write landed before first paint in
+ * *both* — because paint is currently gated on a 113.8 kB render-blocking stylesheet, which is
+ * larger than the 89.3 kB entry chunk. So the guarantee held by an accident of relative sizes,
+ * not by design, and #987 was a latent defect rather than a live one.
+ *
+ * That accident is exactly what makes it worth removing. The entry chunk has been shrinking —
+ * #719 took it from 454 kB to 89 kB — and the moment it drops below the stylesheet, the flash
+ * appears with nothing in the suite or the build able to report it.
  *
  * A module rather than an inline `<script>` for the reason nothing else here is inline: the
  * production CSP sends `script-src 'self'`, so an inline block is refused outright (#752;

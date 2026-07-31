@@ -18,14 +18,16 @@
   </head>
   <body>
     <!--
-      Two module scripts, and this order is load-bearing: `appearance-boot` writes the theme
-      class from localStorage, and the app entry below pulls the whole framework in behind it.
-      Note the build merges the pair into one chunk and moves it to <head> — the ordering
-      survives that, the head start does not. See appearance-boot.ts, which measures it.
+      `src/appearance-boot.ts` is loaded first, and its tag is deliberately NOT written here:
+      the `appearanceBootScript()` plugin in vite.config.mts injects it at the top of <head>.
 
-      Neither can be inline: the production CSP sends `script-src 'self'` (#752).
+      A tag in this file would be folded into the app's entry chunk — Vite emits one chunk per
+      HTML page however many module scripts it finds, so the 300-byte theme write ended up
+      concatenated into ~90 kB of application and could not run until all of it arrived (#987).
+      Declared as its own Rollup input and injected, it is a separate chunk with its own tag.
+
+      Neither script can be inline: the production CSP sends `script-src 'self'` (#752).
     -->
-    <script type="module" src="/src/appearance-boot.ts"></script>
     <!--
       The application root. `<div id="root">` until #719 half 2, when the last React component
       became `keep-app` — a custom element needs no mount call, so the entry below registers
