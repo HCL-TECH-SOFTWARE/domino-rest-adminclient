@@ -14,6 +14,10 @@ const log = getLogger('components/keep-monaco-editor');
 // Types only — `import type` erases at compile time, so naming Monaco's interfaces
 // throughout the class costs nothing at runtime.
 import type * as Monaco from 'monaco-editor';
+import {
+  applyHoistedStyles,
+  installInlineStyleHoisting
+} from '../../services/monaco-inline-styles.js';
 import { EDITOR_THEME_ID, EDITOR_TOKENS, buildEditorTheme } from '../../services/editor-theme.js';
 import { resolveWaColors } from '../../services/wa-color.js';
 import { resolveWaTypography } from '../../services/wa-typography.js';
@@ -30,6 +34,11 @@ import { resolveWaTypography } from '../../services/wa-typography.js';
  * resolves immediately.
  */
 function fetchMonaco() {
+  // Before the imports below, not after: Monaco creates the trusted-types policies this
+  // hooks in static initialisers, so they are built while its module graph evaluates.
+  // `installInlineStyleHoisting()` documents what happens if this moves.
+  installInlineStyleHoisting();
+
   return Promise.all([
     import('monaco-editor'),
     import('monaco-editor/esm/vs/editor/editor.worker?worker'),
@@ -41,7 +50,12 @@ function fetchMonaco() {
     // which cannot happen before an editor exists. Assigning it here — inside the
     // memoised promise, before any caller gets the namespace — is therefore early
     // enough, and it keeps the three worker wrappers out of the entry chunk too.
+    //
+    // Spread, not replaced: `installInlineStyleHoisting()` above put a
+    // `createTrustedTypesPolicy` here that Monaco has already read, and an editor rebuilt
+    // after a hot reload would re-read this object.
     self.MonacoEnvironment = {
+      ...self.MonacoEnvironment,
       getWorker(_: unknown, label: string) {
         if (label === 'json') return new jsonWorker.default();
         if (label === 'javascript' || label === 'typescript') return new tsWorker.default();
@@ -125,6 +139,8 @@ export default class MonacoEditor extends LitElement {
     | Monaco.languages.CompletionItemProvider
     | undefined;
   private _themeObserver?: MutationObserver;
+  /** Watches the render root for markup carrying hoisted style declarations. */
+  private _styleObserver?: MutationObserver;
   /**
    * Cache key from the last `_applyTheme()` call that did real work — see
    * `_themeCacheKey()`. Starts `undefined` so the construction-time call always runs.
@@ -489,6 +505,8 @@ export default class MonacoEditor extends LitElement {
     // Synchronous, so the rules are in place before Monaco builds into the container
     // below and therefore before the next paint.
     this._adoptMonacoStyles(bundle.styles);
+    // Before the editor builds, so the very first batch of view lines is covered.
+    this._replayHoistedStyles();
 
     this._rebuildEditor();
 
@@ -561,6 +579,26 @@ export default class MonacoEditor extends LitElement {
     monacoStyles ??= unsafeCSS(cssText);
     const { elementStyles } = this.constructor as typeof MonacoEditor;
     adoptStyles(this.renderRoot as ShadowRoot, [...elementStyles, monacoStyles]);
+  }
+
+  /**
+   * Replays the style declarations `hoistInlineStyles()` parked on Monaco's markup.
+   *
+   * The hoist happens while the HTML is still a string, so nothing can apply it until the
+   * nodes are in the tree — this is that second half, and without it every view line renders
+   * at `top: 0`. A `MutationObserver` rather than a hook on Monaco's render: its callback is
+   * a microtask, so the declarations land in the same frame as the insertion and there is no
+   * flash of unpositioned text.
+   *
+   * Measured against the built bundle under the enforcing policy, scrolling a 500-line
+   * document ten screens: `.view-line` offsets and gutter numbers identical to the same
+   * build with no CSP at all, and zero `style-src-attr` violations.
+   */
+  private _replayHoistedStyles() {
+    const root = this.renderRoot as ShadowRoot;
+    applyHoistedStyles(root);
+    this._styleObserver = new MutationObserver(() => applyHoistedStyles(root));
+    this._styleObserver.observe(root, { childList: true, subtree: true });
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -648,6 +686,9 @@ export default class MonacoEditor extends LitElement {
 
     this._themeObserver?.disconnect();
     this._themeObserver = undefined;
+
+    this._styleObserver?.disconnect();
+    this._styleObserver = undefined;
   }
 
   /**
