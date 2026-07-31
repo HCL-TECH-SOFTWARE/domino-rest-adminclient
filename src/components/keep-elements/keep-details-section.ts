@@ -473,6 +473,16 @@ export default class DetailsSection extends KeepElement {
        * because it does not cross this boundary: without it the dialog is 32rem wide by
        * user-agent default rather than centred, padded and raised. The backdrop comes from
        * the shared module above for the same reason.
+       *
+       * One declaration of that rule is **not** restated: Web Awesome sets
+       * align-items: start, which suits the dialogs it was written for — a paragraph and
+       * a button row — but on a column flex container it is the cross axis, so every child
+       * shrinks to fit its own content unless it declares a width. Three of the four rows
+       * here happen to declare width: 100% and the fourth, the header, does not: it
+       * shrank to the width of the words "Edit Schema", taking the absolutely positioned
+       * close button with it, which is why the close box sat 195px inside the dialog's
+       * right edge at 1440 rather than above the Save button (#975). Stretch is what the
+       * three explicit widths were compensating for.
        */
       dialog {
         border: 1px solid var(--wa-color-surface-border);
@@ -487,7 +497,7 @@ export default class DetailsSection extends KeepElement {
         padding: var(--wa-space-l);
         margin: auto;
         inset: 0;
-        align-items: start;
+        align-items: stretch;
         background: var(--wa-color-surface-raised);
         color: var(--wa-color-text-normal);
         box-shadow: var(--wa-shadow-l);
@@ -501,10 +511,22 @@ export default class DetailsSection extends KeepElement {
         outline: none;
       }
 
-      /* Was the two zero-padding utilities on the edit dialog, which pulls its own padding
-         in to the rows so the divider can run the full width. */
+      /*
+       * Was the two zero-padding utilities on the edit dialog, which pulls its own padding
+       * in to the rows so the divider can run the full width.
+       *
+       * The width is a floor over the shared 30%, not a replacement for it (#975). 30% is
+       * what every converted dialog in the app uses and it is right for the ones that hold
+       * a sentence and two buttons; this one holds a picker, a textarea, a two-column grid
+       * of five switches and a formula field, and 30% is 432px at 1440 — enough that the
+       * longest switch caption wrapped and the grid rows grew unevenly. Expressed through
+       * width rather than min-width on purpose: min-width would beat the max-width
+       * above and push the dialog off a narrow screen, whereas a wide width is still
+       * clamped by it.
+       */
       dialog.edit {
         padding-inline: 0;
+        width: max(30%, 520px);
       }
 
       /* Was the padding utilities that put each row back inside the dialog's margins. */
@@ -528,10 +550,18 @@ export default class DetailsSection extends KeepElement {
         background: var(--wa-color-surface-border);
       }
 
-      /* Was the shared dialog-content rule. */
+      /*
+       * Was the shared dialog-content rule.
+       *
+       * Its padding: 0 is dropped (#975). This element carries .padded as well in the
+       * edit dialog, and the two rules are one class of specificity apart with this one
+       * declared second — so the shorthand reset the 30px inline padding back to nothing
+       * and the whole body of the dialog ran flush to the border while the header and the
+       * button row above and below it stayed inset. The declaration bought nothing
+       * otherwise: it lands on a div, which has no padding to reset.
+       */
       .dialog-content {
         width: 100%;
-        padding: 0;
         margin: 0;
         display: flex;
         flex-direction: column;
@@ -568,9 +598,16 @@ export default class DetailsSection extends KeepElement {
         color: var(--wa-color-text-normal);
       }
 
-      /* Was the text-center utility around the icon picker. */
+      /*
+       * Was the text-center utility around the icon picker.
+       *
+       * Left, now (#975). The two other dialogs that mount this same picker — Add Schema
+       * and the scope drawer — both sit it under its caption at the content's left edge,
+       * and every other row of this dialog is left-aligned too, so the centring made this
+       * one row disagree with its own caption and with the rest of the app.
+       */
       .icon-picker {
-        text-align: center;
+        text-align: start;
       }
 
       /*
@@ -605,14 +642,36 @@ export default class DetailsSection extends KeepElement {
         outline-color: var(--wa-color-focus);
       }
 
-      /* Was the config-container rule with a flex-direction utility beside it. */
+      /*
+       * Was the config-container rule with a flex-direction utility beside it: a wrapping
+       * flex row of 40%-wide items with gap: 10%. Two defects came out of that (#975).
+       *
+       * A percentage row-gap resolves against the container's own height, and the height
+       * here is indefinite, so the row gap computed to **zero** — the three rows of
+       * switches sat flush and the 15px controls in successive rows touched, which reads
+       * as one smeared column of toggles rather than as five separate switches.
+       *
+       * And 40% of a dialog that was 432px wide is 172px, against a longest caption —
+       * Prevent Design Refresh — of 133px plus a 26px control, so the caption wrapped and
+       * that row grew to twice the height of the others.
+       *
+       * A grid states the two columns directly. The row gap is a length, so it is real;
+       * minmax(0, 1fr) keeps the columns even and lets each one shrink below its
+       * content's intrinsic width rather than pushing the grid wider than the dialog.
+       *
+       * The margin is on the top rather than the bottom now, and is the 5px the other two
+       * rows already put between a caption and its control — the textarea declares it and
+       * the icon picker's host has it as padding. The 20px underneath was adding to the
+       * 40px gap the dialog body already puts between its rows, so the step down to the
+       * formula field was half again as deep as every other step in the dialog.
+       */
       .config-container {
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 40px;
+        row-gap: 14px;
         width: 100%;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 10%;
+        margin-top: 5px;
       }
 
       /*
@@ -624,10 +683,12 @@ export default class DetailsSection extends KeepElement {
        *
        * 12px because the caption was a bare text element with no size class, so it took
        * the overrides sheet's size for that element.
+       *
+       * No width of its own any more: a grid item stretches into its column, so the 40%
+       * that used to size these is the grid's job now.
        */
       .config-toggle {
         display: flex;
-        width: 40%;
         font-size: 12px;
       }
 
