@@ -93,3 +93,38 @@ been dead since the day they were written. Deleting MUI therefore *changes sizes
 way you go* — honouring the classes shrinks icons up to 42 %.
 
 **Rule:** that is the user's call, not a codemod's. Detect it, quantify it, ask once.
+
+## A shared integration branch can do your task while you are doing it
+
+`new_code` advanced four times in about an hour, and one of those merges — #956, wave 7 —
+independently completed the deletion that was in progress, file for file. The branch was
+finished, green, and worthless. #957 had to be closed as obsolete before it was ever pushed.
+
+Two mechanical traps came with it. `git reset --soft new_code` resolves the branch *live*,
+so after it moves, `git add -A` stages a diff that reads as "delete everything the other PRs
+added". And a report or issue written against a base captured an hour ago can cite files
+that no longer exist by the time it is filed.
+
+**Rule:** `git fetch` and compare before branching, before each verification run, and again
+immediately before pushing. Read `git status` after any reset onto a branch name. When a
+base move makes work redundant, bin it and say so — do not reshape it into a PR that
+re-adds deleted files.
+
+## Verify which version of a dependency actually implements the attribute you are using
+
+`<wa-icon canvas="auto">` appeared at 56 call sites, with docblocks explaining the
+semantics in detail. `canvas` did not exist in the pinned WebAwesome 3.10 — it arrived in
+3.11 — so every one of them was inert and every icon rendered 1.25em wide, the exact layout
+the docblocks said the attribute existed to prevent. `package.json` said `^3.10.0`, which
+both versions satisfy, so only the lockfile was wrong.
+
+The near-miss: the obvious reading of the failing test was "the call sites use a bad API,
+migrate them to `auto-width`", and that was proposed and approved. It was backwards —
+`auto-width` is the *deprecated* spelling and the call sites were right all along. Reading
+the installed package's `custom-elements.json` for both versions is what settled it, in
+about a minute, and turned a 33-file migration into a one-line bump.
+
+**Rule:** when an attribute appears not to work, check the installed package's own metadata
+before changing any call site. Confirm whether the API is missing, renamed, or deprecated —
+and check the newest version too, because "this API does not exist" and "this API does not
+exist *yet, here*" call for opposite fixes.
