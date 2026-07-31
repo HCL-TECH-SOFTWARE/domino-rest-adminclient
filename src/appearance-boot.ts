@@ -46,7 +46,13 @@
  * but left `body[data-theme]` at whatever the previous session had written.
  */
 
-import { applyTheme } from './services/theme-service';
+import { applyTheme, followSystemAppearance } from './services/theme-service';
 
-// TODO: extend to dark, light and system themes rather than dark/default.
 applyTheme(localStorage.getItem('theme'));
+
+/*
+ * And keep following, for the `system` setting (#962). Installed here rather than in a
+ * component because it has to be live on the login screen as well as behind the shell, and
+ * because there is no moment in the session when it should not be.
+ */
+followSystemAppearance();

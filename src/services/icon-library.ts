@@ -71,6 +71,7 @@ import penToSquare from '@fortawesome/fontawesome-free/svgs/solid/pen-to-square.
 import play from '@fortawesome/fontawesome-free/svgs/solid/play.svg?url';
 import plus from '@fortawesome/fontawesome-free/svgs/solid/plus.svg?url';
 import rightFromBracket from '@fortawesome/fontawesome-free/svgs/solid/right-from-bracket.svg?url';
+import robot from '@fortawesome/fontawesome-free/svgs/solid/robot.svg?url';
 import rotateLeft from '@fortawesome/fontawesome-free/svgs/solid/rotate-left.svg?url';
 import shieldHalved from '@fortawesome/fontawesome-free/svgs/solid/shield-halved.svg?url';
 import sort from '@fortawesome/fontawesome-free/svgs/solid/sort.svg?url';
@@ -152,6 +153,8 @@ const BUNDLED = {
   play,
   plus,
   'right-from-bracket': rightFromBracket,
+  // The `system` appearance setting (#962) — the machine deciding, rather than the user.
+  robot,
   'rotate-left': rotateLeft,
   'shield-halved': shieldHalved,
   sort,

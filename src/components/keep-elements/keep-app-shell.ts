@@ -17,7 +17,12 @@ import './keep-profile-menu-dialog';
 import './keep-side-nav';
 import './keep-tooltip';
 import { FA_LIBRARY } from '../../services/icon-library';
-import { applyTheme } from '../../services/theme-service';
+import {
+  applyTheme,
+  nextThemeMode,
+  toThemeMode,
+  THEME_MODE_UI
+} from '../../services/theme-service';
 import { getRouter } from '../../router/instance';
 import { StoreController } from '../../store/StoreController';
 import { store } from '../../store/store';
@@ -188,8 +193,15 @@ export default class AppShell extends KeepElement {
     return this.isMobile || !this.collapsed;
   }
 
+  /**
+   * Advance the appearance setting: light → dark → system → light (#962).
+   *
+   * Both destinations are written, because both are read: `localStorage` by
+   * `appearance-boot` on the next load and by the system-preference listener, the store by this
+   * element's own render and by {@link willUpdate}.
+   */
   private readonly toggleTheme = (): void => {
-    const next = this.themeMode.value === 'dark' ? 'default' : 'dark';
+    const next = nextThemeMode(this.themeMode.value);
     localStorage.setItem('theme', next);
     store.dispatch(switchTheme(next));
   };
@@ -217,8 +229,9 @@ export default class AppShell extends KeepElement {
 
   render() {
     const { collapsed, expanded, isMobile } = this;
-    const dark = this.themeMode.value === 'dark';
-    const themeAction = dark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    // The glyph shows the *setting* — sun, moon or robot — and the label names what pressing
+    // the button does next. Both come from one map, so they cannot disagree about the cycle.
+    const theme = THEME_MODE_UI[toThemeMode(this.themeMode.value)];
 
     return html`
       <!--
@@ -262,7 +275,7 @@ export default class AppShell extends KeepElement {
                 HCL Domino REST API
               </span>`
             : nothing}
-          <keep-tooltip content=${themeAction} placement="right">
+          <keep-tooltip content=${theme.action} placement="right">
             <button type="button" class="nav-theme-toggle" @click=${this.toggleTheme}>
               <!--
                 No sizing attribute on either arm: ".nav-theme-toggle wa-icon" in app-shell.css
@@ -270,7 +283,7 @@ export default class AppShell extends KeepElement {
                 always rendered at.
 
                 A label because the glyph is the button's only content — the icon shows the
-                current mode, so the accessible name states the action instead, matching the
+                current setting, so the accessible name states the action instead, matching the
                 tooltip above it word for word.
 
                 canvas="auto" on both icons here, spelled out because the KeepIcon wrapper
@@ -281,8 +294,8 @@ export default class AppShell extends KeepElement {
               -->
               <wa-icon
                 library=${FA_LIBRARY}
-                name=${dark ? 'moon' : 'sun'}
-                label=${themeAction}
+                name=${theme.icon}
+                label=${theme.action}
                 canvas="auto"
               ></wa-icon>
             </button>

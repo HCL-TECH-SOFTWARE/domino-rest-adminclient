@@ -257,22 +257,36 @@ describe('keep-app-shell', () => {
       expect(el.querySelector('wa-icon[name="moon"]')).not.toBeNull();
     });
 
-    it('toggles the store, localStorage and the glyph together', async () => {
+    it('cycles light → dark → system → light across all three destinations', async () => {
+      // Three settings since #962. `localStorage` is what `appearance-boot` reads on the next
+      // load and what the system-preference listener consults; the store is what this element
+      // renders from; the document is what the user sees. All three move together or the page
+      // ends up disagreeing with itself.
       const el = await mountLit<AppShell>(TAG);
-      expect(el.querySelector('wa-icon[name="sun"]')).not.toBeNull();
+      const toggle = () => el.querySelector<HTMLButtonElement>('.nav-theme-toggle')!;
+      const glyph = () => el.querySelector('wa-icon[name]')?.getAttribute('name');
 
-      el.querySelector<HTMLButtonElement>('.nav-theme-toggle')!.click();
-      await el.updateComplete;
+      expect(glyph()).toBe('sun');
 
-      expect(store.getState().styles.themeMode).toBe('dark');
-      expect(localStorage.getItem('theme')).toBe('dark');
-      expect(el.querySelector('wa-icon[name="moon"]')).not.toBeNull();
-      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+      for (const [stored, icon, dark] of [
+        ['dark', 'moon', true],
+        // `system` resolves against `matchMedia`, which the stub answers `false` for.
+        ['system', 'robot', false],
+        ['default', 'sun', false],
+      ] as const) {
+        toggle().click();
+        await el.updateComplete;
+
+        expect(store.getState().styles.themeMode).toBe(stored);
+        expect(localStorage.getItem('theme')).toBe(stored);
+        expect(glyph()).toBe(icon);
+        expect(document.documentElement.classList.contains('wa-dark')).toBe(dark);
+      }
     });
 
     it('names the action rather than the glyph, in both the tooltip and the icon', async () => {
       // The icon is the button's only content, so its accessible name has to say what pressing
-      // it does — the glyph already shows which mode is current.
+      // it does — the glyph already shows which setting is current.
       const el = await mountLit<AppShell>(TAG);
       expect(el.querySelector('keep-tooltip')?.getAttribute('content')).toBe(
         'Switch to Dark Mode',
@@ -280,6 +294,20 @@ describe('keep-app-shell', () => {
       expect(el.querySelector('wa-icon[name="sun"]')?.getAttribute('label')).toBe(
         'Switch to Dark Mode',
       );
+    });
+
+    it('shows the robot and resolves the appearance when the setting is system', async () => {
+      localStorage.setItem('theme', 'system');
+      store.dispatch(switchTheme('system'));
+      const el = await mountLit<AppShell>(TAG);
+
+      expect(el.querySelector('wa-icon[name="robot"]')).not.toBeNull();
+      expect(el.querySelector('keep-tooltip')?.getAttribute('content')).toBe(
+        'Switch to Light Mode',
+      );
+      // The stub reports a light OS, so `system` resolves light — the setting is not itself an
+      // appearance, which is the whole distinction #962 introduces.
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
     });
 
     it('sizes both icons on the narrower canvas the wrapper used to default to', async () => {

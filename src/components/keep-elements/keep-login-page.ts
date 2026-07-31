@@ -40,7 +40,13 @@ import type { IdP } from '../../store/account/types';
 import { WebAuthn } from '../login/KeepWebAuthN';
 import { initiateAuthorizationRequest } from '../login/pkce';
 import { AlertManager, checkForResponse } from '../../utils/common';
-import { applyAppearance } from '../../services/theme-service';
+import {
+  applyTheme,
+  nextThemeMode,
+  toThemeMode,
+  THEME_MODE_UI,
+  type ThemeMode
+} from '../../services/theme-service';
 import { getLogger } from '../../services/log-service';
 
 const log = getLogger('components/keep-elements/keep-login-page');
@@ -428,10 +434,14 @@ export default class LoginPage extends KeepElement {
   @state() private accessor displayKeepIdp = true;
 
   /**
+   * The appearance setting — light, dark or system (#962).
+   *
    * Read from local storage rather than the store: this page renders before login, when
-   * nothing has put a theme in the store yet.
+   * nothing has put a theme in the store yet. That is also why it holds the *setting* rather
+   * than a resolved appearance — `system` has to survive a reload, and only the stored string
+   * carries it.
    */
-  @state() private accessor isDark = localStorage.getItem('theme') === 'dark';
+  @state() private accessor themeMode: ThemeMode = toThemeMode(localStorage.getItem('theme'));
 
   /**
    * Whether the server has rejected the credentials. A 401 is about the *pair*, so it marks
@@ -503,7 +513,9 @@ export default class LoginPage extends KeepElement {
   }
 
   protected updated(changed: PropertyValues): void {
-    if (changed.has('isDark')) applyAppearance(this.isDark ? 'dark' : 'light');
+    // `applyTheme`, not `applyAppearance`: it resolves `system` against the OS preference,
+    // which is the one setting whose appearance is not in the name.
+    if (changed.has('themeMode')) applyTheme(this.themeMode);
 
     // Rising edge only: show() restarts the dismiss timer, so raising on every render would
     // hold the toast open for as long as the error flag stayed up. #952.
@@ -554,9 +566,9 @@ export default class LoginPage extends KeepElement {
   }
 
   private toggleTheme(): void {
-    const next = this.isDark ? 'default' : 'dark';
+    const next = nextThemeMode(this.themeMode);
     localStorage.setItem('theme', next);
-    this.isDark = !this.isDark;
+    this.themeMode = next;
   }
 
   /**
@@ -755,15 +767,15 @@ export default class LoginPage extends KeepElement {
     const isHttps = window.location.protocol.toLowerCase().replace(/[^a-z]/g, '') === 'https';
     // The glyph is the toggle's only content, so it carries the button's accessible name.
     // Reusing the tooltip's wording keeps the two from drifting apart.
-    const themeLabel = this.isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    const theme = THEME_MODE_UI[this.themeMode];
     return html`
       <div class="theme-toggle-slot">
-        <keep-tooltip content=${themeLabel} placement="right">
+        <keep-tooltip content=${theme.action} placement="right">
           <button class="theme-toggle" type="button" @click=${() => this.toggleTheme()}>
             <wa-icon
               library=${FA_LIBRARY}
-              name=${this.isDark ? 'moon' : 'sun'}
-              label=${themeLabel}
+              name=${theme.icon}
+              label=${theme.action}
               canvas="auto"
             ></wa-icon>
           </button>
