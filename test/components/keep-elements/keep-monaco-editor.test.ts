@@ -291,6 +291,26 @@ describe('keep-monaco-editor', () => {
     expect(customElements.get(TAG)).toBeTruthy();
   });
 
+  /**
+   * #1002 — Monaco's stylesheet has to reach the shadow root, and not as a `<style>`.
+   *
+   * The production CSP sends `style-src-elem 'self'`, which refuses an inline `<style>`, so
+   * the 308 kB the component used to render into its template was inert and the editor shipped
+   * unstyled. It now goes through Lit's `adoptStyles()`.
+   *
+   * What this can assert is that the CSS still arrives. What it cannot is the half that
+   * matters to CSP: jsdom implements neither `adoptedStyleSheets` nor CSP, so Lit takes its
+   * fallback path here and appends a `<style>` — the very thing production refuses. The
+   * directive-level proof is a browser measurement against the built bundle, and the guard
+   * that keeps a `<style>` out of the template is `test/csp-inline-styles.test.ts`.
+   */
+  it('delivers the Monaco stylesheet into the shadow root', async () => {
+    const el = await mountLit<MonacoEditor>(TAG);
+
+    const sheets = [...el.shadowRoot!.querySelectorAll('style')].map((s) => s.textContent ?? '');
+    expect(sheets.some((text) => text.includes('/* monaco css */'))).toBe(true);
+  });
+
   it('renders an editor container and builds a standard editor into it', async () => {
     const el = await mountLit<MonacoEditor>(TAG);
 

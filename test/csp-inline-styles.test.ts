@@ -77,6 +77,28 @@ describe('no CSP-blocked inline styles (#685)', () => {
     expect(found, `setAttribute('style') in: ${found.join(', ')}`).toEqual([]);
   });
 
+  /**
+   * #1002 — the element half of the same rule, one directive over.
+   *
+   * `style-src-elem 'self'` refuses an inline `<style>`, and the failure is quieter than a
+   * blocked attribute: the element sits in the DOM with all of its text and inspects
+   * correctly, it simply has no `.sheet`. `keep-monaco-editor` rendered Monaco's 308 kB
+   * stylesheet that way, so the editor shipped unstyled — measured against the built bundle
+   * under the `/admin/ui` policy from `jar/config/config.json`.
+   *
+   * `adoptedStyleSheets` is the way in, and CSP does not govern it. Where the CSS is known
+   * at class-definition time that means `static styles` (Lit adopts it); where it arrives
+   * from a dynamic import, `adoptStyles()` with the element's own `elementStyles`.
+   * `keep-data-table.styles.ts` is the existing example of the first.
+   */
+  it('renders no <style> element from a template', () => {
+    const found = SOURCES.filter(({ text }) => /<style[\s>]/.test(code(text))).map(
+      ({ file }) => file,
+    );
+    expect(found, `a <style> element does not survive style-src-elem 'self': ${found.join(', ')}`)
+      .toEqual([]);
+  });
+
   it('does not reach for styleMap as a workaround', () => {
     // It looks like the CSSOM route but is not, on first render. If a future change needs
     // dynamic values, use a class, or `style.setProperty` in `updated()`.

@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { LitElement, html, css, adoptStyles, unsafeCSS, type CSSResult } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { createRef, Ref, ref } from 'lit/directives/ref.js';
 import { getLogger } from '../../services/log-service.js';
 
@@ -58,6 +58,16 @@ function loadMonaco() {
   monacoBundle ??= fetchMonaco();
   return monacoBundle;
 }
+
+/**
+ * `editor.main.css` as a Lit `CSSResult`, built once for the whole page.
+ *
+ * A `CSSResult` constructs its `CSSStyleSheet` lazily and caches it, so every editor on the
+ * page adopts one 308 kB sheet that the browser parses once — where the `<style>` block this
+ * replaces put a fresh copy of the text in each instance's shadow root. Module scope rather
+ * than a `static` field because the text only exists after {@link loadMonaco} resolves.
+ */
+let monacoStyles: CSSResult | undefined;
 
 /**
  * Prettier, loaded on first use rather than at module scope.
@@ -114,8 +124,6 @@ export default class MonacoEditor extends LitElement {
   @property({ attribute: false }) accessor completionProvider:
     | Monaco.languages.CompletionItemProvider
     | undefined;
-  /** Monaco's stylesheet, empty until the dynamic import lands. See `render()`. */
-  @state() private accessor _monacoStyles = '';
   private _themeObserver?: MutationObserver;
   /**
    * Cache key from the last `_applyTheme()` call that did real work — see
@@ -478,9 +486,9 @@ export default class MonacoEditor extends LitElement {
     if (!this.isConnected) return;
 
     this._monaco = bundle.monaco;
-    // Schedules a re-render of the <style> block in `render()`. Monaco builds into the
-    // container below in the same task, so the stylesheet lands before the next paint.
-    this._monacoStyles = bundle.styles;
+    // Synchronous, so the rules are in place before Monaco builds into the container
+    // below and therefore before the next paint.
+    this._adoptMonacoStyles(bundle.styles);
 
     this._rebuildEditor();
 
@@ -530,6 +538,29 @@ export default class MonacoEditor extends LitElement {
         this.editor?.focus();
       }, 200);
     }
+  }
+
+  /**
+   * Puts `editor.main.css` into this editor's shadow root as a stylesheet, not an element.
+   *
+   * It used to be `<style>${this._monacoStyles}</style>` in `render()`. The shipped CSP sends
+   * **`style-src-elem 'self'`** (`jar/config/config.json`), which refuses an inline `<style>` —
+   * so all 308 kB of it was inert in production and the editor rendered with no gutter, no
+   * syntax colours and `position: static` where Monaco needs `relative`. Nothing looked broken
+   * in dev, where the same policy is report-only, and nothing looked broken in the DOM either:
+   * a refused `<style>` keeps its text and only loses its `.sheet` (#1002).
+   *
+   * `adoptedStyleSheets` is not governed by `style-src`, which is the whole reason this works —
+   * the same reason `keep-data-table.styles.ts` adopts its slotted-table sheet. Lit's
+   * `adoptStyles()` is used rather than assigning the array directly because it also handles
+   * the browsers that cannot adopt, where it appends a `<style>` and behaviour is exactly what
+   * it is today. `elementStyles` has to be passed back in: `adoptStyles()` sets the list rather
+   * than appending to it, and dropping it would take `:host { display: block }` with it.
+   */
+  private _adoptMonacoStyles(cssText: string) {
+    monacoStyles ??= unsafeCSS(cssText);
+    const { elementStyles } = this.constructor as typeof MonacoEditor;
+    adoptStyles(this.renderRoot as ShadowRoot, [...elementStyles, monacoStyles]);
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -661,12 +692,7 @@ export default class MonacoEditor extends LitElement {
   }
 
   render() {
-    return html`
-      <style>
-        ${this._monacoStyles}
-      </style>
-      <div class="editor-container" ${ref(this.containerRef)}></div>
-    `;
+    return html`<div class="editor-container" ${ref(this.containerRef)}></div>`;
   }
 }
 
