@@ -66,6 +66,23 @@ keep-data-table tbody tr:last-child th,
 keep-data-table tbody tr:last-child td {
   border-bottom: 0;
 }
+/*
+ * Named for assistive tech, never shown (#713).
+ *
+ * Five of the seven tables have a column of controls — open, edit, delete, expand — whose
+ * header cell was empty, so a screen reader moving across the header row announced nothing
+ * for it and a cell in that column had no column name to be associated with. The cells now
+ * carry a hidden name, and this is where the rule lives because it is the one sheet all
+ * seven already share; restating it in five shadow roots would be five chances to drift.
+ */
+keep-data-table .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 `;
 
 /**

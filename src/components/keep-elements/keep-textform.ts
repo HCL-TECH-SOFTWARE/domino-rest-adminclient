@@ -79,7 +79,7 @@ export default class TextForm extends KeepElement {
             <div class="value">
               ${key === 'formulaType'
                 ? html`
-                  <keep-autocomplete .options=${['domino']} .initialOption="${this.data[key]}" @input=${(event: Event) => this.handleInputChange(key, event)}></keep-autocomplete>`
+                  <keep-autocomplete label="Formula Engine" .options=${['domino']} .initialOption="${this.data[key]}" @input=${(event: Event) => this.handleInputChange(key, event)}></keep-autocomplete>`
                 : html`
                   <input type="text" .value=${this.data[key]} @input=${(event: Event) => this.handleInputChange(key, event)} />
                 `}

@@ -581,7 +581,7 @@ export default class FormsTable extends KeepElement {
         <table aria-label="forms table">
           <thead>
             <tr>
-              <th class="col-edit" scope="col"></th>
+              <th class="col-edit" scope="col"><span class="visually-hidden">Actions</span></th>
               <th class="col-name" scope="col">
                 <div class="name-header">
                   <span class="marker marker-spacer marker-gap">${DIAMOND}</span>

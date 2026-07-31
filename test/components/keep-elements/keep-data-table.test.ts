@@ -41,7 +41,12 @@ describe('keep-data-table styles', () => {
   // on the comma as well — checking only the first would let `keep-data-table th, td`
   // through, which is precisely the mistake worth catching.
   it('scopes every selector to the keep-data-table tag', () => {
-    const selectors = TABLE_STYLE_TEXT.split('}')
+    // Comments are stripped first. Without that this splits on the `{` of a rule and reads
+    // whatever precedes it — including a `/* … */` block — as the selector, so documenting a
+    // rule inside the sheet failed the guard while changing nothing about the CSS. Same
+    // comment-blindness as #930's dead-selector scan, one file smaller.
+    const selectors = TABLE_STYLE_TEXT.replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .split('}')
       .map((block) => block.split('{')[0])
       .flatMap((group) => group.split(','))
       .map((selector) => selector.trim())

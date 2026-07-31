@@ -626,8 +626,7 @@ export default class ConsentsTable extends KeepElement {
         <table aria-label="consents table">
           <thead>
             <tr>
-              <!-- The disclosure column, which has no name to give. Left empty, as it was. -->
-              <th class="expand" scope="col"></th>
+              <th class="expand" scope="col"><span class="visually-hidden">Details</span></th>
               <th class="user" scope="col">
                 ${this.renderSearchColumn('user', 'User', 'Search User', this.sortUser)}
               </th>

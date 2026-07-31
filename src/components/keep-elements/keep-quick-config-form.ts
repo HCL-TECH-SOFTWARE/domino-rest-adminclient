@@ -628,12 +628,13 @@ export default class QuickConfigForm extends KeepElement {
         </div>
 
         <div class="checkbox-row">
+          <!-- Slotted, not a sibling (#713) — see keep-scope-form for why a span beside a
+               wa-checkbox names nothing. -->
           <keep-checkbox
             size="m"
             ?checked=${values.isActive}
             @change=${(e: Event) => this.form.setValue('isActive', this.checkedOf(e))}
-          ></keep-checkbox>
-          <span>Active</span>
+          >Active</keep-checkbox>
         </div>
 
         <div class="input-container">
@@ -644,15 +645,13 @@ export default class QuickConfigForm extends KeepElement {
             <keep-checkbox
               ?checked=${values.additionalModes.odata}
               @change=${(e: Event) => this.form.setValue('additionalModes.odata', this.checkedOf(e))}
-            ></keep-checkbox>
-            <span>Odata</span>
+            >Odata</keep-checkbox>
           </div>
           <div class="modes checkbox-row">
             <keep-checkbox
               ?checked=${values.additionalModes.dql}
               @change=${(e: Event) => this.form.setValue('additionalModes.dql', this.checkedOf(e))}
-            ></keep-checkbox>
-            <span>DQL</span>
+            >DQL</keep-checkbox>
           </div>
         </div>
 

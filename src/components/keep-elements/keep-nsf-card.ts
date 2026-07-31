@@ -94,6 +94,17 @@ export default class NsfCard extends KeepElement {
       font-size: 32px;
     }
 
+    /* Named for assistive tech, never shown. Same rule as keep-mode-fields and
+       keep-delete-dialog; it does not cross a shadow boundary, so each root restates it. */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
     .search {
       width: 100%;
     }
@@ -171,13 +182,21 @@ export default class NsfCard extends KeepElement {
             </div>
             <text class="nsf-filename">${this.database.fileName}</text>
         </div>
+        <!--
+          The label is slotted and visually hidden (#713). A placeholder is not an accessible
+          name, so this field had none — and a host aria-label would not have given it one
+          either: Web Awesome renders the real input inside its own shadow root and wires only
+          the label attribute and this slot into it, so an attribute on the host never reaches
+          the control. Measured both ways before choosing this one.
+        -->
         <wa-input
             class="search"
             placeholder="Search Schema"
             .value=${this.searchItem}
             @wa-input=${this._handleSearchInput}
         >
-            <wa-icon slot="prefix" library="${FA_LIBRARY}" name="magnifying-glass"></wa-icon>
+            <span slot="label" class="visually-hidden">Search schemas in ${this.database.fileName ?? 'this database'}</span>
+            <wa-icon slot="prefix" library="${FA_LIBRARY}" name="magnifying-glass" aria-hidden="true"></wa-icon>
         </wa-input>
         <div class="list-container">
             ${this.items.map(

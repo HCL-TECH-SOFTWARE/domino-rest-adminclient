@@ -377,7 +377,7 @@ export default class ViewsTable extends KeepElement {
         <table aria-label="views table">
           <thead>
             <tr>
-              <th class="col-edit" scope="col"></th>
+              <th class="col-edit" scope="col"><span class="visually-hidden">Actions</span></th>
               <th class="col-name" scope="col">View Name</th>
               <th class="col-alias" scope="col">Alias</th>
               <th scope="col">

@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css } from 'lit';
+import { html, css, nothing } from 'lit';
 import type { PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
@@ -192,6 +192,21 @@ export default class Autocomplete extends KeepElement {
   @property({ type: String }) accessor initialOption = '';
   @property({ type: Object }) accessor icons: Record<string, string> = {};
 
+  /**
+   * The field's accessible name (#713).
+   *
+   * Every call site sits under a visual caption — "App Icons", "Database", the scope row's
+   * heading — and not one of them was associated with the control, so the input's accessible
+   * name was **empty**: it carried a single `list` attribute and nothing else. A caption
+   * that is merely nearby is not a name (WCAG 4.1.2), and there is no `<label for>` to reach
+   * it across this shadow boundary anyway.
+   *
+   * A property rather than a host `aria-label`, because a host attribute would not reach the
+   * `input` inside this root — the same trap that makes `aria-label` useless on a `wa-input`,
+   * measured while fixing `keep-nsf-card` in this pass.
+   */
+  @property({ type: String }) accessor label = '';
+
   @state() private accessor filteredOptions: readonly string[] = [];
   @state() private accessor highlightedOptionIndex = -1;
   @state() private accessor showDropdown = false;
@@ -226,20 +241,39 @@ export default class Autocomplete extends KeepElement {
             ` : ''}
             <input
               list="autocomplete-options"
+              aria-label=${this.label || nothing}
               .value="${this.selectedOption.length > 0 ? this.selectedOption : this.initialOption}"
               @input="${this._handleInput}"
               @click="${this._handleInput}"
               @keydown="${this._handleKeyDown}"
             >
+            <!--
+              Both buttons hold nothing but an aria-hidden glyph, so until #713 neither had
+              any accessible name at all — a screen reader announced "button", twice, with
+              nothing to tell them apart. They are named for what they do, and the name says
+              which field they belong to when one is given.
+
+              type="button" as well: these sit inside forms at three of the four call sites,
+              and a button with no type submits.
+            -->
             <section class="button-container">
               ${this.selectedOption !== '' ? html`
-                <button @click="${this._handleClearInput}">
+                <button
+                  type="button"
+                  aria-label=${this.label ? `Clear ${this.label}` : 'Clear selection'}
+                  @click="${this._handleClearInput}"
+                >
                   <wa-icon class="clear-icon" library=${FA_LIBRARY} name="xmark" canvas="auto" aria-hidden="true"></wa-icon>
                 </button>
             ` : html``}
             </section>
             <section class="button-container">
-              <button @click="${this._toggleDropdown}">
+              <button
+                type="button"
+                aria-label=${this.label ? `Show ${this.label} options` : 'Show options'}
+                aria-expanded=${this.showDropdown ? 'true' : 'false'}
+                @click="${this._toggleDropdown}"
+              >
                 <wa-icon
                   class="caret ${this.showDropdown ? 'open' : ''}"
                   library=${FA_LIBRARY}
