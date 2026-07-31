@@ -13,7 +13,7 @@ import { FA_LIBRARY } from '../../services/icon-library';
 /**
  * The `/mail` placeholder screen — a hero envelope glyph over the word "Mail".
  *
- * **Nothing renders this yet.** The route is parked in a JSX comment in `Views.tsx`,
+ * **Nothing renders this yet.** The route is parked in a note on `keep-views`' route table,
  * blocked on LABS-1214 (#698); the sidenav entry that would reach it sits behind a
  * `false &&` switch. The screen is converted rather than deleted because #806 asks for it,
  * so that re-enabling the page is a routing change and not a rewrite. Consequently there is

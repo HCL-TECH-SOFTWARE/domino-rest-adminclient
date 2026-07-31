@@ -49,12 +49,13 @@ const VIEW_QUERY = '?view=';
  * {@link ./keep-schemas-multi-view}, plus the filtering and sorting that decides which
  * schemas it is handed.
  *
- * ## It is reached through a wrapper, because a route root has to be a React component
+ * ## The route mounts this module directly
  *
- * `Views.tsx` hands each route a `load()` and the outlet wraps it in `React.lazy`, which
- * needs a module whose default export is a component — so the route cannot point at an
- * element module. It points at `keep-elements/react/KeepSchemasList` instead, the same shape
- * the consents route and the quick-config drawer already use.
+ * It used to be reached through `keep-elements/react/KeepSchemasList`, because `Views.tsx`
+ * wrapped every route in `React.lazy`, which needs a module whose default export is a
+ * *component* — and an element module's is a class. #719 P4 made the outlet a Lit element, so
+ * `keep-views` names the tag and imports this module for its registration alone. That wrapper
+ * is deleted.
  *
  * ## The router comes from a controller
  *

@@ -14,7 +14,7 @@ import { KeepElement } from './keep-element';
  * Three layouts, selected by the `contained` and `pageHeight` properties:
  *
  *   - default — a page-level overlay: absolutely positioned, `100vh - 100px` tall. This is
- *     what the route fallbacks in `App.tsx` / `Views.tsx` and the applications list use.
+ *     what the route fallbacks in `App.tsx` / `keep-views` and the applications list use.
  *   - `contained` — normal flow, filling its parent box. This is the shape the old
  *     `GenericLoading` had, and it is what a loading state nested inside an already-laid-out
  *     panel needs; the overlay variant would escape that panel and cover the page.

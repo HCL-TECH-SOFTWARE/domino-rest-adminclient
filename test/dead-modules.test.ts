@@ -56,22 +56,18 @@ const ENTRIES = ['src/index.tsx', 'src/index.ts'];
  * things nobody dares remove.
  */
 const ALLOWED: Record<string, string> = {
-  // The `/mail` placeholder screen. Its route is parked in a JSX comment in `Views.tsx`
-  // behind LABS-1214 (#698) and the sidenav entry sits behind a `false &&`. Converted in
+  // The `/mail` placeholder screen. Its route is parked in a note on `keep-views`' route
+  // table behind LABS-1214 (#698) and the sidenav entry sits behind a `false &&`. Converted in
   // #806 tier A rather than deleted, so that re-enabling the page is a routing change and
   // not a rewrite. It deliberately has no `@lit/react` wrapper — when the route returns it
-  // returns as `<keep-mail></keep-mail>`.
+  // returns as one more entry in that table.
   'src/components/keep-elements/keep-mail.ts':
     'parked screen — route disabled pending #698, kept converted so re-enabling is routing only',
 
-  // The React host for `FormController` (#717). Its purpose was to decouple "remove Formik"
-  // from "convert to Lit" so a `.tsx` could drop Formik without also being rewritten. It did
-  // that once, for the Quick Config pair, which converted to Lit half an hour later and took
-  // its only consumer with it. Report 04 §8 schedules the deletion for P4 and gates the file
-  // at 100/100/100/100 until then; the gate entry must go *with* the file, since a floor on a
-  // path that no longer exists protects nothing while looking like it does.
-  'src/store/FormController.react.ts':
-    'transitional Formik→FormController adapter, deletion scheduled for P4 (report 04 §8)',
+  // `src/store/FormController.react.ts` was listed here until #719 deleted it. Report 04 §8
+  // scheduled it for P4 and it arrived: the adapter served one pair of files for half an hour
+  // before they converted to Lit, and #717 closed with Formik gone, so it had no future users
+  // either. Its coverage gate went in the same commit, as that entry's own note required.
 };
 
 const walk = (dir: string): string[] =>
@@ -81,6 +77,21 @@ const walk = (dir: string): string[] =>
   });
 
 const files = walk(SRC).filter((path) => /\.tsx?$/.test(path) && !path.endsWith('.d.ts'));
+
+/**
+ * Whole-line comments dropped before the import scan.
+ *
+ * Prose resurrects a module otherwise: a docblock in `keep-views.ts` that *described* the
+ * parked `/mail` route by writing its lazy import out in full made `keep-mail.ts` read as
+ * reachable, and this file's own allowlist check was the only thing that noticed. The sibling
+ * scans in `keep-element-wrappers.test.ts` and `shell-dead-code.test.ts` strip comments for
+ * the same reason.
+ */
+const code = (text: string) =>
+  text
+    .split('\n')
+    .filter((line) => !/^\s*(\/\/|\/?\*)/.test(line))
+    .join('\n');
 
 /**
  * Resolve a relative specifier the way the bundler does, including the `.js`-for-`.ts` form.
@@ -104,7 +115,7 @@ const resolveSpecifier = (fromFile: string, specifier: string): string | undefin
  * bound. Miss it and every Lit element in the tree looks unreachable.
  */
 const importsOf = (file: string): string[] => {
-  const source = readFileSync(file, 'utf8');
+  const source = code(readFileSync(file, 'utf8'));
   const specifiers = [
     ...[...source.matchAll(/from\s+['"](\.[^'"]+)['"]/g)].map((m) => m[1]),
     ...[...source.matchAll(/import\(\s*['"](\.[^'"]+)['"]\s*\)/g)].map((m) => m[1]),

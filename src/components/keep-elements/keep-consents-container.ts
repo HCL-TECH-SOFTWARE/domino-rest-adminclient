@@ -19,13 +19,13 @@ import './keep-consents';
  * Replaces `applications/ConsentsContainer.tsx`, which was a padded box around
  * {@link ./keep-consents} plus the fetch that fills it.
  *
- * ## It is reached through its wrapper, because a route root has to be a React component
+ * ## The route mounts this module directly
  *
- * `Views.tsx` hands each route a `load()` and the outlet wraps it in `React.lazy`, which
- * needs a module whose default export is a component — so the route cannot point at an
- * element module. It points at `keep-elements/react/KeepConsentsContainer` instead, the same
- * shape `Views.tsx` already uses for `KeepQuickConfigDrawer`. That is the one line of shell
- * this conversion touches.
+ * It used to be reached through `keep-elements/react/KeepConsentsContainer`, because
+ * `Views.tsx` wrapped every route in `React.lazy`, which needs a module whose default export
+ * is a *component* — and an element module's is a class. #719 P4 made the outlet a Lit
+ * element, so `keep-views` names the tag and imports this module for its registration alone.
+ * That wrapper is deleted.
  *
  * ## No `StoreController`
  *

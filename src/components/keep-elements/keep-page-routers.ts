@@ -11,9 +11,10 @@ import { KeepElement } from './keep-element';
 /**
  * The breadcrumb strip above the page, hidden on mobile.
  *
- * Its one child is `keep-breadcrumb-router`, converted in #806 wave 7 and still slotted in from
- * `Views.tsx` — this element stays a slot host until that file is rewritten, at which point the
- * pair collapses into one.
+ * Its one child is `keep-breadcrumb-router`, converted in #806 wave 7 and slotted in from
+ * `keep-views` since #719 P4. The two could now collapse into one element — this host adds a
+ * height, a mobile hide and nothing else — but that is a pure CSS merge with a layout risk the
+ * suite cannot see (`css: false`), so it is left for a change that can be checked in a browser.
  *
  * The Linaria block also carried a `.arrow-left { width: 70px }` rule. Nothing in the tree has
  * ever had that class, so it is dropped rather than moved - which is fortunate, because a rule

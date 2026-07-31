@@ -190,12 +190,13 @@ function loadConfiguredForms(
  * renders converted in wave 5, so this was the last React frame around an otherwise all-Lit
  * screen and the five `@lit/react` wrappers it used are deleted with it.
  *
- * ## It is reached through a wrapper, because a route root has to be a React component
+ * ## The route mounts this module directly
  *
- * `Views.tsx` hands each route a `load()` and the outlet wraps it in `React.lazy`, which needs
- * a module whose default export is a component — so the route cannot point at an element
- * module. It points at `keep-elements/react/KeepFormsContainer` instead, the same shape
- * `/schema` and `/apps/consents` already use.
+ * It used to be reached through `keep-elements/react/KeepFormsContainer`, because `Views.tsx`
+ * wrapped every route in `React.lazy`, which needs a module whose default export is a
+ * *component* — and an element module's is a class. #719 P4 made the outlet a Lit element, so
+ * `keep-views` names the tag and imports this module for its registration alone. That wrapper
+ * is deleted.
  *
  * ## The router and the route params come from a controller
  *

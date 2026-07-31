@@ -33,9 +33,11 @@ import { BACK_NAVIGATION } from '../../store/navigationGuard/types';
  * - a dialog, which has to be rendered somewhere.
  *
  * A reactive controller answers the first and not the second, and it needs a Lit host to give
- * it that lifetime — which does not exist here. The guard's only mount point is `Views.tsx`,
- * a React file that stays React through P4, so a controller would have to be hosted by the
- * very thing that has not converted yet. A plain `installNavigationGuard()` module is the
+ * it that lifetime — which did not exist when this was written: the guard's only mount point
+ * was `Views.tsx`, a React file, so a controller would have had to be hosted by the very thing
+ * that had not converted yet. (`keep-views` is Lit as of #719 P4; the argument below is what
+ * keeps this an element rather than a controller now that a host exists.) A plain
+ * `installNavigationGuard()` module is the
  * honest shape for "listeners on `document` and `window`", but it hands the teardown problem
  * to whoever calls it and still leaves the dialog homeless: someone has to render
  * `keep-unsaved-changes-dialog` and wire its three events.

@@ -83,10 +83,10 @@ const EMPTY_SCHEMA: Database = {
  *
  * The app's one instance used to come down from `react/KeepAccessMode.ts`, the last React
  * frame above this screen, because `Router` is deliberately framework-free and had no Lit
- * binding. #926 gave it one, so {@link route} reaches it directly and the wrapper is now
- * nothing but the `createComponent` call. Everything derived from the URL is still derived
- * here and handed down; `keep-access-tabs` has its own controller, because creating a form
- * navigates away from this page.
+ * binding. #926 gave it one, so {@link route} reaches it directly; #719 P4 then deleted that
+ * wrapper outright, since the Lit outlet mounts this module by tag. Everything derived from
+ * the URL is still derived here and handed down; `keep-access-tabs` has its own controller,
+ * because creating a form navigates away from this page.
  *
  * ## #928, and why the mode list is derived
  *
