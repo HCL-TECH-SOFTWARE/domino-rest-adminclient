@@ -57,6 +57,12 @@
   "include": [
     "src",
     "vite.config.mts",
+    // The SWC decorator transform `vite.config.mts` registers (#996). Listed because a
+    // composite project must contain every file in its program. Named as a single file
+    // rather than the whole `scripts` directory, which also holds `bundle-budget.mjs` — a
+    // plain node script with no reason to be type-checked here. `tsconfig.test.json` already
+    // lists `scripts` wholesale, so the file belongs to both projects exactly as `src` does.
+    "scripts/standard-decorators.mts",
     "package.json"
   ]
 }

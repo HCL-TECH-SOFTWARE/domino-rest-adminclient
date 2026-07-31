@@ -461,7 +461,14 @@ describe('keep-consents-table', () => {
 
     it('matches a Custom expiry on the calendar day, not the instant', async () => {
       const consents = freshConsents();
+      // Anchored to midday of the target day, not to `now + 7 days`, which inherits the
+      // *current* time of day. From 23:00 local onwards the hour added below crossed into
+      // the next calendar day, the filter correctly matched nothing, and this test failed —
+      // for one hour in every twenty-four, wherever the runner happens to be. Midday is far
+      // enough from both boundaries that no offset here can leave the day, and it keeps the
+      // instant distinct from the fixture's, which is what the assertion is about.
       const day = new Date(Date.now() + 7 * DAY);
+      day.setHours(12, 0, 0, 0);
       seed({ consents });
       const el = await mount();
 

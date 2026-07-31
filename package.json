@@ -13,9 +13,9 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@swc/core": "^1.15.47",
     "@testing-library/dom": "^10.4.1",
     "@types/node": "26.1.2",
-    "@vitejs/plugin-react-swc": "4.3.2",
     "@vitest/coverage-v8": "^4.1.10",
     "@vitest/ui": "^4.1.10",
     "cross-env": "10.1.0",
@@ -49,6 +49,7 @@
     "typecheck": "tsc -b"
   },
   "allowScripts": {
-    "fsevents@2.3.3": true
+    "fsevents@2.3.3": true,
+    "@swc/core@1.15.47": true
   }
 }

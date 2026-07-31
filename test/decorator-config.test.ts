@@ -5,32 +5,49 @@
  * ========================================================================== */
 
 import { describe, expect, it } from 'vitest';
+import { transform } from '@swc/core';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { standardDecorators } from '../scripts/standard-decorators.mjs';
 
 /**
  * #747 — the Lit elements use standard (TC39) decorators with the `accessor` keyword.
  *
- * Three settings have to agree for that to work, and they live in three files that no
- * single tool checks together:
+ * ## What changed in #996, and why this file got stronger rather than retargeted
  *
- *   - `tsconfig.app.json`   type-check only (`noEmit: true`). SWC never reads it.
- *   - `vite.config.mts`     runtime-authoritative for `npm run build` / `dev`.
- *   - `vitest.config.ts`    runtime-authoritative for this suite.
+ * This used to assert the *strings* `decoratorVersion = '2022-03'` and `/tsDecorators:\s*true/`
+ * in both bundler configs. That was the right check while the settings were two copy-pasted
+ * literals in two files. #996 replaced `@vitejs/plugin-react-swc` with one shared module, so
+ * the drift those string matches guarded against is now impossible by construction — and a
+ * string match would have had to be rewritten to match the new spelling while testing strictly
+ * less.
  *
- * The sharp edge is that `tsDecorators` in @vitejs/plugin-react-swc is only SWC's
- * **parser** flag — it does not choose decorator semantics. Semantics come from
- * `jsc.transform.decoratorVersion`, which SWC defaults to legacy ('2021-12'). Under that
- * default SWC emits `accessor` members *untransformed* rather than failing, so a config
- * that looks plausible produces a broken bundle.
+ * So the core assertion is **behavioural**: run a fixture through the real transform and check
+ * the `accessor` keyword is gone. That survives any future change of transform, spelling or
+ * option shape, which no string match does.
  *
- * A missing `accessor` is loud — Lit's standard decorators throw "Unsupported decorator
- * location: field" at module load, in dev and production alike — but only once something
- * imports the element. This file fails in CI instead, with a message that says why.
+ * ## The failure mode this exists for is silent
  *
- * The other half is config drift: `vitest.config.ts` governs the tests and
- * `vite.config.mts` governs the shipped bundle. Edit one and not the other and the suite
- * stays green while the build breaks, which is exactly the asymmetry worth guarding.
+ * SWC's default is legacy decorators (`'2021-12'`). Under that default it does not error on
+ * `accessor` — it emits the member **untransformed**, `@decorator` syntax and all. The build
+ * still exits 0 and ships a bundle Chrome cannot parse (`Invalid or unexpected token`), so
+ * `keep-app` never upgrades and the page is blank. Measured: 386 such fields with no transform,
+ * 0 with it.
+ *
+ * That is why `emitsLegacyUntransformed` below is part of the test rather than a comment. It
+ * runs the same fixture through SWC's *default* and asserts the keyword survives — which is
+ * what proves the main assertion is discriminating rather than trivially true. Without it, a
+ * fixture that simply contained no `accessor` would pass.
+ *
+ * ## Three files still have to agree
+ *
+ *   - `tsconfig.app.json`            type-check only (`noEmit`). SWC never reads it.
+ *   - `scripts/standard-decorators.mts` the transform itself, for build, dev and this suite.
+ *   - `vite.config.mts` / `vitest.config.ts`   must both register it.
+ *
+ * The last pair is what remains of the drift guard: sharing a module makes the *settings*
+ * identical, but either config could still drop the registration, and the two govern different
+ * things — the shipped bundle and this suite.
  */
 
 const ROOT = resolve(process.cwd());
@@ -51,6 +68,25 @@ const FIELD_DECORATOR =
 const elementFiles = readdirSync(resolve(ROOT, ELEMENTS_DIR))
   .filter((name) => name.endsWith('.ts'))
   .map((name) => join(ELEMENTS_DIR, name));
+
+/** A decorated auto-accessor — the one construct the whole transform exists to handle. */
+const FIXTURE = `
+const dec = (value: unknown, context: unknown) => value;
+export class Demo {
+  @dec accessor label = 'x';
+}
+`;
+
+/** The plugin's `transform`, called directly. It uses no plugin context, so this is safe. */
+const runPlugin = async (code: string, id: string) => {
+  const hook = standardDecorators().transform;
+  const handler = typeof hook === 'function' ? hook : hook?.handler;
+  if (!handler) throw new Error('the decorator plugin has no transform hook');
+  return (await (handler as (c: string, i: string) => Promise<{ code: string } | null>)(
+    code,
+    id,
+  )) as { code: string } | null;
+};
 
 describe('#747 standard decorators', () => {
   it('has element sources to check', () => {
@@ -73,19 +109,64 @@ describe('#747 standard decorators', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('selects standard decorator semantics in both bundler configs', () => {
+  it('transforms the `accessor` keyword away', async () => {
+    const result = await runPlugin(FIXTURE, resolve(ROOT, 'src/demo.ts'));
+
+    expect(result, 'the plugin declined a .ts file').not.toBeNull();
+    // The exact shape that breaks the bundle when it survives.
+    expect(result!.code).not.toMatch(/\baccessor\s+label\b/);
+    expect(result!.code).not.toMatch(/@dec\b/);
+    // What standard semantics actually produce: the decorator runtime, and a real
+    // getter/setter pair over a private field.
+    expect(result!.code).toContain('_apply_decs_2203_r');
+    expect(result!.code).toMatch(/get label\(\)/);
+    expect(result!.code).toMatch(/set label\(/);
+  });
+
+  it('emits the keyword untransformed under SWC defaults, which is why the option matters', async () => {
+    // Anti-vacuity for the case above, and a faithful reproduction of the silent failure:
+    // same fixture, same parser, only `decoratorVersion` left at SWC's legacy default.
+    const legacy = await transform(FIXTURE, {
+      filename: 'demo.ts',
+      swcrc: false,
+      configFile: false,
+      jsc: {
+        target: 'esnext',
+        parser: { syntax: 'typescript', tsx: false, decorators: true },
+        transform: { useDefineForClassFields: true },
+      },
+    });
+
+    expect(legacy.code).toMatch(/\baccessor\s+label\b/);
+    expect(legacy.code).toMatch(/@dec\b/);
+  });
+
+  it('transforms only the files that can carry decorators', async () => {
+    // Narrow on purpose. Anything this declines is still type-stripped by Vite's oxc pass,
+    // so an over-narrow filter fails loudly on `accessor` rather than shipping a half
+    // -transformed bundle. `.mts` is in because `vite.config.mts` is one.
+    expect(await runPlugin(FIXTURE, '/app/src/x.ts'), '.ts must transform').not.toBeNull();
+    expect(await runPlugin(FIXTURE, '/app/src/x.mts'), '.mts must transform').not.toBeNull();
+    // Vite ids carry suffixes; the extension, not the raw id, decides.
+    expect(await runPlugin(FIXTURE, '/app/src/x.ts?v=1'), 'a query must not hide .ts').not.toBeNull();
+    // Dependencies ship compiled JavaScript that must not be re-parsed as TypeScript.
+    expect(await runPlugin(FIXTURE, '/app/src/x.js'), '.js must be declined').toBeNull();
+    expect(
+      await runPlugin(FIXTURE, '/app/node_modules/p/x.ts'),
+      'node_modules must be declined',
+    ).toBeNull();
+  });
+
+  it('registers the shared transform in both bundler configs', () => {
+    // Settings can no longer drift — there is one module — but a registration can still be
+    // dropped from one config, and they govern different things: the shipped bundle and
+    // this suite.
     for (const file of ['vite.config.mts', 'vitest.config.ts']) {
       const source = read(file);
-      expect(source, `${file} must select standard decorators`).toContain(
-        "decoratorVersion = '2022-03'",
+      expect(source, `${file} must import the shared decorator transform`).toMatch(
+        /from '\.\/scripts\/standard-decorators\.mjs'/,
       );
-      // The parser flag. False makes SWC reject `@` outright.
-      expect(source, `${file} must keep the SWC decorator parser on`).toMatch(
-        /tsDecorators:\s*true/,
-      );
-      expect(source, `${file} must not pin the legacy class-field semantics`).not.toMatch(
-        /useDefineForClassFields\s*=\s*false/,
-      );
+      expect(source, `${file} must register it`).toMatch(/standardDecorators\(\)/);
     }
   });
 
