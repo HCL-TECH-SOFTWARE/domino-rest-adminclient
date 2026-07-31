@@ -135,8 +135,11 @@ const monacoState = vi.hoisted(() => {
 
   return {
     editors, diffEditors, models, definedThemes, setThemes, completionProviders, makeEditor,
-    /** Whether the hoisting hook existed when `monaco-editor` was first evaluated (#1002). */
-    hookAtImport: { installed: undefined as boolean | undefined },
+    /** What was in place when `monaco-editor` was first evaluated (#1002). */
+    hookAtImport: {
+      installed: undefined as boolean | undefined,
+      headWrapped: undefined as boolean | undefined,
+    },
   };
 });
 
@@ -149,6 +152,11 @@ vi.mock('monaco-editor', () => {
   // ordering test near the bottom of this file.
   monacoState.hookAtImport.installed =
     typeof self.MonacoEnvironment?.createTrustedTypesPolicy === 'function';
+  // `adoptStyleElements` assigns `appendChild` as an own property of the node it wraps.
+  monacoState.hookAtImport.headWrapped = Object.prototype.hasOwnProperty.call(
+    document.head,
+    'appendChild',
+  );
 
   return {
     editor: {
@@ -272,6 +280,17 @@ describe('keep-monaco-editor', () => {
     monacoState.completionProviders.length = 0;
     prettierState.format = (code: string) => code;
 
+    /*
+     * jsdom has constructed stylesheets (`new CSSStyleSheet()`, `replaceSync`) but no
+     * `adoptedStyleSheets`, and `adoptStyleElements` is capability-gated on exactly that —
+     * it declines to intercept where the browser could not adopt, because losing the
+     * stylesheet is worse than the violation. Without this the gate closes, nothing is
+     * wrapped, and the ordering guard below could not tell "too late" from "not supported".
+     */
+    if (!('adoptedStyleSheets' in document)) {
+      (document as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets = [];
+    }
+
     // jsdom implements neither ResizeObserver (observed in firstUpdated) nor a real
     // layout, so a recording no-op stands in.
     vi.stubGlobal(
@@ -336,6 +355,20 @@ describe('keep-monaco-editor', () => {
     await mountLit<MonacoEditor>(TAG);
 
     expect(monacoState.hookAtImport.installed).toBe(true);
+  });
+
+  /**
+   * #1002 — the same ordering, for the same reason, on a different mechanism.
+   *
+   * Monaco writes a stylesheet into `document.head` while its module graph evaluates. An
+   * editor that wraps the head from `firstUpdated()` — after the import has resolved, which
+   * is where this went first — misses exactly that one and reports exactly one violation per
+   * session. One is not zero, and it is the kind of number that gets rounded to "clean".
+   */
+  it('wraps document.head before monaco-editor is evaluated', async () => {
+    await mountLit<MonacoEditor>(TAG);
+
+    expect(monacoState.hookAtImport.headWrapped).toBe(true);
   });
 
   it('renders an editor container and builds a standard editor into it', async () => {

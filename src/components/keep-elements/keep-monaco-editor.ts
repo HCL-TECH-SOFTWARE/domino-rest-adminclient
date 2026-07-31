@@ -18,6 +18,10 @@ import {
   applyHoistedStyles,
   installInlineStyleHoisting
 } from '../../services/monaco-inline-styles.js';
+import {
+  adoptStyleElements,
+  installDocumentHeadAdoption
+} from '../../services/monaco-style-elements.js';
 import { EDITOR_THEME_ID, EDITOR_TOKENS, buildEditorTheme } from '../../services/editor-theme.js';
 import { resolveWaColors } from '../../services/wa-color.js';
 import { resolveWaTypography } from '../../services/wa-typography.js';
@@ -34,10 +38,12 @@ import { resolveWaTypography } from '../../services/wa-typography.js';
  * resolves immediately.
  */
 function fetchMonaco() {
-  // Before the imports below, not after: Monaco creates the trusted-types policies this
-  // hooks in static initialisers, so they are built while its module graph evaluates.
-  // `installInlineStyleHoisting()` documents what happens if this moves.
+  // Both before the imports below, not after. Monaco creates the trusted-types policies the
+  // first one hooks in static initialisers, and writes a stylesheet into `document.head`,
+  // while its module graph evaluates — so anything installed afterwards is already too late.
+  // Each function documents what breaks if it moves.
   installInlineStyleHoisting();
+  installDocumentHeadAdoption();
 
   return Promise.all([
     import('monaco-editor'),
@@ -141,6 +147,8 @@ export default class MonacoEditor extends LitElement {
   private _themeObserver?: MutationObserver;
   /** Watches the render root for markup carrying hoisted style declarations. */
   private _styleObserver?: MutationObserver;
+  /** Unwraps this editor's container, installed only once Monaco has loaded. */
+  private _releaseContainer?: () => void;
   /**
    * Cache key from the last `_applyTheme()` call that did real work — see
    * `_themeCacheKey()`. Starts `undefined` so the construction-time call always runs.
@@ -505,8 +513,10 @@ export default class MonacoEditor extends LitElement {
     // Synchronous, so the rules are in place before Monaco builds into the container
     // below and therefore before the next paint.
     this._adoptMonacoStyles(bundle.styles);
-    // Before the editor builds, so the very first batch of view lines is covered.
+    // Both before the editor builds: the first batch of view lines and Monaco's own
+    // stylesheets are created during `_rebuildEditor()`, and neither can be caught after.
     this._replayHoistedStyles();
+    this._interceptMonacoStyleElements(container);
 
     this._rebuildEditor();
 
@@ -594,6 +604,18 @@ export default class MonacoEditor extends LitElement {
    * document ten screens: `.view-line` offsets and gutter numbers identical to the same
    * build with no CSP at all, and zero `style-src-attr` violations.
    */
+  /**
+   * Adopts the 136 kB theme sheet Monaco injects into this editor's container `<div>`.
+   *
+   * That refusal is what left the editor with no syntax colouring under the policy. The
+   * container is the only place to intervene — see `monaco-style-elements.ts`. Monaco's
+   * other stylesheet goes to `document.head` and is caught page-wide by
+   * `installDocumentHeadAdoption()`, which has to run far earlier than this.
+   */
+  private _interceptMonacoStyleElements(container: HTMLElement) {
+    this._releaseContainer = adoptStyleElements(container, this.renderRoot as ShadowRoot);
+  }
+
   private _replayHoistedStyles() {
     const root = this.renderRoot as ShadowRoot;
     applyHoistedStyles(root);
@@ -689,6 +711,9 @@ export default class MonacoEditor extends LitElement {
 
     this._styleObserver?.disconnect();
     this._styleObserver = undefined;
+
+    this._releaseContainer?.();
+    this._releaseContainer = undefined;
   }
 
   /**
