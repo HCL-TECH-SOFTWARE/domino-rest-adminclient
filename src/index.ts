@@ -6,7 +6,7 @@
 
 // Apply theme before React renders to prevent flash
 // TODO: simplify after wa transition to wa-dark
-
+// TODO extend them to dark, light and system themes
 const theme = localStorage.getItem('theme');
 const isDark = theme === 'dark';
 if (isDark) {

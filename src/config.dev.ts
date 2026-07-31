@@ -14,7 +14,7 @@ export const BASE_KEEP_API_URL = '/api/v1';
 export const SETUP_KEEP_API_URL = '/api/setup-v1';
 export const PIM_KEEP_API_URL = '/api/pim-v1';
 export const ADMIN_KEEP_API_URL = '/api/admin-v1';
-export const IDP_KEEP_API_URL = '/api/keepidp-v1'
+export const IDP_KEEP_API_URL = '/api/keepidp-v1';
 
 // ASSETS DIRECTORY
 // Images are not listed here: each is `import`ed from the module that renders it, so
@@ -30,7 +30,7 @@ export const IDP_KEEP_API_URL = '/api/keepidp-v1'
 //
 // Must equal --wa-color-brand-50 in src/styles/keep-theme.css, which is the single
 // source of truth for the brand ramp. This constant exists only because getTheme()
-// hands JS colour strings to MUI's createTheme(), and MUI cannot read a CSS custom
+// hands JS color strings to MUI's createTheme(), and MUI cannot read a CSS custom
 // property — every *CSS* use went to var(--wa-color-brand-50) in #765.
 //
 // It was #5F1EBE, a fourth purple that predated the ramp; #705 chose #7c5fd9 because
