@@ -94,7 +94,9 @@ half of it gated on #709, half retiring per file inside #806.
 
 **Rough surface area (re-measured at `0d5458c`):** **43** files import `@mui/material` (84
 references) and that is now the *only* MUI package; `@mui/icons-material` and `react-icons`
-are **gone**. **50** files use `@linaria/react` with **148 `styled.` usages** (was 175),
+are **gone**. ~~**50** files use `@linaria/react` with **148 `styled.` usages** (was 175)~~ —
+**0 and 0** since #825; a raw grep for `styled` still answers 32, and every one of them is a
+provenance comment inside a converted element,
 **6** files read `getTheme()`, `Box` appears **48×** (was 144). **One** `CssBaseline` mount
 and **one** `ThemeProvider`, both in `AppShell.tsx`. On the WebAwesome side: **504** `--wa-*`
 references across **67** files, `webawesome.css` imported exactly **once** at
@@ -681,9 +683,14 @@ token flips (no per-component `light-dark()`).
    `resolveWaTypography()` (§3.6) instead of reviving a `getTheme()`-shaped color object.
    The Monaco theme is the proof this works.
 
-Linaria stays as the authoring tool — it just emits `var(--wa-*)` references. No build
+~~Linaria stays as the authoring tool — it just emits `var(--wa-*)` references. No build
 change was required (`@wyw-in-js/vite` extracts to a bundled stylesheet, served from
-`'self'`).
+`'self'`).~~ **Superseded (#825).** It did not stay: `styled` is a React component factory,
+so it could not outlive React, and the blocks moved into each element's `static styles` as
+that element converted. They still emit `var(--wa-*)` references, which is the part of this
+paragraph that held — the tokens were never the Linaria layer's doing. Removing
+`@wyw-in-js/vite` changed the built stylesheet by **zero bytes**, so nothing about the CSP
+answer changes either.
 
 **Scale check, re-measured:** 175 `styled.` blocks across 68 files, now referencing
 `--wa-*` in **382** places across 67 files (was 110). The remaining literal surface is

@@ -6,7 +6,6 @@
 
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react-swc';
-import wyw from '@wyw-in-js/vite';
 
 /**
  * Injects `<meta name="admin-ui-daily-build-version">` into the served/built HTML.
@@ -39,24 +38,6 @@ function stampBuildVersion(): Plugin {
 export default defineConfig({
   plugins: [
     stampBuildVersion(),
-    wyw({
-      include: ['**/*.{ts,tsx}'],
-      // The Lit elements are excluded because they contain no Linaria at all — their
-      // `css` comes from `lit`, not `@linaria/core`. Running them through wyw was always
-      // wasted work; since #747 it is also broken. wyw strips types with oxc-transform
-      // (0.131), which mis-desugars the `accessor` keyword and emits a reference to a
-      // private field it never declares:
-      //     Private field '#___private_isSchema_3' must be declared in an enclosing class
-      // The whole directory is excluded, not `keep-elements/*.ts` — a single `*` does not
-      // cross a directory boundary, so #813's `keep-elements/react/*.ts` wrappers would
-      // fall back into scope and hit the `accessor` bug above through the element classes
-      // they import. Nothing under `keep-elements/` contains Linaria, `KeepElements.tsx`
-      // included, so widening costs nothing.
-      //
-      // `access/styles.ts` and `database/settings/sections/styles.ts` stay in scope — they
-      // are the two non-.tsx files that really do declare Linaria `styled` components.
-      exclude: ['**/components/keep-elements/**']
-    }),
     // The Lit elements use standard (TC39) decorators with `accessor` (#747).
     //
     // `tsDecorators` is a misleading name: in @vitejs/plugin-react-swc it only sets SWC's

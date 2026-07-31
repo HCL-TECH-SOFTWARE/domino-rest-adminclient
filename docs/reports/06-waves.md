@@ -77,7 +77,7 @@ lane D or gated on it:
 | **#806** | the per-file pass — the spine. **79 files / 16,682 LOC** left |
 | #713 · #712 · #717 | lane D work under other labels; they close *inside* #806 |
 | ~~#718~~ | ✅ **closed** — 0 `@mui/icons-material` / `react-icons` references remain, both packages uninstalled (#913) |
-| #825 | the styling half of the same pass — `@linaria/react` is in **50** files |
+| ~~#825~~ | ✅ **closed** — `@linaria/react` reached **0** files without a CSS-Modules sweep, and the package and `@wyw-in-js/vite` are uninstalled |
 | **#709** | wave-3 gate — waits for `@mui/*` to leave **43** files |
 | **#719** | wave-3 capstone — waits for React to leave **69** files (101 raw, minus 32 wrapper shims) |
 | #786 | the `new_code` → `main` merge — `main` is now **479** commits behind |
@@ -802,12 +802,16 @@ Two things sit outside #806 and can be taken by anyone:
   causes are already ruled out in the issue.
 - **#877** — replace `BreadcrumbRouter` with `wa-breadcrumb`. One eager file, no dependency.
 
-**#825 needs re-measuring before anyone starts it.** Its list of 22 MUI-free Linaria files
-predates #806 tier A and the card-view slice, which between them deleted eleven of them outright
-(`PageRouters`, `Homepage`, `MobileHeader`, `ErrorWrapper`, `ZeroResultsWrapper`, `PageLoading`,
-`ColumnBar`, `FormSettings`, `CarViewstyles`, both `v2/CardV2Styles`) plus `components/flex`,
-`SchemaStyles` and `ScopeStyles`. `@linaria/react` is down to 51 files from 69 without a single
-CSS-Modules conversion.
+~~**#825 needs re-measuring before anyone starts it.**~~ ✅ **Closed, and nobody ever started it.**
+Its list of 22 MUI-free Linaria files predated #806 tier A and the card-view slice, which between
+them deleted eleven of them outright (`PageRouters`, `Homepage`, `MobileHeader`, `ErrorWrapper`,
+`ZeroResultsWrapper`, `PageLoading`, `ColumnBar`, `FormSettings`, `CarViewstyles`, both
+`v2/CardV2Styles`) plus `components/flex`, `SchemaStyles` and `ScopeStyles`. The re-measurement
+kept giving the same answer in the same direction — 69 → 51 → 50 → **0** — because a component
+that becomes a Lit element takes its `styled` blocks into `static styles` with it. No
+CSS-Modules conversion was ever written. What #825 finally did was delete two `package.json`
+entries and the `wyw` plugin from both build configs, with the built stylesheet coming out
+**byte-identical**: proof that the extractor had been contributing nothing for some time.
 
 ---
 

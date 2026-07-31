@@ -95,22 +95,23 @@ describe('#747 standard decorators', () => {
     expect(source).not.toMatch(/"useDefineForClassFields"\s*:\s*false/);
   });
 
-  it('keeps the Lit elements out of the Linaria transform', () => {
-    // wyw strips types with oxc-transform, which mis-desugars `accessor` into a reference
-    // to a private field it never declares. The elements contain no Linaria — their `css`
-    // comes from `lit` — so excluding them is both correct and cheaper.
+  it('registers no Linaria transform, which is what protects accessor now (#825)', () => {
+    // This used to assert the shape of wyw's `exclude` glob, because wyw strips types with
+    // oxc-transform and that mis-desugars `accessor` into a reference to a private field it
+    // never declares. Keeping the elements out of its scope was the whole defence, and it
+    // was fragile: the glob was `keep-elements/*.ts` until #813 split the React wrappers
+    // into `keep-elements/react/`, and a single `*` does not cross a directory boundary, so
+    // the new modules silently fell back into scope and took the element classes they
+    // import with them.
     //
-    // The glob must reach *subdirectories*. It was `keep-elements/*.ts` until #813 split
-    // the React wrappers into `keep-elements/react/`, and a single `*` does not cross a
-    // directory boundary — so the new modules silently fell back into wyw's scope, taking
-    // the element classes they import with them. `**` is what makes this hold.
+    // The plugin is gone (#825), so the defence is now that there is nothing to exclude
+    // from. That is a stronger invariant than a glob and this is the assertion that keeps
+    // it: reintroducing wyw without reintroducing an exclude would break `accessor` in
+    // exactly the way described above, silently, in the built bundle only.
     for (const file of ['vite.config.mts', 'vitest.config.ts']) {
-      expect(read(file), `${file} must exclude all of keep-elements from wyw`).toContain(
-        "'**/components/keep-elements/**'",
+      expect(read(file), `${file} must not register the Linaria/wyw transform`).not.toMatch(
+        /@wyw-in-js|\bwyw\(/,
       );
-    }
-    for (const file of elementFiles) {
-      expect(read(file), `${file} must not import Linaria`).not.toContain('@linaria');
     }
   });
 });

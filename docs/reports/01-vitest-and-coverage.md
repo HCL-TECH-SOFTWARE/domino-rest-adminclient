@@ -22,8 +22,10 @@
 ## TL;DR
 
 - **Jest is gone.** Vitest 4.1 runs on the same Vite plugin graph as the build
-  (`@wyw-in-js` + `@vitejs/plugin-react-swc`), so Linaria `styled` components and the Lit
-  decorators transform identically to `npm run build`.
+  (`@vitejs/plugin-react-swc`), so the Lit decorators transform identically to
+  `npm run build`. The graph was `@wyw-in-js` + SWC until #825 removed the first half; the
+  property that matters — *the same* graph in both configs — is unchanged, and
+  `test/decorator-config.test.ts` is what enforces it.
 - **4 tests → 1709 tests across 133 files** (was 747 / 70 at the last refresh — the suite
   more than doubled in one refresh). Global line coverage went from ~0 % to **70.18 %**,
   with `src/utils` at **99.3 %**, `src/router` at **97.8 %**, `src/services` at **96.1 %**,
@@ -173,7 +175,7 @@ time coverage has been visible on a PR without downloading an artifact — and i
 | Global line coverage | ~0 % | **70.18 %** (3352/4776) | `coverage/coverage-summary.json` |
 | Per-path coverage gates | none | **14**, plus a global floor of 61/61/63/49 | `vitest.config.ts` |
 | Runner | Jest 30 | **Vitest 4.1.10** | `package.json` `test`, `vitest.config.ts` |
-| Transform | `ts-jest` **and** `@swc/jest` (redundant) | **Vite plugin graph** — `@wyw-in-js/vite` + `@vitejs/plugin-react-swc` | `vitest.config.ts` |
+| Transform | `ts-jest` **and** `@swc/jest` (redundant) | **Vite plugin graph** — `@vitejs/plugin-react-swc` (was `@wyw-in-js/vite` + it, until #825) | `vitest.config.ts` |
 | Decorators | n/a | `tsDecorators: true` + `useDefineForClassFields: false` (mirrors `vite.config.mts`) | `vitest.config.ts` |
 | Environment | `jest-environment-jsdom` | **`jsdom` 30.0.1**, `url: http://localhost/admin/ui` | `vitest.config.ts:31` |
 | ESM allow-list | `transformIgnorePatterns` | **not needed** — Vite transforms `node_modules` natively | — |
@@ -589,7 +591,7 @@ single untested file (which is precisely how the `keep-monaco-editor` gap was ca
 | **Real Monaco reports errors on a timer** | ✅ handled, non-obvious | `captureMonacoErrors()` hooks `process.on('uncaughtException')`, because Monaco's `ErrorHandler` rethrows inside `setTimeout` — `expect(…).not.toThrow()` cannot see it (§A10). |
 | **Redux store helper** | ✅ **DONE** (#689) | `test/test-utils/renderWithProviders.tsx` now sits alongside `lit.ts` and `monaco.ts`; the duplicated `createMockStore()` declarations in `EditView.test.tsx` and `TabsAccess.test.tsx` are gone. |
 | ~~**react-router 7**~~ | ➖ **gone** | #716 replaced `react-router-dom` with the in-repo router at `src/router/`. Tests use its own harness; `router.test.ts` (458 lines) + `react.test.tsx` (598) cover it at **97.8 %**. |
-| **MUI 9 / Linaria** | ✅ handled | `matchMedia` stub in setup; `css: false` means no computed styles — assert on roles/text/`data-testid`. `wyw` stays in the plugin list so `styled` components remain real components. |
+| ~~**MUI 9 / Linaria**~~ | ➖ **gone** | Both packages are uninstalled — MUI with #709, Linaria and `wyw` with #825 — so neither the `matchMedia` stub's original reason nor the `wyw`-stays-in-the-plugin-list rule applies any more. `css: false` still means no computed styles, and that constraint is its own row below. |
 | **`css: false` makes styling invisible** | 🟡 **structural, mitigated by a new test genre — and it has already cost us a bug** | This is why #708's tokenization has *no* runtime test: `getComputedStyle()` returns nothing useful and jsdom has no canvas backend to resolve `color-mix()`. The workaround that emerged is **source-scanning suites** — `keep-theme.test.ts` parses `keep-theme.css` as text and pins each token to `getTheme()`; `theme-selectors.test.ts` greps the element sources for `light-dark(` outside the editor-palette carve-out; `shell-dead-code.test.ts` asserts deleted shell code stays deleted. **They pin structure, not appearance.** 🐛 Worked example, found in this refresh: `validity-states.test.ts` (#744) asserts that the invalid-state rules use `:state(user-invalid)` and that the state flips correctly — and passes — while the colour those rules apply, `var(--wa-color-danger-600)`, names a token WA 3.10 does not define, with no fallback, so the border never paints. A structural test caught the dead selector and could not catch the dead value. See report 03 finding 11b. |
 | **`wa-*` form association** | 🔴 **not testable here** | jsdom cannot run form association at all, so `wa-*` form participation has no jsdom coverage. Split those assertions out and verify them in Chrome; do not write a jsdom test that *looks* like it covers them. |
 | **WebAwesome / Lit custom elements** | ✅ handled, with a twist | jsdom's own `attachInternals` is *incompatible* with WA form-associated elements, so the stub is installed **unconditionally** rather than conditionally. Registration still happens automatically on import. Shadow-DOM assertions are fine. |
