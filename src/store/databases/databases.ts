@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import { INIT_STATE } from './types';
 import { setLoading, toggleDetailsLoading } from '../loading/action';
 import { toggleQuickConfigDrawer } from '../drawer/action';

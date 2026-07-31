@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import { toggleDrawer } from '../drawer/action';
 import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';

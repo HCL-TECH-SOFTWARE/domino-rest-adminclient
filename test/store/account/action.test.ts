@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import {
   bearerOf,
   getToken,

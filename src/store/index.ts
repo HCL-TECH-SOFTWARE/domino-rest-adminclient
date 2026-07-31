@@ -4,8 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { combineReducers } from 'redux';
-import type { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
+import { combineReducers, type ThunkDispatch, type UnknownAction } from '@reduxjs/toolkit';
 import databaseReducer from './databases/reducer';
 import drawerReducer from './drawer/reducer';
 import loadingReducer from './loading/reducer';

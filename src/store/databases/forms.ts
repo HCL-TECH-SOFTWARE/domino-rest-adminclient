@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import { Database } from './types';
 import { AppDispatch } from '..';
 import { getFormIndex, getFormModeIndex } from './scripts';
