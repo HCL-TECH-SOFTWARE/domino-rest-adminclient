@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { html, css, render, type PropertyValues } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 
 // Import Shoelace components
 import '@awesome.me/webawesome/dist/components/tree/tree.js';
@@ -142,6 +142,20 @@ export default class SourceTree extends KeepElement {
    *  it must NOT itself trigger a render (matches the original). */
   currentInputValues: JsonRecord = {};
 
+  /**
+   * Which row the one context menu is currently about (#940).
+   *
+   * Reactive, because the menu's `Edit`/`Duplicate` disabled states are a function of it.
+   * `null` between openings; every handler reads it rather than walking up from the event,
+   * since the menu is no longer inside the row it acts on.
+   */
+  @state() private accessor activeRow: {
+    key: string;
+    value: any;
+    fullPath: string;
+    isObjectOrArray: boolean;
+  } | null = null;
+
   /* The `.input-validation-pattern` rules below use `:state(user-invalid)` /
      `:state(user-valid)`, not the Shoelace-era `data-user-*` attributes WebAwesome 3.x
      never sets — see the note in keep-input-text.ts, including why it is out here (#742). */
@@ -242,10 +256,10 @@ export default class SourceTree extends KeepElement {
      * rows, which carry no contextmenu handler, could not open it by any means. The slot is
      * on the button now and these rules follow it.
      *
-     * Hidden with opacity, not display:none, so the trigger keeps a box and stays in the tab
-     * order — a display-none trigger cannot take focus, so :focus-within could never fire to
-     * reveal it. That is necessary for reaching the menu from the keyboard but not sufficient:
-     * wa-tree still claims the keys. See the note on handleMenuSelect and #940.
+     * Hidden with opacity, not display:none, so the opener keeps a box and stays in the tab
+     * order — a display-none control cannot take focus, so :focus-within could never fire to
+     * reveal it. That was necessary for reaching the menu from the keyboard and, on its own,
+     * not sufficient; #940 supplied the rest by moving the menu out of the tree.
      *
      * The wa-dropdown rule that stood here was dead twice over: it set no position, and
      * wa-dropdown is display:contents (measured: a 0x0 host box), so it has nothing to
@@ -275,6 +289,29 @@ export default class SourceTree extends KeepElement {
     .object-array-container:hover .icon-button,
     .object-array-container:focus-within .icon-button {
       opacity: 1;
+    }
+
+    /* The one menu's anchor: zero-size, moved over the active row before opening (#940).
+       wa-dropdown positions against its own slotted trigger and offers no anchor property,
+       so this stands in for the row while the visible opener above stays the affordance. */
+    #row-menu-anchor {
+      position: fixed;
+      width: 0;
+      height: 0;
+      padding: 0;
+      border: 0;
+      opacity: 0;
+    }
+
+    /* The opener is a bare button now rather than a wa-button (#940), so it carries no
+       Web Awesome chrome of its own. */
+    .menu-opener {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: inherit;
+      line-height: 0;
     }
 
     dialog {
@@ -428,27 +465,17 @@ export default class SourceTree extends KeepElement {
                   @contextmenu="${this.handleRightClick}"
                 >
               `}
-              <wa-dropdown @wa-select="${(e: Event) => this.handleMenuSelect(e, key, value, fullPath)}">
-                <wa-button slot="trigger" class="icon-button" appearance="plain" size="small">
-                  <wa-icon appearance="filled" library="${FA_LIBRARY}" name="square-caret-down" label="Context Menu"></wa-icon>
-                </wa-button>
-                <wa-dropdown-item value="add">
-                  Add
-                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="circle-plus"></wa-icon>
-                </wa-dropdown-item>
-                <wa-dropdown-item value="edit" ?disabled=${isObjectOrArray}>
-                  Edit
-                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="pencil"></wa-icon>
-                </wa-dropdown-item>
-                <wa-dropdown-item value="duplicate" ?disabled=${!isObjectOrArray}>
-                  Duplicate
-                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="copy"></wa-icon>
-                </wa-dropdown-item>
-                <wa-dropdown-item value="remove">
-                  Remove
-                  <wa-icon slot="prefix" library="${FA_LIBRARY}" name="trash"></wa-icon>
-                </wa-dropdown-item>
-              </wa-dropdown>
+              <button
+                class="icon-button menu-opener"
+                type="button"
+                data-row="${fullPath}"
+                aria-haspopup="menu"
+                aria-label="Actions for ${label}"
+                @keydown="${this.handleOpenerKeydown}"
+                @click="${(e: Event) => this.openRowMenu(e, key, value, fullPath, isObjectOrArray)}"
+              >
+                <wa-icon appearance="filled" library="${FA_LIBRARY}" name="square-caret-down"></wa-icon>
+              </button>
             </section>
             <dialog id="${fullPath}" aria-label="${type}">
               <form class="input-validation-pattern">
@@ -479,9 +506,12 @@ export default class SourceTree extends KeepElement {
                   </section>
                 </section>
                 <section class="dialog-content buttons">
-                  <button id="dialog-insert" class="hidden" @click="${(e: Event) => this.handleInsertButtonClick(e, fullPath)}">Insert</button>
-                  <button id="dialog-edit" class="hidden" @click="${(e: Event) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
-                  <button class="cancel" @click="${this.handleClickCancel}">Cancel</button>
+                  <!-- These sit inside a wa-tree-item as well, so Enter on them reaches the
+                       same wa-tree handler that throws on a control within a row. Guarded the
+                       same way as the row opener. #940 -->
+                  <button id="dialog-insert" class="hidden" @keydown="${this.handleOpenerKeydown}" @click="${(e: Event) => this.handleInsertButtonClick(e, fullPath)}">Insert</button>
+                  <button id="dialog-edit" class="hidden" @keydown="${this.handleOpenerKeydown}" @click="${(e: Event) => this.handleClickDialogEdit(e, key, fullPath)}">Edit</button>
+                  <button class="cancel" @keydown="${this.handleOpenerKeydown}" @click="${this.handleClickCancel}">Cancel</button>
                 </section>
               </form>
             </dialog>
@@ -490,6 +520,8 @@ export default class SourceTree extends KeepElement {
       })
     }
 
+    const row = this.activeRow;
+
     return html`
       <main>
         <wa-tree class="custom-icons">
@@ -497,56 +529,108 @@ export default class SourceTree extends KeepElement {
           <wa-icon library="${FA_LIBRARY}" name="square-minus" slot="collapse-icon"></wa-icon>
           ${generateTreeItems(this.editedContent)}
         </wa-tree>
+
+        <!-- One menu for the whole tree, deliberately outside wa-tree. See openRowMenu. -->
+        <wa-dropdown id="row-menu" @wa-select="${this.handleMenuSelect}">
+          <button id="row-menu-anchor" slot="trigger" type="button" tabindex="-1" aria-hidden="true"></button>
+          <wa-dropdown-item value="add">
+            Add
+            <wa-icon slot="prefix" library="${FA_LIBRARY}" name="circle-plus"></wa-icon>
+          </wa-dropdown-item>
+          <wa-dropdown-item value="edit" ?disabled=${row?.isObjectOrArray ?? true}>
+            Edit
+            <wa-icon slot="prefix" library="${FA_LIBRARY}" name="pencil"></wa-icon>
+          </wa-dropdown-item>
+          <wa-dropdown-item value="duplicate" ?disabled=${!(row?.isObjectOrArray ?? false)}>
+            Duplicate
+            <wa-icon slot="prefix" library="${FA_LIBRARY}" name="copy"></wa-icon>
+          </wa-dropdown-item>
+          <wa-dropdown-item value="remove">
+            Remove
+            <wa-icon slot="prefix" library="${FA_LIBRARY}" name="trash"></wa-icon>
+          </wa-dropdown-item>
+        </wa-dropdown>
       </main>
     `;
   }
 
   /**
-   * The context menu's selection. One listener on the dropdown rather than a `@click` per
-   * item (#925).
+   * Open the one menu against the row whose opener was pressed (#940).
    *
-   * Web Awesome only synthesises a `click` on an item for *pointer* selection, so every entry
-   * in this menu was dead for anyone driving it with the arrow keys and Enter. `wa-select` is
-   * emitted by `makeSelection`, which both the pointer and the keyboard path go through, and
-   * it skips disabled items before emitting, so `Edit` and `Duplicate` now honour their
-   * `?disabled` instead of relying on the `null` handler the template used to swap in.
+   * ### Why there is one menu, and why it is outside the tree
    *
-   * `event.target` is the `wa-dropdown`, which is inside the row's `wa-tree-item`, so the
-   * handlers below still find their dialog with the same `closest()` walk. Stopped here
-   * because `wa-select` is composed and would otherwise surface in the host document.
+   * There used to be a `wa-dropdown` per row, inside the `wa-tree-item`. That could not be
+   * driven from the keyboard, and no binding fixed it: `wa-tree` claims Enter, Space, the
+   * four arrows, Home and End for anything focusable inside it, and `wa-dropdown` listens for
+   * its own arrow keys on `document` — past `wa-tree` on the bubble path. Any
+   * `stopPropagation` early enough to spare the tree also starved the menu.
    *
-   * ### This menu is still not keyboard-operable, and the reason is upstream (#940)
+   * Moving the menu out of the tree is what breaks that deadlock. Its items are no longer
+   * descendants of `wa-tree`, so their keydowns never reach it, and the dropdown's document
+   * listener gets them untouched. Measured in Chrome, end to end: focus the opener, Enter,
+   * ArrowDown, Enter — `wa-select` fires with the right value and nothing throws.
    *
-   * `wa-tree` binds `keydown` to a div in its own shadow root and claims Enter, Space, the
-   * four arrows, Home and End for tree navigation whenever focus is anywhere inside it —
-   * `preventDefault()` first, so Enter on our trigger never becomes the click that opens the
-   * menu. It excuses only `input` and `textarea` in the composed path, which is why the leaf
-   * value fields still work. It also *throws* on Enter here: it looks up `activeItem` with
-   * `items.findIndex((item) => item.matches(':focus'))`, gets -1 when focus is on a control
-   * *within* an item, and reads `activeItem.disabled` off `undefined`.
-   *
-   * Containing it from this side is not possible as things stand: `wa-dropdown` listens for
-   * its own arrow keys on `document`, i.e. past `wa-tree` on the bubble path, so a
-   * `stopPropagation()` early enough to spare the tree also starves the menu. The fix is to
-   * stop nesting the dropdown inside the tree item — one menu at the component level, opened
-   * against the active row — which is a reshape of this element rather than a binding change.
-   * Measured in Chrome; see #940.
+   * `wa-dropdown` anchors to its own slotted trigger and offers no `for`/`anchor` escape
+   * hatch, so the trigger is a zero-size button moved over the active row before opening. It
+   * carries `tabindex="-1"` and `aria-hidden`: the visible per-row opener is the affordance,
+   * this is only the anchor.
    */
-  handleMenuSelect(e: Event, key: string, value: any, fullPath: string) {
+  openRowMenu(e: Event, key: string, value: any, fullPath: string, isObjectOrArray: boolean) {
     e.stopPropagation();
+    this.activeRow = { key, value, fullPath, isObjectOrArray };
+
+    const opener = e.currentTarget as HTMLElement;
+    const anchor = this.renderRoot.querySelector('#row-menu-anchor') as HTMLElement | null;
+    const menu = this.renderRoot.querySelector('#row-menu') as WithOpen | null;
+    if (!anchor || !menu) return;
+
+    const box = opener.getBoundingClientRect();
+    anchor.style.left = `${box.left}px`;
+    anchor.style.top = `${box.bottom}px`;
+    menu.open = true;
+  }
+
+  /**
+   * Enter and Space on a row's opener must not reach `wa-tree`.
+   *
+   * Its `handleKeyDown` reads `activeItem.disabled` after looking the item up with
+   * `items.findIndex((item) => item.matches(':focus'))` — which is `-1` whenever focus is on a
+   * control *within* an item rather than on the item itself. So Enter on the opener threw
+   * `Cannot read properties of undefined (reading 'disabled')`, and `preventDefault()` ran
+   * first, so the native click that opens the menu never happened either.
+   *
+   * Safe to contain now, and only now: the dropdown's document listener is needed after the
+   * menu is open, and by then focus is on a menu item, which is outside the tree. Arrows are
+   * deliberately not stopped — `wa-tree` uses those to move between rows, which is correct,
+   * and its arrow branches guard `activeItem` properly.
+   */
+  handleOpenerKeydown(e: KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+  }
+
+  /** Act on the chosen entry, against whichever row {@link openRowMenu} recorded. */
+  handleMenuSelect(e: Event) {
+    e.stopPropagation();
+    const row = this.activeRow;
+    if (!row) return;
     const { item } = (e as CustomEvent<{ item: { value: string } }>).detail;
+    const opener = this.renderRoot.querySelector(
+      `[data-row="${CSS.escape(row.fullPath)}"]`,
+    ) as HTMLElement | null;
+    const target = { target: opener ?? this } as unknown as Event;
+
     switch (item.value) {
       case 'add':
-        this.handleClickAdd(e);
+        this.handleClickAdd(target);
         break;
       case 'edit':
-        this.handleClickEdit(e, key, value);
+        this.handleClickEdit(target, row.key, row.value);
         break;
       case 'duplicate':
-        this.handleClickDuplicate(e, fullPath, key, value);
+        this.handleClickDuplicate(target, row.fullPath, row.key, row.value);
         break;
       case 'remove':
-        this.handleClickRemove(key, this.editedContent, fullPath);
+        this.handleClickRemove(row.key, this.editedContent, row.fullPath);
         break;
     }
   }
@@ -643,12 +727,22 @@ export default class SourceTree extends KeepElement {
     this.requestUpdate()
   }
 
+  /**
+   * Right-click, and the keyboard ContextMenu key, open the same one menu (#940).
+   *
+   * Measured in Chrome: the dedicated ContextMenu key does fire `contextmenu` on the focused
+   * element, but **Shift+F10 does not** — so this is not a keyboard path most Mac users have,
+   * and it is why the visible per-row opener stays rather than being replaced by the gesture.
+   *
+   * Delegates to the row's own opener so there is one way in: `openRowMenu` records the row
+   * and positions the anchor, whichever gesture arrived.
+   */
   handleRightClick(e: Event) {
     e.preventDefault(); // Prevent the default context menu from showing up
-    const dropdown = (e.target as HTMLElement).closest('wa-tree-item')!.querySelector('wa-dropdown') as WithOpen | null;
-    if (dropdown) {
-      dropdown.open = true
-    }
+    const opener = (e.target as HTMLElement)
+      .closest('wa-tree-item')
+      ?.querySelector('.menu-opener') as HTMLElement | null;
+    opener?.click();
   }
 
   handleClickCancel(e: Event) {
