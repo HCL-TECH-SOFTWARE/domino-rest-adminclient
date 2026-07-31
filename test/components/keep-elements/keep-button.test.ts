@@ -1,0 +1,114 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanupLit, mountLit } from '../../test-utils/lit';
+import '../../../src/components/keep-elements/keep-button';
+import type Button from '../../../src/components/keep-elements/keep-button';
+import { FA_LIBRARY } from '../../../src/services/icon-library';
+
+const TAG = 'keep-button';
+
+const waButton = (el: Button) => el.shadowRoot!.querySelector('wa-button')!;
+
+describe('keep-button', () => {
+  afterEach(cleanupLit);
+
+  it('registers the custom element', () => {
+    expect(customElements.get(TAG)).toBeTruthy();
+  });
+
+  it('renders a wa-button with brand/accent defaults', async () => {
+    const el = await mountLit<Button>(TAG);
+    const btn = waButton(el);
+    expect(btn).toBeTruthy();
+    expect(btn.getAttribute('variant')).toBe('brand');
+    expect(btn.getAttribute('appearance')).toBe('accent');
+    expect(btn.hasAttribute('disabled')).toBe(false);
+    expect(btn.hasAttribute('pill')).toBe(false);
+  });
+
+  it('reflects the variant property onto wa-button', async () => {
+    const el = await mountLit<Button>(TAG, { variant: 'danger' });
+    expect(waButton(el).getAttribute('variant')).toBe('danger');
+  });
+
+  /*
+   * #701 collapsed keep-button-yes / -no / -neutral into this element. These three
+   * cover the shapes those call sites migrated to, so a regression in the mapping
+   * shows up here rather than as three differently-wrong buttons in the UI.
+   */
+  it('covers the former keep-button-yes as the brand/accent default', async () => {
+    const el = await mountLit<Button>(TAG);
+    expect(waButton(el).getAttribute('variant')).toBe('brand');
+    expect(waButton(el).getAttribute('appearance')).toBe('accent');
+  });
+
+  it('covers the former keep-button-no as variant="danger"', async () => {
+    const el = await mountLit<Button>(TAG, { variant: 'danger' });
+    expect(waButton(el).getAttribute('variant')).toBe('danger');
+    expect(waButton(el).getAttribute('appearance')).toBe('accent');
+  });
+
+  it('covers the former keep-button-neutral as neutral/outlined', async () => {
+    const el = await mountLit<Button>(TAG, { variant: 'neutral', appearance: 'outlined' });
+    expect(waButton(el).getAttribute('variant')).toBe('neutral');
+    expect(waButton(el).getAttribute('appearance')).toBe('outlined');
+  });
+
+  it('re-renders when appearance changes after mount', async () => {
+    // It was a plain class field before #701, so this assertion failed: the initial
+    // value rendered, but a later change never reached the wa-button.
+    const el = await mountLit<Button>(TAG);
+    expect(waButton(el).getAttribute('appearance')).toBe('accent');
+    el.appearance = 'outlined';
+    await el.updateComplete;
+    expect(waButton(el).getAttribute('appearance')).toBe('outlined');
+  });
+
+  it('disables the wa-button when disabled is true', async () => {
+    const el = await mountLit<Button>(TAG, { disabled: true });
+    expect(waButton(el).hasAttribute('disabled')).toBe(true);
+  });
+
+  it('makes the wa-button a pill when pill is true', async () => {
+    const el = await mountLit<Button>(TAG, { pill: true });
+    expect(waButton(el).hasAttribute('pill')).toBe(true);
+  });
+
+  it('renders a wa-icon resolved through the bundled Font Awesome library', async () => {
+    const el = await mountLit<Button>(TAG, { icon: 'plus' });
+    const icon = el.shadowRoot!.querySelector('wa-icon');
+    expect(icon).toBeTruthy();
+    expect(icon!.getAttribute('name')).toBe('plus');
+    // The library attribute is what keeps this off Web Awesome's Font Awesome CDN.
+    expect(icon!.getAttribute('library')).toBe(FA_LIBRARY);
+    expect(icon!.hasAttribute('src')).toBe(false);
+  });
+
+  it('renders no wa-icon when icon is empty', async () => {
+    const el = await mountLit<Button>(TAG);
+    expect(el.shadowRoot!.querySelector('wa-icon')).toBeNull();
+  });
+
+  it('projects light-DOM children through a default slot', async () => {
+    const el = document.createElement(TAG) as Button;
+    el.textContent = 'Add column';
+    document.body.appendChild(el);
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('slot')).toBeTruthy();
+  });
+
+  it('forwards a click on the inner button up to a host listener', async () => {
+    const el = await mountLit<Button>(TAG);
+    let clicks = 0;
+    el.addEventListener('click', () => {
+      clicks += 1;
+    });
+    (waButton(el) as HTMLElement).click();
+    expect(clicks).toBe(1);
+  });
+});

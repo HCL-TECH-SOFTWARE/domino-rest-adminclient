@@ -1,26 +1,19 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { SET_VALUE, LoadingProps, TOGGLE_CONSENTS_LOADING, TOGGLE_USERS_LOADING } from './types';
-
-export function setLoading(value: LoadingProps) {
-  return {
-    type: SET_VALUE,
-    payload: value,
-  };
-}
-
-export function toggleConsentsLoading() {
-  return {
-    type: TOGGLE_CONSENTS_LOADING,
-  };
-}
-
-export function toggleUsersLoading() {
-  return {
-    type: TOGGLE_USERS_LOADING,
-  };
-}
+/**
+ * `createSlice` generates these action creators now (#710). The module stays so
+ * its callers keep the import path and the names they already use.
+ *
+ * `toggleDetailsLoading` is new here only in the sense that it never had a
+ * creator: `databases.ts` dispatched `{ type: TOGGLE_DETAILS_LOADING }` by hand.
+ */
+export {
+  setLoading,
+  toggleDetailsLoading,
+  toggleConsentsLoading,
+  toggleUsersLoading,
+} from './reducer';

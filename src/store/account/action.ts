@@ -1,128 +1,157 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Dispatch } from 'redux';
-import {
-  Credentials,
-  LOGIN,
-  SET_LOGIN_ERROR,
-  SET_401_ERROR,
-  AUTHENTICATE,
-  SET_TOKEN,
-  RENEW_TOKEN,
-  REMOVE_AUTH,
-  NAVITEMS,
-  PageListObj,
-  SET_IDP_LOGIN,
-  IdP,
-  SET_ERROR_MESSAGE,
-} from './types';
+import type { Dispatch, ThunkAction, UnknownAction } from '@reduxjs/toolkit';
+import { Credentials, PageListObj } from './types';
 import { BASE_KEEP_API_URL, IDP_KEEP_API_URL } from '../../config.dev';
-import {
-  initState,
-} from '../databases/action';
+import { initState } from '../databases/action';
 import { AppState } from '..';
 import { clearForms } from '../databases/action';
-import { ThunkAction } from 'redux-thunk';
-import { AnyAction } from 'redux';
-import { apiRequestWithRetry, notify } from '../../utils/api-retry';
+import { apiRequestWithRetry, notify, parseThrownError } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
 import { checkForResponse } from '../../utils/common';
+import { getLogger } from '../../services/log-service';
+// `login` and `removeAuth` are aliased: this module exports a `login` *thunk*
+// taking credentials and a callback, and a `removeAuth` that clears the stored
+// tokens before returning the action. Both keep the names their callers use.
+import {
+  authenticate,
+  login as loginAction,
+  removeAuth as removeAuthAction,
+  set401Error,
+  setCurrentIdp,
+  setErrorMessage,
+  setIdpLogin,
+  setLoginError,
+  setNavItems
+} from './reducer';
 
-export function setLoginError(error: boolean) {
-  return {
-    type: SET_LOGIN_ERROR,
-    payload: error
-  };
-}
+/**
+ * `createSlice` generates these now (#710). Re-exported so callers keep the import
+ * path and the names they already use.
+ */
+export {
+  authenticate,
+  set401Error,
+  setCurrentIdp,
+  setErrorMessage,
+  setIdpLogin,
+  setLoginError,
+  setNavItems,
+};
 
-export function set401Error(error401: boolean) {
-  return {
-    type: SET_401_ERROR,
-    payload: error401
-  }
-}
+const log = getLogger('store/account');
 
-export function setErrorMessage(errorMessage: string) {
-  return {
-    type: SET_ERROR_MESSAGE,
-    payload: errorMessage,
-  };
-}
-
-export function authenticate() {
-  return {
-    type: AUTHENTICATE
-  };
-}
-
+/**
+ * Not a re-export: this clears the stored tokens before returning the action, so it
+ * stays a wrapper around the generated creator rather than becoming one.
+ */
 export function removeAuth() {
   localStorage.removeItem('user_token');
   localStorage.removeItem('refresh_token')
-  return {
-    type: REMOVE_AUTH
-  };
+  return removeAuthAction();
 }
 
-export function setToken(token: string) {
-  return {
-    type: SET_TOKEN,
-    payload: token
-  };
-}
+/**
+ * The bearer string to put in an `Authorization` header, for either token shape the
+ * app stores under `user_token`: a Keep native token (`{ bearer }`) or an IdP/PKCE
+ * token (`{ access_token }`). `null` when the value carries neither.
+ */
+export const bearerOf = (token: unknown): string | null => {
+  const candidate = token as { access_token?: string; bearer?: string } | null | undefined;
+  if (candidate?.access_token) {
+    return candidate.access_token;
+  }
+  return candidate?.bearer ?? null;
+};
 
 export const getToken = () => {
   try {
     const raw = localStorage.getItem('user_token');
     if (!raw) return null;
-    const userToken = JSON.parse(raw);
-    if (userToken?.access_token) {
-      return userToken.access_token;
-    }
-    return userToken?.bearer ?? null;
+    return bearerOf(JSON.parse(raw));
   } catch {
     return null;
   }
 };
 
-export function renewToken() {
-  return async (dispatch: Dispatch, getState: () => AppState) => {
-    const {
-      account: { token }
-    } = getState();
+/**
+ * Publishes the bearer of a token that has just been written to local storage, waking
+ * a `showPages()` that started before there was one to read.
+ *
+ * The bearer is resolved with the same rule `getToken()` uses, because `showPages()`
+ * treats the two as interchangeable — `waitForToken()` stands in for a `getToken()`
+ * that returned `null`, and the result goes straight into `Authorization: Bearer
+ * ${token}`. Handing the emitter the token *object*, as all three call sites below
+ * used to, put `Bearer [object Object]` in that header.
+ */
+const publishToken = (token: unknown) => {
+  const bearer = bearerOf(token);
+  if (!bearer) {
+    // Not fatal: a waiter stays parked rather than sending a malformed credential,
+    // and every other caller reads local storage through `getToken()` anyway.
+    log.warn('Token carries no bearer or access_token; nothing published to waiters');
+    return;
+  }
+  emitTokenEvent(bearer);
+};
 
-    let oldToken;
-    try {
-      oldToken = JSON.parse(token);
-    } catch {
+export function renewToken() {
+  return async (dispatch: Dispatch) => {
+    // Reads local storage directly rather than `account.token` (#727). That field held
+    // three different shapes depending on which of the four producers wrote last, and
+    // only the JSON-string form could be parsed here — the other two signed the user out.
+    // `getToken()` resolves the bearer from the same stored value the old path ultimately
+    // came from, one hop earlier, and additionally understands the IdP `access_token`
+    // shape that the `JSON.parse(...).bearer` route did not.
+    const oldBearer = getToken();
+    if (!oldBearer) {
       dispatch(removeAuth());
       return;
     }
 
-    const response = await
-      fetch(`${BASE_KEEP_API_URL}/auth/extend`, {
+    // Every failure below ends the same way: drop the session and let the user log
+    // in again. `renewToken` is dispatched once, from App.tsx's bootstrap, and the
+    // sibling branch there already calls `removeAuth()` when the stored token has
+    // expired — so a failed extend landing in the same place is consistent, and far
+    // better than the previous behaviour of putting `undefined` in the store.
+    let response: Response;
+    let newToken: { bearer?: string } | undefined;
+    try {
+      response = await fetch(`${BASE_KEEP_API_URL}/auth/extend`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${oldToken.bearer}`,
+          Authorization: `Bearer ${oldBearer}`,
           'Content-Type': 'application/json'
         },
         body: localStorage.getItem('user_token'),
-      })
-    const data = await response.json()
-    const newToken = data;
+      });
+      // `checkForResponse` parses the body on both paths; it does not throw on !ok,
+      // so the status still has to be checked below.
+      newToken = await checkForResponse(response);
+    } catch (err) {
+      // Network failure, or a body that is not JSON at all.
+      log.warn('Token renewal request failed; signing out', err as Error);
+      dispatch(removeAuth());
+      return;
+    }
 
-    // Set token to account store
-    dispatch({
-      type: RENEW_TOKEN,
-      payload: newToken.bearer
-    });
+    if (!response.ok || !newToken?.bearer) {
+      log.warn('Token renewal rejected; signing out', {
+        status: response.status,
+        hasBearer: Boolean(newToken?.bearer)
+      });
+      dispatch(removeAuth());
+      return;
+    }
 
-    // Apply new token on local storage
+    // No store dispatch: `account.token` no longer exists (#727). Local storage is the
+    // single home for the credential, and `publishToken` wakes anything waiting on it.
     localStorage.setItem('user_token', JSON.stringify(newToken));
-    emitTokenEvent(newToken)
+    publishToken(newToken)
   };
 }
 
@@ -142,17 +171,16 @@ export function login(credentials: Credentials, successCallback: () => void) {
     const data = await checkForResponse(response)
 
     if (response.ok) {
-      console.log("Login successful, setting token and updating state.")
+      // debug, not info: auth-flow state is exactly the kind of thing that should not
+      // be sitting in a production console by default (P0-6).
+      log.debug('Login successful, setting token and updating state')
       const jwtData = data;
       localStorage.setItem('user_token', JSON.stringify(jwtData));
-      emitTokenEvent(jwtData)
-      dispatch({
-        type: LOGIN
-      });
-      dispatch(setToken(jwtData));
+      publishToken(jwtData)
+      dispatch(loginAction());
       successCallback()
     } else {
-      console.log("Login failed, dispatching error state.")
+      log.debug('Login failed, dispatching error state')
       dispatch(setLoginError(true));
       dispatch(setErrorMessage(`${data.status} error: ${data.message}`));
       notify(`${data.message}`, 'danger');
@@ -181,7 +209,7 @@ export function logout() {
         throw new Error(JSON.stringify(data))
 
       }
-    } catch (e: any) {
+    } catch {
       // Logout failed, but we still clear local state below
     } finally {
       dispatch(removeAuth());
@@ -197,9 +225,7 @@ export function logout() {
 // Admin UI pages initially on
 const pageList: PageListObj = {
   apps: true,
-  databases: true,
-  groups: true,
-  users: true
+  databases: true
 };
 
 /**
@@ -232,39 +258,23 @@ export function showPages() {
       if (data.databases != null) {
         pageList.databases = data.databases;
       }
-      if (data.groups != null) {
-        pageList.groups = data.groups;
-      }
-      if (data.users != null) {
-        pageList.users = data.users;
-      }
 
       // Save page state
-      dispatch({
-        type: NAVITEMS,
-        payload: pageList
-      });
+      dispatch(setNavItems(pageList));
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
       // If no configruation settings were found, use the default
-      dispatch({
-        type: NAVITEMS,
-        payload: pageList
+      dispatch(setNavItems(pageList));
+
+      // Both fields, one line. The branch this replaces tested `if (err)` — a string that
+      // is truthy for every error that has a message — so the `else` recording `message`
+      // was all but unreachable, and the `if` recorded a `statusText` that is absent from
+      // the body Keep actually returns. Logging both costs nothing and loses neither. #1000.
+      log.error('Error reading page configuration', {
+        statusText: error.statusText,
+        message: error.message
       });
-
-      // Use the Keep response error if it's available
-      if (err) {
-        console.log(
-          `Error reading page configuration: ${error.statusText}`
-        );
-      }
-
-      // Otherwise use the generic error
-      else {
-        console.log(`Error reading page configuration: ${error.message}`);
-      }
     }
   };
 }
@@ -282,20 +292,6 @@ export async function getIdpList() {
   return resJson
 }
 
-export function setIdpLogin(idpLogin: boolean) {
-  return {
-    type: SET_IDP_LOGIN,
-    payload: idpLogin,
-  }
-}
-
-export function setCurrentIdp(idp: IdP) {
-  return {
-    type: 'CURRENT_IDP',
-    payload: idp,
-  }
-}
-
 export function setPkceToken(token: any) {
   return {
     type: 'SET_PKCE_TOKEN',
@@ -307,18 +303,21 @@ export function loginWithPkce(token: any) {
   return async (dispatch: Dispatch) => {
     dispatch(setPkceToken(token))
     localStorage.setItem('user_token', JSON.stringify(token));
-    emitTokenEvent(token)
+    publishToken(token)
     dispatch(setIdpLogin(true))
     dispatch(authenticate())
-    dispatch({
-      type: LOGIN
-    });
-    dispatch(setToken(token))
+    dispatch(loginAction());
   }
 }
 
-// Thunk action to get the current idpLogin state
-export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, AnyAction> => (dispatch, getState) => {
+// Thunk action to get the current idpLogin state.
+//
+// `UnknownAction` rather than the `AnyAction` this carried until #994: Redux 5 deprecates
+// `AnyAction`, whose index signature types every extra field `any`. Free to swap here — the
+// parameter only constrains what this thunk's `dispatch` accepts, and this thunk never
+// dispatches. It also matches `AppDispatch` in the store barrel, which already says
+// `UnknownAction`.
+export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, UnknownAction> => (_dispatch, getState) => {
   const { idpLogin } = getState().account;
   return idpLogin;
 };

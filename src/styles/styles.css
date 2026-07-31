@@ -1,36 +1,50 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
 /* ========== All styles moved from inline styles in components ========== */
 
 :root {
   /* This line is mandatory to activate light-dark() */
   color-scheme: light dark;
 
-  /* Theme tokens */
-  --text-color-primary: light-dark(#000, #e0e0e0);
+  /* Theme tokens.
+     The brand-derived ones are aliases onto the ramp in keep-theme.css so there
+     is a single place to change the brand (#706). They are kept as names rather
+     than inlined so their ~17 consumers keep working; retiring the names in
+     favour of var(--wa-*) at the call site is #708. Custom properties resolve at
+     computed-value time, so referencing a token defined in a later-imported
+     sheet is fine. */
+  --text-color-primary: var(--wa-color-text-normal);
   --text-color-secondary: #e0e0e0;
-  --text-color-danger: light-dark(#dc1434, #ff6b6b);
+  --text-color-danger: var(--keep-color-danger-text);
   --text-color-disabled: light-dark(#6c6c6c, #8d8d8d);
   --text-secondary: #e0e0e0;
   --border-color: light-dark(#3a3a4a, #6c7882);
-  --button-primary-color: #8b6ce0;
+  --button-primary-color: var(--wa-color-brand-60);
   --button-secondary-color: #9e9e9e;
-  --body-color: light-dark(#fff, #181825);
-  --hover-color: #8b6ce0;
-  --button-hover-color: #7356cd;
-  --dialog-header-color: light-dark(#391b70, #8b6ce0);
+  --body-color: var(--wa-color-surface-lowered);
+  --hover-color: var(--wa-color-brand-60);
+  --button-hover-color: var(--wa-color-brand-50);
+  --dialog-header-color: light-dark(var(--wa-color-brand-20), var(--wa-color-brand-60));
   --dialog-title-color: #e0e0e0;
-  --badge-color-background: light-dark(#391b70, #8b6ce0);
-  --base-color: light-dark(#5f1ebe, #b38df9);
-  --badge-color: #fff;
-  --icon-color: light-dark(#000, #fff);
+  /* --base-color served two opposite roles at once — a text colour and a surface fill
+     carrying 24px white text. #765 split them into --keep-text-brand and
+     --keep-surface-brand in keep-theme.css, which is where the contrast table now
+     lives. Both resolve to what --base-color already did, so nothing moved; they
+     can simply be tuned apart now.
+     This alias stays so any stylesheet or markup still saying --base-color keeps
+     working, and points at the surface half. Both of the rules it names above are gone
+     with #930, along with --badge-color and --badge-color-background, whose only reader
+     was the .background-badge rule deleted there. */
+  --base-color: var(--keep-surface-brand);
+  --icon-color: var(--wa-color-text-loud);
   --hint-text-color: light-dark(#808080, #a9a9a9);
   --active-indicator-color: light-dark(#0fa068, #52c999);
   --inactive-indicator-color: light-dark(#8291a0, #707e8a);
-  --copyright-color: light-dark(#666, #999);
-}
-
-/* Generic */
-.tiny-text {
-    font-size: 12px;
+  --copyright-color: var(--wa-color-text-quiet);
 }
 
 .text-13 {
@@ -46,37 +60,18 @@
     color: var(--text-color-primary);
 }
 
-.big-text {
-    font-size: 18px;
-}
-
-.large-text {
-    font-size: 20px;
-}
-
-.very-large-text {
-    font-size: 22px;
-}
-
-.huge-text {
-    font-size: 24px;
-}
-
-.very-huge-text {
-    font-size: 30px;
-}
-
-.giant-text {
-    font-size: 60px;
-}
-
-.line-height-normal {
-    line-height: normal;
-}
-
-.text-transform-none {
-    text-transform: none;
-}
+/*
+ * `.big-text` was here. #806 moved its last five call sites into shadow roots — the schemas and
+ * scopes views, the app filter and the consent filter each restate `font-size: 18px` in their
+ * own `static styles`, and their notes say so — which left the rule reaching nothing in `src`.
+ *
+ * It survived the #930 sweep because `dead-selectors.test.ts` counts `test/` as source, and
+ * `KeepIcon.test.tsx` passed `className: 'big-text'` to prove the wrapper forwarded a class.
+ * #719 deleted that wrapper and its test, so the last thing naming the class went with it.
+ *
+ * A rule kept alive only by its own test is the CSS form of the argument the wrapper guard made
+ * about components: the test was exercising something no screen renders.
+ */
 
 .divider {
     height: 1px;
@@ -86,20 +81,8 @@
     margin: 0;
 }
 
-.cursor-default {
-    cursor: default;
-}
-
 .cursor-pointer {
     cursor: pointer;
-}
-
-.pointer-auto {
-    pointer-events: auto;
-}
-
-.pointer-none {
-    pointer-events: none;
 }
 
 .color-text-primary {
@@ -110,20 +93,8 @@
     color: var(--hint-text-color);
 }
 
-.color-text-white {
-    color: #fff;
-}
-
 .color-hover {
     color: var(--hover-color);
-}
-
-.color-base {
-    color: var(--base-color);
-}
-
-.color-copyright {
-    color: var(--copyright-color);
 }
 
 .color-border {
@@ -142,32 +113,8 @@
     text-wrap: wrap;
 }
 
-.background-badge {
-    background: var(--badge-color-background);
-}
-
-.background-keep-base {
-    background: var(--base-color);
-}
-
 body[data-theme="dark"] .color-text-primary {
     color: #e0e0e0;
-}
-
-.color-text-danger {
-    color: var(--text-color-danger);
-}
-
-.color-text-disabled {
-    color: var(--text-color-disabled);
-}
-
-body[data-theme="dark"] .color-text-disabled {
-    color: #8d8d8d;
-}
-
-.color-text-secondary {
-    color: var(--text-color-secondary);
 }
 
 .dialog {
@@ -175,8 +122,8 @@ body[data-theme="dark"] .color-text-disabled {
     border-radius: 10px;
     width: 30%;
     height: fit-content;
-    background: light-dark(#FFF, #252535);
-    color: light-dark(#000, #e0e0e0);
+    background: var(--wa-color-surface-raised);
+    color: var(--wa-color-text-normal);
     flex-direction: column;
     gap: 30px;
 }
@@ -203,40 +150,9 @@ body[data-theme="dark"] .color-text-disabled {
     color: var(--text-color-primary);
 }
 
-.dialog-header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    align-items: center;
-    padding-right: 36px;
-}
-
-.dialog-header-close {
-    cursor: pointer;
-    font-size: 16px;
-    color: var(--dialog-header-color);
-    padding: 0;
-    border: none;
-    background: transparent;
-    margin: 0;
-    position: absolute;
-    top: -15px;
-    right: 0;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.dialog-header-title {
-    flex: 1;
-    text-overflow: ellipsis;
-    width: 100%;
-    overflow: hidden;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--dialog-header-color);
-}
+/* The dialog header's three rules moved into keep-form-dialog-header.ts (#806 tier A).
+   `--dialog-header-color` above is still read from there: custom properties inherit through
+   a shadow boundary, so only the class rules had to move. */
 
 .dialog-actions {
     width: 100%;
@@ -261,104 +177,16 @@ body[data-theme="dark"] .color-text-disabled {
     color: var(--text-color-primary);
 }
 
-.quarter-width {
-    width: 25%;
-}
-
-.half-width {
-    width: 50%;
-}
-
 .full-width {
     width: 100%;
-}
-
-.no-min-width {
-    min-width: 0;
-}
-
-.min-width-85 {
-    min-width: 85px;
-}
-
-.w-24 {
-    width: 24px;
 }
 
 .w-30px {
     width: 30px;
 }
 
-.w-35px {
-    width:35px;
-}
-
-.w-44px {
-    width: 44px;
-}
-
-.w-35vw {
-    width: 35vw;
-}
-
-.w-50vw {
-    width: 50vw;
-}
-
-.w-55vw {
-    width: 55vw;
-}
-
-.w-40 {
-    width: 40%;
-}
-
-.w-45 {
-    width: 45%;
-}
-
-.w-60 {
-    width: 60%;
-}
-
-.w-90 {
-    width: 90%;
-}
-
-.w-80 {
-    width: 80%;
-}
-
-.w-fit {
-    width: fit-content;
-}
-
-.full-height {
-    height: 100%;
-}
-
-.h-30px {
-    height: 30px;
-}
-
-.h-44px {
-    height: 44px;
-}
-
-.h-10vh {
-    height: 10vh;
-}
-
-.h-fit {
-    height: fit-content;
-}
-
 .flex {
     display: flex;
-}
-
-.flex-flow-row-wrap {
-    flex-flow: row wrap;
 }
 
 .inline-block {
@@ -369,10 +197,6 @@ body[data-theme="dark"] .color-text-disabled {
     display: relative;
 }
 
-.flex-row {
-    flex-direction: row;
-}
-
 .flex-col {
     flex-direction: column;
 }
@@ -381,196 +205,12 @@ body[data-theme="dark"] .color-text-disabled {
     flex-wrap: wrap;
 }
 
-.flex-1 {
-    flex: 1;
-}
-
-.shrink-0 {
-    flex-shrink: 0;
-}
-
 .p-0 {
     padding: 0;
 }
 
-.p-16 {
-    padding: 16px;
-}
-
-.p-20 {
-    padding: 20px;
-}
-
-.p-30 {
-    padding: 30px;
-}
-
-.pr-0 {
-    padding-right: 0;
-}
-
-.pr-10 {
-    padding-right: 10px;
-}
-
-.pr-20 {
-    padding-right: 20px;
-}
-
-.pr-30 {
-    padding-right: 30px;
-}
-
-.pl-0 {
-    padding-left: 0;
-}
-
-.pl-10 {
-    padding-left: 10px;
-}
-
-.pl-15 {
-    padding-left: 15px;
-}
-
-.pl-20 {
-    padding-left: 20px;
-}
-
-.pl-30 {
-    padding-left: 30px;
-}
-
-.pt-2 {
-    padding-top: 2px;
-}
-
-.pt-4 {
-    padding-top: 4px;
-}
-
-.pt-5 {
-    padding-top: 5px;
-}
-
-.pt-10 {
-    padding-top: 10px;
-}
-
-.pt-30 {
-    padding-top: 30px;
-}
-
-.pt-40 {
-    padding-top: 40px;
-}
-
-.pb-2 {
-    padding-bottom: 2px;
-}
-
-.pb-4 {
-    padding-bottom: 4px;
-}
-
-.pb-5 {
-    padding-bottom: 5px;
-}
-
-.pb-10 {
-    padding-bottom: 10px;
-}
-
-.pb-20 {
-    padding-bottom: 20px;
-}
-
-.pb-30 {
-    padding-bottom: 30px;
-}
-
-.pb-40 {
-    padding-bottom: 40px;
-}
-
 .m-0 {
     margin: 0;
-}
-
-.m-10 {
-    margin: 10px;
-}
-
-.mt-0 {
-    margin-top: 0;
-}
-
-.mt-5 {
-    margin-top: 5px;
-}
-
-.mt-7 {
-    margin-top: 7px;
-}
-
-.mt-8 {
-    margin-top: 8px;
-}
-
-.mt-10 {
-    margin-top: 10px;
-}
-
-.mt-15 {
-    margin-top: 15px;
-}
-
-.mt-20 {
-    margin-top: 20px;
-}
-
-.mt-30 {
-    margin-top: 30px;
-}
-
-.mb-0 {
-    margin-bottom: 0;
-}
-
-.mb-5 {
-    margin-bottom: 5px;
-}
-
-.mb-10 {
-    margin-bottom: 10px;
-}
-
-.mb-15 {
-    margin-bottom: 15px;
-}
-
-.mb-30 {
-    margin-bottom: 30px;
-}
-
-.ml-10 {
-    margin-left: 10px;
-}
-
-.ml-15 {
-    margin-left: 15px;
-}
-
-.mr-5 {
-    margin-right: 5px;
-}
-
-.mr-8 {
-    margin-right: 8px;
-}
-
-.mr-15 {
-    margin-right: 15px;
 }
 
 .gap-2 {
@@ -581,92 +221,12 @@ body[data-theme="dark"] .color-text-disabled {
     gap: 3px;
 }
 
-.gap-5 {
-    gap: 5px;
-}
-
-.gap-10 {
-    gap: 10px;
-}
-
-.gap-16 {
-    gap: 16px;
-}
-
-.gap-20 {
-    gap: 20px;
-}
-
-.overflow-hidden {
-    overflow: hidden;
-}
-
-.text-ellipsis {
-    text-overflow: ellipsis;
-}
-
-.z-2 {
-    z-index: 2;
-}
-
-.z-100 {
-    z-index: 100;
-}
-
-.z-1300 {
-    z-index: 1300;
-}
-
-.justify-start {
-    justify-content: flex-start;
-}
-
-.justify-center {
-    justify-content: center;
-}
-
-.justify-between {
-    justify-content: space-between;
-}
-
-.justify-end {
-    justify-content: flex-end;
-}
-
 .items-center {
     align-items: center;
 }
 
-.content-center {
-    align-content: center;
-}
-
-.text-center {
-    text-align: center;
-}
-
 .text-bold {
     font-weight: bold;
-}
-
-.text-italic {
-    font-style: italic;
-}
-
-.weight-300 {
-    font-weight: 300;
-}
-
-.weight-400 {
-    font-weight: 400;
-}
-
-.weight-500 {
-    font-weight: 500;
-}
-
-.weight-600 {
-    font-weight: 600;
 }
 
 .transparent {
@@ -674,7 +234,7 @@ body[data-theme="dark"] .color-text-disabled {
 }
 
 .search-input {
-    background: light-dark(#fff, #252535);
+    background: var(--wa-color-surface-raised);
 }
 
 .header-text {
@@ -708,7 +268,7 @@ body[data-theme="dark"] .color-text-disabled {
 .short-vertical {
     height: 31px;
     width: 1px;
-    background-color: light-dark(#000, #fff);
+    background-color: var(--wa-color-text-loud);
 }
 
 .hidden {
@@ -721,36 +281,10 @@ body[data-theme="dark"] .color-text-disabled {
 
 .icon-select {
     text-transform: capitalize;
-    color: light-dark(#000, #e0e0e0);
-}
-
-.rounded-16 {
-    border-radius: 16px;
-}
-
-.float-left {
-    float: left;
-}
-
-.small-icon {
-    width: 15px;
-    height: 15px;
+    color: var(--wa-color-text-normal);
 }
 
 /* AccessMode.tsx */
-.tabs-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    align-items: center;
-    padding-top: 50 * var(--modes-length);
-}
-
-.top-container {
-    margin-top: 15px;
-}
-
 .access-container {
     flex: 1;
     display: flex;
@@ -763,394 +297,9 @@ body[data-theme="dark"] .color-text-disabled {
     height: calc(100vh - 200px);
 }
 
-/* FieldContainer.tsx */
-.config-field-container {
-    border-radius: 5px;
-    border: 1px solid light-dark(#bfbfbf, #3a3a4a);
-    background: light-dark(#FFF, #1e1e2e);
-    padding: 0 0 15px 0;
-    width: 100%;
-}
-
-.item-name-container {
-    width: 30%;
-    font-size: 14px;
-    padding: 24px 24px 0 24px;
-}
-
-.field-item-title {
-    font-size: 12px;
-    font-weight: 400;
-    color: light-dark(#6c6c6c, #b0b0b0);
-}
-
-.field-item-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: light-dark(#000, #e0e0e0);
-}
-
-.field-setting-text {
-    font-size: 14px;
-    font-weight: 700;
-    color: light-dark(#000, #e0e0e0);
-    width: 100%;
-    padding: 0 20px;
-}
-
-.field-setting-details-container {
-    padding: 10px 20px 0 20px;
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: 8px;
-}
-
-.field-name-input {
-    width: 50%;
-    font-size: 14px;
-}
-
-.field-type-text-field {
-    width: 50%;
-    z-index: 0;
-}
-
-.field-access-input {
-    width: 50%;
-}
-
-.multi-value-container {
-    display: flex;
-    align-items: center;
-}
-
-.required-pill-container {
-    display: flex;
-    align-items: center;
-}
-
-.field-batch-delete-button {
-    background-color: transparent;
-    width: fit-content;
-    padding: 10px;
-    display: flex;
-    justify-content: end;
-    align-items: end;
-}
-
-.batch-delete-cancel-button {
-    text-transform: none;
-    font-weight: 400;
-    color: light-dark(#000, #e0e0e0);
-    text-overflow: ellipsis;
-}
-
 /* FieldDndContainer.tsx */
 .add-icon {
     margin: 0 5px;
-}
-
-.yes-button-field-dnd {
-    color: #fff;
-}
-
-.selected-fields-container {
-    border-radius: 5px;
-    border: 1px solid light-dark(#A5AFBE, #3a3a4a);
-    background: light-dark(#FFF, #1e1e2e);
-}
-
-.field-batch-delete-container {
-    padding: 0 11px;
-    max-width: 100%;
-    flex-wrap: wrap;
-}
-
-.field-batch-delete-text {
-    text-transform: none;
-    font-size: 12px;
-    font-weight: 400;
-    color: #aa1f51;
-    text-overflow: ellipsis;
-}
-
-.please-add-fields-text {
-    font-weight: 400;
-    padding: 20px;
-    color: light-dark(#000, #e0e0e0);
-}
-
-body[data-theme="dark"] .field-batch-delete-text {
-    color: #e06385;
-}
-
-.field-list-container {
-    overflow-y: auto;
-    overflow-x: clip;
-}
-
-.field-list-custom-item {
-    justify-content: space-between !important;
-    padding: 10px 20px;
-    cursor: pointer;
-
-    &:hover {
-        background: light-dark(#d7e0f3, #353548);
-    }
-}
-
-.field-list-field-info {
-    width: 60%;
-    text-overflow: ellipsis;
-}
-
-.field-list-field-name {
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: light-dark(#000, #e0e0e0);
-}
-
-.field-list-field-metadata {
-    font-size: 12px;
-    white-space: nowrap;
-    text-align: left;
-}
-
-.field-config-field-container {
-    border-radius: 5px;
-    border: 1px solid light-dark(#bfbfbf, #3a3a4a);
-    background: light-dark(#fff, #1e1e2e);
-    height: 45%;
-}
-
-.field-config-field-setting {
-    font-size: 16px;
-    font-weight: 700;
-    color: light-dark(#000, #e0e0e0);
-    width: 100%;
-    padding: 10px 20px 0 20px;
-    height: 15%;
-}
-
-.field-select-message-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 85%;
-}
-
-.remove-field-warning-icon {
-    width: 30px;
-    height: 30px;
-}
-
-.field-list-icon-button {
-    border: 0;
-    background: none;
-    user-select: none;
-    cursor: pointer;
-    color: light-dark(#000, #e0e0e0);
-}
-
-/* Fields.tsx */
-.fields-dropdown-header {
-    justify-content: center;
-}
-
-.fields-displayed-container {
-    overflow-y: scroll;
-}
-
-.fields-dropdown-div {
-    padding: 0 23.5px;
-}
-
-/* ModeCompare.tsx */
-.mode-compare-container {
-    padding: 30px;
-    height: 100%;
-}
-
-.mode-compare-search-icon {
-    margin-right: 10px;
-}
-
-.mode-compare-card-container {
-    display: flex;
-    padding-top: 9px;
-    padding-bottom: 20px;
-}
-
-.empty-mode-card-container {
-    display: flex;
-    width: 42.5%;
-    justify-content: end;
-    padding-right: 20px;
-    padding-top: 10px;
-}
-
-.mode-compare-normal-font {
-    font-style: normal;
-}
-
-.mode-compare-delete-container {
-    display: flex;
-    width: calc(50% + 103px);
-    justify-content: end;
-}
-
-.mode-compare-delete-adjacent {
-    width: 103px;
-    height: 7px;
-    border-radius: 50px;
-    background: #fff;
-}
-
-.mode-compare-divider {
-    height: 1px;
-    background: #000;
-}
-
-.mode-compare-formulas-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    align-content: center;
-}
-
-.mode-compare-formulas-content {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 8px 0;
-}
-
-.diff-formulas-container {
-    width: 15px;
-}
-
-.formula-name-container {
-    width: calc(0.4*(100% - 15px));
-    overflow-wrap: break-word;
-}
-
-.mode-compare-formula-name {
-    color: light-dark(#323a3d, #7d939a);
-}
-
-.formula-name-value-container {
-    width: calc(0.6*(100% - 15px));
-    overflow-wrap: break-word;
-}
-
-.compare-diff-values-indicator {
-    width: 8px;
-    height: 8px;
-    color: #c3335f;
-    display: block;
-    margin: auto 0;
-}
-
-.compare-filled-card-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 8px 0;
-}
-
-.mode-compare-indicators-container {
-    width: 15px;
-}
-
-.mode-compare-search-bar {
-    border: 1px solid #9a9a9a;
-    padding: 0 17px;
-    border-radius: 10px;
-    width: 50%;
-    margin-left: 25%;
-    background: light-dark(#fff, #252535);
-}
-
-/* AddModeDialog.tsx */
-.add-mode-dialog-container {
-    border: 1px solid light-dark(transparent, #3a3a4a);
-    border-radius: 10px;
-    width: 30%;
-    height: fit-content;
-    background: light-dark(#FFF, #252535);
-    color: light-dark(#000, #e0e0e0);
-    flex-direction: column;
-    gap: 30px;
-}
-
-.add-mode-dialog-container[open] {
-    display: flex;
-}
-
-.add-mode-content-container {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-}
-
-.add-mode-content-text {
-    font-size: 15px;
-    padding: 0;
-    margin: 0;
-    color: var(--hint-text-color);
-}
-
-.add-mode-dialog-buttons {
-    padding: 0 30px 30px 30px;
-    display: flex;
-    flex-direction: row-reverse;
-    width: 100%;
-}
-
-/* TabsAccess.tsx */
-.mode-buttons {
-    background: none;
-    border: none;
-    margin: 5;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-.access-change-mode-button {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    justify-content: left !important;
-    text-transform: none !important;
-}
-
-.access-actions-container {
-    flex: 1 0 0%;
-    display: flex;
-    padding: 0 20px;
-    justify-content: flex-end;
-    gap: 20px;
-}
-
-.tabs-access-save-button {
-    background: none;
-    border: none;
-}
-
-.tabs-access-action-icon {
-    font-size: 16px;
-    margin-right: 5px;
-    padding: 0;
-}
-
-.access-load-tab-container {
-    height: 92%;
 }
 
 /* AppItem.tsx */
@@ -1162,142 +311,6 @@ body[data-theme="dark"] .field-batch-delete-text {
 
 .regen-app-secret-dialog[open] {
     display: flex;
-}
-
-/* AddImportDialog.tsx */
-.add-import-dialog {
-    padding: 0;
-}
-
-.add-import-dialog-container {
-    width: 100%;
-    height: 100%;
-    padding: 0 35px;
-    flex-direction: column;
-    gap: 30px;
-    background: light-dark(#FFF, #252535);
-}
-
-.add-import-dialog-container[open] {
-    display: flex;
-}
-
-.add-import-option-container {
-    border: 1px solid #AFAFAF;
-    border-radius: 5px;
-    padding: 15px 10px;
-    display: flex;
-    gap: 23px;
-    align-items: center;
-    background-color: light-dark(#FFF, #1e1e2e);
-    margin-bottom: 30px;
-
-    &:hover {
-        cursor: pointer;
-        background-color: light-dark(#D5E0F3, #353548);
-    }
-}
-
-.add-import-text-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.add-import-option-title {
-    font-weight: 700;
-    font-size: 16px;
-    padding: 0;
-    margin: 0;
-    color: var(--text-color-primary);
-}
-
-.add-import-option-description {
-    font-weight: 400;
-    font-size: 14px;
-    padding: 0;
-    margin: 0;
-    color: var(--hint-text-color);
-}
-
-.add-import-svg-icon {
-    color: light-dark(#000, #fff);
-    width: 39px;
-    height: 39px;
-    background-color: light-dark(white, transparent);
-}
-
-body[data-theme="dark"] .add-import-svg-icon {
-    filter: invert(1);
-}
-
-.add-import-dialog-header {
-    padding: 30px 30px 0 30px;
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    background: transparent;
-}
-
-.import-dialog-content {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 10px;
-}
-
-.add-import-back-button {
-    font-size: 14px;
-    background: light-dark(#FFF, #252535);
-    justify-content: flex-start;
-    gap: 5px;
-    color: var(--text-color-primary);
-}
-
-.import-dialog-content-section {
-    padding: 0 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.import-icon-schema-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.import-icon-dropdown-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.import-schema-name-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    flex: 1;
-}
-
-.import-schema-field-input {
-    width: 100%;
-    max-height: 41px;
-}
-
-/* DeleteDialog.tsx */
-.delete-dialog-progress-icon {
-    min-width: 400;
-    height: 150;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.delete-schema-dialog-text {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    word-break: break-word;
 }
 
 /* SingleFieldContainer.tsx */
@@ -1338,412 +351,21 @@ body[data-theme="dark"] .add-import-svg-icon {
     border-color: #4099ff;
 }
 
-/* ActivateMenu.tsx */
-.activate-menu-container {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    align-items: center;
-}
-
-.active-text {
-    color: var(--active-indicator-color)
-}
-
-.inactive-text {
-    color: var(--inactive-indicator-color)
-}
-
-.active-menu-button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-/* FormsTable.tsx */
-.table-cell-activate-menu {
-    white-space: nowrap;
-    width: 200px;
-}
-
-.forms-table-diamond-marker {
-    transform: translateY(-7%);
-}
-
-/* DetailsSection.tsx */
-.details-section-textarea {
-    font-size: 16px;
-    border-color: light-dark(#b8b8b8, #121212);
-    border-radius: 5px;
-    padding: 16px 14px;
-    width: 100%;
-    height: 20vh;
-    resize: none;
-    margin-top: 5px;
-}
-
-.details-section-textarea:disabled {
-    background-color: light-dark(#f5f5f5, #1e1e2e);
-    color: var(--text-color-primary);
-}
-
-.details-section-config-container {
-    display: flex;
-    width: 100%;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10%;
-}
-
-.details-section-config-row {
-    width: 40%;
-}
-
-.details-section-config-name {
-    display: flex;
-    flex-wrap: wrap;
-    width: 95%;
-    max-width: calc(100% - 12px);
-}
-
-.details-section-config-unchecked {
-    color: var(--hint-text-color);
-}
-
-.details-section-checkbox-container {
-    width: 5%;
-}
-
-.details-section-formula-box {
-    overflow-x: hidden;
-    max-width: 100%;
-}
-
-.details-section-config {
-    margin: 0 0 0 0;
-}
-
-.details-section-icon-dropdown {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    display: block;
-}
-
-.details-section-icon-container {
-    position: relative;
-    display: inline-block;
-    width: 90px;
-    height: 90px;
-}
-
-/* EditView.tsx */
-.edit-view-dialog {
-    height: 90vh;
-    width: 95vw;
-    left: 2.5vw;
-    border-radius: 10px;
-    overflow-y: hidden;
-}
-
-.edit-view-close-button {
-    cursor: pointer;
-    justify-content: right;
-    align-items: right;
-    position: absolute;
-    top: 1%;
-    right: 1%;
-    background: transparent;
-    color: var(--text-color-primary);
-}
-
-.edit-view-title-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-top: 35px;
-    padding-right: 35px;
-    padding-left: 35px;
-}
-
-.edit-view-buttons-container {
-    display: flex;
-    width: fit-content;
-    justify-content: flex-end;
-    gap: 15px;
-    align-items: center;
-}
-
-.edit-view-button {
-    text-transform: none;
-    border: 1px solid;
-    border-radius: 5px;
-    line-height: 19px;
-    font-size: 14px;
-    color: var(--text-color-primary);
-    display: flex;
-    gap: 5px;
-}
-
-.edit-view-reset {
-    background: light-dark(#fff, #252535);
-
-    &:hover {
-        background: light-dark(#f5f5f5, #353548);
-    }
-}
-
-.edit-view-save {
-    background: var(--button-primary-color);
-    color: #fff;
-    border: none;
-
-    &:hover {
-        background: var(--button-hover-color);
-    }
-
-    &:disabled {
-        background: var(--button-secondary-color);
-        color: #fff;
-        cursor: not-allowed;
-    }
-}
-
-.edit-view-save-text {
-    color: #fff;
-}
-
-.column-bar-container {
-    box-sizing: border-box;
-    width: 20%;
-    max-height: 100%;
-    margin-left: 2%;
-    overflow-y: auto;
-    overflow-x: auto;
-    background: transparent;
-    border: 1px solid light-dark(#a5afbe, #3a3a4a);
-    border-radius: 10px;
-}
-
-.add-all-container {
-    height: 10%;
-    text-align: right;
-    align-items: center;
-    padding-right: 6%;
-    padding-left: 6%;
-    line-height: 6;
-    vertical-align: middle;
-    color: light-dark(#5e1ebe, #8b6ce0);
-    cursor: pointer;
-    justify-content: flex-end;
-}
-
 .add-all-icon {
     margin-right: 2%;
     display: inline-block;
     transform: translateY(4%);
+    /* Was FiPlus size={'1.2em'}. wa-icon takes its box from font-size, not width, so the
+       same relative measure has to be spelled as a font-size on this wrapper. */
+    font-size: 1.2em;
 }
 
 .add-all-text {
-    color: light-dark(#5e1ebe, #8b6ce0);
-}
-
-.all-columns-list {
-    height: fit-content;
-}
-
-.all-columns-list-item {
-    padding: 20px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.all-columns-added-column {
-    background: light-dark(#d7e0f3, #353548);
-}
-
-.all-columns-column-info {
-    width: 90%;
-    gap: 5px;
-}
-
-.all-columns-column-name {
-    line-height: 19px;
-    flex: 0 0 auto;
-    font-size: 15px;
-}
-
-.all-columns-column-details {
-    display: block;
-    white-space: pre-wrap;
-    line-height: 17px;
-    color: light-dark(#636363, #999);
-}
-
-.all-columns-icon {
-    flex: 0 0 auto;
-    font-size: 18px;
-    margin: 0;
-}
-
-.all-columns-check-icon {
-    color: light-dark(#087251, #66bfa4);
-}
-
-/* Footer.tsx */
-.footer-container {
-    display: flex;
-    position: fixed;
-    padding: 0 15px;
-    bottom: 0;
-    width: 100%;
-    /* align-items: center; */
-    justify-content: flex-end;
-    background: #212121;
-}
-
-.footer-copyright-text {
-    margin: 0;
-    margin-right: 20px;
-    color: #f5f5f5;
-    font-size: 14px;
-}
-
-.footer-build-version {
-    color: #fafafa;
-    /* font-weight: 500; */
-    font-size: 14px;
-    margin: 0;
-}
-
-/* ScriptEditor.tsx */
-.script-editor-container {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    border-radius: 5px;
-    border: 1px solid light-dark(#BFBFBF, #3a3a4a);
-    padding: 5px 20px;
-    gap: 16px;
-    background-color: light-dark(#FFF, #1e1e2e);
-}
-
-.script-editor-settings-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0;
-}
-
-.script-editor-settings-text {
-    font-size: 14px;
-    font-weight: 700;
-    padding: 0;
-}
-
-.script-editor-formulas-container {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 16px;
+    color: var(--keep-text-brand);
 }
 
 .script-editor-help-icon {
     color: #2d91e3;
-}
-
-.script-editor-access-container {
-    border: 1px solid light-dark(#a5afbe, #3a3a4a);
-    border-radius: 10px;
-    width: 45%;
-}
-
-.script-editor-edit-dialog {
-    border-radius: 10px;
-    background: light-dark(#FFF, #252535);
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    border: none;
-    width: 50%;
-    padding: 30px 0;
-}
-
-.script-editor-formula-line {
-    padding: 5px 0;
-}
-
-.script-editor-compute-text {
-    font-size: 15px;
-}
-
-/* AppForm.tsx */
-.app-form-header {
-    color: #fff;
-    font-size: 24px;
-    padding: 20px;
-    height: 70px;
-    border-radius: 5px;
-}
-
-/* SchemasAlphabeticalView.tsx */
-.schemas-alphabetical-schema-name {
-    font-size: 16px;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 25vw;
-    line-height: 1.2em;
-}
-
-/* SchemaCardV2.tsx */
-.schema-card-schema-name {
-    font-weight: 600;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    white-space: nowrap;
-}
-
-.schema-card-nsf-name {
-    font-size: 14px;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-}
-
-/* ScopeCardV2.tsx */
-.scope-card-acl-edited {
-    color: green;
-}
-
-.scope-card-acl-unedited {
-    color: orange;
-}
-
-/* QuickConfigForm */
-.drawer-available-databases-text {
-    color: #fff;
-    font-size: 18px;
-    padding: 10px;
-    border-radius: 5px;
-    background: var(--base-color);
-}
-
-.scope-form-header {
-    color: #fff;
-    font-size: 24px;
-    padding: 20px;
-    border-radius: 5px;
-    background: var(--base-color);
-    width: 100%;
-}
-
-.scope-form-text-schema {
-    color: var(--text-color-primary);
-    display: flex;
-    text-overflow: ellipsis;
-    overflow-x: hidden;
 }
 
 .quick-config-icon-image {
@@ -1753,289 +375,59 @@ body[data-theme="dark"] .add-import-svg-icon {
     display: block;
 }
 
-.schema-icon-in-use {
-    width: 14px;
-    height: 14px;
-    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiM4MkRDNzMiLz4KPC9zdmc+Cg==');
-}
-
-.schema-icon-not-in-use {
-    width: 14px;
-    height: 14px;
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNiIgY3k9IjYiIHI9IjYiIGZpbGw9IiNENjQ2NkYiLz4KPC9zdmc+Cg==");
-}
-
-/* AppsTable.tsx */
-.apps-table-bottom-row {
-    flex-shrink: 0;
-    margin-left: 10;
-    display: inline-flex;
-    align-items: center;
-}
-
-/* AppCard.tsx */
-.app-card-app-icon {
-    background: var(--body-color);
-    color: var(--hover-color);
-    height: 40;
-    width: 40;
-}
-
-/* Kanban.tsx */
-.kanban-div {
-    height: 46px;
-    width: 1px;
-    background-color: light-dark(#000, #3a3a4a);
-}
-
-/* IconDropdown.tsx */
-.icon-dropdown-span {
-    text-transform: capitalize;
-    padding-left: 11px;
-    color: light-dark(#000, #e0e0e0);
-}
-
-.icon-dropdown-image {
-    color: var(--hover-color);
-    height: 35;
-    width: 35;
-    margin-right: 15px;
-}
-
-/* CardViewOptions.tsx */
-.multicard-view-container {
-    width: 200px;
-    height: 43px;
-    display: flex;
-    justify-content: center;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    margin-left: 15px;
-    font-size: 14px;
-    background: var(--body-color);
-}
-
-/* DatabaseSearch.tsx */
-.database-search-container-button {
-    text-transform: none;
-    width: 255px;
-    min-width: 191px;
-    height: 100%;
-    white-space: nowrap;
-    color: var(--hint-text-color);
-    font-size: 16px;
-    justify-content: space-between;
-    padding-left: 25px;
-    padding-right: 5px;
-}
-
-.database-search-dropdown-arrow {
-    width: 50px;
-    height: 40px;
-}
-
-/* FormsContainer.tsx */
-.forms-container-loading-container {
-    height: calc(100vh - 170px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-}
-
-/* ViewsTable.tsx */
-.views-table-question-circle {
-    color: light-dark(#0f52ba, #008000);
-}
-
-/* GroupForm.tsx */
-.group-add-member-button {
-    width: 125px;
-    float: right;
-    margin-right: 6px;
-}
-
-.group-form-button-style {
-    height: 10%;
-    width: 25%;
-    background-color: var(--badge-color-background);
-    float: right;
-    color: white;
-    margin-left: 20px;
-}
-
-.group-form-button-small {
-    font-size: 12px;
-    height: 9%;
-    margin: 15px 3px 5px 3px;
-    background-color: var(--badge-color-background);
-    color: white;
-}
-
-.group-remove-member-button {
-    width: 150px;
-    float: left;
-}
-
-/* Groups.tsx */
-.groups-click-row-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 60px;
-    cursor: pointer;
-}
-
-/* LoginPage.tsx */
-.login-page-grid {
-    padding: 90px;
-    height: 100%;
-    background-color: var(--body-color);
-    color: var(--text-color-primary);
-}
-
-.login-castle-bg {
-    width: 40%;
-    flex-basis: 44%;
-    max-width: 40%;
-    height: 100vh;
-    background-color: light-dark(#fafafa, #212121);
-    background-image: url('/img/castlebg.jpg');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-}
-
-.login-page-alert {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 9999;
-}
-
-body[data-theme='dark'] wa-button[appearance="outlined"]::part(label),
-body[data-theme='dark'] lit-button[appearance="outlined"]::part(label) {
-    color: #7e57c2 !important;
-}
-
-body[data-theme='dark'] wa-button[appearance="accent"]::part(label),
-body[data-theme='dark'] lit-button[appearance="accent"]::part(label) {
-    color: #7e57c2 !important;
-}
-
-.login-lit-button {
-    --lit-button-display: block;
-    --lit-button-width: 100%;
-}
-
-body[data-theme='dark'] .login-lit-button {
-    --wa-color-brand-80: #7e57c2;
-    --wa-color-brand-50: #7e57c2;
-    --wa-color-brand-border-loud: #7e57c2;
-    --wa-color-brand-fill-loud: #7e57c2;
-    color: #7e57c2;
-    border-color: #7e57c2;
-}
-
-.login-submit-button {
-    --lit-button-display: block;
-    --lit-button-width: 100%;
-    margin-top: 30px;
-}
-
-body[data-theme='dark'] .login-submit-button {
-    --wa-color-brand-80: #7e57c2;
-    --wa-color-brand-50: #7e57c2;
-    --wa-color-brand-border-loud: #7e57c2;
-    --wa-color-brand-fill-loud: #7e57c2;
-    --wa-color-brand: #7e57c2;
-    --wa-color-brand-on: #7e57c2;
-    color: #7e57c2;
-    border-color: #7e57c2;
-}
-
-.login-page-signup-text {
-    font-size: 14px;
-    cursor: pointer;
-    text-transform: none;
-}
-
-.login-page-signup-text:hover {
-    color: red;
-    text-decoration: underline;
-}
-
-.login-page-oidc-dropdown {
-    --lit-dropdown-display: inline-block;
-    --lit-dropdown-width: auto;
-}
-
-/* PeopleCRUD.tsx */
-
-.people-crud-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 60px;
-    cursor: pointer;
-}
-
-/* GroupMembers.tsx */
-.group-members-div {
-    height: 500px;
-    width: 100%;
-    margin-top: 20px;
-}
-
-/* PeopleSelector.tsx */
-.people-selector-div {
-    height: 350px;
-    width: 98%;
-    margin-top: 20px;
-    border-width: 5px;
-}
-
-/* OptionList.tsx */
-.option-list-container-button {
-    width: 181px;
-    height: 42px;
-    border-radius: 20px;
-    background: #aa1f51;
-    color: #fff;
-    font-weight: 700;
-}
-
-/* ProfileMenu.tsx */
-.profile-menu-user-icon {
-    width: 36px;
-    height: 36px;
-}
-
 /* ProfileMenuDialog.tsx */
 .profile-menu-dialog-user {
-    margin: 0 0 115px 8px;
+    /* Was `0 0 115px 8px`. That 115px bottom margin made the 24px icon a 139px-tall box, and
+       it is why the mobile header used to be ~168px of mostly empty white rather than the
+       56px it looked like it should be — the old `calc(100vh - 56px)` under-subtracted by
+       over 100px and the document gained a second scrollbar. Nothing positions against it:
+       the profile popover is a MUI Popper anchored to this element's own rect. #707. */
+    margin-left: 8px;
 }
 
-/* SideNav.tsx */
+/* AppShell.tsx — the logo in wa-page's navigation-header */
 .side-nav-logo-img {
     width: 37px;
     height: 37px;
     object-fit: contain;
     display: block;
-    margin-top: 30px;
+    /* No margin-top: the 30px this used to carry is now .nav-header's padding, which the
+       57px rail and the mobile drawer both need to share. */
 }
 
-.side-nav-text-link {
-    margin-left: -4px;
-    font-size: 16px;
-    font-weight: 400;
+/* ==========================================================================
+   Carried over from dark-mode.css, which is deleted (#924, #959).
+
+   By the end that file was 182 lines and 22 selectors, and all but these two
+   groups were unreachable:
+
+     - #969 removed its 53 `.Mui*` selectors when the last MUI package went.
+     - Most of the rest name classes that moved into a keep-* element's shadow
+       root during #806, which a light-DOM rule cannot cross. Only five `.tsx`
+       files render anything now.
+     - Seven declarations were `light-dark(inherit, …)`, which is invalid —
+       `inherit` is a CSS-wide keyword, not a valid component value inside a
+       function, so the declaration was dropped at parse time (#924).
+     - Its `body[data-theme="dark"]` block had never applied either: a stray
+       U+FEFF sat in front of the selector, which made it invalid and took the
+       whole block with it.
+
+   These two still match light DOM, so they move rather than go.
+   ========================================================================== */
+
+/* The document's own scrollbars. Nothing else styles them, and they sit outside
+   every shadow root, so this is the only place they can be set. */
+body[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #1e1e2e;
 }
 
-/* Tip.tsx */
-.tip-card-media {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    background-color: transparent;
-    padding: 0;
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3a3a5a;
+}
+
+/* `styles.css` styles no bare `a`, so without this the router's `Link`
+   (`router/react.tsx`) — the one real `<a>` left in light DOM — falls back to the
+   user agent's blue on a dark surface. */
+body[data-theme="dark"] a {
+  color: inherit;
 }

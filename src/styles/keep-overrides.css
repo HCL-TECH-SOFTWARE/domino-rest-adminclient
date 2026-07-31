@@ -1,0 +1,202 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+/* `hidden` has to hide.
+
+   WebAwesome's native.css styles bare form controls — `button`, `input[type=button|
+   submit|reset|file]`, and separately `label` and `summary` — and among other things
+   gives them a `display`, a height and a fill. Those declarations are author-origin,
+   and *every* author declaration outranks the user-agent `[hidden] { display: none }`
+   no matter which cascade layer it sits in. So a `<button hidden>` in the light DOM
+   renders: 29×37, filled with the neutral ramp.
+
+   That is what put a dark square under LOG IN. The login form's submit control is a
+   hidden native button — `keep-button` renders its `<wa-button>` into a shadow root, so
+   it can never be a submitter, and without that button Enter in a field logs nobody in
+   (#809). Every other hidden bare button, label or summary in the app had the same
+   problem; the login page is just where one existed.
+
+   `!important` because `hidden` is an absolute statement about an element, not a
+   preference to be weighed against the next rule. Delete this once WebAwesome stops
+   setting `display` on bare controls — test/styles/hidden-attribute.test.ts fails when
+   that day comes.
+
+   The user-agent rule this restores is really `[hidden]:not([hidden='until-found'])`.
+   Nothing here uses `hidden="until-found"`; if something does, add that `:not()` or
+   find-in-page will never reveal it. */
+[hidden] {
+  display: none !important;
+}
+
+/* Switch base styles */
+:root keep-switch {
+  color-scheme: inherit;
+}
+wa-switch::part(label) {
+  color: inherit;
+}
+::slotted(*) {
+  color: inherit;
+}
+/* === Lit Elements Base & Light Mode Styles === */
+
+/* InputPassword base styles */
+:root {
+  color-scheme: inherit;
+}
+/* Invalid fields are marked with aria-invalid, set by whoever owns the form's state.
+
+   This replaced :state(user-invalid), WebAwesome's own custom state (#742, #743). That
+   state is derived from `!valid && hasInteracted`, so engaging it meant setting
+   `hasInteracted` by hand before calling checkValidity() — WebAwesome's own
+   reportValidity() sets the flag afterwards, so a single call never produced it. It also
+   told assistive tech nothing. aria-invalid is a plain attribute the form sets when it
+   decides a field has failed, it is announced, and it needs no JavaScript to style. */
+wa-input[aria-invalid='true']::part(base) {
+  border-color: var(--wa-color-danger-fill-loud);
+  box-shadow: 0 0 0 var(--wa-focus-ring-width) var(--wa-color-danger-fill-quiet);
+}
+text {
+  font-size: 12px;
+}
+
+/* Alert base styles */
+.toast-wrapper {
+  position: relative;
+  min-width: 280px;
+  max-width: 420px;
+  opacity: 0;
+  pointer-events: none;
+}
+.toast-wrapper.visible {
+  animation: slideIn 0.3s ease forwards;
+  pointer-events: auto;
+}
+.toast-wrapper.hiding {
+  animation: slideOut 0.25s ease forwards;
+  pointer-events: none;
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+}
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: currentColor;
+  opacity: 0.6;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
+  z-index: 1;
+}
+.close-btn:hover {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.close-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.message {
+  display: block;
+  padding-right: 2rem;
+}
+
+div.main {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+div.icon {
+  margin: 0;
+  padding: 0;
+}div.status {
+  width: 10px;
+  height: 10px;
+  background-position: top right;
+  background-repeat: no-repeat;
+  background-size: contain;
+  right: 20px;
+  top: 20px;
+  border-radius: 50%;
+}
+
+/* DialogContent base styles */
+keep-dialog-content section {
+  padding: 10px 20px;
+  margin: 0;
+}
+
+/* DialogActions base styles */
+keep-dialog-actions section {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 10px;
+  padding: 10px 20px;
+}
+
+/* Dropdown/Autocomplete base styles */
+.autocomplete-container .dropdown,
+.autocomplete-container .input-container,
+.dropdown,
+.input-container {
+  background-color: #fff;
+  color: #000;
+  border-color: #bbbdbf;
+}
+.autocomplete-container li,
+.dropdown li {
+  color: #000;
+}
+.autocomplete-container li:hover,
+.dropdown li:hover,
+.autocomplete-container li.highlighted,
+.dropdown li.highlighted {
+  background-color: #e5e5e5;
+}
+/*
+ * The brand ramp, the brand aliases and --wa-font-size-scale used to live here.
+ * They now live in keep-theme.css, which is the single source of truth for
+ * design tokens (#706). The dark override that sat at the bottom of this file
+ * keyed on `@media (prefers-color-scheme: dark)` — the OS preference — rather
+ * than on the app's own theme; it is now `:root.wa-dark` in keep-theme.css.
+ *
+ * This file keeps only component-level Web Awesome overrides.
+ */

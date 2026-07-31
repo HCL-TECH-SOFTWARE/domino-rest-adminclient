@@ -1,0 +1,137 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+import { describe, expect, it } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+/**
+ * `styles.css` may not carry a class rule nothing applies.
+ *
+ * The sheet accumulated 28 of them. Five were orphaned by the People/Groups removal
+ * (#770), three by rewrites on this branch — the contents trees, and the mobile header
+ * whose hamburger `wa-page` now owns. The other twenty were already dead before the
+ * migration began; `.schema-card-schema-name` and `.scope-card-acl-edited` still sat under
+ * `SchemaCardV2.tsx` and `ScopeCardV2.tsx` headings for components that no longer exist.
+ *
+ * Nothing catches this on its own. CSS has no compiler, the bundler keeps every rule it is
+ * handed, and review sees a plausible-looking selector under a plausible-looking heading.
+ * The cost is not the bytes — it is that a dead rule is indistinguishable from a live one,
+ * so the next person styling a screen matches or duplicates a name that controls nothing.
+ * That will keep happening: #709, #717, #718 and #771 each delete more screens.
+ *
+ * #930 then removed 147 rules in one pass and took the sheet from 1316 lines to 425. That is
+ * not a backlog this guard let build up — it is the guard's own two blind spots, both closed
+ * below. Read those two notes before adding a rule here: a check that passes for the wrong
+ * reason is worse than no check, because it is also a claim.
+ *
+ * Scope is deliberately this one sheet. It is the hand-written component-class sheet, so
+ * every name in it should appear in source.
+ *
+ * `dark-mode.css` used to be excluded because it was mostly `.Mui*-root` overrides — names
+ * MUI generated at runtime and no source file ever spelled — so it would have needed an
+ * allowlist longer than the check. #709 deleted all 53 of those rules with the framework, and
+ * the file itself is now gone (#924, #959): everything left in it was either shadow-scoped,
+ * invalid CSS, or never parsed. Its two surviving rules moved into `styles.css`, which this
+ * scan already reads, so nothing is excluded any more.
+ */
+
+const ROOT = resolve(process.cwd());
+
+const walk = (dir: string): string[] =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    return entry.isDirectory() ? walk(path) : [path];
+  });
+
+const SELF = 'test/styles/dead-selectors.test.ts';
+
+/**
+ * Comments are not source (#930).
+ *
+ * Every converted element documents where its rules came from, in a note that reads "was
+ * .script-editor-container" — and naming the class in that prose was enough to keep the rule
+ * looking alive. The guard therefore had a false negative that *grew with every wave*: 44
+ * rules when #930 was opened, 147 by the time it was done, because waves 7 and 8 converted the
+ * six largest elements and each conversion note named every class it replaced.
+ *
+ * The `code()` spelling is the one `app-shell.test.ts`, `mui-removed.test.ts`,
+ * `csp-inline-styles.test.ts`, `validity-states.test.ts` and `wa-usage.test.ts` already share.
+ *
+ * This does not weaken the over-accepting rule below. That rule is about *code*: a class can
+ * reach an element by too many routes to parse for, so any appearance in code counts. A
+ * comment is not one of those routes.
+ */
+const code = (text: string) =>
+  text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+/**
+ * Source is searched as raw text rather than parsed. A class reaches an element through
+ * `className`, a template literal, `classList.add`, a Lit template or a `styled` block, and
+ * a parser tuned to one of those would miss the rest. Substring matching over-accepts, and
+ * that is the safe direction: a false pass leaves a dead rule, a false failure sends
+ * someone deleting a live one.
+ */
+const SOURCE = ['src', 'test']
+  .flatMap((dir) => walk(resolve(ROOT, dir)))
+  .filter((file) => /\.(tsx?|html)$/.test(file) && !file.endsWith(SELF))
+  .map((file) => code(readFileSync(file, 'utf8')))
+  .join('\n');
+
+/**
+ * Every class named in any selector, at any nesting depth.
+ *
+ * This used to be `^\.name {` — a class rule starting at column 0 — which was a second blind
+ * spot, and one earlier deletion passes created themselves. Removing a rule and leaving its
+ * closing brace glued to the next selector produces `}.w-35vw {`, and six such rules were
+ * invisible to the scan. Three more were descendant rules (`body[data-theme="dark"]
+ * .color-text-disabled`) or carried an attribute (`.add-mode-dialog-container[open]`), which
+ * that pattern also could not see.
+ *
+ * Comments are stripped first so a class named only inside one does not register as defined
+ * either — `.color-base` is named in a `:root` note and has no rule.
+ */
+const selectors = (css: string) =>
+  [
+    ...new Set(
+      [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]*)\{/g)].flatMap((match) =>
+        [...match[1].matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g)].map((name) => name[1]),
+      ),
+    ),
+  ];
+
+describe('styles.css carries no rule nothing applies', () => {
+  const css = readFileSync(resolve(ROOT, 'src/styles/styles.css'), 'utf8');
+
+  it('finds the sheet and the source to check it against', () => {
+    // A bad path, or a `selectors()` regex that stops matching, would make the assertion below
+    // vacuously pass — that, and only that, is what this guards.
+    //
+    // The number is deliberately far below the current count and must stay that way. It was
+    // 300, then 200, then 150, moved each time by a wave of #806 legitimately deleting rules;
+    // #930 took it to 50 in one pass and they will keep falling until the last screen converts.
+    // A threshold that has to be re-set whenever the thing it measures changes on purpose is
+    // not a guard, it is a chore — and one that trains people to edit floors, which is how a
+    // real ratchet gets quietly lowered later.
+    //
+    // The failure this catches is a parse returning nothing, so it is caught just as well at 20
+    // as at 150, and 20 has needed no edit across three waves that moved every other number
+    // here. The same reasoning removed the aggregate floor in `type-selectors.test.ts`; this is
+    // the per-sheet form of it.
+    expect(selectors(css).length).toBeGreaterThan(20);
+    expect(SOURCE.length).toBeGreaterThan(100_000);
+  });
+
+  it('applies every class it defines', () => {
+    const dead = [...new Set(selectors(css))].filter((name) => !SOURCE.includes(name));
+    expect(
+      dead,
+      `styles.css defines ${dead.length} class(es) no source applies: ${dead.join(', ')}.\n` +
+        'Delete the rule. If the class is genuinely applied somewhere this scan cannot see ' +
+        '— a framework that generates it at runtime, say — add it here with the reason.',
+    ).toEqual([]);
+  });
+});

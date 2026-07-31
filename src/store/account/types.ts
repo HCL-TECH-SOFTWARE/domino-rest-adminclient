@@ -1,5 +1,5 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
@@ -31,36 +31,35 @@ export interface IdP {
   }
 }
 export interface AccountState {
-  navitems: {
-	  apps: boolean;
-    databases: boolean;
-    groups: boolean;
-    users: boolean;
-  };
+  /** The same shape `showPages()` publishes; it was duplicated inline until #770. */
+  navitems: PageListObj;
   authenticated: boolean;
   error: boolean;
   error401: boolean;
   errorMessage: string;
-  token: string;
   idpLogin: boolean;
   currentIdp: any;
 }
 
- export interface PageListObj {
+ /**
+ * Which optional sections `adminui.json` turns on.
+ *
+ * `users` and `groups` are deliberately absent: the screens they gated went in #770, so
+ * nothing reads them. The server still sends both keys and that is fine — `showPages()`
+ * copies only the keys it knows, and an unknown one is ignored. Re-add them here only
+ * alongside a consumer, or the next reader gets a flag that controls nothing.
+ */
+export interface PageListObj {
   apps: boolean;
   databases: boolean;
-  groups: boolean;
-  users: boolean;
 }
 
 export const LOGIN = 'LOGIN';
 export const LOGOUT = 'LOGOUT';
 export const AUTHENTICATE = 'AUTHENTICATE';
 export const REMOVE_AUTH = 'REMOVE_AUTH';
-export const SET_TOKEN = 'SET_TOKEN';
 export const SET_LOGIN_ERROR = 'SET_LOGIN_ERROR';
 export const SET_401_ERROR = 'SET_401_ERROR';
-export const RENEW_TOKEN = 'RENEW_TOKEN';
 export const NAVITEMS = 'NAVITEMS';
 export const SET_IDP_LOGIN = 'SET_IDP_LOGIN';
 export const CURRENT_IDP = 'CURRENT_IDP';
@@ -98,16 +97,6 @@ interface RemoveAuth {
   type: typeof REMOVE_AUTH;
 }
 
-interface SetToken {
-  type: typeof SET_TOKEN;
-  payload: string;
-}
-
-interface RenewToken {
-  type: typeof RENEW_TOKEN;
-  payload: string;
-}
-
 interface SetIdpLogin {
   type: typeof SET_IDP_LOGIN;
   payload: boolean;
@@ -130,8 +119,6 @@ export type AccountActionTypes =
   | SetLoginError
   | SetError401
   | Authenticate
-  | RenewToken
-  | SetToken
   | RemoveAuth
   | SetIdpLogin
   | SetCurrentIdp

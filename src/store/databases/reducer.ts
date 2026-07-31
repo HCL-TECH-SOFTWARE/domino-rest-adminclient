@@ -1,78 +1,29 @@
 /* ========================================================================== *
- * Copyright (C) 2019, 2022 HCL America Inc.                                  *
+ * Copyright (C) 2019, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { produce } from 'immer';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
   DBState,
-  ADD_SCHEMA,
-  ADD_SCOPE,
-  DatabaseActionTypes,
+  AGENTS_ERROR,
+  CLEAR_DB_ERROR,
   FETCH_AVAILABLE_DATABASES,
-  ADD_NEW_SCHEMA_TO_STATE,
-  APPEND_FORM_DATA,
-  SET_PULLED_DATABASE,
-  SET_PULLED_SCOPE,
-  FORM_LOADING,
-  FETCH_KEEP_DATABASES,
-  ADD_AVAILABLE_DATABASE,
-  FETCH_KEEP_SCOPES,
-  DELETE_SCHEMA,
-  DELETE_SCOPE,
-  FETCH_DB_CONFIG,
-  UPDATE_SCHEMA,
-  UPDATE_SCOPE,
-  SET_FORMS,
-  ADD_FORM,
-  SET_CURRENTFORMS,
-  SET_LOADEDFORM,
-  SET_LOADEDFIELDS,
-  SET_ACTIVEFORM,
-  SET_VIEWS,
-  ADD_ACTIVEFIELDS,
-  UPDATE_VIEW,
-  SET_ACTIVEVIEWS,
-  ADD_ACTIVEVIEW,
-  DELETE_ACTIVEVIEW,
-  SET_AGENTS,
-  UPDATE_AGENT,
-  SET_ACTIVEAGENTS,
-  ADD_ACTIVEAGENT,
-  DELETE_ACTIVEAGENT,
-  CACHE_MODES,
-  CACHE_FORM_FIELDS,
-  SET_RETRY_COUNT,
-  SET_DB_INDEX,
-  APPEND_CONFIGURED_FORM,
-  RESET_FORM,
-  SAVE_READ_RESULT,
-  SAVE_WRITE_RESULT,
+  INIT_STATE,
   SAVE_DELETE_RESULT,
   SAVE_LOAD_RESULT,
+  SAVE_READ_RESULT,
   SAVE_SAVE_RESULT,
-  CLEAR_FORMULA_RESULTS,
+  SAVE_WRITE_RESULT,
+  SET_ACTIVEAGENTS,
+  SET_ACTIVEVIEWS,
   SET_DB_ERROR,
-  CLEAR_DB_ERROR,
-  CLEAR_DATABASEPULL_RESULT,
-  CLEAR_FORMS,
-  UNCONFIG_FORM,
-  ADD_NSF_DESIGN,
-  SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES,
-  FETCH_KEEP_PERMISSIONS,
-  INIT_STATE,
-  CLEAR_SCHEMA_FORM,
   VIEWS_ERROR,
-  AGENTS_ERROR,
-  UPDATE_ERROR,
-  SET_FORM_NAME,
-  SET_FOLDERS,
 } from './types';
 import { getDatabaseIndex, getScopeIndex } from './scripts';
 
 const initialState: DBState = {
-  databases: [],
   databasesOverview: [],
   nsfDesigns: {},
   availableDatabases: [],
@@ -118,510 +69,382 @@ const initialState: DBState = {
   updateFormError: false
 };
 
+
 /**
- * reducer.ts provides a Redux Reducer for the  Database page
+ * The Database page's slice.
+ *
+ * #710 converted this from a 60-case `switch` reducer. Most actions became
+ * generated creators, but **13 could not** and are matched as literal strings in
+ * `extraReducers`, because something outside this folder dispatches them:
+ *
+ * - `SAVE_*_RESULT` (×5) — `saveResult(formulaType, result)` uses its *argument*
+ *   as the action type, and `components/access/TabsAccess.tsx` hard-codes the five
+ *   strings it passes. Namespacing them empties the formula-test results panel,
+ *   and nothing would catch it: the string is untyped the whole way through.
+ * - `SET_DB_ERROR` / `CLEAR_DB_ERROR` — literal only because the values are still
+ *   spelled out in `types.ts`. They no longer collide: #866 renamed them from
+ *   `'SET_APP_ERROR'` / `'CLEAR_APP_ERROR'` — the applications slice's values — to
+ *   `'databases/…'`, so a database error stays in this slice. Both are dispatched
+ *   solely through `setDBError`/`clearDBError` in `./shared`, never as raw strings,
+ *   so these two could become generated creators whenever someone wants them to.
+ * - `VIEWS_ERROR`, `AGENTS_ERROR`, `FETCH_AVAILABLE_DATABASES`, `SET_ACTIVEVIEWS`,
+ *   `SET_ACTIVEAGENTS` — dispatched raw from `ActivateSwitch`, `ScopeLists`,
+ *   `FormsContainer` and `EditView`. Left literal rather than rewiring six
+ *   `track:views` files that #806 is actively converting.
+ * - `INIT_STATE` — the cross-slice reset broadcast six slices answer.
  *
  * @author Michael Angelo Silva
  * @author Neil Schultz
  * @author Qian Liang
- *
  */
-
-export default function databaseReducer(
-  state = initialState,
-  action: DatabaseActionTypes
-): DBState {
-  switch (action.type) {
-    case FETCH_KEEP_DATABASES:
-      return {
-        ...state,
-        databasesOverview: action.payload,
-      };
-    case FETCH_KEEP_SCOPES:
-      return {
-        ...state,
-        scopes: action.payload.filter((scope) => scope.apiName !== 'keepconfig'),
-      };
-    case FETCH_AVAILABLE_DATABASES:
-      return {
-        ...state,
-        availableDatabases: action.payload,
-      };
-    case ADD_AVAILABLE_DATABASE:
-      const dbExists = state.availableDatabases.findIndex((db) => db.nsfpath === action.payload.nsfpath) >= 0
-      switch (dbExists) {
-        case true:
-          return state
-        case false:
-        default:
-          let updatedList = state.availableDatabases ? [...state.availableDatabases, action.payload] : [action.payload];
-          return {
-            ...state,
-            availableDatabases: updatedList
-          };   
-      } 
-    case ADD_NEW_SCHEMA_TO_STATE:
-      // Save resource to avoid fetching all database again after new schema created every time
+export const databasesSlice = createSlice({
+  name: 'databases',
+  initialState,
+  reducers: {
+    fetchKeepDatabases(state, action: PayloadAction<any[]>) {
+      state.databasesOverview = action.payload;
+    },
+    fetchKeepScopes(state, action: PayloadAction<any[]>) {
+      state.scopes = action.payload.filter((scope: any) => scope.apiName !== 'keepconfig');
+    },
+    addAvailableDatabase(state, action: PayloadAction<any>) {
+      const exists = state.availableDatabases.findIndex((db) => db.nsfpath === action.payload.nsfpath) >= 0;
+      if (!exists) state.availableDatabases.push(action.payload);
+    },
+    addNewSchemaToState(state, action: PayloadAction<{ schemaName: string; nsfPath: string }>) {
       const { schemaName, nsfPath } = action.payload;
-      return produce(state, (draft: DBState) => {
-        const index = state.availableDatabases.findIndex(db => db.nsfpath === nsfPath);
-        if (index >= 0) {
-          draft.availableDatabases[index].apinames.push(schemaName);
-        }
-      });
-    case CLEAR_SCHEMA_FORM:
-      return {
-        ...state,
-        clearSchemaForm: action.payload
-      }
-    case VIEWS_ERROR:
-      return {
-        ...state,
-        updateViewError: action.payload
-      }
-    case AGENTS_ERROR:
-      return {
-        ...state,
-        updateAgentError: action.payload
-      }
-    case UPDATE_ERROR:
-      return {
-        ...state,
-        updateSchemaError: action.payload
-      }
-    case FETCH_DB_CONFIG:
-      return produce(state, (draft: DBState) => {
-        const dbIndex = getDatabaseIndex(
-          state.databasesOverview,
-          action.payload.apiName,
-          action.payload.nsfPath
+      const index = state.availableDatabases.findIndex((db) => db.nsfpath === nsfPath);
+      if (index >= 0) state.availableDatabases[index].apinames.push(schemaName);
+    },
+    clearSchemaForm(state, action: PayloadAction<boolean>) {
+      state.clearSchemaForm = action.payload;
+    },
+    updateError(state, action: PayloadAction<boolean>) {
+      state.updateSchemaError = action.payload;
+    },
+    fetchDbConfig(state, action: PayloadAction<any>) {
+      const dbIndex = getDatabaseIndex(state.databasesOverview, action.payload.apiName, action.payload.nsfPath);
+      state.contextViewIndex = dbIndex;
+      state.databasesOverview[dbIndex] = action.payload;
+    },
+    addSchema(state, action: PayloadAction<any>) {
+      state.databasesOverview.push(action.payload);
+    },
+    addScope(state, action: PayloadAction<any>) {
+      state.scopes.push(action.payload);
+    },
+    updateScope(state, action: PayloadAction<any>) {
+      state.scopes[getScopeIndex(state.scopes, action.payload.apiName)] = action.payload;
+    },
+    deleteSchema(state, action: PayloadAction<{ schemaName: string; nsfPath: string }>) {
+      let dbIndex = getDatabaseIndex(state.databasesOverview, action.payload.schemaName, action.payload.nsfPath);
+      state.databasesOverview.splice(dbIndex, 1);
+      dbIndex = state.availableDatabases.findIndex((db) => db.nsfpath === action.payload.nsfPath);
+      if (dbIndex >= 0) {
+        const apiIndex = state.availableDatabases[dbIndex].apinames.findIndex(
+          (apiname: string) => apiname === action.payload.schemaName,
         );
-        draft.contextViewIndex = dbIndex;
-        draft.databasesOverview[dbIndex] = action.payload;
+        state.availableDatabases[dbIndex].apinames.splice(apiIndex, 1);
+      }
+    },
+    deleteScope(state, action: PayloadAction<string>) {
+      state.scopes.splice(getScopeIndex(state.scopes, action.payload), 1);
+    },
+    updateSchema(state, action: PayloadAction<any[]>) {
+      const newDatabases: any[] = [];
+      action.payload.forEach((schema: any) => {
+        const dbIndex = getDatabaseIndex(state.databasesOverview, schema.schemaName, schema.nsfPath);
+        if (dbIndex >= 0) state.databasesOverview[dbIndex] = schema;
+        else newDatabases.push(schema);
       });
-    case ADD_SCHEMA:
-      return produce(state, (draft: DBState) => {
-        draft.databasesOverview.push(action.payload);
+      state.databasesOverview = [...state.databasesOverview, ...newDatabases];
+    },
+    setPullDatabase(state, action: PayloadAction<boolean>) {
+      state.databasePull = action.payload;
+      state.scopePull = action.payload;
+    },
+    setPullScope(state, action: PayloadAction<boolean>) {
+      state.scopePull = action.payload;
+    },
+    formLoading(state, action: PayloadAction<boolean>) {
+      state.formLoading = action.payload;
+    },
+    appendFormData(state, action: PayloadAction<{ dbIndex: number; data: any }>) {
+      state.databasesOverview[action.payload.dbIndex] = action.payload.data;
+    },
+    setForms(state, action: PayloadAction<{ db?: string; forms: any[] }>) {
+      action.payload.forms.forEach((form: any) => {
+        const index = state.forms.findIndex((f) => f.formName === form.formName);
+        if (index !== -1) state.forms[index] = form;
+        else state.forms.push(form);
       });
-    case ADD_SCOPE:
-      return produce(state, (draft: DBState) => {
-        draft.scopes.push(action.payload);
-      });
-    case UPDATE_SCOPE:
-      return produce(state, (draft: DBState) => {
-        const scopeIndex = getScopeIndex(state.scopes, action.payload.apiName);
-        draft.scopes[scopeIndex] = action.payload;
-      });
-    case DELETE_SCHEMA:
-      return produce(state, (draft: DBState) => {
-        let dbIndex = getDatabaseIndex(state.databasesOverview, action.payload.schemaName, action.payload.nsfPath);
-        draft.databasesOverview.splice(dbIndex, 1);
-        dbIndex = state.availableDatabases.findIndex((db) => db.nsfpath === action.payload.nsfPath)
-        if (dbIndex >= 0) {
-          const apiIndex = state.availableDatabases[dbIndex].apinames.findIndex((apiname) => apiname === action.payload.schemaName)
-          draft.availableDatabases[dbIndex].apinames.splice(apiIndex, 1)
-        }
-      });
-    case DELETE_SCOPE:
-      return produce(state, (draft: DBState) => {
-        const dbIndex = getScopeIndex(state.scopes, action.payload);
-        draft.scopes.splice(dbIndex, 1);
-      });
-    case UPDATE_SCHEMA:
-      return produce(state, (draft: DBState) => {
-        let newDatabases: Array<{
-          schemaName: string;
-          description: string;
-          iconName: string;
-          icon: any;
-          nsfPath: string;
-        }> = []
-        
-        action.payload.forEach((schema) => {
-          const dbIndex = getDatabaseIndex(
-            state.databasesOverview,
-            schema.schemaName,
-            schema.nsfPath
-          );
-          
-          if (dbIndex >= 0) {
-            draft.databasesOverview[dbIndex] = schema
-          } else {
-            newDatabases.push(schema)
-          }
-        })
-        draft.databasesOverview = [...draft.databasesOverview, ...newDatabases]
-      });
-    case SET_PULLED_DATABASE:
-      return {
-        ...state,
-        databasePull: action.payload,
-        scopePull: action.payload,
-      };
-    case SET_PULLED_SCOPE:
-      return {
-        ...state,
-        scopePull: action.payload,
-      };
-    case FORM_LOADING:
-      return {
-        ...state,
-        formLoading: action.payload,
-      };
-    case APPEND_FORM_DATA:
-      return produce(state, (draft: DBState) => {
-        draft.databasesOverview[action.payload.dbIndex] = action.payload.data;
-      });
-    case SET_FORMS:
-      const { forms } = action.payload;
-      return produce(state, (draft: DBState) => {
-        forms.forEach((form) => {
-          const index = draft.forms.findIndex((f) => f.formName === form.formName)
-          if (index !== -1) {
-            draft.forms[index] = form
-          } else {
-            draft.forms = [...draft.forms, form]
-          }
-        })
-      });
-    case ADD_FORM:
-      if (action.payload.enabled) {
-        return {
-          ...state,
-          newForm: {
-            enabled: true,
-            form: action.payload.form,
+    },
+    addForm(state, action: PayloadAction<{ enabled: boolean; form?: any }>) {
+      state.newForm = action.payload.enabled
+        ? { enabled: true, form: action.payload.form }
+        : { enabled: false };
+    },
+    setCurrentForms(state, action: PayloadAction<{ db?: string; forms: any[] }>) {
+      state.forms = action.payload.forms;
+    },
+    // Both were `produce(state, () => {})` — deliberate no-ops kept so the action
+    // types stay dispatchable and typed. Preserved rather than deleted: removing
+    // them changes what `default:` sees.
+    cacheModes(_state, _action: PayloadAction<any>) {},
+    cacheFormFields(_state, _action: PayloadAction<any>) {},
+    setRetryCount(state, action: PayloadAction<number>) {
+      state.retryCount = action.payload;
+    },
+    appendConfiguredForm(state, action: PayloadAction<{ formIndex: number; data: any }>) {
+      const formModes = state.forms[action.payload.formIndex].formModes;
+      if (formModes !== undefined) formModes.push(action.payload.data);
+    },
+    unConfigForm(state, action: PayloadAction<{ schemaName: string; formName: string }>) {
+      const index = state.forms.findIndex(
+        (value) => value.dbName === action.payload.schemaName && value.formName === action.payload.formName,
+      );
+      state.forms[index].formModes = [];
+    },
+    setDbIndex(state, action: PayloadAction<number>) {
+      state.contextViewIndex = action.payload;
+    },
+    // `string` again since #848 removed the one caller that passed an object.
+    // tsc is now the guard: a second caller with a different shape is a compile
+    // error rather than a filter that silently matches nothing.
+    resetForm(state, action: PayloadAction<string>) {
+      state.forms = state.forms.filter((form) => form.formName !== action.payload);
+    },
+    setLoadedForm(state, action: PayloadAction<{ db?: string; formName: string }>) {
+      state.loadedForm = action.payload.formName;
+    },
+    setLoadedFields(state, action: PayloadAction<{ db?: string; formName?: string; fields: any[] }>) {
+      state.loadedFields = action.payload.fields;
+    },
+    setActiveForm(state, action: PayloadAction<{ db?: string; formName: string }>) {
+      state.activeForm = action.payload.formName;
+    },
+    addActiveFields(state, action: PayloadAction<{ activeFields: any }>) {
+      const formIndex = state.activeFields.findIndex(
+        (form: any) => form.formName === action.payload.activeFields.formName,
+      );
+      if (formIndex === -1) state.activeFields.push(action.payload.activeFields);
+      else state.activeFields[formIndex] = action.payload.activeFields;
+    },
+    setViews(state, action: PayloadAction<{ db?: string; views: any[] }>) {
+      action.payload.views.forEach((view: any) => {
+        view.viewActive = !!view.viewActive;
+        for (let ii = 0; ii < state.activeViews.length; ii++) {
+          if (view.viewUnid === state.activeViews[ii].viewUnid) {
+            view.viewActive = true;
+            view.viewUpdated = !!state.activeViews[ii].viewUpdated;
+            break;
           }
         }
-      } else {
-        return {
-          ...state,
-          newForm: {
-            enabled: false,
+      });
+      state.views = action.payload.views;
+    },
+    updateView(state, action: PayloadAction<{ db?: string; view: any }>) {
+      const viewIndex = state.views.findIndex((view) => view.viewUnid === action.payload.view.viewUnid);
+      if (viewIndex !== -1) state.views[viewIndex] = action.payload.view;
+    },
+    addActiveView(state, action: PayloadAction<{ db?: string; activeView: any }>) {
+      const viewIndex = state.activeViews.findIndex(
+        (view) => view.viewUnid === action.payload.activeView.viewUnid,
+      );
+      if (viewIndex === -1) state.activeViews.push(action.payload.activeView);
+    },
+    deleteActiveView(state, action: PayloadAction<{ db?: string; activeView: string }>) {
+      const viewIndex = state.activeViews.findIndex((view) => view.viewUnid === action.payload.activeView);
+      if (viewIndex !== -1) state.activeViews.splice(viewIndex, 1);
+    },
+    setFolders(state, action: PayloadAction<{ db?: string; folders: any[] }>) {
+      action.payload.folders.forEach((folder: any) => {
+        folder.viewActive = !!folder.viewActive;
+        for (let ii = 0; ii < state.activeViews.length; ii++) {
+          if (folder.viewUnid === state.activeViews[ii].viewUnid) {
+            folder.viewActive = true;
+            folder.viewUpdated = !!state.activeViews[ii].viewUpdated;
+            break;
           }
         }
-      }
-    case SET_CURRENTFORMS:
-      return produce(state, (draft: DBState) => {
-        draft.forms = action.payload.forms ;
       });
-    case CACHE_MODES:
-      return produce(state, (draft: DBState) => {
-        const { formName, formModes } = action.payload;
-        const index = getDatabaseIndex(state.databasesOverview, action.payload.db, action.payload.nsfPath);
-      });
-    case CACHE_FORM_FIELDS:
-      return produce(state, (draft: DBState) => {
-      });
-    case SET_RETRY_COUNT:
-      return {
-        ...state,
-        retryCount: action.payload,
+      state.folders = action.payload.folders;
+    },
+    setAgents(state, action: PayloadAction<{ db?: string; agents: any[] }>) {
+      state.agents = action.payload.agents.map((agent: any) => ({
+        ...agent,
+        agentActive:
+          agent.agentActive !== undefined
+            ? agent.agentActive
+            : state.activeAgents.some((activeAgent) => activeAgent.agentUnid === agent.agentUnid),
+      }));
+    },
+    updateAgent(state, action: PayloadAction<{ db?: string; agent: any }>) {
+      const agentIndex = state.agents.findIndex((agent) => agent.agentUnid === action.payload.agent.agentUnid);
+      if (agentIndex !== -1) state.agents[agentIndex] = action.payload.agent;
+    },
+    addActiveAgent(state, action: PayloadAction<{ db?: string; activeAgent: any }>) {
+      const agentIndex = state.activeAgents.findIndex(
+        (agent) => agent.agentUnid === action.payload.activeAgent.agentUnid,
+      );
+      if (agentIndex === -1) state.activeAgents.push(action.payload.activeAgent);
+    },
+    deleteActiveAgent(state, action: PayloadAction<{ db?: string; activeAgent: string }>) {
+      const agentIndex = state.activeAgents.findIndex(
+        (agent) => agent.agentUnid === action.payload.activeAgent,
+      );
+      if (agentIndex !== -1) state.activeAgents.splice(agentIndex, 1);
+    },
+    setFormName(state, action: PayloadAction<string>) {
+      state.formName = action.payload;
+    },
+    clearFormulaResults(state) {
+      state.displayTestResults = false;
+      state.displayReadResults = false;
+      state.readFormulaResults = '';
+      state.displayWriteResults = false;
+      state.writeFormulaResults = '';
+      state.displayDeleteResults = false;
+      state.deleteFormulaResults = '';
+      state.displayLoadResults = false;
+      state.loadFormulaResults = '';
+      state.displaySaveResults = false;
+      state.saveFormulaResults = '';
+    },
+    clearDatabasePullResult(state) {
+      state.databasePull = false;
+      state.scopePull = false;
+    },
+    clearForms(state) {
+      state.forms = [];
+    },
+    /**
+     * The design-list cache, keyed by NSF path.
+     *
+     * **The key is the decoded path.** This is the single definition of that (#933); every
+     * writer and reader is expected to match it, and none of them may key by the encoded
+     * form. A percent-encoded key and a decoded one are different strings, so a mismatch is
+     * not a crash — it is a lookup that misses after a *successful* fetch, leaving the
+     * reader on its empty-state branch with no error anywhere to explain it.
+     *
+     * It already holds, and the router is why: `matchPath` runs `safeDecode` over every
+     * captured segment, so a route param is decoded before any element sees it. That covers
+     * `keep-access-mode`, which reads through `params`, and `keep-forms-tab`, which is handed
+     * the container's captured value. `keep-forms-container` decodes a second time for its
+     * own writes — the identity for every path this app can produce, kept as the explicit
+     * statement of this rule at the one call site that does not read a route param directly.
+     *
+     * Note that the *fetch* wants the opposite: `nsfPath` goes into a query string, so it
+     * must be encoded there. The two are not interchangeable, which is the trap. #978 settled
+     * it the only way that keeps this key intact — the value stays decoded everywhere it is
+     * held or passed, and `encodeQueryValue` is applied where the URL is built, never before.
+     * A caller that encodes on the way *in* poisons this cache as well as the request.
+     */
+    addNsfDesign(state, action: PayloadAction<{ nsfPath: string; nsfDesign: any }>) {
+      state.nsfDesigns[action.payload.nsfPath] = {
+        ...state.nsfDesigns[action.payload.nsfPath],
+        ...action.payload.nsfDesign,
       };
-    case APPEND_CONFIGURED_FORM:
-      return produce(state, (draft: DBState) => {
-        const formModes = draft.forms[action.payload.formIndex].formModes;
-        if (formModes !== undefined) {
-          formModes.push(action.payload.data);
-        }
-      });
-    case UNCONFIG_FORM:
-      return produce(state, (draft: DBState) => {
-        const index = draft.forms.findIndex((value) => (value.dbName === action.payload.schemaName && value.formName === action.payload.formName))
-        draft.forms[index].formModes = [];
-      });    
-    case SET_DB_INDEX:
-      return {
-        ...state,
-        contextViewIndex: action.payload,
+    },
+    setOnlyShowSchemasWithScopes(state, action: PayloadAction<boolean>) {
+      state.onlyShowSchemasWithScopes = action.payload;
+    },
+    fetchKeepPermissions(state, action: PayloadAction<{ createDbMapping: any; deleteDbMapping: any }>) {
+      state.permissions = {
+        createDbMapping: action.payload.createDbMapping,
+        deleteDbMapping: action.payload.deleteDbMapping,
       };
-    case RESET_FORM:
-      return produce(state, (draft: DBState) => {
-        const sliceForms = state.forms.filter(
-          (form) => form.formName !== action.payload
-        );
-        draft.forms = sliceForms;
-      });
-
-    // Mark a Form field list as loaded
-    case SET_LOADEDFORM:
-      return produce(state, (draft: DBState) => {
-        draft.loadedForm = action.payload.formName;
-      });
-
-    // Set the list of Loaded Fields
-    case SET_LOADEDFIELDS:
-      return produce(state, (draft: DBState) => {      
-          draft.loadedFields = action.payload.fields;
-      });
-
-    // Mark a Form field list as active
-    case SET_ACTIVEFORM:
-      return produce(state, (draft: DBState) => {
-        draft.activeForm = action.payload.formName;
-      });
-
-    // Add a new list of Active Fields
-    case ADD_ACTIVEFIELDS:
-      return produce(state, (draft: DBState) => {
-        // Look for a possible duplicate before adding
-        const formIndex = state.activeFields.findIndex(
-          (form) => form.formName === action.payload.activeFields.formName
-        );
-        if (formIndex === -1) {
-          draft.activeFields.push(action.payload.activeFields);
-        }
-        else if (state.activeFields[formIndex] !== action.payload.activeFields) {
-          draft.activeFields[formIndex] = action.payload.activeFields;
-        }
-      });
-    // Save the list of Views
-    case SET_VIEWS:
-      return produce(state, (draft: DBState) => {
-        action.payload.views.forEach((view) => {
-          view.viewActive = view.viewActive ? true : false;
-          for (let ii = 0; ii < draft.activeViews.length; ii++) {
-            if (view.viewUnid === draft.activeViews[ii].viewUnid) {
-              view.viewActive = true;
-              view.viewUpdated = draft.activeViews[ii].viewUpdated ? true : false;
-              break;
-            }
-          }
-        });
-        draft.views = action.payload.views;
-      });
-    // Update Active Status of an View
-    case UPDATE_VIEW:
-      return produce(state, (draft: DBState) => {
-        const viewIndex = state.views.findIndex(
-          (view) => view.viewUnid === action.payload.view.viewUnid
-        );
-        if (viewIndex !== -1) {
-          draft.views[viewIndex] = action.payload.view;
-        }
-      });
-    // Save the list of Active Views
-    case SET_ACTIVEVIEWS:
-      return produce(state, (draft: DBState) => {
-        draft.activeViews = action.payload.activeViews;
-      });
-    // Add a new active View
-    case ADD_ACTIVEVIEW:
-      return produce(state, (draft: DBState) => {
-        // Look for possible duplicate before adding
-        const viewIndex = state.activeViews.findIndex(
-          (view) => view.viewUnid === action.payload.activeView.viewUnid
-        );
-        if (viewIndex === -1) {
-          draft.activeViews.push(action.payload.activeView);
-        }
-      });
-    // Delete an Active View
-    case DELETE_ACTIVEVIEW:
-      return produce(state, (draft: DBState) => {
-        const viewIndex = state.activeViews.findIndex(
-          (view) => view.viewUnid === action.payload.activeView
-        );
-        if (viewIndex !== -1) {
-          draft.activeViews.splice(viewIndex, 1);
-        }
-      });
-    case SET_FOLDERS:
-      return produce(state, (draft: DBState) => {
-        action.payload.folders.forEach((folder) => {
-          folder.viewActive = folder.viewActive ? true : false;
-          for (let ii = 0; ii < draft.activeViews.length; ii++) {
-            if (folder.viewUnid === draft.activeViews[ii].viewUnid) {
-              folder.viewActive = true;
-              folder.viewUpdated = draft.activeViews[ii].viewUpdated ? true : false;
-              break;
-            }
-          }
-        });
-        draft.folders = action.payload.folders;
-      });
-    // Save the list of Agents
-    case SET_AGENTS:
-      return produce(state, (draft: DBState) => {
-        const updatedAgents = action.payload.agents.map((agent) => {
-          const isActive = 
-            agent.agentActive !== undefined
-              ? agent.agentActive // Retain the existing value if it exists
-              : draft.activeAgents.some(
-                  (activeAgent) => activeAgent.agentUnid === agent.agentUnid
-                );
-          return {
-            ...agent, // Spread the original agent properties
-            agentActive: isActive, // Add or update the agentActive property
-          };
-        });
-    
-        // Assign the updated agents array to the draft state
-        draft.agents = updatedAgents;
-      });
-    // Update Active Status of an Agent
-    case UPDATE_AGENT:
-      return produce(state, (draft: DBState) => {
-        const agentIndex = state.agents.findIndex(
-          (agent) => agent.agentUnid === action.payload.agent.agentUnid
-        );
-        if (agentIndex !== -1) {
-          draft.agents[agentIndex] = action.payload.agent;
-        }
-      });
-    // Save the list of Active Agents
-    case SET_ACTIVEAGENTS:
-      return produce(state, (draft: DBState) => {
-        draft.activeAgents = action.payload.activeAgents;
-      });
-    // Add a new active Agent
-    case ADD_ACTIVEAGENT:
-      return produce(state, (draft: DBState) => {
-        // Look for possible duplicate before adding
-        const agentIndex = state.activeAgents.findIndex(
-          (agent) => agent.agentUnid === action.payload.activeAgent.agentUnid
-        );
-        if (agentIndex === -1) {
-          draft.activeAgents.push(action.payload.activeAgent);
-        }
-      });
-    // Delete an Active Agent
-    case DELETE_ACTIVEAGENT:
-      return produce(state, (draft: DBState) => {
-        const agentIndex = state.activeAgents.findIndex(
-          (agent) => agent.agentUnid === action.payload.activeAgent
-        );
-        if (agentIndex !== -1) {
-          draft.activeAgents.splice(agentIndex, 1);
-        }
-      });
-    // Set selected form name
-    case SET_FORM_NAME:
-      return {
-        ...state,
-        formName: action.payload,
-      }
-    // Save the results from a Read formula test
-    case SAVE_READ_RESULT:
-      return {
-        ...state,
-        displayTestResults: true,
-        displayReadResults: true,
-        readFormulaResults: action.payload,
-      };
-    // Save the results from a Write formula test
-    case SAVE_WRITE_RESULT:
-      return {
-        ...state,
-        displayTestResults: true,
-        displayWriteResults: true,
-        writeFormulaResults: action.payload,
-      };
-    // Save the results from a Delete formula test
-    case SAVE_DELETE_RESULT:
-      return {
-        ...state,
-        displayTestResults: true,
-        displayDeleteResults: true,
-        deleteFormulaResults: action.payload,
-      };
-    // Save the results from a Load formula test
-    case SAVE_LOAD_RESULT:
-      return {
-        ...state,
-        displayTestResults: true,
-        displayLoadResults: true,
-        loadFormulaResults: action.payload,
-      };
-    // Save the results from a Save formula test
-    case SAVE_SAVE_RESULT:
-      return {
-        ...state,
-        displayTestResults: true,
-        displaySaveResults: true,
-        saveFormulaResults: action.payload,
-      };
-    // Clears all the results from the Formula tests
-    case CLEAR_FORMULA_RESULTS:
-      return {
-        ...state,
-        displayTestResults: false,
-        displayReadResults: false,
-        readFormulaResults: '',
-        displayWriteResults: false,
-        writeFormulaResults: '',
-        displayDeleteResults: false,
-        deleteFormulaResults: '',
-        displayLoadResults: false,
-        loadFormulaResults: '',
-        displaySaveResults: false,
-        saveFormulaResults: '',
+    },
+  },
+  extraReducers: (builder) => {
+    const saveFormulaResult = (display: keyof DBState, results: keyof DBState) =>
+      (state: DBState, action: any) => {
+        state.displayTestResults = true;
+        (state as any)[display] = true;
+        (state as any)[results] = action.payload;
       };
 
-    // Store Databse error to display in the UI
-    case SET_DB_ERROR:
-      return {
-        ...state,
-        dbError: true,
-        dbErrorMessage: action.payload,
-      };
+    builder
+      .addCase(FETCH_AVAILABLE_DATABASES, (state, action: any) => {
+        state.availableDatabases = action.payload;
+      })
+      .addCase(VIEWS_ERROR, (state, action: any) => {
+        state.updateViewError = action.payload;
+      })
+      .addCase(AGENTS_ERROR, (state, action: any) => {
+        state.updateAgentError = action.payload;
+      })
+      .addCase(SET_ACTIVEVIEWS, (state, action: any) => {
+        state.activeViews = action.payload.activeViews;
+      })
+      .addCase(SET_ACTIVEAGENTS, (state, action: any) => {
+        state.activeAgents = action.payload.activeAgents;
+      })
+      .addCase(SAVE_READ_RESULT, saveFormulaResult('displayReadResults', 'readFormulaResults'))
+      .addCase(SAVE_WRITE_RESULT, saveFormulaResult('displayWriteResults', 'writeFormulaResults'))
+      .addCase(SAVE_DELETE_RESULT, saveFormulaResult('displayDeleteResults', 'deleteFormulaResults'))
+      .addCase(SAVE_LOAD_RESULT, saveFormulaResult('displayLoadResults', 'loadFormulaResults'))
+      .addCase(SAVE_SAVE_RESULT, saveFormulaResult('displaySaveResults', 'saveFormulaResults'))
+      .addCase(SET_DB_ERROR, (state, action: any) => {
+        state.dbError = true;
+        state.dbErrorMessage = action.payload;
+      })
+      .addCase(CLEAR_DB_ERROR, (state) => {
+        state.dbError = false;
+        state.dbErrorMessage = '';
+      })
+      .addCase(INIT_STATE, () => initialState);
+  },
+});
 
-    // Clear database error
-    case CLEAR_DB_ERROR:
-      return {
-        ...state,
-        dbError: false,
-        dbErrorMessage: '',
-      };
+export const {
+  fetchKeepDatabases,
+  fetchKeepScopes,
+  addAvailableDatabase,
+  addNewSchemaToState,
+  clearSchemaForm,
+  updateError,
+  fetchDbConfig,
+  addSchema,
+  addScope,
+  updateScope,
+  deleteSchema,
+  deleteScope,
+  updateSchema,
+  setPullDatabase,
+  setPullScope,
+  formLoading,
+  appendFormData,
+  setForms,
+  addForm,
+  setCurrentForms,
+  cacheModes,
+  cacheFormFields,
+  setRetryCount,
+  appendConfiguredForm,
+  unConfigForm,
+  setDbIndex,
+  resetForm,
+  setLoadedForm,
+  setLoadedFields,
+  setActiveForm,
+  addActiveFields,
+  setViews,
+  updateView,
+  addActiveView,
+  deleteActiveView,
+  setFolders,
+  setAgents,
+  updateAgent,
+  addActiveAgent,
+  deleteActiveAgent,
+  setFormName,
+  clearFormulaResults,
+  clearDatabasePullResult,
+  clearForms,
+  addNsfDesign,
+  setOnlyShowSchemasWithScopes,
+  fetchKeepPermissions,
+} = databasesSlice.actions;
 
-    // Setting databasepull value as false
-    case CLEAR_DATABASEPULL_RESULT:
-      return {
-        ...state,
-        databasePull: false,
-        scopePull: false,
-      };
-
-    // Clear the results of forms
-    case CLEAR_FORMS:
-      return {
-        ...state,
-        forms: [],
-      };
-      
-    // 
-    case ADD_NSF_DESIGN:
-      return {
-        ...state,
-        nsfDesigns: {
-          ...state.nsfDesigns,
-          [action.payload.nsfPath]: { 
-            ...state.nsfDesigns[action.payload.nsfPath],
-            ...action.payload.nsfDesign
-          },
-        },
-      };
-      
-    // Set only show schemas configured with scopes filter
-    case SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES:
-      return {
-        ...state,
-        onlyShowSchemasWithScopes: action.payload,
-      };
-    // 
-    case FETCH_KEEP_PERMISSIONS:
-      return {
-        ...state,
-        permissions: {
-          createDbMapping: action.payload.createDbMapping,
-          deleteDbMapping: action.payload.deleteDbMapping,
-        },
-      };
-    case INIT_STATE:
-      return {
-        ...initialState
-      };
-    default:
-      return state;
-  }
-}
+export default databasesSlice.reducer;

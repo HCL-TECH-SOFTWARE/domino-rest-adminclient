@@ -1,0 +1,401 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+/* ==========================================================================
+ * keep-theme.css — the single source of truth for Keep's design tokens.
+ *
+ * Everything brand-coloured in the app should resolve, directly or through an
+ * alias, to one of the `--wa-color-brand-*` steps defined here. Nothing else
+ * may define a brand ramp.
+ *
+ * Web Awesome's brand scale is lightness-based and runs 95 (lightest) → 05
+ * (darkest), which is the inverse of the old Shoelace 50…950 scale. Semantic
+ * tokens are derived from it, so overriding the ramp is enough to re-brand
+ * every WA component:
+ *
+ *   --wa-color-brand-fill-loud   = --wa-color-brand-50
+ *   --wa-color-brand-border-loud = --wa-color-brand-60
+ *
+ * Load order (src/index.tsx): webawesome.css → keep-theme.css → keep-overrides.css.
+ * Custom properties resolve at computed-value time, so an alias may reference a
+ * token defined in a later sheet — `styles.css` relies on that.
+ *
+ * The same applies to the dark surface/text palette pinned below (#708): Keep's
+ * values, not WA's, so that the Linaria layer and the keep-* elements can point
+ * at a token instead of each repeating the hex.
+ *
+ * Decisions recorded in #705; consolidation tracked by #706. Replacing the
+ * remaining hardcoded literals across the Linaria layer is #708.
+ * ========================================================================== */
+
+:root {
+    /*
+     * Light ramp. Base is --wa-color-brand-50 (#7c5fd9); the other steps hold
+     * hue and saturation constant and vary lightness.
+     *
+     * #7c5fd9 was chosen (#705) because it is what the app already renders:
+     * this ramp previously lived in keep-overrides.css, which is imported last
+     * and so already won over the #7e57c2 values in styles.css.
+     *
+     * Those #7e57c2 values are gone as of #765 — they survived as a scoped block
+     * that re-pinned the ramp for the login buttons alone, so the login screen was
+     * the one place still rendering the old purple. Deleting it puts that screen on
+     * the ramp like everything else; verified in a browser as no visible change,
+     * because the block was already losing to keep-theme.css almost everywhere.
+     *
+     * One of its declarations set --wa-color-brand and --wa-color-brand-on to the
+     * *same* colour, which looks like an invisible-label bug and is not: wa-button
+     * reads --wa-color-brand-on-loud/-normal/-quiet, never the bare
+     * --wa-color-brand-on. It was inert, the same as the Shoelace-era names #706
+     * removed.
+     *
+     * KEEP_ADMIN_BASE_COLOR in src/config.dev.ts must equal --wa-color-brand-50: it
+     * is the JS copy MUI needs, and test/styles/keep-theme.test.ts pins the two.
+     */
+    --wa-color-brand-95: #f1edfa; /* lightest tint */
+    --wa-color-brand-90: #e0d7f5;
+    --wa-color-brand-80: #c3b3ec;
+    --wa-color-brand-70: #a48ee3;
+    --wa-color-brand-60: #8a6fdc;
+    --wa-color-brand-50: #7c5fd9; /* base */
+    --wa-color-brand-40: #684db3;
+    --wa-color-brand-30: #523d8c;
+    --wa-color-brand-20: #3c2d66;
+    --wa-color-brand-10: #261d40;
+    --wa-color-brand-05: #140e20; /* darkest shade */
+
+    /* Base brand aliases used by some components/utilities. */
+    --wa-color-brand: var(--wa-color-brand-50);
+    --wa-color-brand-on: #ffffff;
+
+    /*
+     * Scale Web Awesome's typographic ramp to ~85% of the default. Every
+     * --wa-font-size-* token derives from this, so all WA components shrink
+     * proportionally to match the prior Shoelace sizing.
+     *
+     * #705 decided to keep 0.85 rather than re-map every size at 1.0. Any
+     * px→token mapping must therefore be validated *with this scale applied*,
+     * or converted sizes render ~15% smaller than the literals they replace.
+     */
+    --wa-font-size-scale: 0.85;
+
+    /*
+     * Corner radius, scaled for the same reason --wa-font-size-scale is (#708).
+     *
+     * WA's stock ladder is s=3px, m=6px, l=12px. The app's own radii are 10px
+     * (34 uses), 5px (18) and 3px (13), so at scale 1 only 3px has a home and the
+     * dominant 10px is 2px away from --wa-border-radius-l.
+     *
+     * 5/6 shifts the ladder to s=2.5px, m=5px, l=10px, which lands the two most
+     * common literals *exactly* on steps and 3px within half a pixel. Written as
+     * a fraction rather than 0.8333 so the intent stays legible.
+     *
+     * The trade is that WA's own components lose ~17% of their corner radius --
+     * a wa-button goes 6px -> 5px. That is the same trade #705 already made for
+     * type, and it pulls WA's corners onto the app's rather than leaving two
+     * radius languages side by side.
+     */
+    --wa-border-radius-scale: calc(5 / 6);
+
+    /*
+     * Light text (#708 PR 1 deferred these; PR 2 needs them).
+     *
+     * #383838 is getTheme('default').textColorPrimary — the colour Keep's body
+     * text already renders. Pinning it here means the ~25 keep-* element rules
+     * that said `light-dark(inherit, #e0e0e0)` resolve to the *same* colour they
+     * were inheriting, so converting them to a token does not move light mode.
+     *
+     * #000 is what those elements use for emphasised text, so text-loud is pinned
+     * to it: the `light-dark(#000, #ffffff)` rules then convert exactly, both ends.
+     *
+     * Contrast on white: #383838 gives 11.7:1, #000 gives 21:1 — both far past AA.
+     * Surfaces are not pinned in light mode because WA already renders white.
+     */
+    --wa-color-text-normal: #383838; /* getTheme('default').textColorPrimary */
+    --wa-color-text-loud: #000000;
+
+    /*
+     * Light page surface (#765).
+     *
+     * The dark block below says light mode needs no surface pins "because WA already
+     * renders white". That is true of surface-default and surface-raised and **false**
+     * of surface-lowered, which WA renders as #f1f2f3 — a light grey page behind white
+     * cards. Keep's page is white (`--body-color: light-dark(#fff, #181825)`).
+     *
+     * Caught by screenshotting the login screen before and after, not by the suite:
+     * converting `light-dark(#fff, #181825)` to the token turned the page grey, which
+     * is exactly the kind of change `css: false` cannot see. Pinning it restores white
+     * and makes the conversion the no-op it was supposed to be.
+     *
+     * The cost is that light mode now has no surface hierarchy — lowered, default and
+     * raised are all white. That is what Keep already rendered; if a raised card ever
+     * needs to lift off the page, this is the token to give it.
+     */
+    --wa-color-surface-lowered: #ffffff;
+
+    /*
+     * Light borders (#765).
+     *
+     * The dark side of this token has been pinned since #708; the light side was
+     * left to Web Awesome, which renders #e4e5e9. Keep's own borders cluster an
+     * order of magnitude darker — across the Linaria layer they were written as
+     * #b8b8b8, #b9b9b9, #bfbfbf, #bdbdbd, #b4b4b4, #a5afbe, #d1d1d1, #ccc, #848484
+     * and the keyword `grey`, ten spellings of one intent.
+     *
+     * Pinning the light side too makes the token symmetric and makes converting
+     * those sites a no-op rather than a 40 %-lighter border. #b9b9b9 is the mode of
+     * the distribution (6 of 16 sites are #b9b9b9 or #b8b8b8).
+     *
+     * Knock-on: WA's own component borders darken in light mode, from #e4e5e9 to
+     * #b9b9b9. That is deliberate — it pulls WA's chrome onto the app's border
+     * weight instead of leaving two border languages side by side, the same trade
+     * #705 made for type and #708 for radius.
+     *
+     * Neither value clears the 3:1 WCAG bar for UI-component boundaries (#e4e5e9 is
+     * 1.26:1 on white, #b9b9b9 is 1.98:1). That is pre-existing and not addressed
+     * here; raising it is a design decision, not a tokenization one.
+     */
+    --wa-color-surface-border: #b9b9b9;
+
+    /*
+     * Tinted surfaces (#765).
+     *
+     * Not every background in the app is one of the three semantic surfaces. Two
+     * tints are used repeatedly and had started to drift, which is the specific
+     * problem a token fixes:
+     *
+     *   accent     table headers and tab strips — #f8fbff in four places and
+     *              #f9fbff in two, one unit apart in green and indistinguishable
+     *   highlight  selected / active rows — #e6ebf5, three places
+     *   header     the banded <thead> — #f0f4f7, previously a single-use literal
+     *              in ConsentsTable
+     *
+     * `header` was on the single-use list below until #771 moved that band into
+     * `keep-data-table`. Inside `src/components/keep-elements/**` the #708 rule
+     * applies — chrome colours are tokens, not `light-dark()` literals, because a
+     * literal looks theme-aware and so reads as correct in review. Enforced by
+     * `test/components/keep-elements/theme-selectors.test.ts`.
+     *
+     * Genuinely single-use tints (the two translucent whites on the login glass
+     * panel) are still left as literals: they are not duplicated, so a token would
+     * add indirection without removing drift.
+     */
+    --keep-surface-accent: #f8fbff;
+    --keep-surface-highlight: #e6ebf5;
+    --keep-surface-header: #f0f4f7;
+
+    /*
+     * The two halves of --base-color (#765).
+     *
+     * `styles.css` used one token for two opposite roles: a *text* colour
+     * (`.color-base`) and a *surface* fill that carries white text
+     * (`.background-keep-base`, `.app-form-header`, `.scope-form-header`,
+     * `.drawer-available-databases-text`). A single value cannot be tuned for both —
+     * darker helps the text role and hurts the white-on-brand role — which is why the
+     * old comment there said no step was ideal.
+     *
+     *   role                         light           dark            contrast
+     *   text on surface              brand-40        brand-60        6.36 / 5.11
+     *   white text on the fill       brand-40        brand-40        6.36 / 4.90
+     *
+     * ### The fill must clear 4.5, not 3.0 (#910)
+     *
+     * This table used to say the fill role only had to clear 3.0, "because it is 24px,
+     * WCAG large text". Three of its four consumers are 24px; the fourth,
+     * `.drawer-available-databases-text`, is **18px at weight 400**. WCAG 2.1 large text
+     * is ≥18pt (24px), or ≥14pt (18.66px) bold — so 18px/400 is normal text and needs
+     * 4.5:1. At the old dark value (brand-60) it measured **3.21** and failed 1.4.3.
+     *
+     * The dark half therefore reads brand-40, not brand-60. White text over the ramp,
+     * measured:
+     *
+     *   step       light   dark
+     *   brand-60    3.90   3.21   <- old dark value, fails
+     *   brand-50    4.67   3.95   fails in dark
+     *   brand-40    6.36   4.90   <- both clear 4.5
+     *   brand-30    8.73   7.10
+     *
+     * **Web Awesome's own guaranteed pair does not solve this here.** The obvious fix is
+     * `--wa-color-brand-fill-loud` with `--wa-color-brand-on-loud`, which WA designs to be
+     * contrast-safe. That holds in WA's default theme because there `fill-loud` is brand-50
+     * in *both* modes. This file overrides the brand ramp per mode (see the two ramp blocks),
+     * so `fill-loud` resolves to two different colours here and the dark one is 3.95 — still
+     * short of 4.5. Overriding a ramp silently voids the guarantee built on top of it.
+     *
+     * `test/styles/keep-theme.test.ts` now computes this rather than trusting the comment.
+     */
+    --keep-text-brand: var(--wa-color-brand-40);
+    --keep-surface-brand: var(--wa-color-brand-40);
+
+    /*
+     * Sidenav (#708 PR 3).
+     *
+     * Keep-namespaced rather than --wa-*, because none of this is a Web Awesome
+     * concept: the sidenav has its own gradient identity that is not the brand
+     * ramp and has no semantic token to point at.
+     *
+     * These carry no light/dark variants because they never had any — getTheme()
+     * defined byte-identical `sidenav` blocks in both its branches, so the eight
+     * call sites were paying for a theme lookup that could not change the answer.
+     * Whether dark mode *should* restyle the sidenav is a design question this
+     * does not attempt to settle; it preserves today's behaviour exactly.
+     */
+    --keep-sidenav-background: linear-gradient(180deg, #5e1ebe 10.94%, #3b91ff 57.29%, #8cc7f9 100%);
+    --keep-sidenav-border: #cfcfcf;
+    --keep-sidenav-active: #002c70;
+    --keep-sidenav-hover: #0a3e8f;
+    --keep-sidenav-on: #ffffff;
+
+    /*
+     * Validation text (#765).
+     *
+     * Web Awesome has no "danger text" / "success text" token — its danger and
+     * success aliases are all fill/border/on-fill roles. Validation *labels* and
+     * *help text* need one, and unlike a border they have to clear the 4.5:1 AA
+     * bar for normal text, which no single step does in both modes.
+     *
+     * Measured in Chrome against the app's own surfaces:
+     *
+     *   step        hex       #ffffff  #f5f5f5   #1e1e2e  #181825
+     *   danger-40   #b30532     7.03     6.45        —        —
+     *   danger-50   #dc3146     4.59     4.20      3.57     3.82
+     *   danger-60   #f3676c     3.01     2.76      5.44     5.82
+     *   success-40  #036730     7.03     6.45        —        —
+     *   success-50  #00883c     4.58     4.20      3.58     3.83
+     *   success-60  #00ac49     3.00     2.75      5.47     5.85
+     *
+     * **Four backgrounds, not two, and that is what #944 was about.** The original
+     * pair was chosen against `#ffffff` and `#1e1e2e` — the two `surface-default`
+     * tokens — where -50 measured 4.59 and cleared AA honestly. But these are page
+     * text colours and plenty of consumers sit on the *page*, which is `#f5f5f5`
+     * light and `#181825` dark (`getTheme().bodyColor`). On `#f5f5f5`, -50 is
+     * **4.20** and fails AA for normal text by a small but real margin.
+     *
+     * So light takes **-40**, which clears 4.5 on both light backgrounds (6.45 on
+     * the page, 7.03 on a white card) rather than only on the lighter one. Dark
+     * stays at -60: 5.82/5.85 on the page and 5.44/5.47 on a raised surface, both
+     * clear. A step is only safe if it passes against the *darker* of the two light
+     * backgrounds and the *lighter* of the two dark ones.
+     *
+     * Higher step = lighter, throughout. #944 suggested moving light to `-70` to
+     * make it darker; that is the wrong direction — -70 measures 2.21 on the page.
+     *
+     * The colour ramps themselves are mode-invariant — only which step you read
+     * changes — which is why this needs a token rather than a `light-dark()`.
+     *
+     * Borders do not need their own token: --wa-color-danger-fill-loud resolves to
+     * #dc3146 in both modes (4.59 / 3.57), and both clear the 3:1 WCAG bar for
+     * non-text. WA's --wa-color-danger-border-loud does not — it reads danger-60 in
+     * light (3.01, borderline) and danger-40 in dark (2.33, fails).
+     */
+    --keep-color-danger-text: var(--wa-color-danger-40);
+    --keep-color-success-text: var(--wa-color-success-40);
+
+    /*
+     * Tooltip chrome (#765).
+     *
+     * Inverted surface, so it does not follow --wa-color-surface-*: the tooltip is
+     * dark-on-light in light mode and stays dark (a lighter grey) in dark mode.
+     * These are the values keep-tooltip.ts already rendered — it branched on
+     * `document.body.dataset.theme` in JS to pick them. Moving them here lets that
+     * branch go, so no component reads the theme any more.
+     */
+    --keep-tooltip-surface: #18191b;
+    --keep-tooltip-on: #ffffff;
+}
+
+/*
+ * Dark ramp.
+ *
+ * Keyed on `.wa-dark`, which `services/theme-service.ts` is the single writer
+ * for — set on <html> at boot (the inline script in index.html) and on every
+ * runtime toggle. It replaces an `@media (prefers-color-scheme: dark)` block
+ * that keyed on the *OS* preference, so the brand went light whenever the OS
+ * was dark even if the app was in light mode, and stayed light when the OS was
+ * light even if the app was in dark mode. Both are fixed by keying on the class.
+ *
+ * Values are the ones dark-mode.css always intended: they were written there as
+ * --wa-color-brand-600/500/700, which are not valid WA token names (the scale is
+ * 05…95), so they never applied. Re-mapped here onto the real steps.
+ */
+:root.wa-dark {
+    --wa-color-brand-70: #b8a3ea;
+    --wa-color-brand-60: #9b7ee8; /* border-loud */
+    --wa-color-brand-50: #8b6ce0; /* base / fill-loud */
+    --wa-color-brand-40: #7b5cd0;
+    --wa-color-brand-30: #63489f;
+
+    --wa-color-brand-on: #ffffff;
+
+    /*
+     * Dark surface / text palette (#708).
+     *
+     * These values are Keep's, not Web Awesome's. They were previously written
+     * down three times and drifted independently:
+     *
+     *   getTheme('dark')                  in store/styles/action.ts  (JS object)
+     *   light-dark(#fff, #1e1e2e) & co.   in the keep-* elements     (~100 literals)
+     *   raw hex                           in styles.css / dark-mode.css
+     *
+     * Pinning them here makes this file the only place they exist, so the
+     * Linaria layer and the keep-* elements can both point at a token instead of
+     * repeating a hex.
+     *
+     * Pinned at the *semantic* level rather than by overriding --wa-color-neutral-*,
+     * because that ramp is shared between light and dark: only the semantic tokens
+     * switch which step they read. Dark surface-raised wants neutral-10 = #252535
+     * while light text-normal wants neutral-10 = #383838 — one ramp cannot satisfy
+     * both. Pinning semantics also leaves WA's own neutral ramp intact for the
+     * component internals that are tuned against it.
+     *
+     * Only the dark side is pinned. WA's light values already match what Keep
+     * renders (both surfaces are white); the remaining light-mode text nuances
+     * (#383838 vs #000 vs `inherit`) are per-site judgements, settled where those
+     * sites are converted rather than guessed at globally here.
+     *
+     * The three surfaces nest the way WA intends — lowered (page) sits behind
+     * default, which sits behind raised (cards) — so Keep's existing three-value
+     * stack maps onto them one-for-one.
+     *
+     * surface-lowered is pinned rather than left to derive. WA computes it as
+     * surface-default mixed with 20% black, which from #1e1e2e gives #13131f;
+     * Keep's page background is #181825, a little lighter. Pinning keeps the page
+     * background where it is instead of darkening it as a side effect.
+     */
+    --wa-color-surface-lowered: #181825; /* getTheme('dark').bodyColor */
+    --wa-color-surface-default: #1e1e2e; /* getTheme('dark').primary   */
+    --wa-color-surface-raised: #252535; /* getTheme('dark').secondary */
+    --wa-color-surface-border: #3a3a4a; /* getTheme('dark').borderColor */
+    --wa-color-text-normal: #e0e0e0; /* getTheme('dark').textColorPrimary */
+    --wa-color-text-loud: #ffffff;
+
+    /* Validation text: the lighter step, so it clears AA on a dark surface. See
+       the light block above for the measured contrast table. */
+    --keep-color-danger-text: var(--wa-color-danger-60);
+    --keep-color-success-text: var(--wa-color-success-60);
+
+    /* The dark halves of the tints the light block introduces. `accent` collapses
+       onto surface-default because that is what all six sites already used in dark
+       mode — the tint only ever existed in light. `header` keeps a distinct dark
+       value: ConsentsTable's band was `light-dark(#F0F4F7, #252535)`, so both halves
+       already existed and carrying them over keeps #771's migration 1:1. */
+    --keep-surface-accent: #1e1e2e;
+    --keep-surface-highlight: #3a3a5a;
+    --keep-surface-header: #252535;
+
+    /* The text half reads -60: it is brand-coloured text on a dark surface, where a
+       lighter step is what gives contrast.
+
+       The surface half reads **-40**, not -60. It is the opposite role — a fill carrying
+       white text — so it needs a *darker* step, and -60 gave white only 3.21:1 against the
+       18px consumer's 4.5 requirement (#910). -40 gives 4.90. See the light block for the
+       measured ramp and why brand-fill-loud is not the answer here. */
+    --keep-text-brand: var(--wa-color-brand-60);
+    --keep-surface-brand: var(--wa-color-brand-40);
+
+    /* #4a4a4a is what keep-tooltip.ts's `isDark` branch already used. */
+    --keep-tooltip-surface: #4a4a4a;
+}

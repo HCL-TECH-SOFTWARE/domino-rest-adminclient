@@ -1,0 +1,419 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+import { html, css, nothing } from 'lit';
+import type { PropertyValues } from 'lit';
+import { customElement, property, state, query } from 'lit/decorators.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import { FA_LIBRARY } from '../../services/icon-library';
+import { KeepElement } from './keep-element';
+
+/**
+ * Autocomplete text input with a filterable dropdown of options.
+ * Tag: `keep-autocomplete`. Exposed via `KeepElements.tsx` as `KeepAutocomplete`.
+ */
+@customElement('keep-autocomplete')
+export default class Autocomplete extends KeepElement {
+  static styles = css`
+    .parent-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      overflow: visible;
+    }
+
+    .autocomplete-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 1000;
+      visibility: hidden;
+      background-color: var(--wa-color-surface-default);
+      border: 1px solid var(--wa-color-surface-border);
+      border-radius: var(--wa-border-radius-m);
+      width: 100%;
+      z-index: 9999;
+      max-height: 30vh;
+      overflow: auto;
+    }
+    .dropdown.show {
+      visibility: visible;
+    }
+    .dropdown--above {
+      top: auto;
+      bottom: 100%;
+    }
+
+    .input-container {
+      width: 97%;
+      border: 1px solid var(--wa-color-surface-border);
+      border-radius: var(--wa-border-radius-m);
+      padding: 15px 10px;
+      font-size: var(--wa-font-size-m);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0;
+      position: relative;
+      background-color: var(--wa-color-surface-default);
+      color: var(--wa-color-text-normal);
+    }
+    .input-container.error {
+      border: 1px solid red;
+    }
+
+    input {
+      width: 85%;
+      border: none;
+      padding: 0;
+      margin: 0;
+      outline: none;
+      background-color: transparent;
+      color: inherit;
+    }
+
+    .button-container {
+      width: 8%;
+      padding: 0;
+      margin: 0;
+    }
+
+    button {
+      border: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      background: none;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    svg {
+      background: none;
+    }
+
+    p {
+      margin: 8px 0 0 2px;
+      font-size: var(--wa-font-size-m);
+      color: red;
+    }
+
+    ul {
+      padding: 0;
+      margin: 0;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    li {
+      list-style-type: none;
+      padding: 10px 15px;
+      margin: 0;
+      color: var(--wa-color-text-normal);
+    }
+    li:hover, li.highlighted {
+      background-color: light-dark(#e5e5e5, #353548);
+    }
+
+    @media only screen and (min-width: 992px) {
+      :host {
+        font-size: 16px;
+      }
+
+      input, .input-container {
+        font-size: 16px;
+      }
+
+      p {
+        font-size: var(--wa-font-size-s);
+      }
+    }
+
+    /*
+     * The caret used to carry width/height and its rotation in a style attribute. The
+     * rotation was interpolated, and the production CSP sends style-src-attr 'none', which
+     * blocks Lit from applying an interpolated style — so the caret never turned. #685.
+     */
+    /*
+     * The rotation is inverted from what stood here, and deliberately (#946). The polygon
+     * this replaces drew an *upward* triangle, so the closed state rotated it 180deg to point
+     * down and the open state undid that. A registered caret-down already points down, so the
+     * resting state needs no transform and it is the open state that turns.
+     */
+    .caret {
+      font-size: 12px;
+      transition: transform 0.2s ease;
+    }
+
+    .caret.open {
+      transform: rotate(180deg);
+    }
+
+    /* Option and selection icons; these were inline sizes on the <img> elements. */
+    .option-icon {
+      width: 24px;
+      height: 24px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    /* wa-icon takes its box from font-size, not width. The cross was drawn in #808283;
+       currentColor picks up the field's own text colour instead, which is what every other
+       control in this element already does. */
+    .clear-icon {
+      font-size: 15px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+    }
+  `;
+
+  // `readonly` because callers pass shared constants (`APP_ICON_NAMES`) — this element
+  // only ever filters and reads, never mutates, the list it is given.
+  @property({ type: Array }) accessor options: readonly string[] = [];
+  @property({ type: String }) accessor selectedOption = '';
+  @property({ type: Boolean }) accessor error = false;
+  @property({ type: String }) accessor errorMessage = '';
+  @property({ type: String }) accessor initialOption = '';
+  @property({ type: Object }) accessor icons: Record<string, string> = {};
+
+  /**
+   * The field's accessible name (#713).
+   *
+   * Every call site sits under a visual caption — "App Icons", "Database", the scope row's
+   * heading — and not one of them was associated with the control, so the input's accessible
+   * name was **empty**: it carried a single `list` attribute and nothing else. A caption
+   * that is merely nearby is not a name (WCAG 4.1.2), and there is no `<label for>` to reach
+   * it across this shadow boundary anyway.
+   *
+   * A property rather than a host `aria-label`, because a host attribute would not reach the
+   * `input` inside this root — the same trap that makes `aria-label` useless on a `wa-input`,
+   * measured while fixing `keep-nsf-card` in this pass.
+   */
+  @property({ type: String }) accessor label = '';
+
+  @state() private accessor filteredOptions: readonly string[] = [];
+  @state() private accessor highlightedOptionIndex = -1;
+  @state() private accessor showDropdown = false;
+
+  /**
+   * Cached in `updated()` and read during `render()`. Deliberately NOT reactive
+   * (kept a plain field, matching the original): assigning it must not trigger
+   * an extra render on its own.
+   */
+  private hasIcons = false;
+
+  @query('input') private accessor _input!: HTMLInputElement;
+  @query('.dropdown') private accessor _dropdown!: HTMLElement;
+
+  updated(changedProperties: PropertyValues): void {
+    if (changedProperties.has('icons')) {
+      this.hasIcons = Object.keys(this.icons).length > 0;
+    }
+  }
+
+  render() {
+    return html`
+      <div class="parent-container">
+        <section class="autocomplete-container">
+          <section class="input-container ${this.error ? 'error' : ''}">
+            ${this.hasIcons && this.selectedOption && this.icons[this.selectedOption] ? html`
+              <img
+                class="option-icon"
+                src="data:image/svg+xml;base64,${this.icons[this.selectedOption]}"
+                alt=""
+              >
+            ` : ''}
+            <input
+              list="autocomplete-options"
+              aria-label=${this.label || nothing}
+              .value="${this.selectedOption.length > 0 ? this.selectedOption : this.initialOption}"
+              @input="${this._handleInput}"
+              @click="${this._handleInput}"
+              @keydown="${this._handleKeyDown}"
+            >
+            <!--
+              Both buttons hold nothing but an aria-hidden glyph, so until #713 neither had
+              any accessible name at all — a screen reader announced "button", twice, with
+              nothing to tell them apart. They are named for what they do, and the name says
+              which field they belong to when one is given.
+
+              type="button" as well: these sit inside forms at three of the four call sites,
+              and a button with no type submits.
+            -->
+            <section class="button-container">
+              ${this.selectedOption !== '' ? html`
+                <button
+                  type="button"
+                  aria-label=${this.label ? `Clear ${this.label}` : 'Clear selection'}
+                  @click="${this._handleClearInput}"
+                >
+                  <wa-icon class="clear-icon" library=${FA_LIBRARY} name="xmark" canvas="auto" aria-hidden="true"></wa-icon>
+                </button>
+            ` : html``}
+            </section>
+            <section class="button-container">
+              <button
+                type="button"
+                aria-label=${this.label ? `Show ${this.label} options` : 'Show options'}
+                aria-expanded=${this.showDropdown ? 'true' : 'false'}
+                @click="${this._toggleDropdown}"
+              >
+                <wa-icon
+                  class="caret ${this.showDropdown ? 'open' : ''}"
+                  library=${FA_LIBRARY}
+                  name="caret-down"
+                  canvas="auto"
+                  aria-hidden="true"
+                ></wa-icon>
+              </button>
+            </section>
+          </section>
+          <section class="dropdown ${this.showDropdown ? 'show' : ''}" @focusout="${this._handleFocusOut}">
+            <ul>
+              ${this.filteredOptions.map((option, index) => html`
+                <li
+                  id="option-${index}"
+                  class="option-row ${index === this.highlightedOptionIndex ? 'highlighted' : ''}"
+                  @mousedown="${() => this._handleOptionClick(option)}"
+                >
+                  ${this.hasIcons ?
+                    html`<img
+                      class="option-icon"
+                      src="data:image/svg+xml;base64,${this.icons[option]}"
+                      alt=""
+                    >`
+                    :
+                    ''} ${option}
+                </li>
+              `)}
+            </ul>
+          </section>
+          <p>${this.error ? this.errorMessage : ""}</p>
+        </section>
+      </div>
+    `;
+  }
+
+  private _handleInput(e: Event): void {
+    this.showDropdown = true;
+    this.selectedOption = (e.target as HTMLInputElement).value;
+    this.emit('change');
+    this.filteredOptions = this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase()));
+    this.requestUpdate();
+    setTimeout(() => {
+      if (this.showDropdown) {
+        this._adjustDropdownPosition();
+      }
+    }, 0);
+  }
+
+  private _handleOptionClick(option: string): void {
+    this.selectedOption = option;
+    this.emit('change');
+    this.showDropdown = false;
+    this.requestUpdate();
+  }
+
+  private _handleFocusOut(e: FocusEvent): void {
+    // Check if the new focused element is outside the component
+    if (!this.shadowRoot!.contains(e.relatedTarget as Node | null)) {
+      setTimeout(() => {
+        this.showDropdown = false;
+        this.requestUpdate();
+      }, 0);
+    }
+  }
+
+  private _handleKeyDown(e: KeyboardEvent): void {
+    switch (e.key) {
+      case 'ArrowDown':
+        if (this.highlightedOptionIndex < this.filteredOptions.length - 1) {
+          this.highlightedOptionIndex++;
+        }
+        break;
+      case 'ArrowUp':
+        if (this.highlightedOptionIndex > 0) {
+          this.highlightedOptionIndex--;
+        }
+        break;
+      case 'Enter':
+        if (this.highlightedOptionIndex >= 0) {
+          this.selectedOption = this.filteredOptions[this.highlightedOptionIndex];
+          this.emit('change');
+        }
+        this.showDropdown = false;
+        break;
+      default:
+        break;
+    }
+    this.requestUpdate();
+    this._scrollIntoView();
+  }
+
+  private _scrollIntoView(): void {
+    if (this.highlightedOptionIndex >= 0) {
+      const optionElement = this.shadowRoot!.getElementById(`option-${this.highlightedOptionIndex}`);
+      if (optionElement) {
+        optionElement.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }
+
+  private _handleClearInput(): void {
+    this.selectedOption = ''
+    this.emit('change');
+    this.initialOption = ''
+    this.filteredOptions = this.options
+    this.requestUpdate()
+  }
+
+  private _toggleDropdown(): void {
+    this.filteredOptions = this.selectedOption !== '' ? this.options.filter(option => option.toLowerCase().includes(this.selectedOption.toLowerCase())) : this.options;
+    this.showDropdown = !this.showDropdown;
+    this.requestUpdate();
+    setTimeout(() => {
+      if (this.showDropdown) {
+        this._adjustDropdownPosition();
+      }
+    }, 0);
+  }
+
+  private _adjustDropdownPosition(): void {
+    const inputRect = this._input.getBoundingClientRect();
+    const dropdown = this._dropdown;
+    const spaceBelow = window.innerHeight - inputRect.bottom;
+    const spaceAbove = inputRect.top;
+
+    // Assume dropdown height is 200px, or measure it dynamically
+    const dropdownHeight = dropdown.offsetHeight || 200;
+
+    if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+      dropdown.classList.add('dropdown--above');
+    } else {
+      dropdown.classList.remove('dropdown--above');
+    }
+    this.requestUpdate();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'keep-autocomplete': Autocomplete;
+  }
+}

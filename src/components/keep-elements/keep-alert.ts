@@ -1,0 +1,289 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+import { html, css } from 'lit';
+import type { PropertyValues } from 'lit';
+import { customElement, property, state, query } from 'lit/decorators.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/button/button.js';
+import { FA_LIBRARY } from '../../services/icon-library';
+import { KeepElement } from './keep-element';
+
+/**
+ * Top-layer toast alert built on `<wa-callout>`.
+ * Tag: `keep-alert`. Exposed via `KeepElements.tsx` as `KeepAlert`.
+ *
+ * Uses the Popover API so it renders above `<dialog>`-based components
+ * (e.g. `wa-drawer`). Emits the standardized `alert-closed` event once it has
+ * fully dismissed.
+ */
+@customElement('keep-alert')
+export default class Alert extends KeepElement {
+  static styles = css`
+    /* Reset default popover UA styles and anchor top-right.
+       Popover puts us in the top layer, which renders above <dialog> elements like wa-drawer. */
+    :host {
+      display: block;
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      left: auto;
+      bottom: auto;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      overflow: visible;
+      width: auto;
+      height: auto;
+      max-width: none;
+      max-height: none;
+      color: inherit;
+      z-index: 2147483647;
+    }
+
+    :host(:not(:popover-open)) {
+      display: none;
+    }
+
+    .toast-wrapper {
+      position: relative;
+      min-width: 280px;
+      max-width: 420px;
+      /* Hidden by default; shown via .visible */
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toast-wrapper.visible {
+      animation: slideIn 0.3s ease forwards;
+      pointer-events: auto;
+    }
+
+    .toast-wrapper.hiding {
+      animation: slideOut 0.25s ease forwards;
+      pointer-events: none;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(32px); }
+      to   { opacity: 1; transform: translateX(0);    }
+    }
+
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(0);    }
+      to   { opacity: 0; transform: translateX(32px); }
+    }
+
+    /* Close button — floats in the top-right corner of the callout */
+    .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      color: currentColor;
+      opacity: 0.6;
+      transition: opacity 0.15s ease, background 0.15s ease;
+      z-index: 1;
+    }
+
+    .close-btn:hover {
+      opacity: 1;
+      background: color-mix(in srgb, currentColor 12%, transparent);
+    }
+
+    /* Was a 14px cross drawn from two <line>s at stroke-width 2.5. A registered xmark is
+       solid, so the stroke properties go with the path data, and wa-icon takes its box from
+       font-size rather than width. #946 */
+    .close-btn wa-icon {
+      font-size: 14px;
+      color: currentColor;
+    }
+
+    /* Give the callout message room so it never slides under the X button.
+       Only message is a real wa-callout part -- the component exposes icon and message
+       and nothing else, so the base and body selectors listed here matched nothing. */
+    wa-callout::part(message) {
+      padding-right: 2.5rem;
+    }
+
+    .message {
+      display: block;
+      padding-right: 2rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .close-btn {
+        color: #888;
+      }
+    }
+
+    :host-context(body[data-theme="dark"]) .close-btn {
+      color: #888 !important;
+    }
+  `;
+
+  @property({ type: String }) accessor message = '';
+  @property({ type: String }) accessor variant = 'neutral'; // brand | success | warning | danger | neutral
+  @property({ type: String }) accessor heading = 'Network error!';
+
+  @state() private accessor _visible = false;
+
+  private _timer: ReturnType<typeof setTimeout> | null = null;
+
+  @query('.toast-wrapper') private accessor _wrapper!: HTMLElement | null;
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Enable Popover API so we render in the top layer (above wa-drawer's <dialog>).
+    if (!this.hasAttribute('popover')) {
+      this.setAttribute('popover', 'manual');
+    }
+  }
+
+  /**
+   * Show the alert for `duration` ms (default 1 000 — change to 5 000 for production).
+   * Called externally by the notify() helper.
+   */
+  show(message: string, variant = 'neutral', duration = 5000, heading?: string) {
+    clearTimeout(this._timer ?? undefined);
+
+    this.message = message;
+    this.variant = variant;
+    if (heading !== undefined) {
+      this.heading = heading;
+    }
+    this._visible = true;
+
+    /*
+     * Open via the Popover API, which promotes this element into the **top layer** — above
+     * any <dialog>, and out of every ancestor's clipping and stacking context, wherever it
+     * happens to sit in the tree.
+     *
+     * It used to move itself to document.body first, "so we're not trapped inside another
+     * component's shadow tree" (#952). The popover already answers that, and the move was
+     * doing real harm: both Lit call sites render this element from a template, and a
+     * template holds a ChildPart bracketing the nodes it produced. Relocating one of those
+     * nodes from inside the element's own updated() is what broke the React consumer in
+     * #902, aimed at a different renderer — Lit tolerates it, which is not the same as it
+     * being safe.
+     *
+     * Measured in Chrome with the element nested two shadow roots deep inside a 200x60
+     * overflow:hidden box, with a modal <dialog> open: it paints at the top right, above
+     * the dialog's backdrop, unclipped, and its parentNode is unchanged.
+     */
+    try {
+      if (typeof this.showPopover === 'function' && !this.matches(':popover-open')) {
+        this.showPopover();
+      }
+    } catch (_) {
+      /* already open */
+    }
+
+    this.updateComplete.then(() => {
+      this._timer = setTimeout(() => this._hide(), duration);
+    });
+  }
+
+  private _hide() {
+    const wrapper = this._wrapper;
+    const finish = () => {
+      this._visible = false;
+      try {
+        if (typeof this.hidePopover === 'function' && this.matches(':popover-open')) {
+          this.hidePopover();
+        }
+      } catch (_) {
+        /* not open */
+      }
+      this.emit('alert-closed');
+    };
+
+    if (!wrapper) {
+      finish();
+      return;
+    }
+
+    wrapper.classList.remove('visible');
+    wrapper.classList.add('hiding');
+    wrapper.addEventListener(
+      'animationend',
+      () => {
+        wrapper.classList.remove('hiding');
+        finish();
+      },
+      { once: true },
+    );
+  }
+
+  private _onClose() {
+    clearTimeout(this._timer ?? undefined);
+    this._hide();
+  }
+
+  /**
+   * Auto-show whenever `message` transitions to a non-empty value.
+   *
+   * This was justified as "so React consumers need not call show()", and that consumer is
+   * gone — #806 wave 6 deleted the last `KeepAlert` wrapper with `LoginPage.tsx`. The
+   * behaviour is kept anyway, because it is not a React accommodation: it is what makes the
+   * element usable from a *declarative* renderer at all, and both remaining call sites are
+   * Lit templates written that way —
+   *
+   *     ${dbError ? html`<keep-alert variant="danger" message=${msg}></keep-alert>` : nothing}
+   *
+   * Neither holds a ref or calls `show()`. Removing this would mean a `@query` and a
+   * `firstUpdated` hook in each, to say something the template already says. #952.
+   *
+   * `notify()` in `utils/api-retry.ts` is the imperative caller and goes through `show()`
+   * directly; it never sets `message` on its own, so it does not double-fire here.
+   */
+  protected updated(changed: PropertyValues) {
+    if (changed.has('_visible') && this._visible) {
+      this._wrapper?.classList.add('visible');
+    }
+    if (changed.has('message')) {
+      const prev = changed.get('message');
+      if (this.message && this.message !== prev) {
+        this.show(this.message, this.variant, undefined, this.heading);
+      }
+    }
+  }
+
+  render() {
+    return html`
+      <div class="toast-wrapper">
+        <wa-callout variant=${this.variant}>
+            <strong>${this.heading}</strong>
+          <span class="message">${this.message}</span>
+        </wa-callout>
+        <button
+          class="close-btn"
+          aria-label="Dismiss notification"
+          @click=${this._onClose}
+        >
+          <wa-icon library=${FA_LIBRARY} name="xmark" canvas="auto" aria-hidden="true"></wa-icon>
+        </button>
+      </div>
+    `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'keep-alert': Alert;
+  }
+}

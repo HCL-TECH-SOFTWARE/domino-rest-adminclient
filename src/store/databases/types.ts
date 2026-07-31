@@ -1,5 +1,5 @@
 /* ========================================================================== *
- * Copyright (C) 2019, 2022 HCL America Inc.                                  *
+ * Copyright (C) 2019, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
@@ -165,7 +165,16 @@ export interface Scope {
 }
 
 export interface DBState {
-  databases: Array<Database>;
+  /**
+   * The schema list. `Database` above is the *full* record, fetched one at a time for the
+   * schema detail page and passed around as a prop; this slice only ever holds the summary
+   * the lists render from, which `addSchema` pushes into and `deleteSchema` splices out of.
+   *
+   * There used to be a second field here, `databases: Array<Database>`, that no reducer
+   * anywhere wrote — `[]` from `initialState` for the life of the session. Two components
+   * read it for the "this schema name is already taken in this database" rule, so that rule
+   * could not fire in either of them (#905). Both now read this field.
+   */
   databasesOverview: Array<DatabaseOverview>;
   nsfDesigns: any;
   availableDatabases: AvailableDatabases[];
@@ -276,8 +285,13 @@ export const SAVE_LOAD_RESULT = 'SAVE_LOAD_RESULT';
 export const SAVE_SAVE_RESULT = 'SAVE_SAVE_RESULT';
 export const CLEAR_FORMULA_RESULTS = 'CLEAR_FORMULA_RESULTS';
 export const CLEAR_DATABASEPULL_RESULT = 'CLEAR_DATABASEPULL_RESULT';
-export const SET_DB_ERROR = 'SET_APP_ERROR';
-export const CLEAR_DB_ERROR = 'CLEAR_APP_ERROR';
+// Namespaced, because these used to be `'SET_APP_ERROR'` / `'CLEAR_APP_ERROR'` — the same
+// values `applications/types.ts` declares. `combineReducers` gives every action to every
+// reducer, so one `setDBError()` also wrote `apps.appError` and one `clearAppError()` also
+// cleared the database banner (#866). The names are unchanged, and every dispatch goes
+// through `setDBError`/`clearDBError` in `./shared`, so no call site moves.
+export const SET_DB_ERROR = 'databases/setDBError';
+export const CLEAR_DB_ERROR = 'databases/clearDBError';
 export const ADD_NSF_DESIGN = 'ADD_NSF_DESIGN';
 export const SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES = 'SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES';
 export const FETCH_KEEP_PERMISSIONS = 'FETCH_KEEP_PERMISSIONS';
@@ -516,11 +530,6 @@ interface updateSchema {
   payload: Array<DatabaseOverview>;
 }
 
-interface UpdateSchema {
-  type: typeof UPDATE_SCHEMA;
-  payload: Database;
-}
-
 interface FetchAvailableDatabases {
   type: typeof FETCH_AVAILABLE_DATABASES;
   payload: any;
@@ -635,11 +644,6 @@ interface ClearFormulaResults {
 
 interface ClearDatabasePullResult {
   type: typeof CLEAR_DATABASEPULL_RESULT;
-}
-
-interface SetOnlyShowSchemaWithScopes {
-  type: typeof SET_ONLY_SHOW_SCHEMAS_WITH_SCOPES;
-  payload: boolean;
 }
 
 /**

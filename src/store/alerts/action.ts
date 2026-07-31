@@ -1,23 +1,12 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import {
-  TOGGLE_ALERT,
-  CLOSE_SNACKBAR,
-} from './types';
-
-export function toggleAlert(message: string) {
-  return {
-    type: TOGGLE_ALERT,
-    payload: message,
-  };
-}
-
-export function closeSnackbar() {
-  return {
-    type: CLOSE_SNACKBAR,
-  };
-}
+/**
+ * `createSlice` generates these action creators now (#710). The module stays so
+ * its callers keep the import path and the names they already use — `toggleAlert`
+ * is reached from roughly 100 call sites across the store and the components.
+ */
+export { toggleAlert, closeSnackbar } from './reducer';

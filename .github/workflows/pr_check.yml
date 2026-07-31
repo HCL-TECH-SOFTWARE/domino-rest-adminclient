@@ -18,10 +18,84 @@ jobs:
       REACT_APP_ADMIN_UI_BUILD_VERSION: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Sonar needs the full history: a shallow clone leaves SCM blame empty,
+          # which is what drives "new code" detection and the new-code quality gate.
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
+          node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
+      - run: npm run lint
+      # `npm run build` is `tsc -b tsconfig.app.json` — it type-checks `src` and nothing
+      # else. Without this step `tsconfig.test.json` was never checked in CI, and five type
+      # errors accumulated in `test/` on a branch whose every gate was green. See #771.
+      - run: npm run typecheck
       - run: npm run build
+      # Ratcheting gate on the *eager* closure — the bytes needed before first paint —
+      # read from dist/.vite/manifest.json. Runs straight after the build because it needs
+      # dist, and before the tests so a bundle regression is not buried under test output.
+      # Blocking on purpose: the failure it catches (a barrel dragging a subtree onto the
+      # critical path) is invisible in a green build. See #813.
+      - run: npm run bundle:budget
       - run: npm run test
+      - name: Publish test coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            {
+              echo "## Test Coverage Summary"
+              echo ""
+              echo "| Metric | Coverage | Covered/Total |"
+              echo "| --- | --- | --- |"
+              jq -r '.total as $t | ["lines","statements","functions","branches"][] | . as $k | $t[$k] | "| \($k) | \(.pct)% | \(.covered)/\(.total) |"' coverage/coverage-summary.json
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Coverage report not found." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # --- SonarQube Cloud analysis ------------------------------------------ #
+      # SONAR_TOKEN is never exposed to pull requests from forks, so the token is
+      # probed first and the analysis is skipped rather than failing the PR. These
+      # steps also do not run at all if lint/build/test failed above: analysing a
+      # red run would publish partial coverage as if it were the real number.
+      - name: Check for a SonarQube token
+        id: sonar
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '_SonarQube analysis skipped: no `SONAR_TOKEN` available (fork PR, or the secret is not configured)._' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: SonarQube Cloud scan
+        if: steps.sonar.outputs.available == 'true'
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # Report-only: `continue-on-error` keeps a red gate from failing the PR while
+      # the gate is still being tuned. Delete that one line to make it blocking.
+      - name: SonarQube quality gate
+        id: sonar_gate
+        if: steps.sonar.outputs.available == 'true'
+        continue-on-error: true
+        uses: SonarSource/sonarqube-quality-gate-action@v1.2.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Publish quality gate status
+        if: steps.sonar.outputs.available == 'true'
+        env:
+          GATE_STATUS: ${{ steps.sonar_gate.outputs.quality-gate-status }}
+        run: |
+          {
+            echo "## SonarQube Quality Gate"
+            echo ""
+            echo "Status: **${GATE_STATUS:-UNKNOWN}** (report only, does not fail this run)"
+            if [ -f .scannerwork/report-task.txt ]; then
+              echo ""
+              echo "[Open the analysis]($(sed -n 's/^dashboardUrl=//p' .scannerwork/report-task.txt))"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

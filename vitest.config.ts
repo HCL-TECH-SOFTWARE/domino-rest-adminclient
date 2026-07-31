@@ -1,0 +1,221 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+/// <reference types="vitest/config" />
+import { defineConfig } from 'vitest/config';
+import { standardDecorators } from './scripts/standard-decorators.mjs';
+
+// Standalone Vitest config. It reuses the same plugin graph as the Vite build
+// (SWC/React) so components transform identically to `npm run build`/`dev`, but
+// deliberately omits the dev-server CSP header and /api proxy from
+// vite.config.mts, which are irrelevant in a test context.
+export default defineConfig({
+  // Resolve dependencies through their `browser` export condition. Both keys are needed —
+  // they fix two different packages, and each was silently degrading every component test
+  // in this suite. Found while fixing #742.
+  //
+  // 1. `ssr.resolve.conditions` → `lit`. Vitest loads test modules through Vite's SSR
+  //    pipeline, which resolves with Node conditions. `lit` ships a per-condition
+  //    `is-server` module and the Node one hardcodes `isServer = true`, so every
+  //    Lit/WebAwesome component ran in server mode despite jsdom providing `window` and
+  //    `document`. WebAwesome gates real behaviour on that flag:
+  //        static get validators() { return isServer ? [] : [CustomErrorValidator()]; }
+  //    With an empty validator list `updateValidity()` returns early, never reaching
+  //    `setValidity()` — so **no WebAwesome form control could ever be invalid in a test.**
+  //
+  // 2. `resolve.conditions` → `@lit/react`. Its exports map has a `node` branch pointing at
+  //    a build compiled with `NODE_MODE = true`, which omits the `useLayoutEffect` that
+  //    applies props to the underlying custom element. Every `Keep*` wrapper therefore
+  //    rendered with **no props at all**: `<KeepInputText label="Username" required id="x">`
+  //    produced an element whose `label` was `''`, `required` was `false` and `id` was
+  //    unset. Any assertion about a wrapped element's configured state was vacuous.
+  //
+  // Together with the no-op `attachInternals` that `test/setupTests.ts` used to install,
+  // this is how #742's 18 dead `data-user-invalid` selectors survived unnoticed.
+  ssr: { resolve: { conditions: ['browser'] } },
+  resolve: { conditions: ['browser'] },
+  plugins: [
+    // The `wyw` (Linaria) plugin used to sit here to mirror the build. It is gone with the
+    // last `styled` block (#825); see the note in vite.config.mts.
+    //
+    // The same module `vite.config.mts` registers, not a copy of its settings. These two
+    // configs govern different things — this one the suite, that one the shipped bundle —
+    // and a copy-paste pair drifting apart is exactly what `test/decorator-config.test.ts`
+    // was written to catch. One import cannot drift.
+    //
+    // Standard (TC39) decorators with `accessor` (#747); see the plugin for why each SWC
+    // option is load-bearing.
+    standardDecorators(),
+  ],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    environmentOptions: {
+      jsdom: { url: 'http://localhost/admin/ui' }, // == old jest testEnvironmentOptions.url
+    },
+    setupFiles: ['./test/setupTests.ts'],
+    css: false, // do not process CSS imports (replaces __mocks__/styleMock.js)
+    // Every run used to end with "close timed out after 10000ms / something prevents Vite
+    // server from exiting", adding ~10s to each local and CI run (#692).
+    //
+    // It is not a leak in our tests. `--reporter=hanging-process` blames ~2,956 FILEHANDLE
+    // entries with no stack, alongside `napi_rs_threadsafe_function` — a native addon, not
+    // a timer or observer of ours. Bisected to the coverage provider, not to any test:
+    //
+    //   vitest run test/utils/form.test.ts               0.97s, clean
+    //   vitest run test/utils/form.test.ts --coverage    13.28s, "close timed out"
+    //   vitest run <a Monaco/Lit suite>                  1.04s, clean
+    //
+    // So the handles belong to @vitest/coverage-v8 (4.1.10, matching vitest), and there is
+    // nothing in this repo to dispose. Tests have already finished and the exit code is
+    // already 0 by the time this timer starts — it only bounds how long Vitest waits for a
+    // server that will not close. Capping it at 1s takes a full-suite run from ~13s of
+    // teardown to ~1s. Revisit when coverage-v8 stops holding them.
+    teardownTimeout: 1000,
+    include: ['test/**/*.{test,spec}.{ts,tsx}'],
+    clearMocks: true, // reset mock history between tests (replaces jest.clearAllMocks)
+    reporters: process.env.CI
+      ? ['default', ['vitest-sonar-reporter', { outputFile: 'coverage/sonar-report.xml' }]]
+      : ['default'],
+    coverage: {
+      provider: 'v8',
+      reportsDirectory: 'coverage',
+      reporter: ['text', 'lcov', 'html', 'json-summary'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.d.ts',
+        'src/**/types.ts', // pure type/const modules
+        // The application entry — `src/index.tsx` until #719 half 2 renamed it. Six imports
+        // and one `void loadAppIcons()`, whose value is an order no test can observe (the
+        // suite runs with `css: false`). `src/appearance-boot.ts`, the other entry, is *not*
+        // excluded — it stayed measurable when it was called `index.ts` and it still is.
+        'src/index.ts',
+        // keep-source is a 752-line interactive tree/source editor (context
+        // menus, drag, dialogs, validation). It is covered at the API level
+        // by keep-source.test.ts, but exhaustive unit coverage in jsdom is
+        // impractical, so it is excluded from the coverage ratchet.
+        'src/components/keep-elements/keep-source.ts',
+      ],
+      // Enforced ratchet gate. Every floor sits a few points below what is actually
+      // measured, so a routine refactor does not fail CI but a real regression does.
+      // Raise these as coverage grows — a gate far below reality protects nothing.
+      //
+      // Re-measured on `new_code` @ fc470a8, 120 files / 1,507 tests. Previous pass was
+      // #820 at 7ec97b1 (87 files / 996), and the one before that #690 at 53/509.
+      //
+      // Two different problems this time, and the second matters more.
+      //
+      // **Drift.** The global floor sat 20 points under reality — #801–#805's thunk
+      // suites, #806's element conversions and #807 all landed behind it.
+      //
+      //                        floor was → is        measured @ fc470a8
+      //   global               44/44/42/38 → 61/61/63/49    64.4 / 64.7 / 66.9 / 53.1
+      //   keep-elements        83/83/82/67 → 85/85/84/68    88.8 / 88.0 / 87.8 / 72.8
+      //   utils                96/96/93/91 → 96/96/93/93    99.3 / 99.4 / 96.6 / 97.4
+      //   access/action.ts     97/97/97/80 → 97/97/97/84     100 /  100 /  100 / 87.5
+      //   applications/action  88/88/88/66 → 90/90/92/68    93.5 / 93.5 / 95.2 / 71.9
+      //   (reducers, services, consents, StoreController, store.ts unchanged — already
+      //    sit the right distance under their measurements)
+      //
+      // **Gaps.** Three well-tested areas had *no gate at all*, which drift cannot show:
+      // a directory nobody listed is not a low floor, it is no floor. All three arrived
+      // after #820 wrote this block, which is exactly how it happens.
+      //
+      //   src/store/databases/**    13 files, 84.4 % lines — #711's split modules and the
+      //                             ~500 thunk tests from #801–#805
+      //   src/router/**              2 files, 97.8 % — the in-repo router (#716, #813)
+      //   src/store/FormController   1 file, 100 % — and its sibling StoreController was
+      //                             gated, for a reason that applies equally to it
+      //
+      // Branch floors keep ~4 points of slack and the rest ~3: branch counts move under
+      // ordinary refactoring (an added guard clause, a removed `default:` arm) in a way
+      // line counts do not.
+      //
+      // ## Re-measured at #719 half 2 — 180 files / 3,263 tests
+      //
+      // Two floors had drifted far enough to protect nothing. The global one sat **31 points**
+      // under reality and `keep-elements` **ten**, because #806 converted screen after screen
+      // into well-tested elements without either being re-read, and because this change
+      // removed the largest uncovered files left: `index.tsx`, `App.tsx`, `AppShell.tsx`,
+      // `router/react.tsx` and twelve wrappers.
+      //
+      //                     floor was → is             measured
+      //   global            61/61/63/49 → 89/89/90/82   92.33 / 86.07 / 93.42 / 92.64
+      //   keep-elements     85/85/84/68 → 91/91/91/84   94.89 / 88.52 / 94.55 / 95.57
+      //
+      // Everything else was re-measured in the same pass and left alone — each still sits the
+      // documented distance under, and moving a floor that is already right is churn that
+      // makes the ones that moved harder to see in a diff.
+      thresholds: {
+        lines: 89,
+        statements: 89,
+        functions: 90,
+        branches: 82,
+        'src/store/**/reducer.ts': { lines: 97, statements: 97, functions: 97, branches: 92 },
+        // Thunk suites, per slice (#690). Gated individually rather than through one
+        // `**/action.ts` glob, because they are covered to very different depths.
+        'src/store/access/action.ts': { lines: 97, statements: 97, functions: 97, branches: 84 },
+        'src/store/consents/action.ts': { lines: 97, statements: 97, functions: 97, branches: 67 },
+        'src/store/applications/action.ts': { lines: 90, statements: 90, functions: 92, branches: 68 },
+        // #711 split the 2,926-line databases/action.ts into one module per concern, and
+        // #801–#805 covered them. That is the single largest body of store logic in the
+        // tree and it was ungated until now — the old comment here even said the file
+        // was "still at 15 %", which stopped being true several PRs ago.
+        'src/store/databases/**': { lines: 81, statements: 81, functions: 86, branches: 64 },
+        // The React-removal primitives (#715, #807). Small, and every element converted
+        // in #719 depends on them being right, so they are gated close to the measurement
+        // rather than a few points below. FormController is the newer half and had no
+        // floor at all; the argument for gating it is the same one written for its
+        // sibling, and 15 tier-D files are about to depend on it.
+        //
+        // FormController's floors were 97/97/88/88 against a measurement of 100/100/100/92.85,
+        // because 14 branches make each one worth 7 points and there was no room to sit closer.
+        // #887 and #890 took it to 100/100/100/100 over 18 branches, so it now gets its
+        // sibling's numbers exactly — which is what the paragraph above always intended.
+        'src/store/StoreController.ts': { lines: 97, statements: 97, functions: 97, branches: 95 },
+        'src/store/FormController.ts': { lines: 97, statements: 97, functions: 97, branches: 95 },
+        // `FormController.react.ts` was gated here at 100/100/100/100, with a note saying to
+        // delete the entry with the file. #719 did: the adapter existed to let a `.tsx` drop
+        // Formik without also converting to Lit, it served exactly one pair of files for about
+        // half an hour before they converted, and it has had no consumer since. #717 closed
+        // with Formik gone from the tree, so it had no future users either.
+        // store.ts is one `configureStore` call: 100 % lines, and *zero* functions and
+        // zero branches to count. Those two floors are vacuous — left where they are
+        // rather than raised to imply a measurement that does not exist.
+        'src/store/store.ts': { lines: 95, statements: 95, functions: 95, branches: 90 },
+        // The router that replaced react-router-dom (#716), plus the code-splitting and
+        // prefetch contracts added in #813. `react.tsx` is deleted when the views become
+        // Lit elements; `router.ts` is not, and is what the Lit controller will bind to.
+        'src/router/**': { lines: 94, statements: 94, functions: 90, branches: 91 },
+        'src/utils/**': { lines: 96, statements: 96, functions: 93, branches: 93 },
+        // The converted Lit elements — every screen in the app, plus `keep-app` and
+        // `keep-app-shell` since #719 half 2. The `react/` wrapper directory that used to sit
+        // under this glob is gone with React itself.
+        'src/components/keep-elements/**': { lines: 92, statements: 91, functions: 91, branches: 84 },
+        // Pure, well-covered helpers (log, theme, icon library, WA token readers).
+        // Nothing here should ever ship untested.
+        'src/services/**': { lines: 93, statements: 93, functions: 90, branches: 91 },
+        // The unsaved-changes guard (#884), which had *no* tests until it was measured at
+        // 100/100/100/100. Gated close to the measurement for the same reason the two
+        // controllers above are: it is one small file, its failure mode is silent — the dialog
+        // simply stops appearing — and what it protects is the user's unsaved work in the
+        // access-mode editor.
+        //
+        // The path is the file, not `src/components/navigation/**`, because #806 wave 8
+        // converted it to `keep-navigation-guard` and deleted that directory. The entry is
+        // re-pointed rather than dropped: `keep-elements/**` above would otherwise take over at
+        // 85/85/84/68, quietly lowering this floor by twelve points on the one file here whose
+        // regression nobody would see. It still measures 100 across the board.
+        'src/components/keep-elements/keep-navigation-guard.ts': {
+          lines: 97,
+          statements: 97,
+          functions: 97,
+          branches: 95,
+        },
+      },
+    },
+  },
+});

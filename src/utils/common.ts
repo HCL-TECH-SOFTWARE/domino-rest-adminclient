@@ -1,11 +1,38 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
 export function fullEncode(name: string): string {
-  return name.replace(/[\[\]!()\*\\\/$&'#]/g, (char) => '%' + char.charCodeAt(0).toString(16));
+  return name.replace(/[[\]!()*\\/$&'#]/g, (char) => '%' + char.charCodeAt(0).toString(16));
+}
+
+/**
+ * Percent-encode a value for use as a **query-string value** (#978).
+ *
+ * A query value and a path segment are different positions with different rules, and this
+ * codebase had only {@link fullEncode}, which is written for the second. `fullEncode` escapes
+ * the twelve characters Domino design names carry and nothing else, so a value it produces
+ * still contains a raw `+`, `%` or space — harmless in a path segment, and in a query string
+ * respectively a space on many servers, a malformed escape, and a value the URL parser has to
+ * repair. That is why this is a second function rather than a wider character class on the
+ * first: widening `fullEncode` would change how every form and view *name* is addressed.
+ *
+ * The rule here is the standard one — `encodeURIComponent`, plus the five sub-delimiters it
+ * leaves alone. Those five are exactly the ones `fullEncode` does escape, so this is a strict
+ * superset of it: nothing that was escaped before stops being escaped, and `+`, `%`, space,
+ * `,` and `;` start being.
+ *
+ * Escaping more than the server strictly requires is safe in a way that escaping less is not.
+ * The reverse — leaving `&` or `#` raw, as most call sites did before #978 — ends the value
+ * early, so the request addresses a different database and fails as a confusing 404.
+ */
+export function encodeQueryValue(value: string): string {
+  return encodeURIComponent(value).replace(
+    /[!'()*]/g,
+    (char) => '%' + char.charCodeAt(0).toString(16).toUpperCase(),
+  );
 }
 
 // Function to insert a character or string inside another string for every interval of characters

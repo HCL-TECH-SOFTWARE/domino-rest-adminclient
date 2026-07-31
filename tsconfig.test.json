@@ -1,0 +1,31 @@
+// The test project: checked by `npm run typecheck`, never by `npm run build`.
+//
+// Two things here look wrong and are not:
+//
+// 1. It re-`include`s `src` instead of declaring `references: [tsconfig.app.json]`, which
+//    is the usual way to express "the tests depend on the app". A reference is rejected
+//    outright — `error TS6310: Referenced project may not disable emit` — because the app
+//    project sets `noEmit: true`, and a referenced project has to emit the .d.ts files its
+//    dependents consume. The alternative is `emitDeclarationOnly` on the app project, which
+//    would make every production build write declarations nothing reads. Since a composite
+//    project must list every file in its program, and the tests import `src` directly,
+//    listing `src` here is the cheaper trade.
+//
+// 2. Because of (1), a type error in `src` is reported twice by `npm run typecheck` — once
+//    per project. Cosmetic, and only when something is already broken; `npm run build`
+//    reports it once.
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    // Must differ from the app project's: two projects sharing one .tsbuildinfo clobber
+    // each other's incremental state and silently skip checks.
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo"
+  },
+  "include": [
+    "test",
+    "vitest.config.ts",
+    "src",
+    "scripts",
+    "package.json"
+  ]
+}

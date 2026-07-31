@@ -8,6 +8,9 @@
  */
 
 import { base64urlEncode, base64urlDecode } from "./base64url-arraybuffer";
+import { getLogger } from "../../services/log-service";
+
+const log = getLogger("components/login/KeepWebAuthN");
 
 // Helper to sucessfully GET JSON, boiler plate
 const jsonGet = (path: string, bearer: any) => {
@@ -68,13 +71,12 @@ const jsonGet = (path: string, bearer: any) => {
   
     // One time registration
     async register(bearer: any) {
-      const self = this;
-      if (!self.registerPath) {
+      if (!this.registerPath) {
         return Promise.reject(
           'Register path missing form the initial configuration!'
         );
       }
-      return jsonGet(self.registerPath, bearer)
+      return jsonGet(this.registerPath, bearer)
         .then((res) => {
           return res.json()
         })
@@ -103,7 +105,7 @@ const jsonGet = (path: string, bearer: any) => {
             },
             type: credential.type
           };
-          return jsonPost(self.callbackPath, bearer, body);
+          return jsonPost(this.callbackPath, bearer, body);
         })
         .catch((e) => {
           // If the code is 11, there's already a credential
@@ -132,7 +134,7 @@ const jsonGet = (path: string, bearer: any) => {
             };
             return result;
           } else {
-            console.error(e);
+            log.error('Passkey authentication failed', e as Error);
             throw e;
           }
         });
@@ -140,13 +142,12 @@ const jsonGet = (path: string, bearer: any) => {
   
     // login challenge
     async login(user: {name: string }) {
-      const self = this;
-      if (!self.loginPath) {
+      if (!this.loginPath) {
         return Promise.reject(
           'Login path missing from the initial configuration!'
         );
       }
-      return jsonPost(self.loginPath, null, user)
+      return jsonPost(this.loginPath, null, user)
         .then((res) => {
           return res.json()
         })
@@ -176,7 +177,7 @@ const jsonGet = (path: string, bearer: any) => {
             },
             type: credential.type
           };
-          return jsonPost(self.callbackPath, null, body);
+          return jsonPost(this.callbackPath, null, body);
         });
     }
   }

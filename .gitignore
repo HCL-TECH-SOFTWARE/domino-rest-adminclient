@@ -13,6 +13,7 @@ dist/
 target/
 remote-repo/
 coverage/
+.scannerwork/
 .module-cache
 fixtures/dom/public/react-dom.js
 fixtures/dom/public/react.js
@@ -30,4 +31,4 @@ chrome-user-data
 .project
 .settings
 .classpath
-public/
+worktrees

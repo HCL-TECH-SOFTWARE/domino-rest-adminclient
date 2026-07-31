@@ -1,5 +1,5 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2025 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
@@ -25,8 +25,6 @@ export interface ApplicationStates {
   apps: Array<any>;
   status: boolean;
   appPull: boolean;
-  appError: boolean;
-  appErrorMessage: string;
   deleteDialogOpen: boolean;
 }
 
@@ -54,9 +52,15 @@ export const ADD_APP = 'ADD_APP';
 export const SET_PULLED_APP = 'SET_PULLED_APP';
 export const DELETE_APP = 'DELETE_APP';
 export const EXECUTING = 'EXECUTING';
-export const TOGGLE_DELETE_DIALOG = 'TOGGLE_DELETE_DIALOG';
-export const SET_APP_ERROR = 'SET_APP_ERROR';
-export const CLEAR_APP_ERROR = 'CLEAR_APP_ERROR';
+// `TOGGLE_DELETE_DIALOG` was declared here too, with the same value as the one in
+// `dialog/types.ts`, so one dispatch drove both reducers. That is what made #840's
+// regression invisible — converting the dialog slice unhooked this one, silently. The
+// dialog slice owns it; this reducer matches its generated action *object* (#866).
+//
+// `SET_APP_ERROR` / `CLEAR_APP_ERROR` are gone too (#869). Nothing ever dispatched them:
+// `setAppError` and both its call sites had been commented out, and the only thing that
+// reached the reducer case was `databases`' `SET_DB_ERROR`, which shared the value until
+// #866 renamed it. Application failures report through `toggleAlert`.
 export const INIT_STATE = 'INIT_STATE';
 
 export const status = ['Requested', 'Active', 'Approved', 'Inactive'];
@@ -86,10 +90,6 @@ interface Deleting {
   payload: boolean;
 }
 
-interface ToggleDeleteDialog {
-  type: typeof TOGGLE_DELETE_DIALOG;
-}
-
 interface DropUpdate {
   type: typeof DROP_UPDATE;
   payload: {
@@ -109,21 +109,6 @@ interface SetPullApp {
 
 
 /**
- * Store an Application error for display in the UI
- */
-interface SetAppError {
-  type: typeof SET_APP_ERROR;
-  payload: string;
-}
-
-/**
- * Clear an Application error
- */
-interface ClearAppError {
-  type: typeof CLEAR_APP_ERROR;
-}
-
-/**
  * Init state
  */
 interface InitState {
@@ -137,8 +122,5 @@ export type AppsActionTypes =
   | SetPullApp
   | Deleting
   | AddApp
-  | ToggleDeleteDialog
   | UpdateApp
-  | SetAppError
-  | InitState
-  | ClearAppError;
+  | InitState;

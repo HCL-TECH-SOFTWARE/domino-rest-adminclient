@@ -1,5 +1,5 @@
 /* ========================================================================== *
- * Copyright (C) 2023, 2024 HCL America Inc.                                  *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
@@ -14,14 +14,32 @@ export const BASE_KEEP_API_URL = '/api/v1';
 export const SETUP_KEEP_API_URL = '/api/setup-v1';
 export const PIM_KEEP_API_URL = '/api/pim-v1';
 export const ADMIN_KEEP_API_URL = '/api/admin-v1';
-export const IDP_KEEP_API_URL = '/api/keepidp-v1'
+export const IDP_KEEP_API_URL = '/api/keepidp-v1';
 
 // ASSETS DIRECTORY
-export const IMG_DIR = '/admin/img';
-export const MONACO_EDITOR_DIR = '/monaco-editor-core';
+// Images are not listed here: each is `import`ed from the module that renders it, so
+// Vite emits it alongside the app bundle and its URL follows the same base the bundle
+// loaded from. An absolute `/admin/...` constant resolves only when the app happens to
+// be mounted at `/admin/`, and fails silently everywhere else.
+//
+// MONACO_EDITOR_DIR = '/monaco-editor-core' lived here and had no reader. Monaco is a
+// bundled ESM import now, so nothing requests that path; the matching webjar entry and
+// its CSP went with it in #685.
 
 // Theming
-export const KEEP_ADMIN_BASE_COLOR = '#5F1EBE';
+//
+// Must equal --wa-color-brand-50 in src/styles/keep-theme.css, which is the single
+// source of truth for the brand ramp. This constant exists only because getTheme()
+// hands JS color strings to MUI's createTheme(), and MUI cannot read a CSS custom
+// property — every *CSS* use went to var(--wa-color-brand-50) in #765.
+//
+// It was #5F1EBE, a fourth purple that predated the ramp; #705 chose #7c5fd9 because
+// it is what the app already rendered (keep-overrides.css was imported last and won).
+// Leaving this at #5F1EBE after the CSS moved would have recreated the split #706 fixed,
+// with MUI on one purple and everything else on another.
+//
+// test/styles/keep-theme.test.ts fails if the two drift. It goes away with MUI (#709).
+export const KEEP_ADMIN_BASE_COLOR = '#7c5fd9';
 export const HCL_BASE_COLOR = '#3C91FF';
 
 // Theme Switching

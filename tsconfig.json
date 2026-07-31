@@ -1,36 +1,22 @@
+// Solution-style root config: it holds no files of its own, only references.
+//
+// Editors resolve a file by walking up to the nearest tsconfig.json — this one. Because
+// it lists references and no files, TypeScript searches the referenced projects instead
+// of falling back to an inferred project, so `test/**` keeps full IntelliSense (strict,
+// decorators) even though `npm run build` no longer looks at it.
+//
+//   tsconfig.app.json   src + build config  -> `npm run build` (tsc -b tsconfig.app.json)
+//   tsconfig.test.json  the test tree       -> checked by `npm run typecheck` only
+//
+// `npm run typecheck` runs `tsc -b` against this file and so covers both.
 {
-  "compilerOptions": {
-    "target": "ES2020",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "ES2020"
-    ],
-    "composite": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    /* "allowImportingTsExtensions": true, */
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "moduleDetection": "force",
-    /* TODO: Set the next 2 to true when ready */
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-  },
-  "include": [
-    "src",
-    "vite.config.mts",
-    "package.json"
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.test.json"
+    }
   ]
 }

@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.hcl.domino.keep</groupId>
 	<artifactId>keep-admin-ui</artifactId>
-	<version>1.43.1-SNAPSHOT</version>
+	<version>1.50.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>HCL Domino REST API Administration UI</name>
 	<description>ReactJS application using the HCL Domino REST APIs for administration</description>
@@ -68,7 +68,6 @@
 									<filtering>false</filtering>
 									<excludes>
 										<exclude>assets/**</exclude>
-										<exclude>img/**</exclude>
 									</excludes>
 								</resource>
 							</resources>
@@ -92,29 +91,12 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>copy-img</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>							
-							<outputDirectory>${project.build.directory}/classes/admin/img</outputDirectory>
-							<resources>
-								<resource>
-									<directory>
-										${maven.multiModuleProjectDirectory}/dist/img</directory>
-									<filtering>false</filtering>
-								</resource>								
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
 						<id>copy-index</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
-						<configuration>												
+						<configuration>
 							<outputDirectory>${project.build.directory}/classes/admin</outputDirectory>
 							<resources>
 								<resource>
@@ -125,11 +107,11 @@
 										<include>index.html</include>
 									</includes>
 								</resource>
-							</resources>								
+							</resources>
 						</configuration>
-					</execution>		
-				</executions>					
-			</plugin>	
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>

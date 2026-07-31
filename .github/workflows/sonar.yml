@@ -1,0 +1,84 @@
+# ========================================================================== #
+# Copyright (C) 2026 HCL America Inc.                                        #
+# Apache-2.0 license   https://www.apache.org/licenses/LICENSE-2.0           #
+# ========================================================================== #
+#
+# Branch analysis. `pr_check.yml` analyses pull requests; this keeps the long-lived
+# branches analysed so Sonar has a baseline to compare "new code" against. Without
+# it, new-code metrics on a PR have nothing meaningful to diff.
+name: SonarQube Cloud branch analysis
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - new_code
+
+# Sonar rejects concurrent analyses of the same project branch, and a superseded
+# analysis is worthless anyway — keep only the newest push per branch.
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sonar:
+    name: Analyse ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Sonar needs the full history: a shallow clone leaves SCM blame empty,
+          # which is what drives "new code" detection and the new-code quality gate.
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      # No lint/build step: the scanner reads sources plus the two reports this
+      # produces (coverage/lcov.info and coverage/sonar-report.xml). `pr_check.yml`
+      # is where lint and build are gated.
+      - run: npm run test
+
+      - name: Check for a SonarQube token
+        id: sonar
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then
+            echo 'available=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'available=false' >> "$GITHUB_OUTPUT"
+            echo '_SonarQube analysis skipped: no `SONAR_TOKEN` configured for this repository._' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: SonarQube Cloud scan
+        if: steps.sonar.outputs.available == 'true'
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # Report-only: `continue-on-error` keeps a red gate from failing the run while
+      # the gate is still being tuned. Delete that one line to make it blocking.
+      - name: SonarQube quality gate
+        id: sonar_gate
+        if: steps.sonar.outputs.available == 'true'
+        continue-on-error: true
+        uses: SonarSource/sonarqube-quality-gate-action@v1.2.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Publish quality gate status
+        if: steps.sonar.outputs.available == 'true'
+        env:
+          GATE_STATUS: ${{ steps.sonar_gate.outputs.quality-gate-status }}
+        run: |
+          {
+            echo "## SonarQube Quality Gate"
+            echo ""
+            echo "Status: **${GATE_STATUS:-UNKNOWN}** (report only, does not fail this run)"
+            if [ -f .scannerwork/report-task.txt ]; then
+              echo ""
+              echo "[Open the analysis]($(sed -n 's/^dashboardUrl=//p' .scannerwork/report-task.txt))"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,38 +1,21 @@
 /* ========================================================================== *
- * Copyright (C) 2023 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import {
-  AccountActionTypes,
-  LOGIN,
-  NAVITEMS,
-  AccountState,
-  LOGOUT,
-  SET_LOGIN_ERROR,
-  AUTHENTICATE,
-  SET_TOKEN,
-  RENEW_TOKEN,
-  REMOVE_AUTH,
-  SET_401_ERROR,
-  SET_IDP_LOGIN,
-  CURRENT_IDP,
-  SET_ERROR_MESSAGE,
-} from './types';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { AccountState, IdP, PageListObj } from './types';
 
 const initialState: AccountState = {
   navitems: {
     databases: false,
     apps: false,
-    users: false,
-    groups: false,
   },
   authenticated: false,
   error: false,
   error401: false,
   errorMessage: '',
-  token: '',
   idpLogin: false,
   currentIdp: {
     name: '',
@@ -42,77 +25,61 @@ const initialState: AccountState = {
       client_id: '',
       scope: [],
     },
-  }
+  },
 };
 
-export default function accountReducer(
-  state = initialState,
-  action: AccountActionTypes
-): AccountState {
-  switch (action.type) {
-    case CURRENT_IDP:
-      return {
-        ...state,
-        currentIdp: action.payload,
-      };
-    case LOGIN:
-      return {
-        ...state,
-        authenticated: true,
-      };
-    case LOGOUT:
-      return {
-        ...state,
-        authenticated: false,
-        token: '',
-      };
-    case AUTHENTICATE:
-      return {
-        ...state,
-        authenticated: true,
-      };
-    case NAVITEMS:
-      return {
-        ...state,
-        navitems: action.payload,
-      };
-    case REMOVE_AUTH:
-      return {
-        ...state,
-        authenticated: false,
-        token: '',
-      };
-    case SET_LOGIN_ERROR:
-      return {
-        ...state,
-        error: action.payload,
-      };
-    case SET_IDP_LOGIN:
-      return {
-        ...state,
-        idpLogin: action.payload,
-      };
-    case SET_401_ERROR:
-      return {
-        ...state,
-        error401: action.payload,
-      };
-    case SET_ERROR_MESSAGE:
-      return {
-        ...state,
-        errorMessage: action.payload,
-      };
-    case SET_TOKEN:
-      return {
-        ...state,
-        token: action.payload,
-      };
-    case RENEW_TOKEN:
-      return {
-        ...state,
-        token: action.payload,
-      };
-    default:
-      return state;
-  }
-}
+export const accountSlice = createSlice({
+  name: 'account',
+  initialState,
+  reducers: {
+    // login/authenticate and logout/removeAuth are pairs of synonyms: each pair
+    // had two action types doing the same thing, dispatched from different places.
+    // Preserved as four actions rather than collapsed, because collapsing them
+    // changes which names callers import — a separate decision from #710.
+    login(state) {
+      state.authenticated = true;
+    },
+    authenticate(state) {
+      state.authenticated = true;
+    },
+    logout(state) {
+      state.authenticated = false;
+    },
+    removeAuth(state) {
+      state.authenticated = false;
+    },
+    setNavItems(state, action: PayloadAction<PageListObj>) {
+      state.navitems = action.payload;
+    },
+    setLoginError(state, action: PayloadAction<boolean>) {
+      state.error = action.payload;
+    },
+    set401Error(state, action: PayloadAction<boolean>) {
+      state.error401 = action.payload;
+    },
+    setErrorMessage(state, action: PayloadAction<string>) {
+      state.errorMessage = action.payload;
+    },
+    setIdpLogin(state, action: PayloadAction<boolean>) {
+      state.idpLogin = action.payload;
+    },
+    setCurrentIdp(state, action: PayloadAction<IdP>) {
+      state.currentIdp = action.payload;
+    },
+  },
+});
+
+export const {
+  login,
+  authenticate,
+  logout,
+  removeAuth,
+  setNavItems,
+  setLoginError,
+  set401Error,
+  setErrorMessage,
+  setIdpLogin,
+  setCurrentIdp,
+} = accountSlice.actions;
+
+export default accountSlice.reducer;

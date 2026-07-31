@@ -1,0 +1,285 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@awesome.me/webawesome/dist/components/card/card.js';
+import { KeepElement } from './keep-element';
+import { appIconSkeleton, appIconSkeletonStyles } from './app-icon-skeleton';
+
+/**
+ * Card summarising a single Keep entity (schema/scope/…) built on `<wa-card>`.
+ * Tag: `keep-default-card`. Reached only from `keep-schemas-cards-view` and
+ * `keep-scopes-cards-view`, both Lit — so it has no `@lit/react` wrapper, and needs none.
+ */
+@customElement('keep-default-card')
+export default class DefaultCard extends KeepElement {
+  static styles = [
+    appIconSkeletonStyles,
+    css`
+        /* Inherit color-scheme from the host's ancestor (documentElement toggles
+           it via inline style). The colours here no longer depend on it — they
+           are --wa-color-* tokens, which inherit through the shadow boundary on
+           their own — but it still drives how native controls and scrollbars
+           inside this root are painted, so it stays. */
+        :host {
+            color-scheme: inherit;
+            color: var(--wa-color-text-loud);
+        }
+        /*
+         * NO BACKTICKS IN THIS BLOCK -- it is inside a css tagged template, and one ends
+         * the template.
+         *
+         * What is deliberately absent here, having been measured rather than assumed:
+         *
+         *  - --wa-panel-background-color and --wa-panel-border-color. wa-card does not read
+         *    either. It reads --wa-color-surface-*, --wa-panel-border-radius and
+         *    --wa-shadow-s. Setting those two looked like theming and did nothing.
+         *  - a wa-card::part(base) rule. That part does not exist -- card exposes body,
+         *    header, footer and media. Painting it red changed nothing on screen, which is
+         *    how three more declarations turned out to be dead.
+         *
+         * The visible bug all of that was hiding: in LIGHT mode
+         * --wa-color-surface-raised is white and so is --wa-color-surface-default, and the
+         * card also set border: none. A white card with no border on a white page, held up
+         * only by wa-card's own --wa-shadow-s (about 0 2px 2px -1px). Dark mode was always
+         * fine, because there the two surfaces genuinely differ (#252535 on #1e1e2e).
+         *
+         * So the border is real now, from the NEUTRAL ramp rather than the surface one, and
+         * the shadow is a step up.
+         */
+        wa-card {
+            color: var(--wa-color-text-loud);
+            background: var(--wa-color-surface-raised);
+            border-color: var(--wa-color-neutral-border-normal);
+            box-shadow: var(--wa-shadow-l);
+        }
+        wa-card::part(body) {
+            background: var(--wa-color-surface-raised);
+            color: var(--wa-color-text-loud);
+        }
+        /*
+         * The dark-mode force-override that used to sit here is gone (#708). It
+         * set #252535 / #3a3a4a / #ffffff !important — exactly what the tokens
+         * above now resolve to in dark mode — so it was both redundant and, being
+         * !important, capable of hiding a mistake in the tokens it duplicated.
+         */
+        text,
+        strong {
+            color: var(--wa-color-text-loud);
+        }
+        wa-card {
+            margin: 0;
+            border-radius: 15px;
+            width: 315px;
+            height: 250px;
+            min-height: 250px;
+            max-height: 260px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            overflow: hidden;
+            /*
+             * border: none used to sit here and is what made the card edgeless in light
+             * mode. --border-radius sat here too and did nothing -- wa-card reads
+             * --wa-panel-border-radius; the literal border-radius below is what has been
+             * doing the work all along.
+             */
+            &:hover {
+                cursor: pointer;
+                /*
+                 * Was --border-color: #5F1EBE, which was inert twice over: nothing reads
+                 * --border-color, and #5F1EBE is the fourth purple that predated the ramp
+                 * -- config.dev.ts records #706 replacing it with #7c5fd9. Now it is the
+                 * real property and the brand token, so hovering a card actually shows.
+                 */
+                border-color: var(--wa-color-brand-50);
+            }
+        }
+
+        section {
+            margin: 5px 0;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        section.titles {
+            display: flex;
+            flex-direction: column;
+            width: calc( 100% - 10px);
+            gap: 1px;
+            line-height: 1.2;
+            margin: 0 5px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        section.delete {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 5px;
+        }
+        section.description {
+            margin: 5px 0 20px 0;
+            width: calc( 100% - 10px);
+            height: 70px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            line-height: 1.5;
+            text-overflow: ellipsis;
+            white-space: normal;
+        }
+
+        text {
+            font-size: 16px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            max-width: 100%;
+            display: block;
+            line-height: 1.5;
+        }
+        text.medium {
+            font-size: var(--wa-font-size-m);
+            display: block;
+        }
+
+        img {
+            background: #383838;
+            border-radius: 8px;
+            padding: 10px;
+            height: 55px;
+            width: auto;
+            display: block;
+        }
+
+        /* Same 55px box as the img above (plus its 10px padding), so swapping the
+           skeleton for the real icon does not move the card's text. */
+        .app-icon-skeleton {
+            height: 75px;
+            width: 75px;
+        }
+
+        div.main {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+        div.icon {
+            margin: 0;
+            padding: 0;
+        }
+        div.delete {
+            width: 20px;
+            height: 20px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNkg1SDIxIiBmaWxsPSIjRDY0NjZGIi8+CjxwYXRoIGQ9Ik0zIDZINUgyMSIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTkgNlYyMEMxOSAyMC41MzA0IDE4Ljc4OTMgMjEuMDM5MSAxOC40MTQyIDIxLjQxNDJDMTguMDM5MSAyMS43ODkzIDE3LjUzMDQgMjIgMTcgMjJIN0M2LjQ2OTU3IDIyIDUuOTYwODYgMjEuNzg5MyA1LjU4NTc5IDIxLjQxNDJDNS4yMTA3MSAyMS4wMzkxIDUgMjAuNTMwNCA1IDIwVjZNOCA2VjRDOCAzLjQ2OTU3IDguMjEwNzEgMi45NjA4NiA4LjU4NTc5IDIuNTg1NzlDOC45NjA4NiAyLjIxMDcxIDkuNDY5NTcgMiAxMCAySDE0QzE0LjUzMDQgMiAxNS4wMzkxIDIuMjEwNzEgMTUuNDE0MiAyLjU4NTc5QzE1Ljc4OTMgMi45NjA4NiAxNiAzLjQ2OTU3IDE2IDRWNiIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K');
+            background-position: top right;
+            background-repeat: no-repeat;
+            background-size: contain;
+
+            &:hover {
+                background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE5IDZWMjBDMTkgMjAuNTMwNCAxOC43ODkzIDIxLjAzOTEgMTguNDE0MiAyMS40MTQyQzE4LjAzOTEgMjEuNzg5MyAxNy41MzA0IDIyIDE3IDIySDdDNi40Njk1NyAyMiA1Ljk2MDg2IDIxLjc4OTMgNS41ODU3OSAyMS40MTQyQzUuMjEwNzEgMjEuMDM5MSA1IDIwLjUzMDQgNSAyMFY2TTggNlY0QzggMy40Njk1NyA4LjIxMDcxIDIuOTYwODYgOC41ODU3OSAyLjU4NTc5QzguOTYwODYgMi4yMTA3MSA5LjQ2OTU3IDIgMTAgMkgxNEMxNC41MzA0IDIgMTUuMDM5MSAyLjIxMDcxIDE1LjQxNDIgMi41ODU3OUMxNS43ODkzIDIuOTYwODYgMTYgMy40Njk1NyAxNiA0VjYiIGZpbGw9IiNENjQ2NkYiLz4KPHBhdGggZD0iTTE5IDZWMjBDMTkgMjAuNTMwNCAxOC43ODkzIDIxLjAzOTEgMTguNDE0MiAyMS40MTQyQzE4LjAzOTEgMjEuNzg5MyAxNy41MzA0IDIyIDE3IDIySDdDNi40Njk1NyAyMiA1Ljk2MDg2IDIxLjc4OTMgNS41ODU3OSAyMS40MTQyQzUuMjEwNzEgMjEuMDM5MSA1IDIwLjUzMDQgNSAyMFY2TTggNlY0QzggMy40Njk1NyA4LjIxMDcxIDIuOTYwODYgOC41ODU3OSAyLjU4NTc5QzguOTYwODYgMi4yMTA3MSA5LjQ2OTU3IDIgMTAgMkgxNEMxNC41MzA0IDIgMTUuMDM5MSAyLjIxMDcxIDE1LjQxNDIgMi41ODU3OUMxNS43ODkzIDIuOTYwODYgMTYgMy40Njk1NyAxNiA0VjYiIHN0cm9rZT0iI0Q2NDY2RiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPG1hc2sgaWQ9InBhdGgtMy1vdXRzaWRlLTFfMjc4XzEzNzMiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjIiIHk9IjUiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyIiBmaWxsPSJibGFjayI+CjxyZWN0IGZpbGw9IndoaXRlIiB4PSIyIiB5PSI1IiB3aWR0aD0iMjAiIGhlaWdodD0iMiIvPgo8cGF0aCBkPSJNMyA2SDVIMjEiLz4KPC9tYXNrPgo8cGF0aCBkPSJNMyA2SDVIMjEiIGZpbGw9IiNENjQ2NkYiLz4KPHBhdGggZD0iTTMgNUMyLjQ0NzcyIDUgMiA1LjQ0NzcyIDIgNkMyIDYuNTUyMjggMi40NDc3MiA3IDMgN1Y1Wk0yMSA3QzIxLjU1MjMgNyAyMiA2LjU1MjI4IDIyIDZDMjIgNS40NDc3MiAyMS41NTIzIDUgMjEgNVY3Wk0zIDdINVY1SDNWN1pNNSA3SDIxVjVINVY3WiIgZmlsbD0id2hpdGUiIG1hc2s9InVybCgjcGF0aC0zLW91dHNpZGUtMV8yNzhfMTM3MykiLz4KPG1hc2sgaWQ9InBhdGgtNS1vdXRzaWRlLTJfMjc4XzEzNzMiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjMiIHk9IjQiIHdpZHRoPSIxOCIgaGVpZ2h0PSIyIiBmaWxsPSJibGFjayI+CjxyZWN0IGZpbGw9IndoaXRlIiB4PSIzIiB5PSI0IiB3aWR0aD0iMTgiIGhlaWdodD0iMiIvPgo8cGF0aCBkPSJNNCA1TDUuNzc3NzggNUwyMCA1Ii8+CjwvbWFzaz4KPHBhdGggZD0iTTQgNUw1Ljc3Nzc4IDVMMjAgNSIgZmlsbD0iI0Q2NDY2RiIvPgo8cGF0aCBkPSJNNCA0QzMuNDQ3NzIgNCAzIDQuNDQ3NzIgMyA1QzMgNS41NTIyOCAzLjQ0NzcyIDYgNCA2TDQgNFpNMjAgNkMyMC41NTIzIDYgMjEgNS41NTIyOSAyMSA1QzIxIDQuNDQ3NzIgMjAuNTUyMyA0IDIwIDRMMjAgNlpNNCA2TDUuNzc3NzggNkw1Ljc3Nzc4IDRMNCA0TDQgNlpNNS43Nzc3OCA2TDIwIDZMMjAgNEw1Ljc3Nzc4IDRMNS43Nzc3OCA2WiIgZmlsbD0iI0Q2NDY2RiIgbWFzaz0idXJsKCNwYXRoLTUtb3V0c2lkZS0yXzI3OF8xMzczKSIvPgo8L3N2Zz4K');
+            }
+        }
+        div.status {
+            width: 10px;
+            height: 10px;
+            background-position: top right;
+            background-repeat: no-repeat;
+            background-size: contain;
+            right: 20px;
+            top: 20px;
+            border-radius: 50%;
+        }
+
+        /*
+         * The colours were interpolated into a style attribute until #685. The production
+         * CSP sends style-src-attr 'none', which blocks a Lit AttributePart from applying
+         * one — so the dot rendered with no background at all and the ACL label with no
+         * colour, silently, for as long as that policy has shipped. Static template
+         * attributes survive (they are cloned, not set); interpolated ones do not.
+         */
+        div.status.active {
+            background-color: var(--wa-color-success-fill-loud, #4caf50);
+        }
+
+        div.status.inactive {
+            background-color: var(--wa-color-danger-fill-loud, #f44336);
+        }
+
+        text.acl-editor {
+            color: var(--wa-color-warning-on-quiet, orange);
+        }
+
+        text.acl-other {
+            color: var(--wa-color-success-on-quiet, green);
+        }
+    `,
+  ];
+
+  @property({ type: Boolean }) accessor status = false;
+  @property({ type: String }) accessor icon = '';
+  @property({ type: String }) accessor title = '';
+  @property({ type: String }) accessor subtitle = '';
+  @property({ type: String }) accessor acl = '';
+  @property({ type: String }) accessor description = '';
+  @property({ type: Boolean }) accessor delete = false;
+  @property({ attribute: false }) accessor onDelete: () => void = () => {};
+
+  render() {
+    return html`
+        <wa-card>
+            <section class="delete">
+                <div class="status ${this.status ? 'active' : 'inactive'}"></div>
+            </section>
+            <div class="main">
+                <div class="icon">
+                    ${this.icon
+                      ? html`<img src="${this.icon}" alt="${this.title}" />`
+                      : appIconSkeleton()}
+                </div>
+                <section class="titles">
+                    <strong><text>${this.title}</text></strong>
+                    <text class="medium">${this.subtitle}</text>
+                    ${this.acl ?
+                        html`
+                            <strong>
+                                <text class="${this.acl === '*Editor' ? 'acl-editor' : 'acl-other'}">
+                                    ${this.acl}
+                                </text>
+                            </strong>
+                        `
+                        : ''}
+                </section>
+            </div>
+            <section class="description">
+                <text class="medium">${this.description}</text>
+            </section>
+            <section class="delete" @click=${(e: Event) => { e.stopPropagation(); this.onDelete(); }}>
+                ${this.delete ?
+                    html`
+                        <div class="delete"></div>
+                    `
+                    :
+                    ''
+                }
+            </section>
+        </wa-card>
+      `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'keep-default-card': DefaultCard;
+  }
+}
