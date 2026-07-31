@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { LitElement, html, css, adoptStyles, unsafeCSS, type CSSResult } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { createRef, Ref, ref } from 'lit/directives/ref.js';
 import { getLogger } from '../../services/log-service.js';
 
@@ -14,6 +14,10 @@ const log = getLogger('components/keep-monaco-editor');
 // Types only — `import type` erases at compile time, so naming Monaco's interfaces
 // throughout the class costs nothing at runtime.
 import type * as Monaco from 'monaco-editor';
+import {
+  applyHoistedStyles,
+  installInlineStyleHoisting
+} from '../../services/monaco-inline-styles.js';
 import { EDITOR_THEME_ID, EDITOR_TOKENS, buildEditorTheme } from '../../services/editor-theme.js';
 import { resolveWaColors } from '../../services/wa-color.js';
 import { resolveWaTypography } from '../../services/wa-typography.js';
@@ -30,6 +34,11 @@ import { resolveWaTypography } from '../../services/wa-typography.js';
  * resolves immediately.
  */
 function fetchMonaco() {
+  // Before the imports below, not after: Monaco creates the trusted-types policies this
+  // hooks in static initialisers, so they are built while its module graph evaluates.
+  // `installInlineStyleHoisting()` documents what happens if this moves.
+  installInlineStyleHoisting();
+
   return Promise.all([
     import('monaco-editor'),
     import('monaco-editor/esm/vs/editor/editor.worker?worker'),
@@ -41,7 +50,12 @@ function fetchMonaco() {
     // which cannot happen before an editor exists. Assigning it here — inside the
     // memoised promise, before any caller gets the namespace — is therefore early
     // enough, and it keeps the three worker wrappers out of the entry chunk too.
+    //
+    // Spread, not replaced: `installInlineStyleHoisting()` above put a
+    // `createTrustedTypesPolicy` here that Monaco has already read, and an editor rebuilt
+    // after a hot reload would re-read this object.
     self.MonacoEnvironment = {
+      ...self.MonacoEnvironment,
       getWorker(_: unknown, label: string) {
         if (label === 'json') return new jsonWorker.default();
         if (label === 'javascript' || label === 'typescript') return new tsWorker.default();
@@ -58,6 +72,16 @@ function loadMonaco() {
   monacoBundle ??= fetchMonaco();
   return monacoBundle;
 }
+
+/**
+ * `editor.main.css` as a Lit `CSSResult`, built once for the whole page.
+ *
+ * A `CSSResult` constructs its `CSSStyleSheet` lazily and caches it, so every editor on the
+ * page adopts one 308 kB sheet that the browser parses once — where the `<style>` block this
+ * replaces put a fresh copy of the text in each instance's shadow root. Module scope rather
+ * than a `static` field because the text only exists after {@link loadMonaco} resolves.
+ */
+let monacoStyles: CSSResult | undefined;
 
 /**
  * Prettier, loaded on first use rather than at module scope.
@@ -114,9 +138,9 @@ export default class MonacoEditor extends LitElement {
   @property({ attribute: false }) accessor completionProvider:
     | Monaco.languages.CompletionItemProvider
     | undefined;
-  /** Monaco's stylesheet, empty until the dynamic import lands. See `render()`. */
-  @state() private accessor _monacoStyles = '';
   private _themeObserver?: MutationObserver;
+  /** Watches the render root for markup carrying hoisted style declarations. */
+  private _styleObserver?: MutationObserver;
   /**
    * Cache key from the last `_applyTheme()` call that did real work — see
    * `_themeCacheKey()`. Starts `undefined` so the construction-time call always runs.
@@ -478,9 +502,11 @@ export default class MonacoEditor extends LitElement {
     if (!this.isConnected) return;
 
     this._monaco = bundle.monaco;
-    // Schedules a re-render of the <style> block in `render()`. Monaco builds into the
-    // container below in the same task, so the stylesheet lands before the next paint.
-    this._monacoStyles = bundle.styles;
+    // Synchronous, so the rules are in place before Monaco builds into the container
+    // below and therefore before the next paint.
+    this._adoptMonacoStyles(bundle.styles);
+    // Before the editor builds, so the very first batch of view lines is covered.
+    this._replayHoistedStyles();
 
     this._rebuildEditor();
 
@@ -530,6 +556,49 @@ export default class MonacoEditor extends LitElement {
         this.editor?.focus();
       }, 200);
     }
+  }
+
+  /**
+   * Puts `editor.main.css` into this editor's shadow root as a stylesheet, not an element.
+   *
+   * It used to be `<style>${this._monacoStyles}</style>` in `render()`. The shipped CSP sends
+   * **`style-src-elem 'self'`** (`jar/config/config.json`), which refuses an inline `<style>` —
+   * so all 308 kB of it was inert in production and the editor rendered with no gutter, no
+   * syntax colours and `position: static` where Monaco needs `relative`. Nothing looked broken
+   * in dev, where the same policy is report-only, and nothing looked broken in the DOM either:
+   * a refused `<style>` keeps its text and only loses its `.sheet` (#1002).
+   *
+   * `adoptedStyleSheets` is not governed by `style-src`, which is the whole reason this works —
+   * the same reason `keep-data-table.styles.ts` adopts its slotted-table sheet. Lit's
+   * `adoptStyles()` is used rather than assigning the array directly because it also handles
+   * the browsers that cannot adopt, where it appends a `<style>` and behaviour is exactly what
+   * it is today. `elementStyles` has to be passed back in: `adoptStyles()` sets the list rather
+   * than appending to it, and dropping it would take `:host { display: block }` with it.
+   */
+  private _adoptMonacoStyles(cssText: string) {
+    monacoStyles ??= unsafeCSS(cssText);
+    const { elementStyles } = this.constructor as typeof MonacoEditor;
+    adoptStyles(this.renderRoot as ShadowRoot, [...elementStyles, monacoStyles]);
+  }
+
+  /**
+   * Replays the style declarations `hoistInlineStyles()` parked on Monaco's markup.
+   *
+   * The hoist happens while the HTML is still a string, so nothing can apply it until the
+   * nodes are in the tree — this is that second half, and without it every view line renders
+   * at `top: 0`. A `MutationObserver` rather than a hook on Monaco's render: its callback is
+   * a microtask, so the declarations land in the same frame as the insertion and there is no
+   * flash of unpositioned text.
+   *
+   * Measured against the built bundle under the enforcing policy, scrolling a 500-line
+   * document ten screens: `.view-line` offsets and gutter numbers identical to the same
+   * build with no CSP at all, and zero `style-src-attr` violations.
+   */
+  private _replayHoistedStyles() {
+    const root = this.renderRoot as ShadowRoot;
+    applyHoistedStyles(root);
+    this._styleObserver = new MutationObserver(() => applyHoistedStyles(root));
+    this._styleObserver.observe(root, { childList: true, subtree: true });
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -617,6 +686,9 @@ export default class MonacoEditor extends LitElement {
 
     this._themeObserver?.disconnect();
     this._themeObserver = undefined;
+
+    this._styleObserver?.disconnect();
+    this._styleObserver = undefined;
   }
 
   /**
@@ -661,12 +733,7 @@ export default class MonacoEditor extends LitElement {
   }
 
   render() {
-    return html`
-      <style>
-        ${this._monacoStyles}
-      </style>
-      <div class="editor-container" ${ref(this.containerRef)}></div>
-    `;
+    return html`<div class="editor-container" ${ref(this.containerRef)}></div>`;
   }
 }
 

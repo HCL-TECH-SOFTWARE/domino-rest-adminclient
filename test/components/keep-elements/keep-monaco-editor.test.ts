@@ -133,11 +133,22 @@ const monacoState = vi.hoisted(() => {
     return editor;
   };
 
-  return { editors, diffEditors, models, definedThemes, setThemes, completionProviders, makeEditor };
+  return {
+    editors, diffEditors, models, definedThemes, setThemes, completionProviders, makeEditor,
+    /** Whether the hoisting hook existed when `monaco-editor` was first evaluated (#1002). */
+    hookAtImport: { installed: undefined as boolean | undefined },
+  };
 });
 
 vi.mock('monaco-editor', () => {
   const { editors, diffEditors, models, definedThemes, setThemes, completionProviders, makeEditor } = monacoState;
+
+  // This factory runs at the first `import('monaco-editor')`, which is exactly where the
+  // real Monaco builds its trusted-types policies in static initialisers. Recording the
+  // environment here is the only way to catch the hook being installed too late — see the
+  // ordering test near the bottom of this file.
+  monacoState.hookAtImport.installed =
+    typeof self.MonacoEnvironment?.createTrustedTypesPolicy === 'function';
 
   return {
     editor: {
@@ -289,6 +300,42 @@ describe('keep-monaco-editor', () => {
 
   it('registers the custom element', () => {
     expect(customElements.get(TAG)).toBeTruthy();
+  });
+
+  /**
+   * #1002 — Monaco's stylesheet has to reach the shadow root, and not as a `<style>`.
+   *
+   * The production CSP sends `style-src-elem 'self'`, which refuses an inline `<style>`, so
+   * the 308 kB the component used to render into its template was inert and the editor shipped
+   * unstyled. It now goes through Lit's `adoptStyles()`.
+   *
+   * What this can assert is that the CSS still arrives. What it cannot is the half that
+   * matters to CSP: jsdom implements neither `adoptedStyleSheets` nor CSP, so Lit takes its
+   * fallback path here and appends a `<style>` — the very thing production refuses. The
+   * directive-level proof is a browser measurement against the built bundle, and the guard
+   * that keeps a `<style>` out of the template is `test/csp-inline-styles.test.ts`.
+   */
+  it('delivers the Monaco stylesheet into the shadow root', async () => {
+    const el = await mountLit<MonacoEditor>(TAG);
+
+    const sheets = [...el.shadowRoot!.querySelectorAll('style')].map((s) => s.textContent ?? '');
+    expect(sheets.some((text) => text.includes('/* monaco css */'))).toBe(true);
+  });
+
+  /**
+   * #1002 — the ordering that makes the inline-style hoisting work at all.
+   *
+   * Monaco builds its trusted-types policies in static initialiser blocks, so they exist by
+   * the time `import('monaco-editor')` resolves. Installing the hook after that — next to
+   * `getWorker`, which is where it went first and where it looks like it belongs — is too
+   * late: the hook is simply never called. Nothing fails, nothing logs, the editor renders,
+   * and every `style-src-attr` violation is still reported. That is why this is a test and
+   * not a comment.
+   */
+  it('installs the inline-style hook before monaco-editor is evaluated', async () => {
+    await mountLit<MonacoEditor>(TAG);
+
+    expect(monacoState.hookAtImport.installed).toBe(true);
   });
 
   it('renders an editor container and builds a standard editor into it', async () => {
