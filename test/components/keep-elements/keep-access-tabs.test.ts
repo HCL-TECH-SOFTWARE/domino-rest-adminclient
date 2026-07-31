@@ -11,6 +11,7 @@ import { INIT_STATE } from '../../../src/store/databases/types';
 import { addForm, fetchKeepScopes } from '../../../src/store/databases/reducer';
 import { runSaveFunction } from '../../../src/store/navigationGuard/saveFunction';
 import { Router, memoryHistory } from '../../../src/router/router';
+import { setRouterForTest } from '../../../src/router/instance';
 import '../../../src/components/keep-elements/keep-access-tabs';
 import type AccessTabs from '../../../src/components/keep-elements/keep-access-tabs';
 
@@ -604,8 +605,12 @@ describe('keep-access-tabs', () => {
 
     it('writes a brand-new form as a whole schema and leaves the page', async () => {
       store.dispatch(addForm({ enabled: true, form: { formName: 'Invoice' } }));
-      const router = new Router({ history: memoryHistory(['/schema/a/b/Invoice/access']) });
-      const el = await mount({ router } as Partial<AccessTabs>);
+      // Installed rather than passed as a property: the element carries its own
+      // `RouterController` over the module singleton since #926.
+      const router = setRouterForTest(
+        new Router({ history: memoryHistory(['/schema/a/b/Invoice/access']) }),
+      );
+      const el = await mount();
       buttonNamed(el, 'Save').click();
       await vi.advanceTimersByTimeAsync(0);
 

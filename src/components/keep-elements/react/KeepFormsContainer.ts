@@ -7,7 +7,6 @@
 import React from 'react';
 import { createComponent } from '@lit/react';
 import FormsContainer from '../keep-forms-container';
-import { useParams, useRouter } from '../../../router/react';
 
 /**
  * One consumer, and it is the router: `Views.tsx` lazy-loads `/schema/:nsfPath/:dbName`
@@ -16,30 +15,20 @@ import { useParams, useRouter } from '../../../router/react';
  * nothing about the screen is React any more. `KeepSchemasList` and `KeepConsentsContainer`
  * are loaded the same way in the same file.
  *
- * ## Why this one is not just the `createComponent` call
+ * That is now the *whole* reason this file exists. It used to supply two things no other
+ * frame could: the **router**, created in `App.tsx` and published through context with no
+ * module-level instance, and the two **route params**, published through a second context
+ * that only the outlet writes. #926 made the router a module singleton with a
+ * `RouterController` over it, and that controller matches a pattern itself — so the element
+ * reads both out of the URL directly, through the same `matchPath` the outlet used.
  *
- * The element needs three things this frame is the only place that can supply:
- *
- *  - the **router**, which is created in `App.tsx` and published through context with no
- *    module-level instance. One navigation crosses the boundary — the Forms tab reports a
- *    finished path rather than navigating itself.
- *  - the two **route params**, which the outlet publishes through a second context that only
- *    it writes. `nsfPath` is handed down *raw*, undecoded: `keep-forms-tab` encodes it itself
- *    when it builds the paths it emits, and double-encoding it here would break every link
- *    off this screen for a path containing a space.
- *
- * All three go away with the Lit router controller (#926), which is what lets the element be
- * mounted directly and this module deleted along with the rest of `router/react.tsx`.
+ * What is left goes when `RouterOutlet` does (#719 P4): a Lit outlet can mount the element
+ * directly, and then the route names `keep-forms-container` and this file is deleted.
  *
  * No events: every event the screen raises is handled inside the element.
  */
-const FormsContainerElement = createComponent({
+export const KeepFormsContainer = createComponent({
   tagName: 'keep-forms-container',
   elementClass: FormsContainer,
   react: React,
 });
-
-export const KeepFormsContainer: React.FC = () => {
-  const { nsfPath, dbName } = useParams<{ nsfPath: string; dbName: string }>();
-  return React.createElement(FormsContainerElement, { router: useRouter(), nsfPath, dbName });
-};

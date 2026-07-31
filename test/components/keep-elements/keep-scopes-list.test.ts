@@ -18,6 +18,7 @@ import { setDBError } from '../../../src/store/databases/shared';
 import { FETCH_AVAILABLE_DATABASES, INIT_STATE } from '../../../src/store/databases/types';
 import { fetchKeepDatabases } from '../../../src/store/databases/action';
 import { Router, memoryHistory } from '../../../src/router/router';
+import { getRouter, setRouterForTest } from '../../../src/router/instance';
 import '../../../src/components/keep-elements/keep-scopes-list';
 import type ScopesList from '../../../src/components/keep-elements/keep-scopes-list';
 import type ScopesMultiView from '../../../src/components/keep-elements/keep-scopes-multi-view';
@@ -86,7 +87,16 @@ const emitOn = async (el: ScopesList, target: Element, type: string, detail: unk
   await el.updateComplete;
 };
 
-const router = (entry = '/scope') => new Router({ history: memoryHistory([entry]) });
+/**
+ * Put the app's router at `entry` for this test (#926).
+ *
+ * The element reads the URL through a `RouterController` over the module singleton now, so a
+ * route is installed rather than passed in as a property. `setupTests.ts` installs a memory
+ * router at `/` for every test and disposes it afterwards; this replaces it with one that
+ * starts where the screen expects to be.
+ */
+const atRoute = (entry = '/scope') =>
+  setRouterForTest(new Router({ history: memoryHistory([entry]) }));
 
 const mount = async (props: Partial<ScopesList> = {}) => {
   const el = await mountLit<ScopesList>(TAG, props);
@@ -275,27 +285,30 @@ describe('keep-scopes-list', () => {
 
   it('defaults to the card view when the URL says nothing', async () => {
     seed();
-    const el = await mount({ router: router() });
+    atRoute();
+    const el = await mount();
     expect(viewOptions(el).view).toBe('card');
     expect(multiView(el)!.view).toBe('card');
   });
 
   it('reads the view out of the query string on arrival', async () => {
     seed();
-    const el = await mount({ router: router('/scope?view=nsf') });
+    atRoute('/scope?view=nsf');
+    const el = await mount();
     expect(viewOptions(el).view).toBe('nsf');
   });
 
   it('ignores a query string that carries something else', async () => {
     seed();
-    const el = await mount({ router: router('/scope?sort=name') });
+    atRoute('/scope?sort=name');
+    const el = await mount();
     expect(viewOptions(el).view).toBe('card');
   });
 
   it('records a view pick in the query string and re-labels the picker', async () => {
     seed();
-    const instance = router();
-    const el = await mount({ router: instance });
+    const instance = atRoute();
+    const el = await mount();
 
     await emitOn(el, viewOptions(el), 'view-change', { view: 'stack' });
 
@@ -304,13 +317,20 @@ describe('keep-scopes-list', () => {
     expect(multiView(el)!.view).toBe('stack');
   });
 
-  it('changes the view with no router in scope, and navigates nowhere', async () => {
+  /*
+   * This was "changes the view with no router in scope, and navigates nowhere" — the element
+   * took a nullable `router` property and the navigation was guarded. There is no such state
+   * any more (#926): the controller always has a router, so what is left to pin is that the
+   * screen works against whatever router it finds rather than against one a test handed it.
+   */
+  it('changes the view against the app router the controller found for itself', async () => {
     seed();
     const el = await mount();
 
     await emitOn(el, viewOptions(el), 'view-change', { view: 'alphabetical' });
 
     expect(viewOptions(el).view).toBe('alphabetical');
+    expect(getRouter().location().search).toBe('?view=alphabetical');
   });
 
   // ---- loading ---------------------------------------------------------------------------

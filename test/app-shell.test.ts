@@ -129,7 +129,13 @@ describe('AppShell on wa-page (#707)', () => {
     for (const gone of ['SideNavContainer', 'AppContainer', 'RightPanel', 'toggle-button']) {
       expect(code(sidenav) + code(shell), `${gone} is back`).not.toContain(gone);
     }
-    expect(read('src/styles/sidenav.tsx')).not.toContain('SideNavContainer');
+    // This line used to read `styles/sidenav.tsx` and assert the name was not in it — the
+    // module the styled container had lived in. That module is gone: #806 wave 7 removed the
+    // last importer of `styles/CommonStyles` and the six files behind it went with the barrel.
+    // The name is still guarded, by the loop above, against the two files that now hold the
+    // shell's navigation markup; what is checked here is the half the loop cannot see, that
+    // the styled-component module is not back to hold it again.
+    expect(existsSync(resolve(ROOT, 'src/styles/sidenav.tsx'))).toBe(false);
     // `sidenav/style.ts` held one export, `drawerWidth = 242`, which nothing read once
     // `--menu-width` took over the two rail widths.
     expect(existsSync(resolve(ROOT, 'src/components/sidenav/style.ts'))).toBe(false);

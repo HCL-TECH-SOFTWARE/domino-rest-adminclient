@@ -15,6 +15,7 @@ import {
   updateSchema,
 } from '../../../src/store/databases/action';
 import { Router, memoryHistory } from '../../../src/router/router';
+import { getRouter, setRouterForTest } from '../../../src/router/instance';
 
 /**
  * `keep-forms-container` — the conversion of `forms/FormsContainer.tsx`, the
@@ -171,8 +172,15 @@ const defaultRespond = (url: string): Response => {
   return jsonResponse({});
 };
 
-const router = (entry = '/schema/demo.nsf/demoapi') =>
-  new Router({ history: memoryHistory([entry]) });
+/**
+ * Put the app's router at `entry` for this test (#926).
+ *
+ * `nsfPath` and `dbName` used to be properties the `@lit/react` wrapper read out of the
+ * outlet's params context. They are read off the URL here now, through the same `matchPath`
+ * that context was filled from, so the route *is* the fixture.
+ */
+const atRoute = (entry = '/schema/demo.nsf/demoapi') =>
+  setRouterForTest(new Router({ history: memoryHistory([entry]) }));
 
 const shadow = (el: FormsContainer) => el.shadowRoot!;
 const find = <T extends Element>(el: FormsContainer, selector: string) =>
@@ -193,13 +201,9 @@ const emitOn = async (el: FormsContainer, target: Element, type: string, detail?
 };
 
 /** Mount, then wait out the two chained fetches the element issues on its first update. */
-const mount = async (props: Partial<FormsContainer> = {}) => {
-  const el = await mountLit<FormsContainer>(TAG, {
-    nsfPath: 'demo.nsf',
-    dbName: 'demoapi',
-    router: router(),
-    ...props,
-  } as Partial<FormsContainer>);
+const mount = async (props: Partial<FormsContainer> = {}, entry?: string) => {
+  atRoute(entry);
+  const el = await mountLit<FormsContainer>(TAG, props as Partial<FormsContainer>);
   await vi.waitFor(() => {
     expect(shadow(el).querySelector('wa-tab-group')).toBeTruthy();
   });
@@ -233,10 +237,8 @@ describe('keep-forms-container', () => {
 
   describe('mounting', () => {
     it('shows a loading state until the first fetch settles', async () => {
-      const el = await mountLit<FormsContainer>(TAG, {
-        nsfPath: 'demo.nsf',
-        dbName: 'demoapi',
-      } as Partial<FormsContainer>);
+      atRoute();
+      const el = await mountLit<FormsContainer>(TAG);
 
       expect(find(el, 'keep-page-loading')).toBeTruthy();
       expect(find(el, 'wa-tab-group')).toBeNull();
@@ -248,10 +250,8 @@ describe('keep-forms-container', () => {
     });
 
     it('names the schema in the loading caption and the document title', async () => {
-      const el = await mountLit<FormsContainer>(TAG, {
-        nsfPath: 'demo.nsf',
-        dbName: 'demoapi',
-      } as Partial<FormsContainer>);
+      atRoute();
+      const el = await mountLit<FormsContainer>(TAG);
 
       const loading = find<HTMLElement & { message: string }>(el, 'keep-page-loading')!;
       expect(loading.message).toContain('Getting Schema demoapi');
@@ -322,10 +322,8 @@ describe('keep-forms-container', () => {
         return jsonResponse({});
       };
 
-      const el = await mountLit<FormsContainer>(TAG, {
-        nsfPath: 'demo.nsf',
-        dbName: 'demoapi',
-      } as Partial<FormsContainer>);
+      atRoute();
+      const el = await mountLit<FormsContainer>(TAG);
       await vi.waitFor(() => {
         const wrapper = shadow(el).querySelector('keep-error-wrapper') as HTMLElement & {
           errorStatus: { status: number; statusText: string };
@@ -339,10 +337,8 @@ describe('keep-forms-container', () => {
         throw new TypeError('Failed to fetch');
       };
 
-      const el = await mountLit<FormsContainer>(TAG, {
-        nsfPath: 'demo.nsf',
-        dbName: 'demoapi',
-      } as Partial<FormsContainer>);
+      atRoute();
+      const el = await mountLit<FormsContainer>(TAG);
       await vi.waitFor(() => {
         expect(shadow(el).querySelector('wa-tab-group')).toBeTruthy();
       });
@@ -355,7 +351,7 @@ describe('keep-forms-container', () => {
 
   describe('the child contracts wave 5 established', () => {
     it('hands keep-forms-tab the raw route param, which that element encodes itself', async () => {
-      const el = await mount({ nsfPath: 'my apps.nsf' } as Partial<FormsContainer>);
+      const el = await mount({}, '/schema/my apps.nsf/demoapi');
       const tab = find<HTMLElement & { nsfPath: string; dbName: string }>(el, 'keep-forms-tab')!;
       expect(tab.nsfPath).toBe('my apps.nsf');
       expect(tab.dbName).toBe('demoapi');
@@ -369,20 +365,12 @@ describe('keep-forms-container', () => {
     });
 
     it('navigates with the finished path keep-forms-tab reports', async () => {
-      const route = router();
-      const el = await mount({ router: route } as Partial<FormsContainer>);
+      const el = await mount();
       const tab = find<HTMLElement>(el, 'keep-forms-tab')!;
 
       await emitOn(el, tab, 'form-navigate', { path: '/schema/my%20apps.nsf/demoapi/Alpha/access' });
 
-      expect(route.location().pathname).toBe('/schema/my%20apps.nsf/demoapi/Alpha/access');
-    });
-
-    it('does not throw when it has no router to navigate with', async () => {
-      const el = await mount({ router: null } as Partial<FormsContainer>);
-      const tab = find<HTMLElement>(el, 'keep-forms-tab')!;
-
-      await expect(emitOn(el, tab, 'form-navigate', { path: '/somewhere' })).resolves.not.toThrow();
+      expect(getRouter().location().pathname).toBe('/schema/my%20apps.nsf/demoapi/Alpha/access');
     });
 
     it('passes the scope list to the two children that read it', async () => {
@@ -533,7 +521,7 @@ describe('keep-forms-container', () => {
     });
 
     it('hands the panel the raw route param, as the previous frame did', async () => {
-      const el = await mount({ nsfPath: 'my apps.nsf' } as Partial<FormsContainer>);
+      const el = await mount({}, '/schema/my apps.nsf/demoapi');
       await showTab(el, 'views');
       const panel = find<HTMLElement & { nsfPathProp: string }>(el, 'keep-edit-view')!;
       expect(panel.nsfPathProp).toBe('my apps.nsf');

@@ -32,7 +32,7 @@ import {
 import { findScopeBySchema } from '../../store/databases/scripts';
 import { isEmptyOrSpaces, verifyModeName } from '../../utils/form';
 import type { Database, Mode } from '../../store/databases/types';
-import type { Router } from '../../router/router';
+import { RouterController } from '../../router/RouterController';
 import type { KeepFieldItem } from './keep-field-container';
 import type { KeepFieldIndexChangeDetail, KeepModeFieldState } from './keep-mode-fields';
 import type { KeepScriptData, KeepValidationRule } from './keep-script-editor';
@@ -358,8 +358,15 @@ export default class AccessTabs extends KeepElement {
    */
   @property({ attribute: false }) accessor postSaveAction: 'add' | 'clone' | null = null;
 
-  /** The app's one router. Only used to leave the page after a new form is created. */
-  @property({ attribute: false }) accessor router: Router | null = null;
+  /**
+   * The app's router (#926). Only used to leave the page after a new form is created.
+   *
+   * Its own controller rather than a property from `keep-access-mode`: since the router is a
+   * module singleton there is nothing left for the parent to hand down, and a property would
+   * only reintroduce the arrival race the controller exists to remove. Selects the pathname
+   * because nothing here re-renders on a location change — this is a navigator, not a reader.
+   */
+  private readonly route = new RouterController(this, (location) => location.pathname);
 
   /**
    * Adds a field to the mode and answers with the reason it could not, or an empty string.
@@ -812,9 +819,7 @@ export default class AccessTabs extends KeepElement {
       };
       void this.db.dispatch(updateSchema(newSchema, this.handleSchemaData));
       this.setDirty(false);
-      this.router?.navigate(
-        `/schema/${encodeURIComponent(this.nsfPath)}/${this.schemaName}`,
-      );
+      this.route.navigate(`/schema/${encodeURIComponent(this.nsfPath)}/${this.schemaName}`);
       return;
     }
 

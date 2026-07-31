@@ -4,8 +4,8 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css, nothing, type PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { html, css, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/switch/switch.js';
 import { KeepElement } from './keep-element';
 import { StoreController } from '../../store/StoreController';
@@ -18,7 +18,7 @@ import {
 import type { DatabaseOverview } from '../../store/databases/types';
 import { toggleAlert } from '../../store/alerts/action';
 import { setLoading } from '../../store/loading/action';
-import type { Router } from '../../router/router';
+import { RouterController } from '../../router/RouterController';
 import type { KeepSchemaOpenDetail } from './keep-schemas-cards-view';
 import type { KeepViewChangeDetail } from './keep-card-view-options';
 import type {
@@ -56,13 +56,14 @@ const VIEW_QUERY = '?view=';
  * element module. It points at `keep-elements/react/KeepSchemasList` instead, the same shape
  * the consents route and the quick-config drawer already use.
  *
- * ## The router arrives as a property
+ * ## The router comes from a controller
  *
- * That wrapper is also the one place that can reach the router: it is created in `App.tsx`
- * and published through React context with no module-level instance, and there is still no
- * Lit reactive controller for it (#926). So {@link router} is handed down, the way `AppShell`
- * hands it to `keep-side-nav`, and the two navigations this screen owns — opening a schema
- * and recording the chosen view in the query string — go through it.
+ * The wrapper used to be the one place that could reach the router — it was created in
+ * `App.tsx` and published through React context — so it read it and handed it down as a
+ * property. #926 made the router a module singleton with a `RouterController` over it, so
+ * this screen reaches it itself and the wrapper is now nothing but the `createComponent`
+ * call. The two navigations this screen owns — opening a schema and recording the chosen
+ * view in the query string — go through {@link route}.
  *
  * This is the boundary `keep-schemas-multi-view` was written against: the four card views
  * emit `schema-open` and it travels, composed, up to here. Nothing above this element listens
@@ -195,12 +196,13 @@ export default class SchemasList extends KeepElement {
   `;
 
   /**
-   * The app's single `Router`. Handed down by the wrapper — see the class note.
+   * The app's router (#926).
    *
-   * Nullable because the element is constructible without one; every navigation below is
-   * guarded, so an element mounted bare renders and filters and simply does not navigate.
+   * Selects the pathname rather than the whole location, because this screen writes its own
+   * `?view=` into the query string: with the default selector that write would re-render the
+   * element a second time for a value it already holds.
    */
-  @property({ attribute: false }) accessor router: Router | null = null;
+  private readonly route = new RouterController(this, (location) => location.pathname);
 
   /** The whole `databases` slice: schemas, scopes, both pull flags and the permissions. */
   private readonly db = new StoreController(this, (state) => state.databases);
@@ -220,23 +222,17 @@ export default class SchemasList extends KeepElement {
   /** Raises the Add/Import dialog, which owns its own form state and lowers it back. */
   @state() private accessor addImportOpen = false;
 
-  /** The URL is read for `?view=` exactly once, when the router first arrives. */
-  private viewReadFromUrl = false;
-
   connectedCallback(): void {
     super.connectedCallback();
     const { databasePull, databasesOverview } = this.db.value;
     if (!databasePull && databasesOverview.length === 0) {
       this.db.dispatch(fetchKeepDatabases());
     }
-  }
 
-  protected willUpdate(changed: PropertyValues): void {
-    // The wrapper sets `router` after construction, so this cannot live in connectedCallback.
-    if (!changed.has('router') || this.viewReadFromUrl || !this.router) return;
-    this.viewReadFromUrl = true;
-
-    const { search } = this.router.location();
+    // Before the first render, so the chosen view is never painted wrong and corrected. This
+    // was a `willUpdate` guarded on the router property arriving, which is a race the
+    // controller removes: the location is readable the moment the element exists.
+    const { search } = this.route.location;
     const displayType = search.split(VIEW_QUERY)[1];
     if (search && displayType) this.view = displayType;
   }
@@ -306,10 +302,7 @@ export default class SchemasList extends KeepElement {
     const { view } = event.detail;
     // Recorded in the query string so the choice survives a reload, as before. The element
     // keeps its own `view` rather than re-reading the URL — see keep-card-view-options.
-    const router = this.router;
-    if (router) {
-      router.navigate({ pathname: router.location().pathname, search: `${VIEW_QUERY}${view}` });
-    }
+    this.route.navigate({ pathname: this.route.value, search: `${VIEW_QUERY}${view}` });
     this.view = view;
   }
 
@@ -321,7 +314,7 @@ export default class SchemasList extends KeepElement {
     // The four card views declare the payload as `unknown` — they hand back whichever entry
     // of `databases` was clicked, and this element is what put that array there.
     const database = event.detail.database as DatabaseOverview;
-    this.router?.navigate(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);
+    this.route.navigate(`/schema/${encodeURIComponent(database.nsfPath)}/${database.schemaName}`);
   }
 
   private handleAddImportClose(): void {

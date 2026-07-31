@@ -6,7 +6,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { Router } from './router/router';
+import { getRouter } from './router/instance';
 import { RouterOutlet, RouterProvider, type RouteDef } from './router/react';
 import { useSelector } from 'react-redux';
 import { AppState } from './store';
@@ -29,14 +29,18 @@ const App: React.FC = () => {
   const { authenticated } = useSelector((state: AppState) => state.account);
 
   /*
-   * One router for the life of the app (#716). It attaches a `popstate` listener in its
-   * constructor, so rebuilding it on every render would leak one listener per render and
-   * hand `useSyncExternalStore` a new subscription target each time.
+   * One router for the life of the app (#716), and since #926 it is a module singleton rather
+   * than a `useMemo` here — see `router/instance.ts` for why that had to happen (a Lit element
+   * has no React context to read from) and why it is a function rather than a const.
    *
-   * `/admin/ui` is where the UI is served; every route table, `navigate()` and `<Link to>`
-   * below this point is written base-relative and never sees it.
+   * The `useMemo` is gone, not replaced: `getRouter()` returns the same instance every time,
+   * so there is nothing left to memoise. It still attaches exactly one `popstate` listener,
+   * and `useSyncExternalStore` still sees one stable subscription target.
+   *
+   * The base — where the UI is served — moved to `ROUTER_BASE` with it. Every route table,
+   * `navigate()` and `<Link to>` below this point is written base-relative and never sees it.
    */
-  const router = useMemo(() => new Router({ base: '/admin/ui' }), []);
+  const router = getRouter();
 
   useEffect(() => {
     // Get JWT Token from Browser Local Storage
@@ -77,12 +81,15 @@ const App: React.FC = () => {
   /*
    * Going home after a password login (#806 wave 6).
    *
-   * `keep-login-page` cannot navigate: the router is published to React through context with
-   * no module-level instance and there is no Lit router controller yet (#926). It emits
-   * `login-success` instead — and unlike `/callback`, that page is behind a `load` route, so
-   * there is no prop to hand a callback to: `RouterOutlet` renders the lazy component with
-   * none. The event is composed and bubbling, so the document is where it can be caught, and
-   * `router` here is the only instance in the app.
+   * `keep-login-page` emits `login-success` rather than navigating itself, because when it
+   * was written the router was reachable only through React context — and unlike `/callback`,
+   * that page is behind a `load` route, so there is no prop to hand a callback to either:
+   * `RouterOutlet` renders the lazy component with none. The event is composed and bubbling,
+   * so the document is where it can be caught.
+   *
+   * #926 has since landed `RouterController`, so the page *could* now navigate itself. That
+   * is a change to `keep-login-page`, not to this file, and it is deliberately not made here:
+   * the ordering this listener pins (authenticate, then go home) has its own test.
    */
   useEffect(() => {
     const goHome = () => router.navigate('/');

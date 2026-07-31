@@ -10,8 +10,38 @@
 
 // jest-dom matchers, registered against Vitest's `expect`.
 import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 import { TextEncoder, TextDecoder } from 'node:util';
+import { Router, memoryHistory } from '../src/router/router';
+import { resetRouterForTest, setRouterForTest } from '../src/router/instance';
+
+/**
+ * A fresh in-memory router per test (#926).
+ *
+ * The router became a module singleton so that a Lit element could reach it without a React
+ * provider — which means it now needs the same per-test teardown the store gets, or one
+ * test's navigation is still the current location when the next one mounts.
+ *
+ * Installing one is as important as resetting it. Without an installed router `getRouter()`
+ * falls back to a **browser-backed** one over jsdom's `window.location`, and jsdom's window
+ * is shared by every test in a file: a `pushState` in one test would still be the URL in the
+ * next, and disposing the router does not undo it. A memory history has no such reach.
+ *
+ * Global rather than per-suite, because a suite cannot tell from its own imports whether it
+ * needs this — any element carrying a `RouterController` reaches the singleton, including one
+ * a test only mounts as a child of something else.
+ *
+ * A test that wants a specific URL calls `setRouterForTest` with its own; a test that wants
+ * the *real* address bar (`test/App.test.tsx` has the only one) calls `resetRouterForTest`
+ * and lets the next `getRouter()` build a browser-backed router.
+ */
+beforeEach(() => {
+  setRouterForTest(new Router({ history: memoryHistory(['/']) }));
+});
+
+afterEach(() => {
+  resetRouterForTest();
+});
 
 // Silence Lit's "Lit is in dev mode" banner (#918) — one stderr line per test file that
 // touches a Lit or WebAwesome element, so it scales with the suite: 77 lines per full run

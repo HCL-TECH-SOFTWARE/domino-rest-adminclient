@@ -43,10 +43,13 @@ const sources = walk(resolve(ROOT, 'src'))
   .filter((f) => /\.(ts|tsx)$/.test(f) && !f.endsWith('theme.ts'))
   .map((f) => ({ file: f.slice(ROOT.length + 1), text: readFileSync(f, 'utf8') }));
 
+const theme = readFileSync(resolve(ROOT, THEME), 'utf8');
+
+/** Comments dropped, so the note recording a removed override is not read as one. */
+const themeCode = theme.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
 /** `MuiButton:` … the keys of the theme's `components` map. */
-const overrides = [...readFileSync(resolve(ROOT, THEME), 'utf8').matchAll(/^\s{6}(Mui[A-Za-z]+):/gm)].map(
-  (m) => m[1],
-);
+const overrides = [...themeCode.matchAll(/^\s{6}(Mui[A-Za-z]+):/gm)].map((m) => m[1]);
 
 /**
  * Whether any source file imports the MUI component an override is named for.
@@ -63,9 +66,19 @@ const isImported = (component: string): boolean => {
 
 describe('theme.ts component overrides', () => {
   it('finds the overrides to check', () => {
-    // Guards the regex above: a formatting change that stopped it matching would make the case
-    // below pass vacuously.
-    expect(overrides.length).toBeGreaterThan(0);
+    // This used to assert `overrides.length` was above zero, to stop a formatting change that
+    // broke the regex from making the case below pass vacuously. #806 wave 7 removed the last
+    // one — `MuiSwitch`, whose only importer was `styles/forms.tsx` — so that floor is no
+    // longer a guard, it is a countdown that has finished, and it now fails on the outcome it
+    // was written to work towards.
+    //
+    // Note it is *not* replaced with a lower floor. What the count stood in for is that the
+    // strict scan is anchored where the map actually is, and that is checkable directly and at
+    // any size, empty included: every `Mui*:` key anywhere in the file must also be one the
+    // indentation-anchored scan found. An override added at the wrong depth, or a map that
+    // moved, fails here rather than passing silently with nothing to report.
+    const loose = [...themeCode.matchAll(/\b(Mui[A-Za-z]+)\s*:/g)].map((m) => m[1]);
+    expect(overrides, 'the anchored scan missed a key the file contains').toEqual(loose);
 
     // This used to also assert `toContain('MuiButton')`. That is the wrong shape for this
     // particular guard, and #806 wave 6 proved it by deleting MuiButton — along with
@@ -78,7 +91,7 @@ describe('theme.ts component overrides', () => {
     //
     // What actually needs guarding is that the regex is still anchored to the right place, so
     // that is what is asserted — the shape of the map it reads, not its contents.
-    expect(readFileSync(resolve(ROOT, THEME), 'utf8')).toMatch(/^\s{4}components:\s*\{/m);
+    expect(theme).toMatch(/^\s{4}components:\s*\{/m);
   });
 
   it('overrides no component the app has stopped importing', () => {
