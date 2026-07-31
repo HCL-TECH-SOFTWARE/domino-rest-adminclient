@@ -28,11 +28,6 @@
 
       Neither script can be inline: the production CSP sends `script-src 'self'` (#752).
     -->
-    <!--
-      The application root. `<div id="root">` until #719 half 2, when the last React component
-      became `keep-app` — a custom element needs no mount call, so the entry below registers
-      the tag and the browser upgrades this.
-    -->
     <keep-app></keep-app>
     <script type="module" src="/src/index.ts"></script>
   </body>
