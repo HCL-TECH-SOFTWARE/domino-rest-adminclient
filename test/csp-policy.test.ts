@@ -43,6 +43,17 @@ const directives = (policy: string) => {
 const occurrences = (policy: string, name: string) =>
   policy.split(';').filter((part) => part.trim().split(/\s+/)[0] === name).length;
 
+/**
+ * A directive's source list with `'report-sample'` removed.
+ *
+ * It is not a source and matches nothing — it asks the browser to put a snippet of the
+ * offending code into the report, which is what makes a `report-uri` payload triageable
+ * rather than just a directive name. Production carries it on every directive now, so an
+ * assertion about *sources* has to drop it or it fails on the keyword instead of the policy.
+ */
+const sources = (policy: string, name: string) =>
+  (directives(policy).get(name) ?? []).filter((value) => value !== "'report-sample'");
+
 describe('the shipped CSP (#685)', () => {
   it('gives both SPA entries the same policy', () => {
     // They disagreed: only `/admin/ui` opened img-src to `*`, so which URL the user landed
@@ -67,7 +78,7 @@ describe('the shipped CSP (#685)', () => {
     // The directive the app was violating. `test/csp-inline-styles.test.ts` keeps source
     // free of style attributes; this keeps the reason for that rule from being deleted.
     for (const key of SPA) {
-      expect(directives(csp(key)).get('style-src-attr')).toEqual(["'none'"]);
+      expect(sources(csp(key), 'style-src-attr')).toEqual(["'none'"]);
     }
   });
 
@@ -76,7 +87,7 @@ describe('the shipped CSP (#685)', () => {
     // was re-added in 81c0335 for a pre-render theme <script> that has since moved into
     // src/index.ts; verified with zero violations against `npm run build` output.
     for (const key of SPA) {
-      expect(directives(csp(key)).get('script-src')).toEqual(["'self'"]);
+      expect(sources(csp(key), 'script-src')).toEqual(["'self'"]);
     }
   });
 
@@ -84,7 +95,7 @@ describe('the shipped CSP (#685)', () => {
     // keep-monaco-editor.ts instantiates the editor/json/ts workers through Vite `?worker`
     // imports. Drop blob: and the Source tab and Diff view stop working.
     for (const key of SPA) {
-      expect(directives(csp(key)).get('worker-src')).toContain('blob:');
+      expect(sources(csp(key), 'worker-src')).toContain('blob:');
     }
   });
 
@@ -98,23 +109,49 @@ describe('the shipped CSP (#685)', () => {
     }
   });
 
-  it('keeps the connect-src wildcard, which OIDC needs', () => {
+  it('lets connect-src reach an IdP, but only over https', () => {
     /*
-     * This one looks like a defect and is not, so it is asserted rather than left to be
-     * "tidied up" by the next reader.
+     * `connect-src` cannot be `'self' data:`, and it no longer needs to be `*`.
      *
      * `src/components/login/pkce.js` fetches `idp.wellKnown` — the IdP's discovery document
      * — and then the `token_endpoint` that document names. For any external IdP (Entra ID,
      * Okta, Keycloak, Ping) both are a different origin, and the origin is deployment
-     * specific, so it cannot be enumerated in a config file shipped inside the JAR.
+     * specific, so it cannot be enumerated in a config file shipped inside the JAR. Narrowing
+     * to `'self' data:` breaks SSO for every such deployment, and breaks it *after* the user
+     * has authenticated: the navigation to the authorize endpoint is a top-level navigation,
+     * which connect-src does not govern, so only the token exchange fails.
      *
-     * Narrowing this to `'self' data:` breaks SSO login for every such deployment. The
-     * navigation to the authorize endpoint is unaffected either way — that is a top-level
-     * navigation, which connect-src does not govern — so the breakage would appear only at
-     * the token exchange, after the user had already authenticated.
+     * `https:` is the scheme-source form and keeps that working while dropping cleartext
+     * `http:`, `ws:` and `ftp:`, which the wildcard also allowed. Nothing in `src` opens a
+     * WebSocket; Vite's HMR socket in dev is same-origin and covered by `'self'`.
      */
     for (const key of SPA) {
-      expect(directives(csp(key)).get('connect-src')).toContain('*');
+      expect(sources(csp(key), 'connect-src')).toEqual(["'self'", 'data:', 'https:']);
+    }
+  });
+
+  it('spells the https scheme-source in a form that is not silently inert', () => {
+    /*
+     * `https:*` is the trap here, and it is worth a test of its own because every signal
+     * points the wrong way.
+     *
+     * It is not valid grammar: `scheme-source` is `https:` with nothing after the colon, and
+     * `host-source` needs `https://…`. `https:*` is neither, so the token is discarded and
+     * the directive collapses to `'self' data:` — i.e. **every** cross-origin request refused
+     * and SSO broken. Measured in Chrome. And Chrome does not warn: it echoes the directive
+     * back in the violation message verbatim ("violates … connect-src 'self' data: https:*"),
+     * which reads like the URL merely failed to match.
+     *
+     * `https://*` is valid but wrong for a different reason: a host-source with no port-part
+     * pins the default port, so an IdP on `https://idp.example:8443` is refused. Also
+     * measured — and already excluded by "reaches no external origin" above, which is why
+     * only the inert spelling is asserted here.
+     */
+    for (const key of Object.keys(entries)) {
+      const policy = entries[key].csp ?? '';
+      expect(policy, `${key} has a host wildcard glued onto a scheme-source`).not.toMatch(
+        /\bhttps?:\*/,
+      );
     }
   });
 
@@ -141,7 +178,7 @@ describe('the shipped CSP (#685)', () => {
      * navigated to directly; `/adminui.json` is a JSON body that can violate nothing.
      */
     for (const key of SPA) {
-      expect(directives(csp(key)).get('report-uri')).toEqual(['/api/csp-violation-report']);
+      expect(sources(csp(key), 'report-uri')).toEqual(['/api/csp-violation-report']);
     }
   });
 
@@ -153,11 +190,15 @@ describe('the shipped CSP (#685)', () => {
     const header = vite.match(/'Content-Security-Policy-Report-Only':\s*`([^`]+)`/)?.[1];
     expect(header, 'no report-only header found in vite.config.mts').toBeDefined();
 
-    const dev = directives(header!.replace(/\s+/g, ' ').trim());
-    const prod = directives(csp('/admin/ui'));
-    for (const [name, values] of prod) {
-      const devValues = (dev.get(name) ?? []).filter((v) => v !== "'report-sample'");
-      expect(devValues, `dev ${name} does not match production`).toEqual(values);
+    // `'report-sample'` is dropped from both sides rather than one: production carries it
+    // now too, and it is a reporting keyword either way — it decides what a report *says*,
+    // never what the policy *permits*, so it cannot make the two mirrors disagree.
+    const devPolicy = header!.replace(/\s+/g, ' ').trim();
+    const prodPolicy = csp('/admin/ui');
+    for (const name of directives(prodPolicy).keys()) {
+      expect(sources(devPolicy, name), `dev ${name} does not match production`).toEqual(
+        sources(prodPolicy, name),
+      );
     }
   });
 });
