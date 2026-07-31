@@ -662,6 +662,9 @@ export default class ModeCompare extends KeepElement {
   private renderDot(differs: boolean) {
     if (!differs) return nothing;
     return html`
+      <!-- A status dot, left as inline SVG on purpose (#946): a filled circle has no
+           name in any icon set, so wa-icon would cost a registry entry and a
+           font-size to draw one path. -->
       <svg
         width="9"
         height="8"

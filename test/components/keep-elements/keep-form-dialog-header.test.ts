@@ -56,9 +56,13 @@ describe('keep-form-dialog-header', () => {
 
   it('gives the icon-only close button an accessible name', async () => {
     const el = await mountLit<FormDialogHeader>(TAG, { heading: 'x' });
-    // Its only content is an SVG, so without this it had no name at all (WCAG 4.1.2).
+    // Its only content is a glyph, so without this it had no name at all (WCAG 4.1.2).
     expect(closeButton(el).getAttribute('aria-label')).toBe('Close');
-    expect(closeButton(el).querySelector('svg')!.getAttribute('aria-hidden')).toBe('true');
+    // A registered xmark now, not the hand-drawn cross this used to assert (#946).
+    const glyph = closeButton(el).querySelector('wa-icon')!;
+    expect(glyph.getAttribute('name')).toBe('xmark');
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+    expect(closeButton(el).querySelector('svg')).toBeNull();
   });
 
   it('types the close button so it cannot submit a surrounding form', async () => {

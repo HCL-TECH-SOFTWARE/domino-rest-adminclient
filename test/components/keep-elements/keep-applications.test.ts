@@ -430,7 +430,12 @@ describe('keep-applications', () => {
     const el = await mountReady();
     const filter = find<HTMLElement>(el, '.filter-button');
     expect(filter.getAttribute('aria-label')).toBe('Filter applications');
-    expect(filter.querySelector('svg')!.getAttribute('aria-hidden')).toBe('true');
+    // The funnel is a registered glyph now, not inline path data (#946). The claim is
+    // unchanged — decorative, because the button carries the name.
+    const glyph = filter.querySelector('wa-icon')!;
+    expect(glyph.getAttribute('name')).toBe('filter');
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+    expect(filter.querySelector('svg')).toBeNull();
 
     filter.click();
     await settle(el);

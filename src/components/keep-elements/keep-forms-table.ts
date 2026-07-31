@@ -72,36 +72,28 @@ const STATUS_HELP = `Activate the Forms that should be accessible\nvia rest API`
 
 /** The purple lozenge marking a form that exists only in the schema. Decorative. */
 const DIAMOND = html`
+  <!-- A 4-point diamond, left as inline SVG on purpose (#946): it is a shape rather than a
+       glyph, with no name in any icon set. -->
   <svg width="8" height="8" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <polygon points="4,0 8,4 4,8 0,4" fill="#962CEA"></polygon>
   </svg>
 `;
 
 /**
- * The activate dialog's warning glyph.
+ * The activate dialog's warning glyph (#946).
  *
- * Inlined rather than imported: the only other copy is a component in the shared style
- * modules, which are React and are the last thing the migration removes. The markup is
- * byte-identical to that one.
+ * Was 35x35 of hand-drawn path data — an outline ring with an exclamation, hardcoding
+ * `#D6466F` — duplicated byte-for-byte in `keep-mode-fields` and in a `styles/forms.tsx`
+ * export that turned out to have no consumers at all. One registered glyph replaces all three.
+ *
+ * Solid rather than the outline it replaces, following #718's decision: several glyphs that
+ * were outline-weight in the legacy sets are solid now, because one coherent weight beats a
+ * per-glyph match to four inconsistent sources. The colour moves to the danger token; the
+ * glyph is `aria-hidden` decoration beside a heading that says the same thing in words, so the
+ * 3:1 non-text threshold applies to it rather than the 4.5:1 that #944 is about.
  */
 const WARNING = html`
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="35"
-    height="35"
-    viewBox="0 0 35 35"
-    fill="none"
-    aria-hidden="true"
-  >
-    <path
-      d="M17.5 0C7.83594 0 0 7.83594 0 17.5C0 27.1641 7.83594 35 17.5 35C27.1641 35 35 27.1641 35 17.5C35 7.83594 27.1641 0 17.5 0ZM17.5 32.0312C9.47656 32.0312 2.96875 25.5234 2.96875 17.5C2.96875 9.47656 9.47656 2.96875 17.5 2.96875C25.5234 2.96875 32.0312 9.47656 32.0312 17.5C32.0312 25.5234 25.5234 32.0312 17.5 32.0312Z"
-      fill="#D6466F"
-    />
-    <path
-      d="M15.625 24.375C15.625 24.8723 15.8225 25.3492 16.1742 25.7008C16.5258 26.0525 17.0027 26.25 17.5 26.25C17.9973 26.25 18.4742 26.0525 18.8258 25.7008C19.1775 25.3492 19.375 24.8723 19.375 24.375C19.375 23.8777 19.1775 23.4008 18.8258 23.0492C18.4742 22.6975 17.9973 22.5 17.5 22.5C17.0027 22.5 16.5258 22.6975 16.1742 23.0492C15.8225 23.4008 15.625 23.8777 15.625 24.375ZM16.5625 20H18.4375C18.6094 20 18.75 19.8594 18.75 19.6875V9.0625C18.75 8.89062 18.6094 8.75 18.4375 8.75H16.5625C16.3906 8.75 16.25 8.89062 16.25 9.0625V19.6875C16.25 19.8594 16.3906 20 16.5625 20Z"
-      fill="#D6466F"
-    />
-  </svg>
+  <wa-icon library="${FA_LIBRARY}" name="circle-exclamation" canvas="auto" aria-hidden="true"></wa-icon>
 `;
 
 /**
@@ -382,13 +374,17 @@ export default class FormsTable extends KeepElement {
         align-items: center;
       }
 
-      /* was the w-30px/h-30px/p-0/flex/items-center utility stack around the glyph */
+      /* was the w-30px/h-30px/p-0/flex/items-center utility stack around the glyph.
+         The glyph is a wa-icon now (#946), which takes its box from font-size rather than
+         width, so the size moves onto the icon and the wrapper keeps only the centring. */
       .warning-icon {
         display: flex;
         align-items: center;
-        width: 30px;
-        height: 30px;
         padding: 0;
+      }
+      .warning-icon wa-icon {
+        font-size: 30px;
+        color: var(--keep-color-danger-text);
       }
 
       /* margin: 0 because this is a heading now and the UA default would shift the row */

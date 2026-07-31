@@ -41,6 +41,9 @@ export default class AppStatus extends KeepElement {
   render() {
     return html`
       <div>
+        <!-- A status dot, left as inline SVG on purpose (#946): a filled circle has no
+             name in any icon set, so wa-icon would cost a registry entry and a
+             font-size to draw one path. -->
         <svg width="5" height="5" viewBox="0 0 5 5" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="2.5" cy="2.5" r="2.5" fill="${this.status ? '#003122' : '#6C7882'}"></circle>
         </svg>

@@ -325,6 +325,25 @@ describe('keep-mode-fields', () => {
       expect(dialogEl(el).showModal).not.toHaveBeenCalled();
     });
 
+    /**
+     * The same 35×35 of hand-drawn path data that `keep-forms-table` carried, hardcoding the
+     * warning colour in a wrapper class. One registered glyph replaces both, plus a third copy
+     * in `styles/forms.tsx` that had no consumers at all (#946).
+     */
+    it('draws the warning with a registered glyph, not inline path data', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await toggle(rowCheckboxes(el)[1], true);
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+
+      const icon = shadow(el).querySelector('.warning-icon wa-icon')!;
+      expect(icon, 'the remove dialog has no warning glyph').toBeTruthy();
+      expect(icon.getAttribute('name')).toBe('circle-exclamation');
+      expect(shadow(el).querySelector('.warning-icon svg')).toBeNull();
+    });
+
     it('lists the ticked fields in the dialog it opens', async () => {
       const el = await mount();
       textButton(el, 'Delete Field(s)').click();

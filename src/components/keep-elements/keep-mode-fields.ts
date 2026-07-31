@@ -480,17 +480,24 @@ export default class ModeFields extends KeepElement {
       }
 
       /*
-       * was .remove-field-warning-icon.p-0.flex.items-center. The glyph itself is inline
-       * because the bundled icon set has no exclamation mark; #d6466f is the colour the
-       * original graphic was drawn with, moved out of the markup so there is one copy.
+       * was .remove-field-warning-icon.p-0.flex.items-center.
+       *
+       * The glyph used to be inline "because the bundled icon set has no exclamation mark".
+       * It has one now — circle-exclamation was registered in #951 — so the 35x35 of path
+       * data is gone and the hardcoded #d6466f with it. wa-icon takes its box from font-size
+       * rather than width, so the size sits on the icon and this keeps only the centring.
        */
       .warning-icon {
         display: flex;
         align-items: center;
-        width: 30px;
-        height: 30px;
         padding: 0;
-        color: #d6466f;
+        color: var(--keep-color-danger-text);
+      }
+      .warning-icon wa-icon {
+        /* 35px, the size the replaced graphic was drawn at. canvas="auto" because Web
+           Awesome's default is "fixed", a 1.25em x 1em canvas — measured 38x30 for this
+           glyph, where the original was square. #946 */
+        font-size: 35px;
       }
 
       /* was .dialog-content.gap-10 — the utility is declared later than the gap: 40px in
@@ -779,25 +786,10 @@ export default class ModeFields extends KeepElement {
       <dialog aria-label="Remove Field" @cancel=${this.closeRemoveDialog}>
         <div class="dialog-head">
           <div class="warning-icon">
-            <!-- The clip path the original wrapped this in covered the whole 35x35 canvas,
-                 so it clipped nothing and is dropped with its defs block. -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="35"
-              height="35"
-              viewBox="0 0 35 35"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M17.5 0C7.83594 0 0 7.83594 0 17.5C0 27.1641 7.83594 35 17.5 35C27.1641 35 35 27.1641 35 17.5C35 7.83594 27.1641 0 17.5 0ZM17.5 32.0312C9.47656 32.0312 2.96875 25.5234 2.96875 17.5C2.96875 9.47656 9.47656 2.96875 17.5 2.96875C25.5234 2.96875 32.0312 9.47656 32.0312 17.5C32.0312 25.5234 25.5234 32.0312 17.5 32.0312Z"
-                fill="currentColor"
-              />
-              <path
-                d="M15.625 24.375C15.625 24.8723 15.8225 25.3492 16.1742 25.7008C16.5258 26.0525 17.0027 26.25 17.5 26.25C17.9973 26.25 18.4742 26.0525 18.8258 25.7008C19.1775 25.3492 19.375 24.8723 19.375 24.375C19.375 23.8777 19.1775 23.4008 18.8258 23.0492C18.4742 22.6975 17.9973 22.5 17.5 22.5C17.0027 22.5 16.5258 22.6975 16.1742 23.0492C15.8225 23.4008 15.625 23.8777 15.625 24.375ZM16.5625 20H18.4375C18.6094 20 18.75 19.8594 18.75 19.6875V9.0625C18.75 8.89062 18.6094 8.75 18.4375 8.75H16.5625C16.3906 8.75 16.25 8.89062 16.25 9.0625V19.6875C16.25 19.8594 16.3906 20 16.5625 20Z"
-                fill="currentColor"
-              />
-            </svg>
+            <!-- One registered glyph replaces 35x35 of hand-drawn path data that was
+                 duplicated byte-for-byte in keep-forms-table and in a dead styles/forms.tsx
+                 export (#946). Solid rather than the outline it replaces, per #718. -->
+            <wa-icon library=${FA_LIBRARY} name="circle-exclamation" canvas="auto" aria-hidden="true"></wa-icon>
           </div>
           <div class="dialog-head-body">
             <keep-form-dialog-header

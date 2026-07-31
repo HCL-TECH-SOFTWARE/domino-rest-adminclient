@@ -9,6 +9,7 @@ import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 type SchemaItem = { schemaName?: string; apiName?: string; nsfPath?: string };
@@ -58,26 +59,27 @@ export default class SchemaStatus extends KeepElement {
       }
     }
 
+    /*
+     * The delete affordance. #946.
+     *
+     * Was hand-drawn path data styled as an outline — fill:none, stroke:#F75764 — that filled
+     * in on hover. A registered trash glyph is solid, so there is no outline state to fill:
+     * the same two colours drive the resting and hover states directly, and wa-icon takes its
+     * box from font-size rather than width.
+     *
+     * The bare wa-icon rule that stood beside this matched nothing — there was no wa-icon in
+     * this element until now — so it is folded in rather than left to apply twice.
+     */
     .trash-icon {
         cursor: pointer;
         flex-shrink: 0;
-        width: 20px;
-        height: 20px;
-        fill: none;
-        stroke: #F75764;
-        stroke-width: 1.5;
-        transition: fill 0.2s ease, stroke 0.2s ease;
+        font-size: 20px;
+        color: #F75764;
+        transition: color 0.2s ease;
     }
 
     .trash-icon:hover {
-        fill: #F75764;
-        stroke: #8B2630;
-    }
-
-    wa-icon {
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: filter 0.2s ease;
+        color: #8B2630;
     }
 
     div.name {
@@ -128,9 +130,7 @@ export default class SchemaStatus extends KeepElement {
         </div>
         ${this.isSchema
           ? html`<div class="delete" @click=${this.onDelete}>
-            <svg class="trash-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14M10 11v6M14 11v6"/>
-            </svg>
+            <wa-icon class="trash-icon" library=${FA_LIBRARY} name="trash" canvas="auto" aria-hidden="true"></wa-icon>
         </div>`
           : ''}
       </div>
