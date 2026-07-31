@@ -9,6 +9,7 @@ import { cleanupLit, mountLit } from '../../test-utils/lit';
 import { loadAppIcons, resetAppIconsForTest } from '../../../src/services/app-icons';
 import { updateSchema } from '../../../src/store/databases/action';
 import '../../../src/components/keep-elements/keep-details-section';
+import DetailsSectionClass from '../../../src/components/keep-elements/keep-details-section';
 import type DetailsSection from '../../../src/components/keep-elements/keep-details-section';
 
 /**
@@ -735,5 +736,76 @@ describe('keep-details-section', () => {
     expect(one(el, '.status-dot')!.classList.contains('not-in-use')).toBe(true);
     // No schema means the four flags have not arrived, so the summary is still waiting.
     expect(one(el, 'wa-spinner')).toBeTruthy();
+  });
+});
+
+/**
+ * The dialog's own CSS, read as text (#975).
+ *
+ * Every defect that issue reported was a cascade or layout question, and the suite can
+ * answer none of them: it runs with `css: false`, and jsdom has no cascade, no layout and
+ * no paint, so a mounted element here reports the same geometry whatever these rules say.
+ * The fixes were measured in Chrome instead — the numbers are in the pull request.
+ *
+ * What is left worth pinning is the *shape* of three declarations, each of which was a bug
+ * by its absence and each of which is the kind of thing a later tidy-up reintroduces.
+ */
+describe('the Edit Schema dialog stylesheet (#975)', () => {
+  const sheets = () => DetailsSectionClass.styles as unknown as { cssText: string }[];
+
+  /** The body of one rule, without the comment block above it. */
+  const ruleFor = (selector: string): string => {
+    const css = sheets()
+      .map((sheet) => sheet.cssText)
+      .join('\n');
+    // Anchored, so `dialog` does not match `dialog.edit` or the word inside a comment.
+    const at = css.search(new RegExp(`(^|[\\s}])${selector.replace(/[.[\]]/g, '\\$&')}\\s*\\{`, 'm'));
+    expect(at, `no rule for ${selector} in this component`).toBeGreaterThan(-1);
+    return css.slice(css.indexOf('{', at), css.indexOf('}', at));
+  };
+
+  it('stretches its rows, so the header spans the dialog and the close box lands at the edge', () => {
+    // Web Awesome's own bare-dialog rule says `align-items: start`. On a column flex
+    // container that is the cross axis, so it shrink-wraps every child that does not
+    // declare a width — which the header wrapper does not, and which is why the close
+    // button sat beside the title instead of above the Save button.
+    expect(
+      ruleFor('dialog'),
+      'align-items must stay stretch, or the header shrink-wraps and takes the close box with it',
+    ).toMatch(/align-items:\s*stretch/);
+  });
+
+  it('lets .padded inset the dialog body instead of resetting it', () => {
+    // `.dialog-content` and `.padded` land on the same element and are one class of
+    // specificity apart, so a `padding` declaration here — even `padding: 0`, which buys
+    // nothing on a div — cancels the 30px inline padding and the body runs flush to the
+    // border while the header and buttons stay inset.
+    expect(
+      ruleFor('.dialog-content'),
+      '.dialog-content must not declare padding; .padded is on the same element and loses to it',
+    ).not.toMatch(/padding\s*:/);
+  });
+
+  it('gives the switch grid a row gap that is a length', () => {
+    const rule = ruleFor('.config-container');
+    // A percentage row-gap resolves against the container's own height. That height is
+    // indefinite here, so `gap: 10%` computed to a zero row gap and the rows of switches
+    // touched. Only a length is honest.
+    expect(rule, 'the row gap must be a length; a percentage resolves to zero here').toMatch(
+      /row-gap:\s*[\d.]+px/,
+    );
+    expect(rule, 'no percentage gap on this container — see the row-gap assertion above').not.toMatch(
+      /gap:\s*[\d.]+%/,
+    );
+  });
+
+  it('floors the edit dialog through width, so max-width can still clamp it', () => {
+    // `min-width` would beat the `max-width: calc(100% - var(--wa-space-l))` above it and
+    // push the dialog off a narrow viewport. A wide `width` is clamped by it instead.
+    const rule = ruleFor('dialog.edit');
+    expect(rule, 'the width floor must be expressed through width').toMatch(/width:\s*max\(/);
+    expect(rule, 'min-width beats max-width and would overflow a narrow screen').not.toMatch(
+      /min-width\s*:/,
+    );
   });
 });
