@@ -398,21 +398,10 @@ export default class Consents extends KeepElement {
           class="option"
           @click=${() => this.consentsCtl.dispatch(toggleConsentsDrawer())}
         >
-          <!-- Kept as an inline SVG rather than swapped for wa-icon: no funnel glyph is
-               bundled, it inherits currentColor, and it needs no icon library at runtime.
-               Decorative, because the button says "All filters" beside it. -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            viewBox="0 0 16 16"
-            aria-hidden="true"
-          >
-            <path
-              d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"
-            />
-          </svg>
+          <!-- Was inline SVG "because no funnel glyph is bundled". One is now: filter was
+               registered in #951, so the path data is gone (#946). Still decorative — the
+               button says "All filters" beside it. -->
+          <wa-icon library=${FA_LIBRARY} name="filter" canvas="auto" aria-hidden="true"></wa-icon>
           All filters
         </button>
         <button

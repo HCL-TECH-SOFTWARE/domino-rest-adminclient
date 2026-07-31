@@ -6,6 +6,8 @@
 
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { KeepElement } from './keep-element';
 
 /** Payload is empty; the event itself is the signal. */
@@ -99,24 +101,14 @@ export default class FormDialogHeader extends KeepElement {
     //  - aria-label, because the button's only content is an icon, so it had no accessible
     //    name at all (WCAG 4.1.2).
     //  - the glyph is decorative once the button is labelled.
-    // The inline SVG is kept rather than swapped for <wa-icon>: it is already
-    // framework-agnostic, inherits currentColor, and needs no icon library at runtime.
+    // The glyph was inline SVG, kept that way "because it is already framework-agnostic
+    // and needs no icon library at runtime". It is a registered xmark now (#946) — the
+    // library is bundled either way, and one cross beats three hand-drawn copies of it.
     return html`
       <div class="header">
         <h2 class="heading">${this.heading}</h2>
         <button class="close" type="button" aria-label="Close" @click=${this.handleClose}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="20px"
-            viewBox="0 -960 960 960"
-            width="20px"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"
-            />
-          </svg>
+          <wa-icon library=${FA_LIBRARY} name="xmark" canvas="auto" aria-hidden="true"></wa-icon>
         </button>
       </div>
     `;
