@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import { Database, SET_ACTIVEAGENTS, AgentObj } from './types';
 import { AppDispatch } from '..';
 import { toggleAlert } from '../alerts/action';

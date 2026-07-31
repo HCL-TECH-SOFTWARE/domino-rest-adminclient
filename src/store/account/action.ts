@@ -4,14 +4,12 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Dispatch } from 'redux';
+import type { Dispatch, ThunkAction, UnknownAction } from '@reduxjs/toolkit';
 import { Credentials, PageListObj } from './types';
 import { BASE_KEEP_API_URL, IDP_KEEP_API_URL } from '../../config.dev';
 import { initState } from '../databases/action';
 import { AppState } from '..';
 import { clearForms } from '../databases/action';
-import { ThunkAction } from '@reduxjs/toolkit';
-import { AnyAction } from 'redux';
 import { apiRequestWithRetry, notify } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
 import { checkForResponse } from '../../utils/common';
@@ -314,8 +312,14 @@ export function loginWithPkce(token: any) {
   }
 }
 
-// Thunk action to get the current idpLogin state
-export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, AnyAction> => (_dispatch, getState) => {
+// Thunk action to get the current idpLogin state.
+//
+// `UnknownAction` rather than the `AnyAction` this carried until #994: Redux 5 deprecates
+// `AnyAction`, whose index signature types every extra field `any`. Free to swap here — the
+// parameter only constrains what this thunk's `dispatch` accepts, and this thunk never
+// dispatches. It also matches `AppDispatch` in the store barrel, which already says
+// `UnknownAction`.
+export const getCurrentIdpLogin = (): ThunkAction<void, AppState, unknown, UnknownAction> => (_dispatch, getState) => {
   const { idpLogin } = getState().account;
   return idpLogin;
 };

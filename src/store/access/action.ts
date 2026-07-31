@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import { ADMIN_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleUsersLoading } from '../loading/action';

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import { changeScope, deleteScope, fetchScopes } from '../../../src/store/databases/action';
 import { SET_DB_ERROR } from '../../../src/store/databases/types';
 import {

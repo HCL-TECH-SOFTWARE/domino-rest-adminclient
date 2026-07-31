@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Dispatch } from 'redux';
+import type { Dispatch } from '@reduxjs/toolkit';
 import { fetchUsers } from '../../../src/store/access/action';
 import { setUsers } from '../../../src/store/access/reducer';
 import { toggleUsersLoading } from '../../../src/store/loading/action';
