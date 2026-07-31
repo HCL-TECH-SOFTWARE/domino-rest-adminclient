@@ -15,7 +15,7 @@
  *     would render the fallback and then swap.
  *   - the icon pickers select by list index (`handleMenuItemClick(_, index)`), so the
  *     order here has to be the order the grid renders in — which is this order.
- *   - `iconName` is persisted server-side, so an unknown name must stay recognisable
+ *   - `iconName` is persisted server-side, so an unknown name must stay recognizable
  *     as unknown rather than as not-yet-loaded.
  *
  * Duplicating the names is the price of not importing the payloads.
@@ -108,7 +108,7 @@ export const APP_ICON_NAMES: readonly string[] = [
   'travel',
   'trekking',
   'wallet',
-  'wind_turbine',
+  'wind_turbine'
 ];
 
 /** The icon every caller falls back to when `iconName` is missing or unknown. */
