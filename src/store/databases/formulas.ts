@@ -8,6 +8,7 @@ import { Dispatch } from 'redux';
 import { BASE_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { encodeQueryValue } from '../../utils/common';
 import { clearFormulaResults as clearFormulaResultsAction } from './reducer';
 
 /**
@@ -20,7 +21,7 @@ export const testFormula = (dataSource: string, formulaData: any, formulaType: s
     // Run Formula test
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${BASE_KEEP_API_URL}/run/formula?dataSource=${dataSource}`, {
+        fetch(`${BASE_KEEP_API_URL}/run/formula?dataSource=${encodeQueryValue(dataSource)}`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${getToken()}`,

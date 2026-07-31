@@ -393,7 +393,13 @@ export default class FormsTab extends KeepElement {
   /** The schema these forms belong to. Half of the row lookup the table performs. */
   @property({ type: String, attribute: 'db-name' }) accessor dbName = '';
 
-  /** The schema's NSF path, undecoded. Only ever used to build the paths emitted upward. */
+  /**
+   * The schema's NSF path, decoded — the route param as the outlet handed it over.
+   *
+   * Only ever used to build the paths emitted upward, which is why {@link navigateTo} encodes
+   * it rather than taking it ready-made. The comment here used to say "undecoded", which the
+   * `encodeURIComponent` on that line has always contradicted.
+   */
   @property({ type: String, attribute: 'nsf-path' }) accessor nsfPath = '';
 
   /** Form names the database itself knows; anything outside it is a custom form. */

@@ -12,7 +12,7 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog } from '../dialog/action';
-import { fullEncode } from '../../utils/common';
+import { encodeQueryValue, fullEncode } from '../../utils/common';
 import { apiRequestWithRetry } from '../../utils/api-retry';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { addNsfDesign } from './databases';
@@ -114,7 +114,7 @@ export const pullForms = (nsfPath: string) => {
     try {
       dispatch(setApiLoading(true));
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${nsfPath}`, {
+        fetch(`${SETUP_KEEP_API_URL}/designlist/forms?nsfPath=${encodeQueryValue(nsfPath)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
@@ -171,7 +171,7 @@ const updateForms = (
       dispatch(setApiLoading(true));
       try {
         const { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(newSchemaData.nsfPath)}&configName=${encodeQueryValue(newSchemaData.schemaName)}`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${getToken()}`,
@@ -311,7 +311,7 @@ export const updateFormMode = (
       dispatch(setApiLoading(true));
       try {
         const { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(newSchemaData.nsfPath)}&configName=${encodeQueryValue(newSchemaData.schemaName)}`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${getToken()}`,
@@ -396,7 +396,7 @@ export const deleteFormMode = (
       dispatch(setApiLoading(true));
       try {
         const { response, data } = await apiRequestWithRetry(() => 
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(newSchemaData.nsfPath)}&configName=${encodeQueryValue(newSchemaData.schemaName)}`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${getToken()}`,
@@ -460,7 +460,7 @@ export const deleteForm = (
       dispatch(setApiLoading(true));
       try {
         const { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${newSchemaData.nsfPath}&configName=${newSchemaData.schemaName}`, {
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(newSchemaData.nsfPath)}&configName=${encodeQueryValue(newSchemaData.schemaName)}`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${getToken()}`,
@@ -567,7 +567,7 @@ export const saveNewForm = (
     };
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${fullEncode(nsfPath)}`, {
+        fetch(`${SETUP_KEEP_API_URL}/design/forms/${fullEncode(form.formName)}?nsfPath=${encodeQueryValue(nsfPath)}`, {
           method: 'PUT',
           headers: {
             Authorization: `Bearer ${getToken()}`,

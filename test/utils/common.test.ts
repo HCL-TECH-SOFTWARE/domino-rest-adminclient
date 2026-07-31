@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
+  encodeQueryValue,
   fullEncode,
   insertCharacter,
   capitalizeFirst,
@@ -44,6 +45,55 @@ describe('fullEncode', () => {
 
   it('encodes multiple special characters in one pass', () => {
     expect(fullEncode('a!b#c')).toBe('a%21b%23c');
+  });
+});
+
+/**
+ * The query-string encoder (#978).
+ *
+ * The characters that matter are the ones that end the value early: `&` starts the next
+ * parameter and `#` starts the fragment, so an NSF path containing either addressed a
+ * different database, and the failure arrived as a 404 that named nothing.
+ *
+ * The rest of what is pinned here is the relationship to `fullEncode`, which is what makes
+ * this safe to put in front of the three call sites that already used that one.
+ */
+describe('encodeQueryValue', () => {
+  it('leaves an ordinary NSF path alone apart from its separators', () => {
+    expect(encodeQueryValue('demo.nsf')).toBe('demo.nsf');
+    expect(encodeQueryValue('subdir/demo.nsf')).toBe('subdir%2Fdemo.nsf');
+  });
+
+  it('escapes the two characters that end the value early', () => {
+    expect(encodeQueryValue('a&b')).toBe('a%26b');
+    expect(encodeQueryValue('a#b')).toBe('a%23b');
+  });
+
+  it('escapes the three fullEncode leaves raw', () => {
+    // A `+` reads as a space on many servers, a lone `%` is a malformed escape, and a space
+    // is a value the URL parser has to repair on the way out. All three survived `fullEncode`.
+    expect(encodeQueryValue('a+b')).toBe('a%2Bb');
+    expect(encodeQueryValue('a%b')).toBe('a%25b');
+    expect(encodeQueryValue('a b')).toBe('a%20b');
+  });
+
+  it('escapes everything fullEncode does, so no call site loses cover', () => {
+    // The property that lets this replace `fullEncode` at the three query-string sites that
+    // already had it: a strict superset, differing only in the case of the hex digits.
+    for (const char of `[]!()*\\/$&'#`) {
+      expect(encodeQueryValue(char).toLowerCase(), `unescaped: ${char}`).toBe(
+        fullEncode(char).toLowerCase(),
+      );
+    }
+  });
+
+  it('returns an empty string for empty input', () => {
+    expect(encodeQueryValue('')).toBe('');
+  });
+
+  it('round-trips through the standard decoder', () => {
+    const awkward = `a&b#c+d%e f/g'h(i)j*k!l[m]n$o\\p,q;r=s?t`;
+    expect(decodeURIComponent(encodeQueryValue(awkward))).toBe(awkward);
   });
 });
 

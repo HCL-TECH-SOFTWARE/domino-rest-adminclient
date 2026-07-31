@@ -11,6 +11,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { encodeQueryValue } from '../../utils/common';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { sortAndRemoveDupSchemas } from './schemas';
 import {
@@ -28,7 +29,7 @@ export function deleteScope(apiName: string) {
     try {
       // NEED UPDATE DEL
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
+        fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${encodeQueryValue(apiName)}`, {
           method: 'DELETE',
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -61,7 +62,7 @@ export const fetchScope = async (scopeData: any) => {
   const { apiName } = scopeData;
   try {
     const { response, data } = await apiRequestWithRetry(() =>
-      fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${apiName}`, {
+      fetch(`${SETUP_KEEP_API_URL}/admin/scope?scopeName=${encodeQueryValue(apiName)}`, {
         headers: {
           Authorization: `Bearer ${getToken()}`,
           'Content-Type': 'application/json',

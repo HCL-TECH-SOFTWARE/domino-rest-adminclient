@@ -30,7 +30,7 @@ import { StoreController } from '../../store/StoreController';
 import { checkIcon } from '../../styles/scripts';
 import { appIconPayload, DEFAULT_APP_ICON_NAME, loadAppIcons } from '../../services/app-icons';
 import { apiRequestWithRetry } from '../../utils/api-retry';
-import { fullEncode } from '../../utils/common';
+import { encodeQueryValue, fullEncode } from '../../utils/common';
 import { getLogger } from '../../services/log-service';
 
 const log = getLogger('components/keep-elements/keep-edit-view');
@@ -657,7 +657,7 @@ export default class EditView extends KeepElement {
     const design = isFolder ? 'folders' : 'views';
     const url =
       `${SETUP_KEEP_API_URL}/design/${design}/${fullEncode(this.viewName)}` +
-      `?nsfPath=${fullEncode(this.nsfPathProp)}&raw=false`;
+      `?nsfPath=${encodeQueryValue(this.nsfPathProp)}&raw=false`;
 
     try {
       const { response, data } = await apiRequestWithRetry(() =>

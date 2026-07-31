@@ -11,6 +11,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog } from '../dialog/action';
 import { apiRequestWithRetry } from '../../utils/api-retry';
+import { encodeQueryValue } from '../../utils/common';
 import { log, setDBError, clearDBError } from './shared';
 import {
   addNewSchemaToState,
@@ -41,7 +42,7 @@ export function deleteSchema(dbData: any) {
       try {
         try {
           const { response, data } = await apiRequestWithRetry(() =>
-            fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+            fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(nsfPath)}&configName=${encodeQueryValue(schemaName)}`, {
               method: 'DELETE',
               headers: {
                 Authorization: `Bearer ${getToken()}`,
@@ -93,7 +94,7 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
   return async (dispatch: Dispatch) => {
     try {
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${nsfPath}&configName=${schemaName}`, {
+        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(nsfPath)}&configName=${encodeQueryValue(schemaName)}`, {
           headers: {
             Authorization: `Bearer ${getToken()}`,
             Accept: 'application/json',
@@ -140,7 +141,7 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
     try {
       dispatch(setApiLoading(true));
       const { response, data } = await apiRequestWithRetry(() =>
-        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${dbData.nsfPath}&configName=${dbData.schemaName}`, {
+        fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(dbData.nsfPath)}&configName=${encodeQueryValue(dbData.schemaName)}`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${getToken()}`,
@@ -200,7 +201,7 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
       dispatch(updateError(false));
       try {
         const { response, data } = await apiRequestWithRetry(() =>
-          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${schemaData.nsfPath}&configName=${schemaData.schemaName}`, {
+          fetch(`${SETUP_KEEP_API_URL}/schema?nsfPath=${encodeQueryValue(schemaData.nsfPath)}&configName=${encodeQueryValue(schemaData.schemaName)}`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${getToken()}`,
