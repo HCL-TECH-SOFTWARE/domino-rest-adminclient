@@ -131,24 +131,38 @@ describe('databases — formulas', () => {
       expect(actions()[0]).toEqual({ type: FORMULA_TYPE, payload: 'Failed to fetch' });
     });
 
-    // `data.result[0].result[0]` is unguarded, so an ok response of any other shape
-    // raises a TypeError inside the try. The catch then runs JSON.parse over that
-    // TypeError's own message and throws a SyntaxError, which escapes the thunk.
+    // `data.result[0].result[0]` is unguarded, so an ok response of any other shape raises a
+    // TypeError inside the try. These two cases used to assert that the thunk **rejected**
+    // with a SyntaxError — the catch parsed the TypeError's own message as JSON and threw a
+    // second time, so the handler never finished.
     //
-    // Pinned rather than fixed: the guard belongs with whoever owns the endpoint
-    // contract, and inventing a placeholder result here would be worse than the
-    // rejection — it would show the user a formula result that never came back.
-    it('rejects when the response is missing the result wrapper', async () => {
+    // That was pinned rather than fixed, on the reasoning that a rejection beat showing a
+    // result that never came back. #1000 reversed it: the rejection logged nothing, so the
+    // shape change that caused it was invisible, and the same handler-throws-from-its-own
+    // -catch bug was live at 24 other sites. The thunk now completes, the fault is logged,
+    // and the panel shows the TypeError's message — which reads as an error, not a result.
+    //
+    // The missing guard on the response shape is still the endpoint owner's to add; what
+    // changed is that failing it is now diagnosable.
+    it('reports the fault instead of rejecting when the result wrapper is missing', async () => {
       returns({ unexpected: true });
 
-      await expect(testFormula('db.nsf', formulaData, FORMULA_TYPE)(dispatch)).rejects.toThrow(SyntaxError);
-      expect(actions()).toEqual([]);
+      await expect(
+        testFormula('db.nsf', formulaData, FORMULA_TYPE)(dispatch),
+      ).resolves.not.toThrow();
+      expect(actions()).toHaveLength(1);
+      expect(actions()[0].type).toBe(FORMULA_TYPE);
+      expect(String(actions()[0].payload)).toMatch(/undefined|Cannot read/i);
     });
 
-    it('rejects when the result array is empty', async () => {
+    it('reports the fault instead of rejecting when the result array is empty', async () => {
       returns({ result: [] });
 
-      await expect(testFormula('db.nsf', formulaData, FORMULA_TYPE)(dispatch)).rejects.toThrow(SyntaxError);
+      await expect(
+        testFormula('db.nsf', formulaData, FORMULA_TYPE)(dispatch),
+      ).resolves.not.toThrow();
+      expect(actions()).toHaveLength(1);
+      expect(String(actions()[0].payload)).toMatch(/undefined|Cannot read/i);
     });
   });
 });

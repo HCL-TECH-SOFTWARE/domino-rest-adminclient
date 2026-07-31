@@ -196,17 +196,26 @@ describe('databases — fields', () => {
       expect(types()).toContain(toggleErrorDialog.type);
     });
 
-    // The handler builds its title from `error.statusCode`, but checkForResponse and
-    // #800's failure shape both use `status`. Nothing writes `statusCode`, so the
-    // dialog always opens as "undefined: …". Pinned rather than fixed here: the same
-    // mistake sits in #818's unreachable line and the two want one decision.
-    it('titles the error dialog "undefined" because it reads the wrong key', async () => {
+    // The handler builds its title from `error.statusCode`, but checkForResponse and #800's
+    // failure shape both use `status`. **Nothing writes `statusCode`, so that key is still
+    // wrong** — the same mistake sits in #818's unreachable line, and the two still want one
+    // decision. Untouched here on purpose.
+    //
+    // What #1000 changed is the *rendering* of the missing value. This used to assert the
+    // literal string "undefined: no such form", which is what the user saw. That was
+    // tolerable while the only way to reach this dialog was an API error; #1000 made a
+    // *non*-API error reach it too (before, the handler threw a SyntaxError and the dialog
+    // never opened), so the prefix is now emitted only when there is a code to show.
+    //
+    // The title is therefore the message alone until #818 settles the key — at which point
+    // this case should read "400: no such form".
+    it('omits the status prefix, because nothing writes the key it reads', async () => {
       refuses({ status: 400, message: 'no such form' });
 
       await fetchFields('demo', 'db.nsf', 'Order', 'Order', 'forms')(dispatch);
       await dispatch.settled();
 
-      expect(byType(toggleErrorDialog.type).payload).toBe('undefined: no such form');
+      expect(byType(toggleErrorDialog.type).payload).toBe('no such form');
     });
 
     it('does not throw out of the thunk when the request never completes', async () => {

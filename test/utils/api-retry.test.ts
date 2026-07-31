@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { apiRequestWithRetry } from '../../src/utils/api-retry';
+import { apiRequestWithRetry, errorMessageOf, parseThrownError } from '../../src/utils/api-retry';
 import { refreshToken } from '../../src/components/login/pkce';
 
 // ---- Mocks ----
@@ -389,6 +389,94 @@ describe('apiRequestWithRetry', () => {
 
       expect(result.success).toBe(false);
       expect(result.data).toMatchObject({ status: 502, message: 'Bad Gateway' });
+    });
+  });
+});
+
+describe('reading a thrown error (#1000)', () => {
+  // The store's catch blocks used to do this by hand, 25 times:
+  //
+  //   const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
+  //   const error = JSON.parse(err)
+  //
+  // Right for an API error, fatal for anything else — the parse threw a SyntaxError *out of
+  // the catch*, so the handler never finished and the real fault was lost.
+
+  describe('errorMessageOf', () => {
+    it('takes an Error message without its class-name prefix', () => {
+      expect(errorMessageOf(new Error('plain failure'))).toBe('plain failure');
+    });
+
+    it('does not mangle a TypeError the way toString().replace("Error: ") did', () => {
+      // The old idiom replaced the substring wherever it appeared, and every built-in class
+      // ends in `Error`, so "TypeError: Cannot read …" became "TypeCannot read …". That
+      // corruption is visible in #1000's own repro, which reports `"TypeCannot"`.
+      const message = "Cannot read properties of undefined (reading 'map')";
+      const thrown = new TypeError(message);
+
+      expect(thrown.toString().replace('Error: ', '')).toBe(`Type${message}`);
+      expect(errorMessageOf(thrown)).toBe(message);
+    });
+
+    it('stringifies a throw that is not an Error at all', () => {
+      expect(errorMessageOf('just a string')).toBe('just a string');
+      expect(errorMessageOf(undefined)).toBe('undefined');
+    });
+  });
+
+  describe('parseThrownError', () => {
+    it('parses the JSON body the API layer throws', () => {
+      const body = { status: 404, message: 'Database not found', errorId: 1234 };
+
+      expect(parseThrownError(new Error(JSON.stringify(body)))).toEqual(body);
+    });
+
+    it('unescapes quotes, as the hand-written idiom did', () => {
+      // Some bodies arrive with their quotes escaped; without this they do not parse, and
+      // dropping it would silently turn every one of them into a raw-message fallback.
+      const thrown = new Error('{\\"status\\":500,\\"message\\":\\"boom\\"}');
+
+      expect(parseThrownError(thrown)).toEqual({ status: 500, message: 'boom' });
+    });
+
+    it('strips a leading "Error: " but never bites into "TypeError: "', () => {
+      expect(parseThrownError('Error: {"message":"kept"}')).toEqual({ message: 'kept' });
+      expect(parseThrownError(new TypeError('x is not a function')).message).toBe(
+        'x is not a function',
+      );
+    });
+
+    it('keeps the raw message when the throw is not an API error', () => {
+      // The whole point. This is the case the old code destroyed.
+      const thrown = new TypeError("Cannot read properties of undefined (reading 'map')");
+
+      expect(parseThrownError(thrown)).toEqual({
+        message: "Cannot read properties of undefined (reading 'map')",
+      });
+    });
+
+    it('never throws, whatever it is handed', () => {
+      for (const thrown of [undefined, null, 0, '', 'not json', { a: 1 }, new Error('x'), []]) {
+        expect(() => parseThrownError(thrown)).not.toThrow();
+        expect(typeof parseThrownError(thrown).message).toBe('string');
+      }
+    });
+
+    it('treats JSON that is not an object as a message, not a body', () => {
+      // `JSON.parse` happily returns numbers, strings, booleans and null; none of them is an
+      // API error body, and returning one would give callers a `.message` of undefined.
+      expect(parseThrownError('42')).toEqual({ message: '42' });
+      expect(parseThrownError('null')).toEqual({ message: 'null' });
+      expect(parseThrownError('"quoted"')).toEqual({ message: '"quoted"' });
+    });
+
+    it('always yields a message, even for a body that has none', () => {
+      // Callers pass `error.message` into string-typed actions. Before #1000 a body without
+      // one produced `undefined` there, or — on the fallback branch — the whole object.
+      expect(parseThrownError(new Error('{"status":500}'))).toEqual({
+        status: 500,
+        message: '{"status":500}',
+      });
     });
   });
 });

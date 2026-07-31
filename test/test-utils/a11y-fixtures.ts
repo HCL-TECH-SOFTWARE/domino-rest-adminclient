@@ -142,15 +142,18 @@ import '../../src/components/keep-elements/keep-zero-results';
  * Scanning it here would mean either a permanent false failure or weakening the rule set for
  * every other element, so it is excluded and its evidence lives in the pull request.
  *
- * ## `keep-forms-container` is excluded until #1000
+ * ## `keep-forms-container` is scanned again (#1000 fixed)
  *
- * Mounting it runs the folders thunk, whose catch block `JSON.parse`s the error message —
- * so the `TypeError` this stub's empty payload provokes is replaced by a `SyntaxError`
- * thrown *out of the catch*, which Vitest reports as an unhandled rejection and which fails
- * the run even when every test passes. That is #1000, a pattern repeated in eleven catch
- * blocks across seven store modules, and it is a store bug rather than an accessibility one.
- * Excluded rather than worked around with a bespoke payload, because a fixture shaped to
- * dodge a bug is a fixture that stops describing real usage.
+ * It was excluded here because mounting it runs the folders thunk, whose catch block
+ * `JSON.parse`d the error message — so the `TypeError` this stub's empty payload provokes
+ * was replaced by a `SyntaxError` thrown *out of the catch*, which Vitest reported as an
+ * unhandled rejection and which failed the run even when every test passed. Excluding it,
+ * rather than dodging the bug with a bespoke payload, was the right call: a fixture shaped
+ * around a bug stops describing real usage.
+ *
+ * #1000 fixed that at the root — `parseThrownError` keeps the raw message instead of
+ * throwing over it — so the empty payload now provokes exactly what it should: a logged
+ * TypeError and a thunk that finishes. The element is back in the table below.
  *
  * ## Three elements are absent
  *
@@ -255,6 +258,7 @@ export const ELEMENT_FIXTURES: ElementFixture[] = [
   { tag: 'keep-filter-drawer' },
   { tag: 'keep-footer' },
   { tag: 'keep-form-dialog-header', props: { heading: 'Edit Schema' } }, // the heading is the h2's text
+  { tag: 'keep-forms-container' },
   { tag: 'keep-forms-tab' },
   { tag: 'keep-forms-table', props: { formList: ['Customer'] } },
   { tag: 'keep-homepage' },

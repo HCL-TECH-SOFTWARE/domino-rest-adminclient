@@ -7,7 +7,7 @@
 import type { Dispatch } from '@reduxjs/toolkit';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { encodeQueryValue } from '../../utils/common';
 import { log } from './shared';
 import { setFolders as setFoldersAction } from './reducer';
@@ -57,8 +57,7 @@ export const fetchFolders = (dbName: string, nsfPath: string) => {
         ) as any
       );
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
       log.error('Error fetching folders', { error })
     }
   };
