@@ -8,6 +8,21 @@
   color-scheme: light;
 }
 
+/*
+ * The application root (#719), which `index.html` declares and `index.ts` upgrades.
+ *
+ * An unknown element is `display: inline` by default, and every view this element renders —
+ * the login screen, the loading page, the `wa-page` shell — is a full-viewport block. Inside
+ * an inline box each would generate an anonymous block container instead of being a child of
+ * `<body>`, which is where they were when React rendered into `<div id="root">`.
+ *
+ * It lives here rather than beside `keep-app-shell`'s identical rule in `app-shell.css`
+ * because that sheet travels in the shell's chunk, and an anonymous visitor never loads it.
+ */
+keep-app {
+  display: contents;
+}
+
 #modal .holder {
   position: absolute;
   top: 0;

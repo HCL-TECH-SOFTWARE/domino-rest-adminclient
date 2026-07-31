@@ -40,6 +40,9 @@ import { join, resolve } from 'node:path';
 
 const SRC = resolve(process.cwd(), 'src');
 
+/** The shell, which was `src/AppShell.tsx` until #719 half 2 made it a Lit element. */
+const SHELL = 'src/components/keep-elements/keep-app-shell.ts';
+
 const walk = (dir: string, match: RegExp): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
@@ -95,10 +98,14 @@ describe('shell dead code stays removed (#707)', () => {
   it('leaves the shell with no MUI media query at all', () => {
     // Two identical `useMediaQuery('(max-width:768px)')` calls in `HomeElement` were the
     // symptom that hid the duplication; PR 1 collapsed them to one. PR 3 removed the last:
-    // `AppShell` derives its breakpoint from the same expression `wa-page` compiles into its
-    // shadow root, so React and the component cannot disagree at 768px — which MUI's
-    // `(max-width:768px)` did, calling it mobile where `wa-page` says desktop.
-    const shell = SOURCES.find(({ file }) => file === 'src/AppShell.tsx');
+    // the shell derives its breakpoint from the same expression `wa-page` compiles into its
+    // shadow root, so the two cannot disagree at 768px — which MUI's `(max-width:768px)` did,
+    // calling it mobile where `wa-page` says desktop.
+    //
+    // `src/AppShell.tsx` until #719 half 2 converted it. Repointed rather than dropped: the
+    // hook is gone from the tree, but a second `matchMedia` over the same breakpoint is just
+    // as easy to add to an element as it was to a component.
+    const shell = SOURCES.find(({ file }) => file === SHELL);
     expect(shell, 'the shell moved again — repoint this guard').toBeDefined();
     expect(code(shell!.text)).not.toMatch(/useMediaQuery/);
     expect(existsSync(resolve(SRC, 'components/home/HomeElement.tsx'))).toBe(false);

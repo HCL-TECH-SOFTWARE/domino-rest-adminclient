@@ -94,7 +94,11 @@ export default defineConfig({
       exclude: [
         'src/**/*.d.ts',
         'src/**/types.ts', // pure type/const modules
-        'src/index.tsx',
+        // The application entry — `src/index.tsx` until #719 half 2 renamed it. Six imports
+        // and one `void loadAppIcons()`, whose value is an order no test can observe (the
+        // suite runs with `css: false`). `src/appearance-boot.ts`, the other entry, is *not*
+        // excluded — it stayed measurable when it was called `index.ts` and it still is.
+        'src/index.ts',
         // keep-source is a 752-line interactive tree/source editor (context
         // menus, drag, dialogs, validation). It is covered at the API level
         // by keep-source.test.ts, but exhaustive unit coverage in jsdom is
@@ -135,11 +139,27 @@ export default defineConfig({
       // Branch floors keep ~4 points of slack and the rest ~3: branch counts move under
       // ordinary refactoring (an added guard clause, a removed `default:` arm) in a way
       // line counts do not.
+      //
+      // ## Re-measured at #719 half 2 — 180 files / 3,263 tests
+      //
+      // Two floors had drifted far enough to protect nothing. The global one sat **31 points**
+      // under reality and `keep-elements` **ten**, because #806 converted screen after screen
+      // into well-tested elements without either being re-read, and because this change
+      // removed the largest uncovered files left: `index.tsx`, `App.tsx`, `AppShell.tsx`,
+      // `router/react.tsx` and twelve wrappers.
+      //
+      //                     floor was → is             measured
+      //   global            61/61/63/49 → 89/89/90/82   92.33 / 86.07 / 93.42 / 92.64
+      //   keep-elements     85/85/84/68 → 91/91/91/84   94.89 / 88.52 / 94.55 / 95.57
+      //
+      // Everything else was re-measured in the same pass and left alone — each still sits the
+      // documented distance under, and moving a floor that is already right is churn that
+      // makes the ones that moved harder to see in a diff.
       thresholds: {
-        lines: 61,
-        statements: 61,
-        functions: 63,
-        branches: 49,
+        lines: 89,
+        statements: 89,
+        functions: 90,
+        branches: 82,
         'src/store/**/reducer.ts': { lines: 97, statements: 97, functions: 97, branches: 92 },
         // Thunk suites, per slice (#690). Gated individually rather than through one
         // `**/action.ts` glob, because they are covered to very different depths.
@@ -177,9 +197,10 @@ export default defineConfig({
         // Lit elements; `router.ts` is not, and is what the Lit controller will bind to.
         'src/router/**': { lines: 94, statements: 94, functions: 90, branches: 91 },
         'src/utils/**': { lines: 96, statements: 96, functions: 93, branches: 93 },
-        // The converted Lit elements — 93 files now, including the per-element React
-        // wrappers #813 split out of the KeepElements barrel.
-        'src/components/keep-elements/**': { lines: 85, statements: 85, functions: 84, branches: 68 },
+        // The converted Lit elements — every screen in the app, plus `keep-app` and
+        // `keep-app-shell` since #719 half 2. The `react/` wrapper directory that used to sit
+        // under this glob is gone with React itself.
+        'src/components/keep-elements/**': { lines: 92, statements: 91, functions: 91, branches: 84 },
         // Pure, well-covered helpers (log, theme, icon library, WA token readers).
         // Nothing here should ever ship untested.
         'src/services/**': { lines: 93, statements: 93, functions: 90, branches: 91 },
