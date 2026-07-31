@@ -136,20 +136,6 @@ export default defineConfig({
   plugins: [
     stampBuildVersion(),
     appearanceBootScript(),
-    // The `wyw` (Linaria) plugin used to sit here, ahead of `react()`. It is gone with the
-    // last `styled` block (#825) — nothing under `src` imports `@linaria/*` any more, and
-    // the elements' `css` comes from `lit`.
-    //
-    // Removing it changed the built output by zero bytes: every eager chunk kept its
-    // content hash and the stylesheet compared identical, which is what proved the plugin
-    // was transforming the whole tree and emitting nothing. It also took ~40 % off the
-    // build. `test/styles/no-css-in-js.test.ts` is what keeps it out.
-    //
-    // The `exclude: ['**/components/keep-elements/**']` it carried is not something to
-    // reinstate in another form: it existed because wyw strips types with oxc-transform,
-    // which mis-desugars the `accessor` keyword (#747) into a reference to a private field
-    // it never declares. Deleting the plugin is the stronger version of that exclusion.
-    //
     // The Lit elements use standard (TC39) decorators with `accessor` (#747), and SWC is the
     // only transform in the tree that implements them. This was `@vitejs/plugin-react-swc`
     // until #996 — a React plugin in a repo with zero `.tsx` files, kept solely for this.
@@ -224,7 +210,7 @@ export default defineConfig({
         font-src 'self' data: 'report-sample';
         img-src 'self' data: 'report-sample';
         worker-src 'self' blob: 'report-sample';
-        connect-src 'self' data: * 'report-sample';
+        connect-src 'self' data: https: 'report-sample';
         report-uri /api/csp-violation-report
       `
         .replace(/\s+/g, ' ')
