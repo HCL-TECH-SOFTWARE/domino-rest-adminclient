@@ -17,4 +17,4 @@ export { FormSearchContainer, SearchContainer, SearchInput } from './search';
 export { CardContainer, Container, ModeLogo, SchemaIconStatus, InUseSymbol, NotInUseSymbol } from './cards';
 export { CommonDialog, DialogContainer, DrawerFormContainer, FormContentContainer, DrawerContainer } from './dialog';
 export { OptionsIcon, Options, OptionList, MenuOptionsContainer } from './sidenav';
-export { InputContainer, Buttons, BlueSwitch, StyledRadio, EncryptSignOptions, DeleteIcon, WarningIcon } from './forms';
+export { InputContainer, Buttons, BlueSwitch, StyledRadio, EncryptSignOptions, DeleteIcon } from './forms';

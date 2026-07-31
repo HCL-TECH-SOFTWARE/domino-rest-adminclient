@@ -273,6 +273,26 @@ describe('keep-forms-table', () => {
       expect(el.pendingActivation).toBe('Invoice');
     });
 
+    /**
+     * The warning glyph was 35×35 of hand-drawn path data hardcoding `#D6466F`, duplicated
+     * byte-for-byte in `keep-mode-fields` and in a `styles/forms.tsx` export that had no
+     * consumers (#946). One registered glyph replaces all three.
+     *
+     * This asserts the markup, not the picture: the swap is outline → solid and needs a
+     * browser to judge, which the PR carries the measurements for.
+     */
+    it('draws the warning with a registered glyph, not inline path data', async () => {
+      const el = await mount();
+      editButton(el, 'Invoice').click();
+      await el.updateComplete;
+
+      const icon = el.shadowRoot!.querySelector('.warning-icon wa-icon')!;
+      expect(icon, 'the activate dialog has no warning glyph').toBeTruthy();
+      expect(icon.getAttribute('name')).toBe('circle-exclamation');
+      expect(icon.getAttribute('library')).toBe('fa');
+      expect(el.shadowRoot!.querySelector('.warning-icon svg')).toBeNull();
+    });
+
     it('stays shut until an edit control asks for it', async () => {
       await mount();
       expect(showModal()).not.toHaveBeenCalled();
