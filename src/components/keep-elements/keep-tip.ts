@@ -120,13 +120,19 @@ export default class Tip extends KeepElement {
      *
      * position: relative is the containing block for the stretched link overlay below. It
      * is on the card rather than on the host so the hit area is exactly the visible tile;
-     * against the host it would also cover the margin, and two neighbouring tiles would
-     * meet with no dead space between their click targets.
+     * against the host it would cover the surrounding space too, and two neighbouring tiles
+     * would meet with no dead space between their click targets.
+     *
+     * The inline margin is 0 and the space between tiles is a gap on the row instead
+     * (#963). As two touching margins it was 2 x --wa-space-l, i.e. 48px, which is set by
+     * nothing that names it -- a gap says the number once, and says it where the tiles are
+     * laid out rather than inside one tile. The block margin stays: it is this element's own
+     * breathing room above and below, not spacing between siblings.
      */
     wa-card {
       --wa-panel-border-radius: var(--wa-border-radius-l);
       position: relative;
-      margin: var(--wa-space-l);
+      margin: var(--wa-space-l) 0;
       border-color: var(--wa-color-neutral-border-normal);
       box-shadow: var(--wa-shadow-l);
       display: flex;

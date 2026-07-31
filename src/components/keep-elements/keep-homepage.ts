@@ -131,10 +131,22 @@ export default class Homepage extends KeepElement {
       outline-offset: var(--wa-focus-ring-offset);
     }
 
-    /* was FeatureContainer. */
+    /*
+     * was FeatureContainer.
+     *
+     * NO BACKTICKS IN THIS BLOCK -- it sits inside a css tagged-template literal, so one
+     * ends the template and the file stops parsing. Same warning as in keep-tip.ts.
+     *
+     * The gap is what separates the tiles (#963). It used to be two touching --wa-space-l
+     * card margins inside keep-tip, so the real figure was 48px and no declaration anywhere
+     * said so; one gap on the row states it once, at the level that lays the tiles out. The
+     * tiles are flex: 1, so this comes out of their width rather than being distributed
+     * around them -- which is also why justify-content had nothing left to distribute and
+     * is gone.
+     */
     .features {
       display: flex;
-      justify-content: space-between;
+      gap: var(--wa-space-l);
       margin-bottom: 50px;
     }
 
