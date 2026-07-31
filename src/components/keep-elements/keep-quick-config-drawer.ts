@@ -4,7 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css, nothing, type PropertyValues } from 'lit';
+import { html, css, type PropertyValues } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
 import { StoreController } from '../../store/StoreController';
@@ -12,6 +12,7 @@ import { clearDBError } from '../../store/databases/action';
 import { toggleQuickConfigDrawer } from '../../store/drawer/action';
 import './keep-drawer';
 import './keep-alert';
+import type Alert from './keep-alert';
 import './keep-quick-config-form';
 import type QuickConfigForm from './keep-quick-config-form';
 
@@ -75,8 +76,13 @@ export default class QuickConfigDrawer extends KeepElement {
 
   @query('keep-quick-config-form') private accessor form!: QuickConfigForm | null;
 
+  @query('keep-alert') private accessor alert!: Alert | null;
+
   /** Previous drawer flag, so `updated` sees the edge rather than the level. */
   private wasOpen = false;
+
+  /** Previous error flag, so a toast is raised on the edge and not on every render. */
+  private wasErrored = false;
 
   /**
    * The React version reset on **every** change of the drawer flag, opening or closing, via a
@@ -89,6 +95,21 @@ export default class QuickConfigDrawer extends KeepElement {
    * nothing in the changed-properties map.
    */
   protected updated(_changed: PropertyValues): void {
+    /*
+     * Raise the toast on the rising edge of dbError (#952).
+     *
+     * This used to be a conditional part with a `message` binding, which keep-alert answered
+     * by auto-showing *and* by moving itself into document.body — the move being the only
+     * reason the toast survived `close()` clearing dbError a moment later. The element stays
+     * where it is put now, so the showing is explicit and the part is unconditional.
+     *
+     * Edge, not level: `show()` restarts the dismiss timer, so raising on every render would
+     * pin the toast open for as long as the error flag stayed up.
+     */
+    const { dbError, dbErrorMessage } = this.db.value;
+    if (dbError && !this.wasErrored) this.alert?.show(dbErrorMessage, 'danger');
+    this.wasErrored = dbError;
+
     if (this.wasOpen === this.drawer.value) return;
     this.wasOpen = this.drawer.value;
     this.form?.reset();
@@ -125,7 +146,6 @@ export default class QuickConfigDrawer extends KeepElement {
   }
 
   render() {
-    const { dbError, dbErrorMessage } = this.db.value;
     return html`
       <keep-drawer
         label="Quick Config"
@@ -136,13 +156,12 @@ export default class QuickConfigDrawer extends KeepElement {
           <keep-quick-config-form @close=${() => this.close()}></keep-quick-config-form>
         </div>
       </keep-drawer>
-      ${dbError
-        ? html`<keep-alert
-            variant="danger"
-            heading="Quick config error!"
-            message=${dbErrorMessage}
-          ></keep-alert>`
-        : nothing}
+      <!-- Rendered unconditionally and driven through show(), not conditionally with a
+           message binding (#952). The element used to move itself into document.body on first
+           show, which is what let a toast outlive the Lit part that created it — closing the
+           drawer clears dbError, and a conditional part would take the message away with it.
+           keep-alert no longer relocates itself, so the part has to stay put instead. -->
+      <keep-alert heading="Quick config error!"></keep-alert>
     `;
   }
 }

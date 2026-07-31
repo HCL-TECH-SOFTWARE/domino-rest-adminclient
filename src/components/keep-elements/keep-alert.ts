@@ -143,7 +143,6 @@ export default class Alert extends KeepElement {
   @state() private accessor _visible = false;
 
   private _timer: ReturnType<typeof setTimeout> | null = null;
-  private _movedToBody = false;
 
   @query('.toast-wrapper') private accessor _wrapper!: HTMLElement | null;
 
@@ -169,13 +168,23 @@ export default class Alert extends KeepElement {
     }
     this._visible = true;
 
-    // Move to body so we're not trapped inside another component's shadow tree.
-    if (!this._movedToBody && this.isConnected && this.parentNode !== document.body) {
-      document.body.appendChild(this);
-      this._movedToBody = true;
-    }
-
-    // Open via Popover API → places this element in the top layer, above any <dialog>.
+    /*
+     * Open via the Popover API, which promotes this element into the **top layer** — above
+     * any <dialog>, and out of every ancestor's clipping and stacking context, wherever it
+     * happens to sit in the tree.
+     *
+     * It used to move itself to document.body first, "so we're not trapped inside another
+     * component's shadow tree" (#952). The popover already answers that, and the move was
+     * doing real harm: both Lit call sites render this element from a template, and a
+     * template holds a ChildPart bracketing the nodes it produced. Relocating one of those
+     * nodes from inside the element's own updated() is what broke the React consumer in
+     * #902, aimed at a different renderer — Lit tolerates it, which is not the same as it
+     * being safe.
+     *
+     * Measured in Chrome with the element nested two shadow roots deep inside a 200x60
+     * overflow:hidden box, with a modal <dialog> open: it paints at the top right, above
+     * the dialog's backdrop, unclipped, and its parentNode is unchanged.
+     */
     try {
       if (typeof this.showPopover === 'function' && !this.matches(':popover-open')) {
         this.showPopover();
@@ -225,8 +234,23 @@ export default class Alert extends KeepElement {
     this._hide();
   }
 
-  // Auto-show whenever the `message` attribute/property transitions to a non-empty value.
-  // This lets React consumers just render <keep-alert message={msg} /> without manually calling show().
+  /**
+   * Auto-show whenever `message` transitions to a non-empty value.
+   *
+   * This was justified as "so React consumers need not call show()", and that consumer is
+   * gone — #806 wave 6 deleted the last `KeepAlert` wrapper with `LoginPage.tsx`. The
+   * behaviour is kept anyway, because it is not a React accommodation: it is what makes the
+   * element usable from a *declarative* renderer at all, and both remaining call sites are
+   * Lit templates written that way —
+   *
+   *     ${dbError ? html`<keep-alert variant="danger" message=${msg}></keep-alert>` : nothing}
+   *
+   * Neither holds a ref or calls `show()`. Removing this would mean a `@query` and a
+   * `firstUpdated` hook in each, to say something the template already says. #952.
+   *
+   * `notify()` in `utils/api-retry.ts` is the imperative caller and goes through `show()`
+   * directly; it never sets `message` on its own, so it does not double-fire here.
+   */
   protected updated(changed: PropertyValues) {
     if (changed.has('_visible') && this._visible) {
       this._wrapper?.classList.add('visible');

@@ -672,15 +672,17 @@ describe('keep-login-page', () => {
   });
 
   describe('the login error alert', () => {
+    /**
+     * The alert is queried from this element's shadow root, not the document (#952). It used
+     * to relocate itself into `document.body` on first show; it does not any more, and the
+     * Popover API — which is what actually put it in the top layer — never needed it to.
+     */
     it('is shown for a failed login', async () => {
       store.dispatch(setLoginError(true));
       store.dispatch(setErrorMessage('401 error: bad credentials'));
-      await mount();
+      const el = await mount();
 
-      // The text is a *property* of the alert element and is rendered inside its own shadow
-      // root. The element is queried from the document because it relocates itself there:
-      // it is a top-layer popover.
-      const alert = document.querySelector('keep-alert') as HTMLElement & {
+      const alert = el.shadowRoot!.querySelector('keep-alert') as HTMLElement & {
         message: string;
         heading: string;
       };
@@ -689,10 +691,16 @@ describe('keep-login-page', () => {
       expect(alert.heading).toBe('Error logging in!');
     });
 
-    it('is not shown otherwise', async () => {
+    it('is rendered but silent when there is no error', async () => {
+      // The element is always in the tree now and shows itself on demand, rather than being
+      // conditionally rendered for keep-alert to auto-show off a message binding (#952). So
+      // "not shown" is an empty message, not an absent element.
       const el = await mount();
-      expect(el.shadowRoot!.querySelector('keep-alert')).toBeNull();
-      expect(document.querySelector('keep-alert')).toBeNull();
+      const alert = el.shadowRoot!.querySelector('keep-alert') as HTMLElement & {
+        message: string;
+      };
+      expect(alert, 'the alert element should always be rendered').not.toBeNull();
+      expect(alert.message).toBe('');
     });
 
     it('is cleared when the user edits the password', async () => {

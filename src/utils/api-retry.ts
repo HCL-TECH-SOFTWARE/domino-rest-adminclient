@@ -195,6 +195,36 @@ interface KeepAlertElement extends HTMLElement {
  
 // ─── Singleton host ────────────────────────────────────────────────────────────
  
+/**
+ * Register `keep-alert` before we try to use it (#949).
+ *
+ * `notify()` raises its toast by *creating* the element, and this module never imported it.
+ * `document.createElement` on an undefined custom element returns a plain un-upgraded
+ * `HTMLElement`, so `el.show` is `undefined` and calling it throws — **from inside
+ * `apiRequestWithRetry`'s own catch block**, replacing the API error the caller was meant to
+ * see with a `TypeError`, and showing no toast at all.
+ *
+ * It has not been reproducible in the app, and only by luck: the shell mounts the Quick Config
+ * drawer on every page and `keep-quick-config-drawer.ts` imports `keep-alert`. A shared error
+ * path in `utils/` worked because an unrelated drawer happened to pull in its dependency.
+ *
+ * Deferred rather than static, following `load-popover.ts`. This module is on the eager path,
+ * so a static import would pull `keep-alert` and its Web Awesome dependencies into the entry
+ * closure — #813 measured a single WA component there at ~4% of the budget. A toast that
+ * appears a chunk-load later is not a cost anyone can perceive.
+ *
+ * The `customElements.get` check is what keeps tests working unchanged: they register a stub
+ * `keep-alert` before exercising a failing request, and importing the real module on top of
+ * that would throw `NotSupportedError` for the duplicate name.
+ */
+let _alertModule: Promise<unknown> | undefined;
+
+function _loadAlert(): Promise<unknown> {
+  if (customElements.get('keep-alert')) return Promise.resolve();
+  _alertModule ??= import('../components/keep-elements/keep-alert');
+  return _alertModule;
+}
+ 
 let _alertEl: KeepAlertElement | null = null;
  
 function _getOrCreateAlert(): KeepAlertElement {
@@ -240,8 +270,28 @@ export function notify(
   variant: NotifyVariant = 'neutral',
   duration: number = 5000,
 ): void {
-  const el = _getOrCreateAlert();
-  // Also re-enable pointer events on the host immediately
-  el.parentElement!.style.pointerEvents = 'auto';
-  el.show(message, variant, duration);
+  /*
+   * Nothing in here may throw. Every call site is a catch block reporting something that has
+   * already gone wrong, so an exception raised here does not surface a failure — it replaces
+   * one, and the real error is lost. #949.
+   */
+  void _loadAlert()
+    .then(() => {
+      const el = _getOrCreateAlert();
+      if (typeof el.show !== 'function') {
+        // Belt and braces: the element is registered by the time we get here, so this is
+        // unreachable. It stays because the cost of being wrong is swallowing an API error.
+        log.error('keep-alert did not upgrade; dropping toast', { message, variant });
+        return;
+      }
+      // Optional chaining, not `!`: the singleton element is memoised at module scope and
+      // can outlive its host — a test that clears the DOM between cases detaches it, and
+      // `el.parentElement!.style` then threw the exact TypeError this function must never
+      // raise. The toast still shows; only the pointer-events restore is skipped.
+      if (el.parentElement) el.parentElement.style.pointerEvents = 'auto';
+      el.show(message, variant, duration);
+    })
+    .catch((error: unknown) => {
+      log.error('Could not raise the error toast', { message, variant, error });
+    });
 }

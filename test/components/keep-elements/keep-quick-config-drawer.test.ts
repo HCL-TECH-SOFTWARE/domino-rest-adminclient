@@ -44,7 +44,15 @@ describe('keep-quick-config-drawer', () => {
    * was declared in. So the element's own placement is a statement of intent rather than the
    * mechanism — the toast would survive the drawer either way.
    */
-  const alert = () => document.body.querySelector('keep-alert');
+  /**
+   * The toast lives in this element's own shadow root, beside `keep-drawer` rather than
+   * inside it (#952). It used to be looked up in `document.body`, because `keep-alert` moved
+   * itself there on first show; it no longer relocates itself.
+   */
+  const alert = (el: QuickConfigDrawer) =>
+    el.shadowRoot!.querySelector('keep-alert') as
+      | (HTMLElement & { message: string; variant: string })
+      | null;
 
   /**
    * A store dispatch reaches the element through `StoreController.requestUpdate()`, and the
@@ -130,13 +138,18 @@ describe('keep-quick-config-drawer', () => {
     expect(focus).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the toast only while dbError is set', async () => {
+  it('raises the toast when dbError is set', async () => {
     const el = await mount();
-    expect(alert()).toBeNull();
+    // The element is always in the tree now and shows itself on demand, rather than being
+    // conditionally rendered with a message binding for keep-alert to auto-show (#952).
+    expect(alert(el), 'the alert element should always be rendered').toBeTruthy();
+    expect(alert(el)!.message).toBe('');
 
     await raise(el, 'Server said no');
-    expect(alert()!.getAttribute('message')).toBe('Server said no');
-    expect(alert()!.getAttribute('variant')).toBe('danger');
+    expect(alert(el)!.message).toBe('Server said no');
+    // The property, not the attribute: show() assigns it and keep-alert does not reflect.
+    // It used to be an attribute only because the template bound variant="danger" (#952).
+    expect(alert(el)!.variant).toBe('danger');
   });
 
   it('the toast is not inside the drawer, so it survives the drawer closing', async () => {
@@ -144,7 +157,7 @@ describe('keep-quick-config-drawer', () => {
     // save has to stay readable after the drawer has gone.
     const el = await mount();
     await raise(el, 'Server said no');
-    expect(alert()!.closest('keep-drawer')).toBeNull();
+    expect(alert(el)!.closest('keep-drawer')).toBeNull();
     expect(el.shadowRoot!.querySelector('keep-drawer keep-alert')).toBeNull();
   });
 
@@ -162,26 +175,31 @@ describe('keep-quick-config-drawer', () => {
     expect(store.getState().databases.dbError).toBe(false);
   });
 
-  it('a toast, once shown, outlives the condition that created it (#902)', async () => {
-    // Not an assertion of what *should* happen — a record of what does. `keep-alert` moves
-    // itself into document.body on first show, so it is no longer between the markers of the
-    // Lit part that created it; switching that part to `nothing` cannot take it away. It
-    // hides itself on a 5s timer instead, and a second error mints a second element.
+  it('a toast, once shown, outlives the condition that created it (#902, #952)', async () => {
+    // This was a *characterization* of the old behaviour, and said so: keep-alert moved itself
+    // into document.body on first show, so the Lit part that created it could no longer take
+    // it away — and a second error minted a **second element**, because the first was no
+    // longer where the part expected it.
     //
-    // Pre-existing: the React container conditionally rendered <KeepAlert> the same way. Filed
-    // as #902 (by the PR that converted this pair to FormController) rather than worked around
-    // here, because the fix belongs in keep-alert.
+    // Same outcome, honestly now. The element is rendered unconditionally and shown through
+    // show(), so clearing dbError cannot remove it and a second error reuses the one element.
     const el = await mount();
     await raise(el, 'first');
-    expect(document.body.querySelectorAll('keep-alert')).toHaveLength(1);
+    expect(el.shadowRoot!.querySelectorAll('keep-alert')).toHaveLength(1);
+    expect(alert(el)!.message).toBe('first');
 
     store.dispatch({ type: INIT_STATE });
     await settle(el);
     expect(store.getState().databases.dbError).toBe(false);
-    expect(document.body.querySelectorAll('keep-alert')).toHaveLength(1);
+    // Still there, still readable — which is the behaviour the drawer needs, since close()
+    // clears dbError a moment after the save that raised it.
+    expect(el.shadowRoot!.querySelectorAll('keep-alert')).toHaveLength(1);
+    expect(alert(el)!.message).toBe('first');
 
     await raise(el, 'second');
-    expect(document.body.querySelectorAll('keep-alert')).toHaveLength(2);
+    expect(el.shadowRoot!.querySelectorAll('keep-alert'), 'a second element was minted')
+      .toHaveLength(1);
+    expect(alert(el)!.message).toBe('second');
   });
 
   it("the drawer's own close affordance does the same", async () => {
