@@ -31,8 +31,8 @@ const NSF_SEARCH_TYPE = 'NSF NAME';
 
 /**
  * The search bar above the schema and scope lists: a column picker, a divider and one text
- * field with a clear button. Tag: `keep-database-search`. Exposed to React as
- * `KeepDatabaseSearch`.
+ * field with a clear button. Tag: `keep-database-search`. No wrapper: both screens are Lit
+ * and compose it directly (#806).
  *
  * Distinct from `keep-search-input`, which is the plain filter box the forms/views/agents
  * tabs share. This one has the two extra controls and is used by exactly two screens.

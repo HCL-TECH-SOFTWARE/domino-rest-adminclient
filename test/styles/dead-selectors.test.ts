@@ -60,8 +60,20 @@ describe('styles.css carries no rule nothing applies', () => {
   const css = readFileSync(resolve(ROOT, 'src/styles/styles.css'), 'utf8');
 
   it('finds the sheet and the source to check it against', () => {
-    // A bad path would make every assertion below vacuously pass.
-    expect(selectors(css).length).toBeGreaterThan(200);
+    // A bad path, or a `selectors()` regex that stops matching, would make the assertion below
+    // vacuously pass — that, and only that, is what this guards.
+    //
+    // The number is deliberately far below the current count and must stay that way. It was
+    // 300, then 200, then 150, moved each time by a wave of #806 legitimately deleting rules;
+    // 196 remain as of wave 6 and they will keep falling until the last screen converts. A
+    // threshold that has to be re-set whenever the thing it measures changes on purpose is not
+    // a guard, it is a chore — and one that trains people to edit floors, which is how a real
+    // ratchet gets quietly lowered later.
+    //
+    // The failure this catches is a parse returning nothing, so it is caught just as well at 20
+    // as at 150, and 20 needs no further edits. The same reasoning removed the aggregate floor
+    // in `type-selectors.test.ts`; this is the per-sheet form of it.
+    expect(selectors(css).length).toBeGreaterThan(20);
     expect(SOURCE.length).toBeGreaterThan(100_000);
   });
 

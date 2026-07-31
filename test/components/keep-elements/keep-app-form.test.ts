@@ -35,7 +35,14 @@ vi.mock('../../../src/store/applications/action', async (importOriginal) => ({
 
 const TAG = 'keep-app-form';
 
-/** A complete, valid seed — the shape `AppCard` and `AppItem` push in for an edit. */
+/**
+ * A complete, valid seed — the shape a row of the list pushes in for an edit.
+ *
+ * The client id is what makes it one. Since #939 the form derives Add from Edit by asking
+ * whether it was seeded with an application, so this constant and {@link ADD_VALUES} below
+ * differ in that field and nothing else, and every test that asserts which thunk ran picks
+ * the one it means.
+ */
 const EDIT_VALUES: AppFormValues = {
   appId: 'client-77',
   appName: 'Orders',
@@ -48,6 +55,9 @@ const EDIT_VALUES: AppFormValues = {
   appIcon: 'anchor',
   usePkce: true,
 };
+
+/** The same values with no application behind them — a filled-in Add. */
+const ADD_VALUES: AppFormValues = { ...EDIT_VALUES, appId: '' };
 
 describe('keep-app-form', () => {
   beforeEach(() => {
@@ -158,11 +168,59 @@ describe('keep-app-form', () => {
   });
 
   it('heads and labels itself for an edit', async () => {
-    const el = await mount({ formContext: 'Edit' });
+    const el = await mount({ initialValues: EDIT_VALUES });
+    await settle(el);
     expect(el.shadowRoot!.querySelector('.form-header')!.textContent!.trim()).toBe(
       'Edit Application',
     );
     expect(submitButton(el).textContent!.trim()).toBe('Update');
+  });
+
+  /**
+   * #939. The mode used to be a string the opener set, and the list view's edit control — the
+   * only reachable way into this form — never set it, so every edit from the list saved as a
+   * create: a second application, with the same name and a freshly issued client id.
+   *
+   * These three pin the derivation from both ends, because the failure was not that the mode
+   * was computed wrongly. It was that it was computed somewhere else.
+   */
+  it('takes an add from a seed with no application behind it, whatever the old mode says', async () => {
+    const el = await mount({ initialValues: ADD_VALUES, formContext: 'Edit' });
+    await settle(el);
+    expect(el.shadowRoot!.querySelector('.form-header')!.textContent!.trim()).toBe(
+      'Add New Application',
+    );
+    expect(submitButton(el).textContent!.trim()).toBe('Add');
+
+    await press(el);
+    expect(updated).toHaveLength(0);
+    expect(added).toHaveLength(1);
+  });
+
+  it('takes an edit from the row alone, with nothing else said', async () => {
+    const el = await mount({ initialValues: EDIT_VALUES });
+    await settle(el);
+    expect(el.shadowRoot!.querySelector('.form-header')!.textContent!.trim()).toBe(
+      'Edit Application',
+    );
+    expect(submitButton(el).textContent!.trim()).toBe('Update');
+
+    await press(el);
+    expect(added).toHaveLength(0);
+    expect(updated).toEqual([expect.objectContaining({ client_id: 'client-77' })]);
+  });
+
+  it('goes back to an add when the drawer is reopened without a row', async () => {
+    const el = await mount({ initialValues: EDIT_VALUES });
+    await settle(el);
+
+    el.initialValues = undefined;
+    await settle(el);
+
+    expect(el.shadowRoot!.querySelector('.form-header')!.textContent!.trim()).toBe(
+      'Add New Application',
+    );
+    expect(submitButton(el).textContent!.trim()).toBe('Add');
   });
 
   it('names a library on every icon, so nothing is fetched from a CDN', async () => {
@@ -175,7 +233,7 @@ describe('keep-app-form', () => {
   // ---- seeding -----------------------------------------------------------------------------
 
   it('seeds every field from the values it is given', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES, formContext: 'Edit' });
+    const el = await mount({ initialValues: EDIT_VALUES });
     await settle(el);
 
     expect(fieldFor(el, 'Application Name').value).toBe('Orders');
@@ -191,7 +249,7 @@ describe('keep-app-form', () => {
    * thrown away.
    */
   it('does not re-seed when the same values object is re-applied', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES, formContext: 'Edit' });
+    const el = await mount({ initialValues: EDIT_VALUES });
     await settle(el);
     await type(el, 'Application Name', 'Orders v2');
 
@@ -202,7 +260,7 @@ describe('keep-app-form', () => {
   });
 
   it('re-seeds when a different application is pushed in', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES, formContext: 'Edit' });
+    const el = await mount({ initialValues: EDIT_VALUES });
     await settle(el);
 
     el.initialValues = { ...EDIT_VALUES, appId: 'client-88', appName: 'Invoices' };
@@ -318,7 +376,7 @@ describe('keep-app-form', () => {
   });
 
   it('marks an active application and PKCE the way the API spells them', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES });
+    const el = await mount({ initialValues: ADD_VALUES });
     await settle(el);
     await press(el);
 
@@ -328,8 +386,8 @@ describe('keep-app-form', () => {
     });
   });
 
-  it('updates rather than adds when the context is an edit, carrying the client id', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES, formContext: 'Edit' });
+  it('updates rather than adds when it was seeded with a row, carrying the client id', async () => {
+    const el = await mount({ initialValues: EDIT_VALUES });
     await settle(el);
     await press(el);
 
@@ -344,7 +402,7 @@ describe('keep-app-form', () => {
    * rewrote the application's icon. The icon is a form value here, so it survives a round trip.
    */
   it('keeps the application"s own icon through an edit that never touches the picker', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES, formContext: 'Edit' });
+    const el = await mount({ initialValues: EDIT_VALUES });
     await settle(el);
     expect(iconInput(el).selectedOption).toBe('anchor');
 
@@ -353,7 +411,7 @@ describe('keep-app-form', () => {
   });
 
   it('carries the two switches into the request body', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES });
+    const el = await mount({ initialValues: ADD_VALUES });
     await settle(el);
 
     for (const box of checkboxes(el)) {
@@ -370,7 +428,7 @@ describe('keep-app-form', () => {
   });
 
   it('takes a new icon from the picker', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES, formContext: 'Edit' });
+    const el = await mount({ initialValues: EDIT_VALUES });
     await settle(el);
 
     const picker = iconInput(el);
@@ -384,7 +442,7 @@ describe('keep-app-form', () => {
 
   /** #887: a double-clicked Save was two applications, because this path is a create. */
   it('saves once when the button is pressed twice in a row', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES });
+    const el = await mount({ initialValues: ADD_VALUES });
     await settle(el);
 
     submitButton(el).click();
@@ -395,7 +453,7 @@ describe('keep-app-form', () => {
   });
 
   it('submits from the form, so Enter in a field reaches the same path', async () => {
-    const el = await mount({ initialValues: EDIT_VALUES });
+    const el = await mount({ initialValues: ADD_VALUES });
     await settle(el);
 
     const form = el.shadowRoot!.querySelector('form')!;
@@ -478,10 +536,7 @@ describe('keep-app-form', () => {
    * application with no scopes put `false` into list state and the next membership test threw.
    */
   it('renders no pills for an edit of an application with no scopes', async () => {
-    const el = await mount({
-      initialValues: { ...EDIT_VALUES, appScope: '' },
-      formContext: 'Edit',
-    });
+    const el = await mount({ initialValues: { ...EDIT_VALUES, appScope: '' } });
     await settle(el);
 
     expect(pills(el)).toEqual([]);

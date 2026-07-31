@@ -44,9 +44,15 @@ const read = (file: string) =>
  * deletion would be a larger and more fragile thing than the deletion itself. What is
  * asserted is exactly what was removed: no reader, no writer, no state.
  *
- * The first of those two has since become `keep-elements/keep-app-form.ts` (#806), which is
- * what the canary below now names — it is the file that would have carried the banner. The
- * scan itself is unchanged: it covers every `.ts` and `.tsx` under `src`, elements included.
+ * Both have since converted (#806): `AppForm.tsx` became `keep-elements/keep-app-form.ts` in
+ * wave 4, and `kanban/Kanban.tsx` became `keep-elements/keep-applications.ts` in wave 6. The
+ * canary below names them at their current paths — it is those two files that would carry the
+ * banner if it came back. The scan itself is unchanged: every `.ts` and `.tsx` under `src`,
+ * elements included.
+ *
+ * Re-pointing a canary at a renamed file is the intended maintenance here; what would not be
+ * acceptable is deleting the assertion because the path moved, since it is the only thing
+ * stopping the two checks below from passing against an empty list.
  *
  * The reducer's own shape is pinned separately, in `reducer.test.ts`.
  */
@@ -54,7 +60,7 @@ describe('the application-error machinery is gone (#869)', () => {
   it('scans a plausible number of files, so the assertions cannot pass vacuously', () => {
     expect(SOURCES.length).toBeGreaterThan(100);
     expect(SOURCES).toContain('src/components/keep-elements/keep-app-form.ts');
-    expect(SOURCES).toContain('src/components/applications/kanban/Kanban.tsx');
+    expect(SOURCES).toContain('src/components/keep-elements/keep-applications.ts');
   });
 
   it('is read by no component', () => {

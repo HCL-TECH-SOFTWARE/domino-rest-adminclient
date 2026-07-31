@@ -49,44 +49,16 @@ const theme = (
       },
     },
     components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            variants: [
-              { 
-                props: { variant: 'text', color: 'primary' }, 
-                style: { color: currentTheme.button.primary, textTransform: 'capitalize', fontSize: 16 } 
-              },
-              { 
-                props: { variant: 'text', color: 'secondary' }, 
-                style: { color: currentTheme.button.secondary, textTransform: 'capitalize', fontSize: 16 } 
-              },
-            ]
-          }
-        },
-      },
-      MuiCircularProgress: {
-        styleOverrides: {
-          colorPrimary: {
-            color: currentTheme.loading,
-          },
-        },
-      },
       // MuiBreadcrumbs went with #877: the breadcrumb is <wa-breadcrumb> now and MUI's
       // is imported nowhere. The override was already inert — BreadcrumbRouter's own
       // Linaria block set `background-color: transparent !important` over it.
-      MuiTab: {
-        styleOverrides: {
-          root: {
-            '@media (min-width: 600px)': {
-              minWidth: 0
-            }
-          },
-          textColorPrimary: {
-            color: currentTheme.textColorPrimary,
-          },
-        },
-      },
+      //
+      // MuiButton, MuiCircularProgress and MuiTab went the same way in #806 wave 6, when the
+      // last screens importing them converted: the tab strip is <wa-tab-group>, the loading
+      // state is <keep-page-loading>, and the text buttons are <keep-button>. MuiPaper went in
+      // wave 5. `test/styles/dead-theme-overrides.test.ts` is what reports each one — an
+      // override for a component nothing imports costs nothing at runtime and reads, to the
+      // next person, as the place where that component is themed.
       MuiSwitch: {
         styleOverrides: {
           switchBase: {
