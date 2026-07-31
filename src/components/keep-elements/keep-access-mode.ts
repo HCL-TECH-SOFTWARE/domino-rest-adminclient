@@ -22,6 +22,7 @@ import {
   setLoadedFields,
   addActiveFields,
   fetchSchema,
+  pullForms,
 } from '../../store/databases/action';
 import { resetAccessFields, setAccessFields } from '../../store/accessMode/action';
 import type { AccessField, AccessModeState } from '../../store/accessMode/types';
@@ -88,15 +89,20 @@ const EMPTY_SCHEMA: Database = {
  * the URL is still derived here and handed down; `keep-access-tabs` has its own controller,
  * because creating a form navigates away from this page.
  *
- * ## #928, and why the mode list is derived
+ * ## #928 and #933, and why the mode list is derived
  *
  * Every crash this screen had was a cold load — the route reached without the schema's Forms
  * tab having run first, which is a *sibling* route rather than a parent, so nothing it
  * fetched is in the store. `allModes` is a pure function of data this element already has,
  * so a copy in state could only ever be stale, and one `?? []` in the getter is a guarantee
  * for all of its readers where `?? []` at each call site is a chance to miss one. Same for
- * the design list: an absent NSF means "not loaded", which the render already treats as
- * "still loading".
+ * the design list: an absent NSF means "not loaded", which the render treats as "still
+ * loading".
+ *
+ * Those guards stopped the crash without giving the screen anything to render, so a cold
+ * load simply stayed on the loading state — nothing on this route fetched the design list at
+ * all. {@link syncDesign} is what fills it now (#933). The `?? []` guards stay regardless:
+ * they are what keeps a *failed* pull a loading state rather than a white screen.
  *
  * ## What the shadow boundary cost
  *
@@ -249,14 +255,17 @@ export default class AccessMode extends KeepElement {
   }
 
   /**
-   * The three data syncs, in the order the effects they replace ran in.
+   * The four data syncs, in the order the effects they replace ran in.
    *
    * `willUpdate` rather than `updated`: each of them writes reactive state, and a write here
    * folds into the render already scheduled where one in `updated()` asks for a second one —
    * so the first frame the user sees is the one carrying the fetched schema. None of them can
    * re-enter: their dependency lists are checked first, and no sync writes its own inputs.
+   *
+   * `syncDesign` runs first because the other three read what it fetches.
    */
   protected willUpdate(): void {
+    this.syncDesign();
     this.syncSchema();
     this.reseedFromSchema();
     this.syncModeFields();
@@ -310,8 +319,13 @@ export default class AccessMode extends KeepElement {
   /**
    * The NSF's design forms, and the screen's "is anything loaded yet" test.
    *
-   * `?? []` for the same reason as `allModes` (#928): `nsfDesigns` is only ever populated by
-   * the Forms tab's own effect, and this route is a sibling of that one rather than a child.
+   * `?? []` for the same reason as `allModes` (#928). It used to be load-bearing for the
+   * ordinary case too, because `nsfDesigns` was populated only by the Forms tab — a sibling
+   * of this route rather than a parent — so a cold load never had an entry here at all.
+   * {@link syncDesign} fetches it now (#933), and the guard covers the two windows that
+   * remain: before the pull answers, and after one that failed.
+   *
+   * Keyed by the **decoded** path. See the note on `addNsfDesign` in the reducer.
    */
   private get designForms(): unknown[] {
     return this.db.value.nsfDesigns[this.params.nsfPath]?.forms ?? [];
@@ -326,8 +340,40 @@ export default class AccessMode extends KeepElement {
   }
 
   /* ---------------------------------------------------------------- *
-   *  The three data syncs                                              *
+   *  The four data syncs                                               *
    * ---------------------------------------------------------------- */
+
+  /**
+   * Fetch the NSF design when this route is entered without one (#933).
+   *
+   * `nsfDesigns` used to be written only by the Forms tab, and this route is that tab's
+   * sibling rather than its child. Arriving through the tab therefore worked, because the
+   * pull had already happened; a direct URL, a bookmark or F5 left the cache empty. Before
+   * #928's guards that threw and blanked the app, and after them it renders "Loading form
+   * modes" forever — {@link designForms} stays empty, so {@link allModes} does, so
+   * `renderEditor` never leaves its loading branch. Nothing on this route would ever have
+   * filled it in.
+   *
+   * The key is the **decoded** path, which is what every writer already uses — see the note
+   * on `addNsfDesign` in the reducer. `params` reads through the route pattern, and the
+   * outlet percent-decodes each captured segment, so the value here is the same string
+   * `keep-forms-container` derives for its own writes.
+   *
+   * Guarded on the path rather than on "have I run", so that navigating between two schemas
+   * without unmounting fetches the second one. The cache test is the guard that keeps this
+   * to one request: once the pull lands, `nsfDesigns[nsfPath]` is set and the early return
+   * takes over. A pull that *fails* leaves the cache empty and `dialog.loading` false, which
+   * is the error path #928's `?? []` guards already cover — it does not retry in a loop,
+   * because the dependency list has not changed.
+   */
+  private syncDesign(): void {
+    if (this.route.params(ACCESS_ROUTE) === null) return;
+    const { nsfPath, dbName } = this.params;
+    if (!nsfPath) return;
+    if (this.db.value.nsfDesigns[nsfPath]) return;
+    if (!this.depsChanged('design', [nsfPath, dbName])) return;
+    void this.db.dispatch(pullForms(nsfPath, dbName));
+  }
 
   /** Fetch the schema whenever the database or the schema in the URL changes. */
   private syncSchema(): void {

@@ -41,8 +41,14 @@ import type AccessMode from '../../../src/components/keep-elements/keep-access-m
  */
 const fixture = vi.hoisted(() => ({ schema: { forms: [] as any[] }, fetches: 0 }));
 
+/** The design pull this route now issues for itself (#933). Recorded, never performed. */
+const { pullForms } = vi.hoisted(() => ({
+  pullForms: vi.fn((..._args: unknown[]) => ({ type: 'TEST_PULL_FORMS' })),
+}));
+
 vi.mock('../../../src/store/databases/action', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/store/databases/action')>()),
+  pullForms,
   // Synchronous, so the "schema has arrived" render is the one under test rather than
   // something a test has to wait for.
   fetchSchema: (_nsfPath: string, _dbName: string, setSchemaData: (data: any) => void) => {
@@ -105,6 +111,7 @@ describe('keep-access-mode', () => {
     store.dispatch({ type: INIT_STATE });
     fixture.schema = { forms: [] };
     fixture.fetches = 0;
+    pullForms.mockClear();
   });
 
   afterEach(() => {
@@ -192,6 +199,85 @@ describe('keep-access-mode', () => {
       const el = await mountLit<AccessMode>(TAG);
       expect(pageLoading(el)).toBeTruthy();
       expect(fixture.fetches).toBe(0);
+    });
+  });
+
+  /**
+   * #933 — the other half of #928.
+   *
+   * #928 stopped the cold load crashing; it did not give the route anything to render. The
+   * design list is what {@link designForms} reads, and it was written *only* by the Forms
+   * tab — a sibling route, not a parent. Reaching this screen through the tab worked because
+   * the pull had already happened. A direct URL, a bookmark or F5 left the cache empty, and
+   * the guards #928 added turned the crash into "Loading form modes" forever: no code path on
+   * this route would ever have filled it in.
+   */
+  describe('fetching its own design list (#933)', () => {
+    it('pulls the design when the route is entered without one', async () => {
+      await mount();
+
+      expect(pullForms).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * The key assertion, and the reason the fixture route is percent-encoded.
+     *
+     * `nsfDesigns` is keyed by the **decoded** path — `addNsfDesign` in the reducer is the
+     * single definition of that. `ROUTE` carries `nsf%2Fdemo.nsf`, so encoded and decoded are
+     * genuinely different strings here: pull with the encoded one and the fetch succeeds, the
+     * reducer writes under `nsf%2Fdemo.nsf`, and this screen — which reads through the
+     * router's decoded param — misses the entry and stays on the loading state anyway. That
+     * failure has no error to point at, which is why it is pinned rather than left to the
+     * round trip working by luck on paths that need no encoding.
+     */
+    it('pulls it under the decoded path, the key the cache is read by', async () => {
+      await mount();
+
+      expect(pullForms).toHaveBeenCalledWith(NSF_PATH, 'demo');
+      expect(pullForms.mock.calls[0][0]).not.toContain('%2F');
+    });
+
+    it('does not pull when the Forms tab has already filled the cache', async () => {
+      giveDesign();
+
+      await mount();
+
+      expect(pullForms).not.toHaveBeenCalled();
+    });
+
+    it('pulls once, not on every render', async () => {
+      const el = await mount();
+
+      // Three more update cycles with the route unchanged. The dependency list is the guard;
+      // without it this is a request per render, and `willUpdate` runs on every store change
+      // this element subscribes to.
+      for (let i = 0; i < 3; i++) {
+        el.requestUpdate();
+        await el.updateComplete;
+      }
+
+      expect(pullForms).toHaveBeenCalledTimes(1);
+    });
+
+    it('pulls nothing when the URL is not this route', async () => {
+      await mountLit<AccessMode>(TAG);
+
+      expect(pullForms).not.toHaveBeenCalled();
+    });
+
+    it('leaves the loading state once the design arrives', async () => {
+      // End to end for the reported symptom: empty cache renders the loading branch, and the
+      // pull landing is what takes it off. `giveDesign` stands in for the thunk's own
+      // `addNsfDesign`, which is covered in `test/store/databases/forms.test.ts`.
+      fixture.schema = { forms: [{ formName: 'Contact', formModes: [mode('default')] }] };
+      const el = await mount();
+      expect(pageLoading(el)).toBeTruthy();
+
+      giveDesign();
+      await el.updateComplete;
+
+      expect(pageLoading(el)).toBeNull();
+      expect(tabs(el)).toBeTruthy();
     });
   });
 
