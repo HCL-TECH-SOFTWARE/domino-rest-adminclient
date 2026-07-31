@@ -886,27 +886,47 @@ describe('keep-login-page', () => {
       expect(icon.getAttribute('label')).toBe('Switch to Dark Mode');
     });
 
-    it('switches the stored theme and the glyph', async () => {
+    it('cycles light → dark → system → light, glyph and store together', async () => {
+      // Three settings since #962, not two. The glyph shows which one is current; the label
+      // names what the next press does, which is asserted below.
       const el = await mount();
       const toggle = el.shadowRoot!.querySelector('.theme-toggle') as HTMLButtonElement;
-      toggle.click();
-      await settle(el);
+      const glyph = () =>
+        (toggle.querySelector('wa-icon') as HTMLElement & { name?: string }).name;
 
-      expect(localStorage.getItem('theme')).toBe('dark');
-      expect((toggle.querySelector('wa-icon') as HTMLElement & { name?: string }).name).toBe(
-        'moon',
-      );
+      expect(glyph()).toBe('sun');
 
-      toggle.click();
-      await settle(el);
-      expect(localStorage.getItem('theme')).toBe('default');
+      for (const [stored, icon] of [
+        ['dark', 'moon'],
+        ['system', 'robot'],
+        ['default', 'sun'],
+      ] as const) {
+        toggle.click();
+        await settle(el);
+        expect(localStorage.getItem('theme')).toBe(stored);
+        expect(glyph()).toBe(icon);
+      }
     });
 
-    it('starts dark when that is what was stored', async () => {
+    it('names the destination, not the current setting', async () => {
+      // The glyph is the button's only content, so the label has to say what pressing it does.
       localStorage.setItem('theme', 'dark');
       const el = await mount();
+      const icon = el.shadowRoot!.querySelector('wa-icon') as HTMLElement & { label?: string };
+      expect(icon.label).toBe('Switch to System Mode');
+    });
+
+    it.each([
+      ['dark', 'moon'],
+      ['system', 'robot'],
+      ['default', 'sun'],
+      // Anything unrecognised is light — a value stored before #962, or a hand-edited key.
+      ['nonsense', 'sun'],
+    ])('starts on %s when that is what was stored', async (stored, expected) => {
+      localStorage.setItem('theme', stored);
+      const el = await mount();
       const icon = el.shadowRoot!.querySelector('wa-icon') as HTMLElement & { name?: string };
-      expect(icon.name).toBe('moon');
+      expect(icon.name).toBe(expected);
     });
 
     it('is not a direct child of the grid', async () => {
