@@ -217,12 +217,37 @@ describe('keep-consent-item — details', () => {
     expect(textOf('https://example.test/cb')).toBeUndefined();
   });
 
-  it('keeps the detail row standing when it is empty', async () => {
-    // It always did: the transition collapsed the contents and left the row and its cell,
-    // padding included. Removing it would tighten every row in the table.
-    await mount();
+  it('hides the empty detail row rather than leaving it standing (#976)', async () => {
+    // It used to stand: the transition this conversion replaced collapsed the row's contents
+    // and left the row and its cell behind, padding included, so every closed consent was
+    // followed by a 41px empty band with a border of its own and a list read as rows already
+    // opened onto nothing. The conversion reproduced that deliberately; #976 is the report
+    // that it looks wrong, and this is where the decision changed.
+    //
+    // Hidden rather than removed, because the disclosure button points `aria-controls` at
+    // this row and that reference has to resolve in both states.
+    const el = await mount();
+    const details = document.querySelector('td[colspan="5"]')!.closest('tr')!;
     expect(document.querySelectorAll('tbody tr')).toHaveLength(2);
-    expect(document.querySelector('td[colspan="5"]')).toBeTruthy();
+    expect(details.hasAttribute('hidden'), 'the collapsed detail row must be hidden').toBe(true);
+
+    toggleButton().click();
+    await el.updateComplete;
+    expect(details.hasAttribute('hidden'), 'the expanded detail row must not be hidden').toBe(
+      false,
+    );
+  });
+
+  it('keeps the hidden row reachable from aria-controls', async () => {
+    // The suite runs with `css: false` and jsdom has no layout, so nothing here can assert
+    // that the row takes up no space — that was measured in Chrome, and the rule that does
+    // it (`keep-consent-item tr[hidden]`) lives in `consentItemStyles`. What is testable is
+    // the half that would break the screen reader: hiding a row by removing it would leave
+    // `aria-controls` pointing at an id that no longer exists.
+    await mount();
+    const controlled = document.getElementById(toggleButton().getAttribute('aria-controls')!);
+    expect(controlled, 'aria-controls must resolve while the row is collapsed').toBeTruthy();
+    expect(controlled!.hasAttribute('hidden')).toBe(true);
   });
 
   it('starts expanded when the table asks it to', async () => {
