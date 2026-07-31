@@ -31,10 +31,8 @@
     "node": ">=24"
   },
   "overrides": {
-    "yaml": "^2.6.1",
     "dompurify": "^3.4.12",
-    "jsdom": "^30.0.1",
-    "minimatch": "^10.2.6"
+    "jsdom": "^30.0.1"
   },
   "scripts": {
     "start": "vite",
@@ -52,7 +50,6 @@
     "typecheck": "tsc -b"
   },
   "allowScripts": {
-    "fsevents@2.3.3": true,
-    "@swc/core@1.15.47": true
+    "fsevents@2.3.3": true
   }
 }
