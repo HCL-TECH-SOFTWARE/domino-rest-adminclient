@@ -372,7 +372,7 @@ export default class AccessMode extends KeepElement {
     if (!nsfPath) return;
     if (this.db.value.nsfDesigns[nsfPath]) return;
     if (!this.depsChanged('design', [nsfPath, dbName])) return;
-    void this.db.dispatch(pullForms(nsfPath, dbName));
+    void this.db.dispatch(pullForms(nsfPath));
   }
 
   /** Fetch the schema whenever the database or the schema in the URL changes. */
