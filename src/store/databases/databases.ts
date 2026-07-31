@@ -15,7 +15,7 @@ import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
 import { AlertManager, encodeQueryValue } from '../../utils/common';
 import { getAppIcons, loadAppIcons } from '../../services/app-icons';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
 import {
   addAvailableDatabase,
@@ -334,13 +334,12 @@ export const quickConfig = (dbData: any) => {
       // Before the parse, which throws on any non-JSON error and would take the
       // rest of this handler with it.
       dispatch(setApiLoading(false));
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
-      // Use the response error if it's available
-      if (err) {
-        dispatch(setDBError(error.message));
-      }
+      // Unconditional now: `parseThrownError` always yields a message, so the `if (err)`
+      // this replaces — which skipped the dispatch entirely for an error with an empty
+      // message — has nothing left to guard. #1000.
+      dispatch(setDBError(error.message));
     }
   };
 };
@@ -369,8 +368,7 @@ export const fetchDBConfig = (config: string) => {
       // Before the parse, which throws on any non-JSON error and would take the
       // rest of this handler with it.
       dispatch(setApiLoading(false));
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
       log.error('Error fetching database configuration', { error });
     }
@@ -409,8 +407,7 @@ export const fetchKeepPermissions = () => {
           deleteDbMapping: data.DeleteDbMapping
         }));
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
       log.error('Error fetching Keep permissions', { error })
     }

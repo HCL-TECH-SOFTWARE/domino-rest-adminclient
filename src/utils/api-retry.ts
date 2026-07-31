@@ -17,6 +17,89 @@ export interface ApiErrorBody {
     errorId?: number;
 }
 
+/**
+ * What a thrown API error looks like once read (#1000).
+ *
+ * Deliberately open. The named fields are the ones the store's catch blocks actually read —
+ * different endpoints answer with different bodies, and this type exists to keep those reads
+ * honest rather than to claim a schema nobody enforces. Everything is optional because a
+ * throw that carried no API body at all still produces one of these.
+ */
+export interface ThrownApiError {
+    /**
+     * Always present: the API body's own `message` when it carried one, the raw thrown text
+     * otherwise. Guaranteeing it is what lets a caller write `error.message` with no fallback
+     * — several used to pass the whole *object* into a string-typed action when the message
+     * was missing, which the old `any` from `JSON.parse` hid.
+     */
+    message: string;
+    status?: number;
+    statusCode?: number;
+    statusText?: string;
+    errorId?: number;
+    [key: string]: unknown;
+}
+
+/**
+ * The message a throw carries, without the class-name prefix.
+ *
+ * `e.message`, not `e.toString().replace('Error: ', '')`. That older idiom replaced the
+ * substring **wherever it appeared**, and every built-in error class ends in `Error`: a
+ * `TypeError` reading "TypeError: Cannot read properties of undefined" came out as
+ * "TypeCannot read properties of undefined", losing the class name and corrupting the text.
+ * That mangling is visible in #1000's own repro, where the resulting `SyntaxError` complains
+ * about `"TypeCannot"`.
+ */
+export function errorMessageOf(thrown: unknown): string {
+    return thrown instanceof Error ? thrown.message : String(thrown);
+}
+
+/**
+ * Read a thrown API error, without letting the read become the failure (#1000).
+ *
+ * The API layer throws `new Error(JSON.stringify(body))`, so for a real API failure the
+ * message *is* JSON and parsing it is right. **Every other failure inside the same `try` is
+ * not JSON**, and 24 catch blocks across 11 store modules parsed it unguarded. A `TypeError`
+ * from a shape change in a response — a renamed key, a null list — made `JSON.parse` throw a
+ * `SyntaxError` **out of the catch block**, so the handler never completed: nothing was
+ * logged, no alert was dispatched, no loading flag was cleared, and the original fault was
+ * gone. The screen span forever on a request that had already failed.
+ *
+ * Three sites had already been patched around this by moving their `setApiLoading(false)`
+ * *above* the parse, with comments saying why; `applications/action.ts` had been fixed
+ * properly. This is that fix, once, for all of them.
+ *
+ * Same family as #949 (`notify()` throwing from inside `apiRequestWithRetry`'s catch) and
+ * #800 (a null `response` raising a `TypeError` that landed in an API-error handler) — see
+ * the {@link ApiResult} note. A handler that can throw is a handler that does not run.
+ *
+ * Returns the parsed body when the throw carried one, and `{ message }` when it did not, so
+ * `error.message` is always the most specific text available.
+ */
+export function parseThrownError(thrown: unknown): ThrownApiError {
+    // `\"` unescaping is kept from the original idiom: some bodies arrive with their quotes
+    // escaped, and without this they do not parse. The `Error: ` strip is anchored, so it
+    // cannot bite into `TypeError: ` the way the unanchored version did.
+    const cleaned = errorMessageOf(thrown).replace(/\\"/g, '"').replace(/^Error: /, '');
+    try {
+        const parsed: unknown = JSON.parse(cleaned);
+        // `JSON.parse` happily returns numbers, strings and null. Only an object is an API
+        // error body; anything else is a message that merely looked like JSON.
+        if (parsed !== null && typeof parsed === 'object') {
+            const body = parsed as Partial<ThrownApiError>;
+            // A body with no `message` of its own keeps the raw text as one, so the
+            // guarantee above holds for every shape an endpoint might answer with.
+            return typeof body.message === 'string'
+                ? (body as ThrownApiError)
+                : { ...body, message: cleaned };
+        }
+    } catch {
+        // Not an API error body. The raw message is the best information available, and
+        // keeping it is the whole point — it is what the old code destroyed.
+    }
+    return { message: cleaned };
+}
+
 export interface ApiSuccess<T = any> {
     success: true;
     response: Response;

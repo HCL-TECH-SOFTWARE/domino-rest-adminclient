@@ -10,7 +10,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { toggleAlert } from '../alerts/action';
 import { toggleApplicationDrawer } from '../drawer/action';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, errorMessageOf, parseThrownError } from '../../utils/api-retry';
 import { getLogger } from '../../services/log-service';
 import { toggleDeleteDialog } from '../dialog/action';
 // `updateApp` is a thunk in this module and `executing` was a hand-written creator;
@@ -336,22 +336,16 @@ export const generateSecret = (
       // "Generating New Secret …" forever on any failure.
       setGenerating(false);
 
-      // `e.message` rather than the old `toString().replace('Error: ', '')`, which cut
-      // the substring wherever it appeared: a TypeError surfaced as "Typeel.show is not
-      // a function".
-      const err = e?.message ?? String(e);
       // Only the `!response.ok` throw above carries a JSON body. A network failure or a
       // non-JSON error page reaches here as plain text, and parsing it unguarded threw
       // *inside* the catch — so the user saw no alert at all, exactly when one was needed.
-      let message = err;
-      try {
-        message = JSON.parse(err).message ?? err;
-      } catch {
-        // Not JSON; the raw text is the best message available.
-      }
+      // This site was fixed by hand first; #1000 found the same bug at 24 more and moved the
+      // logic to `parseThrownError`, so there is one implementation rather than a pattern to
+      // copy. Behaviour here is unchanged.
+      const error = parseThrownError(e);
 
-      dispatch(toggleAlert(`Error Generating App Secret: ${message}`));
-      log.error('Error generating app secret', { error: err })
+      dispatch(toggleAlert(`Error Generating App Secret: ${error.message}`));
+      log.error('Error generating app secret', { error: errorMessageOf(e) })
     }
   }
 }

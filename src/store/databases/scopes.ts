@@ -10,7 +10,7 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { encodeQueryValue } from '../../utils/common';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { sortAndRemoveDupSchemas } from './schemas';
@@ -47,8 +47,7 @@ export function deleteScope(apiName: string) {
       dispatch(toggleDrawer());
       dispatch(toggleAlert(`${apiName} has been successfully deleted.`));
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
       dispatch(setApiLoading(false));
       dispatch(toggleDeleteDialog());
       dispatch(toggleAlert(`Delete scope failed! ${error.message}`));
@@ -90,8 +89,7 @@ export const fetchScope = async (scopeData: any) => {
       modes: []
     };
   } catch (e: any) {
-    const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-    const error = JSON.parse(err)
+    const error = parseThrownError(e);
     log.error(`Error fetching scope ${apiName}`, { error });
   }
 };
@@ -226,8 +224,7 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
         // Cleared before the parse below, not after: JSON.parse throws on any
         // non-JSON error, and a handler that throws never reaches its own tail.
         dispatch(setApiLoading(false));
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
+        const error = parseThrownError(e);
 
         dispatch(setDBError(getErrorMsg(error.message)));
       }

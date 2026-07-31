@@ -11,7 +11,7 @@ import { getToken } from '../account/action';
 import { toggleErrorDialog } from '../dialog/action';
 import { convert2FieldType, convertDesignType2Format } from '../../utils/field-types';
 import { encodeQueryValue, fullEncode } from '../../utils/common';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { log } from './shared';
 import { setActiveForm, setLoadedForm } from './forms';
 import { setLoading } from '../loading/action';
@@ -127,10 +127,14 @@ export const fetchFields = (schemaName: string, nsfPath: string, formName: strin
 
       dispatch(setLoading({ status: false }));
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
-      log.error('Error fetching fields', { error: err });
-      dispatch(toggleErrorDialog(`${error.statusCode}: ${error.message}`));
+      const error = parseThrownError(e);
+      log.error('Error fetching fields', { error });
+      // Only prefix when there is a code. A non-API error has none, and #1000 made that
+      // path reachable — before, the parse threw and this dialog never opened at all — so
+      // without the guard the user would read "undefined: Cannot read properties of null".
+      dispatch(
+        toggleErrorDialog(error.statusCode ? `${error.statusCode}: ${error.message}` : error.message),
+      );
     }
   };
 };
@@ -227,8 +231,7 @@ export const getAllFieldsByNsf = (nsfPath: any) => {
   
       dispatch(addActiveFields('keep_internal_form_for_allFields', finalFields));
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
       log.error('Error fetching all fields', { error })
     }

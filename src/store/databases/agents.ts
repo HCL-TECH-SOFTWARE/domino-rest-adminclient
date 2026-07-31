@@ -11,7 +11,7 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { encodeQueryValue } from '../../utils/common';
 import { log, setDBError, clearDBError } from './shared';
 import { addActiveAgent, deleteActiveAgent, setAgents as setAgentsAction, updateAgent } from './reducer';
@@ -60,8 +60,7 @@ export const fetchAgents = (dbName: string, nsfPath: string) => {
         ) as any
       );
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
       log.error('Error fetching agents', { error });
     }
   };
@@ -205,8 +204,7 @@ export const updateAgents = (schemaData: Database, agentsData: any, dbName: stri
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(`Agents have been successfully saved.`));
       } catch (e: any) {
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
+        const error = parseThrownError(e);
 
         dispatch(setApiLoading(false));
         dispatch(setAgents(dbName, currentAgents))

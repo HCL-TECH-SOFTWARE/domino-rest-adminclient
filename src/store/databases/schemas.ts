@@ -10,7 +10,7 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog } from '../dialog/action';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { encodeQueryValue } from '../../utils/common';
 import { log, setDBError, clearDBError } from './shared';
 import {
@@ -62,8 +62,7 @@ export function deleteSchema(dbData: any) {
           dispatch(setApiLoading(false));
           dispatch(toggleAlert(`${dbData.schemaName} has been successfully deleted.`));
         } catch (e: any) {
-          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-          const error = JSON.parse(err)
+          const error = parseThrownError(e);
           
           dispatch(setApiLoading(false));
           dispatch(toggleDeleteDialog());

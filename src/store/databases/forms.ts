@@ -13,7 +13,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog } from '../dialog/action';
 import { encodeQueryValue, fullEncode } from '../../utils/common';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { addNsfDesign } from './databases';
 import {
@@ -127,15 +127,14 @@ export const pullForms = (nsfPath: string) => {
         dispatch(addNsfDesign(nsfPath, data));
       }
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
-      // Use the response error if it's available
-      if (err) {
-        dispatch(setDBError(error.message));
-      } else {
-        dispatch(setDBError(error));
-      }
+      // One dispatch, not a branch: `parseThrownError` always yields a message — the API
+      // body's own when it carried one, the raw thrown text otherwise. The `else` this
+      // replaces passed the whole error *object* into a string-typed action, and its
+      // condition (`if (err)`) tested a string that was only ever falsy for an error with an
+      // empty message. #1000.
+      dispatch(setDBError(error.message));
     } finally {
       // A finally, not a line on each path: this flag was stranded on *every*
       // exit including success, so there is no path that may skip clearing it.
@@ -229,8 +228,7 @@ const updateForms = (
         // Before the parse below, which throws on any non-JSON error and would
         // take the rest of this handler with it.
         dispatch(setApiLoading(false));
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
+        const error = parseThrownError(e);
 
         dispatch(toggleAlert(`Update forms failed! ${error.message}`));
       }
@@ -344,15 +342,14 @@ export const updateFormMode = (
       }
       dispatch(clearDBError());
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
-      // Use the response error if it's available
-      if (err) {
-        dispatch(setDBError(error.message));
-      } else {
-        dispatch(setDBError(error));
-      }
+      // One dispatch, not a branch: `parseThrownError` always yields a message — the API
+      // body's own when it carried one, the raw thrown text otherwise. The `else` this
+      // replaces passed the whole error *object* into a string-typed action, and its
+      // condition (`if (err)`) tested a string that was only ever falsy for an error with an
+      // empty message. #1000.
+      dispatch(setDBError(error.message));
       dispatch(setApiLoading(false))
     }
   };
@@ -415,8 +412,7 @@ export const deleteFormMode = (
         dispatch(toggleDeleteDialog());
         dispatch(toggleAlert(`${formModeName} mode has been deleted!`));
       } catch (e: any) {
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
+        const error = parseThrownError(e);
 
         dispatch(setApiLoading(false));
         dispatch(toggleDeleteDialog());
@@ -488,8 +484,7 @@ export const deleteForm = (
 
         dispatch(unConfigForm(newSchemaData.schemaName, formName));
       } catch (e: any) {
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
+        const error = parseThrownError(e);
 
         dispatch(setApiLoading(false));
         dispatch(toggleAlert(`Delete form failed! ${error.message}`));
@@ -583,8 +578,7 @@ export const saveNewForm = (
 
       dispatch(toggleAlert('New form schema created!'));
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
       log.error('Error creating new form schema', { error });
     }

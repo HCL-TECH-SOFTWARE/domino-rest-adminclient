@@ -10,7 +10,7 @@ import { BASE_KEEP_API_URL, IDP_KEEP_API_URL } from '../../config.dev';
 import { initState } from '../databases/action';
 import { AppState } from '..';
 import { clearForms } from '../databases/action';
-import { apiRequestWithRetry, notify } from '../../utils/api-retry';
+import { apiRequestWithRetry, notify, parseThrownError } from '../../utils/api-retry';
 import { emitTokenEvent, waitForToken } from '../../utils/token-emitter';
 import { checkForResponse } from '../../utils/common';
 import { getLogger } from '../../services/log-service';
@@ -262,21 +262,19 @@ export function showPages() {
       // Save page state
       dispatch(setNavItems(pageList));
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
       // If no configruation settings were found, use the default
       dispatch(setNavItems(pageList));
 
-      // Use the Keep response error if it's available
-      if (err) {
-        log.error('Error reading page configuration', { statusText: error.statusText });
-      }
-
-      // Otherwise use the generic error
-      else {
-        log.error('Error reading page configuration', { message: error.message });
-      }
+      // Both fields, one line. The branch this replaces tested `if (err)` — a string that
+      // is truthy for every error that has a message — so the `else` recording `message`
+      // was all but unreachable, and the `if` recorded a `statusText` that is absent from
+      // the body Keep actually returns. Logging both costs nothing and loses neither. #1000.
+      log.error('Error reading page configuration', {
+        statusText: error.statusText,
+        message: error.message
+      });
     }
   };
 }

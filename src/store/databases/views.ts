@@ -12,7 +12,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
 import { encodeQueryValue, fullEncode } from '../../utils/common';
-import { apiRequestWithRetry } from '../../utils/api-retry';
+import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
 import { isActiveAgent } from './agents';
 import {
@@ -68,8 +68,7 @@ export const fetchViews = (dbName: string, nsfPath: string) => {
         ) as any
       );
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
       log.error('Error fetching views', { error });
     }
   };
@@ -184,8 +183,7 @@ const updateViews = (schemaData: Database, viewsData: any, setSchemaData: (data:
           schemaName: newSchemaData.schemaName
         };
       } catch (e: any) {
-        const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-        const error = JSON.parse(err)
+        const error = parseThrownError(e);
 
         dispatch(toggleAlert(`Update views failed! ${error.message}`));
         dispatch({
@@ -465,15 +463,13 @@ export const processViewsAgents = (
             dispatch(toggleAlert('Activated Agents have been saved'));
           }
         } catch (e: any) {
-          const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-          const error = JSON.parse(err)
+          const error = parseThrownError(e);
 
           log.error('Error in saveViewsAgents', { statusCode: error.statusCode, message: error.message });
         }
       }
     } catch (e: any) {
-      const err = e.toString().replace(/\\"/g, '"').replace("Error: ", "")
-      const error = JSON.parse(err)
+      const error = parseThrownError(e);
 
       log.error('Error in processViewsAgents', { statusCode: error.statusCode, message: error.message });
     }
