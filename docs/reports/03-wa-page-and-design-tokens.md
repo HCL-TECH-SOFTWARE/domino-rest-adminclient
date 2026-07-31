@@ -18,7 +18,8 @@
 > the single definition of the brand ramp *and* the semantic surface/text tokens for both
 > modes; the `keep-*` elements and the Linaria layer read `var(--wa-*)` instead of carrying
 > their own hexes; the `theme` prop plumbing is gone; and `CommonStyles.tsx` was split per
-> feature.
+> feature — and has since been deleted outright, along with all six modules it re-exported,
+> as their consumers became Lit elements (#957, #956).
 >
 > **The token audit closed too** (#765). **34 `--wa-*` tokens are read by `src`, all 34
 > resolve, 0 undefined**, and no `--sl-*` token remains anywhere.
@@ -75,7 +76,7 @@ half of it gated on #709, half retiring per file inside #806.
 | 1 | ~~`<wa-page>` is a Web Awesome **Pro** component~~ → **`<wa-page>` is FREE at 3.10.0** | ✅ **RESOLVED** | Settled empirically as well as by inspection: it is in production. §2.4's CSS-grid fallback is now purely historical. |
 | 1b | ~~**No `wa-page` in the tree yet**~~ → **`AppShell.tsx` is built on it** (#707) | ✅ **DONE** | §2 is now a *description*, not a plan. `MOBILE_BREAKPOINT_PX = 768` feeds `mobile-breakpoint`, and `test/app-shell.test.ts` fails if `styles/app-shell.css`'s two media queries drift from it — a media condition cannot read a custom property, so the number is duplicated on purpose and guarded. |
 | 2 | **The app shell was _not_ built on MUI `AppBar`/`Toolbar`/`Drawer`.** It was hand-rolled Linaria `styled` + flexbox. | ✅ **paid off exactly as predicted** | The swap needed no untangling of MUI layout primitives, which is why #707 could *delete* the old scaffolding rather than port it. What remains of MUI in the shell is `ThemeProvider`/`CssBaseline` + icons — see finding 10. |
-| 3 | **The brand purple is consolidated *in the token layer* but three purples are still live in the tree.** `keep-theme.css` now owns the ramp (`#7c5fd9` light base, `#8b6ce0` dark) — but `KEEP_ADMIN_BASE_COLOR = #5F1EBE` still has **11 interpolations** across `styles/layout.tsx`, `styles/forms.tsx`, `styles/dialog.tsx`, `components/applications/AppForm.tsx` and `store/styles/action.ts` (plus a raw `#5F1EBE` at `styles.css:1337`), and **`#7e57c2` survives in 17 places** in the scoped login-button overrides at `styles.css:1946-1985`. | 🟡 **half done** | #705/#706 built the single source of truth; nothing has yet *deleted* the other two. **This is the single most misleading thing about the current state** — the ramp looks consolidated until you grep for the old hexes. Finish it in **#765**. |
+| 3 | **The brand purple is consolidated *in the token layer*; the other two purples are nearly gone.** `keep-theme.css` owns the ramp (`#7c5fd9` light base, `#8b6ce0` dark). `KEEP_ADMIN_BASE_COLOR = #5F1EBE` is down to **7 interpolations in one file**, `store/styles/action.ts`, plus its definition in `config.dev.ts`; `#7e57c2` is down to **2 occurrences**. | 🟡 **nearly done** | #705/#706 built the single source of truth. These counts were **re-measured, not adjusted** — the previous "11 interpolations across five files" named three files that no longer exist *and* was already wrong before they were deleted, since none of them contained the token when they went. Finish the remainder in **#765**. |
 | 3b | ➖ **RETRACTED — the "invisible login label" was not a bug.** This row previously claimed that `body[data-theme='dark'] .login-submit-button` (`styles.css:1975-1985`) painted its label invisible, because it sets `--wa-color-brand` **and** `--wa-color-brand-on` to the same `#7e57c2`. Checked in a browser while implementing #765: the label is white before and after. `wa-button` reads `--wa-color-brand-on-loud` / `-on-normal` / `-on-quiet` and **never the bare `--wa-color-brand-on`**, so the declaration was inert. | ➖ **withdrawn** | The finding was reasoned from the token *name* rather than measured, which is the exact mistake §4.1 warns about. What was true: the block was the last place rendering the pre-#705 purple, so deleting it (#765) still belongs in finding 3 — just as consolidation, not as a defect fix. The genuinely dead declaration is one more instance of finding 11. |
 | 4 | ~~**`dark-mode.css:9-11` overrides `--wa-color-brand-600 / -500 / -700`**~~ — Shoelace-era 3-digit tint names that never applied | ✅ **RESOLVED** (#706) | The three declarations were deleted and their values carried over to the real `05…95` steps in `keep-theme.css`. `dark-mode.css:9-12` now carries a comment recording that they were invalid, which is the right artefact to leave behind. **The class of bug recurred twice more** — see finding 11. |
 | 5 | **The WebAwesome token layer is now a designed thing, not scaffolding.** `keep-theme.css` (183 lines) defines the light and dark brand ramps, the semantic `--wa-color-surface-*` / `--wa-color-text-*` pins, `--wa-font-size-scale: 0.85`, `--wa-border-radius-scale: calc(5 / 6)` and the `--keep-sidenav-*` gradient tokens — each with a comment saying which semantic token it drives and why the value is what it is. Load order (`src/index.tsx`) is `webawesome.css` → `keep-theme.css` → `keep-overrides.css`, and that order matters. | ✅ **done** | The work is now *extending* the token layer's reach (§4, §6), not building it. |
@@ -188,14 +189,14 @@ Key regions and where they are styled:
 | Region | Component / file | How it is styled today |
 |--------|------------------|------------------------|
 | Top bar / logo | ~~`components/header/Header.tsx`~~ | ✅ **Gone.** The desktop bar was dead code (#751); the logo and title moved into `wa-page`'s `navigation-header` slot. An empty `header` part measures 0px, so `--header-height` stays 0 on desktop. |
-| Mobile header | `components/header/MobileHeader.tsx` | Linaria; rendered into `slot="header"` only below 768px. |
-| Side navigation | `components/sidenav/SideNav.tsx` + `styles/sidenav.tsx#SideNavContainer` | In `wa-page`'s `navigation` slot. Width belongs to `--menu-width` and the paint to `::part(menu)`; the gradient comes from `--keep-sidenav-background` in `keep-theme.css` (#708) rather than `getTheme().sidenav.background`. Still MUI `List`/`ListItemButton`/`ListItemIcon`/`ListItemText`/`Divider` + MUI icons inside. |
+| Mobile header | ~~`components/header/MobileHeader.tsx`~~ → `keep-elements/keep-mobile-header.ts` | ✅ **Converted** (#806). A Lit element rendered into `slot="header"` only below 768px; no Linaria left. |
+| Side navigation | ~~`components/sidenav/SideNav.tsx` + `styles/sidenav.tsx#SideNavContainer`~~ → `keep-elements/keep-side-nav.ts` | ✅ **Converted** (#806); `styles/sidenav.tsx` deleted with the `CommonStyles` barrel (#957). In `wa-page`'s `navigation` slot. Width belongs to `--menu-width` and the paint to `::part(menu)`; the gradient comes from `--keep-sidenav-background` in `keep-theme.css` (#708) rather than `getTheme().sidenav.background`. **No MUI inside** — the `List`/`ListItemButton`/… stack and its MUI icons are gone (#718). |
 | Main content | `Views.tsx#ViewContainer` | Linaria; `height:calc(100vh - 23px)`, `overflow-y:auto`. `RightPanel`'s `calc(100% - 241px\|50px)` is **deleted** — `wa-page` owns the grid. |
 | Mobile nav drawer | ~~`components/sidenav/MobileSidebar.tsx`~~ | ✅ **Deleted** — `wa-page` collapses `navigation` into a drawer natively below `mobile-breakpoint`. |
-| Quick-config drawer | `components/database/QuickConfigFormContainer.tsx` | Already a WebAwesome/Lit drawer (`wa-drawer`, styled in `dark-mode.css` via `::part`). |
-| Dialogs | `components/dialogs/*`, `styles/dialog.tsx` (`CommonDialog` = MUI `Dialog`) + native `<dialog>` | MUI `Dialog`/`Paper` themed via `dark-mode.css` `.MuiDialog-*` `light-dark()` `!important` rules. **This is the largest surviving `light-dark()` cluster** — see §4. |
-| Footer | `Footer.tsx` + `styles.css .footer-container` | Plain div, fixed overlay outside `wa-page` (see §1.1). |
-| Notifications/toasts | `components/alerts/Notification.tsx`, `dialogs/SnackbarToaster.tsx` | MUI Snackbar + a Lit toast (`keep-alert`); rendered outside the page element because the snackbar portals to `document.body`. |
+| Quick-config drawer | ~~`components/database/QuickConfigFormContainer.tsx`~~ → `keep-elements/keep-quick-config-drawer.ts` + `keep-quick-config-form.ts` | ✅ **Converted** (#806). A WebAwesome/Lit drawer whose `::part` styling now lives in the element rather than in `dark-mode.css`. |
+| Dialogs | ~~`components/dialogs/*`, `styles/dialog.tsx` (`CommonDialog` = MUI `Dialog`)~~ → twelve `keep-elements/keep-*-dialog.ts` on native `<dialog>` | ✅ **Converted** (#806); the directory and `styles/dialog.tsx` are both deleted (#956, #957). The five `.MuiDialog-*` rules in `dark-mode.css` outlived every element they targeted and match nothing — see #959. |
+| Footer | ~~`Footer.tsx`~~ → `keep-elements/keep-footer.ts` | ✅ **Converted** (#806). Fixed overlay outside `wa-page` (see §1.1). |
+| Notifications/toasts | ~~`components/alerts/Notification.tsx`, `dialogs/SnackbarToaster.tsx`~~ → `keep-elements/keep-alert.ts` | ✅ **Converted** (#806). The MUI Snackbar is gone, and with it the reason this sat outside the page element. `keep-alert` no longer relocates itself to `document.body` either (#952) — the Popover API puts it in the top layer from wherever it is rendered. |
 
 ### 1.2 Where the theme / colors / spacing come from
 
@@ -222,14 +223,14 @@ Key regions and where they are styled:
    > `AppsTable` and `ConsentsTable` never passed one — so those tables rendered light
    > chrome in dark mode. It is now impossible to reproduce: no component knows the theme.
 
-4. **Hardcoded hex in Linaria — reduced, not eliminated.** `CommonStyles.tsx` is now a
-   20-line re-export barrel over six per-feature modules (`layout`, `search`, `cards`,
-   `dialog`, `sidenav`, `forms`), and the repo is down to **175 `styled.` usages** across
-   68 files (was 198). But **`KEEP_ADMIN_BASE_COLOR` still has 11 interpolations** in
-   `styles/layout.tsx`, `styles/forms.tsx`, `styles/dialog.tsx`, `applications/AppForm.tsx`
-   and `store/styles/action.ts`, and **56 `light-dark()` literals** remain across 21
-   `.tsx`/`.ts` files. §4.
-5. **Global CSS custom properties** — `styles.css` (2,074 lines) `:root` defines app-local
+4. **Hardcoded hex in Linaria — nearly eliminated.** `CommonStyles.tsx` and all six
+   per-feature modules it re-exported (`layout`, `search`, `cards`, `dialog`, `sidenav`,
+   `forms`) are **deleted** (#957, #956): every consumer became a Lit element whose rules
+   live in its own shadow root. The repo is down to **33 `styled.` usages across 12 files**
+   (was 175 across 68), **20 `light-dark()` literals across 10 files** (was 56 across 21),
+   and **`KEEP_ADMIN_BASE_COLOR` to 7 interpolations in `store/styles/action.ts` alone**
+   (was reported as 11 across five files, three of which no longer exist). §4.
+5. **Global CSS custom properties** — `styles.css` (1,279 lines) `:root` defines app-local
    tokens with `light-dark()`. `--base-color` is now derived
    (`light-dark(var(--wa-color-brand-40), var(--wa-color-brand-60))`) with a comment noting
    it serves two opposite roles — a text colour and a surface — which is why splitting it
@@ -290,6 +291,10 @@ the host for responsive CSS. Region widths: `--menu-width`, `--main-width`,
 > in bespoke positioning.
 
 ### 2.2 Region mapping — this app → `wa-page`
+
+> **The "Today" column describes the tree as it was before #707**, and is kept as the record of
+> what was mapped where. Every file it names has since been deleted or converted — see the
+> §1.1 table above for what each region is now. Do not read this one as an inventory.
 
 | Today | `wa-page` slot | Notes |
 |-------|----------------|-------|
@@ -652,7 +657,7 @@ token flips (no per-component `light-dark()`).
    > a hover state. Naming it in the `--keep-` namespace keeps `keep-theme.css` as the one
    > file to edit without pretending it is part of WA's scale.
 2. ✅ **Replace literal hex/px in `CommonStyles.tsx`** — **DONE**, and the file itself was
-   split (see §6). 133 radius/font-size substitutions landed with it, under a **two-part
+   split (see §6) and later deleted entirely (#957). 133 radius/font-size substitutions landed with it, under a **two-part
    gate**: a token was only substituted where it lands **within 1px** of the literal *and*
    does not collapse two distinct sizes into one. That is why `16px` and `18px` kept their
    literals — see the caveat below.
