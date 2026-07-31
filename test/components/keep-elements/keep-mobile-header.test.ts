@@ -9,7 +9,6 @@ import { cleanupLit, mountLit } from '../../test-utils/lit';
 // Value imports, not `import type`: the assertions below read `.styles` off the classes, and
 // the default import registers the element as a side effect either way.
 import MobileHeader from '../../../src/components/keep-elements/keep-mobile-header';
-import Homepage from '../../../src/components/keep-elements/keep-homepage';
 import PageRouters from '../../../src/components/keep-elements/keep-page-routers';
 
 describe('keep-mobile-header', () => {
@@ -66,28 +65,15 @@ describe('keep-mobile-header', () => {
   });
 });
 
-describe('keep-homepage', () => {
-  const TAG = 'keep-homepage';
-
-  afterEach(cleanupLit);
-
-  it('registers the custom element', () => {
-    expect(customElements.get(TAG)).toBeTruthy();
-  });
-
-  it('scrolls its own content', () => {
-    expect(Homepage.styles.toString()).toMatch(/overflow-y:\s*auto/);
-  });
-
-  it('projects its still-React child through the default slot', async () => {
-    const el = document.createElement('keep-homepage');
-    el.innerHTML = '<div id="section"></div>';
-    document.body.appendChild(el);
-    await el.updateComplete;
-    const slot = el.shadowRoot!.querySelector<HTMLSlotElement>('slot')!;
-    expect(slot.assignedElements().map((n) => n.id)).toEqual(['section']);
-  });
-});
+/*
+ * `keep-homepage` had a block here, and it moved to `keep-homepage.test.ts` in #806 wave 8.
+ *
+ * It was three cases about a container with a slot. The element is the whole `/` screen now —
+ * `home/sections/Section.tsx` and `Tip.tsx` folded into it — so it has a suite of its own,
+ * carrying the two cases that still mean something. The third asserted that a still-React
+ * child was projected through the default slot; there is no React child and no slot left, and
+ * what replaced it is asserted there as rendered tiles.
+ */
 
 describe('keep-page-routers', () => {
   const TAG = 'keep-page-routers';

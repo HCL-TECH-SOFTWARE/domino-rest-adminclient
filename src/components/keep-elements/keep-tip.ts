@@ -1,62 +1,91 @@
 /* ========================================================================== *
- * Copyright (C) 2026 HCL America Inc.                                        *
+ * Copyright (C) 2023, 2026 HCL America Inc.                                  *
  * All rights reserved.                                                       *
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
-import { html, css } from 'lit';
+import { html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import { KeepElement } from './keep-element';
+import { RouterController } from '../../router/RouterController';
 
 /**
- * One of the four overview tiles, on `<wa-card>`.
- * Tag: `keep-tip`. Exposed via `KeepElements.tsx` as `KeepTip`.
+ * One of the four overview tiles on the `/` route, on `<wa-card>`. Tag: `keep-tip`.
  *
- * Replaces the MUI `Card`/`CardActionArea`/`CardContent`/`CardMedia` stack that
- * `components/home/sections/Tip.tsx` used to render.
+ * It replaces the card stack that `components/home/sections/Tip.tsx` rendered, and since
+ * #806 wave 8 it replaces that file as well: the tile owns its link and its image instead of
+ * taking them as slotted light DOM.
  *
- * ## The link stays in the light DOM, deliberately
+ * ## The anchor is in this shadow root now — the note that said it could not be is wrong
  *
- * The caller passes the anchor in, rather than this element taking an `href` and rendering
- * one:
+ * This element used to carry a long argument for keeping the `<a>` outside, in the caller's
+ * light DOM, because a click from a shadow tree is *retargeted* and three things read the
+ * anchor off the click. All three have since moved:
  *
- * ```html
- * <keep-tip heading="Schemas" description="…">
- *   <a slot="media" href="/admin/ui/schema"><img src="…" alt=""></a>
- * </keep-tip>
- * ```
+ * 1. The unsaved-changes guard no longer does `e.target.closest('a[href]')`. #884/#901
+ *    changed it to `e.composedPath().find(...)`, which walks *into* an open shadow root and
+ *    finds this anchor. `keep-tip.test.ts` mounts the real guard — `keep-navigation-guard`,
+ *    which was `navigation/NavigationGuard.tsx` until wave 8 — clicks this anchor and asserts
+ *    the navigation is held; and asserts alongside it that the traversal #901 replaced still
+ *    finds nothing, so the pass is `composedPath()` doing the work.
+ * 2. Client-side navigation was the router's React `Link`. {@link RouterController} (#926)
+ *    supplies `href` and `navigate` to any element, so the anchor can be built here.
+ * 3. Hover prefetching of the route chunk (#813) hung off the same `Link`, and the
+ *    controller exposes `prefetch` too.
  *
- * Three things depend on that anchor being reachable from the document, and all three break
- * silently if it moves inside this shadow root — a click from a shadow tree is *retargeted*,
- * so listeners above see this host and not the `<a>`:
+ * What is left of the old constraint is the one real limit, recorded so it is not
+ * rediscovered: `composedPath()` stops at a **closed** shadow root. Lit opens its roots, so
+ * nothing here is affected.
  *
- * 1. `NavigationGuardContext` catches in-app navigation with a document-level capture
- *    listener doing `e.target.closest('a[href]')`. Retargeted, that returns `null` and the
- *    unsaved-changes prompt stops appearing.
- * 2. The router's own `Link` click handler, which is what makes navigation client-side
- *    rather than a full page load.
- * 3. Hover prefetching of the route's chunk (#813 step 4), which hangs off the same `Link`.
+ * Moving the anchor in is what lets the tile be one link with one accessible name: the
+ * heading and description are the anchor's own content, and its `::after` stretches over the
+ * card so the whole tile is the hit area. That could not be expressed from outside —
+ * `::slotted(a)::after` matches nothing, which is why the stretch rule used to live in a
+ * document-scope Linaria block.
  *
- * So the element owns the *card*, and the caller owns the *link*. The Lit `<keep-link>` that
- * replaces `Link` when the views convert will slot in here unchanged.
+ * ## Two things that were silently broken before this rewrite
  *
- * `<slot name="media" slot="media">` forwards whatever is passed into `<wa-card>`'s own media
- * slot — a slot inside a shadow root can itself be assigned to a slot further down.
- *
- * ## Stretching the click target
- *
- * The whole tile is clickable, as it was when the anchor wrapped everything. `:host` is the
- * positioning context and the caller's stylesheet stretches the anchor's `::after` across
- * it. That half cannot live here: shadow CSS can style a slotted element with `::slotted()`,
- * but not its pseudo-elements — `::slotted(a)::after` matches nothing.
+ * - The card asked for `--wa-spacing-l`, which **no stylesheet in this repo or in Web
+ *   Awesome defines** — it is the Shoelace-era spelling of `--wa-space-l`. An unresolved
+ *   custom property makes the declaration invalid at computed-value time, so the four tiles
+ *   have been sitting flush against each other with their raised shadows overlapping.
+ * - The link had **no accessible name**. It wrapped only the decorative image, whose `alt`
+ *   is empty precisely so the tile is not announced twice — so a screen reader read out
+ *   "link" and nothing else, four times.
  */
+
+/**
+ * How long a pointer must rest on a link before it counts as intent to go there (#813).
+ *
+ * The same 80 ms `router/react.tsx` uses for `Link` and `keep-side-nav` uses for the rail.
+ * This is now the third copy; they should become one helper (`router/prefetch-intent.ts`)
+ * once no agent owns the other two.
+ */
+const PREFETCH_INTENT_MS = 80;
+
+/** `navigator.connection`, which TypeScript's DOM lib does not declare. */
+type NetworkInformation = { saveData?: boolean; effectiveType?: string };
+
+/** Whether speculative fetching is welcome on this connection. Mirrors `router/react.tsx`. */
+const prefetchIsWelcome = (): boolean => {
+  const connection = (navigator as Navigator & { connection?: NetworkInformation }).connection;
+  if (!connection) return true;
+  if (connection.saveData) return false;
+  return connection.effectiveType !== '2g' && connection.effectiveType !== 'slow-2g';
+};
+
 @customElement('keep-tip')
 export default class Tip extends KeepElement {
   static readonly styles = css`
+    /* The document's border-box reset does not cross a shadow boundary. */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
     :host {
-      /* The positioning context the caller's stretched-link ::after resolves against. */
-      position: relative;
       display: flex;
       flex: 1;
       color-scheme: inherit;
@@ -69,9 +98,9 @@ export default class Tip extends KeepElement {
      * The tile has to read as a raised surface in LIGHT mode, where WebAwesome gives it
      * almost nothing to work with:
      *
-     * - --wa-color-surface-raised and --wa-color-surface-default are BOTH white. The MUI
+     * - --wa-color-surface-raised and --wa-color-surface-default are BOTH white. The
      *   original set background: var(--wa-color-surface-raised) and so was white on white;
-     *   only MUI's own elevation shadow separated it from the page.
+     *   only the framework's own elevation shadow separated it from the page.
      * - --wa-color-surface-border is --wa-color-neutral-90, and the neutral ramp is
      *   mode-invariant, so in light mode that is a near-white line on a white page.
      * - wa-card's own box-shadow: var(--wa-shadow-s) resolves to about 0 2px 2px -1px:
@@ -88,10 +117,16 @@ export default class Tip extends KeepElement {
      * --wa-panel-border-radius and --wa-shadow-s. Setting the others looks like theming and
      * does nothing at all -- they were copied from keep-default-card, where they are equally
      * inert.
+     *
+     * position: relative is the containing block for the stretched link overlay below. It
+     * is on the card rather than on the host so the hit area is exactly the visible tile;
+     * against the host it would also cover the margin, and two neighbouring tiles would
+     * meet with no dead space between their click targets.
      */
     wa-card {
       --wa-panel-border-radius: var(--wa-border-radius-l);
-      margin: var(--wa-spacing-l);
+      position: relative;
+      margin: var(--wa-space-l);
       border-color: var(--wa-color-neutral-border-normal);
       box-shadow: var(--wa-shadow-l);
       display: flex;
@@ -99,11 +134,47 @@ export default class Tip extends KeepElement {
       overflow: hidden;
     }
 
-    /* The media is a link wrapping an image; both need to fill the slot rather than sit
-       at their intrinsic size. */
-    ::slotted([slot='media']) {
+    /*
+     * The document sheet sizes images through a bare img selector and that does not cross a
+     * shadow boundary. wa-card's own media rule covers the same ground for a slotted child,
+     * but it is one version bump from not doing so, and this is one declaration.
+     */
+    img {
       display: block;
-      line-height: 0;
+      width: 100%;
+      height: auto;
+    }
+
+    /*
+     * The tile link. It is the card body, and its overlay is the rest of the card: one link,
+     * one accessible name, whole tile clickable. It must not look like body text set in link
+     * blue -- the framework styles bare anchors from a document layer that stops at this
+     * boundary, so the reset here is what the tile has always rendered as.
+     */
+    .tile {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .tile::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+
+    /*
+     * The focus ring traces the whole hit area rather than the two lines of text, so what is
+     * focused and what a click will hit are the same shape. Negative offset keeps it inside
+     * the card, which clips its own overflow.
+     */
+    .tile:focus-visible {
+      outline: none;
+    }
+
+    .tile:focus-visible::after {
+      outline: var(--wa-focus-ring);
+      outline-offset: calc(-1 * var(--wa-focus-ring-width));
     }
 
     .heading {
@@ -119,18 +190,88 @@ export default class Tip extends KeepElement {
     }
   `;
 
-  /** The tile's title, e.g. "Schemas". */
+  /** The tile's title, e.g. "Database Management - REST API". */
   @property({ type: String }) accessor heading = '';
 
   /** The line under it. */
   @property({ type: String }) accessor description = '';
 
+  /** Base-relative route this tile leads to, e.g. `/schema`. */
+  @property({ type: String }) accessor uri = '';
+
+  /** The card's media image. Decorative — the heading and description carry the meaning. */
+  @property({ type: String }) accessor image = '';
+
+  /**
+   * The app's router (#926).
+   *
+   * The tile never reads the location — only moves it — so the selector is constant and this
+   * host never re-renders on navigation. `href`, `navigate` and `prefetch` read the router on
+   * each call, which is what lets a test install a memory-backed one after the element exists.
+   */
+  private readonly route = new RouterController(this, () => null);
+
+  private prefetchTimer?: ReturnType<typeof setTimeout>;
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    // A tile can be unmounted mid-hover — the route changes under it. Without this the timer
+    // still fires and fetches a chunk for a tile that is no longer on screen.
+    this.cancelPrefetch();
+  }
+
+  /**
+   * Plain left-click navigates in-app; everything else belongs to the browser, so modified
+   * clicks still open a tab or a window.
+   *
+   * When the unsaved-changes guard blocks the click it has already called
+   * `stopPropagation()` in the capture phase, so this never runs.
+   */
+  private readonly onClick = (event: MouseEvent): void => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    event.preventDefault();
+    this.route.navigate(this.uri);
+  };
+
+  private readonly startPrefetch = (): void => {
+    if (this.prefetchTimer !== undefined || !prefetchIsWelcome()) return;
+    this.prefetchTimer = setTimeout(() => {
+      this.prefetchTimer = undefined;
+      this.route.prefetch(this.uri);
+    }, PREFETCH_INTENT_MS);
+  };
+
+  private readonly cancelPrefetch = (): void => {
+    if (this.prefetchTimer === undefined) return;
+    clearTimeout(this.prefetchTimer);
+    this.prefetchTimer = undefined;
+  };
+
   render() {
     return html`
       <wa-card appearance="filled-outlined">
-        <slot name="media" slot="media"></slot>
-        <span class="heading">${this.heading}</span>
-        <span class="description">${this.description}</span>
+        ${this.image ? html`<img slot="media" src=${this.image} alt="" />` : nothing}
+        <a
+          class="tile"
+          href=${this.route.href(this.uri)}
+          @click=${this.onClick}
+          @pointerenter=${this.startPrefetch}
+          @pointerleave=${this.cancelPrefetch}
+          @focus=${this.startPrefetch}
+          @blur=${this.cancelPrefetch}
+        >
+          <span class="heading">${this.heading}</span>
+          <span class="description">${this.description}</span>
+        </a>
       </wa-card>
     `;
   }

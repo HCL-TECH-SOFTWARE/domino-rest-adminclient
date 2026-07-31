@@ -14,7 +14,7 @@ import { KeepBreadcrumbRouter } from './components/keep-elements/react/KeepBread
 import { KeepPageLoading } from './components/keep-elements/react/KeepPageLoading';
 import { KeepPageRouters } from './components/keep-elements/react/KeepPageRouters';
 import { fetchScopes, fetchKeepPermissions } from './store/databases/action';
-import { NavigationGuard } from './components/navigation/NavigationGuard';
+import { KeepNavigationGuard } from './components/keep-elements/react/KeepNavigationGuard';
 /*
  * Lazy, and mounted on first open rather than while open (#813 step 3).
  *
@@ -121,7 +121,15 @@ const Views: React.FC = () => {
   const routes: RouteDef[] = useMemo(() => {
     const guard = () => authenticated;
     return [
-      { path: '/', load: () => import('./components/home/HomePage'), guard, redirectTo: '/' },
+      {
+        path: '/',
+        load: () =>
+          import('./components/keep-elements/react/KeepHomepage').then((m) => ({
+            default: m.KeepHomepage,
+          })),
+        guard,
+        redirectTo: '/',
+      },
       {
         /* A Lit element behind its wrapper, like `/apps/consents` below (#806). */
         path: '/schema',
@@ -282,7 +290,7 @@ const Views: React.FC = () => {
         `document` and `window` — so the subtree it appeared to scope was never the subtree
         it guarded, and a component moved out of it would have looked guarded and not been.
       */}
-      <NavigationGuard basename="/admin/ui" />
+      <KeepNavigationGuard basename="/admin/ui" />
       <KeepPageRouters>
         <KeepBreadcrumbRouter />
       </KeepPageRouters>

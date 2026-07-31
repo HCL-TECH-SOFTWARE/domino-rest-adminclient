@@ -48,10 +48,17 @@ const declared = (block: string, token: string) =>
 
 describe('keep-theme.css — pinned dark semantic tokens (#708)', () => {
   /*
-   * The point of #708 is that this palette existed in three places at once. Two of
-   * them still do while getTheme() has a consumer (src/theme.ts, until #709 removes
-   * MUI), so pin them to each other: editing one without the other fails here rather
-   * than showing up as a colour that is subtly wrong in one half of the app.
+   * The point of #708 is that this palette existed in three places at once, so pin the
+   * remaining two to each other: editing one without the other fails here rather than
+   * showing up as a colour that is subtly wrong in one half of the app.
+   *
+   * #709 has since removed getTheme()'s only consumer — src/theme.ts fed it to MUI's
+   * createTheme(), and both are gone — so this is now a stylesheet pinned to a JS object
+   * that nothing in src reads. The pin is kept rather than deleted because these are the
+   * literals a reviewer checks the dark palette against, but getTheme() and
+   * KEEP_ADMIN_BASE_COLOR (below) are dead exports now and deleting them, with this
+   * describe block, is the honest end of #708. It is left as its own change: it moves
+   * coverage on src/store/**, which this pass has no way to measure.
    */
   const dark = getTheme('dark');
 
