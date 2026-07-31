@@ -6,7 +6,7 @@
 
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react-swc';
+import { standardDecorators } from './scripts/standard-decorators.mjs';
 
 // Standalone Vitest config. It reuses the same plugin graph as the Vite build
 // (SWC/React) so components transform identically to `npm run build`/`dev`, but
@@ -41,20 +41,14 @@ export default defineConfig({
     // The `wyw` (Linaria) plugin used to sit here to mirror the build. It is gone with the
     // last `styled` block (#825); see the note in vite.config.mts.
     //
-    // Must mirror vite.config.mts exactly — see the longer note there.
+    // The same module `vite.config.mts` registers, not a copy of its settings. These two
+    // configs govern different things — this one the suite, that one the shipped bundle —
+    // and a copy-paste pair drifting apart is exactly what `test/decorator-config.test.ts`
+    // was written to catch. One import cannot drift.
     //
-    // `tsDecorators` is SWC's *parser* flag, not a semantics choice: false makes SWC
-    // reject `@` outright. `decoratorVersion: '2022-03'` selects standard (TC39)
-    // decorators, which the Lit elements need for `accessor` (#747); SWC's default is
-    // legacy, and under it `accessor` members are emitted untransformed.
-    react({
-      tsDecorators: true,
-      useAtYourOwnRisk_mutateSwcOptions(options) {
-        options.jsc ??= {};
-        options.jsc.transform ??= {};
-        options.jsc.transform.decoratorVersion = '2022-03';
-      },
-    }),
+    // Standard (TC39) decorators with `accessor` (#747); see the plugin for why each SWC
+    // option is load-bearing.
+    standardDecorators(),
   ],
   test: {
     globals: true,

@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { defineConfig, type Plugin } from 'vite';
-import react from '@vitejs/plugin-react-swc';
+import { standardDecorators } from './scripts/standard-decorators.mjs';
 
 /** The appearance boot module, as a Rollup input name and as a source path. */
 const APPEARANCE_BOOT = { name: 'appearance-boot', path: 'src/appearance-boot.ts' };
@@ -150,28 +150,19 @@ export default defineConfig({
     // which mis-desugars the `accessor` keyword (#747) into a reference to a private field
     // it never declares. Deleting the plugin is the stronger version of that exclusion.
     //
-    // The Lit elements use standard (TC39) decorators with `accessor` (#747).
-    //
-    // `tsDecorators` is a misleading name: in @vitejs/plugin-react-swc it only sets SWC's
-    // *parser* flag. It must stay `true` or SWC refuses to parse `@` at all — it is not a
-    // choice of decorator semantics.
-    //
-    // The semantics are `decoratorVersion`, which SWC defaults to legacy ('2021-12'). Under
-    // that default it silently emits `accessor` members untransformed, so the hook below is
-    // required and cannot be dropped. SWC does not read tsconfig.json (esbuild does), so
-    // this copy — not tsconfig.app.json — is what governs the build.
+    // The Lit elements use standard (TC39) decorators with `accessor` (#747), and SWC is the
+    // only transform in the tree that implements them. This was `@vitejs/plugin-react-swc`
+    // until #996 — a React plugin in a repo with zero `.tsx` files, kept solely for this.
+    // Every option, and why each is load-bearing, is documented at the plugin.
     //
     // Getting it wrong is loud, not silent: Lit's standard decorators reject a plain field
     // with "Unsupported decorator location: field" at module load, in dev and production
-    // alike. That is the point of the migration.
-    react({
-      tsDecorators: true,
-      useAtYourOwnRisk_mutateSwcOptions(options) {
-        options.jsc ??= {};
-        options.jsc.transform ??= {};
-        options.jsc.transform.decoratorVersion = '2022-03';
-      }
-    })
+    // alike. That is the point of the migration. Getting the *transform* wrong is the silent
+    // one — SWC's legacy default emits `accessor` untransformed and the build still exits 0.
+    //
+    // Must stay identical to the registration in `vitest.config.ts`; sharing one module is
+    // what makes that true by construction rather than by review.
+    standardDecorators()
   ],
   build: {
     assetsDir: 'admin/assets',

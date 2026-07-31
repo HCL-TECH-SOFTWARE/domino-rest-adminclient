@@ -51,14 +51,31 @@ const SRC = join(ROOT, 'src');
  * - `@testing-library/react` — only ever re-exported DOM Testing Library's `fireEvent`,
  *   `screen` and `within` for `test/test-utils/tables.ts`, which imports them from
  *   `@testing-library/dom` directly now.
- * - `@vitejs/plugin-react-swc` is deliberately **not** here: it is a build-time SWC transform,
- *   and the Lit elements need it for standard decorators and `accessor` (#747). It depends on
- *   `@swc/core` and nothing else — no `react`, no `react-refresh` runtime it cannot serve
- *   itself — so its name is now the only React left in the repository. `@linaria/react` was
- *   the other build-time package whose name said React; #825 removed it with the last
- *   `styled` block, which is also what stopped `react` being reinstalled as its peer.
+ * - `@vitejs/plugin-react-swc` — a React plugin in a repo with zero `.tsx` files. It was
+ *   deliberately exempt here until #996, because it was the only transform implementing
+ *   standard decorators and `accessor` (#747) and nothing else in the tree could do that job.
+ *   #996 replaced it with `scripts/standard-decorators.mts`, ~30 lines calling `@swc/core`
+ *   directly with the same options — verified by a byte-identical build — so the exemption is
+ *   spent and the last React name in the repository is gone. `@linaria/react` was the other
+ *   build-time package whose name said React; #825 removed it with the last `styled` block,
+ *   which is also what stopped `react` being reinstalled as its peer.
+ *
+ *   `@swc/core` is **not** banned in its place: it is the transform, now a direct dependency
+ *   rather than a transitive one, and it carries nothing React. `test/decorator-config.test.ts`
+ *   is what proves the replacement actually transforms.
+ *
+ * Note the asymmetry for this last one: the import scan below walks `src`, and no config file
+ * lives there, so it is the **declaration** check that keeps the plugin out. The other half —
+ * that the configs still register a working transform — is `decorator-config.test.ts`.
  */
-const BANNED = ['react', 'react-dom', 'react-redux', '@lit/react', '@testing-library/react'];
+const BANNED = [
+  'react',
+  'react-dom',
+  'react-redux',
+  '@lit/react',
+  '@testing-library/react',
+  '@vitejs/plugin-react-swc',
+];
 
 const walk = (dir: string): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
