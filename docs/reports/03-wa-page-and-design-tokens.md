@@ -95,8 +95,10 @@ half of it gated on #709, half retiring per file inside #806.
 **Rough surface area (re-measured at `0d5458c`):** **43** files import `@mui/material` (84
 references) and that is now the *only* MUI package; `@mui/icons-material` and `react-icons`
 are **gone**. ~~**50** files use `@linaria/react` with **148 `styled.` usages** (was 175)~~ —
-**0 and 0** since #825; a raw grep for `styled` still answers 32, and every one of them is a
-provenance comment inside a converted element,
+**0 and 0** since #825; a raw grep for `styled` still answers **68**, and every one of them is
+a provenance comment inside a converted element (32 of those lines carry the `styled.` or
+`styled(` form specifically — the gap between 68 and 32 is exactly why the exit gate in
+`test/styles/no-css-in-js.test.ts` matches import forms rather than the word).
 **6** files read `getTheme()`, `Box` appears **48×** (was 144). **One** `CssBaseline` mount
 and **one** `ThemeProvider`, both in `AppShell.tsx`. On the WebAwesome side: **504** `--wa-*`
 references across **67** files, `webawesome.css` imported exactly **once** at

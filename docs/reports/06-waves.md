@@ -77,7 +77,7 @@ lane D or gated on it:
 | **#806** | the per-file pass — the spine. **79 files / 16,682 LOC** left |
 | #713 · #712 · #717 | lane D work under other labels; they close *inside* #806 |
 | ~~#718~~ | ✅ **closed** — 0 `@mui/icons-material` / `react-icons` references remain, both packages uninstalled (#913) |
-| ~~#825~~ | ✅ **closed** — `@linaria/react` reached **0** files without a CSS-Modules sweep, and the package and `@wyw-in-js/vite` are uninstalled |
+| ~~#825~~ | ✅ **closed** — `@linaria/react` is in **0** files; both it and `@wyw-in-js/vite` are uninstalled |
 | **#709** | wave-3 gate — waits for `@mui/*` to leave **43** files |
 | **#719** | wave-3 capstone — waits for React to leave **69** files (101 raw, minus 32 wrapper shims) |
 | #786 | the `new_code` → `main` merge — `main` is now **479** commits behind |
@@ -198,8 +198,8 @@ retires as the components convert.
 | classic `switch` reducers / `createSlice` | 17 / 0 | 14 / 0 | 0 / 11 | **0 / 17 modules, 10 slices** ✅ |
 | `createSelector` | 0 | 1 | 1 | **2** |
 | `as any` / `dispatch(… as any)` | — | — | — | **44 / 0** ✅ — #694 |
-| `@linaria/react` files | 69 | — | 51 | **50** |
-| `dependencies` | 32 | 24 | 22 | **18** |
+| `@linaria/react` files | 69 | — | 51 | **0** ✅ — #825 |
+| `dependencies` | 32 | 24 | 22 | **13** |
 | `keep-*` elements | — | 27 | 49 | **50** |
 | `@lit/react` wrappers (deletions, not work) | — | — | — | **32**, 0 orphaned |
 | `StoreController` / `FormController` users | 0 / 0 | 0 / 0 | 7 / **0** | **11 / 2** ✅ |
@@ -224,7 +224,9 @@ retires as the components convert.
 
 Three Linaria-carrying modules were deleted with no replacement (`components/flex`,
 `SchemaStyles`, `ScopeStyles`) and three more turned out to have no importers at all, which is
-why `@linaria/react` fell 69 → **50** without a CSS-Modules sweep (#825).
+why `@linaria/react` fell 69 → **50** without a CSS-Modules sweep (#825). It kept falling the
+same way, and reached **0** without one ever being written — the layer was retired *by* the
+component migration, one file at a time.
 
 ---
 
@@ -239,7 +241,7 @@ Every edge that fed #806 has closed. What remains is a chain, not a graph:
                                                               #719 capstone  ─▶  #786 merge to main
 
 #713 a11y  ─── same files as #806. Interleave per file; never parallelise.
-#825       ─── same files. Its 22 MUI-free targets need re-measuring; eleven are already gone.
+#825       ─── ✅ closed. Never needed its own pass: #806 consumed it file by file.
 ```
 
 Read it as: **#806 is now the only thing on the critical path.** Nothing feeds it, and
@@ -531,10 +533,12 @@ Two things tier A did not have to face, and these files do:
 - **Slot the children you cannot convert yet.** Tier A proved the pattern on four files: a
   converted parent does not force its children to convert, it slots them as light DOM.
 
-**Convert the 13 Linaria style modules last within tier B** (`styles/*.tsx`, `*Styles.tsx`,
-`CarViewstyles.tsx`). They are not components — they are `.tsx` only because Linaria's
-`styled` carries JSX types, and they become plain `.ts` once their consumers stop being
-React.
+~~**Convert the 13 Linaria style modules last within tier B**~~ — ✅ **done, and not by
+converting them.** All 13 were deleted along with their consumers as the elements absorbed
+their rules into `static styles`, which is why `@linaria/react` reached 0 without a
+CSS-Modules sweep (#825). The advice was sound while it applied: a style module is not a
+component, so it has nothing to convert *to* until its consumers stop being React — and by
+then there is nothing left to convert.
 
 **Skip the six #771 tables.** Skip `KeepElements.tsx` and `router/react.tsx` — those are
 P4 deletions, not conversions.
@@ -802,16 +806,19 @@ Two things sit outside #806 and can be taken by anyone:
   causes are already ruled out in the issue.
 - **#877** — replace `BreadcrumbRouter` with `wa-breadcrumb`. One eager file, no dependency.
 
-~~**#825 needs re-measuring before anyone starts it.**~~ ✅ **Closed, and nobody ever started it.**
-Its list of 22 MUI-free Linaria files predated #806 tier A and the card-view slice, which between
-them deleted eleven of them outright (`PageRouters`, `Homepage`, `MobileHeader`, `ErrorWrapper`,
-`ZeroResultsWrapper`, `PageLoading`, `ColumnBar`, `FormSettings`, `CarViewstyles`, both
-`v2/CardV2Styles`) plus `components/flex`, `SchemaStyles` and `ScopeStyles`. The re-measurement
-kept giving the same answer in the same direction — 69 → 51 → 50 → **0** — because a component
-that becomes a Lit element takes its `styled` blocks into `static styles` with it. No
-CSS-Modules conversion was ever written. What #825 finally did was delete two `package.json`
-entries and the `wyw` plugin from both build configs, with the built stylesheet coming out
-**byte-identical**: proof that the extractor had been contributing nothing for some time.
+**#825 is closed, and nobody ever started it.** It reserved a slice of MUI-free Linaria files
+for a CSS-Modules sweep; #806 kept deleting them out from under it, and the count went 69 → 51
+→ 0 without a single `.module.css` being written. The four shared modules it finally scoped
+itself to (`styles/layout.tsx`, `styles/sidenav.tsx`, `styles/search.tsx`, `access/styles.ts`)
+were deleted with their consumers, along with the `CommonStyles.tsx` barrel.
+
+The lesson is the one #825's own body argued and then kept having to re-measure around: **a
+cross-cutting cleanup that shares files with a per-file migration is not separable work.** It
+has no independent slice to hold — every re-measurement found its targets already gone. The
+same shape applies to #713, and applied to #718 before it closed.
+
+All that was left to do was delete two `package.json` entries and the `wyw` plugin
+registration. `test/styles/no-css-in-js.test.ts` keeps them out.
 
 ---
 

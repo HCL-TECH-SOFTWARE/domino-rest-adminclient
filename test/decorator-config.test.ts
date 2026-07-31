@@ -95,23 +95,15 @@ describe('#747 standard decorators', () => {
     expect(source).not.toMatch(/"useDefineForClassFields"\s*:\s*false/);
   });
 
-  it('registers no Linaria transform, which is what protects accessor now (#825)', () => {
-    // This used to assert the shape of wyw's `exclude` glob, because wyw strips types with
-    // oxc-transform and that mis-desugars `accessor` into a reference to a private field it
-    // never declares. Keeping the elements out of its scope was the whole defence, and it
-    // was fragile: the glob was `keep-elements/*.ts` until #813 split the React wrappers
-    // into `keep-elements/react/`, and a single `*` does not cross a directory boundary, so
-    // the new modules silently fell back into scope and took the element classes they
-    // import with them.
-    //
-    // The plugin is gone (#825), so the defence is now that there is nothing to exclude
-    // from. That is a stronger invariant than a glob and this is the assertion that keeps
-    // it: reintroducing wyw without reintroducing an exclude would break `accessor` in
-    // exactly the way described above, silently, in the built bundle only.
-    for (const file of ['vite.config.mts', 'vitest.config.ts']) {
-      expect(read(file), `${file} must not register the Linaria/wyw transform`).not.toMatch(
-        /@wyw-in-js|\bwyw\(/,
-      );
-    }
-  });
+  // The Linaria half of this file is gone with #825.
+  //
+  // It asserted that both configs excluded `**/components/keep-elements/**` from the wyw
+  // transform, because wyw's oxc type-stripper mis-desugars `accessor` into a reference to
+  // an undeclared private field. That guard protected a plugin that no longer exists — the
+  // whole `wyw()` registration was removed once the last `styled` block did — and an
+  // assertion that a deleted config block contains a string can only fail.
+  //
+  // Its second half (no element may import `@linaria`) is not lost: it is subsumed, and
+  // widened from `keep-elements/` to all of `src`, by
+  // `test/styles/no-css-in-js.test.ts`.
 });
