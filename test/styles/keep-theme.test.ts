@@ -82,7 +82,7 @@ describe('keep-theme.css — pinned dark semantic tokens (#708)', () => {
    * order, which is exactly the failure #706 fixed for the brand ramp.
    */
   it('is the only stylesheet defining the semantic surface/text tokens', () => {
-    const others = ['keep-overrides.css', 'dark-mode.css', 'styles.css'];
+    const others = ['keep-overrides.css', 'styles.css'];
     const tokens = [
       '--wa-color-surface-lowered',
       '--wa-color-surface-default',
@@ -125,7 +125,7 @@ describe('keep-theme.css — the brand ramp is the only purple (#765)', () => {
       '--keep-color-danger-text',
       '--keep-tooltip-surface',
     ];
-    for (const file of ['keep-overrides.css', 'dark-mode.css', 'styles.css']) {
+    for (const file of ['keep-overrides.css', 'styles.css']) {
       const css = readFileSync(join(__dirname, '../../src/styles', file), 'utf8');
       for (const token of tokens) {
         expect(
@@ -212,32 +212,33 @@ describe('keep-theme.css — white-on-brand clears WCAG AA in both modes (#910)'
   });
 });
 
-describe('dark-mode.css — element styling belongs in the element (#765)', () => {
+describe('the document sheet does not style elements that can style themselves (#765)', () => {
   /*
-   * dark-mode.css used to restate, from the document, what 15 element rules
-   * already say inside their own shadow roots. #708 tokenized the elements; these
-   * became dead weight, and worse than dead weight: a `light-dark()` in a `::part`
-   * rule is evaluated in the *shadow tree's* color-scheme context, which is the
-   * inheritance gap #708 documented — so the global copy could resolve to the wrong
-   * branch while the element's own rule resolved correctly.
+   * `dark-mode.css` used to restate, from the document, what 15 element rules already say
+   * inside their own shadow roots. #708 tokenized the elements; those became dead weight, and
+   * worse than dead weight: a `light-dark()` in a `::part` rule is evaluated in the *shadow
+   * tree's* color-scheme context — the inheritance gap #708 documented — so the global copy
+   * could resolve to the wrong branch while the element's own rule resolved correctly.
    *
-   * Deleting them was verified to change nothing: every wa-* part and keep-* host
-   * computes the same colour before and after, measured in Chrome through the
-   * keep-* wrappers the app actually renders. (Probing a *bare* <wa-drawer> or
-   * <wa-card> shows a difference, but the app never mounts one — they only exist
-   * inside keep-drawer and keep-default-card, which style their own parts.)
+   * That file is now deleted (#924, #959). #969 had already removed its 53 `.Mui*` selectors
+   * with the last MUI package; of the 22 left, most named classes that had moved into a shadow
+   * root, seven declarations were the invalid `light-dark(inherit, …)`, and its
+   * `body[data-theme="dark"]` block had never parsed at all — a stray U+FEFF in front of the
+   * selector took the whole block with it. Only the scrollbar and link rules still matched
+   * light DOM, and those moved to `styles.css`.
    *
-   * The rule this encodes: style an element inside the element. The document sheet
-   * is for MUI, which has no shadow root and cannot style itself.
+   * The guard outlives the file, retargeted at `styles.css`, because the rule it encodes has
+   * not changed: **style an element inside the element.** The document sheet existed for MUI,
+   * which has no shadow root and cannot style itself — and MUI is gone entirely now.
    */
-  const DARK = readFileSync(join(__dirname, '../../src/styles/dark-mode.css'), 'utf8').replace(
+  const DOC = readFileSync(join(__dirname, '../../src/styles/styles.css'), 'utf8').replace(
     /\/\*[\s\S]*?\*\//g,
     '',
   );
 
   it('has no rule whose selectors are all wa-* or keep-* elements', () => {
     const offenders: string[] = [];
-    for (const [, selector] of DARK.matchAll(/([^{}]+)\{[^{}]*\}/g)) {
+    for (const [, selector] of DOC.matchAll(/([^{}]+)\{[^{}]*\}/g)) {
       const parts = selector
         .split(',')
         .map((p) => p.trim())

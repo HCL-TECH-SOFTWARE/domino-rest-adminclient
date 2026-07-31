@@ -38,11 +38,12 @@ import { resolve } from 'node:path';
 
 const ROOT = resolve(process.cwd());
 
-/** Both hand-written document-scope sheets. `dark-mode.css` is excluded for the reason
- *  given in dead-selectors.test.ts — it is mostly `.Mui*` overrides.
+/** The hand-written document-scope sheets — both of them, now that `dark-mode.css` is
+ *  deleted (#924, #959). It used to be excluded for the reason given in
+ *  dead-selectors.test.ts: it was mostly `.Mui*` overrides.
  *
- *  `styles.css` is the larger of the two by an order of magnitude and has none at all,
- *  which is why it is in scope at zero cost: it is the sheet most likely to grow one. */
+ *  `styles.css` has no bare type selector at all, which is why it is in scope at zero cost:
+ *  it is the sheet most likely to grow one. */
 const SHEETS = ['src/styles/styles.css', 'src/styles/keep-overrides.css'];
 
 /**
