@@ -93,8 +93,16 @@ describe('keep-consents-table', () => {
     }
   };
 
+  /**
+   * `rowsPerPage: 5` unless a test says otherwise.
+   *
+   * The element's default moved to 25 in #955, which is larger than the 12-row fixture below —
+   * so every paging assertion here would be testing "one page holds everything". These cases
+   * are about paging *behaviour*, so they pin the page size rather than inherit it; the
+   * default itself is asserted once, separately.
+   */
   const mount = async (props: Partial<ConsentsTable> = {}) => {
-    const el = await mountLit<ConsentsTable>(TAG, props);
+    const el = await mountLit<ConsentsTable>(TAG, { rowsPerPage: 5, ...props } as Partial<ConsentsTable>);
     await settle(el);
     return el;
   };
@@ -235,6 +243,22 @@ describe('keep-consents-table', () => {
   });
 
   describe('pagination', () => {
+    /**
+     * Asserted directly, because the shared `mount` pins the page size so the paging cases
+     * below stay meaningful — which would otherwise leave the default itself uncovered. #955.
+     */
+    it('defaults to 25 rows a page, one of the sizes the footer offers', async () => {
+      const el = await mountLit<ConsentsTable>(TAG);
+      await settle(el);
+      expect(el.rowsPerPage).toBe(25);
+      const table = el.shadowRoot!.querySelector('keep-data-table') as HTMLElement & {
+        rowsPerPage: number;
+        rowsPerPageOptions: number[];
+      };
+      expect(table.rowsPerPage).toBe(25);
+      expect(table.rowsPerPageOptions).toContain(25);
+    });
+
     it('shows the first five consents by default', async () => {
       const el = await mount();
       expect(visibleUsers(el)).toEqual(['User01', 'User02', 'User03', 'User04', 'User05']);

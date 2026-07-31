@@ -359,7 +359,8 @@ export default class ConsentsTable extends KeepElement {
   @state() accessor page = 0;
 
   /** Rows per page; `-1` means All. */
-  @state() accessor rowsPerPage = 5;
+  /** Matches keep-data-table's default and its offered options (#955). */
+  @state() accessor rowsPerPage = 25;
 
   /** What the table is showing: the consents that pass every filter, in sort order. */
   @state() accessor filteredConsents: Consent[] = [];

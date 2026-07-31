@@ -66,8 +66,16 @@ describe('keep-apps-table', () => {
     }
   };
 
+  /**
+   * `rowsPerPage: 5` unless a test says otherwise.
+   *
+   * The element's default moved to 25 in #955, which is larger than the 12-row fixture below —
+   * so every paging assertion here would be testing "one page holds everything". These cases
+   * are about paging *behaviour*, so they pin the page size rather than inherit it; the
+   * default itself is asserted once, separately.
+   */
   const mount = async (props: Partial<AppsTable> = {}) => {
-    const el = await mountLit<AppsTable>(TAG, props);
+    const el = await mountLit<AppsTable>(TAG, { rowsPerPage: 5, ...props } as Partial<AppsTable>);
     await settle(el);
     return el;
   };
@@ -175,6 +183,22 @@ describe('keep-apps-table', () => {
   });
 
   describe('pagination', () => {
+    /**
+     * Asserted directly, because the shared `mount` pins the page size so the paging cases
+     * below stay meaningful — which would otherwise leave the default itself uncovered. #955.
+     */
+    it('defaults to 25 rows a page, one of the sizes the footer offers', async () => {
+      const el = await mountLit<AppsTable>(TAG);
+      await settle(el);
+      expect(el.rowsPerPage).toBe(25);
+      const table = el.shadowRoot!.querySelector('keep-data-table') as HTMLElement & {
+        rowsPerPage: number;
+        rowsPerPageOptions: number[];
+      };
+      expect(table.rowsPerPage).toBe(25);
+      expect(table.rowsPerPageOptions).toContain(25);
+    });
+
     it('shows the first five apps by default', async () => {
       const el = await mount();
       expect(visibleNames(el)).toEqual(['App01', 'App02', 'App03', 'App04', 'App05']);

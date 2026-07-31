@@ -140,11 +140,18 @@ export default class DataTable extends KeepElement {
   /** Zero-based current page. Controlled — the element only ever emits `page-change`. */
   @property({ type: Number }) accessor page = 0;
 
-  /** Rows per page; `-1` means "All". Controlled, as above. */
-  @property({ type: Number }) accessor rowsPerPage = 5;
+  /**
+   * Rows per page; `-1` means "All". Controlled, as above.
+   *
+   * Must be one of {@link rowsPerPageOptions}: the footer's `<select>` matches on value, so a
+   * default the list does not offer leaves the control showing the *first* option while this
+   * property says something else. That is why #955 moved the two together — and why both
+   * consumers, which keep their own copy of this, moved with them.
+   */
+  @property({ type: Number }) accessor rowsPerPage = 25;
 
   /** Choices offered by the footer's select. `-1` renders as "All", matching MUI. */
-  @property({ type: Array }) accessor rowsPerPageOptions: number[] = [5, 10, 25, -1];
+  @property({ type: Array }) accessor rowsPerPageOptions: number[] = [10, 25, 50, 100, -1];
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -213,9 +220,18 @@ export default class DataTable extends KeepElement {
       <div class="pagination">
         <label>
           Rows per page:
-          <select .value=${String(this.rowsPerPage)} @change=${this.onRowsPerPageChange}>
+          <!-- selected per option, not value on the select. Lit commits the select's own
+               bindings before it renders the children, so the value is assigned while the
+               element still has no option to match — the assignment is dropped, and the
+               browser falls back to the first option. Invisible until #955, because the
+               default used to *be* the first option; with a default of 25 in a list starting
+               at 10, the control showed 10 while rowsPerPage said 25, and nothing on screen
+               disagreed. -->
+          <select @change=${this.onRowsPerPageChange}>
             ${this.rowsPerPageOptions.map(
-              (option) => html`<option value=${option}>${option === -1 ? 'All' : option}</option>`,
+              (option) => html`<option value=${option} ?selected=${option === this.rowsPerPage}>
+                ${option === -1 ? 'All' : option}
+              </option>`,
             )}
           </select>
         </label>

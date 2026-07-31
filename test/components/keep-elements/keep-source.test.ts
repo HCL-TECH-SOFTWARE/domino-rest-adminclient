@@ -144,15 +144,16 @@ describe('keep-source-tree (SourceTree)', () => {
     expect(showModal).toHaveBeenCalledTimes(1);
   });
 
-  it('opens the context dropdown via handleRightClick and prevents the default menu', async () => {
+  it('right-click opens the one menu, and prevents the default context menu', async () => {
     const el = await mountWithContent({ name: 'Widget' });
-    const dropdown = shadow(el).querySelector('wa-dropdown') as HTMLElement & { open: boolean };
+    const input = shadow(el).querySelector('#input-name') as HTMLElement;
     const preventDefault = vi.fn();
 
-    el.handleRightClick({ target: dropdown, preventDefault } as unknown as Event);
+    el.handleRightClick({ target: input, preventDefault } as unknown as Event);
+    await el.updateComplete;
 
     expect(preventDefault).toHaveBeenCalledTimes(1);
-    expect(dropdown.open).toBe(true);
+    expect(menu(el).open).toBe(true);
   });
 
   it('coerces "true"/"false" and writes nested paths in updateEditedContent', async () => {
@@ -180,31 +181,42 @@ describe('keep-source-tree (SourceTree)', () => {
     expect(close).toHaveBeenCalledTimes(1);
   });
 
-  // ---- #925 -----------------------------------------------------------------------------------
+  // ---- #925 · #940 ----------------------------------------------------------------------------
 
   /**
-   * Two defects in how this menu is reached, both measured in Chrome (#925).
+   * There is **one** menu for the whole tree, and it lives outside `wa-tree` (#940).
    *
-   * The entries were bound `@click` per item, and Web Awesome only synthesises a click for
-   * *pointer* selection — both paths emit `wa-select` from `makeSelection`, and only that one.
+   * A `wa-dropdown` per row could not be driven from the keyboard, and no binding fixed it:
+   * `wa-tree` claims Enter, Space, the arrows, Home and End for anything focusable inside it —
+   * and throws `Cannot read properties of undefined (reading 'disabled')` doing so, because it
+   * looks the active item up with `:focus`, which matches nothing when focus is on a control
+   * *within* a row. `wa-dropdown` listens for its own arrows on `document`, past the tree on
+   * the bubble path, so containing the tree also starved the menu.
    *
-   * And the row had no trigger at all: `slot="trigger"` sat on the `wa-icon` *inside* the
-   * `wa-button`, so the icon was assigned to no slot (it never rendered) and the button fell
-   * into the dropdown's default slot — into the menu itself. Right-clicking a value was the
-   * only way in, which left object and array rows, which carry no `@contextmenu`, with none.
+   * Moving the menu out breaks that deadlock: its items are no longer descendants of the tree,
+   * so their keydowns never reach it. Only Enter and Space on the row's opener need stopping,
+   * and by the time the menu is open, focus is already outside.
    *
-   * The tests above call `handleClickAdd` and friends directly, which is why they never caught
-   * either: they prove the handler bodies and say nothing about how the menu reaches them.
-   *
-   * ⚠️ These prove the *binding*, not that the menu is usable from the keyboard — it is not,
-   * and cannot be while the dropdown is nested in a `wa-tree` that claims Enter and the arrows
-   * for itself. That is #940, and no assertion here should be read as covering it.
+   * ⚠️ The keyboard journey itself is **not** asserted here and cannot be — jsdom runs no
+   * focus or key handling of that kind. Measured in Chrome instead, end to end: focus the
+   * opener, Enter, ArrowDown, Enter → `wa-select` fires with the right value, no page errors.
+   * These pin the wiring that journey depends on.
    */
-  const dropdowns = (el: SourceTree) => Array.from(shadow(el).querySelectorAll('wa-dropdown'));
+  const menu = (el: SourceTree) =>
+    shadow(el).querySelector('#row-menu') as HTMLElement & { open: boolean };
+
+  const openers = (el: SourceTree) =>
+    Array.from(shadow(el).querySelectorAll<HTMLElement>('.menu-opener'));
+
+  /** Open the one menu against a row, the way its opener does. */
+  const openRow = async (el: SourceTree, row: number) => {
+    openers(el)[row].click();
+    await el.updateComplete;
+  };
 
   /** What Web Awesome emits when an item is chosen, by pointer or by keyboard. */
-  const selectMenuItem = (el: SourceTree, row: number, value: string) =>
-    dropdowns(el)[row].dispatchEvent(
+  const choose = (el: SourceTree, value: string) =>
+    menu(el).dispatchEvent(
       new CustomEvent('wa-select', {
         detail: { item: { value } },
         bubbles: true,
@@ -213,36 +225,69 @@ describe('keep-source-tree (SourceTree)', () => {
       }),
     );
 
-  it('gives every row a real, slotted trigger', async () => {
+  it('renders one menu for the whole tree, not one per row', async () => {
+    const el = await mountWithContent({ name: 'Widget', count: 3, meta: { x: 1 } });
+    expect(shadow(el).querySelectorAll('wa-dropdown')).toHaveLength(1);
+    expect(openers(el)).toHaveLength(3);
+  });
+
+  it('keeps that menu outside the tree, which is the whole point', async () => {
+    const el = await mountWithContent({ name: 'Widget' });
+    expect(menu(el).closest('wa-tree'), 'the menu is back inside wa-tree').toBeNull();
+  });
+
+  it('gives every row a labelled opener, and the menu a slotted anchor', async () => {
     const el = await mountWithContent({ name: 'Widget', meta: { x: 1 } });
-    for (const dropdown of dropdowns(el)) {
-      const trigger = dropdown.querySelector('[slot="trigger"]');
-      expect(trigger, 'the row has no trigger, so the menu cannot be opened').toBeTruthy();
-      expect(trigger!.localName).toBe('wa-button');
-      // The icon belongs inside the trigger, not slotted in its place.
-      expect(trigger!.querySelector('wa-icon')).toBeTruthy();
+    for (const opener of openers(el)) {
+      expect(opener.getAttribute('aria-haspopup')).toBe('menu');
+      expect(opener.getAttribute('aria-label')).toMatch(/^Actions for /);
     }
+    const anchor = menu(el).querySelector('[slot="trigger"]')!;
+    expect(anchor.id).toBe('row-menu-anchor');
+    // Never the affordance: the visible opener is. This only gives wa-dropdown something to
+    // position against, since it has no anchor property.
+    expect(anchor.getAttribute('tabindex')).toBe('-1');
+    expect(anchor.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('labels every menu entry with the value wa-select reports back', async () => {
     const el = await mountWithContent({ name: 'Widget' });
-    const values = Array.from(dropdowns(el)[0].querySelectorAll('wa-dropdown-item')).map((item) =>
+    const values = Array.from(menu(el).querySelectorAll('wa-dropdown-item')).map((item) =>
       item.getAttribute('value'),
     );
     expect(values).toEqual(['add', 'edit', 'duplicate', 'remove']);
   });
 
-  it('removes the row when Remove is selected', async () => {
+  it('stops Enter and Space reaching wa-tree, and nothing else', async () => {
+    // wa-tree throws on those two when focus is on a control within a row; the arrows are its
+    // own row navigation and must still get through.
+    const el = await mountWithContent({ name: 'Widget' });
+    const stopped = (key: string) => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      const spy = vi.spyOn(event, 'stopPropagation');
+      el.handleOpenerKeydown(event);
+      return spy.mock.calls.length > 0;
+    };
+    expect(stopped('Enter')).toBe(true);
+    expect(stopped(' ')).toBe(true);
+    expect(stopped('ArrowDown')).toBe(false);
+    expect(stopped('ArrowUp')).toBe(false);
+  });
+
+  it('acts on the row whose opener was pressed, not the first one', async () => {
     const el = await mountWithContent({ name: 'Widget', count: 3 });
-    selectMenuItem(el, 1, 'remove');
+    await openRow(el, 1);
+    choose(el, 'remove');
     await el.updateComplete;
+
     expect('count' in el.editedContent).toBe(false);
     expect(el.editedContent.name).toBe('Widget');
   });
 
   it('duplicates the row when Duplicate is selected', async () => {
     const el = await mountWithContent({ meta: { x: 1 } });
-    selectMenuItem(el, 0, 'duplicate');
+    await openRow(el, 0);
+    choose(el, 'duplicate');
     await el.updateComplete;
     expect(el.editedContent).toHaveProperty('meta_copy');
   });
@@ -253,25 +298,28 @@ describe('keep-source-tree (SourceTree)', () => {
     const showModal = vi.fn();
     dialog.showModal = showModal;
 
-    selectMenuItem(el, 0, 'add');
+    await openRow(el, 0);
+    choose(el, 'add');
 
     expect(showModal).toHaveBeenCalledTimes(1);
   });
 
-  it('disables Edit on object rows and Duplicate on leaf rows', async () => {
-    // With the entries bound per item the template swapped in a `null` handler to express
-    // this. `makeSelection` skips disabled items before it emits, so the attribute is the
-    // whole mechanism now.
+  it('disables Edit or Duplicate according to the row the menu was opened from', async () => {
+    // One menu, so the states follow the active row rather than being fixed per instance.
     const el = await mountWithContent({ name: 'Widget', meta: { x: 1 } });
-    const itemsOf = (row: number) =>
+    const state = () =>
       Object.fromEntries(
-        Array.from(dropdowns(el)[row].querySelectorAll('wa-dropdown-item')).map((item) => [
+        Array.from(menu(el).querySelectorAll('wa-dropdown-item')).map((item) => [
           item.getAttribute('value'),
           item.hasAttribute('disabled'),
         ]),
       );
-    expect(itemsOf(0)).toMatchObject({ edit: false, duplicate: true });
-    expect(itemsOf(1)).toMatchObject({ edit: true, duplicate: false });
+
+    await openRow(el, 0); // a leaf
+    expect(state()).toMatchObject({ edit: false, duplicate: true });
+
+    await openRow(el, 1); // an object
+    expect(state()).toMatchObject({ edit: true, duplicate: false });
   });
 
   it('does not let the composed wa-select escape into the host document', async () => {
@@ -279,7 +327,8 @@ describe('keep-source-tree (SourceTree)', () => {
     const leaked = vi.fn();
     document.body.addEventListener('wa-select', leaked);
 
-    selectMenuItem(el, 0, 'remove');
+    await openRow(el, 0);
+    choose(el, 'remove');
 
     expect(leaked).not.toHaveBeenCalled();
     document.body.removeEventListener('wa-select', leaked);
