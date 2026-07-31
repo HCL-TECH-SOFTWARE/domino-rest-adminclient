@@ -18,6 +18,36 @@ import type ConsentsTable from '../../../src/components/keep-elements/keep-conse
 const TAG = 'keep-consents-table';
 const DAY = 86_400_000;
 
+/**
+ * A frozen "now" for every date in this file (#997).
+ *
+ * The expiry filter matches on the **local calendar day** (`sameDay()` in the component reads
+ * `getDate`/`getMonth`/`getFullYear`), and these tests used to build their dates from the real
+ * `Date.now()`. That made them depend on two things they are not about:
+ *
+ *   - **The time of day.** `matches a Custom expiry on the calendar day` set the filter to the
+ *     fixture's instant *plus an hour*; from 23:00 local onwards that hour landed on the next
+ *     calendar day, the filter correctly matched nothing, and the case failed. One hour in
+ *     every twenty-four. The same arithmetic makes the last hour of a month, the last hour of
+ *     a year and a DST transition each their own way to go red.
+ *   - **The moment of import.** `template` is a module-level constant, so its `Date.now()` ran
+ *     at import while the test bodies ran theirs later. A suite that crossed midnight between
+ *     those two moments would put the fixture and the filter a day apart.
+ *
+ * Two properties do the work, and **both** are needed:
+ *
+ *   - Constructed from local-time components, not a UTC string, so it is noon *in whatever
+ *     zone the runner uses*. Freezing alone does not make this test timezone-proof: pin a UTC
+ *     instant and its local time-of-day still varies by 25 hours across the zones, so the same
+ *     +1 hour would still cross midnight somewhere.
+ *   - Noon, mid-month, mid-year. June has no DST transition in either hemisphere, and twelve
+ *     hours of margin on each side means no offset in this file can leave the day.
+ *
+ * `vi.setSystemTime` is scoped to `Date` only (`toFake: ['Date']`), so Lit's update scheduling
+ * and `settle()` keep using real timers.
+ */
+const NOW = new Date(2026, 5, 15, 12, 0, 0, 0);
+
 /** 12 consents, User01…User12, each tied to a distinct app so sorting is observable. */
 const template = Array.from({ length: 12 }, (_, i) => ({
   username: `User${String(i + 1).padStart(2, '0')}`,
@@ -25,8 +55,8 @@ const template = Array.from({ length: 12 }, (_, i) => ({
   client_id: `app-${i}`,
   unid: `unid-${i}`,
   redirect_uri: 'https://example.test/cb',
-  code_expires_at: new Date(Date.now() + 7 * DAY).toISOString(),
-  refresh_token_expires_at: new Date(Date.now() + 30 * DAY).toISOString(),
+  code_expires_at: new Date(NOW.getTime() + 7 * DAY).toISOString(),
+  refresh_token_expires_at: new Date(NOW.getTime() + 30 * DAY).toISOString(),
   scope_claim: '',
   scope_description: '',
   scope_logo_url: '',
@@ -71,11 +101,16 @@ const clearLoading = () => {
 
 describe('keep-consents-table', () => {
   beforeEach(() => {
+    // `Date` only — the component reads `new Date()` to decide what has expired, but Lit's
+    // update scheduling and `settle()` must keep their real timers or nothing ever renders.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
     clearLoading();
     seed();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     cleanupLit();
     clearLoading();
     store.dispatch({ type: 'INIT_STATE' });
@@ -429,7 +464,7 @@ describe('keep-consents-table', () => {
 
     it('keeps only consents whose code has not expired when the status is Active', async () => {
       const consents = freshConsents();
-      consents[0].code_expires_at = new Date(Date.now() - DAY).toISOString();
+      consents[0].code_expires_at = new Date(NOW.getTime() - DAY).toISOString();
       seed({ consents });
       const el = await mount();
 
@@ -461,14 +496,11 @@ describe('keep-consents-table', () => {
 
     it('matches a Custom expiry on the calendar day, not the instant', async () => {
       const consents = freshConsents();
-      // Anchored to midday of the target day, not to `now + 7 days`, which inherits the
-      // *current* time of day. From 23:00 local onwards the hour added below crossed into
-      // the next calendar day, the filter correctly matched nothing, and this test failed —
-      // for one hour in every twenty-four, wherever the runner happens to be. Midday is far
-      // enough from both boundaries that no offset here can leave the day, and it keeps the
-      // instant distinct from the fixture's, which is what the assertion is about.
-      const day = new Date(Date.now() + 7 * DAY);
-      day.setHours(12, 0, 0, 0);
+      // An hour after the fixture's expiry instant, so a filter comparing instants finds
+      // nothing and only a calendar-day comparison matches. With `NOW` frozen at local noon
+      // that hour cannot leave the day — which is the whole of #997; this line used to read
+      // `Date.now()` and failed for one hour in every twenty-four.
+      const day = new Date(NOW.getTime() + 7 * DAY);
       seed({ consents });
       const el = await mount();
 
