@@ -366,7 +366,7 @@ describe('keep-forms-tab', () => {
         expect.any(Function),
         'Successfully activated all forms.',
       );
-      expect(pullForms).toHaveBeenCalledWith('test.nsf', 'testdb', expect.any(Function));
+      expect(pullForms).toHaveBeenCalledWith('test.nsf');
     });
 
     it('reports the saved schema upwards rather than taking a setter', async () => {
@@ -381,16 +381,6 @@ describe('keep-forms-tab', () => {
       (handleDatabaseForms.mock.calls[0][3] as (data: unknown) => void)(saved);
 
       expect(changes).toEqual([{ schemaData: saved }]);
-    });
-
-    it('forwards the parent’s design-list sink to the pull thunk', async () => {
-      // The thunk ignores its third argument today, so this pins the wiring rather than an
-      // effect: without it a regression that dropped the property would be invisible.
-      const setData = vi.fn();
-      const el = await mount({ setData });
-      bulkButton(el, 'activate').click();
-
-      expect(pullForms).toHaveBeenCalledWith('test.nsf', 'testdb', setData);
     });
 
     it('does nothing when there is no schema to rewrite', async () => {
@@ -450,7 +440,7 @@ describe('keep-forms-tab', () => {
         expect.any(Function),
         'Successfully deactivated all designer forms.',
       );
-      expect(pullForms).toHaveBeenCalledWith('test.nsf', 'testdb', expect.any(Function));
+      expect(pullForms).toHaveBeenCalledWith('test.nsf');
       expect(el.resetAllForms).toBe(false);
       expect(close()).toHaveBeenCalled();
     });

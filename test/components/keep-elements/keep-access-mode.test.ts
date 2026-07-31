@@ -233,7 +233,7 @@ describe('keep-access-mode', () => {
     it('pulls it under the decoded path, the key the cache is read by', async () => {
       await mount();
 
-      expect(pullForms).toHaveBeenCalledWith(NSF_PATH, 'demo');
+      expect(pullForms).toHaveBeenCalledWith(NSF_PATH);
       expect(pullForms.mock.calls[0][0]).not.toContain('%2F');
     });
 

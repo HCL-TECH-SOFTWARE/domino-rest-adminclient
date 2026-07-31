@@ -446,7 +446,7 @@ describe('databases — forms', () => {
     it('stores the design list and clears the loading flag', async () => {
       returns({ forms: [{ '@name': 'Order' }] });
 
-      await pullForms('db.nsf', 'demo', vi.fn())(dispatch);
+      await pullForms('db.nsf')(dispatch);
 
       expect(types()).toContain(addNsfDesignAction.type);
       // setApiLoading(true) went out on entry and nothing ever cleared it — on any
@@ -457,7 +457,7 @@ describe('databases — forms', () => {
     it('reports the failure and clears the loading flag', async () => {
       refuses({ message: 'no such database' });
 
-      await pullForms('db.nsf', 'demo', vi.fn())(dispatch);
+      await pullForms('db.nsf')(dispatch);
 
       expect(types()).toContain(SET_DB_ERROR);
       expect(types()).not.toContain(addNsfDesignAction.type);
@@ -467,7 +467,7 @@ describe('databases — forms', () => {
     it('clears the loading flag when the request never completes', async () => {
       offline();
 
-      await expect(pullForms('db.nsf', 'demo', vi.fn())(dispatch)).resolves.not.toThrow();
+      await expect(pullForms('db.nsf')(dispatch)).resolves.not.toThrow();
       expectLoadingCleared();
     });
   });

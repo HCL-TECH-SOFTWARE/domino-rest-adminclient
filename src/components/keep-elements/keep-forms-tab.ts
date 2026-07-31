@@ -35,18 +35,6 @@ export interface KeepFormsTabSchemaChangeDetail {
 }
 
 /**
- * The schema-list sink the parent owns.
- *
- * Spelt structurally rather than imported, because the type it mirrors comes from the view
- * library this element may not name. It is the setter half of a `[value, setValue]` state
- * pair over a list of form names.
- */
-export type KeepFormsTabDataSink = (value: string[] | ((previous: string[]) => string[])) => void;
-
-/** Handed to the pull thunk when the parent supplies no sink. See {@link FormsTab.setData}. */
-const NO_SINK: KeepFormsTabDataSink = () => {};
-
-/**
  * The mode a brand-new form schema is created with. Verbatim from the component this
  * replaces, which spelt it out twice — once for `formModes` and once for `formAccessModes`.
  *
@@ -414,15 +402,6 @@ export default class FormsTab extends KeepElement {
   /** The schema the activation thunks rewrite. */
   @property({ attribute: false }) accessor schemaData: Database | undefined;
 
-  /**
-   * The parent's design-list sink.
-   *
-   * Forwarded to the pull thunk and nowhere else — and that thunk ignores it, as its
-   * underscore-prefixed parameter name records. Kept so the call stays a faithful 1:1 of the
-   * component this replaces; see the report on #806 wave 5.
-   */
-  @property({ attribute: false }) accessor setData: KeepFormsTabDataSink | undefined;
-
   /** What is in the search box. Owned here — see the note on `keep-search-input`. */
   @state() accessor searchKey = '';
 
@@ -559,7 +538,7 @@ export default class FormsTab extends KeepElement {
         'Successfully activated all forms.',
       ),
     );
-    this.databases.dispatch(pullForms(this.nsfPath, this.dbName, this.setData ?? NO_SINK));
+    this.databases.dispatch(pullForms(this.nsfPath));
   }
 
   private handleDeactivateAll(): void {
@@ -578,7 +557,7 @@ export default class FormsTab extends KeepElement {
         'Successfully deactivated all designer forms.',
       ),
     );
-    this.databases.dispatch(pullForms(this.nsfPath, this.dbName, this.setData ?? NO_SINK));
+    this.databases.dispatch(pullForms(this.nsfPath));
   }
 
   private handleFormNameInput(event: Event): void {

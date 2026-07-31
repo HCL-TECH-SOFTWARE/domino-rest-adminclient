@@ -103,13 +103,13 @@ export const handleDatabaseForms = (
  * `nsfPath` must be the **decoded** path — see the note on `addNsfDesign` in the reducer for
  * why, and for what goes wrong when a caller passes the encoded one.
  *
- * `_dbName` and `_setData` are both ignored. `_setData` is optional because it is a React
- * `useState` setter this thunk has never called, and #933 added a third caller that is a Lit
- * element with no such thing to hand it; requiring it would mean inventing an empty function
- * to satisfy a parameter nothing reads. Removing the pair outright is #977 — it is left here
- * because the existing callers, and a test, still pass them.
+ * It took two further parameters until #977, and read neither: a schema name, which this
+ * request does not carry — the design list belongs to the NSF, not to a schema over it — and
+ * a React `useState` setter left behind when the answer stopped going back to a caller's
+ * local state and started going into `nsfDesigns`. Both are gone; the design list reaches
+ * every reader through the store.
  */
-export const pullForms = (nsfPath: string, _dbName: string, _setData?: React.Dispatch<React.SetStateAction<string[]>>) => {
+export const pullForms = (nsfPath: string) => {
   return async (dispatch: Dispatch) => {
     try {
       dispatch(setApiLoading(true));
