@@ -182,13 +182,13 @@ risky surface (owned by reports 02/03, listed here for completeness).
 | `yup`, `uuid`, `immer` | **Keep** | — | Framework-agnostic. |
 | `dayjs` | — | 🟡 **Drop candidate** | Existed for `@mui/x-date-pickers`' `AdapterDayjs`. After #703 the only textual match in `src` is a comment. Verify and remove. |
 | `events` | `EventTarget` | 🟡 **Drop candidate** | A Node polyfill shipped to the browser for one consumer, `src/utils/token-emitter.ts`. `EventTarget` is native and does the same job. |
-| `@linaria/react`, `@wyw-in-js/*` | **Keep** | — | Styling survives React removal. (`@linaria/core` is no longer a direct dep.) |
+| `@linaria/react`, `@wyw-in-js/*` | ✅ **Removed** (#825) | Done | Was listed **Keep**, "styling survives React removal". Wrong on both counts: `@linaria/react` *is* React — it calls `React.createElement`/`forwardRef`, so `styled` is a component factory that cannot outlive React. It did not have to: the component migration retired the layer file by file, because a component that becomes a Lit element takes its `styled` blocks into `static styles` with it. `@wyw-in-js/vite` left with it. |
 
 ### Build / test / lint / type dependencies
 
 | Dependency | Action | Effort | Notes |
 |---|---|---|---|
-| `@vitejs/plugin-react-swc` (dev) | **Cannot simply remove** — see the caution below | **Work** | Keep the `wyw` (Linaria) plugin (§7). |
+| `@vitejs/plugin-react-swc` (dev) | **Cannot simply remove** — see the caution below | **Work** | It carries the decorator configuration (§2), which is the part that must survive. The `wyw` (Linaria) plugin that used to sit beside it is gone (#825). |
 | `@types/react`, `@types/react-dom` (dev) | **Remove** | Drop | After the last `.tsx` is gone. |
 | `@testing-library/react` (dev) | Replace in **7 files** with `mountLit` / `@testing-library/dom` | **S** | Was 4 of 63, now **7 of 70** — the two LoginPage suites and `renderWithProviders.tsx` (§8). |
 | `@testing-library/jest-dom` (dev) | Keep (DOM matchers, framework-agnostic) | — | Imported as `@testing-library/jest-dom/vitest`. |
@@ -610,11 +610,11 @@ caution in §2):
 
 ```ts
 import { defineConfig } from 'vite';
-import wyw from '@wyw-in-js/vite';
 // deleted: import react from '@vitejs/plugin-react-swc';
+// The `wyw` (Linaria) plugin used to be here too. It is already gone (#825) — do not
+// reinstate it, and do not carry its `exclude` forward in another form.
 export default defineConfig({
   plugins: [
-    wyw({ include: ['**/*.ts'] }),   // narrow from '{ts,tsx}' once no .tsx remain
     // REQUIRED replacement: a TS transform that still applies
     //   jsc.transform.useDefineForClassFields = false  +  legacy decorators,
     // or Lit's reactive accessors get shadowed by decorated class fields.

@@ -95,22 +95,15 @@ describe('#747 standard decorators', () => {
     expect(source).not.toMatch(/"useDefineForClassFields"\s*:\s*false/);
   });
 
-  it('keeps the Lit elements out of the Linaria transform', () => {
-    // wyw strips types with oxc-transform, which mis-desugars `accessor` into a reference
-    // to a private field it never declares. The elements contain no Linaria — their `css`
-    // comes from `lit` — so excluding them is both correct and cheaper.
-    //
-    // The glob must reach *subdirectories*. It was `keep-elements/*.ts` until #813 split
-    // the React wrappers into `keep-elements/react/`, and a single `*` does not cross a
-    // directory boundary — so the new modules silently fell back into wyw's scope, taking
-    // the element classes they import with them. `**` is what makes this hold.
-    for (const file of ['vite.config.mts', 'vitest.config.ts']) {
-      expect(read(file), `${file} must exclude all of keep-elements from wyw`).toContain(
-        "'**/components/keep-elements/**'",
-      );
-    }
-    for (const file of elementFiles) {
-      expect(read(file), `${file} must not import Linaria`).not.toContain('@linaria');
-    }
-  });
+  // The Linaria half of this file is gone with #825.
+  //
+  // It asserted that both configs excluded `**/components/keep-elements/**` from the wyw
+  // transform, because wyw's oxc type-stripper mis-desugars `accessor` into a reference to
+  // an undeclared private field. That guard protected a plugin that no longer exists — the
+  // whole `wyw()` registration was removed once the last `styled` block did — and an
+  // assertion that a deleted config block contains a string can only fail.
+  //
+  // Its second half (no element may import `@linaria`) is not lost: it is subsumed, and
+  // widened from `keep-elements/` to all of `src`, by
+  // `test/styles/no-css-in-js.test.ts`.
 });

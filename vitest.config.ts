@@ -7,12 +7,11 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
-import wyw from '@wyw-in-js/vite';
 
 // Standalone Vitest config. It reuses the same plugin graph as the Vite build
-// (Linaria via @wyw-in-js + SWC/React) so components transform identically to
-// `npm run build`/`dev`, but deliberately omits the dev-server CSP header and
-// /api proxy from vite.config.mts, which are irrelevant in a test context.
+// (SWC/React) so components transform identically to `npm run build`/`dev`, but
+// deliberately omits the dev-server CSP header and /api proxy from
+// vite.config.mts, which are irrelevant in a test context.
 export default defineConfig({
   // Resolve dependencies through their `browser` export condition. Both keys are needed —
   // they fix two different packages, and each was silently degrading every component test
@@ -39,14 +38,9 @@ export default defineConfig({
   ssr: { resolve: { conditions: ['browser'] } },
   resolve: { conditions: ['browser'] },
   plugins: [
-    // Keep wyw so Linaria `styled` components resolve to real components.
-    // `exclude` mirrors vite.config.mts — the Lit elements use `css` from `lit`, never
-    // Linaria, and wyw's oxc type-stripper mis-desugars the `accessor` keyword. See the
-    // longer note there.
-    wyw({
-      include: ['**/*.{ts,tsx}'],
-      exclude: ['**/components/keep-elements/**'],
-    }),
+    // The `wyw` (Linaria) plugin used to sit here to mirror the build. It is gone with the
+    // last `styled` block (#825); see the note in vite.config.mts.
+    //
     // Must mirror vite.config.mts exactly — see the longer note there.
     //
     // `tsDecorators` is SWC's *parser* flag, not a semantics choice: false makes SWC
@@ -69,7 +63,7 @@ export default defineConfig({
       jsdom: { url: 'http://localhost/admin/ui' }, // == old jest testEnvironmentOptions.url
     },
     setupFiles: ['./test/setupTests.ts'],
-    css: false, // ignore CSS/Linaria virtual modules (replaces __mocks__/styleMock.js)
+    css: false, // do not process CSS imports (replaces __mocks__/styleMock.js)
     // Every run used to end with "close timed out after 10000ms / something prevents Vite
     // server from exiting", adding ~10s to each local and CI run (#692).
     //
