@@ -45,7 +45,8 @@ import {
   nextThemeMode,
   toThemeMode,
   THEME_MODE_UI,
-  type ThemeMode
+  type ThemeMode,
+  followSystemAppearance
 } from '../../services/theme-service';
 import { getLogger } from '../../services/log-service';
 
@@ -569,6 +570,9 @@ export default class LoginPage extends KeepElement {
     const next = nextThemeMode(this.themeMode);
     localStorage.setItem('theme', next);
     this.themeMode = next;
+    // Immediately apply the appearance and ensure the system preference listener is active.
+    applyTheme(next);
+    followSystemAppearance();
   }
 
   /**

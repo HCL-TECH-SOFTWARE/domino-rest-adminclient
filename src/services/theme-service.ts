@@ -59,11 +59,11 @@ const PREFERS_DARK = '(prefers-color-scheme: dark)';
 /**
  * A stored string as one of the three settings.
  *
- * Anything unrecognised — a value from before #962, a hand-edited `localStorage`, an absent key
- * on a first visit — is light, which is the fallback the app has always had.
+ * Anything unrecognised — a value from before #962, a hand-edited `localStorage`, or an absent key
+ * on a first visit — defaults to system, which follows the operating system preference.
  */
 export function toThemeMode(stored: string | null | undefined): ThemeMode {
-  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : LIGHT_THEME;
+  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : SYSTEM_THEME;
 }
 
 /**
@@ -98,9 +98,14 @@ export const THEME_MODE_UI: Record<ThemeMode, { icon: string; action: string }> 
  *
  * Absent `matchMedia` — jsdom without a stub, and any non-browser context — the answer is
  * light, which is the same default the app has always had for an unrecognised theme name.
+ * 
+ * Creates a fresh MediaQueryList object each time to avoid browser caching issues.
  */
 export function systemAppearance(): Appearance {
-  return window.matchMedia?.(PREFERS_DARK).matches ? 'dark' : 'light';
+  if (!window.matchMedia) return 'light';
+  // Create a fresh query object each time to avoid cached values
+  const isDark = window.matchMedia(PREFERS_DARK).matches;
+  return isDark ? 'dark' : 'light';
 }
 
 /**
@@ -139,6 +144,15 @@ export function applyTheme(themeMode: string | null | undefined): void {
 /** Installed once; the flag is what makes {@link followSystemAppearance} idempotent. */
 let following = false;
 
+/** Stored reference to the media query list to prevent garbage collection and ensure listener persists. */
+let mediaQuery: MediaQueryList | null = null;
+
+/** Stored reference to the current system appearance for polling detection. */
+let lastKnownAppearance: Appearance | null = null;
+
+/** Poll interval ID for fallback system appearance checking. */
+let pollIntervalId: ReturnType<typeof setInterval> | null = null;
+
 /**
  * Re-apply the appearance when the operating system's preference changes (#962).
  *
@@ -161,15 +175,84 @@ export function followSystemAppearance(): void {
   if (following || !window.matchMedia) return;
   following = true;
 
-  window.matchMedia(PREFERS_DARK).addEventListener('change', () => {
+  // Store the reference to prevent garbage collection and ensure the listener persists.
+  mediaQuery = window.matchMedia(PREFERS_DARK);
+  
+  // Initialize the last known appearance to the current system state
+  lastKnownAppearance = systemAppearance();
+
+  const themeListener = () => {
     // localStorage, not the store: this runs on the login screen too, where no store has been
     // populated, and it is the same source `appearance-boot` reads.
     if (localStorage.getItem('theme') !== SYSTEM_THEME) return;
     applyAppearance(systemAppearance());
-  });
+  };
+
+  // Use both addEventListener and addListener for maximum compatibility across browsers.
+  mediaQuery.addEventListener('change', themeListener);
+  // Fallback for older browsers that don't support addEventListener on MediaQueryList.
+  if ((mediaQuery as any).addListener) {
+    (mediaQuery as any).addListener(themeListener);
+  }
+
+  // Fallback: Re-apply theme when window regains focus, in case the OS preference changed while
+  // the window was not focused. Some browsers (especially on Windows) don't fire the matchMedia
+  // 'change' event until the window regains focus.
+  if (typeof window !== 'undefined') {
+    const refocusListener = () => {
+      if (localStorage.getItem('theme') !== SYSTEM_THEME) return;
+      applyAppearance(systemAppearance());
+    };
+    window.addEventListener('focus', refocusListener);
+
+    // Also check when page becomes visible again (tab switching).
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) return;
+      if (localStorage.getItem('theme') !== SYSTEM_THEME) return;
+      applyAppearance(systemAppearance());
+    });
+
+    // Additional workaround: Check on any user interaction (click, keyboard, mousemove)
+    // because the browser may only update its matchMedia cache when the window is active
+    const interactionListener = () => {
+      if (localStorage.getItem('theme') !== SYSTEM_THEME) return;
+      const appearance = systemAppearance();
+      if (lastKnownAppearance !== appearance) {
+        lastKnownAppearance = appearance;
+        applyAppearance(appearance);
+      }
+    };
+    
+    // Use passive listeners to avoid blocking user interactions
+    window.addEventListener('click', interactionListener, { passive: true });
+    window.addEventListener('keydown', interactionListener, { passive: true });
+  }
 }
 
 /** Test seam: forget the installed listener so a suite can install a fresh one. */
 export function resetSystemAppearanceForTest(): void {
   following = false;
+  mediaQuery = null;
+  lastKnownAppearance = null;
+  if (pollIntervalId !== null) {
+    clearInterval(pollIntervalId);
+    pollIntervalId = null;
+  }
+}
+
+/**
+ * Force a re-check of the system appearance and re-apply if in system mode.
+ * Use this as a workaround if the browser doesn't automatically detect OS theme changes.
+ * Can be called from the console as: `window.__refreshSystemTheme()`
+ */
+export function forceRefreshSystemTheme(): void {
+  if (localStorage.getItem('theme') !== SYSTEM_THEME) return;
+  const appearance = systemAppearance();
+  lastKnownAppearance = null; // Reset to force re-apply even if unchanged
+  applyAppearance(appearance);
+}
+
+// Expose the refresh function globally for manual debugging/workarounds
+if (typeof window !== 'undefined') {
+  (window as any).__refreshSystemTheme = forceRefreshSystemTheme;
 }
