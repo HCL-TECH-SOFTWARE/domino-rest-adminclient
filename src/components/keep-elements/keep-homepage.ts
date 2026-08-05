@@ -197,7 +197,7 @@ export default class Homepage extends KeepElement {
       <div class="tips">
         <section class="diagram">
           Open the interactive
-          <a href="/img/keepblockdiagram.svg" target="_blank" rel="noopener noreferrer"
+          <a href="/admin/img/keepblockdiagram.svg" target="_blank" rel="noopener noreferrer"
             >&nbsp;DRAPI overview&nbsp;</a
           >
           diagram

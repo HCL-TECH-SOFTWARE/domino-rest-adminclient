@@ -26,6 +26,11 @@
                 "csp": "default-src 'self';",
                 "Content-Type": "application/json; charset=utf-8"
             },
+            "/admin/img/keepblockdiagram.svg": {
+                "type": "path",
+                "path": "/img/keepblockdiagram.svg",
+                "csp": "default-src 'self' data: 'report-sample'; script-src 'self' 'report-sample'; style-src-attr 'none' 'report-sample'; style-src-elem 'self' 'report-sample'; font-src 'self' data: 'report-sample'; img-src 'self' data: 'report-sample'; worker-src 'self' blob: 'report-sample'; connect-src 'self' data: https: 'report-sample'; report-uri /api/csp-violation-report"
+            },
             "/admin/*": {
                 "type": "path",
                 "path": "/admin",
