@@ -174,7 +174,7 @@ export default class SideNav extends KeepElement {
       width: 100%;
       align-items: center;
       justify-content: flex-start;
-      padding: 8px 16px;
+      padding: 10px;
       border: 0;
       border-left: 3px solid transparent;
       background: none;
@@ -185,6 +185,11 @@ export default class SideNav extends KeepElement {
       text-decoration: none;
       cursor: pointer;
       transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    :host:not([expanded]) .item {
+      justify-content: center;
+      padding: 10px;
     }
 
     .item:hover {
@@ -259,7 +264,7 @@ export default class SideNav extends KeepElement {
   `;
 
   /** True when the menu shows its labels; false for the 57px rail. */
-  @property({ type: Boolean }) accessor expanded = false;
+  @property({ type: Boolean, reflect: true }) accessor expanded = false;
 
   /** The path the current-item highlight is computed from. See the class note. */
   private readonly route = new RouterController(this, (location) => location.pathname);
