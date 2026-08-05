@@ -45,7 +45,7 @@ const SELF = 'test/people-groups-removed.test.ts';
 const SOURCES = ['src', 'test']
   .flatMap((d) => walk(resolve(ROOT, d)))
   .filter((f) => /\.tsx?$/.test(f))
-  .map((f) => ({ file: f.slice(ROOT.length + 1), text: readFileSync(f, 'utf8') }))
+  .map((f) => ({ file: f.slice(ROOT.length + 1).replace(/\\/g, '/'), text: readFileSync(f, 'utf8') }))
   // This file names the things it forbids, inside assertions rather than comments, so it
   // would report itself.
   .filter(({ file }) => file !== SELF);

@@ -60,10 +60,10 @@ const PREFERS_DARK = '(prefers-color-scheme: dark)';
  * A stored string as one of the three settings.
  *
  * Anything unrecognised — a value from before #962, a hand-edited `localStorage`, or an absent key
- * on a first visit — defaults to system, which follows the operating system preference.
+ * on a first visit — defaults to light, so a typo doesn't turn into dark mode.
  */
 export function toThemeMode(stored: string | null | undefined): ThemeMode {
-  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : SYSTEM_THEME;
+  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : LIGHT_THEME;
 }
 
 /**

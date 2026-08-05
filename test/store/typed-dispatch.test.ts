@@ -55,7 +55,7 @@ const STORE = 'src/store/index.ts';
 
 const SOURCES = walk(resolve(ROOT, 'src'))
   .filter((f) => /\.tsx?$/.test(f))
-  .map((f) => ({ file: f.slice(ROOT.length + 1), text: readFileSync(f, 'utf8') }));
+  .map((f) => ({ file: f.slice(ROOT.length + 1).replace(/\\/g, '/'), text: readFileSync(f, 'utf8') }));
 
 /** Whole-line comments dropped, so prose describing the old pattern is not an offender. */
 const code = (text: string) =>

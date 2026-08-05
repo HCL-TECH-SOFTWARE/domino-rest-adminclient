@@ -40,7 +40,7 @@ const walk = (dir: string): string[] =>
     return entry.isDirectory() ? walk(path) : [path];
   });
 
-const rel = (file: string) => file.slice(ROOT.length + 1);
+const rel = (file: string) => file.slice(ROOT.length + 1).replace(/\\/g, '/');
 
 const IN_SCOPE = [
   ...['src', 'test', 'scripts']
