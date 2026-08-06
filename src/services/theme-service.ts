@@ -196,6 +196,19 @@ export function followSystemAppearance(): void {
     (mediaQuery as any).addListener(themeListener);
   }
 
+  // Polling fallback: periodically check system preference in case browser events don't fire
+  // This is a safety net for browsers with unreliable matchMedia event delivery
+  if (pollIntervalId === null) {
+    pollIntervalId = setInterval(() => {
+      if (localStorage.getItem('theme') !== SYSTEM_THEME) return;
+      const currentAppearance = systemAppearance();
+      if (lastKnownAppearance !== currentAppearance) {
+        lastKnownAppearance = currentAppearance;
+        applyAppearance(currentAppearance);
+      }
+    }, 500);
+  }
+
   // Fallback: Re-apply theme when window regains focus, in case the OS preference changed while
   // the window was not focused. Some browsers (especially on Windows) don't fire the matchMedia
   // 'change' event until the window regains focus.

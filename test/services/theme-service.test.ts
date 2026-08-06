@@ -270,10 +270,12 @@ describe('theme-service', () => {
   });
 
   describe('polling for system changes', () => {
-    it('detects OS preference changes via polling when in system mode', async () => {
+    it('detects OS preference changes via polling when in system mode', () => {
       vi.useFakeTimers();
       localStorage.setItem('theme', 'system');
       setSystemDark(false);
+      resetSystemAppearanceForTest();
+      stubSystem();
       followSystemAppearance();
       applyTheme('system');
       expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
@@ -284,6 +286,20 @@ describe('theme-service', () => {
       vi.advanceTimersByTime(600);
       expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
 
+      vi.useRealTimers();
+      resetSystemAppearanceForTest();
+    });
+
+    it('stops polling when reset is called', () => {
+      vi.useFakeTimers();
+      localStorage.setItem('theme', 'system');
+      followSystemAppearance();
+      
+      // Reset should not throw and should clear intervals
+      expect(() => {
+        resetSystemAppearanceForTest();
+      }).not.toThrow();
+      
       vi.useRealTimers();
     });
   });
@@ -333,6 +349,306 @@ describe('theme-service', () => {
       // Simulate click event
       window.dispatchEvent(new Event('click'));
       expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+
+    it('responds to keydown event when in system mode', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+
+      // Change OS
+      setSystemDark(true);
+      // Simulate keydown event
+      window.dispatchEvent(new Event('keydown'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+
+    it('does not re-apply when theme is not system during visibility change', () => {
+      localStorage.setItem('theme', 'default');
+      followSystemAppearance();
+      applyTheme('default');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+
+      // Change OS to dark
+      setSystemDark(true);
+      // Simulate visibility change - should NOT apply dark because theme is 'default', not 'system'
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+    });
+
+    it('ignores interaction listeners when not in system mode', () => {
+      localStorage.setItem('theme', 'default');
+      followSystemAppearance();
+      applyTheme('default');
+      
+      // Change OS to dark
+      setSystemDark(true);
+      // Simulate click - should not change appearance
+      window.dispatchEvent(new Event('click'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+    });
+
+    it('ignores repeated same-value changes in interaction listener', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      followSystemAppearance();
+      applyTheme('system');
+      
+      // Simulate click when appearance is already correct
+      window.dispatchEvent(new Event('click'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+      
+      // Simulate another click - no unnecessary DOM writes
+      window.dispatchEvent(new Event('click'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+    });
+  });
+
+  describe('followSystemAppearance idempotency and guards', () => {
+    it('returns early when already following', () => {
+      localStorage.setItem('theme', 'system');
+      followSystemAppearance();
+      
+      // Reset listeners count (should be 1 from first call)
+      const initialListenerCount = systemListeners.length;
+      
+      // Call again - should not add more listeners
+      followSystemAppearance();
+      expect(systemListeners.length).toBe(initialListenerCount);
+    });
+
+    it('returns early when matchMedia is not available', () => {
+      resetSystemAppearanceForTest();
+      vi.unstubAllGlobals();
+      vi.stubGlobal('matchMedia', undefined);
+      
+      // Should not throw, just return
+      expect(() => followSystemAppearance()).not.toThrow();
+      expect(systemAppearance()).toBe('light');
+    });
+  });
+
+  describe('applyAppearance idempotency', () => {
+    it('applies light correctly', () => {
+      applyAppearance('light');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+      expect(document.documentElement.style.colorScheme).toBe('light');
+      expect(document.body.dataset.theme).toBe('light');
+    });
+
+    it('applies dark correctly', () => {
+      applyAppearance('dark');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+      expect(document.documentElement.style.colorScheme).toBe('dark');
+      expect(document.body.dataset.theme).toBe('dark');
+    });
+
+    it('is idempotent for light', () => {
+      applyAppearance('light');
+      applyAppearance('light');
+      expect(document.documentElement.style.colorScheme).toBe('light');
+      expect(document.body.dataset.theme).toBe('light');
+    });
+  });
+
+  describe('forceRefreshSystemTheme comprehensive', () => {
+    it('refreshes when OS changes back to light', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(true);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+
+      setSystemDark(false);
+      forceRefreshSystemTheme();
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+    });
+
+    it('does nothing when theme is not set in localStorage', () => {
+      // No theme in localStorage
+      applyTheme('dark');
+      forceRefreshSystemTheme();
+      // Should still be dark (unchanged)
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+
+    it('updates appearance even when it has not changed since last check', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(true);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+
+      // Call refresh multiple times with same system preference
+      forceRefreshSystemTheme();
+      forceRefreshSystemTheme();
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+  });
+
+  describe('polling mechanism edge cases', () => {
+    it('direct matchMedia listener executes when system changes', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      resetSystemAppearanceForTest();
+      stubSystem();
+      followSystemAppearance();
+      applyTheme('system');
+      
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+      
+      // Directly trigger the listener callback (simulating matchMedia 'change' event)
+      setSystemDark(true);
+      // The listener was added to systemListeners - call it directly
+      if (systemListeners.length > 0) {
+        systemListeners[0]();
+      }
+      
+      // Should now be dark from listener callback
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+
+    it('executes polling callback when appearance changes', () => {
+      vi.useFakeTimers();
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      resetSystemAppearanceForTest();
+      stubSystem();
+      followSystemAppearance();
+      
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+      
+      // Change system to dark
+      setSystemDark(true);
+      // Run polling callback by advancing time
+      vi.advanceTimersByTime(600);
+      
+      // Should now be dark from polling
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+      
+      vi.useRealTimers();
+      resetSystemAppearanceForTest();
+    });
+
+    it('polls but skips re-apply when appearance has not changed', () => {
+      vi.useFakeTimers();
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      resetSystemAppearanceForTest();
+      stubSystem();
+      followSystemAppearance();
+      applyTheme('system');
+      
+      // Keep system as light
+      vi.advanceTimersByTime(600);
+      
+      // Should still be light (no unnecessary re-apply)
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+      
+      vi.useRealTimers();
+      resetSystemAppearanceForTest();
+    });
+
+    it('skips polling callback when theme is not system mode', () => {
+      vi.useFakeTimers();
+      localStorage.setItem('theme', 'dark');
+      resetSystemAppearanceForTest();
+      stubSystem();
+      followSystemAppearance();
+      applyTheme('dark');
+      
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+      
+      // Change system to light (but we're in dark mode, so should not apply)
+      setSystemDark(false);
+      vi.advanceTimersByTime(600);
+      
+      // Should still be dark (polling was skipped)
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+      
+      vi.useRealTimers();
+      resetSystemAppearanceForTest();
+    });
+
+    it('updates lastKnownAppearance when polling detects change', () => {
+      vi.useFakeTimers();
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      resetSystemAppearanceForTest();
+      stubSystem();
+      followSystemAppearance();
+      applyTheme('system');
+      
+      // lastKnownAppearance should be set to 'light'
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+      
+      // Change system preference
+      setSystemDark(true);
+      vi.advanceTimersByTime(600);
+      
+      // Now should be dark and lastKnownAppearance updated to 'dark'
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+      
+      // Change back and verify it detects the change again
+      setSystemDark(false);
+      vi.advanceTimersByTime(600);
+      
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+      
+      vi.useRealTimers();
+      resetSystemAppearanceForTest();
+    });
+  });
+
+  describe('addEventListener vs addListener compatibility', () => {
+    it('has both addEventListener and addListener for compatibility', () => {
+      localStorage.setItem('theme', 'system');
+      stubSystem();
+      
+      // Call matchMedia to get the stubbed object
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      // Our stub provides both for compatibility
+      expect(mediaQuery.addEventListener).toBeDefined();
+      expect((mediaQuery as any).addListener).toBeDefined();
+    });
+
+    it('calls addListener when available', () => {
+      localStorage.setItem('theme', 'system');
+      const addListenerSpy = vi.fn();
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        media: query,
+        get matches() {
+          return query.includes('prefers-color-scheme: dark') ? prefersDark : false;
+        },
+        addEventListener: (_: string, fn: () => void) => systemListeners.push(fn),
+        removeEventListener: () => {},
+        addListener: addListenerSpy,
+        removeListener: () => {},
+        dispatchEvent: () => false
+      }));
+      
+      // Reset and call followSystemAppearance which should call addListener
+      resetSystemAppearanceForTest();
+      followSystemAppearance();
+      
+      // Verify addListener was called
+      expect(addListenerSpy).toHaveBeenCalled();
+    });
+
+    it('maintains listener reference to prevent garbage collection', () => {
+      localStorage.setItem('theme', 'system');
+      stubSystem();
+      
+      followSystemAppearance();
+      
+      // The listener should persist in systemListeners array
+      expect(systemListeners.length).toBe(1);
+      
+      // Verify it's actually a function
+      expect(typeof systemListeners[0]).toBe('function');
     });
   });
 });

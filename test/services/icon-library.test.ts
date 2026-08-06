@@ -295,4 +295,35 @@ describe('icon-library', () => {
       expect(offenders, `icon CDN host referenced in: ${offenders.join(', ')}`).toEqual([]);
     });
   });
+
+  describe('icon resolver function', () => {
+    it('resolves valid icon names through the registered default library', async () => {
+      const { getIconLibrary } = await import(
+        '@awesome.me/webawesome/dist/components/icon/library.js'
+      );
+      await import('../../src/services/icon-library');
+
+      const defaultLibrary = getIconLibrary('default');
+      expect(defaultLibrary).toBeTruthy();
+
+      // Test that a valid icon resolves to a non-empty string
+      const resolvedIcon = defaultLibrary!.resolver('bars', 'classic', 'solid', false);
+      expect(resolvedIcon).toBeTruthy();
+      expect(typeof resolvedIcon).toBe('string');
+    });
+
+    it('returns empty string for unregistered icon names', async () => {
+      const { getIconLibrary } = await import(
+        '@awesome.me/webawesome/dist/components/icon/library.js'
+      );
+      await import('../../src/services/icon-library');
+
+      const defaultLibrary = getIconLibrary('default');
+      expect(defaultLibrary).toBeTruthy();
+
+      // Test that an invalid icon resolves to an empty string
+      const resolvedIcon = defaultLibrary!.resolver('nonexistent-icon-xyz-123', 'classic', 'solid', false);
+      expect(resolvedIcon).toBe('');
+    });
+  });
 });
