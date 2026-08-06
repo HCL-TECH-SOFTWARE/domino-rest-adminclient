@@ -60,10 +60,10 @@ const PREFERS_DARK = '(prefers-color-scheme: dark)';
  * A stored string as one of the three settings.
  *
  * Anything unrecognised — a value from before #962, a hand-edited `localStorage`, or an absent key
- * on a first visit — defaults to light, so a typo doesn't turn into dark mode.
+ * on a first visit — defaults to system, which respects the operating system preference.
  */
 export function toThemeMode(stored: string | null | undefined): ThemeMode {
-  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : LIGHT_THEME;
+  return THEME_MODES.includes(stored as ThemeMode) ? (stored as ThemeMode) : SYSTEM_THEME;
 }
 
 /**
@@ -112,12 +112,13 @@ export function systemAppearance(): Appearance {
  * Maps a stored theme name to an appearance.
  *
  * `"system"` is resolved here rather than at the call sites, which is what keeps every reader
- * of the setting — the boot script, the shell, the login page — agreeing on what it means. The
- * fallback is light, so an unrecognised or absent value behaves exactly as it did before #962.
+ * of the setting — the boot script, the shell, the login page — agreeing on what it means.
+ * Unrecognised or absent values default to system, which respects the operating system preference.
  */
 export function toAppearance(themeMode: string | null | undefined): Appearance {
-  if (themeMode === DARK_THEME) return 'dark';
-  if (themeMode === SYSTEM_THEME) return systemAppearance();
+  const resolved = toThemeMode(themeMode);
+  if (resolved === DARK_THEME) return 'dark';
+  if (resolved === SYSTEM_THEME) return systemAppearance();
   return 'light';
 }
 

@@ -213,9 +213,9 @@ describe('theme-service', () => {
       expect(nextThemeMode('system')).toBe('default');
     });
 
-    it('treats an unrecognised setting as system, so the first press goes dark', () => {
-      expect(nextThemeMode(null)).toBe('dark');
-      expect(nextThemeMode('nonsense')).toBe('dark');
+    it('treats an unrecognised setting as system, so the first press goes light', () => {
+      expect(nextThemeMode(null)).toBe('default');
+      expect(nextThemeMode('nonsense')).toBe('default');
     });
   });
 
@@ -228,9 +228,9 @@ describe('theme-service', () => {
       // The labels and the cycle are two statements of the same order, in two places. Pinning
       // one against the other is what stops a reordered cycle leaving the labels lying.
       const spoken: Record<string, string> = {
-        default: 'Switch to Dark Mode',
-        dark: 'Switch to System Mode',
-        system: 'Switch to Light Mode'
+        default: 'Switch to Light Mode',
+        dark: 'Switch to Dark Mode',
+        system: 'Switch to System Mode'
       };
       for (const mode of THEME_MODES) {
         expect(THEME_MODE_UI[mode].action).toBe(spoken[nextThemeMode(mode)]);
