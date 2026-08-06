@@ -133,6 +133,16 @@ describe('theme-service', () => {
   });
 
   describe('the system setting (#962)', () => {
+    it('systemAppearance returns dark when OS prefers dark', () => {
+      setSystemDark(true);
+      expect(systemAppearance()).toBe('dark');
+    });
+
+    it('systemAppearance returns light when OS prefers light', () => {
+      setSystemDark(false);
+      expect(systemAppearance()).toBe('light');
+    });
+
     it('resolves to whatever the operating system asks for', () => {
       setSystemDark(true);
       expect(toAppearance('system')).toBe('dark');
