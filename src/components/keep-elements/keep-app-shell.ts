@@ -21,7 +21,8 @@ import {
   applyTheme,
   nextThemeMode,
   toThemeMode,
-  THEME_MODE_UI
+  THEME_MODE_UI,
+  followSystemAppearance
 } from '../../services/theme-service';
 import { getRouter } from '../../router/instance';
 import { StoreController } from '../../store/StoreController';
@@ -204,6 +205,9 @@ export default class AppShell extends KeepElement {
     const next = nextThemeMode(this.themeMode.value);
     localStorage.setItem('theme', next);
     store.dispatch(switchTheme(next));
+    // Immediately apply the appearance and ensure the system preference listener is active.
+    applyTheme(next);
+    followSystemAppearance();
   };
 
   /**

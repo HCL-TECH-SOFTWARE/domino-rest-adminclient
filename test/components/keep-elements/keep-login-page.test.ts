@@ -882,8 +882,8 @@ describe('keep-login-page', () => {
       // asserted here — narrower than "some svg exists", not weaker.
       const icon = toggle.querySelector('wa-icon') as HTMLElement & { name?: string };
       expect(icon).not.toBeNull();
-      expect(icon.name).toBe('sun');
-      expect(icon.getAttribute('label')).toBe('Switch to Dark Mode');
+      expect(icon.name).toBe('robot');
+      expect(icon.getAttribute('label')).toBe('Switch to Light Mode');
     });
 
     it('cycles light → dark → system → light, glyph and store together', async () => {
@@ -894,12 +894,12 @@ describe('keep-login-page', () => {
       const glyph = () =>
         (toggle.querySelector('wa-icon') as HTMLElement & { name?: string }).name;
 
-      expect(glyph()).toBe('sun');
+      expect(glyph()).toBe('robot');
 
       for (const [stored, icon] of [
+        ['default', 'sun'],
         ['dark', 'moon'],
         ['system', 'robot'],
-        ['default', 'sun'],
       ] as const) {
         toggle.click();
         await settle(el);
@@ -920,8 +920,8 @@ describe('keep-login-page', () => {
       ['dark', 'moon'],
       ['system', 'robot'],
       ['default', 'sun'],
-      // Anything unrecognised is light — a value stored before #962, or a hand-edited key.
-      ['nonsense', 'sun'],
+      // Anything unrecognised defaults to system — a value stored before #962, or a hand-edited key.
+      ['nonsense', 'robot'],
     ])('starts on %s when that is what was stored', async (stored, expected) => {
       localStorage.setItem('theme', stored);
       const el = await mount();

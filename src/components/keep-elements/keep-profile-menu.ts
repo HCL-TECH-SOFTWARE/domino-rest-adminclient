@@ -152,7 +152,7 @@ export default class ProfileMenu extends KeepElement {
       align-items: center;
       justify-content: center;
       margin: 0 0 0 8px;
-      padding: 0;
+      padding: 10px;
       border: 0;
       background: none;
       color: inherit;

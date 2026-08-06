@@ -50,7 +50,7 @@ const walk = (dir: string, match: RegExp): string[] =>
     return match.test(entry.name) ? [path] : [];
   });
 
-const rel = (file: string) => file.slice(resolve(process.cwd()).length + 1);
+const rel = (file: string) => file.slice(resolve(process.cwd()).length + 1).replace(/\\/g, '/');
 
 /** Whole-line comments dropped, so the notes recording these removals aren't offenders. */
 const code = (text: string) =>

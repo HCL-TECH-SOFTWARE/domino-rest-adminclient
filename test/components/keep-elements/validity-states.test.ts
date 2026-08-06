@@ -59,7 +59,7 @@ const FILES = [...walk(SRC, /\.tsx?$/), ...walk(SRC, /\.css$/)];
  */
 const code = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
-const SOURCES = FILES.map((file) => ({ file: file.slice(ROOT.length + 1), text: readFileSync(file, 'utf8') }));
+const SOURCES = FILES.map((file) => ({ file: file.slice(ROOT.length + 1).replace(/\\/g, '/'), text: readFileSync(file, 'utf8') }));
 
 /** `[data-user-invalid]` / `[data-user-valid]` used as a selector. */
 const STALE_SELECTOR = /\[\s*data-user-(?:in)?valid\s*[\]=]/;

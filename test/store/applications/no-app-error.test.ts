@@ -16,7 +16,7 @@ const walk = (dir: string): string[] =>
     return entry.isDirectory() ? walk(path) : [path];
   });
 
-const rel = (file: string) => file.slice(ROOT.length + 1);
+const rel = (file: string) => file.slice(ROOT.length + 1).replace(/\\/g, '/');
 
 const SOURCES = walk(resolve(ROOT, 'src'))
   .filter((f) => /\.tsx?$/.test(f))

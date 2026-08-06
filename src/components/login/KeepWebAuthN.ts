@@ -1,10 +1,8 @@
 /*
- * WebAuthn
- *
+ * WebAuthn adaptation based on original work:
  * Copyright (c) 2020 Paulo Lopes <pmlopes@gmail.com>
  * Licensed under the Apache 2 license.
- *
- * (C) 2023 ES6 conversion HCL America Inc
+ * (C) 2023 ES6 conversion HCL America Inc.
  */
 
 import { base64urlEncode, base64urlDecode } from "./base64url-arraybuffer";

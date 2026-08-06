@@ -92,7 +92,7 @@ const code = (text: string) =>
 
 const SOURCES = walk(SRC)
   .filter((file) => /\.tsx?$/.test(file))
-  .map((file) => ({ file: file.slice(ROOT.length + 1), text: code(readFileSync(file, 'utf8')) }));
+  .map((file) => ({ file: file.slice(ROOT.length + 1).replace(/\\/g, '/'), text: code(readFileSync(file, 'utf8')) }));
 
 /**
  * A specifier, however it is spelled: `import x from 'p'`, `import 'p'`, `import('p')`,

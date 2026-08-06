@@ -187,7 +187,7 @@ describe('keep-homepage', () => {
       const el = await mount({ databases: true, apps: true });
       const link = el.shadowRoot!.querySelector('.diagram a')!;
 
-      expect(link.getAttribute('href')).toBe('/img/keepblockdiagram.svg');
+      expect(link.getAttribute('href')).toBe('./img/keepblockdiagram.svg');
       expect(link.getAttribute('target')).toBe('_blank');
       // Was missing: a `target="_blank"` link hands the opened document a `window.opener`.
       expect(link.getAttribute('rel')).toBe('noopener noreferrer');

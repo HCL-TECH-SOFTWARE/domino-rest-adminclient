@@ -1,11 +1,10 @@
 /*
- * Base64URL-ArrayBuffer
+ * Base64URL-ArrayBuffer (adapted from):
  * https://github.com/herrjemand/Base64URL-ArrayBuffer
- *
  * Copyright (c) 2017 Yuriy Ackermann <ackermann.yuriy@gmail.com>
  * Copyright (c) 2012 Niklas von Hertzen
  * Licensed under the MIT license.
- *
+ * (C) 2023 ES6 conversion HCL America Inc.
  */
 
 export function base64urlEncode(arraybuffer: any) {

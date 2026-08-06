@@ -160,7 +160,7 @@ describe('every src module is reachable from an entry point', () => {
   it('lists no module that nothing imports', () => {
     const unreachable = files
       .filter((file) => !seen.has(file))
-      .map((file) => relative(ROOT, file))
+      .map((file) => relative(ROOT, file).replace(/\\/g, '/'))
       .filter((path) => !(path in ALLOWED));
 
     expect(
