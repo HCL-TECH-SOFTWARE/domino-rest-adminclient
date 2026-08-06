@@ -9,6 +9,7 @@ import {
   applyAppearance,
   applyTheme,
   followSystemAppearance,
+  forceRefreshSystemTheme,
   nextThemeMode,
   resetSystemAppearanceForTest,
   systemAppearance,
@@ -80,9 +81,14 @@ describe('theme-service', () => {
       expect(toAppearance('default')).toBe('light');
     });
 
-    it('maps an absent theme to light', () => {
+    it('maps an absent theme to system (which resolves to current OS preference)', () => {
+      setSystemDark(false);
       expect(toAppearance(null)).toBe('light');
       expect(toAppearance(undefined)).toBe('light');
+
+      setSystemDark(true);
+      expect(toAppearance(null)).toBe('dark');
+      expect(toAppearance(undefined)).toBe('dark');
     });
   });
 
@@ -194,10 +200,9 @@ describe('theme-service', () => {
       expect(toThemeMode(mode)).toBe(mode);
     });
 
-    it.each([null, undefined, '', 'light', 'nonsense'])('maps %s to the light default', (stored) => {
-      // `light` is in there deliberately: it is a plausible spelling that the app has never
-      // stored, and treating it as the default is what stops a typo turning into dark mode.
-      expect(toThemeMode(stored)).toBe('default');
+    it.each([null, undefined, '', 'light', 'nonsense'])('maps %s to the system default', (stored) => {
+      // Unrecognized values default to 'system', which respects the OS preference
+      expect(toThemeMode(stored)).toBe('system');
     });
   });
 
@@ -208,7 +213,7 @@ describe('theme-service', () => {
       expect(nextThemeMode('system')).toBe('default');
     });
 
-    it('treats an unrecognised setting as light, so the first press goes dark', () => {
+    it('treats an unrecognised setting as system, so the first press goes dark', () => {
       expect(nextThemeMode(null)).toBe('dark');
       expect(nextThemeMode('nonsense')).toBe('dark');
     });
@@ -223,9 +228,9 @@ describe('theme-service', () => {
       // The labels and the cycle are two statements of the same order, in two places. Pinning
       // one against the other is what stops a reordered cycle leaving the labels lying.
       const spoken: Record<string, string> = {
-        default: 'Switch to Light Mode',
-        dark: 'Switch to Dark Mode',
-        system: 'Switch to System Mode'
+        default: 'Switch to Dark Mode',
+        dark: 'Switch to System Mode',
+        system: 'Switch to Light Mode'
       };
       for (const mode of THEME_MODES) {
         expect(THEME_MODE_UI[mode].action).toBe(spoken[nextThemeMode(mode)]);
@@ -236,6 +241,98 @@ describe('theme-service', () => {
       const icons = THEME_MODES.map((mode) => THEME_MODE_UI[mode].icon);
       expect(new Set(icons).size).toBe(icons.length);
       expect(icons).toEqual(['sun', 'moon', 'robot']);
+    });
+  });
+
+  describe('forceRefreshSystemTheme', () => {
+    it('re-applies system appearance when called', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+
+      // Change OS to dark
+      setSystemDark(true);
+      // Manually force refresh
+      forceRefreshSystemTheme();
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+
+    it('does nothing when not in system mode', () => {
+      localStorage.setItem('theme', 'dark');
+      applyTheme('dark');
+      setSystemDark(false);
+      forceRefreshSystemTheme();
+      // Should still be dark, not light
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+  });
+
+  describe('polling for system changes', () => {
+    it('detects OS preference changes via polling when in system mode', async () => {
+      vi.useFakeTimers();
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+
+      // Change OS
+      setSystemDark(true);
+      // Move time forward to trigger the polling interval (500ms)
+      vi.advanceTimersByTime(600);
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('fallback listeners', () => {
+    it('responds to focus event when in system mode', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+
+      // Change OS
+      setSystemDark(true);
+      // Simulate focus event
+      window.dispatchEvent(new Event('focus'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+
+    it('responds to visibilitychange when page becomes visible', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+
+      // Change OS
+      setSystemDark(true);
+      // Simulate becoming visible
+      Object.defineProperty(document, 'hidden', {
+        configurable: true,
+        get: () => false
+      });
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
+    });
+
+    it('responds to click event when in system mode', () => {
+      localStorage.setItem('theme', 'system');
+      setSystemDark(false);
+      followSystemAppearance();
+      applyTheme('system');
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(false);
+
+      // Change OS
+      setSystemDark(true);
+      // Simulate click event
+      window.dispatchEvent(new Event('click'));
+      expect(document.documentElement.classList.contains('wa-dark')).toBe(true);
     });
   });
 });
