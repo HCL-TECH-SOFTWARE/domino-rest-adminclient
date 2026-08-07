@@ -185,7 +185,8 @@ export default class QuickConfigForm extends KeepElement {
 
       /* Was the InputContainer styled.div. */
       .input-container {
-        padding: 5px 0;
+        padding: 0;
+        margin-bottom: 18px;
       }
 
       .database-label {
@@ -266,7 +267,7 @@ export default class QuickConfigForm extends KeepElement {
         display: block;
         color: var(--wa-color-text-normal);
         font-size: 14px;
-        padding-bottom: 4px;
+        padding-bottom: 8px;
       }
 
       .checkbox-row {
@@ -274,6 +275,17 @@ export default class QuickConfigForm extends KeepElement {
         flex-direction: row;
         align-items: center;
         gap: 8px;
+      }
+
+      /* The Active checkbox row (not within input-container) needs more spacing from adjacent sections */
+      .form-content > .checkbox-row {
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+
+      /* Mode checkboxes (within input-container) have minimal spacing between them */
+      .modes .checkbox-row {
+        padding: 4px 0;
       }
 
       .modes {
@@ -600,7 +612,7 @@ export default class QuickConfigForm extends KeepElement {
         </div>
 
         <div class="input-container">
-          <span class="field-label" id="icon-label">Schema Icon</span>
+          <span class="field-label" id="icon-label">Schema and Scope Icon</span>
           <wa-dropdown @wa-select=${this.handleIconSelect}>
             <wa-button
               class="icon-select"
