@@ -106,9 +106,10 @@ export default class IconDropdown extends KeepElement {
          app sheet, beat the app's own class at equal specificity and painted the label in
          the brand purple and upper case. Only the label span escaped that, because its own
          rule targeted the span directly; the caret did not, and is the normal text colour
-         here for the first time. */
+         here for the first time. Display is vertical (flex-column) to match Quick Config. */
       .trigger {
         display: inline-flex;
+        flex-direction: column;
         align-items: center;
         padding: 0;
         border: 0;
@@ -139,15 +140,14 @@ export default class IconDropdown extends KeepElement {
         height: 35px;
         object-fit: contain;
         display: block;
-        margin-right: 15px;
+        margin-bottom: 8px;
         border-radius: var(--wa-border-radius-m);
       }
 
-      /* The two spacings are both from the original: the tile carried a right margin and
-         the label a left padding, which added up to 26px between them. */
+      /* The name label below the icon in vertical layout. */
       .name {
         text-transform: capitalize;
-        padding-left: 11px;
+        padding: 0;
         color: var(--wa-color-text-normal);
       }
 
@@ -214,7 +214,7 @@ export default class IconDropdown extends KeepElement {
 
   private handleSelect(event: Event): void {
     // The event is composed and would otherwise surface on the parent as a Web Awesome
-    // event it never asked for.
+    // event it never asked for. Only stopPropagation to let dropdown close normally.
     event.stopPropagation();
     const { item } = (event as WaSelect).detail;
 

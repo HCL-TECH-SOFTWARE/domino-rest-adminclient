@@ -52,12 +52,31 @@ export default class Drawer extends KeepElement {
   @property({ attribute: false }) accessor closeFn: (...args: unknown[]) => void = () => {};
   @property({ type: Array }) accessor buttons: unknown[] = [];
 
+  // wa-hide bubbles from child dropdowns/popups. wa-drawer's own `source` lives in its shadow
+  // root (internal <dialog> for programmatic/Escape, close-button for the header X), so allow
+  // only when `source` is inside the target drawer's shadow root; block everything else.
+  private handleHideRequest = (event: CustomEvent<{ source: Element }>) => {
+    const target = event.target as Element | null;
+    if (!target || target.tagName?.toLowerCase() !== 'wa-drawer') return;
+    const source = event.detail?.source;
+    if (source && target.shadowRoot?.contains(source)) return;
+    event.preventDefault();
+  };
+
+  // wa-after-hide also bubbles — ignore ones from child dropdowns.
+  private handleAfterHide = (event: CustomEvent) => {
+    const target = event.target as Element | null;
+    if (!target || target.tagName?.toLowerCase() !== 'wa-drawer') return;
+    this.closeFn(event);
+  };
+
   render() {
     return html`
       <wa-drawer
         label="${this.label}"
         ?open="${this.open}"
-        @wa-after-hide="${this.closeFn}"
+        @wa-hide="${this.handleHideRequest}"
+        @wa-after-hide="${this.handleAfterHide}"
       >
         <slot></slot>
       </wa-drawer>

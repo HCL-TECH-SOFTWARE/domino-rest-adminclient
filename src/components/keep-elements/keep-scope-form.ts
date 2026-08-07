@@ -255,11 +255,13 @@ export default class ScopeForm extends KeepElement {
 
     /* Was the InputContainer styled.div. */
     .input-container {
-      padding: 5px 0;
+      padding: 0;
+      margin-bottom: 18px;
     }
 
     .input-container.first {
-      margin-top: 5px;
+      margin-top: 0;
+      margin-bottom: 8px;
     }
 
     /* The two read-only rows that echo the tree selection. The second one truncates, which
@@ -557,6 +559,7 @@ export default class ScopeForm extends KeepElement {
    */
   private handleAclSelect(event: Event): void {
     // Composed, and would otherwise surface on the container as an event it never asked for.
+    // Only stopPropagation to let dropdown close normally.
     event.stopPropagation();
     const { item } = (event as WaSelect).detail;
     // wa-dropdown flips a checkbox item's own `checked` before it emits. Re-picking the level
