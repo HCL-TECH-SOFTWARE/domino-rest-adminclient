@@ -4,6 +4,7 @@
  * Licensed under Apache 2 License.                                           *
  * ========================================================================== */
 
+import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import { standardDecorators } from './scripts/standard-decorators.mjs';
 
@@ -132,7 +133,25 @@ function stampBuildVersion(): Plugin {
 }
 
 // https://vitejs.dev/config/
+const monacoWorkerAliases = [
+  {
+    find: /^monaco-editor\/esm\/vs\/editor\/editor\.worker(?:\.js)?$/,
+    replacement: fileURLToPath(new URL('./node_modules/monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url))
+  },
+  {
+    find: /^monaco-editor\/esm\/vs\/language\/json\/json\.worker(?:\.js)?$/,
+    replacement: fileURLToPath(new URL('./node_modules/monaco-editor/esm/vs/language/json/json.worker.js', import.meta.url))
+  },
+  {
+    find: /^monaco-editor\/esm\/vs\/language\/typescript\/ts\.worker(?:\.js)?$/,
+    replacement: fileURLToPath(new URL('./node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js', import.meta.url))
+  }
+];
+
 export default defineConfig({
+  resolve: {
+    alias: monacoWorkerAliases
+  },
   plugins: [
     stampBuildVersion(),
     appearanceBootScript(),
