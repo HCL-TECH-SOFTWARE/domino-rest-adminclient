@@ -49,9 +49,7 @@ function fetchMonaco() {
   installInlineStyleHoisting();
   installDocumentHeadAdoption();
 
-  return Promise.all([
-    import('monaco-editor')
-  ]).then(([monaco]) => {
+  return import('monaco-editor').then((monaco) => {
     // Monaco reads `MonacoEnvironment` off `self` when it first spins up a worker,
     // which cannot happen before an editor exists. Assigning it here — inside the
     // memoised promise, before any caller gets the namespace — is therefore early
