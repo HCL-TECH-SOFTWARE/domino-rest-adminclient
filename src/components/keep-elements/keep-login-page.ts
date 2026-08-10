@@ -554,6 +554,26 @@ export default class LoginPage extends KeepElement {
   }
 
   /**
+   * Determine if the LOG IN button should be enabled based on the current auth type
+   * and form field values. This handles the case where password managers auto-fill
+   * fields without triggering validation events.
+   */
+  private isButtonEnabled(): boolean {
+    if (this.form.submitting) return false;
+
+    switch (this.authType) {
+      case 'password':
+        return Boolean(this.form.values.username && this.form.values.password);
+      case 'passkey':
+        return Boolean(this.form.values.username);
+      case 'oidc':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Editing a field clears the rejection and the "Error logging in!" alert.
    *
    * The controller clears that field's own message and leaves the other alone, which is a
@@ -851,7 +871,7 @@ export default class LoginPage extends KeepElement {
               <keep-button
                 class="submit-button"
                 pill
-                ?disabled=${this.form.submitting}
+                ?disabled=${!this.isButtonEnabled()}
                 @click=${() => this.handleLogIn()}
               >
                 LOG IN
