@@ -82,7 +82,7 @@ jobs:
         id: sonar_gate
         if: steps.sonar.outputs.available == 'true'
         continue-on-error: true
-        uses: SonarSource/sonarqube-quality-gate-action@v1.2.0
+        uses: SonarSource/sonarqube-quality-gate-action@v1.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Publish quality gate status
