@@ -25,6 +25,10 @@ import {
 import { EDITOR_THEME_ID, EDITOR_TOKENS, buildEditorTheme } from '../../services/editor-theme.js';
 import { resolveWaColors } from '../../services/wa-color.js';
 import { resolveWaTypography } from '../../services/wa-typography.js';
+import editorWorker from '../../workers/monaco-editor.worker?worker';
+import jsonWorker from '../../workers/monaco-json.worker?worker';
+import tsWorker from '../../workers/monaco-ts.worker?worker';
+import editorMainCss from '../../../node_modules/monaco-editor/min/vs/editor/editor.main.css?inline';
 
 /**
  * Monaco, its worker wrappers and its stylesheet, loaded on first use rather than at
@@ -46,12 +50,8 @@ function fetchMonaco() {
   installDocumentHeadAdoption();
 
   return Promise.all([
-    import('monaco-editor'),
-    import('monaco-editor/esm/vs/editor/editor.worker?worker'),
-    import('monaco-editor/esm/vs/language/json/json.worker?worker'),
-    import('monaco-editor/esm/vs/language/typescript/ts.worker?worker'),
-    import('monaco-editor/min/vs/editor/editor.main.css?inline')
-  ]).then(([monaco, editorWorker, jsonWorker, tsWorker, styles]) => {
+    import('monaco-editor')
+  ]).then(([monaco]) => {
     // Monaco reads `MonacoEnvironment` off `self` when it first spins up a worker,
     // which cannot happen before an editor exists. Assigning it here — inside the
     // memoised promise, before any caller gets the namespace — is therefore early
@@ -63,12 +63,12 @@ function fetchMonaco() {
     self.MonacoEnvironment = {
       ...self.MonacoEnvironment,
       getWorker(_: unknown, label: string) {
-        if (label === 'json') return new jsonWorker.default();
-        if (label === 'javascript' || label === 'typescript') return new tsWorker.default();
-        return new editorWorker.default();
+        if (label === 'json') return new jsonWorker();
+        if (label === 'javascript' || label === 'typescript') return new tsWorker();
+        return new editorWorker();
       }
     };
-    return { monaco, styles: styles.default };
+    return { monaco, styles: editorMainCss };
   });
 }
 
