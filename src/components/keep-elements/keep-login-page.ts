@@ -450,9 +450,6 @@ export default class LoginPage extends KeepElement {
    */
   @state() private accessor rejected = false;
 
-  /** Tracks button enabled state separately to handle password manager auto-fills. */
-  @state() private accessor buttonEnabled = false;
-
   @query('#form-oidc') private accessor oidcDropdown!: Dropdown | null;
 
   @query('#login-error-dialog') private accessor errorDialog!: ApiErrorDialog | null;
@@ -473,9 +470,6 @@ export default class LoginPage extends KeepElement {
 
   /** Guards the mount work against a reconnect: moving the element must not refetch. */
   private started = false;
-
-  /** Timer ID for polling input values to detect password manager auto-fills. */
-  private autofillPoller: number | null = null;
 
   /**
    * The mount work, in the order the four effects it replaces ran.
@@ -500,129 +494,6 @@ export default class LoginPage extends KeepElement {
     this.applyStoredLoginType();
     // Reset alert when invalid credentials
     AlertManager.resetAlert();
-    
-    // Start polling to detect password manager auto-fills
-    console.log('[connectedCallback] Login page mounted, starting autofill detection');
-    this.startAutofillDetection();
-    
-    // Immediately try to sync any pre-filled values (password managers may fill before we render)
-    this.scheduleAutofillCheck();
-  }
-
-  /**
-   * Schedule an immediate check for auto-filled values after a short delay
-   * to allow password managers time to populate the fields after initial render.
-   */
-  private scheduleAutofillCheck(): void {
-    // Check after very short delays to catch password manager auto-fills
-    // Different password managers fill at different times, so we check multiple times
-    console.log('[scheduleAutofillCheck] Scheduling checks at 50, 100, 200, 400, 800ms');
-    setTimeout(() => {
-      console.log('[scheduleAutofillCheck] Running check at 50ms');
-      this.syncFormValuesFromInputs();
-    }, 50);
-    setTimeout(() => {
-      console.log('[scheduleAutofillCheck] Running check at 100ms');
-      this.syncFormValuesFromInputs();
-    }, 100);
-    setTimeout(() => {
-      console.log('[scheduleAutofillCheck] Running check at 200ms');
-      this.syncFormValuesFromInputs();
-    }, 200);
-    setTimeout(() => {
-      console.log('[scheduleAutofillCheck] Running check at 400ms');
-      this.syncFormValuesFromInputs();
-    }, 400);
-    setTimeout(() => {
-      console.log('[scheduleAutofillCheck] Running check at 800ms');
-      this.syncFormValuesFromInputs();
-    }, 800);
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.stopAutofillDetection();
-  }
-
-  /**
-   * Start polling to detect when password managers auto-fill the input fields.
-   * Some password managers don't trigger change events, so we poll to detect
-   * values being filled in. We read from the actual HTML inputs within wa-input's
-   * shadow roots because password managers bypass wa-input's .value property.
-   */
-  private startAutofillDetection(): void {
-    if (this.autofillPoller !== null) {
-      console.log('[startAutofillDetection] Polling already running');
-      return;
-    }
-    
-    console.log('[startAutofillDetection] Starting polling every 250ms');
-    
-    let lastUsername = '';
-    let lastPassword = '';
-    let pollCount = 0;
-    
-    this.autofillPoller = window.setInterval(() => {
-      pollCount++;
-      try {
-        const usernameElement = this.shadowRoot?.querySelector<any>('#form-username');
-        const passwordElement = this.shadowRoot?.querySelector<any>('#section-password');
-        
-        if (!usernameElement || !passwordElement) {
-          if (pollCount <= 2) console.log('[polling] Elements not found yet');
-          return; // Elements not ready yet
-        }
-        
-        // Get the actual input elements from within wa-input's shadow roots
-        // Password managers fill these directly, bypassing wa-input's .value property
-        const usernameInput = usernameElement.shadowRoot?.querySelector('input');
-        const passwordInput = passwordElement.shadowRoot?.querySelector('input');
-        
-        if (!usernameInput || !passwordInput) {
-          if (pollCount <= 2) console.log('[polling] Internal inputs not found yet');
-          return; // Internal inputs not ready yet
-        }
-        
-        const currentUsername = usernameInput.value ?? '';
-        const currentPassword = passwordInput.value ?? '';
-        
-        if (pollCount === 1 || currentUsername !== lastUsername || currentPassword !== lastPassword) {
-          console.log(`[polling #${pollCount}] username="${currentUsername}", password=${currentPassword ? '***' : 'empty'}, form.username="${this.form.values.username}", buttonEnabled=${this.buttonEnabled}`);
-        }
-        
-        // Check if values have changed since last poll
-        if (currentUsername !== lastUsername || currentPassword !== lastPassword) {
-          console.log(`[polling #${pollCount}] VALUES CHANGED! Updating form...`);
-          
-          if (currentUsername !== lastUsername) {
-            console.log(`[polling #${pollCount}]   Setting username: "${currentUsername}"`);
-            this.form.setValue('username', currentUsername);
-            lastUsername = currentUsername;
-          }
-          
-          if (currentPassword !== lastPassword) {
-            console.log(`[polling #${pollCount}]   Setting password`);
-            this.form.setValue('password', currentPassword);
-            lastPassword = currentPassword;
-          }
-          
-          console.log(`[polling #${pollCount}]   Before updateButtonState: buttonEnabled=${this.buttonEnabled}`);
-          // Always update button state when form values change
-          // This ensures the login button visual state reflects the form state
-          this.updateButtonState();
-          console.log(`[polling #${pollCount}]   After updateButtonState: buttonEnabled=${this.buttonEnabled}`);
-        }
-      } catch (e) {
-        console.error('[polling] Error:', e);
-      }
-    }, 250); // Poll every 250ms for very fast detection
-  }
-
-  private stopAutofillDetection(): void {
-    if (this.autofillPoller !== null) {
-      window.clearInterval(this.autofillPoller);
-      this.autofillPoller = null;
-    }
   }
 
   /**
@@ -646,9 +517,6 @@ export default class LoginPage extends KeepElement {
     // `applyTheme`, not `applyAppearance`: it resolves `system` against the OS preference,
     // which is the one setting whose appearance is not in the name.
     if (changed.has('themeMode')) applyTheme(this.themeMode);
-
-    // Update button state when auth type changes or after render
-    if (changed.has('authType')) this.updateButtonState();
 
     // Rising edge only: show() restarts the dismiss timer, so raising on every render would
     // hold the toast open for as long as the error flag stayed up. #952.
@@ -686,37 +554,6 @@ export default class LoginPage extends KeepElement {
   }
 
   /**
-   * Determine if the LOG IN button should be enabled based on the current auth type
-   * and form field values. This handles the case where password managers auto-fill
-   * fields without triggering validation events.
-   */
-  private isButtonEnabled(): boolean {
-    return this.buttonEnabled;
-  }
-
-  /**
-   * Public method for debugging - call from browser console
-   */
-  public getDebugInfo(): any {
-    const usernameElement = this.shadowRoot?.querySelector<any>('#form-username');
-    const passwordElement = this.shadowRoot?.querySelector<any>('#section-password');
-    const usernameInput = usernameElement?.shadowRoot?.querySelector('input');
-    const passwordInput = passwordElement?.shadowRoot?.querySelector('input');
-    
-    return {
-      formValues: this.form.values,
-      buttonEnabled: this.buttonEnabled,
-      buttonDisabled: this.shadowRoot?.querySelector('keep-button.submit-button')?.disabled,
-      inputValues: {
-        username: usernameInput?.value ?? 'NOT FOUND',
-        password: passwordInput?.value ? '***' : (passwordInput ? 'EMPTY' : 'NOT FOUND')
-      },
-      authType: this.authType,
-      autofillPollerRunning: this.autofillPoller !== null
-    };
-  }
-
-  /**
    * Editing a field clears the rejection and the "Error logging in!" alert.
    *
    * The controller clears that field's own message and leaves the other alone, which is a
@@ -724,73 +561,9 @@ export default class LoginPage extends KeepElement {
    * username while the password box is still empty no longer hides the password's message.
    */
   private handleFieldInput(field: keyof LoginFormValues, event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    console.log(`[handleFieldInput] field="${field}", value="${field === 'username' ? value : '***'}"`);
-    this.form.setValue(field, value);
+    this.form.setValue(field, (event.target as HTMLInputElement).value);
     this.rejected = false;
     this.account.dispatch(setLoginError(false));
-    this.updateButtonState();
-  }
-
-  /**
-   * Handle change events on input fields. This catches password manager auto-fills
-   * which may not trigger input events. This handler ensures the button can update
-   * its visual state when credentials are auto-filled.
-   */
-  private handleFieldChange(field: keyof LoginFormValues, event: Event): void {
-    const input = event.target as any;
-    const value = input?.value ?? '';
-    
-    console.log(`[handleFieldChange] field="${field}", value="${field === 'password' ? '***' : value}"`);
-    
-    // Update form controller with the actual value from the input
-    this.form.setValue(field, value);
-    this.rejected = false;
-    this.account.dispatch(setLoginError(false));
-    this.updateButtonState();
-  }
-
-  /**
-   * Update the button enabled state based on current field values and auth type.
-   * This is called whenever field values might have changed to keep the button
-   * visual state in sync.
-   */
-  private updateButtonState(): void {
-    const oldButtonEnabled = this.buttonEnabled;
-    
-    if (this.form.submitting) {
-      this.buttonEnabled = false;
-      this.requestUpdate();
-      console.log('[updateButtonState] Form is submitting, disabled button');
-      return;
-    }
-
-    switch (this.authType) {
-      case 'password': {
-        const usernameValue = this.form.values.username?.trim() ?? '';
-        const passwordValue = this.form.values.password?.trim() ?? '';
-        this.buttonEnabled = Boolean(usernameValue && passwordValue);
-        console.log(`[updateButtonState] password mode: username=${!!usernameValue}, password=${!!passwordValue}, buttonEnabled=${this.buttonEnabled}`);
-        break;
-      }
-      case 'passkey': {
-        const usernameValue = this.form.values.username?.trim() ?? '';
-        this.buttonEnabled = Boolean(usernameValue);
-        console.log(`[updateButtonState] passkey mode: username=${!!usernameValue}, buttonEnabled=${this.buttonEnabled}`);
-        break;
-      }
-      case 'oidc':
-        this.buttonEnabled = true;
-        console.log('[updateButtonState] oidc mode, enabled button');
-        break;
-      default:
-        this.buttonEnabled = false;
-        console.log('[updateButtonState] unknown auth type, disabled button');
-    }
-    
-    // Force re-render to update button visual state
-    console.log(`[updateButtonState] Calling requestUpdate() - buttonEnabled changed from ${oldButtonEnabled} to ${this.buttonEnabled}`);
-    this.requestUpdate();
   }
 
   private toggleTheme(): void {
@@ -803,62 +576,6 @@ export default class LoginPage extends KeepElement {
   }
 
   /**
-   * Sync form values from the actual input elements before logging in.
-   * This catches password manager auto-fills that may not have triggered change events.
-   */
-  private syncFormValuesFromInputs(): void {
-    try {
-      const usernameElement = this.shadowRoot?.querySelector<any>('#form-username');
-      const passwordElement = this.shadowRoot?.querySelector<any>('#section-password');
-      
-      // Get the ACTUAL input elements from within wa-input's shadow root
-      // This is necessary because password managers fill the actual input directly
-      // and wa-input's .value property may not be updated
-      const usernameInput = usernameElement?.shadowRoot?.querySelector('input');
-      const passwordInput = passwordElement?.shadowRoot?.querySelector('input');
-      
-      if (!usernameInput || !passwordInput) {
-        console.log('[syncFormValuesFromInputs] Inputs not ready yet');
-        return; // Inputs not ready yet
-      }
-      
-      const usernameValue = usernameInput.value ?? '';
-      const passwordValue = passwordInput.value ?? '';
-      
-      // Check if values exist and are different from what the form controller has
-      const currentUsername = this.form.values.username ?? '';
-      const currentPassword = this.form.values.password ?? '';
-      
-      console.log('[syncFormValuesFromInputs] Input values:', { usernameValue, passwordValue: passwordValue ? '***' : '' });
-      console.log('[syncFormValuesFromInputs] Form values:', { currentUsername, currentPassword: currentPassword ? '***' : '' });
-      
-      let changed = false;
-      
-      if (usernameValue && usernameValue !== currentUsername) {
-        console.log('[syncFormValuesFromInputs] Setting username');
-        this.form.setValue('username', usernameValue);
-        changed = true;
-      }
-      
-      if (passwordValue && passwordValue !== currentPassword) {
-        console.log('[syncFormValuesFromInputs] Setting password');
-        this.form.setValue('password', passwordValue);
-        changed = true;
-      }
-      
-      // If values changed, update button state and request re-render
-      if (changed) {
-        console.log('[syncFormValuesFromInputs] Values changed, calling updateButtonState');
-        this.updateButtonState();
-      } else {
-        console.log('[syncFormValuesFromInputs] No changes detected');
-      }
-    } catch (e) {
-      console.error('[syncFormValuesFromInputs] Error:', e);
-    }
-  }
-
-  /**
    * Press LOG IN, or Enter in a field. Both take exactly the same path: same mode switch,
    * same rules, same dispatch.
    *
@@ -867,7 +584,6 @@ export default class LoginPage extends KeepElement {
    * session.
    */
   private handleLogIn(): void {
-    this.syncFormValuesFromInputs();
     this.rejected = false;
     void this.form.submit();
   }
@@ -1004,10 +720,7 @@ export default class LoginPage extends KeepElement {
       const res = await fetch('/api/webauthn-v1/active');
       if (res.status > 299) return;
       const remembered = localStorage.getItem('keep_user');
-      if (remembered) {
-        this.form.setValue('username', remembered);
-        this.updateButtonState();
-      }
+      if (remembered) this.form.setValue('username', remembered);
     } catch (error) {
       this.account.dispatch(toggleAlert(alertMessage(error)));
     }
@@ -1049,8 +762,6 @@ export default class LoginPage extends KeepElement {
           .hint=${message ?? ''}
           aria-invalid=${message ? 'true' : nothing}
           @input=${(event: Event) => this.handleFieldInput(field, event)}
-          @change=${(event: Event) => this.handleFieldChange(field, event)}
-          @autofill=${(event: Event) => this.handleFieldChange(field, event)}
         ></wa-input>
       </section>
     `;
@@ -1140,7 +851,7 @@ export default class LoginPage extends KeepElement {
               <keep-button
                 class="submit-button"
                 pill
-                ?disabled=${!this.isButtonEnabled()}
+                ?disabled=${this.form.submitting}
                 @click=${() => this.handleLogIn()}
               >
                 LOG IN
