@@ -502,6 +502,7 @@ export default class LoginPage extends KeepElement {
     AlertManager.resetAlert();
     
     // Start polling to detect password manager auto-fills
+    console.log('[connectedCallback] Login page mounted, starting autofill detection');
     this.startAutofillDetection();
     
     // Immediately try to sync any pre-filled values (password managers may fill before we render)
@@ -515,11 +516,27 @@ export default class LoginPage extends KeepElement {
   private scheduleAutofillCheck(): void {
     // Check after very short delays to catch password manager auto-fills
     // Different password managers fill at different times, so we check multiple times
-    setTimeout(() => this.syncFormValuesFromInputs(), 50);
-    setTimeout(() => this.syncFormValuesFromInputs(), 100);
-    setTimeout(() => this.syncFormValuesFromInputs(), 200);
-    setTimeout(() => this.syncFormValuesFromInputs(), 400);
-    setTimeout(() => this.syncFormValuesFromInputs(), 800);
+    console.log('[scheduleAutofillCheck] Scheduling checks at 50, 100, 200, 400, 800ms');
+    setTimeout(() => {
+      console.log('[scheduleAutofillCheck] Running check at 50ms');
+      this.syncFormValuesFromInputs();
+    }, 50);
+    setTimeout(() => {
+      console.log('[scheduleAutofillCheck] Running check at 100ms');
+      this.syncFormValuesFromInputs();
+    }, 100);
+    setTimeout(() => {
+      console.log('[scheduleAutofillCheck] Running check at 200ms');
+      this.syncFormValuesFromInputs();
+    }, 200);
+    setTimeout(() => {
+      console.log('[scheduleAutofillCheck] Running check at 400ms');
+      this.syncFormValuesFromInputs();
+    }, 400);
+    setTimeout(() => {
+      console.log('[scheduleAutofillCheck] Running check at 800ms');
+      this.syncFormValuesFromInputs();
+    }, 800);
   }
 
   disconnectedCallback(): void {
@@ -534,17 +551,25 @@ export default class LoginPage extends KeepElement {
    * shadow roots because password managers bypass wa-input's .value property.
    */
   private startAutofillDetection(): void {
-    if (this.autofillPoller !== null) return;
+    if (this.autofillPoller !== null) {
+      console.log('[startAutofillDetection] Polling already running');
+      return;
+    }
+    
+    console.log('[startAutofillDetection] Starting polling every 250ms');
     
     let lastUsername = '';
     let lastPassword = '';
+    let pollCount = 0;
     
     this.autofillPoller = window.setInterval(() => {
+      pollCount++;
       try {
         const usernameElement = this.shadowRoot?.querySelector<any>('#form-username');
         const passwordElement = this.shadowRoot?.querySelector<any>('#section-password');
         
         if (!usernameElement || !passwordElement) {
+          if (pollCount <= 2) console.log('[polling] Elements not found yet');
           return; // Elements not ready yet
         }
         
@@ -554,30 +579,41 @@ export default class LoginPage extends KeepElement {
         const passwordInput = passwordElement.shadowRoot?.querySelector('input');
         
         if (!usernameInput || !passwordInput) {
+          if (pollCount <= 2) console.log('[polling] Internal inputs not found yet');
           return; // Internal inputs not ready yet
         }
         
         const currentUsername = usernameInput.value ?? '';
         const currentPassword = passwordInput.value ?? '';
         
+        if (pollCount === 1 || currentUsername !== lastUsername || currentPassword !== lastPassword) {
+          console.log(`[polling #${pollCount}] username="${currentUsername}", password=${currentPassword ? '***' : 'empty'}, form.username="${this.form.values.username}", buttonEnabled=${this.buttonEnabled}`);
+        }
+        
         // Check if values have changed since last poll
         if (currentUsername !== lastUsername || currentPassword !== lastPassword) {
+          console.log(`[polling #${pollCount}] VALUES CHANGED! Updating form...`);
+          
           if (currentUsername !== lastUsername) {
+            console.log(`[polling #${pollCount}]   Setting username: "${currentUsername}"`);
             this.form.setValue('username', currentUsername);
             lastUsername = currentUsername;
           }
           
           if (currentPassword !== lastPassword) {
+            console.log(`[polling #${pollCount}]   Setting password`);
             this.form.setValue('password', currentPassword);
             lastPassword = currentPassword;
           }
           
+          console.log(`[polling #${pollCount}]   Before updateButtonState: buttonEnabled=${this.buttonEnabled}`);
           // Always update button state when form values change
           // This ensures the login button visual state reflects the form state
           this.updateButtonState();
+          console.log(`[polling #${pollCount}]   After updateButtonState: buttonEnabled=${this.buttonEnabled}`);
         }
       } catch (e) {
-        // Silently ignore errors during polling
+        console.error('[polling] Error:', e);
       }
     }, 250); // Poll every 250ms for very fast detection
   }
@@ -659,6 +695,28 @@ export default class LoginPage extends KeepElement {
   }
 
   /**
+   * Public method for debugging - call from browser console
+   */
+  public getDebugInfo(): any {
+    const usernameElement = this.shadowRoot?.querySelector<any>('#form-username');
+    const passwordElement = this.shadowRoot?.querySelector<any>('#section-password');
+    const usernameInput = usernameElement?.shadowRoot?.querySelector('input');
+    const passwordInput = passwordElement?.shadowRoot?.querySelector('input');
+    
+    return {
+      formValues: this.form.values,
+      buttonEnabled: this.buttonEnabled,
+      buttonDisabled: this.shadowRoot?.querySelector('keep-button.submit-button')?.disabled,
+      inputValues: {
+        username: usernameInput?.value ?? 'NOT FOUND',
+        password: passwordInput?.value ? '***' : (passwordInput ? 'EMPTY' : 'NOT FOUND')
+      },
+      authType: this.authType,
+      autofillPollerRunning: this.autofillPoller !== null
+    };
+  }
+
+  /**
    * Editing a field clears the rejection and the "Error logging in!" alert.
    *
    * The controller clears that field's own message and leaves the other alone, which is a
@@ -666,7 +724,9 @@ export default class LoginPage extends KeepElement {
    * username while the password box is still empty no longer hides the password's message.
    */
   private handleFieldInput(field: keyof LoginFormValues, event: Event): void {
-    this.form.setValue(field, (event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    console.log(`[handleFieldInput] field="${field}", value="${field === 'username' ? value : '***'}"`);
+    this.form.setValue(field, value);
     this.rejected = false;
     this.account.dispatch(setLoginError(false));
     this.updateButtonState();
@@ -681,6 +741,8 @@ export default class LoginPage extends KeepElement {
     const input = event.target as any;
     const value = input?.value ?? '';
     
+    console.log(`[handleFieldChange] field="${field}", value="${field === 'password' ? '***' : value}"`);
+    
     // Update form controller with the actual value from the input
     this.form.setValue(field, value);
     this.rejected = false;
@@ -694,9 +756,12 @@ export default class LoginPage extends KeepElement {
    * visual state in sync.
    */
   private updateButtonState(): void {
+    const oldButtonEnabled = this.buttonEnabled;
+    
     if (this.form.submitting) {
       this.buttonEnabled = false;
       this.requestUpdate();
+      console.log('[updateButtonState] Form is submitting, disabled button');
       return;
     }
 
@@ -705,21 +770,26 @@ export default class LoginPage extends KeepElement {
         const usernameValue = this.form.values.username?.trim() ?? '';
         const passwordValue = this.form.values.password?.trim() ?? '';
         this.buttonEnabled = Boolean(usernameValue && passwordValue);
+        console.log(`[updateButtonState] password mode: username=${!!usernameValue}, password=${!!passwordValue}, buttonEnabled=${this.buttonEnabled}`);
         break;
       }
       case 'passkey': {
         const usernameValue = this.form.values.username?.trim() ?? '';
         this.buttonEnabled = Boolean(usernameValue);
+        console.log(`[updateButtonState] passkey mode: username=${!!usernameValue}, buttonEnabled=${this.buttonEnabled}`);
         break;
       }
       case 'oidc':
         this.buttonEnabled = true;
+        console.log('[updateButtonState] oidc mode, enabled button');
         break;
       default:
         this.buttonEnabled = false;
+        console.log('[updateButtonState] unknown auth type, disabled button');
     }
     
     // Force re-render to update button visual state
+    console.log(`[updateButtonState] Calling requestUpdate() - buttonEnabled changed from ${oldButtonEnabled} to ${this.buttonEnabled}`);
     this.requestUpdate();
   }
 
@@ -748,6 +818,7 @@ export default class LoginPage extends KeepElement {
       const passwordInput = passwordElement?.shadowRoot?.querySelector('input');
       
       if (!usernameInput || !passwordInput) {
+        console.log('[syncFormValuesFromInputs] Inputs not ready yet');
         return; // Inputs not ready yet
       }
       
@@ -758,24 +829,32 @@ export default class LoginPage extends KeepElement {
       const currentUsername = this.form.values.username ?? '';
       const currentPassword = this.form.values.password ?? '';
       
+      console.log('[syncFormValuesFromInputs] Input values:', { usernameValue, passwordValue: passwordValue ? '***' : '' });
+      console.log('[syncFormValuesFromInputs] Form values:', { currentUsername, currentPassword: currentPassword ? '***' : '' });
+      
       let changed = false;
       
       if (usernameValue && usernameValue !== currentUsername) {
+        console.log('[syncFormValuesFromInputs] Setting username');
         this.form.setValue('username', usernameValue);
         changed = true;
       }
       
       if (passwordValue && passwordValue !== currentPassword) {
+        console.log('[syncFormValuesFromInputs] Setting password');
         this.form.setValue('password', passwordValue);
         changed = true;
       }
       
       // If values changed, update button state and request re-render
       if (changed) {
+        console.log('[syncFormValuesFromInputs] Values changed, calling updateButtonState');
         this.updateButtonState();
+      } else {
+        console.log('[syncFormValuesFromInputs] No changes detected');
       }
     } catch (e) {
-      // Silently ignore errors during sync
+      console.error('[syncFormValuesFromInputs] Error:', e);
     }
   }
 
