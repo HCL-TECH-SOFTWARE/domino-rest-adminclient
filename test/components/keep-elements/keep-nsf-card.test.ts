@@ -177,6 +177,7 @@ describe('keep-nsf-card', () => {
     expect(q(el, 'keep-schema-status').length).toBe(1);
     
     el.database = db2;
+    el.requestUpdate();
     await el.updateComplete;
     expect(q(el, 'keep-schema-status').length).toBe(2);
   });
