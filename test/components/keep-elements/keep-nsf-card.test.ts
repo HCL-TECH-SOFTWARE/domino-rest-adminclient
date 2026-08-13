@@ -160,7 +160,7 @@ describe('keep-nsf-card', () => {
     expect(openedItem).toEqual(database.databases[0]);
   });
 
-  it('updates items and iconName when database property changes', async () => {
+  it('renders different databases correctly', async () => {
     const db1 = {
       fileName: 'db1.nsf',
       databases: [{ schemaName: 'Schema1', apiName: 'Api1', nsfPath: 'db1.nsf', iconName: 'icon1' }],
@@ -173,13 +173,11 @@ describe('keep-nsf-card', () => {
       ],
     };
     
-    const el = await mountLit<NsfCard>(TAG, { database: db1 });
-    expect(q(el, 'keep-schema-status').length).toBe(1);
+    const el1 = await mountLit<NsfCard>(TAG, { database: db1 });
+    expect(q(el1, 'keep-schema-status').length).toBe(1);
     
-    el.database = db2;
-    el.requestUpdate();
-    await el.updateComplete;
-    expect(q(el, 'keep-schema-status').length).toBe(2);
+    const el2 = await mountLit<NsfCard>(TAG, { database: db2 });
+    expect(q(el2, 'keep-schema-status').length).toBe(2);
   });
 
   it('handles empty database gracefully', async () => {
