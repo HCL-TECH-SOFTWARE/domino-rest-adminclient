@@ -54,7 +54,7 @@ describe('keep-nsf-card', () => {
     const el = await mountLit<NsfCard>(TAG, { database });
     const input = el.shadowRoot!.querySelector('wa-input') as HTMLElement & { value: string };
     input.value = 'AlphaApi';
-    input.dispatchEvent(new Event('wa-input', { bubbles: true, composed: true }));
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
     await el.updateComplete;
     expect(q(el, 'keep-schema-status').length).toBe(1);
   });
