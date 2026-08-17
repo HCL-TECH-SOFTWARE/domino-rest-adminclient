@@ -193,7 +193,7 @@ export default class NsfCard extends KeepElement {
             class="search"
             placeholder="Search Schema"
             .value=${this.searchItem}
-            @wa-input=${this._handleSearchInput}
+            @input=${this._handleSearchInput}
         >
             <span slot="label" class="visually-hidden">Search schemas in ${this.database.fileName ?? 'this database'}</span>
             <wa-icon slot="prefix" library="${FA_LIBRARY}" name="magnifying-glass" aria-hidden="true"></wa-icon>

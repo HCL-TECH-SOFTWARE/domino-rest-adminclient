@@ -495,4 +495,8 @@ describe('keep-agents-tab — styles a document sheet cannot reach in here', () 
   it('gives the bulk controls a visible focus indicator', () => {
     expect(styleText).toMatch(/\.text-button:focus-visible\s*\{[^}]*outline:/);
   });
+
+  it('stretches the agents table across the row so it matches the search box width', () => {
+    expect(styleText).toMatch(/\.flex-container\s*>\s*keep-agents-table\s*\{[^}]*flex:\s*1/);
+  });
 });
