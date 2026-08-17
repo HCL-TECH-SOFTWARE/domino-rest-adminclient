@@ -192,11 +192,12 @@ export default class FieldContainer extends KeepElement {
      * border on the hr, which a shadow root still gets.
      */
     hr {
-      height: 1px;
       width: 100%;
-      background: none;
-      padding: 5px 0 10px 0;
-      margin: 0 0 10px 0;
+      height: 0;
+      border: 0;
+      border-top: 2px solid var(--wa-color-neutral-border-normal, var(--wa-color-surface-border, #444));
+      margin: 8px 0 12px 0;
+      padding: 0;
     }
 
     /* was .field-setting-text.m-0 */

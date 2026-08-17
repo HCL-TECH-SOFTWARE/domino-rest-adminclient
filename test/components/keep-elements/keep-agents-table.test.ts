@@ -310,8 +310,23 @@ describe('keep-agents-table — styles a document sheet cannot reach in here', (
     expect(styleText).toMatch(/thead th\s*\{[^}]*font-size:\s*var\(--wa-font-size-smaller\)/);
   });
 
-  it('keeps the name column at the width its width attribute set', () => {
-    expect(styleText).toMatch(/\.col-name\s*\{[^}]*width:\s*550px/);
+  it('lets the name column absorb the remaining width so Status sits at the right edge', () => {
+    expect(styleText).toMatch(/\.col-name\s*\{[^}]*width:\s*auto/);
+    expect(styleText).toMatch(/\.col-status\s*\{[^}]*width:\s*1%/);
+    expect(styleText).toMatch(/\.col-status\s*\{[^}]*white-space:\s*nowrap/);
+  });
+
+  it('stretches the table to fill its container, matching the search box width above it', () => {
+    expect(styleText).toMatch(/\btable\s*\{[^}]*width:\s*100%/);
+  });
+
+  it('tags the status header and cell with col-status', async () => {
+    const el = await mount();
+    expect(headerCells(el)[1].classList.contains('col-status')).toBe(true);
+    const statusCells = bodyRows(el).map((row) =>
+      row.querySelector('td.col-status'),
+    );
+    expect(statusCells.every((cell) => cell !== null)).toBe(true);
   });
 
   it('still asks keep-data-table for zebra striping', async () => {

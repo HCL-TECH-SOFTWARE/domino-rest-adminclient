@@ -190,6 +190,10 @@ export default class AgentsTab extends KeepElement {
         display: flex;
       }
 
+      .flex-container > keep-agents-table {
+        flex: 1;
+      }
+
       /*
        * was the .dialog pair in styles/styles.css. Its border was a light/dark literal
        * pair whose light half was transparent; the surface-border token is what the
