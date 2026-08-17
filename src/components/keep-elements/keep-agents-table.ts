@@ -145,6 +145,7 @@ export default class AgentsTable extends KeepElement {
       table {
         font-variant-numeric: tabular-nums;
         padding: 30px;
+        width: 100%;
       }
 
       tbody tr {
@@ -163,7 +164,13 @@ export default class AgentsTable extends KeepElement {
 
       /* Was a width attribute on the name column's header and body cells. */
       .col-name {
-        width: 550px;
+        width: auto;
+      }
+
+      /* Push the status column to the right edge, matching the Views table layout. */
+      .col-status {
+        width: 1%;
+        white-space: nowrap;
       }
 
       /*
@@ -243,7 +250,7 @@ export default class AgentsTable extends KeepElement {
     return html`
       <tr>
         <td class="col-name"><div class="agent-name">${agent.agentName}</div></td>
-        <td>
+        <td class="col-status">
           <keep-activate-switch
             .view=${agent}
             type="agent"
@@ -262,7 +269,7 @@ export default class AgentsTable extends KeepElement {
           <thead>
             <tr>
               <th class="col-name" scope="col"><div class="agent-name">Agent Name</div></th>
-              <th scope="col" aria-describedby="status-help">
+              <th class="col-status" scope="col" aria-describedby="status-help">
                 <div class="status-header">
                   <keep-tooltip content=${STATUS_HELP} placement="bottom" without-arrow>
                     <div class="status-trigger" tabindex="0">

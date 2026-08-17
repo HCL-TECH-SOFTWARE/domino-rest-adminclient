@@ -77,7 +77,7 @@ export default class FormDialogHeader extends KeepElement {
       background: transparent;
       margin: 0;
       position: absolute;
-      top: -15px;
+      top: -5px;
       right: 0;
       line-height: 1;
       display: flex;

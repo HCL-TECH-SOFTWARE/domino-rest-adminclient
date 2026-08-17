@@ -153,9 +153,9 @@ export default class ActivateSwitch extends KeepElement {
         padding: 8px 12px;
         border-radius: var(--wa-border-radius-m);
         position: absolute;
-        top: 5px;
+        top: 10px;
         transition: all 0.2s ease;
-        left: 68px;
+        left: 74px;
         overflow-x: visible;
         text-transform: none;
       }
@@ -169,7 +169,7 @@ export default class ActivateSwitch extends KeepElement {
        */
       .disable {
         background-color: #6c7882;
-        left: 2px;
+        left: 5px;
       }
 
       /* was .unchecked */
@@ -177,8 +177,8 @@ export default class ActivateSwitch extends KeepElement {
         box-sizing: border-box;
         width: 68px;
         height: 24px;
-        left: 70px;
-        top: 5px;
+        left: 74px;
+        top: 10px;
         position: absolute;
         color: var(--wa-color-text-quiet);
         display: flex;
@@ -193,7 +193,7 @@ export default class ActivateSwitch extends KeepElement {
 
       /* was .left */
       .left {
-        left: 2px;
+        left: 5px;
       }
 
       /* was the .dialog pair in styles/styles.css; see keep-delete-dialog for why the
