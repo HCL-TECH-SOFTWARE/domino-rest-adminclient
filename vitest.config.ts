@@ -7,6 +7,11 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vitest/config';
 import { standardDecorators } from './scripts/standard-decorators.mjs';
+// This config deliberately does not extend vite.config.mts, so the one alias the app cannot
+// build without has to be repeated here — vitest fails to resolve the import otherwise, and
+// `keep-monaco-editor.test.ts` cannot even `vi.mock` a specifier that does not resolve.
+// monaco-css.mts holds the single definition and the reason.
+import { monacoCssAlias } from './monaco-css.mjs';
 
 // Standalone Vitest config. It reuses the same plugin graph as the Vite build
 // (SWC/React) so components transform identically to `npm run build`/`dev`, but
@@ -36,7 +41,7 @@ export default defineConfig({
   // Together with the no-op `attachInternals` that `test/setupTests.ts` used to install,
   // this is how #742's 18 dead `data-user-invalid` selectors survived unnoticed.
   ssr: { resolve: { conditions: ['browser'] } },
-  resolve: { conditions: ['browser'] },
+  resolve: { conditions: ['browser'], alias: [...monacoCssAlias] },
   plugins: [
     // The `wyw` (Linaria) plugin used to sit here to mirror the build. It is gone with the
     // last `styled` block (#825); see the note in vite.config.mts.

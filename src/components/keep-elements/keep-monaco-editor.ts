@@ -47,9 +47,18 @@ function fetchMonaco() {
 
   return Promise.all([
     import('monaco-editor'),
-    import('monaco-editor/esm/vs/editor/editor.worker?worker'),
-    import('monaco-editor/esm/vs/language/json/json.worker?worker'),
-    import('monaco-editor/esm/vs/language/typescript/ts.worker?worker'),
+    // The `esm/vs/` prefix these three used to carry is gone, and dropping it is the
+    // *supported* spelling — not a workaround. Monaco 0.56 added an `exports` map whose
+    // catch-all answers every subpath with `./esm/vs/<subpath>.js`, so the old names now
+    // resolve to `esm/vs/esm/vs/…`, a doubled path that does not exist. Not one file moved;
+    // the map simply turns these shorter names back into the very same workers.
+    import('monaco-editor/editor/editor.worker?worker'),
+    import('monaco-editor/language/json/json.worker?worker'),
+    import('monaco-editor/language/typescript/ts.worker?worker'),
+    // The stylesheet cannot come through that map under any spelling — the catch-all appends
+    // `.js`, so no `.css` in the package is reachable by name. It is aliased to its real path
+    // in `monaco-css.mts`, which both bundler configs import and which is where the reason is
+    // written down. This still names the file it actually gets.
     import('monaco-editor/min/vs/editor/editor.main.css?inline')
   ]).then(([monaco, editorWorker, jsonWorker, tsWorker, styles]) => {
     // Monaco reads `MonacoEnvironment` off `self` when it first spins up a worker,

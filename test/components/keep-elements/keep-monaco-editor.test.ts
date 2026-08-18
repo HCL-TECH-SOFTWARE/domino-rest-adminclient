@@ -231,9 +231,15 @@ vi.mock('monaco-editor', () => {
 // The Vite `?worker` and `?inline` imports only need to resolve — the component never
 // instantiates a worker here, because `MonacoEnvironment.getWorker` is only ever called
 // by the real Monaco.
-vi.mock('monaco-editor/esm/vs/editor/editor.worker?worker', () => ({ default: class {} }));
-vi.mock('monaco-editor/esm/vs/language/json/json.worker?worker', () => ({ default: class {} }));
-vi.mock('monaco-editor/esm/vs/language/typescript/ts.worker?worker', () => ({ default: class {} }));
+//
+// These four specifiers must stay character-for-character identical to the component's, and
+// Monaco 0.56 changed three of them (see the note at the import site). That is not a hazard
+// here: `vi.mock` resolves its argument, so a stale path fails the file outright rather than
+// leaving a mock that silently never applies. The `?inline` one resolves only because
+// `vitest.config.ts` carries the alias from `monaco-css.mts`.
+vi.mock('monaco-editor/editor/editor.worker?worker', () => ({ default: class {} }));
+vi.mock('monaco-editor/language/json/json.worker?worker', () => ({ default: class {} }));
+vi.mock('monaco-editor/language/typescript/ts.worker?worker', () => ({ default: class {} }));
 vi.mock('monaco-editor/min/vs/editor/editor.main.css?inline', () => ({ default: '/* monaco css */' }));
 
 // Prettier's standalone build plus the babel/estree plugins is megabytes of parser that

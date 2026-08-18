@@ -24,6 +24,8 @@
   "include": [
     "test",
     "vitest.config.ts",
+    // Imported by `vitest.config.ts`; see the note on the same entry in `tsconfig.app.json`.
+    "monaco-css.mts",
     "src",
     "scripts",
     "package.json"
