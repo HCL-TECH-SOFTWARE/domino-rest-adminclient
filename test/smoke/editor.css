@@ -1,0 +1,41 @@
+/* ========================================================================== *
+ * Copyright (C) 2026 HCL America Inc.                                        *
+ * All rights reserved.                                                       *
+ * Licensed under Apache 2 License.                                           *
+ * ========================================================================== */
+
+/*
+ * The editor needs a real box or it lays out to nothing and renders a single line.
+ *
+ * A stylesheet and not `el.style.cssText`, which is how the equivalent harness in
+ * couch-companion-ui does it: the policy this gate runs under sends
+ * `style-src-attr 'none'`, so a `style` attribute is refused outright — measured, with the
+ * refusal reported and the element left 5 px tall. Vite emits this as its own asset and
+ * links it, so it is served from `'self'` and the harness never becomes the thing that
+ * fails its own CSP assertion.
+ */
+.smoke-editor {
+  display: block;
+  width: 900px;
+  height: 320px;
+}
+
+/*
+ * The codicon probe: a real glyph next to a font that does not exist. Equal advance widths
+ * mean the face never applied. `position: absolute; visibility: hidden` keeps it out of the
+ * way while still being laid out — `display: none` would give both spans zero width and the
+ * check would pass or fail at random.
+ */
+.smoke-font-probe {
+  position: absolute;
+  visibility: hidden;
+  font-size: 100px;
+}
+
+.smoke-glyph {
+  font-family: codicon;
+}
+
+.smoke-fallback {
+  font-family: no-such-family-xyz;
+}
