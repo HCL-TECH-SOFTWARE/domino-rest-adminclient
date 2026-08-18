@@ -64,7 +64,6 @@ const monacoState = vi.hoisted(() => {
   const models: any[] = [];
   const definedThemes: { id: string; data: any }[] = [];
   const setThemes: string[] = [];
-  const completionProviders: { language: string; provider: unknown; disposed: boolean }[] = [];
 
   const makeEditor = (options: Record<string, unknown> = {}) => {
     const listeners: Record<string, (() => void)[]> = {};
@@ -134,7 +133,7 @@ const monacoState = vi.hoisted(() => {
   };
 
   return {
-    editors, diffEditors, models, definedThemes, setThemes, completionProviders, makeEditor,
+    editors, diffEditors, models, definedThemes, setThemes, makeEditor,
     /** What was in place when `monaco-editor` was first evaluated (#1002). */
     hookAtImport: {
       installed: undefined as boolean | undefined,
@@ -144,7 +143,7 @@ const monacoState = vi.hoisted(() => {
 });
 
 vi.mock('monaco-editor', () => {
-  const { editors, diffEditors, models, definedThemes, setThemes, completionProviders, makeEditor } = monacoState;
+  const { editors, diffEditors, models, definedThemes, setThemes, makeEditor } = monacoState;
 
   // This factory runs at the first `import('monaco-editor')`, which is exactly where the
   // real Monaco builds its trusted-types policies in static initialisers. Recording the
@@ -204,9 +203,6 @@ vi.mock('monaco-editor', () => {
         models.push(m);
         return m;
       },
-      setModelLanguage(model: FakeModel, language: string) {
-        model.language = language;
-      },
       defineTheme(id: string, data: unknown) {
         definedThemes.push({ id, data });
       },
@@ -214,17 +210,9 @@ vi.mock('monaco-editor', () => {
         setThemes.push(id);
       },
     },
-    languages: {
-      registerCompletionItemProvider(language: string, provider: unknown) {
-        const entry = { language, provider, disposed: false };
-        completionProviders.push(entry);
-        return {
-          dispose() {
-            entry.disposed = true;
-          },
-        };
-      },
-    },
+    // No `languages` surface: the component registers no providers and switches no
+    // model languages any more — #1022 made it JSON-only. A fake that still offered
+    // them would assert against a capability nothing uses.
   };
 });
 
@@ -241,16 +229,6 @@ vi.mock('monaco-editor/editor/editor.worker?worker', () => ({ default: class {} 
 vi.mock('monaco-editor/language/json/json.worker?worker', () => ({ default: class {} }));
 vi.mock('monaco-editor/language/typescript/ts.worker?worker', () => ({ default: class {} }));
 vi.mock('monaco-editor/min/vs/editor/editor.main.css?inline', () => ({ default: '/* monaco css */' }));
-
-// Prettier's standalone build plus the babel/estree plugins is megabytes of parser that
-// every mount would otherwise pay for. The identity mock keeps the format-on-* paths
-// reachable while staying deterministic; one test overrides it to assert reformatting.
-const prettierState = vi.hoisted(() => ({ format: (code: string) => code }));
-vi.mock('prettier/standalone', () => ({
-  format: (code: string) => Promise.resolve(prettierState.format(code)),
-}));
-vi.mock('prettier/plugins/babel', () => ({ default: {} }));
-vi.mock('prettier/plugins/estree', () => ({ default: {} }));
 
 // Must come after the mocks: importing the module registers the element, which pulls in
 // everything above.
@@ -283,8 +261,6 @@ describe('keep-monaco-editor', () => {
     monacoState.models.length = 0;
     monacoState.definedThemes.length = 0;
     monacoState.setThemes.length = 0;
-    monacoState.completionProviders.length = 0;
-    prettierState.format = (code: string) => code;
 
     /*
      * jsdom has constructed stylesheets (`new CSSStyleSheet()`, `replaceSync`) but no
@@ -389,23 +365,28 @@ describe('keep-monaco-editor', () => {
 
   // ─── reactive properties ──────────────────────────────────────────────────────
 
-  it('passes value and language into the editor it constructs', async () => {
-    await mountLit<MonacoEditor>(TAG, { value: 'const a = 1;', language: 'javascript' });
+  it('passes value into the editor it constructs, and always builds it as JSON', async () => {
+    await mountLit<MonacoEditor>(TAG, { value: '{ "a": 1 }' });
 
-    expect(lastEditor().options.value).toBe('const a = 1;');
-    expect(lastEditor().options.language).toBe('javascript');
+    expect(lastEditor().options.value).toBe('{ "a": 1 }');
+    expect(lastEditor().options.language).toBe('json');
   });
 
-  it('defaults language to javascript and value to the empty string', async () => {
+  /*
+   * The language is a constant, not a property, since #1022 — so this is the whole of what
+   * a caller can influence. It is asserted rather than assumed because #1022 goes on to
+   * register the JSON grammar *alone*: at that point a buffer built as anything else is
+   * silently untokenised, with nothing thrown and nothing logged.
+   */
+  it('builds a JSON editor with no configuration at all, and defaults value to the empty string', async () => {
     const el = await mountLit<MonacoEditor>(TAG);
 
-    expect(el.language).toBe('javascript');
     expect(el.value).toBe('');
-    expect(lastEditor().options.language).toBe('javascript');
+    expect(lastEditor().options.language).toBe('json');
   });
 
   it('pushes a changed value property into the editor', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'first', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'first' });
 
     el.value = 'second';
     await el.updateComplete;
@@ -414,7 +395,7 @@ describe('keep-monaco-editor', () => {
   });
 
   it('does not re-set the editor when the value property matches what is already there', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'same', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'same' });
     const editor = lastEditor();
     const setValue = vi.spyOn(editor, 'setValue');
 
@@ -422,15 +403,6 @@ describe('keep-monaco-editor', () => {
     await el.updateComplete;
 
     expect(setValue).not.toHaveBeenCalled();
-  });
-
-  it('switches the model language when the language property changes', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: '{}', language: 'json' });
-
-    el.language = 'javascript';
-    await el.updateComplete;
-
-    expect(lastEditor().getModel()!.language).toBe('javascript');
   });
 
   it('forwards readOnly changes to the editor options', async () => {
@@ -493,7 +465,7 @@ describe('keep-monaco-editor', () => {
   // ─── change event ─────────────────────────────────────────────────────────────
 
   it('emits a composed, bubbling change event carrying the new value', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'before', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'before' });
     const editor = lastEditor();
 
     const events: CustomEvent<{ value: string }>[] = [];
@@ -510,7 +482,7 @@ describe('keep-monaco-editor', () => {
   });
 
   it('does not emit change for a value pushed in through the property', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'first', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'first' });
 
     let changes = 0;
     el.addEventListener('change', () => {
@@ -525,7 +497,7 @@ describe('keep-monaco-editor', () => {
   });
 
   it('does not emit change for a programmatic setValue()', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'first', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'first' });
 
     let changes = 0;
     el.addEventListener('change', () => {
@@ -538,27 +510,10 @@ describe('keep-monaco-editor', () => {
     expect(changes).toBe(0);
   });
 
-  it('reformats on blur and suppresses the change that causes', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'const a=1', language: 'javascript' });
-    const editor = lastEditor();
-
-    let changes = 0;
-    el.addEventListener('change', () => {
-      changes += 1;
-    });
-
-    prettierState.format = () => 'const a = 1;';
-    editor.fire('onDidBlurEditorText');
-    await tick();
-
-    expect(editor.getValue()).toBe('const a = 1;');
-    expect(changes).toBe(0);
-  });
-
   // ─── public API ───────────────────────────────────────────────────────────────
 
   it('exposes the editor value through getValue()', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'hello', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'hello' });
 
     lastEditor().value = 'edited';
 
@@ -566,7 +521,7 @@ describe('keep-monaco-editor', () => {
   });
 
   it('forwards focus() and format() to the editor', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG);
     const editor = lastEditor();
     const before = editor.focusCalls;
 
@@ -584,7 +539,6 @@ describe('keep-monaco-editor', () => {
       diffMode: true,
       value: 'modified',
       originalValue: 'original',
-      language: 'json',
     });
 
     const [original, modified] = liveModels();
@@ -599,7 +553,6 @@ describe('keep-monaco-editor', () => {
       diffMode: true,
       value: 'modified',
       originalValue: 'original',
-      language: 'json',
     });
     const modified = lastDiffEditor().getModifiedEditor() as FakeEditor;
 
@@ -614,7 +567,7 @@ describe('keep-monaco-editor', () => {
   });
 
   it('rebuilds the editor when diffMode is toggled, disposing the previous one', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'x', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'x' });
     const standard = lastEditor();
 
     el.diffMode = true;
@@ -629,7 +582,6 @@ describe('keep-monaco-editor', () => {
       diffMode: true,
       value: 'modified',
       originalValue: 'original',
-      language: 'json',
     });
 
     el.originalValue = 'original v2';
@@ -641,36 +593,10 @@ describe('keep-monaco-editor', () => {
     expect(modified!.getValue()).toBe('modified v2');
   });
 
-  // ─── completion provider ──────────────────────────────────────────────────────
-
-  it('registers a completion provider for the current language when one is supplied', async () => {
-    const provider = { provideCompletionItems: () => ({ suggestions: [] }) };
-    await mountLit<MonacoEditor>(TAG, { language: 'json', completionProvider: provider as never });
-
-    expect(monacoState.completionProviders).toHaveLength(1);
-    expect(monacoState.completionProviders[0]).toMatchObject({ language: 'json', provider });
-  });
-
-  it('disposes the previous completion provider when a new one is set', async () => {
-    const first = { provideCompletionItems: () => ({ suggestions: [] }) };
-    const second = { provideCompletionItems: () => ({ suggestions: [] }) };
-    const el = await mountLit<MonacoEditor>(TAG, {
-      language: 'json',
-      completionProvider: first as never,
-    });
-
-    el.completionProvider = second as never;
-    await el.updateComplete;
-
-    expect(monacoState.completionProviders[0]!.disposed).toBe(true);
-    expect(monacoState.completionProviders[1]!.disposed).toBe(false);
-    expect(monacoState.completionProviders[1]!.provider).toBe(second);
-  });
-
   // ─── disposal ─────────────────────────────────────────────────────────────────
 
   it('disposes the editor on disconnectedCallback', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'x', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'x' });
     const editor = lastEditor();
     expect(editor.disposed).toBe(false);
 
@@ -684,7 +610,6 @@ describe('keep-monaco-editor', () => {
       diffMode: true,
       value: 'modified',
       originalValue: 'original',
-      language: 'json',
     });
     const diff = lastDiffEditor();
     const [original, modified] = liveModels();
@@ -696,20 +621,8 @@ describe('keep-monaco-editor', () => {
     expect(modified!.disposed).toBe(true);
   });
 
-  it('disposes the completion provider on disconnectedCallback', async () => {
-    const provider = { provideCompletionItems: () => ({ suggestions: [] }) };
-    const el = await mountLit<MonacoEditor>(TAG, {
-      language: 'json',
-      completionProvider: provider as never,
-    });
-
-    el.remove();
-
-    expect(monacoState.completionProviders[0]!.disposed).toBe(true);
-  });
-
   it('disconnects the theme observer on disconnectedCallback', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG);
     el.remove();
 
     // <html> churn no longer redefines the theme.
@@ -721,7 +634,7 @@ describe('keep-monaco-editor', () => {
   });
 
   it('stops emitting change once removed', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'x', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'x' });
     const editor = lastEditor();
 
     let changes = 0;
@@ -751,7 +664,7 @@ describe('keep-monaco-editor', () => {
   // inverted here rather than deleted, so a regression back to two builds still fails.
 
   it('builds exactly one editor on first render', async () => {
-    await mountLit<MonacoEditor>(TAG, { value: 'x', language: 'json' });
+    await mountLit<MonacoEditor>(TAG, { value: 'x' });
 
     expect(monacoState.editors).toHaveLength(1);
     expect(monacoState.editors[0]!.disposed).toBe(false);
@@ -762,7 +675,6 @@ describe('keep-monaco-editor', () => {
       diffMode: true,
       value: 'modified',
       originalValue: 'original',
-      language: 'json',
     });
 
     expect(monacoState.diffEditors).toHaveLength(1);
@@ -782,7 +694,7 @@ describe('keep-monaco-editor', () => {
       },
     );
 
-    await mountLit<MonacoEditor>(TAG, { language: 'json' });
+    await mountLit<MonacoEditor>(TAG);
 
     expect(observe).toHaveBeenCalledTimes(1);
     expect(disconnect).not.toHaveBeenCalled();
@@ -800,7 +712,7 @@ describe('keep-monaco-editor', () => {
       },
     );
 
-    const el = await mountLit<MonacoEditor>(TAG, { language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG);
     el.diffMode = true;
     await el.updateComplete;
 
@@ -823,7 +735,6 @@ describe('keep-monaco-editor', () => {
     // override every caller that renders and then reaches for the editor would find
     // nothing there.
     const el = document.createElement(TAG) as MonacoEditor;
-    el.language = 'json';
     document.body.appendChild(el);
 
     await el.updateComplete;
@@ -836,7 +747,6 @@ describe('keep-monaco-editor', () => {
     // Changes arriving mid-download must not be lost: `updated()` cannot act on them
     // (there is no editor yet), so `_initialise()` has to read the current values.
     const el = document.createElement(TAG) as MonacoEditor;
-    el.language = 'json';
     document.body.appendChild(el);
 
     el.diffMode = true;

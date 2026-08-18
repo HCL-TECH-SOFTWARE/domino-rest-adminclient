@@ -1039,7 +1039,6 @@ export default class FormsContainer extends KeepElement {
         ></keep-source>
         ${isTextualView(this.selectedOption)
           ? html`<keep-monaco-editor
-              language="json"
               .value=${this.sourceTabContent}
               .diffMode=${this.selectedOption === 'diff'}
               .originalValue=${this.savedSchemaText}

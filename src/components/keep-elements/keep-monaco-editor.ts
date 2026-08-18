@@ -99,35 +99,22 @@ function loadMonaco() {
 let monacoStyles: CSSResult | undefined;
 
 /**
- * Prettier, loaded on first use rather than at module scope.
+ * The only language this editor ever hosts.
  *
- * Two reasons. It is a runtime dependency of this element but weighs ~1 MB, and a
- * static import puts all of it in the entry chunk even for the many sessions that
- * never open a JavaScript buffer — only `language === 'javascript'` ever formats.
- * And it is used in exactly one function, on paths that are already async.
+ * It was a public `language` property defaulting to `'javascript'`, but the one call site
+ * in the tree — `keep-forms-container` — has always passed `"json"`, and nothing else has
+ * ever mounted this element. A constant rather than a property with a default, so that
+ * #1022 can register JSON alone: once Monaco stops shipping the other 79 grammars, a
+ * caller asking for one would get a silently untokenised buffer, and the way to prevent
+ * that is to make the request unrepresentable rather than to document it.
  *
- * The promise itself is memoised, so concurrent callers share one download and
- * later calls resolve immediately.
+ * This is also why Prettier is gone. Every call into it sat behind
+ * `this.language === 'javascript'`, so JSON-only makes the whole formatter unreachable —
+ * ~607 kB of lazy chunks and one runtime dependency. Monaco's own
+ * `editor.action.formatDocument` is unaffected and still formats JSON: it is what
+ * `formatOnPaste`, `formatOnType` and the public {@link MonacoEditor.format} run.
  */
-function fetchPrettier() {
-  return Promise.all([
-    import('prettier/standalone'),
-    import('prettier/plugins/babel'),
-    import('prettier/plugins/estree')
-  ]).then(([standalone, babel, estree]) => ({
-    format: standalone.format,
-    // Inferred, not annotated: these are plugin *namespaces*, and spelling out the
-    // type would mean casting through `unknown` to satisfy Prettier's `Plugin`.
-    plugins: [babel, estree]
-  }));
-}
-
-let prettierBundle: ReturnType<typeof fetchPrettier> | undefined;
-
-function loadPrettier() {
-  prettierBundle ??= fetchPrettier();
-  return prettierBundle;
-}
+const LANGUAGE = 'json';
 
 @customElement('keep-monaco-editor')
 export default class MonacoEditor extends LitElement {
@@ -146,13 +133,9 @@ export default class MonacoEditor extends LitElement {
   `;
 
   @property({ type: String }) accessor value = '';
-  @property({ type: String }) accessor language = 'javascript';
   @property({ type: Boolean }) accessor readOnly = false;
   @property({ type: Boolean }) accessor diffMode = false;
   @property({ type: String }) accessor originalValue = '';
-  @property({ attribute: false }) accessor completionProvider:
-    | Monaco.languages.CompletionItemProvider
-    | undefined;
   private _themeObserver?: MutationObserver;
   /** Watches the render root for markup carrying hoisted style declarations. */
   private _styleObserver?: MutationObserver;
@@ -173,7 +156,6 @@ export default class MonacoEditor extends LitElement {
   private _originalModel?: Monaco.editor.ITextModel;
   private _modifiedModel?: Monaco.editor.ITextModel;
   private _suppressChange = false;
-  private _completionDisposable?: Monaco.IDisposable;
   private _resizeObserver?: ResizeObserver;
 
   /**
@@ -190,47 +172,12 @@ export default class MonacoEditor extends LitElement {
     return complete;
   }
 
-  private async formatWithPrettier(code: string): Promise<string> {
-    try {
-      // Check if it's a CouchDB function (starts with "function(" without a name)
-      const isCouchDBFunction = /^\s*function\s*\(/.test(code);
-
-      // Wrap in parentheses to make it a valid expression for Prettier
-      const codeToFormat = isCouchDBFunction ? `(${code})` : code;
-
-      const { format, plugins } = await loadPrettier();
-      const formatted = await format(codeToFormat, {
-        parser: 'babel',
-        plugins,
-        semi: true,
-        singleQuote: false,
-        tabWidth: 2,
-        printWidth: 80
-      });
-
-      // Remove the wrapping parentheses and semicolon if we added them
-      if (isCouchDBFunction) {
-        return formatted
-          .trim()
-          .replace(/^\(/, '') // Remove leading (
-          .replace(/\);?\s*$/, '') // Remove trailing ) and optional ;
-          .trim();
-      }
-
-      return formatted;
-    } catch (err) {
-      // If formatting fails, return original code unchanged
-      log.debug('Prettier formatting failed, returning code unchanged', err as Error);
-      return code;
-    }
-  }
-
   private _buildStandardEditor(monaco: typeof Monaco, container: HTMLDivElement) {
     const monacoTheme = this._applyTheme(monaco);
 
     this.editor = monaco.editor.create(container, {
       value: this.value,
-      language: this.language,
+      language: LANGUAGE,
       theme: monacoTheme,
       // Both match the pre-`keep-monaco-editor` behaviour, where the Source tab used
       // `@monaco-editor/react` with neither option set and so got Monaco's own
@@ -266,37 +213,6 @@ export default class MonacoEditor extends LitElement {
         })
       );
     });
-
-    // Format on paste
-    this.editor.onDidPaste(() => {
-      setTimeout(async () => {
-        if (this.language === 'javascript' && this.editor) {
-          const content = this.editor.getValue();
-          const formatted = await this.formatWithPrettier(content);
-          if (formatted !== content) {
-            this._suppressChange = true;
-            this.editor.setValue(formatted);
-            this._suppressChange = false;
-          }
-        }
-      }, 150);
-    });
-
-    // Format on blur
-    this.editor.onDidBlurEditorText(() => {
-      if (this.language === 'javascript' && this.editor) {
-        const content = this.editor.getValue();
-        if (content.trim().length > 0) {
-          this.formatWithPrettier(content).then((formatted) => {
-            if (formatted !== content && this.editor) {
-              this._suppressChange = true;
-              this.editor.setValue(formatted);
-              this._suppressChange = false;
-            }
-          });
-        }
-      }
-    });
   }
 
   private _buildDiffEditor(monaco: typeof Monaco, container: HTMLDivElement) {
@@ -315,8 +231,8 @@ export default class MonacoEditor extends LitElement {
       theme: monacoTheme
     });
 
-    this._originalModel = monaco.editor.createModel(this.originalValue || this.value, this.language);
-    this._modifiedModel = monaco.editor.createModel(this.value, this.language);
+    this._originalModel = monaco.editor.createModel(this.originalValue || this.value, LANGUAGE);
+    this._modifiedModel = monaco.editor.createModel(this.value, LANGUAGE);
 
     this.diffEditor.setModel({
       original: this._originalModel,
@@ -344,43 +260,9 @@ export default class MonacoEditor extends LitElement {
         })
       );
     });
-
-    // Format on paste (modified pane)
-    modifiedEditor.onDidPaste(() => {
-      setTimeout(async () => {
-        if (this.language === 'javascript' && this.diffEditor) {
-          const content = modifiedEditor.getValue();
-          const formatted = await this.formatWithPrettier(content);
-          if (formatted !== content) {
-            this._suppressChange = true;
-            modifiedEditor.setValue(formatted);
-            this._suppressChange = false;
-          }
-        }
-      }, 150);
-    });
-
-    // Format on blur (modified pane)
-    modifiedEditor.onDidBlurEditorText(() => {
-      if (this.language === 'javascript' && this.diffEditor) {
-        const content = modifiedEditor.getValue();
-        if (content.trim().length > 0) {
-          this.formatWithPrettier(content).then((formatted) => {
-            if (formatted !== content && this.diffEditor) {
-              this._suppressChange = true;
-              modifiedEditor.setValue(formatted);
-              this._suppressChange = false;
-            }
-          });
-        }
-      }
-    });
   }
 
   private _teardown() {
-    this._completionDisposable?.dispose();
-    this._completionDisposable = undefined;
-
     // Widgets before models. `DiffEditorWidget` subscribes to its models'
     // `onWillDispose` and throws "TextModel got disposed before DiffEditorWidget
     // model got reset" if one disappears while it still holds it — which happened
@@ -551,27 +433,9 @@ export default class MonacoEditor extends LitElement {
       attributeFilter: ['class']
     });
 
-    if (this.completionProvider) {
-      this._completionDisposable = bundle.monaco.languages.registerCompletionItemProvider(
-        this.language,
-        this.completionProvider
-      );
-    }
-
     if (!this.diffMode) {
-      setTimeout(async () => {
+      setTimeout(() => {
         this.editor?.layout();
-
-        // Format the initial content with Prettier
-        if (this.language === 'javascript' && this.editor && this.value.trim().length > 0) {
-          const formatted = await this.formatWithPrettier(this.value);
-          if (formatted !== this.value) {
-            this._suppressChange = true;
-            this.editor.setValue(formatted);
-            this._suppressChange = false;
-          }
-        }
-
         this.editor?.focus();
       }, 200);
     }
@@ -649,13 +513,6 @@ export default class MonacoEditor extends LitElement {
     }
 
     if (!this.diffMode && this.editor) {
-      if (changedProperties.has('language')) {
-        const model = this.editor.getModel();
-        if (model) {
-          monaco.editor.setModelLanguage(model, this.language);
-        }
-      }
-
       // Update value if changed externally
       if (changedProperties.has('value')) {
         const newValue = typeof this.value === 'string' ? this.value : '';
@@ -665,34 +522,12 @@ export default class MonacoEditor extends LitElement {
           this._suppressChange = true;
           this.editor.setValue(newValue);
           this._suppressChange = false;
-
-          // Auto-format after value change - only if there's content
-          if (this.language === 'javascript' && newValue.trim().length > 0) {
-            setTimeout(async () => {
-              if (this.editor) {
-                const formatted = await this.formatWithPrettier(newValue);
-                if (formatted !== newValue) {
-                  this._suppressChange = true;
-                  this.editor.setValue(formatted);
-                  this._suppressChange = false;
-                }
-              }
-            }, 100);
-          }
         }
       }
 
       // Update readOnly if changed
       if (changedProperties.has('readOnly')) {
         this.editor.updateOptions({ readOnly: this.readOnly });
-      }
-
-      if (changedProperties.has('completionProvider')) {
-        this._completionDisposable?.dispose();
-        this._completionDisposable = undefined;
-        if (this.completionProvider) {
-          this._completionDisposable = monaco.languages.registerCompletionItemProvider(this.language, this.completionProvider);
-        }
       }
     }
 
