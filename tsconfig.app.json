@@ -57,6 +57,10 @@
   "include": [
     "src",
     "vite.config.mts",
+    // The Monaco stylesheet alias `vite.config.mts` imports. Listed for the same reason as
+    // `standard-decorators.mts` below: a composite project must contain every file in its
+    // program. `tsconfig.test.json` lists it too, because `vitest.config.ts` imports it as well.
+    "monaco-css.mts",
     // The SWC decorator transform `vite.config.mts` registers (#996). Listed because a
     // composite project must contain every file in its program. Named as a single file
     // rather than the whole `scripts` directory, which also holds `bundle-budget.mjs` — a
