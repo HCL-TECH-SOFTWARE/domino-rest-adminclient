@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanupLit, mountLit } from '../../test-utils/lit';
 
 /*
- * `keep-monaco-editor` cannot be exercised against the real `monaco-editor`: importing it
+ * `keep-monaco-editor` cannot be exercised against the real `monaco-editor/editor`: importing it
  * evaluates the whole editor bundle, which calls `document.queryCommandSupported` at
  * module scope — absent in jsdom — and then wants a layout engine jsdom does not have.
  *
@@ -142,10 +142,10 @@ const monacoState = vi.hoisted(() => {
   };
 });
 
-vi.mock('monaco-editor', () => {
+vi.mock('monaco-editor/editor', () => {
   const { editors, diffEditors, models, definedThemes, setThemes, makeEditor } = monacoState;
 
-  // This factory runs at the first `import('monaco-editor')`, which is exactly where the
+  // This factory runs at the first `import('monaco-editor/editor')`, which is exactly where the
   // real Monaco builds its trusted-types policies in static initialisers. Recording the
   // environment here is the only way to catch the hook being installed too late — see the
   // ordering test near the bottom of this file.
@@ -225,9 +225,11 @@ vi.mock('monaco-editor', () => {
 // here: `vi.mock` resolves its argument, so a stale path fails the file outright rather than
 // leaving a mock that silently never applies. The `?inline` one resolves only because
 // `vitest.config.ts` carries the alias from `monaco-css.mts`.
+// The registration list is imported for its side effects, and those side effects are 72
+// real Monaco modules — exactly what the fake above exists to avoid evaluating in jsdom.
+vi.mock('../../../src/monaco-registrations', () => ({}));
 vi.mock('monaco-editor/editor/editor.worker?worker', () => ({ default: class {} }));
 vi.mock('monaco-editor/language/json/json.worker?worker', () => ({ default: class {} }));
-vi.mock('monaco-editor/language/typescript/ts.worker?worker', () => ({ default: class {} }));
 vi.mock('monaco-editor/min/vs/editor/editor.main.css?inline', () => ({ default: '/* monaco css */' }));
 
 // Must come after the mocks: importing the module registers the element, which pulls in

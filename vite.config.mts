@@ -8,6 +8,8 @@ import { defineConfig, type Plugin } from 'vite';
 import { standardDecorators } from './scripts/standard-decorators.mjs';
 // Monaco 0.56's exports map hides its own stylesheet; monaco-css.mts explains and resolves it.
 import { monacoCssAlias } from './monaco-css.mjs';
+// Guards src/monaco-registrations.ts — both of its failure modes are silent. See the file.
+import { assertMonacoImports } from './monaco-imports.mjs';
 
 /** The appearance boot module, as a Rollup input name and as a source path. */
 const APPEARANCE_BOOT = { name: 'appearance-boot', path: 'src/appearance-boot.ts' };
@@ -134,6 +136,8 @@ function stampBuildVersion(): Plugin {
 }
 
 // https://vitejs.dev/config/
+assertMonacoImports();
+
 export default defineConfig({
   // The one alias the app cannot build without. `vitest.config.ts` repeats it, because these
   // two configs are standalone; `monaco-css.mts` holds the single definition and the reason.

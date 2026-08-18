@@ -46,7 +46,8 @@ const settle = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
  * `installMonacoDomStubs()` again; it is idempotent.
  */
 installMonacoDomStubs();
-await import('monaco-editor');
+await import('monaco-editor/editor');
+await import('../../../src/monaco-registrations');
 
 describe('keep-monaco-editor — real Monaco lifecycle', () => {
   let restoreRejectionHandlers: (() => void) | undefined;
