@@ -80,7 +80,6 @@ describe('keep-monaco-editor — real Monaco lifecycle', () => {
       diffMode: true,
       value: 'modified',
       originalValue: 'original',
-      language: 'json',
     });
     await settle();
 
@@ -91,7 +90,7 @@ describe('keep-monaco-editor — real Monaco lifecycle', () => {
   });
 
   it('disposes a standard editor without tripping a Monaco assertion', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: '{"a":1}', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: '{"a":1}' });
     await settle();
 
     el.remove();
@@ -102,7 +101,7 @@ describe('keep-monaco-editor — real Monaco lifecycle', () => {
 
   // _rebuildEditor() tears down and reconstructs in place; the same ordering applies.
   it('rebuilds across a diffMode toggle without tripping a Monaco assertion', async () => {
-    const el = await mountLit<MonacoEditor>(TAG, { value: 'x', language: 'json' });
+    const el = await mountLit<MonacoEditor>(TAG, { value: 'x' });
     await settle();
 
     el.diffMode = true;
