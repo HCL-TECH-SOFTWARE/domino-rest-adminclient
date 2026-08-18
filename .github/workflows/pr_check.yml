@@ -40,6 +40,14 @@ jobs:
       # critical path) is invisible in a green build. See #813.
       - run: npm run bundle:budget
       - run: npm run test
+      # The only gate that runs a real browser. Everything it asserts is invisible to the
+      # step above: `keep-monaco-editor.test.ts` replaces `monaco-editor` with a fake (it has
+      # to — the real one wants a layout engine), every other suite mocks the component, and
+      # jsdom has no CSP and no Worker that answers. So "the editor is styled, tokenised and
+      # answered by json.worker under the policy we ship" is asserted here or nowhere (#1002,
+      # #1022). ubuntu-latest ships google-chrome-stable; the gate fails loudly rather than
+      # skipping if it is ever absent, because a skipped browser gate gates nothing.
+      - run: npm run smoke
       - name: Publish test coverage summary
         if: always()
         run: |

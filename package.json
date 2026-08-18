@@ -44,6 +44,7 @@
     "build:win": "tsc -b tsconfig.app.json && vite build",
     "lint": "oxlint src test scripts",
     "bundle:budget": "node scripts/bundle-budget.mjs",
+    "smoke": "node scripts/smoke.mjs",
     "bundle:budget:update": "node scripts/bundle-budget.mjs --update",
     "preview": "vite preview",
     "typecheck": "tsc -b"

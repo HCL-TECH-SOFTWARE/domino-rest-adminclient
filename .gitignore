@@ -32,3 +32,6 @@ chrome-user-data
 .settings
 .classpath
 worktrees
+
+# The post-build smoke gate builds here (scripts/smoke.mjs). Never shipped.
+.smoke/
