@@ -12,8 +12,10 @@ import { getLogger } from '../../services/log-service.js';
 const log = getLogger('components/keep-monaco-editor');
 
 // Types only — `import type` erases at compile time, so naming Monaco's interfaces
-// throughout the class costs nothing at runtime.
-import type * as Monaco from 'monaco-editor';
+// throughout the class costs nothing at runtime. `monaco-editor/editor` and not
+// `monaco-editor`: the API-only entry is what this component actually receives, and the
+// everything-entry's types advertise an `lsp` namespace that #1022 stopped shipping.
+import type * as Monaco from 'monaco-editor/editor';
 import {
   applyHoistedStyles,
   installInlineStyleHoisting
@@ -46,7 +48,15 @@ function fetchMonaco() {
   installDocumentHeadAdoption();
 
   return Promise.all([
-    import('monaco-editor'),
+    // The API alone. `monaco-editor` — the everything-entry — registered all 80 grammars,
+    // all four rich language services and an LSP client we never call (#1022); this entry
+    // registers nothing at all, which is why the line below is not optional.
+    import('monaco-editor/editor'),
+    // Imported for its side effects only: it *is* the registration list. Without it the
+    // editor builds, mounts and renders grey untokenised text with no suggest widget and no
+    // folding — throwing nothing and logging nothing. `test/smoke/editor.ts` is what proves
+    // it is doing its job.
+    import('../../monaco-registrations.js'),
     // The `esm/vs/` prefix these three used to carry is gone, and dropping it is the
     // *supported* spelling — not a workaround. Monaco 0.56 added an `exports` map whose
     // catch-all answers every subpath with `./esm/vs/<subpath>.js`, so the old names now
@@ -54,13 +64,12 @@ function fetchMonaco() {
     // the map simply turns these shorter names back into the very same workers.
     import('monaco-editor/editor/editor.worker?worker'),
     import('monaco-editor/language/json/json.worker?worker'),
-    import('monaco-editor/language/typescript/ts.worker?worker'),
     // The stylesheet cannot come through that map under any spelling — the catch-all appends
     // `.js`, so no `.css` in the package is reachable by name. It is aliased to its real path
     // in `monaco-css.mts`, which both bundler configs import and which is where the reason is
     // written down. This still names the file it actually gets.
     import('monaco-editor/min/vs/editor/editor.main.css?inline')
-  ]).then(([monaco, editorWorker, jsonWorker, tsWorker, styles]) => {
+  ]).then(([monaco, , editorWorker, jsonWorker, styles]) => {
     // Monaco reads `MonacoEnvironment` off `self` when it first spins up a worker,
     // which cannot happen before an editor exists. Assigning it here — inside the
     // memoised promise, before any caller gets the namespace — is therefore early
@@ -73,7 +82,9 @@ function fetchMonaco() {
       ...self.MonacoEnvironment,
       getWorker(_: unknown, label: string) {
         if (label === 'json') return new jsonWorker.default();
-        if (label === 'javascript' || label === 'typescript') return new tsWorker.default();
+        // No `typescript`/`javascript` arm any more: #1022 stopped registering the
+        // TypeScript service, so nothing can ask for its worker — and the 6.9 MB
+        // ts.worker chunk it dragged into every build is gone with it.
         return new editorWorker.default();
       }
     };

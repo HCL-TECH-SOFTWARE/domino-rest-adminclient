@@ -61,6 +61,7 @@
     // `standard-decorators.mts` below: a composite project must contain every file in its
     // program. `tsconfig.test.json` lists it too, because `vitest.config.ts` imports it as well.
     "monaco-css.mts",
+    "monaco-imports.mts",
     // The SWC decorator transform `vite.config.mts` registers (#996). Listed because a
     // composite project must contain every file in its program. Named as a single file
     // rather than the whole `scripts` directory, which also holds `bundle-budget.mjs` — a
