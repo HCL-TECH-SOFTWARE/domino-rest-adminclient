@@ -86,6 +86,60 @@ export function applyHoistedStyles(root: ParentNode): void {
   }
 }
 
+/** Whether {@link installStyleAttributeInterception} has already run. */
+let styleAttributeIntercepted = false;
+
+/**
+ * Routes every `setAttribute('style', …)` on the page through the CSSOM instead.
+ *
+ * {@link replayRefusedStyleAttributes} repairs the damage after the fact, which restores what
+ * the user sees but does not stop the browser reporting the refusal first — three reports per
+ * editor session, straight at `report-uri /api/csp-violation-report`. This gets in front of
+ * the write instead, which is the same thing {@link installInlineStyleHoisting} does for
+ * Monaco's `innerHTML` markup and the reason that channel reports nothing.
+ *
+ * **Semantically transparent.** These two are defined to do the same work — parse the text
+ * into the element's declaration block, and leave the attribute serialising back to it:
+ *
+ * ```js
+ * el.setAttribute('style', value);
+ * el.style.cssText = value;
+ * ```
+ *
+ * The difference is only which one CSP governs. `style-src-attr` refuses the first and has
+ * nothing to say about the second, which is the split `hoistInlineStyles` already relies on.
+ *
+ * Deliberately global, and deliberately not scoped to Monaco. It cannot be scoped: the write
+ * happens on an element Monaco creates, so there is no container to wrap and no hook to pass
+ * — and every other component on the page benefits from the same redirection, because any
+ * `style` attribute any of them sets is refused by the same directive. Anything that is not a
+ * `style` attribute on a styleable element goes to the native implementation untouched.
+ *
+ * Not released, for the same reason {@link installDocumentHeadAdoption} is not: it guards a
+ * page-lifetime prototype, and unwrapping it when the last editor closes would reopen the
+ * hole for the next one while a second editor might still be open.
+ */
+export function installStyleAttributeInterception(): void {
+  if (styleAttributeIntercepted) return;
+  styleAttributeIntercepted = true;
+
+  const native = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function setAttribute(
+    this: Element,
+    name: string,
+    value: string
+  ): void {
+    // `style` is the only attribute this touches, and only where there is a declaration
+    // block to write to. SVG elements have one too, which is why this is not an
+    // `instanceof HTMLElement` check.
+    if (name.toLowerCase() === 'style' && 'style' in this) {
+      (this as unknown as ElementCSSInlineStyle).style.cssText = value;
+      return;
+    }
+    native.call(this, name, value);
+  };
+}
+
 /** The subset of a Trusted Types policy Monaco actually calls. */
 interface MonacoPolicy {
   createHTML?: (value: string) => string;

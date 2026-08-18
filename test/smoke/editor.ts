@@ -301,10 +301,17 @@ async function run(): Promise<void> {
 
   /* ---- the diff editor keep-forms-container drives ---------------------------------------- */
 
+  /*
+   * Deleted lines, not a one-line modification. That is what makes Monaco render an
+   * `inline-deleted-margin-view-zone`, and it is the only path in the whole ESM tree that
+   * calls `setAttribute('style', …)` — the channel #1024 was about. With a `{"a":1}` vs
+   * `{"a":2}` diff the zone renders only sometimes, which is exactly why that violation
+   * appeared on a laptop and not on CI.
+   */
   const diff = await mount({
     diffMode: true,
-    value: ['{', '  "a": 1', '}'].join(NL),
-    originalValue: ['{', '  "a": 2', '}'].join(NL)
+    value: ['{', '  "a": 1,', '  "b": 5', '}'].join(NL),
+    originalValue: ['{', '  "a": 1,', '  "x1": 2,', '  "x2": 3,', '  "b": 5', '}'].join(NL)
   });
   const panes = await until(() => {
     const found = diff.shadowRoot!.querySelectorAll('.monaco-diff-editor .editor');
@@ -314,6 +321,36 @@ async function run(): Promise<void> {
     'diff-editor-renders',
     panes !== undefined,
     panes ? `${panes.length} panes inside .monaco-diff-editor` : 'fewer than two panes'
+  );
+
+  /* ---- #1024: the two channels that were refused under the shipped CSP ------------------ */
+
+  /*
+   * Both of these assert the *rendered result*, not the absence of a violation report. The
+   * driver already fails on any report; what it cannot tell you is whether the fix restored
+   * the thing the user sees. These are the two measurements from the investigation.
+   */
+  const sign = await until(() =>
+    diff.shadowRoot!.querySelector('.inline-deleted-margin-view-zone .delete-sign')
+  );
+  const signPosition = sign ? getComputedStyle(sign).position : 'no such element';
+  add(
+    'deletion-indicators-positioned',
+    signPosition === 'absolute',
+    sign
+      ? `.delete-sign resolves to position: ${signPosition} (refused: static, applied: absolute)`
+      : 'no inline-deleted margin view zone rendered — this check proves nothing (#1024)'
+  );
+
+  // The suggest widget is still open on the first editor from the check above.
+  const focusedRow = root.querySelector('.suggest-widget .monaco-list-row.focused');
+  const rowBackground = focusedRow ? getComputedStyle(focusedRow).backgroundColor : 'no focused row';
+  add(
+    'suggest-selection-visible',
+    focusedRow !== null && rowBackground !== 'rgba(0, 0, 0, 0)',
+    focusedRow
+      ? `focused suggestion background ${rowBackground} (refused sheet leaves it transparent)`
+      : 'no focused suggestion row — this check proves nothing (#1024)'
   );
 }
 

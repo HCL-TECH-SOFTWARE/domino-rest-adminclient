@@ -5,11 +5,7 @@
  * ========================================================================== */
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import {
-  applyHoistedStyles,
-  hoistInlineStyles,
-  installInlineStyleHoisting,
-} from '../../src/services/monaco-inline-styles';
+import { applyHoistedStyles, hoistInlineStyles, installInlineStyleHoisting, installStyleAttributeInterception } from '../../src/services/monaco-inline-styles';
 
 /**
  * #1002 — the two halves of moving Monaco's inline styles across the line
@@ -183,5 +179,80 @@ describe('installInlineStyleHoisting', () => {
 
     expect(self.MonacoEnvironment!.getWorker).toBe(getWorker);
     expect(self.MonacoEnvironment!.createTrustedTypesPolicy).toBeTypeOf('function');
+  });
+});
+
+/**
+ * #1024 — the one place in Monaco's whole ESM tree that writes a style attribute directly.
+ *
+ * `editor/browser/widget/diffEditor/…/diffEditorViewZones.js` calls
+ * `marginElement.setAttribute('style', 'position:absolute;top:…')` for each deletion
+ * indicator in an inline-deleted view zone. `hoistInlineStyles` cannot see it — it only sits
+ * on the `innerHTML` path — so under `style-src-attr 'none'` every one of them is refused:
+ * measured in Chrome, `position` resolved to `static` and `width` to `46px` instead of
+ * `10px`, and the icons piled up instead of lining up with the deleted lines.
+ *
+ * The redirection is to the CSSOM, which the directive does not govern. That is the same
+ * split `hoistInlineStyles` relies on, and the reason this is a redirection rather than a
+ * repair: the browser never gets an attribute to refuse, so nothing is reported either.
+ */
+describe('installStyleAttributeInterception', () => {
+  it('routes a style attribute into the declaration block', () => {
+    installStyleAttributeInterception();
+    const element = document.createElement('div');
+    element.setAttribute('style', 'position:absolute;top:18px;width:10px');
+
+    // The declarations are what CSP refuses when they arrive as an attribute; arriving
+    // through the CSSOM they are simply applied.
+    expect(element.style.position).toBe('absolute');
+    expect(element.style.top).toBe('18px');
+    expect(element.style.width).toBe('10px');
+    expect(element.style.length).toBeGreaterThan(0);
+  });
+
+  it('still serialises back to a style attribute, so nothing downstream changes', () => {
+    installStyleAttributeInterception();
+    const element = document.createElement('div');
+    element.setAttribute('style', 'color:red');
+
+    expect(element.getAttribute('style')).toContain('red');
+  });
+
+  it('leaves every other attribute to the native implementation', () => {
+    // The blast-radius test: this patches a prototype the whole page shares.
+    installStyleAttributeInterception();
+    const element = document.createElement('div');
+    element.setAttribute('class', 'delete-sign');
+    element.setAttribute('data-thing', 'x');
+    element.setAttribute('role', 'presentation');
+
+    expect(element.className).toBe('delete-sign');
+    expect(element.getAttribute('data-thing')).toBe('x');
+    expect(element.getAttribute('role')).toBe('presentation');
+  });
+
+  it('matches the attribute name case-insensitively, as the DOM does', () => {
+    installStyleAttributeInterception();
+    const element = document.createElement('div');
+    element.setAttribute('STYLE', 'color:blue');
+
+    expect(element.style.color).toBe('blue');
+  });
+
+  it('clears the declarations when set to the empty string', () => {
+    installStyleAttributeInterception();
+    const element = document.createElement('div');
+    element.setAttribute('style', 'color:red');
+    element.setAttribute('style', '');
+
+    expect(element.style.length).toBe(0);
+  });
+
+  it('installs once, however often it is called', () => {
+    installStyleAttributeInterception();
+    const first = Element.prototype.setAttribute;
+    installStyleAttributeInterception();
+
+    expect(Element.prototype.setAttribute).toBe(first);
   });
 });

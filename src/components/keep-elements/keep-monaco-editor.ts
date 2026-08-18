@@ -18,10 +18,13 @@ const log = getLogger('components/keep-monaco-editor');
 import type * as Monaco from 'monaco-editor/editor';
 import {
   applyHoistedStyles,
+  installStyleAttributeInterception,
   installInlineStyleHoisting
 } from '../../services/monaco-inline-styles.js';
 import {
   adoptStyleElements,
+  watchStyleElementsIn,
+  installStyleElementInterception,
   installDocumentHeadAdoption
 } from '../../services/monaco-style-elements.js';
 import { EDITOR_THEME_ID, EDITOR_TOKENS, buildEditorTheme } from '../../services/editor-theme.js';
@@ -46,6 +49,11 @@ function fetchMonaco() {
   // Each function documents what breaks if it moves.
   installInlineStyleHoisting();
   installDocumentHeadAdoption();
+  // The two channels neither of the above can reach, both fixed at the source rather than
+  // repaired afterwards (#1024): a `style` attribute set directly, and a `<style>` appended
+  // to a node Monaco makes itself. Each documents the race it exists to win.
+  installStyleAttributeInterception();
+  installStyleElementInterception();
 
   return Promise.all([
     // The API alone. `monaco-editor` — the everything-entry — registered all 80 grammars,
@@ -152,6 +160,8 @@ export default class MonacoEditor extends LitElement {
   private _styleObserver?: MutationObserver;
   /** Unwraps this editor's container, installed only once Monaco has loaded. */
   private _releaseContainer?: () => void;
+  /** Stops the subtree watch that adopts style elements Monaco appends to its own nodes. */
+  private _releaseSubtreeStyles?: () => void;
   /**
    * Cache key from the last `_applyTheme()` call that did real work — see
    * `_themeCacheKey()`. Starts `undefined` so the construction-time call always runs.
@@ -505,6 +515,11 @@ export default class MonacoEditor extends LitElement {
     applyHoistedStyles(root);
     this._styleObserver = new MutationObserver(() => applyHoistedStyles(root));
     this._styleObserver.observe(root, { childList: true, subtree: true });
+
+    // Claims this root for `installStyleElementInterception()`, which is what catches the
+    // stylesheets Monaco builds inside detached nodes of its own — the suggest list's, which
+    // the container wrap in `_interceptMonacoStyleElements` structurally cannot see (#1024).
+    this._releaseSubtreeStyles = watchStyleElementsIn(root, root);
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -569,6 +584,9 @@ export default class MonacoEditor extends LitElement {
 
     this._releaseContainer?.();
     this._releaseContainer = undefined;
+
+    this._releaseSubtreeStyles?.();
+    this._releaseSubtreeStyles = undefined;
   }
 
   /**

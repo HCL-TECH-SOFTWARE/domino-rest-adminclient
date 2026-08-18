@@ -93,6 +93,128 @@ export function adoptStyleElements(container: Node, target: AdoptionTarget): () 
   };
 }
 
+/**
+ * Registers `root` as a tree whose style elements must be adopted rather than inserted, and
+ * adopts any already in it.
+ *
+ * {@link adoptStyleElements} wraps `appendChild` on one node, which covers the two containers
+ * the #1002 investigation found. That investigation recorded a third, in `div.monaco-list`,
+ * as *empty* — and it was: the list widget only fills its stylesheet the first time the
+ * suggest widget opens, and nothing had opened one. Measured with the widget open, it is
+ * **5,160 characters** across 29 rules, and it is refused, so the suggest list loses the rule
+ * that highlights the focused row. Its background stays `rgba(0, 0, 0, 0)` where adopting the
+ * same text gives `rgb(0, 96, 192)`: you cannot see which completion is selected (#1024).
+ *
+ * Wrapping one node cannot catch it, because the list builds itself detached and is attached
+ * whole. What catches it is {@link installStyleElementInterception}, which needs to know
+ * which trees are ours — that is what this registers.
+ *
+ * @param root   the shadow root to claim
+ * @param target the adoption target — normally `root` itself
+ * @returns an unregister function; call it on teardown
+ */
+export function watchStyleElementsIn(root: ParentNode & Node, target: AdoptionTarget): () => void {
+  if (!('adoptedStyleSheets' in target)) return () => {};
+
+  const syncObservers: MutationObserver[] = [];
+
+  const adopt = (element: HTMLStyleElement) => {
+    const sheet = new CSSStyleSheet();
+    const sync = () => sheet.replaceSync(element.textContent ?? '');
+    sync();
+    target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
+    // A no-op when the interception got here first and the element was never inserted.
+    element.remove();
+
+    // Monaco rewrites these in place — the list re-emits every rule on a theme change — and
+    // observers fire on detached nodes, which is what makes keeping the element out of the
+    // tree safe rather than a one-shot copy.
+    const observer = new MutationObserver(sync);
+    observer.observe(element, { childList: true, characterData: true, subtree: true });
+    syncObservers.push(observer);
+  };
+
+  watchedRoots.set(root, adopt);
+  for (const style of root.querySelectorAll('style')) adopt(style);
+
+  return () => {
+    watchedRoots.delete(root);
+    for (const sync of syncObservers) sync.disconnect();
+    syncObservers.length = 0;
+  };
+}
+
+/**
+ * The roots {@link watchStyleElementsIn} has claimed, and how to adopt into each.
+ *
+ * A module-level registry rather than a parameter, because the interception below patches
+ * prototypes shared by the whole page and has to decide, per insertion, whether the
+ * destination is one of ours.
+ */
+const watchedRoots = new Map<Node, (element: HTMLStyleElement) => void>();
+
+/** Whether {@link installStyleElementInterception} has already run. */
+let styleElementIntercepted = false;
+
+/**
+ * Diverts a `<style>` appended anywhere inside a watched shadow root into its
+ * `adoptedStyleSheets`, before it ever enters the tree.
+ *
+ * The subtree observer in {@link adoptStyleElementsIn} cannot win this race, and the reason
+ * is worth writing down because it looks like it should. `createStyleSheet` appends the
+ * element **empty** — `listWidget.js` passes no `beforeAppend` — so the append itself is not
+ * a violation. `DefaultStyleController` then fills it in the *same task*, while a
+ * `MutationObserver` callback is still queued as a microtask. The text is parsed, refused and
+ * reported before the observer ever runs. Every *later* rewrite is silent, because by then
+ * the element is detached — which is why the symptom was exactly one report per list.
+ *
+ * So this wraps `Node.prototype.appendChild`, which is synchronous and therefore early
+ * enough. It is as narrow as a prototype patch can be: it acts only on an `HTMLStyleElement`
+ * whose destination is inside a root some editor registered. Every other append on the page
+ * — every Lit render, every Web Awesome component — reaches the native implementation with
+ * one `instanceof` and one `Map` lookup in front of it.
+ *
+ * Not released, for the same reason {@link installDocumentHeadAdoption} is not. The registry
+ * empties as editors tear down, so with no editor mounted the wrapper is inert.
+ */
+export function installStyleElementInterception(): void {
+  if (styleElementIntercepted) return;
+  styleElementIntercepted = true;
+
+  const divert = (destination: Node, incoming: Node): boolean => {
+    if (watchedRoots.size === 0) return false;
+    const adoptInto = watchedRoots.get(destination.getRootNode());
+    if (!adoptInto) return false;
+
+    if (incoming instanceof HTMLStyleElement) {
+      adoptInto(incoming);
+      return true; // never inserted
+    }
+    // The subtree case, which is the one that actually fires. Adopting the descendants
+    // leaves the incoming node itself to be inserted normally, minus its stylesheets.
+    if (incoming instanceof Element) {
+      for (const style of incoming.querySelectorAll('style')) adoptInto(style);
+    }
+    return false;
+  };
+
+  const nativeAppend = Node.prototype.appendChild;
+  Node.prototype.appendChild = function appendChild<T extends Node>(this: Node, node: T): T {
+    if (divert(this, node)) return node;
+    return nativeAppend.call(this, node) as T;
+  };
+
+  const nativeInsert = Node.prototype.insertBefore;
+  Node.prototype.insertBefore = function insertBefore<T extends Node>(
+    this: Node,
+    node: T,
+    child: Node | null
+  ): T {
+    if (divert(this, node)) return node;
+    return nativeInsert.call(this, node, child) as T;
+  };
+}
+
 /** Whether {@link installDocumentHeadAdoption} has already run. */
 let headAdopted = false;
 
