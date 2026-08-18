@@ -212,29 +212,15 @@ async function main() {
    * A refused resource is invisible in the DOM — that is the whole lesson of #1002 — so the
    * reports are asserted on directly rather than inferred from what rendered.
    *
-   * Two are known, both found by this gate on its first run and both filed. They are in
-   * Monaco's own bundle (`source-file` is `editor.api-*.js`, not our source), so neither is
-   * something a change here introduced, and neither is in scope for the gate that found
-   * them. They are allowlisted by signature rather than by count: a *new* violation, or one
-   * of these moving to a different directive, still fails.
+   * The list is empty, and that is the point. It held two entries from the day this gate was
+   * written until #1024 closed them: the diff editor's deletion indicators
+   * (`style-src-attr`, written with `setAttribute`) and the suggest list's stylesheet
+   * (`style-src-elem`, appended to a node Monaco makes itself). Both are fixed at the
+   * source now, so anything arriving here is new and fails.
    *
-   * Delete an entry the moment its issue closes — an allowlist nobody prunes is how a gate
-   * stops meaning anything.
+   * Keep it empty. An allowlist nobody prunes is how a gate stops meaning anything.
    */
-  const KNOWN_VIOLATIONS = [
-    {
-      directive: 'style-src-attr',
-      sample: 'position:absolute;top:0px;width:10px',
-      why: '#1024 — Monaco sets the scrollbar slider geometry with setAttribute(\'style\'), which ' +
-        'never passes through the createTrustedTypesPolicy hook monaco-inline-styles.ts uses'
-    },
-    {
-      directive: 'style-src-elem',
-      sample: '.monaco-list.list_id_1:focus',
-      why: '#1024 — the suggest widget\'s list builds a <style> element outside the editor ' +
-        'container, so neither installDocumentHeadAdoption() nor adoptStyleElements() sees it'
-    }
-  ];
+  const KNOWN_VIOLATIONS = [];
 
   const unexpected = [];
   for (const raw of server.violations) {
