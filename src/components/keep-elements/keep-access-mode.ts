@@ -143,16 +143,29 @@ export default class AccessMode extends KeepElement {
       color: var(--wa-color-text-normal);
     }
 
-    /* was the AccessModeContainer styled.div in access/styles.ts */
+    /*
+     * was the AccessModeContainer styled.div in access/styles.ts. padding-bottom is new:
+     * both flex children below stretch to fill this box, so it is the one place that can
+     * give the rounded panels' bottoms clearance from the viewport edge without the two
+     * panels disagreeing about it.
+     */
     .panels {
       display: flex;
       height: calc(100vh - 230px);
       overflow-y: hidden;
       gap: 20px;
+      padding-bottom: 20px;
     }
 
-    /* was .access-container. The editor inside it is absolutely positioned, which is what
-       the relative position and the padding are here for. */
+    /*
+     * was .access-container. Its own margin and a height 30px taller than .panels used to
+     * both apply at once: the margin pushed this box 10px below keep-field-list's top
+     * (which carries no margin of its own, so the two rounded panels' tops disagreed), and
+     * the extra height ran this box past .panels' own height, which .panels' overflow-y:
+     * hidden then clipped at the bottom. Stretching to the flex container's height — what
+     * keep-field-list already does implicitly — keeps both panels' tops and bottoms in
+     * step.
+     */
     .access-container {
       flex: 1;
       display: flex;
@@ -161,8 +174,7 @@ export default class AccessMode extends KeepElement {
       align-items: center;
       padding-top: 50px;
       position: relative;
-      margin: 10px;
-      height: calc(100vh - 200px);
+      height: 100%;
     }
   `;
 

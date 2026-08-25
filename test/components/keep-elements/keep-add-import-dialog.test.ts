@@ -283,7 +283,7 @@ describe('keep-add-import-dialog', () => {
     await openForm(el);
     await type(el, nameField(el), 'people');
 
-    Array.from(el.shadowRoot!.querySelectorAll<HTMLButtonElement>('button.back'))[0].click();
+    actionNamed(el, 'Back').click();
     await el.updateComplete;
     expect(options(el)).toHaveLength(2);
 
