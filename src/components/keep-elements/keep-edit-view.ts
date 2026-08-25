@@ -360,7 +360,13 @@ export default class EditView extends KeepElement {
         justify-content: flex-end;
         width: 100%;
         height: 10%;
-        padding-inline: 6%;
+        /*
+         * Right-end padding is a fixed 24px rather than the 6% the left side keeps: at this
+         * column's width, 6% landed the control right against .column-bar's scrollbar
+         * gutter, which eats into the same content box from the other side. A fixed value
+         * holds a real gap from it regardless of how narrow the column gets.
+         */
+        padding-inline: 6% 24px;
         color: var(--keep-text-brand);
         font: inherit;
         line-height: 6;
@@ -374,18 +380,24 @@ export default class EditView extends KeepElement {
       /*
        * was .add-all-icon. The glyph takes its box from font-size, not width, so the
        * relative measure the original icon set carried has to be spelled as a font-size.
+       *
+       * line-height: normal overrides the 6 (600%) the button above sets for its own
+       * height — inherited, that turned this icon's line box six times taller than its
+       * glyph and, combined with the translateY compensating for it, put the icon and the
+       * text beside it on visibly different baselines instead of the same line.
        */
       .add-all-icon {
         display: inline-block;
         margin-right: 2%;
         font-size: 1.2em;
-        transform: translateY(4%);
+        line-height: normal;
       }
 
-      /* was .add-all-text; 12px is the bare element rule again, not a new decision */
+      /* was .add-all-text; 12px is the bare element rule again, not a new decision. */
       .add-all-text {
         color: var(--keep-text-brand);
         font-size: 12px;
+        line-height: normal;
       }
 
       /* was .all-columns-list */
@@ -709,6 +721,11 @@ export default class EditView extends KeepElement {
 
   private handleClickClose(): void {
     if (this.isDirty()) {
+      // .edit-dialog stays open and merely covered by this confirmation, the same "two
+      // stacked modals" shape the reset dialog already uses successfully. Closing it here
+      // and reopening it on Cancel made the editor visibly vanish behind nothing for as
+      // long as the prompt was up, rather than staying visible, dimmed, underneath it —
+      // the editor should only actually close once Yes or No resolves the prompt.
       this.showDirtyDialog = true;
     } else {
       this.closeWithoutSaving();
@@ -718,6 +735,11 @@ export default class EditView extends KeepElement {
   private handleDirtySave(): void {
     this.showDirtyDialog = false;
     this.handleClickSave();
+  }
+
+  /** Cancel on the unsaved-changes prompt: stay right here, editing the same columns. */
+  private handleDirtyCancel(): void {
+    this.showDirtyDialog = false;
   }
 
   private handleClickColumn(column: KeepEditViewDesignColumn): void {
@@ -837,6 +859,11 @@ export default class EditView extends KeepElement {
       return withoutColumns;
     });
 
+    // Closing the edit dialog is the parent's job — it owns `open` and lowers it once
+    // `dialog-close` reaches it — but this reset confirmation is this element's own state,
+    // and nothing else ever turns it back off. Left set, it stayed open, on top of nothing,
+    // after the edit dialog it was raised over had already closed underneath it.
+    this.resetDialogOpen = false;
     this.saveSchema(viewsBuffer);
     this.setActiveViews(viewsBuffer);
     this.emit<KeepEditViewCloseDetail>('dialog-close');
@@ -1048,9 +1075,7 @@ export default class EditView extends KeepElement {
         ?open=${this.showDirtyDialog}
         @dialog-save=${this.handleDirtySave}
         @dialog-discard=${this.closeWithoutSaving}
-        @dialog-cancel=${() => {
-          this.showDirtyDialog = false;
-        }}
+        @dialog-cancel=${this.handleDirtyCancel}
       ></keep-unsaved-changes-dialog>
     `;
   }
