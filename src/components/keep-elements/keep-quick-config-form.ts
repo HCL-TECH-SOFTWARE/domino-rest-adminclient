@@ -140,14 +140,19 @@ export default class QuickConfigForm extends KeepElement {
         background: var(--keep-surface-brand);
       }
 
-      /* Was styled(Paper) — a MUI raised surface. */
+      /*
+       * Was styled(Paper) — a MUI raised surface. The side padding is new: at 0 the tree's
+       * icons and labels sat flush against this box's own border, which is what read as
+       * cramped rather than as a bordered list — the same fix keep-scope-form's twin of
+       * this list needed.
+       */
       .search-results {
         flex: 1 1 auto;
         min-height: 0;
         max-height: calc(100vh - 200px);
         margin-bottom: 24px;
         margin-top: 8px;
-        padding: 5px 0;
+        padding: 10px 12px;
         overflow-y: auto;
         background: var(--wa-color-surface-raised);
         border: 1px solid var(--wa-color-surface-border);
@@ -168,12 +173,19 @@ export default class QuickConfigForm extends KeepElement {
         overflow-y: auto;
       }
 
-      /* The form's title bar. The original global rule was swept in #806 wave 5, when the
-         last React consumer converted; this copy is now the only one. */
+      /*
+       * The form's title bar. The original global rule was swept in #806 wave 5, when the
+       * last React consumer converted; this copy is now the only one.
+       *
+       * margin-bottom is new: at 0 the Database line sat right against the banner's own
+       * padding, which read as crowded rather than as two separate blocks — the same fix
+       * keep-scope-form's twin of this banner needed.
+       */
       .form-header {
         display: flex;
         align-items: center;
         gap: 10px;
+        margin: 0 0 20px 0;
         color: var(--wa-color-brand-on-loud, #fff);
         font-size: 24px;
         padding: 20px;

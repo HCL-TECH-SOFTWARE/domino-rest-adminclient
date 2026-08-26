@@ -250,17 +250,37 @@ export default class ActivateSwitch extends KeepElement {
   /** `view` or `agent`. Chooses the wording, the thunk and which error flag applies. */
   @property({ type: String }) accessor type = 'view';
 
-  /** The pill's state. Seeded from `view` once, then owned entirely by this element. */
+  /**
+   * The pill's state.
+   *
+   * Re-derived from `view` on every change of it, not seeded once: `TabViews`' bulk
+   * Activate All / Deactivate All buttons update every row's `viewActive` in the store at
+   * once, and this element's own instance survives that re-render — `ViewsTable` keys its
+   * `repeat()` by name, not by the switch's DOM identity — so a seed-once read would leave
+   * every already-mounted pill showing whatever it said before the bulk action, changed
+   * back only by a full remount. Live re-sync stops, permanently, the moment this specific
+   * pill fires its own toggle — see {@link userToggled}.
+   */
   @state() accessor active = false;
 
   /** Whether the "reset columns?" confirmation is up. Views only. */
   @state() accessor resetView = false;
 
+  /**
+   * Set once this pill's own click has fired an optimistic flip, and never cleared.
+   *
+   * From then on `willUpdate` stops re-deriving {@link active} from `view` at all: the
+   * activation thunk never rolls the store back on a failed save, so the *only* way `view`
+   * could ever disagree with the flip afterward is a record that was always this stale —
+   * which is exactly the case the original app's "flip and never revert" behaviour existed
+   * for, and is preserved for it verbatim. A row this pill never touched keeps re-syncing
+   * live off `view`, which is what a bulk Activate All / Deactivate All needs.
+   */
+  private userToggled = false;
+
   private readonly dialogState = new StoreController(this, (state) => state.dialog);
 
   private readonly databases = new StoreController(this, (state) => state.databases);
-
-  private seeded = false;
 
   private get nativeDialog(): HTMLDialogElement | null {
     return this.shadowRoot?.querySelector('dialog') ?? null;
@@ -280,18 +300,18 @@ export default class ActivateSwitch extends KeepElement {
   }
 
   /**
-   * Seeds `active` from the record on the first update only, which is what the original's
-   * `useState(initial)` did.
+   * Re-derive `active` from the record whenever `view` itself changes — including the
+   * first update, which is what the original's `useState(initial)` did and is why a
+   * fresh instance still seeds correctly.
    *
-   * The ordering this depends on holds: the React bridge assigns element properties from a
-   * layout effect, which runs synchronously in the commit phase, while Lit's first update
-   * is queued as a microtask — so `view` is always set by the time this runs. The
-   * `AgentsTable` suite renders through that bridge and asserts the seeded label, so the
-   * dependency is covered rather than assumed.
+   * The ordering this depends on holds on that first update: the React bridge assigns
+   * element properties from a layout effect, which runs synchronously in the commit
+   * phase, while Lit's first update is queued as a microtask — so `view` is always set by
+   * the time this runs. The `AgentsTable` suite renders through that bridge and asserts
+   * the seeded label, so the dependency is covered rather than assumed.
    */
-  protected willUpdate(): void {
-    if (this.seeded) return;
-    this.seeded = true;
+  protected willUpdate(changed: PropertyValues<this>): void {
+    if (!changed.has('view') || this.userToggled) return;
     // `||`, not `??`: the original fell through to agentActive whenever viewActive was
     // falsy, not only when it was absent.
     this.active = Boolean(this.view.viewActive || this.view.agentActive);
@@ -311,6 +331,8 @@ export default class ActivateSwitch extends KeepElement {
   }
 
   private requestToggle(activate: boolean): void {
+    // Every caller pairs this with its own optimistic `this.active` write; see the field.
+    this.userToggled = true;
     this.emit<KeepActivateSwitchToggleDetail>(activate ? 'toggle-active' : 'toggle-inactive', {
       view: this.view,
     });
