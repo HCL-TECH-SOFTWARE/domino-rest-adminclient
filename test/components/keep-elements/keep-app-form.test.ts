@@ -108,7 +108,7 @@ describe('keep-app-form', () => {
     };
 
   const iconInput = (el: AppForm) =>
-    el.shadowRoot!.querySelector('.icon-select') as HTMLElement & { selectedOption: string };
+    el.shadowRoot!.querySelector('keep-icon-dropdown') as HTMLElement & { iconName: string };
 
   const checkboxes = (el: AppForm) =>
     Array.from(el.shadowRoot!.querySelectorAll('keep-checkbox')) as Array<
@@ -404,7 +404,7 @@ describe('keep-app-form', () => {
   it('keeps the application"s own icon through an edit that never touches the picker', async () => {
     const el = await mount({ initialValues: EDIT_VALUES });
     await settle(el);
-    expect(iconInput(el).selectedOption).toBe('anchor');
+    expect(iconInput(el).iconName).toBe('anchor');
 
     await press(el);
     expect(updated[0]).toMatchObject({ logo_uri: 'anchor' });
@@ -432,8 +432,9 @@ describe('keep-app-form', () => {
     await settle(el);
 
     const picker = iconInput(el);
-    picker.selectedOption = 'beach';
-    picker.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true }));
+    picker.dispatchEvent(
+      new CustomEvent('icon-select', { detail: { iconName: 'beach' }, bubbles: true, composed: true }),
+    );
     await settle(el);
     await press(el);
 

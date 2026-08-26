@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 import { html, css, nothing } from 'lit';
-import { customElement, property, state, query } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import * as Yup from 'yup';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/textarea/textarea.js';
@@ -16,17 +16,13 @@ import { FormController } from '../../store/FormController';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { addApplication, updateApp } from '../../store/applications/action';
-import {
-  APP_ICON_NAMES,
-  DEFAULT_APP_ICON_NAME,
-  getAppIcons,
-  loadAppIcons,
-  type AppIconMap,
-} from '../../services/app-icons';
+import { DEFAULT_APP_ICON_NAME } from '../../services/app-icons';
 import './keep-autocomplete';
 import type Autocomplete from './keep-autocomplete';
 import './keep-checkbox';
 import type Checkbox from './keep-checkbox';
+import './keep-icon-dropdown';
+import type { KeepIconSelectDetail } from './keep-icon-dropdown';
 import './keep-button';
 
 /** The values this form owns. Everything else in the request body is derived — see `buildPayload`. */
@@ -249,8 +245,7 @@ export default class AppForm extends KeepElement {
     }
 
     /* Was the half-width utility on the autocomplete. */
-    .scope-field keep-autocomplete,
-    .icon-select {
+    .scope-field keep-autocomplete {
       width: 50%;
     }
 
@@ -326,9 +321,6 @@ export default class AppForm extends KeepElement {
    */
   @property({ attribute: false }) accessor initialValues: Partial<AppFormValues> | undefined;
 
-  /** The 86 icon payloads, once the lazy chunk (#772) lands. Empty until then. */
-  @state() private accessor icons: AppIconMap = getAppIcons();
-
   @query('#scope-input') private accessor scopeInput!: Autocomplete | null;
 
   /** Identity of the last applied seed, so an unchanged property is not re-applied. */
@@ -336,18 +328,6 @@ export default class AppForm extends KeepElement {
 
   /** Previous drawer flag, so the seed sees the edge rather than the level. */
   private wasOpen = false;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    void loadAppIcons().then(
-      (icons) => {
-        this.icons = icons;
-      },
-      () => {
-        /* the autocomplete hides its icon column while the map is empty; nothing to retry */
-      },
-    );
-  }
 
   /**
    * `willUpdate`, not `updated`: seeding writes to the controller, which requests another
@@ -611,15 +591,12 @@ export default class AppForm extends KeepElement {
         ${this.renderTextArea('appContactsStr', 'Contacts: email or URL (one per line)')}
 
         <small>App Icons</small>
-        <keep-autocomplete
-          class="icon-select"
+        <keep-icon-dropdown
           label="App Icon"
-          .options=${APP_ICON_NAMES}
-          .icons=${this.icons}
-          .selectedOption=${values.appIcon}
-          @change=${(e: Event) =>
-            this.form.setValue('appIcon', (e.target as Autocomplete).selectedOption)}
-        ></keep-autocomplete>
+          .iconName=${values.appIcon}
+          @icon-select=${(e: CustomEvent<KeepIconSelectDetail>) =>
+            this.form.setValue('appIcon', e.detail.iconName)}
+        ></keep-icon-dropdown>
 
         <div class="checkbox-row">
           <keep-checkbox

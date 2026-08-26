@@ -292,10 +292,39 @@ export default class SideNav extends KeepElement {
    * "The current path is at or below `to`", so `/schema/orders.nsf/Alpha` keeps Schemas lit.
    * `/` is exact, or it would match everything. Same rule the router's own nav link applies.
    */
-  private isCurrent(uri: string): boolean {
-    const pathname = this.route.value;
+  private isUnder(uri: string, pathname: string): boolean {
     if (uri === '/') return pathname === uri;
     return pathname === uri || pathname.startsWith(`${uri}/`);
+  }
+
+  /** Every uri actually on the rail right now — routes, plus the two gated groups. */
+  private get railUris(): string[] {
+    const navitems = this.navitems.value;
+    return [
+      ...routes.map((route) => route.uri),
+      ...(navitems.databases ? databases.map((route) => route.uri) : []),
+      ...(navitems.apps ? apps.map((route) => route.uri) : []),
+    ];
+  }
+
+  /**
+   * Whether `uri` is the *most specific* rail entry under the current path.
+   *
+   * "At or below" alone breaks when two rail entries are themselves nested — `/apps` and
+   * `/apps/consents` are siblings on the rail, not a route and its sub-page, but the second
+   * is a URL-level child of the first. On `/apps/consents`, plain "at or below" left
+   * Applications highlighted forever afterward: the check never says "unless a sibling
+   * matches more precisely," so once true for one path segment it stayed true for every
+   * path underneath it, including a completely different rail entry's own page. Comparing
+   * against every other uri on the rail is what lets Consents (the longer, exact match)
+   * take the highlight and Applications give it up.
+   */
+  private isCurrent(uri: string): boolean {
+    const pathname = this.route.value;
+    if (!this.isUnder(uri, pathname)) return false;
+    return !this.railUris.some(
+      (other) => other !== uri && other.length > uri.length && this.isUnder(other, pathname),
+    );
   }
 
   private href(uri: string): string {

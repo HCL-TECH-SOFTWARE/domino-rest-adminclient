@@ -30,7 +30,7 @@
     "node": ">=24"
   },
   "overrides": {
-    "dompurify": "^3.4.12",
+    "dompurify": "^3.4.14",      
     "jsdom": "^30.0.1"
   },
   "scripts": {

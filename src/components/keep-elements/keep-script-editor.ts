@@ -161,7 +161,7 @@ export default class ScriptEditor extends KeepElement {
         overflow-y: auto;
         border-radius: 5px;
         border: 1px solid var(--wa-color-surface-border);
-        padding: 5px 20px;
+        padding: 5px 20px 20px 20px;
         gap: 16px;
         background-color: var(--wa-color-surface-default);
       }

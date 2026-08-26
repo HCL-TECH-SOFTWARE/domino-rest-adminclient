@@ -8,6 +8,7 @@ import { html, css, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { KeepElement } from './keep-element';
 import './keep-tip';
+import { ROUTER_BASE } from '../../router/instance';
 import { store } from '../../store/store';
 import { showPages } from '../../store/account/action';
 import { StoreController } from '../../store/StoreController';
@@ -73,6 +74,16 @@ const TILES: Record<string, { heading: string; description: string; image: strin
     image: consentsImage,
   },
 };
+
+/**
+ * The diagram is a static asset, served one level above the app itself rather than under its
+ * own base — `ROUTER_BASE` is `/admin/ui`, and the SVG lives at `/admin/img/…`, not
+ * `/admin/ui/img/…`. A path relative to the current document got this wrong: it resolves
+ * against wherever this page happens to be mounted, which is `ROUTER_BASE` itself, so it
+ * always landed one directory too deep. Built from the constant instead of the document's own
+ * URL, so it stays correct regardless of which route the homepage renders under.
+ */
+const DIAGRAM_URL = `${ROUTER_BASE.replace(/\/[^/]+$/, '')}/img/keepblockdiagram.svg`;
 
 @customElement('keep-homepage')
 export default class Homepage extends KeepElement {
@@ -197,7 +208,7 @@ export default class Homepage extends KeepElement {
       <div class="tips">
         <section class="diagram">
           Open the interactive
-          <a href="./img/keepblockdiagram.svg" target="_blank" rel="noopener noreferrer"
+          <a href=${DIAGRAM_URL} target="_blank" rel="noopener noreferrer"
             >&nbsp;DRAPI overview&nbsp;</a
           >
           diagram
