@@ -189,10 +189,14 @@ export default class ScopeForm extends KeepElement {
       margin-top: 8px;
     }
 
-    /* Was styled(Paper) — a raised surface from the component library that is going away. */
+    /*
+     * Was styled(Paper) — a raised surface from the component library that is going away.
+     * The side padding is new: at 0 the tree's icons and labels sat flush against this
+     * box's own border, which is what read as cramped rather than as a bordered list.
+     */
     .search-results {
       height: calc(100vh - 153px);
-      padding: 5px 0;
+      padding: 10px 12px;
       overflow-y: auto;
       background: var(--wa-color-surface-raised);
       border: 1px solid var(--wa-color-surface-border);
@@ -215,13 +219,18 @@ export default class ScopeForm extends KeepElement {
       flex-direction: column;
     }
 
-    /* The form's title bar. A heading element rather than a span: it names the panel, and the
-       drawer's own title is the only other heading in here. */
+    /*
+     * The form's title bar. A heading element rather than a span: it names the panel, and
+     * the drawer's own title is the only other heading in here.
+     *
+     * margin-bottom is new: at 0 the Database row sat right against the banner's own
+     * padding, which read as crowded rather than as two separate blocks.
+     */
     .form-header {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 0;
+      margin: 0 0 20px 0;
       color: var(--wa-color-brand-on-loud, #fff);
       background: var(--keep-surface-brand);
       font-size: 24px;

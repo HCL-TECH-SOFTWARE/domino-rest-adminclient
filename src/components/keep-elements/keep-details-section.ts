@@ -182,6 +182,13 @@ export default class DetailsSection extends KeepElement {
 
       /* --- the title block --------------------------------------------------------- */
 
+      /* Was the title styled block: a flex column holding the icon, name and path. */
+      .title {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
       /* Was the icon-container rule: the positioning context the status dot hangs off. */
       .icon-container {
         position: relative;
@@ -316,16 +323,20 @@ export default class DetailsSection extends KeepElement {
       /* Was the heading styled block and its two inner rules. */
       .heading-block {
         margin: 10px 0;
+        display: block;
       }
 
       .heading {
         font-size: 20px;
         word-wrap: break-word;
+        display: block;
+        margin-bottom: 8px;
       }
 
       .description {
         font-size: var(--wa-font-size-m);
         padding: 0 0 20px;
+        display: block;
       }
 
       .expander-row {
@@ -449,6 +460,7 @@ export default class DetailsSection extends KeepElement {
         flex-direction: column;
         overflow-x: hidden;
         max-width: 100%;
+        margin-top: 20px;
       }
 
       /* Was the large-text utility beside color-text-primary. */
