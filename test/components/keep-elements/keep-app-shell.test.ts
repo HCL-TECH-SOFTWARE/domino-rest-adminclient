@@ -11,6 +11,7 @@ import { Router, memoryHistory } from '../../../src/router/router';
 import { setRouterForTest } from '../../../src/router/instance';
 import { store } from '../../../src/store/store';
 import { switchTheme } from '../../../src/store/styles/action';
+import { resetSystemAppearanceForTest } from '../../../src/services/theme-service';
 import AppShell, {
   MOBILE_BREAKPOINT_PX,
 } from '../../../src/components/keep-elements/keep-app-shell';
@@ -76,6 +77,9 @@ describe('keep-app-shell', () => {
 
   afterEach(() => {
     cleanupLit();
+    // The shell installs the #962 system-appearance poller on connect; without this it keeps
+    // its real setInterval alive past this file's jsdom teardown (#theme-service leak).
+    resetSystemAppearanceForTest();
     vi.unstubAllGlobals();
   });
 
