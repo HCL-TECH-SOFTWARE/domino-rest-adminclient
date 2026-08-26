@@ -121,19 +121,20 @@ const VIEW_QUERY = '?view=';
 @customElement('keep-scopes-list')
 export default class ScopesList extends KeepElement {
   static styles = css`
-    /* was keep-wrapper-container, which this screen rendered as its outermost box. */
+    /*
+     * was keep-wrapper-container, which this screen rendered as its outermost box.
+     *
+     * No height or overflow of its own any more (#1032) — see keep-schemas-list, this
+     * screen's twin, for why: it used to reserve calc(100% - 120px) and scroll
+     * internally, a second scrolling region nested inside keep-views' own
+     * .view-container, which already sizes itself to the viewport and scrolls the whole
+     * route. Flowing at natural height leaves exactly one scrolling region for every view
+     * this screen can show, including the nsf view's fixed-height cards, which are tall
+     * enough to make a mismatched inner height most visible.
+     */
     :host {
       display: flex;
       flex-direction: column;
-      overflow-y: auto;
-      height: calc(100% - 120px);
-    }
-
-    /* The 120px is the fixed page chrome above the list, which the mobile layout drops. */
-    @media only screen and (max-width: 768px) {
-      :host {
-        height: 100%;
-      }
     }
 
     /*

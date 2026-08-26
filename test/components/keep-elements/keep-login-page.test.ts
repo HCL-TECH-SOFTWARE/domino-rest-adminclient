@@ -25,6 +25,7 @@ import {
   setLoginError as setLoginErrorSpy,
 } from '../../../src/store/account/action';
 import { initiateAuthorizationRequest } from '../../../src/components/login/pkce';
+import { resetSystemAppearanceForTest } from '../../../src/services/theme-service';
 import '../../../src/components/keep-elements/keep-login-page';
 import type LoginPage from '../../../src/components/keep-elements/keep-login-page';
 
@@ -177,6 +178,9 @@ describe('keep-login-page', () => {
 
   afterEach(() => {
     cleanupLit();
+    // The page installs the #962 system-appearance poller on connect; without this it keeps
+    // its real setInterval alive past this file's jsdom teardown (#theme-service leak).
+    resetSystemAppearanceForTest();
     Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
     vi.unstubAllGlobals();
     localStorage.clear();

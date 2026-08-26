@@ -306,9 +306,16 @@ export default class AccessTabs extends KeepElement {
       height: 92%;
     }
 
-    /* was the w-50vw utility on the div wrapping the test form inside the drawer. */
+    /*
+     * was the w-50vw utility on the div wrapping the test form inside the drawer. 50vw is
+     * wider than the drawer itself — keep-drawer sets --size to 40vw on wa-drawer — so this
+     * box ran past the drawer's own right edge and wa-drawer's body part, which sets
+     * overflow: hidden, cropped it there. That is why the panel looked flush against the
+     * drawer's left edge and clipped, not evenly inset, on the right. 100% fills whatever
+     * width the drawer actually has.
+     */
     .drawer-body {
-      width: 50vw;
+      width: 100%;
     }
   `;
 

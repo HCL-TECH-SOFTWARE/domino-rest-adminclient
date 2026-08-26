@@ -7,7 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanupLit, mountLit } from '../../test-utils/lit';
 import { Router, memoryHistory } from '../../../src/router/router';
-import { setRouterForTest } from '../../../src/router/instance';
+import { ROUTER_BASE, setRouterForTest } from '../../../src/router/instance';
 import { store } from '../../../src/store/store';
 import { setNavItems } from '../../../src/store/account/reducer';
 import { databases, apps } from '../../../src/components/sidenav/Routes';
@@ -187,7 +187,10 @@ describe('keep-homepage', () => {
       const el = await mount({ databases: true, apps: true });
       const link = el.shadowRoot!.querySelector('.diagram a')!;
 
-      expect(link.getAttribute('href')).toBe('./img/keepblockdiagram.svg');
+      // ROUTER_BASE is `/admin/ui`; the diagram is served one level up, at `/admin/img/…`.
+      expect(link.getAttribute('href')).toBe(
+        `${ROUTER_BASE.replace(/\/[^/]+$/, '')}/img/keepblockdiagram.svg`,
+      );
       expect(link.getAttribute('target')).toBe('_blank');
       // Was missing: a `target="_blank"` link hands the opened document a `window.opener`.
       expect(link.getAttribute('rel')).toBe('noopener noreferrer');

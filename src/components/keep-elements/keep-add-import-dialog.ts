@@ -154,8 +154,8 @@ export default class AddImportDialog extends KeepElement {
       dialog {
         border: 1px solid var(--wa-color-surface-border);
         border-radius: 10px;
-        width: 30%;
-        min-width: 420px;
+        width: 60%;
+        min-width: 840px;
         height: fit-content;
         padding: 0;
         background: var(--wa-color-surface-raised);
@@ -294,30 +294,6 @@ export default class AddImportDialog extends KeepElement {
         gap: 10px;
       }
 
-      /* was the Back link's rule. Its gap and its justify-content needed a flex container
-         and the rule never declared one, so the arrow and the word sat centred and touching,
-         which is not what either declaration asks for. It is a flex row here, so the control
-         reads left-aligned with 5px between the two — worth an eye in the browser, because it
-         is the one place this conversion moves something visible. */
-      .back {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 5px;
-        font: inherit;
-        font-size: 14px;
-        padding: 0;
-        border: 0;
-        cursor: pointer;
-        background: var(--wa-color-surface-raised);
-        color: var(--wa-color-text-normal);
-      }
-
-      .back:focus-visible {
-        outline: var(--wa-focus-ring);
-        outline-offset: calc(-1 * var(--wa-focus-ring-width));
-      }
-
       /* was the padded block around the database picker. */
       .section {
         padding: 0 30px;
@@ -359,6 +335,18 @@ export default class AddImportDialog extends KeepElement {
         display: flex;
         align-items: center;
         gap: 10px;
+      }
+
+      /*
+       * keep-icon-dropdown's own :host carries a 5px top/bottom padding for the contexts
+       * it is normally dropped into, on top of the 5px this dialog's own .icon-field gap
+       * already puts between the "Icon" caption and it — twice the 5px gap that
+       * wa-input::part(label) gives every other field's caption below, which is why the
+       * icon tile sat visibly lower than the Schema Name field beside it. Cancelled here
+       * rather than in the shared element, whose padding other call sites still depend on.
+       */
+      .icon-dropdown keep-icon-dropdown {
+        margin-top: -5px;
       }
 
       /* was the schema-name column, which takes the rest of the row. */
@@ -802,31 +790,6 @@ export default class AddImportDialog extends KeepElement {
     return html`
       <hr class="divider" />
       <div class="content">
-        <button class="back" type="button" @click=${() => this.handleBack()}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 15 15"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M11.875 7.5H3.125"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M7.5 11.875L3.125 7.5L7.5 3.125"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-          Back
-        </button>
-
         <div class="section">
           <span class="medium-text"
             >${this.importing ? 'Import Into Database' : 'Database'}</span

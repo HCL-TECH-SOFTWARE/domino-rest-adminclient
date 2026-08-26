@@ -170,10 +170,16 @@ export default class ModeCompare extends KeepElement {
        * focus ring, so only the sizing that made this bar different is restated. Its border
        * literal of #9a9a9a becomes the surface token, which is what makes the bar visible
        * against a dark surface as well as a light one.
+       *
+       * margin-right is new: .add-column docks to the row's right edge with its own
+       * margin-left: auto, which only ever gives back whatever space this box does not
+       * already claim — on a wide dialog that was little more than the button's own width.
+       * Reserving a fixed gap here guarantees one regardless of dialog width.
        */
       .search {
         width: 50%;
         margin-left: 25%;
+        margin-right: 24px;
       }
 
       /* .add-container has no rule in any stylesheet; the box is kept as the layout anchor
@@ -536,10 +542,45 @@ export default class ModeCompare extends KeepElement {
     return this.selectedModeNames.length > 2;
   }
 
+  /** Whether `text` contains the search box's text. An empty search matches everything. */
+  private matchesSearch(text: string): boolean {
+    const key = this.searchInput.trim().toLowerCase();
+    return key === '' || text.toLowerCase().includes(key);
+  }
+
+  /**
+   * Whether any column has this field, and that field's name, or one of its own key/value
+   * pairs, contains the search text — not only its name, which is all the search box used
+   * to be checked against. A field whose name does not match but whose access flag or
+   * format does (e.g. typing "RW") is exactly the case that filtering by name alone missed.
+   */
+  private fieldMatchesSearch(fieldName: string): boolean {
+    if (this.matchesSearch(fieldName)) return true;
+    return this.selectedModeNames.some((modeName) => {
+      if (modeName === '') return false;
+      const mode = this.modes[getFormModeIndex(this.modes, modeName)];
+      const field = mode ? mode.fields[getFieldIndex(mode.fields, fieldName)] : undefined;
+      if (!field) return false;
+      return Object.keys(field)
+        .filter((key) => !IDENTITY_KEYS.includes(key))
+        .some((key) => this.matchesSearch(key) || this.matchesSearch(getValue(field, key) ?? ''));
+    });
+  }
+
   private get filteredFields(): string[] {
-    const key = this.searchInput.toLowerCase();
-    if (key.length === 0) return this.allFieldNames;
-    return this.allFieldNames.filter((name) => name.toLowerCase().indexOf(key) !== -1);
+    return this.allFieldNames.filter((name) => this.fieldMatchesSearch(name));
+  }
+
+  /** Whether any of the five mode-level formulas' name or value contains the search text. */
+  private get formulasMatchSearch(): boolean {
+    return FORMULAS.some((formula) => {
+      if (this.matchesSearch(getProperKey(formula))) return true;
+      return this.selectedModeNames.some((modeName) => {
+        if (modeName === '') return false;
+        const mode = this.modes[getFormModeIndex(this.modes, modeName)];
+        return mode ? this.matchesSearch(JSON.stringify(mode[formula as keyof Mode])) : false;
+      });
+    });
   }
 
   /**
@@ -762,7 +803,9 @@ export default class ModeCompare extends KeepElement {
   /** The formulas row: one cell per column, each listing all five. */
   private renderFormulaRow() {
     const anyDiff = this.diffFormulas.length > 0;
-    const hidden = this.showDiffOnly && !anyDiff ? 'hidden' : '';
+    const hiddenByDiff = this.showDiffOnly && !anyDiff;
+    const hiddenBySearch = !this.formulasMatchSearch;
+    const hidden = hiddenByDiff || hiddenBySearch ? 'hidden' : '';
     return html`
       <div class="field-row ${hidden}">
         ${this.selectedModeNames.map((modeName) => {

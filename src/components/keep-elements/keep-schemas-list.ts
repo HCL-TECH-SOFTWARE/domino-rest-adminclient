@@ -121,19 +121,22 @@ const VIEW_QUERY = '?view=';
 @customElement('keep-schemas-list')
 export default class SchemasList extends KeepElement {
   static styles = css`
-    /* was keep-wrapper-container, which this screen rendered as its outermost box. */
+    /*
+     * was keep-wrapper-container, which this screen rendered as its outermost box.
+     *
+     * No height or overflow of its own any more (#1032). It used to reserve
+     * calc(100% - 120px) and scroll internally — a second scrolling region nested inside
+     * keep-views' own .view-container, which already sizes itself to the viewport and
+     * scrolls the whole route. The 120px was a guess at this screen's own chrome, and
+     * being short even by a few pixels was enough for .view-container to need to scroll
+     * too: a second scrollbar stacked on this one. Flowing at natural height leaves
+     * exactly one scrolling region — .view-container's — for every view this screen can
+     * show, including the nsf view's fixed-height cards, which are tall enough to make a
+     * mismatched inner height most visible.
+     */
     :host {
       display: flex;
       flex-direction: column;
-      overflow-y: auto;
-      height: calc(100% - 120px);
-    }
-
-    /* The 120px is the fixed page chrome above the list, which the mobile layout drops. */
-    @media only screen and (max-width: 768px) {
-      :host {
-        height: 100%;
-      }
     }
 
     /*
@@ -173,26 +176,14 @@ export default class SchemasList extends KeepElement {
       margin-top: 5px;
       margin-bottom: 25px;
       display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     /* were the medium-text and color-text-primary utilities on the label beside the toggle. */
     wa-switch {
       font-size: 16px;
       color: var(--text-color-primary);
-    }
-
-    /*
-     * Web Awesome lays the switch out control-then-label; this screen has always read
-     * label-then-control. Reversing the row keeps that reading order and moves the gap to
-     * the other side of the text with it.
-     */
-    wa-switch::part(base) {
-      flex-direction: row-reverse;
-    }
-
-    wa-switch::part(label) {
-      margin-inline-start: 0;
-      margin-inline-end: 0.5em;
     }
   `;
 
@@ -350,13 +341,12 @@ export default class SchemasList extends KeepElement {
       </div>
 
       <div class="filter">
-        <keep-tooltip content=${onlyShowSchemasWithScopes ? 'On' : 'Off'} placement="top">
+        <keep-tooltip content=${onlyShowSchemasWithScopes ? 'On' : 'Off'} placement="bottom">
           <wa-switch
             size="s"
             ?checked=${onlyShowSchemasWithScopes}
             @change=${this.handleScopeFilterToggle}
-            >Only show schemas configured with scopes</wa-switch
-          >
+          >Only show schemas configured with scopes</wa-switch>
         </keep-tooltip>
       </div>
 

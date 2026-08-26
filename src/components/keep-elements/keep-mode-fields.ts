@@ -170,19 +170,31 @@ export default class ModeFields extends KeepElement {
         box-sizing: border-box;
       }
 
-      /* was the root div: full-height flex gap-16 */
+      /*
+       * was the root div: full-height flex gap-16. overflow-x is new: below the panel's
+       * min-width plus the editor's own minimum, the row no longer fits the tab's width,
+       * and a scrollbar here reads better than the add-field row silently overlapping the
+       * delete button did.
+       */
       :host {
         display: flex;
         gap: 16px;
         height: 100%;
+        overflow-x: auto;
       }
 
-      /* was .selected-fields-container.flex.flex-col.gap-10.full-height.quarter-width */
+      /*
+       * was .selected-fields-container.flex.flex-col.gap-10.full-height.quarter-width.
+       * 25% is fluid on a wide window, which is all the original ever had to be; min-width
+       * is new — below it the add-field input and its button no longer both fit the row,
+       * so the panel holds this floor and the tab scrolls horizontally instead.
+       */
       .field-list-panel {
         display: flex;
         flex-direction: column;
         gap: 10px;
         width: 25%;
+        min-width: 220px;
         height: 100%;
         border: 1px solid var(--wa-color-surface-border);
         border-radius: 5px;
@@ -198,8 +210,15 @@ export default class ModeFields extends KeepElement {
         margin: 0;
       }
 
+      /*
+       * min-width: 0 overrides the flex default of auto, which sizes a flex item to its
+       * content's intrinsic minimum — a wa-input does not shrink past that on its own, so
+       * without this the box held its width regardless of the panel around it and only
+       * looked responsive once the window was wide enough to never test the shrink.
+       */
       .add-input {
         flex: 1;
+        min-width: 0;
       }
 
       /*
@@ -220,6 +239,7 @@ export default class ModeFields extends KeepElement {
 
       /* was .field-list-icon-button */
       .add-button {
+        flex-shrink: 0;
         border: 0;
         background: none;
         user-select: none;
