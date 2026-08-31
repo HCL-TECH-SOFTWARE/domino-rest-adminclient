@@ -15,7 +15,7 @@ import { resolve } from 'node:path';
  *
  *     img { background: #383838; border-radius: 8px; padding: 10px; … }
  *
- * under a `/* DefaultCard base styles *​/` heading, written for the app icon in the
+ * under a `/ * DefaultCard base styles * /` heading, written for the app icon in the
  * default card. That card is a Lit element, so the rule that actually styles the icon is
  * the copy inside `keep-default-card.ts`'s `static styles` — document CSS does not cross a
  * shadow boundary. What the document copy did reach was every *other* `<img>` in the app:
