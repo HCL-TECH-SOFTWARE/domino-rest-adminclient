@@ -164,6 +164,9 @@ describe('#747 standard decorators', () => {
     for (const file of ['vite.config.mts', 'vitest.config.mts']) {
       const source = read(file);
       expect(source, `${file} must import the shared decorator transform`).toMatch(
+        // `.mjs`, deliberately, though the file on disk is `standard-decorators.mts`. If this
+        // assertion ever fails because a config was "corrected" to `.mts`, fix the config and
+        // not this pattern — see the note at the imports in `vite.config.mts`.
         /from '\.\/scripts\/standard-decorators\.mjs'/,
       );
       expect(source, `${file} must register it`).toMatch(/standardDecorators\(\)/);
