@@ -254,19 +254,73 @@ export function connect(url) {
   };
 }
 
-async function waitForDevToolsPort(userDataDir, chromeExited) {
+/**
+ * How long Chrome gets to write its `DevToolsActivePort` file before the gate gives up.
+ *
+ * Sized for the worst machine that runs this, not the typical one. A developer laptop takes
+ * 200–400 ms and a warm CI runner well under a second, so on every passing run this number is
+ * never reached — the poll below returns the instant the file is readable, and a larger budget
+ * costs exactly nothing. It is only ever spent when something is already wrong.
+ *
+ * It was 10 s (200 turns of a 50 ms poll, a count rather than a considered duration) and that
+ * was enough to make the gate flaky: run 34251416387 failed here at 10.08 s on a *comment-only*
+ * commit whose parent had passed the same step six minutes earlier in 2.7 s. A cold Chrome on a
+ * contended GitHub runner simply does not always start in ten seconds, and a browser gate that
+ * fails on tree-identical input teaches everyone to re-run it — which is how a red gate stops
+ * being read at all.
+ */
+const DEVTOOLS_PORT_TIMEOUT_MS = 60_000;
+
+/**
+ * Why a launch failed, in a form that says what actually happened.
+ *
+ * Separate and exported because the message *is* the feature here. Whatever Chrome wrote to
+ * stdout and stderr is the only evidence this gate ever gets about a browser that would not
+ * start, and the previous timeout path discarded all of it — one bare line, no exit status, no
+ * output, nothing to distinguish "still starting" from "died on launch". That is precisely the
+ * state the CI failure above left us in.
+ */
+export function startupFailure({ waitedMs, exited, output }) {
+  const what = exited
+    ? 'Chrome exited before it opened a DevTools port'
+    : `Chrome did not write a DevToolsActivePort file within ${Math.round(waitedMs / 1000)}s, ` +
+      'and was still running when this gave up';
+  const said = String(output ?? '').trim();
+  return said ? `${what}. What it printed:\n${said}` : `${what}, and it printed nothing.`;
+}
+
+/**
+ * Polls the throwaway profile for the file Chrome drops once its DevTools endpoint is up.
+ *
+ * Two races, both real and both seen. The file appears *before* it is complete, so a read can
+ * land between the port line and the WebSocket path — hence the check for both halves rather
+ * than for the file's existence. And Chrome can die at any point, including inside the last
+ * sleep; testing the file before the exit flag, and reporting through one path either way,
+ * means a browser that crashed says so instead of being reported as merely slow.
+ */
+export async function waitForDevToolsPort(
+  userDataDir,
+  chromeExited,
+  { timeoutMs = DEVTOOLS_PORT_TIMEOUT_MS, pollMs = 50 } = {}
+) {
   const portFile = path.join(userDataDir, 'DevToolsActivePort');
-  for (let i = 0; i < 200; i++) {
-    if (chromeExited.value) {
-      fail(`Chrome exited before it opened a DevTools port:\n${chromeExited.output}`);
-    }
+  const started = Date.now();
+  do {
     if (fs.existsSync(portFile)) {
       const [devtoolsPort, wsPath] = fs.readFileSync(portFile, 'utf8').trim().split('\n');
       if (devtoolsPort && wsPath) return `ws://127.0.0.1:${devtoolsPort}${wsPath}`;
     }
-    await sleep(50);
-  }
-  fail('Chrome never wrote a DevToolsActivePort file');
+    if (chromeExited.value) break;
+    await sleep(pollMs);
+  } while (Date.now() - started < timeoutMs);
+
+  fail(
+    startupFailure({
+      waitedMs: Date.now() - started,
+      exited: chromeExited.value,
+      output: chromeExited.output
+    })
+  );
 }
 
 /**

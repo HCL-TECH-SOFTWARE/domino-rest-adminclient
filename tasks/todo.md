@@ -489,3 +489,59 @@ never fetches the design.
 Remaining: `DetailsSection` (725, shares `FormsContainer` with the now-converted `EditView`),
 `NavigationGuardContext` + `BreadcrumbRouter` (the router half wants **#926**), the four style
 modules, and tier D, which is still untouched by design.
+
+---
+
+# `npm run smoke` was flaky in CI, not broken
+
+Reported as "works local, fails in CI" against run
+[34251416387](https://github.com/HCL-TECH-SOFTWARE/domino-rest-adminclient/actions/runs/34251416387/job/102146510355),
+which died on one line: `smoke: Chrome never wrote a DevToolsActivePort file`.
+
+## What the evidence said
+
+- [x] **The failure was a timeout, to the millisecond.** Build finished 16:33:24.35, failure at
+      16:33:34.43 — 10.08 s, exactly the 200 × 50 ms budget in `waitForDevToolsPort`. Chrome had
+      *not* exited: that branch prints a different message.
+- [x] **The same tree passed twice, minutes earlier.** Runs 34250099816 and 34250764337 on this
+      same branch were green; in the passing one Chrome came up and all eight checks finished in
+      **2.7 s**.
+- [x] **The failing commit changes nothing.** `34d8d6c` on top of the passing `c03090b` is three
+      comments — `test/decorator-config.test.ts`, `vite.config.mts`, `vitest.config.mts`. Zero
+      behavioural delta. A gate that is red on a tree that is green is flaky by definition.
+- [x] **Measured the real cost.** Chrome writes `DevToolsActivePort` in 200–400 ms locally
+      (three runs: 409, 198, 200 ms). The 10 s budget was ~30× normal — and still not enough for
+      one cold start on a contended runner.
+
+## Root cause
+
+A budget written as a **loop count** (200 turns of a 50 ms poll) rather than a duration. It reads
+like a retry policy and behaves like a ten-second deadline, so nobody sized it.
+
+Second, smaller defect found on the way: the timeout path **discarded Chrome's stdout and
+stderr**, so the CI run left no evidence at all. And because the exit flag was tested at the top
+of each turn, a browser dying inside the final sleep would be reported as "never wrote a file"
+rather than as the crash it was.
+
+## Changed
+
+- [x] `scripts/lib/browser.mjs` — budget is now `DEVTOOLS_PORT_TIMEOUT_MS = 60_000`, expressed in
+      time and injectable. Costs nothing on a passing run: the poll returns the instant the file
+      is readable.
+- [x] Port file is tested **before** the exit flag, and both outcomes report through one path, so
+      a crash says it crashed.
+- [x] New exported `startupFailure()` — the message carries what Chrome actually printed, how
+      long it waited, and whether the process was still alive.
+- [x] `test/browser-startup.test.ts` — 7 tests. The timing budget itself is not unit-testable
+      (asserting a 60 s wait would be a terrible test); what is pinned is the polling, the
+      half-written-file race, the exit/port ordering, and the diagnostic content.
+
+## Verified
+
+`npm run lint` · `tsc -b --force` · `npm run test` (191 files, **3536 passed**) · `npm run smoke`
+green end to end, all 11 checks. Mutation-checked: restoring the exit-before-file ordering makes
+the ordering test fail via `process.exit(1)`, and the fixed version passes.
+
+**Not changed, deliberately:** no `--disable-dev-shm-usage` or other launch flags. The evidence
+points at a slow start, not a crash, and adding an unverified second variable to a flake fix is
+how you stop knowing which change worked.
