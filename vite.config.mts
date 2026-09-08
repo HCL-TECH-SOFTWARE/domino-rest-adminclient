@@ -139,7 +139,7 @@ function stampBuildVersion(): Plugin {
 assertMonacoImports();
 
 export default defineConfig({
-  // The one alias the app cannot build without. `vitest.config.ts` repeats it, because these
+  // The one alias the app cannot build without. `vitest.config.mts` repeats it, because these
   // two configs are standalone; `monaco-css.mts` holds the single definition and the reason.
   resolve: {
     alias: [...monacoCssAlias]
@@ -157,7 +157,7 @@ export default defineConfig({
     // alike. That is the point of the migration. Getting the *transform* wrong is the silent
     // one — SWC's legacy default emits `accessor` untransformed and the build still exits 0.
     //
-    // Must stay identical to the registration in `vitest.config.ts`; sharing one module is
+    // Must stay identical to the registration in `vitest.config.mts`; sharing one module is
     // what makes that true by construction rather than by review.
     standardDecorators()
   ],

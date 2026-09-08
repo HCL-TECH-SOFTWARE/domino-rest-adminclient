@@ -1943,7 +1943,7 @@ git commit -m "Characterize ConsentsTable pagination, filtering and sorting (#77
 ### Task 10: Verify the net and open the PR
 
 **Files:**
-- Modify (only if measurement demands it): `vitest.config.ts` coverage thresholds
+- Modify (only if measurement demands it): `vitest.config.mts` coverage thresholds
 
 **Interfaces:**
 - Consumes: every preceding task.
@@ -1974,7 +1974,7 @@ Record the new global `lines / statements / functions / branches`.
 
 - [ ] **Step 3: Raise the global floors**
 
-Set each global threshold in `vitest.config.ts` to roughly 2 points below the number you
+Set each global threshold in `vitest.config.mts` to roughly 2 points below the number you
 just measured, and update the "Measured on `new_code`" comment block above `thresholds` with
 the new figures and `(#771)`. Leave every per-path floor untouched — this PR adds no
 `keep-elements`, `services`, `store` or `utils` coverage.
@@ -1999,7 +1999,7 @@ Expected: all clean. `npm run build` matters even though this is a test-only PR 
 - [ ] **Step 6: Commit the gate change**
 
 ```bash
-git add vitest.config.ts
+git add vitest.config.mts
 git commit -m "Raise the global coverage floors after the table characterization suites (#771)"
 ```
 
@@ -2034,7 +2034,7 @@ Two helpers absorb the parts that would otherwise break:
 ## Coverage
 
 Global floors raised to sit just under the new measurement, per the ratchet comment
-in `vitest.config.ts`. Per-path floors untouched.
+in `vitest.config.mts`. Per-path floors untouched.
 
 closes #771
 EOF

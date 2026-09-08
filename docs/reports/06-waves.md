@@ -53,7 +53,7 @@ subtrees under `src/components/<feature>/` and say which in the PR.
 |---|---|---|
 | **A — store & data** | `store`, `test`+store | `src/store/**`, `src/utils/`, `test/store/**` |
 | **B — design system** | `styles`, `elements` | `src/styles/**`, `src/components/keep-elements/**` |
-| **C — infra & tests** | `build`, `test` | `package.json`, `vite.config.mts`, `vitest.config.ts`, `.github/workflows/`, `test/**` |
+| **C — infra & tests** | `build`, `test` | `package.json`, `vite.config.mts`, `vitest.config.mts`, `.github/workflows/`, `test/**` |
 | **D — React removal** | `views`, `icons`, `shell` | `src/components/<feature>/**`, `App.tsx`, `AppShell.tsx`, `Views.tsx`, `index.tsx` |
 
 ⚠️ **`track:icons` is not a lane you can occupy on its own.** Icon call sites live inside
@@ -780,7 +780,7 @@ and `package.json` contains no `react`, `@mui/*`, `react-*`, `@emotion/*`, `form
 `tsDecorators: true` + `useDefineForClassFields: false` to *all* TypeScript, including
 every Lit element. Remove it without replacing that configuration and decorated class
 fields shadow Lit's reactive accessors, so **elements silently stop reacting**. It does not
-fail loudly. Configured in **both** `vite.config.mts` and `vitest.config.ts` — a required
+fail loudly. Configured in **both** `vite.config.mts` and `vitest.config.mts` — a required
 pairing, guarded by `test/decorator-config.test.ts`.
 
 The element test suites are the detector. Keep them green; they are the only thing between
@@ -888,7 +888,7 @@ both. Three things to know:
   ship. Roughly 6 kB of tier A's growth is prose. Hoisting long rationales into the class
   docblock, above `static styles`, is the cheap win when raw needs to come down.
 
-**Coverage is enforced, not advisory.** `vitest.config.ts` sets a global floor of **61 %** plus
+**Coverage is enforced, not advisory.** `vitest.config.mts` sets a global floor of **61 %** plus
 **14** per-path gates — `src/store/**/reducer.ts` at 97 %, `utils/**` 96, `services/**` 93,
 `components/keep-elements/**` 85, `router/**` 94, `store/databases/**` 81, and the two
 controllers at 97. A PR that drops a gated directory fails. ⚠️ **When a conversion creates a new
@@ -899,7 +899,7 @@ covered and had *no* gate at all, which drift reporting cannot surface.
 
 ## Traps
 
-**The suite cannot see styling.** `vitest.config.ts` runs with `css: false` and jsdom has
+**The suite cannot see styling.** `vitest.config.mts` runs with `css: false` and jsdom has
 no canvas backend, so every guard on the token layer is a *source-scanning* test that pins
 structure, not appearance. **A green suite is not evidence that a visual change looks
 right.** Anything touching layout or tokens needs a human click-through in both colour

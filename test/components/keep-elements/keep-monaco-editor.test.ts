@@ -224,7 +224,7 @@ vi.mock('monaco-editor/editor', () => {
 // Monaco 0.56 changed three of them (see the note at the import site). That is not a hazard
 // here: `vi.mock` resolves its argument, so a stale path fails the file outright rather than
 // leaving a mock that silently never applies. The `?inline` one resolves only because
-// `vitest.config.ts` carries the alias from `monaco-css.mts`.
+// `vitest.config.mts` carries the alias from `monaco-css.mts`.
 // The registration list is imported for its side effects, and those side effects are 72
 // real Monaco modules — exactly what the fake above exists to avoid evaluating in jsdom.
 vi.mock('../../../src/monaco-registrations', () => ({}));

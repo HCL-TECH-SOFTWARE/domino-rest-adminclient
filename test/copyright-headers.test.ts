@@ -31,7 +31,7 @@ const VENDORED = [
   'src/components/login/KeepWebAuthN.ts',
 ];
 
-const ROOT_FILES = ['vite.config.mts', 'vitest.config.ts', 'index.html'];
+const ROOT_FILES = ['vite.config.mts', 'vitest.config.mts', 'index.html'];
 const CODE_EXTS = /\.(ts|tsx|mts|mjs|css|js)$/;
 
 const walk = (dir: string): string[] =>

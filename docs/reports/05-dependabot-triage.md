@@ -51,7 +51,7 @@ Generated 2026-07-24 · Remediation applied & verified 2026-07-25 on branch
 >
 > Alerts **109**/**110** are `happy-dom` matched against **`main`'s `happy-dom@10.8.0`**.
 > `new_code` resolves **20.11.1**. Doubly non-urgent: `happy-dom` is not application code and
-> is not even the test environment here — Vitest runs on **jsdom** (`vitest.config.ts`). It
+> is not even the test environment here — Vitest runs on **jsdom** (`vitest.config.mts`). It
 > arrives via `@wyw-in-js/vite` and `vitest`, and never enters the browser bundle.
 >
 > **If you are reading the GitHub security tab: all 16 alerts are stale branch skew. Merge

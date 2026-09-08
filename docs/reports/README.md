@@ -265,7 +265,7 @@ rather than a percentage.
    remove it without replacing that configuration and every Lit element silently stops
    reacting (class-field shadowing). **#747** removes the coupling. — *report 04 §2*
 7. ⚠️ **The suite cannot see styling — and this has now cost two shipped bugs.**
-   `vitest.config.ts` runs with `css: false` and jsdom
+   `vitest.config.mts` runs with `css: false` and jsdom
    has no canvas backend, so every guard on the token layer is a *source-scanning* test that
    pins structure, not appearance. **A green suite is not evidence that a visual change
    looks right**, and most screens sit behind login — budget a human click-through in both

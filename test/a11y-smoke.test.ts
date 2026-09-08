@@ -33,7 +33,7 @@ import { ELEMENT_FIXTURES, type ElementFixture } from './test-utils/a11y-fixture
  *
  * ## What this cannot do
  *
- * Contrast and visible focus. `vitest.config.ts` sets `css: false` and jsdom has no canvas,
+ * Contrast and visible focus. `vitest.config.mts` sets `css: false` and jsdom has no canvas,
  * so `color-contrast` can only ever come back "incomplete" — see `a11y-fixtures.ts` and
  * `test-utils/a11y.ts`. Those two need a browser; #944 is the worked example.
  */

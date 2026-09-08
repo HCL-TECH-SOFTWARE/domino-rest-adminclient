@@ -5,7 +5,7 @@
  * ========================================================================== */
 
 /*
- * One alias, needed by both `vite.config.mts` and `vitest.config.ts`, which share nothing
+ * One alias, needed by both `vite.config.mts` and `vitest.config.mts`, which share nothing
  * else. It exists because Monaco 0.56 made its own stylesheet unreachable by name.
  *
  * ## Why the app imports that stylesheet at all

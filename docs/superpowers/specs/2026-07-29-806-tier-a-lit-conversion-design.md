@@ -134,7 +134,7 @@ nothing.
 `KeepElements.tsx`. This is report 04 §8's stated plan and it costs **no build-config
 change**, which matters more than directory aesthetics:
 
-- `vite.config.mts` and `vitest.config.ts` both exclude exactly
+- `vite.config.mts` and `vitest.config.mts` both exclude exactly
   `'**/components/keep-elements/*.ts'` from wyw. That glob is flat — direct children only.
   wyw's oxc type-stripper mis-desugars `accessor`, so an element outside that directory
   breaks, and `tsDecorators` misconfiguration fails **silently**: decorated fields shadow
@@ -197,7 +197,7 @@ shadow boundary. Linaria `styled` components do not either.
 
 So every conversion must relocate its styling into the element's `static styles`.
 
-And `vitest.config.ts` sets `css: false`. **The suite is structurally incapable of
+And `vitest.config.mts` sets `css: false`. **The suite is structurally incapable of
 detecting a style that failed to make the crossing.** A green suite is not evidence that
 this work is correct. #777 already found a grey login page this way, after the suite went
 green.
