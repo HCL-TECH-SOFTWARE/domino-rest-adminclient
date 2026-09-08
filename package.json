@@ -1,6 +1,6 @@
 {
   "name": "@hcl-software/domino-rest-adminclient",
-  "version": "1.50.2",
+  "version": "1.50.3-SNAPSHOT",
   "private": false,
   "dependencies": {
     "@awesome.me/webawesome": "^3.11.0",
