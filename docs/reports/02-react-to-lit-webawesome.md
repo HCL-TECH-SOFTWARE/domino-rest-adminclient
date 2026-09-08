@@ -683,7 +683,7 @@ The debt catalogue from the original report, re-scored:
 
 1. ✅ **Types.** All **50** elements are TypeScript with decorators. The SWC config
    (`tsDecorators: true` + `useDefineForClassFields: false`) is mirrored in
-   `vite.config.mts` and `vitest.config.ts` — **keep these in sync**; divergence
+   `vite.config.mts` and `vitest.config.mts` — **keep these in sync**; divergence
    reintroduces Lit's class-field-shadowing bug silently. Moving to standard decorators +
    `accessor`, which removes that coupling, is **#747**.
 2. ✅ **Button duplication — CLOSED (#701).** `keep-button-yes`/`-no`/`-neutral` — plain

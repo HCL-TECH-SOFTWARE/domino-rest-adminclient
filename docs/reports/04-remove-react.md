@@ -206,7 +206,7 @@ risky surface (owned by reports 02/03, listed here for completeness).
 > exactly what the Lit elements need. Removing it without replacing that SWC configuration
 > reintroduces Lit's class-field-shadowing bug across every element, silently. Replace it
 > with a plain SWC/esbuild TS transform carrying the same decorator options — and change
-> `vite.config.mts` and `vitest.config.ts` **together**.
+> `vite.config.mts` and `vitest.config.mts` **together**.
 
 **Net:** **16** of the current 32 `dependencies` go (`react`, `react-dom`, `react-redux`,
 `react-router-dom`, `@lit/react`, `@monaco-editor/react`, `@monaco-editor/loader`,
@@ -232,7 +232,7 @@ controller** covers every one of the 323 hook sites (207 `useSelector` + 116
 > this report — a `createSlice` store binds to a `StoreController` exactly as a
 > `combineReducers` store does, so the two can be sequenced in either order. What changed
 > at `e17010c` is the safety net: every `store/*/reducer.ts` clears the 95 %/95 %/90 %/88 %
-> coverage gate in `vitest.config.ts`, and `test/store/account/action.test.ts` (#673) is
+> coverage gate in `vitest.config.mts`, and `test/store/account/action.test.ts` (#673) is
 > the first test to pin a *thunk*'s contract rather than a reducer's. A `createSlice`
 > rewrite now has behavioural parity tests to land against instead of a manual diff.
 
@@ -624,7 +624,7 @@ export default defineConfig({
 });
 ```
 
-Mirror the same change in `vitest.config.ts` in the same commit.
+Mirror the same change in `vitest.config.mts` in the same commit.
 
 **CSP note:** once MUI/emotion are gone, their runtime `<style>` injection disappears, so
 `'unsafe-hashes'` in `style-src-elem` can go. But `wa-page` needs `style-src-attr`
@@ -670,7 +670,7 @@ during report 02; the last rename removes the final React import.
   `"react"` plugin — drop it in the final purge. Consider adding a Lit/web-components
   rule set at that point if oxlint offers one; otherwise the TS + correctness categories
   already carry most of the value.
-- **Coverage gates:** `vitest.config.ts` now gates `src/components/keep-elements/**` at
+- **Coverage gates:** `vitest.config.mts` now gates `src/components/keep-elements/**` at
   **85 %** lines (#880 raised it from #686's 80) against a measured **89.7 %** — so the headroom is
   ~4 points, not 14. Every element converted from a `.tsx` view enters that directory —
   **budget a test per element**, or the gate fails as the numerator stops keeping up. This
@@ -731,7 +731,7 @@ very end).
   `test/keep-element-wrappers.test.ts` enforces this.
 - **G3 (exit P4):** `grep -rn "react-dom" src` empty; `Provider`/`createRoot` gone.
 - **G4 (exit P5):** `package.json` has no `react`, `@mui/*`, `react-*`, `@emotion/*`,
-  `formik`, `@lit/react`, `@monaco-editor/*`; `vite.config.mts` and `vitest.config.ts`
+  `formik`, `@lit/react`, `@monaco-editor/*`; `vite.config.mts` and `vitest.config.mts`
   still apply the Lit decorator options.
 
 ### Riskiest items (watch list)
@@ -922,13 +922,13 @@ rather than as its own task. See the counting rule at the top of this report.
   since #703) and **`events`** (a Node polyfill for one `EventTarget`-shaped use in
   `utils/token-emitter.ts`).
 - ✅ `package.json` `scripts` no longer contains `disabledpostinstall` (#675).
-- `vite.config.mts` and `vitest.config.ts` no longer use `@vitejs/plugin-react-swc` **but
+- `vite.config.mts` and `vitest.config.mts` no longer use `@vitejs/plugin-react-swc` **but
   still apply legacy decorators + `useDefineForClassFields: false`** — unless **#747** has
   landed standard decorators + `accessor`, which removes the requirement;
   `tsconfig.json` no longer sets `"jsx": "react-jsx"`.
 - `.oxlintrc.json` no longer lists the `react` plugin.
 - `npm run lint`, `npm run build` (tsc -b + vite build) and `npm run test` are all green,
-  with the coverage gates in `vitest.config.ts` satisfied — **and the SonarQube quality
+  with the coverage gates in `vitest.config.mts` satisfied — **and the SonarQube quality
   gate** (#688), once it is switched from report-only.
 - The production CSP in `jar/config/config.json` is validated in enforcing mode with
   `script-src` free of `'unsafe-inline'` and `style-src-attr` reconciled against the app's

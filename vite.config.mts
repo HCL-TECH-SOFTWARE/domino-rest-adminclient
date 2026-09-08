@@ -5,6 +5,27 @@
  * ========================================================================== */
 
 import { defineConfig, type Plugin } from 'vite';
+/*
+ * The three local specifiers below end in `.mjs`, but the files on disk are `.mts`. That is
+ * the required spelling, not a stale reference — and it is worth a note here because it reads
+ * as a bug every time someone new looks at it.
+ *
+ * TypeScript resolves a module specifier against the *output* extension, substituting `.mts`
+ * for `.mjs` exactly as it substitutes `.ts` for `.js`. Spelling these `./monaco-css.mts`
+ * instead — the "obvious" fix — is rejected outright, once per import (five across this file
+ * and `vitest.config.mts`):
+ *
+ *     error TS5097: An import path can only end with a '.mts' extension when
+ *                   'allowImportingTsExtensions' is enabled
+ *
+ * and that flag is deliberately off; it sits commented out in `tsconfig.app.json`, where it
+ * has been since the project split (8667414).
+ *
+ * Note which command catches it, because only `tsc` does. Vite and Vitest resolve *either*
+ * form, so `vite build` alone exits 0 and the suite passes green; it is the `tsc -b` in front
+ * of `npm run build`, and `npm run typecheck`, that fail. A bundler that loads the config is
+ * no evidence the specifier is right.
+ */
 import { standardDecorators } from './scripts/standard-decorators.mjs';
 // Monaco 0.56's exports map hides its own stylesheet; monaco-css.mts explains and resolves it.
 import { monacoCssAlias } from './monaco-css.mjs';
@@ -139,7 +160,7 @@ function stampBuildVersion(): Plugin {
 assertMonacoImports();
 
 export default defineConfig({
-  // The one alias the app cannot build without. `vitest.config.ts` repeats it, because these
+  // The one alias the app cannot build without. `vitest.config.mts` repeats it, because these
   // two configs are standalone; `monaco-css.mts` holds the single definition and the reason.
   resolve: {
     alias: [...monacoCssAlias]
@@ -157,7 +178,7 @@ export default defineConfig({
     // alike. That is the point of the migration. Getting the *transform* wrong is the silent
     // one — SWC's legacy default emits `accessor` untransformed and the build still exits 0.
     //
-    // Must stay identical to the registration in `vitest.config.ts`; sharing one module is
+    // Must stay identical to the registration in `vitest.config.mts`; sharing one module is
     // what makes that true by construction rather than by review.
     standardDecorators()
   ],

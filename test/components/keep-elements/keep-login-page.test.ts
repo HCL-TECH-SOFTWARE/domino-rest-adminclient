@@ -48,7 +48,7 @@ import type LoginPage from '../../../src/components/keep-elements/keep-login-pag
  * three auth paths, the 401 marking, the error alert, the submit control Enter needs, and
  * the passkey prefill.
  *
- * **Layout fidelity is not asserted and cannot be.** `vitest.config.ts` sets `css: false`
+ * **Layout fidelity is not asserted and cannot be.** `vitest.config.mts` sets `css: false`
  * and jsdom has no layout engine, so nothing here can tell a 60/40 grid from anything else.
  * The 767/768/769px behaviour and both colour modes need a browser.
  */

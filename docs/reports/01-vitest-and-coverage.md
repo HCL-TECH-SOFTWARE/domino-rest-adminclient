@@ -44,7 +44,7 @@
   `csp-inline-styles.test.ts`, `csp-policy.test.ts`, `copyright-headers.test.ts`,
   `bundle-budget.test.ts`, `decorator-config.test.ts`, `node-modules-root.test.ts`,
   `people-groups-removed.test.ts` and `keep-element-wrappers.test.ts` parse source, CSS and
-  build output as *text* rather than executing it — because `vitest.config.ts` runs with
+  build output as *text* rather than executing it — because `vitest.config.mts` runs with
   `css: false` and cannot see styling at all. They are the only automated guard several
   whole subsystems have (§B4).
 - **What this suite still cannot do is see CSS.** `css: false` is the single largest gap in
@@ -73,7 +73,7 @@ Exit code **0**. No threshold breach, no suite fails to load. 110 `.ts` suites +
 
 **319 commits, 99 merged PRs (#753–#922).** **75 new test files, 10 deleted**,
 +16,175/−1,144 lines under `test/` — the largest single-refresh growth in the suite's
-history, and `vitest.config.ts` itself grew by 106 lines, almost all of it new gates and the
+history, and `vitest.config.mts` itself grew by 106 lines, almost all of it new gates and the
 reasoning behind them.
 
 | PR | What landed | Effect on this report |
@@ -173,19 +173,19 @@ time coverage has been visible on a PR without downloading an artifact — and i
 |---|---|---|---|
 | Test files / tests | 4 / 34 | **133 / 1709** (110 `.ts`, 23 `.tsx`) | `npm test` |
 | Global line coverage | ~0 % | **70.18 %** (3352/4776) | `coverage/coverage-summary.json` |
-| Per-path coverage gates | none | **14**, plus a global floor of 61/61/63/49 | `vitest.config.ts` |
-| Runner | Jest 30 | **Vitest 4.1.10** | `package.json` `test`, `vitest.config.ts` |
-| Transform | `ts-jest` **and** `@swc/jest` (redundant) | **Vite plugin graph** — `@vitejs/plugin-react-swc` (was `@wyw-in-js/vite` + it, until #825) | `vitest.config.ts` |
-| Decorators | n/a | `tsDecorators: true` + `useDefineForClassFields: false` (mirrors `vite.config.mts`) | `vitest.config.ts` |
-| Environment | `jest-environment-jsdom` | **`jsdom` 30.0.1**, `url: http://localhost/admin/ui` | `vitest.config.ts:31` |
+| Per-path coverage gates | none | **14**, plus a global floor of 61/61/63/49 | `vitest.config.mts` |
+| Runner | Jest 30 | **Vitest 4.1.10** | `package.json` `test`, `vitest.config.mts` |
+| Transform | `ts-jest` **and** `@swc/jest` (redundant) | **Vite plugin graph** — `@vitejs/plugin-react-swc` (was `@wyw-in-js/vite` + it, until #825) | `vitest.config.mts` |
+| Decorators | n/a | `tsDecorators: true` + `useDefineForClassFields: false` (mirrors `vite.config.mts`) | `vitest.config.mts` |
+| Environment | `jest-environment-jsdom` | **`jsdom` 30.0.1**, `url: http://localhost/admin/ui` | `vitest.config.mts:31` |
 | ESM allow-list | `transformIgnorePatterns` | **not needed** — Vite transforms `node_modules` natively | — |
-| Asset/style mocks | `__mocks__/fileMock.js`, `styleMock.js` | **deleted** — `css: false` + Vite asset URLs | `vitest.config.ts` |
-| Setup file | `src/setupTests.ts` existed but was **never loaded** | **`test/setupTests.ts`, wired via `setupFiles`** | `vitest.config.ts` |
+| Asset/style mocks | `__mocks__/fileMock.js`, `styleMock.js` | **deleted** — `css: false` + Vite asset URLs | `vitest.config.mts` |
+| Setup file | `src/setupTests.ts` existed but was **never loaded** | **`test/setupTests.ts`, wired via `setupFiles`** | `vitest.config.mts` |
 | Test location | 4 files scattered under `src/` | **top-level `test/` tree** mirroring `src/` | `4d7ab3b` |
 | Test helpers | none | **`test/test-utils/lit.ts`**, **`monaco.ts`**, **`renderWithProviders.tsx`** (#689) | §A10 |
-| Sonar | `jest-sonar-reporter` | **`vitest-sonar-reporter` 3.0** → `coverage/sonar-report.xml` (CI only), **now consumed by a real scanner** (§C9) | `vitest.config.ts`, `sonar-project.properties` |
-| Coverage | Istanbul via `--coverage` | **`@vitest/coverage-v8`** → `text`, `lcov`, `html`, `json-summary` | `vitest.config.ts` |
-| Thresholds | none | **global floor + 14 per-path gates**, all passing | `vitest.config.ts` |
+| Sonar | `jest-sonar-reporter` | **`vitest-sonar-reporter` 3.0** → `coverage/sonar-report.xml` (CI only), **now consumed by a real scanner** (§C9) | `vitest.config.mts`, `sonar-project.properties` |
+| Coverage | Istanbul via `--coverage` | **`@vitest/coverage-v8`** → `text`, `lcov`, `html`, `json-summary` | `vitest.config.mts` |
+| Thresholds | none | **global floor + 14 per-path gates**, all passing | `vitest.config.mts` |
 | CI | `build` + `test` | **`lint` → `typecheck` → `build` → `bundle:budget` → `test` → `coverage summary` → `Sonar scan` → `quality gate`** on Node 24 | `.github/workflows/pr_check.yml` |
 
 ### Scripts as shipped
@@ -211,7 +211,7 @@ Recorded as-built, so the decisions stay discoverable. Nothing here is outstandi
 Vitest consumes the same plugin graph as the build. This paid off immediately during the
 `.js` → TypeScript Lit conversion (report 02): the decorator configuration
 (`tsDecorators` + `useDefineForClassFields: false`) had to be identical in
-`vite.config.mts` and `vitest.config.ts`, and because both files construct the plugin the
+`vite.config.mts` and `vitest.config.mts`, and because both files construct the plugin the
 same way, "passes in tests, breaks in prod" never happened. Had Jest kept its own
 `ts-jest`/`@swc/jest` pipeline, the class-field-shadowing bug
 ([lit.dev/msg/class-field-shadowing](https://lit.dev/msg/class-field-shadowing)) would
@@ -221,7 +221,7 @@ It kept paying off in #673: the real-Monaco lifecycle suite (§A10) imports
 `monaco-editor` from `node_modules` with no transform allow-list and no bundler config of
 its own, because Vite already resolves it exactly as the app does.
 
-## A2. `vitest.config.ts` — as shipped
+## A2. `vitest.config.mts` — as shipped
 
 Standalone rather than a `test` block inside `vite.config.mts`, so the dev-server CSP
 header and `/api` proxy stay out of the test context. Key deviations from the original
@@ -292,7 +292,7 @@ Istanbul).
 > - **The quality gate is report-only** (`continue-on-error: true`): its status lands
 >   in the job summary but does not fail the run while the gate is still being tuned
 >   server-side. So the **enforcement that actually blocks a merge today is still the
->   `vitest.config.ts` threshold block** (plus, since #671, the coverage table on
+>   `vitest.config.mts` threshold block** (plus, since #671, the coverage table on
 >   every PR). Dropping `continue-on-error` makes the gate binding.
 
 ## A10. Monaco under jsdom — two suites, deliberately

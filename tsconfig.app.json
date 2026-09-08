@@ -13,7 +13,7 @@
 // default of `true`. Neither needs an override here any more — see #747.
 //
 // This file is `noEmit: true`, so it only ever type-checks. The runtime-authoritative
-// decorator setting lives in the bundler configs (`vite.config.mts`, `vitest.config.ts`),
+// decorator setting lives in the bundler configs (`vite.config.mts`, `vitest.config.mts`),
 // which must select SWC's `decoratorVersion: '2022-03'`; SWC does not read tsconfig.json.
 //
 // ## No `jsx`
@@ -59,7 +59,7 @@
     "vite.config.mts",
     // The Monaco stylesheet alias `vite.config.mts` imports. Listed for the same reason as
     // `standard-decorators.mts` below: a composite project must contain every file in its
-    // program. `tsconfig.test.json` lists it too, because `vitest.config.ts` imports it as well.
+    // program. `tsconfig.test.json` lists it too, because `vitest.config.mts` imports it as well.
     "monaco-css.mts",
     "monaco-imports.mts",
     // The SWC decorator transform `vite.config.mts` registers (#996). Listed because a

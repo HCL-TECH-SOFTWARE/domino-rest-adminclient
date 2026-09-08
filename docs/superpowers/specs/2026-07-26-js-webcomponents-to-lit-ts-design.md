@@ -35,7 +35,7 @@ extraction (reports 02 §6.2/§6.5 / 03) — tracked as follow-ups.
 ## Foundation (established in PR #1)
 
 - **SWC decorator transpilation** (the critical enabler — verified by spike): both
-  `vitest.config.ts` and `vite.config.mts` pass
+  `vitest.config.mts` and `vite.config.mts` pass
   `react({ tsDecorators: true, useAtYourOwnRisk_mutateSwcOptions(o => o.jsc.transform.useDefineForClassFields = false) })`.
   `useDefineForClassFields:false` is required so decorated class fields compile to constructor
   assignments and don't shadow Lit's reactive accessors (lit.dev/msg/class-field-shadowing).

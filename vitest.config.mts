@@ -6,6 +6,9 @@
 
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vitest/config';
+// `.mjs` specifiers, `.mts` files, on purpose: TypeScript resolves the output extension, and
+// writing `.mts` here is what TS5097 rejects. The note at the imports in `vite.config.mts`
+// has the detail, including why a green build does not prove the specifier is right.
 import { standardDecorators } from './scripts/standard-decorators.mjs';
 // This config deliberately does not extend vite.config.mts, so the one alias the app cannot
 // build without has to be repeated here — vitest fails to resolve the import otherwise, and

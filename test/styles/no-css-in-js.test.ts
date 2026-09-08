@@ -30,7 +30,7 @@ import { join, resolve } from 'node:path';
  *
  * `@wyw-in-js/vite` is the only reason `@linaria/react` ever produced CSS, and it was
  * registered in two places that drift independently: `vite.config.mts` governs the shipped
- * bundle, `vitest.config.ts` governs this suite. Re-adding it to one is how the pair got
+ * bundle, `vitest.config.mts` governs this suite. Re-adding it to one is how the pair got
  * out of step before (see `decorator-config.test.ts`, which guards the same asymmetry for
  * decorators), so both are named here.
  *
@@ -137,9 +137,9 @@ describe('the CSS-in-JS layer is gone (#825)', () => {
 
   it('registers no Linaria transform in either config', () => {
     // Both, because they drift independently: vite.config.mts governs the shipped bundle
-    // and vitest.config.ts governs this suite, so re-adding the plugin to one would leave
+    // and vitest.config.mts governs this suite, so re-adding the plugin to one would leave
     // the other silently emitting different CSS.
-    for (const file of ['vite.config.mts', 'vitest.config.ts']) {
+    for (const file of ['vite.config.mts', 'vitest.config.mts']) {
       expect(importsOf(read(file)), `${file} must not register a Linaria transform`).toEqual(
         expect.not.arrayContaining([expect.stringMatching(/^@wyw-in-js\//)]),
       );

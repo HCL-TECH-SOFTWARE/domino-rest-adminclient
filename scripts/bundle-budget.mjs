@@ -6,7 +6,7 @@
 
 /**
  * Ratcheting bundle-size gate (#813), the build-side counterpart to the coverage
- * thresholds in `vitest.config.ts`.
+ * thresholds in `vitest.config.mts`.
  *
  * What it measures is the **eager closure**: every chunk reachable from an entry through
  * *static* imports, plus their CSS. That is what a browser must download before it can

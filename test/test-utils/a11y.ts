@@ -20,7 +20,7 @@ import axe from 'axe-core';
  * inside a shadow root and asserts both are found. Without that case every assertion here
  * could pass by never looking anywhere.
  *
- * It cannot see anything that needs paint. `vitest.config.ts` runs with `css: false` and
+ * It cannot see anything that needs paint. `vitest.config.mts` runs with `css: false` and
  * jsdom has no canvas backend — `getContext()` throws "Not implemented" — so `color-contrast`
  * comes back **incomplete**, never violation, whatever the colours are. That is the caveat
  * the issue records, and it holds: contrast and visible focus need a browser. #944 is the

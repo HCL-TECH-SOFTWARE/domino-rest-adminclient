@@ -43,7 +43,7 @@ import { standardDecorators } from '../scripts/standard-decorators.mjs';
  *
  *   - `tsconfig.app.json`            type-check only (`noEmit`). SWC never reads it.
  *   - `scripts/standard-decorators.mts` the transform itself, for build, dev and this suite.
- *   - `vite.config.mts` / `vitest.config.ts`   must both register it.
+ *   - `vite.config.mts` / `vitest.config.mts`   must both register it.
  *
  * The last pair is what remains of the drift guard: sharing a module makes the *settings*
  * identical, but either config could still drop the registration, and the two govern different
@@ -161,9 +161,12 @@ describe('#747 standard decorators', () => {
     // Settings can no longer drift — there is one module — but a registration can still be
     // dropped from one config, and they govern different things: the shipped bundle and
     // this suite.
-    for (const file of ['vite.config.mts', 'vitest.config.ts']) {
+    for (const file of ['vite.config.mts', 'vitest.config.mts']) {
       const source = read(file);
       expect(source, `${file} must import the shared decorator transform`).toMatch(
+        // `.mjs`, deliberately, though the file on disk is `standard-decorators.mts`. If this
+        // assertion ever fails because a config was "corrected" to `.mts`, fix the config and
+        // not this pattern — see the note at the imports in `vite.config.mts`.
         /from '\.\/scripts\/standard-decorators\.mjs'/,
       );
       expect(source, `${file} must register it`).toMatch(/standardDecorators\(\)/);
