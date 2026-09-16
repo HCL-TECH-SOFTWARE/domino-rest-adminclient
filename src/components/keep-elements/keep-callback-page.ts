@@ -164,7 +164,17 @@ export default class CallbackPage extends KeepElement {
     const clientId = localStorage.getItem('client_id');
     const redirectUri = sessionStorage.getItem('redirect_uri');
 
-    const token = await handleCallback(oidcConfigUrl, clientId, redirectUri);
+    let token;
+    try {
+      token = await handleCallback(oidcConfigUrl, clientId, redirectUri);
+    } catch (error) {
+      // pkce.js throws here for a missing/mismatched `state` as well as a missing code
+      // verifier -- both mean the callback cannot be trusted, and by this point there is no
+      // token to report a failure on, so it is handled the same as AUTH_FAILED above.
+      log.error('OIDC callback failed', { error });
+      this.displayText = AUTH_FAILED;
+      return;
+    }
     const {
       refresh_token,
       refresh_expires_in,

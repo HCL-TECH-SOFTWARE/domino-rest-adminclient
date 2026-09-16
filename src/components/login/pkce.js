@@ -58,6 +58,10 @@ async function generateCodeVerifierAndChallenge() {
     return { codeVerifier, codeChallenge };
 }
 
+// A CSRF state token has no format requirement beyond "unguessable per attempt", so it
+// reuses the same randomness generateCodeVerifier() already has rather than duplicating it.
+const generateState = generateCodeVerifier;
+
 // Step 2: Initiate Authorization Request
 export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redirectUri, scope = "") {
     try {
@@ -66,13 +70,20 @@ export async function initiateAuthorizationRequest(oidcConfigUrl, clientId, redi
                 .then(res => res.json()
     )
     const { codeVerifier, codeChallenge } = await generateCodeVerifierAndChallenge();
-    
+
     localStorage.setItem('pkce_code_verifier', codeVerifier);
-    
+
+    // RFC 6749 4.1.1 / RFC 9700 4.7.1: state is this flow's CSRF token, distinct from
+    // PKCE's code_verifier. Kept in sessionStorage alongside redirect_uri (keep-login-page.ts)
+    // since both are per-attempt data, not something that should survive across tabs/reloads.
+    const state = generateState();
+    sessionStorage.setItem('pkce_state', state);
+
     const params = new URLSearchParams({
         client_id: clientId,
         redirect_uri: redirectUri,
         response_type: 'code',
+        state,
         code_challenge: codeChallenge,
         code_challenge_method: 'S256',
     });
@@ -98,6 +109,14 @@ export async function handleCallback(oidcConfigUrl, clientId, redirectUri) {
 
     if (!authorizationCode) {
         throw new Error('Authorization code not found in callback URL');
+    }
+
+    // Consumed once and cleared immediately: a state value must not be reusable across two
+    // callbacks, the same reason the authorization code itself is single-use server-side.
+    const expectedState = sessionStorage.getItem('pkce_state');
+    sessionStorage.removeItem('pkce_state');
+    if (!expectedState || params.get('state') !== expectedState) {
+        throw new Error('State mismatch: possible CSRF attempt');
     }
 
     const codeVerifier = localStorage.getItem('pkce_code_verifier');
