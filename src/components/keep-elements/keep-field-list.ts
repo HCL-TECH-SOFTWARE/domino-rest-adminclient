@@ -5,16 +5,19 @@
  * ========================================================================== */
 
 import { html, css, type TemplateResult } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
+import './keep-button';
+import './keep-form-dialog-header';
 import './keep-search-input';
 import './keep-single-field';
 import './keep-tooltip';
 import { KeepElement } from './keep-element';
+import { modalBackdropStyles } from './modal-backdrop';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { StoreController } from '../../store/StoreController';
 import { setLoading } from '../../store/loading/action';
@@ -82,7 +85,9 @@ interface FormOption {
  */
 @customElement('keep-field-list')
 export default class FieldList extends KeepElement {
-  static styles = css`
+  static styles = [
+    modalBackdropStyles,
+    css`
     /* was the FieldContainer Linaria block */
     :host {
       display: flex;
@@ -269,7 +274,45 @@ export default class FieldList extends KeepElement {
     .field-item {
       padding-bottom: 2px;
     }
-  `;
+
+    /*
+     * The "Add All Fields?" confirmation. Same pattern keep-mode-fields uses for its own
+     * dialog, reproduced rather than shared: the two are small and diverge in content, and a
+     * shared base would buy nothing here but an extra import to trace through.
+     */
+    dialog {
+      display: none;
+      width: 30%;
+      max-width: calc(100% - var(--wa-space-l));
+      height: fit-content;
+      padding: var(--wa-space-l);
+      border: 1px solid var(--wa-color-surface-border);
+      border-radius: 10px;
+      box-shadow: var(--wa-shadow-l);
+      background: var(--wa-color-surface-raised);
+      color: var(--wa-color-text-normal);
+      flex-direction: column;
+      align-items: start;
+      gap: 20px;
+    }
+
+    dialog[open] {
+      display: flex;
+    }
+
+    .dialog-text {
+      color: var(--text-color-primary);
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+  `,
+  ];
 
   /** The schema (configuration) name — `dbName` at the call site. */
   @property({ type: String }) accessor schemaName = '';
@@ -293,6 +336,11 @@ export default class FieldList extends KeepElement {
 
   /** What is typed in the filter. Internal: the parent never read it. */
   @state() accessor searchFieldKey = '';
+
+  /** Whether the "Add All Fields?" confirmation is open. */
+  @state() private accessor confirmAddAllOpen = false;
+
+  @query('dialog') private accessor confirmAddAllDialog!: HTMLDialogElement | null;
 
   private designs = new StoreController(this, (state) => state.databases.nsfDesigns);
 
@@ -395,6 +443,16 @@ export default class FieldList extends KeepElement {
 
   protected updated(): void {
     this.fetchForForm();
+
+    const dialog = this.confirmAddAllDialog;
+    if (!dialog) return;
+    // Guarded on both sides: this runs on every render, and showModal() on an open dialog
+    // throws InvalidStateError.
+    if (this.confirmAddAllOpen) {
+      if (!dialog.open) dialog.showModal();
+    } else if (dialog.open) {
+      dialog.close();
+    }
   }
 
   /**
@@ -477,6 +535,15 @@ export default class FieldList extends KeepElement {
     this.activeFields.dispatch(setLoading({ status: false }));
   }
 
+  /** Opens the "Add All Fields?" confirmation; the add itself waits for Yes. */
+  private openConfirmAddAll(): void {
+    this.confirmAddAllOpen = true;
+  }
+
+  private closeConfirmAddAll(): void {
+    this.confirmAddAllOpen = false;
+  }
+
   /** Offer every field of the chosen form, minus the API's internal ones. */
   private handleAddAll(): void {
     const items: AccessField[] = [];
@@ -486,6 +553,7 @@ export default class FieldList extends KeepElement {
         .forEach((field: any) => items.push({ ...field, name: field.content }));
     });
     this.emit<KeepFieldsAddDetail>('fields-add', { items });
+    this.closeConfirmAddAll();
   }
 
   private handleSearch(event: CustomEvent<KeepSearchChangeDetail>): void {
@@ -566,7 +634,9 @@ export default class FieldList extends KeepElement {
           ${this.renderIconButton('arrows-rotate', 'Refresh List of Fields', () =>
             this.handleRefresh(),
           )}
-          ${this.renderIconButton('square-plus', 'Add All Fields', () => this.handleAddAll())}
+          ${this.renderIconButton('square-plus', 'Add All Fields', () =>
+            this.openConfirmAddAll(),
+          )}
         </div>
         <div class="row">
           <wa-select
@@ -594,6 +664,27 @@ export default class FieldList extends KeepElement {
       </div>
       <div class="divider" role="separator"></div>
       ${this.renderFields()}
+      ${this.renderConfirmAddAllDialog()}
+    `;
+  }
+
+  private renderConfirmAddAllDialog() {
+    return html`
+      <dialog aria-label="Add All Fields" @cancel=${this.closeConfirmAddAll}>
+        <keep-form-dialog-header
+          heading="Add All Fields?"
+          @header-close=${this.closeConfirmAddAll}
+        ></keep-form-dialog-header>
+        <p class="dialog-text">
+          This adds every field of the current form to this mode. Continue?
+        </p>
+        <div class="dialog-actions">
+          <keep-button variant="neutral" appearance="outlined" @click=${this.closeConfirmAddAll}>
+            No
+          </keep-button>
+          <keep-button @click=${this.handleAddAll}>Yes</keep-button>
+        </div>
+      </dialog>
     `;
   }
 }

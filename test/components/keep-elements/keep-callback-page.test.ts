@@ -183,6 +183,18 @@ describe('keep-callback-page', () => {
       expect(left).not.toHaveBeenCalled();
     });
 
+    it('reports a rejected exchange (state-mismatch or missing-verifier from pkce.js) the same as a provider error', async () => {
+      vi.mocked(handleCallback).mockRejectedValue(new Error('State mismatch: possible CSRF attempt'));
+      const el = await mountLit<CallbackPage>(TAG);
+      const left = vi.fn();
+      el.addEventListener('authenticated', left);
+      await settle(el);
+
+      expect(text(el)).toContain('Error authenticating. Please try again.');
+      expect(localStorage.getItem('user_token')).toBeNull();
+      expect(left).not.toHaveBeenCalled();
+    });
+
     it('does not ask the host to leave while the exchange is still in flight', async () => {
       // The mount pass runs the same comparison with nothing exchanged yet. A stored token
       // from an earlier session must not be mistaken for this one.

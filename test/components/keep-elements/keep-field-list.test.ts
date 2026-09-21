@@ -86,6 +86,14 @@ const rowNames = (el: FieldList) =>
 const iconButtons = (el: FieldList) =>
   [...el.shadowRoot!.querySelectorAll<HTMLButtonElement>('button.icon-button')];
 
+const confirmDialog = (el: FieldList) => el.shadowRoot!.querySelector('dialog')!;
+
+/** Yes is second, No is first — the same left-to-right order the markup renders them in. */
+const confirmDialogButton = (el: FieldList, label: 'Yes' | 'No') =>
+  [...confirmDialog(el).querySelectorAll('keep-button')].find(
+    (button) => button.textContent?.trim() === label,
+  )!;
+
 const listen = (el: FieldList, type: string) => {
   const seen: CustomEvent[] = [];
   el.addEventListener(type, (e) => seen.push(e as CustomEvent));
@@ -257,18 +265,83 @@ describe('keep-field-list', () => {
     expect(raw).toHaveLength(0);
   });
 
-  it('offers every selectable field at once from Add All Fields', async () => {
+  it('does not re-invoke showModal on a dialog that is already open', async () => {
+    seedDesign();
+    const el = await mount();
+    // showModal() is a no-op in this environment and never flips `open` itself, so this
+    // stands in for the state a real one would already be in.
+    confirmDialog(el).open = true;
+    const showModal = confirmDialog(el).showModal as unknown as ReturnType<typeof vi.fn>;
+    showModal.mockClear();
+
+    iconButtons(el)[1].click();
+    await el.updateComplete;
+
+    expect(showModal).not.toHaveBeenCalled();
+  });
+
+  it('asks for confirmation before adding, rather than adding straight away', async () => {
     seedDesign();
     await seedFields(FORM, [field('Subject'), field('@Internal'), field('Body')]);
     const el = await mount();
     const seen = listen(el, 'fields-add');
 
     iconButtons(el)[1].click();
+    await el.updateComplete;
+
+    expect(seen).toHaveLength(0);
+    expect(confirmDialog(el).getAttribute('aria-label')).toBe('Add All Fields');
+  });
+
+  it('offers every selectable field once Yes is chosen in the confirmation', async () => {
+    seedDesign();
+    await seedFields(FORM, [field('Subject'), field('@Internal'), field('Body')]);
+    const el = await mount();
+    const seen = listen(el, 'fields-add');
+
+    iconButtons(el)[1].click();
+    await el.updateComplete;
+    confirmDialogButton(el, 'Yes').dispatchEvent(new Event('click'));
+    await el.updateComplete;
 
     expect(seen).toHaveLength(1);
     const items = (seen[0].detail as KeepFieldsAddDetail).items;
     // Each carries the `name` the access screen keys on, taken from `content`.
     expect(items.map((item) => item.name)).toEqual(['Subject', 'Body']);
+  });
+
+  it('adds nothing and closes the dialog when No is chosen', async () => {
+    seedDesign();
+    await seedFields(FORM, [field('Subject')]);
+    const el = await mount();
+    const seen = listen(el, 'fields-add');
+
+    iconButtons(el)[1].click();
+    await el.updateComplete;
+    // showModal() is a no-op stand-in in this environment, so `open` never moves on its own
+    // — set by hand here, the same way keep-mode-fields' own dialog tests do, to exercise
+    // the closing half of the updated() guard at all.
+    confirmDialog(el).open = true;
+    confirmDialogButton(el, 'No').dispatchEvent(new Event('click'));
+    await el.updateComplete;
+
+    expect(seen).toHaveLength(0);
+    expect(confirmDialog(el).close).toHaveBeenCalled();
+  });
+
+  it('also closes the confirmation from its header close button', async () => {
+    seedDesign();
+    const el = await mount();
+
+    iconButtons(el)[1].click();
+    await el.updateComplete;
+    confirmDialog(el).open = true;
+    confirmDialog(el)
+      .querySelector('keep-form-dialog-header')!
+      .dispatchEvent(new CustomEvent('header-close', { bubbles: true, composed: true }));
+    await el.updateComplete;
+
+    expect(confirmDialog(el).close).toHaveBeenCalled();
   });
 
   it('gives both icon controls a name and makes them real buttons', async () => {

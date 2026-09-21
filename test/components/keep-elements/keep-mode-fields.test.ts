@@ -69,6 +69,16 @@ const addButton = (el: ModeFields) =>
 
 const dialogEl = (el: ModeFields) => shadow(el).querySelector('dialog')!;
 
+/** Type into the filter the way the shared search element reports it. */
+const search = async (el: ModeFields, value: string) => {
+  shadow(el)
+    .querySelector('keep-search-input')!
+    .dispatchEvent(
+      new CustomEvent('search-change', { detail: { value }, bubbles: true, composed: true }),
+    );
+  await el.updateComplete;
+};
+
 /** Row checkboxes only; the select-all box lives in the batch bar, outside the list. */
 const rowCheckboxes = (el: ModeFields) =>
   Array.from(shadow(el).querySelectorAll<Checkbox>('.row keep-checkbox'));
@@ -121,6 +131,7 @@ describe('keep-mode-fields', () => {
     expect(el.validationRules).toEqual([]);
     expect(el.required).toEqual([]);
     expect(el.fieldIndex).toBe(0);
+    expect(el.modeName).toBe('');
     expect(el.addField('read', {})).toBe('');
   });
 
@@ -169,6 +180,52 @@ describe('keep-mode-fields', () => {
       // whole list with it; the second row is the regression guard. It renders the access
       // flag alone, which is what the surrounding bullet guards already implied.
       expect(metaText(el)).toEqual(['Names • R / W', 'R / W']);
+    });
+  });
+
+  describe('the field filter', () => {
+    it('gives the filter an accessible name', async () => {
+      const el = await mount();
+      expect(shadow(el).querySelector('keep-search-input')!.getAttribute('label')).toBe(
+        'Search Field',
+      );
+    });
+
+    it('narrows the rows to those whose name matches, case-insensitively', async () => {
+      const el = await mount();
+      await search(el, 'bod');
+      expect(rowButtons(el).map((button) => button.querySelector('.row-name')!.textContent)).toEqual(
+        ['Body'],
+      );
+    });
+
+    it('restores every row once the filter is cleared', async () => {
+      const el = await mount();
+      await search(el, 'bod');
+      await search(el, '');
+      expect(rowButtons(el)).toHaveLength(2);
+    });
+
+    it('shows a no-match message distinct from the empty-mode placeholder', async () => {
+      const el = await mount();
+      await search(el, 'nope');
+      expect(shadow(el).querySelector('.field-list')).toBeNull();
+      expect(shadow(el).querySelector('.empty-text')!.textContent).toContain(
+        'No fields match "nope"',
+      );
+    });
+
+    it('still reports a filtered row by its position in the full, unfiltered list', async () => {
+      const el = await mount({
+        state: modeState([FIELDS[0], FIELDS[1], { name: 'Cc', content: 'Cc', format: 'string' }]),
+      });
+      const seen = listen<KeepFieldIndexChangeDetail>(el, 'field-index-change');
+
+      await search(el, 'cc');
+      rowButtons(el)[0].click();
+      await el.updateComplete;
+
+      expect(seen).toEqual([{ fieldIndex: 2 }]);
     });
   });
 
@@ -299,6 +356,30 @@ describe('keep-mode-fields', () => {
       expect(selectAllBox(el).textContent).toContain('Select all fields');
     });
 
+    it('puts each row checkbox to the left of the field name, not the right', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+
+      const row = shadow(el).querySelectorAll('.row')[0]!;
+      const children = [...row.children];
+      expect(children.indexOf(rowCheckboxes(el)[0])).toBeLessThan(
+        children.indexOf(rowButtons(el)[0]),
+      );
+    });
+
+    it('puts the select-all checkbox to the left of Remove/Cancel, not the right', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+
+      const batchActions = shadow(el).querySelector('.batch-actions')!;
+      const children = [...batchActions.children];
+      expect(children.indexOf(selectAllBox(el))).toBeLessThan(
+        children.indexOf(shadow(el).querySelector('.batch-buttons')!),
+      );
+    });
+
     it('explains the disabled Remove button while nothing is ticked', async () => {
       const el = await mount();
       textButton(el, 'Delete Field(s)').click();
@@ -358,6 +439,68 @@ describe('keep-mode-fields', () => {
       expect(
         Array.from(shadow(el).querySelectorAll('.dialog-field-name')).map((n) => n.textContent),
       ).toEqual(['Body']);
+    });
+
+    it('heads the dialog "Remove Field" for one row and "Remove Fields" for more than one', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+      expect(dialogEl(el).getAttribute('aria-label')).toBe('Remove Field');
+      expect(
+        shadow(el).querySelector('keep-form-dialog-header')!.getAttribute('heading'),
+      ).toBe('Remove Field');
+
+      await toggle(rowCheckboxes(el)[1], true);
+      await el.updateComplete;
+      expect(dialogEl(el).getAttribute('aria-label')).toBe('Remove Fields');
+      expect(
+        shadow(el).querySelector('keep-form-dialog-header')!.getAttribute('heading'),
+      ).toBe('Remove Fields');
+    });
+
+    it('names the mode in the confirmation body when it has one', async () => {
+      const el = await mount({ modeName: 'Editor' });
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+
+      const [, modeText] = shadow(el).querySelectorAll('.dialog-text');
+      expect(modeText!.textContent).toBe('in the mode: Editor.');
+    });
+
+    it('falls back to a generic mode reference when it has no mode name', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+
+      const [, modeText] = shadow(el).querySelectorAll('.dialog-text');
+      expect(modeText!.textContent).toBe('in the current mode.');
+    });
+
+    it('labels the confirmation buttons Yes and No', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+
+      const [no, yes] = shadow(el).querySelectorAll('keep-button');
+      expect(no!.textContent?.trim()).toBe('No');
+      expect(yes!.textContent?.trim()).toBe('Yes');
     });
 
     it('unticking a row takes it back out of the basket', async () => {
@@ -447,7 +590,7 @@ describe('keep-mode-fields', () => {
         shadow(el)
           .querySelector('keep-form-dialog-header')!
           .dispatchEvent(new CustomEvent('header-close', { bubbles: true, composed: true }))],
-      ['Cancel', (el: ModeFields) =>
+      ['No', (el: ModeFields) =>
         shadow(el).querySelectorAll('keep-button')[0].dispatchEvent(new Event('click'))],
       ['the Escape key', (el: ModeFields) => dialogEl(el).dispatchEvent(new Event('cancel'))],
     ])('closes the dialog from %s', async (_name, close) => {

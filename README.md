@@ -1,6 +1,6 @@
 # HCL Domino REST API Admin Client
 
-The Domino Rest Admin Client is a web UI that facilitates managing schemas, scopes, and applications using Domino Rest API. By nature, it is built on JavaScript and the React framework, but it is used in a Maven application (Domino Rest API) as a [WebJar](https://www.webjars.org/). This WebJar will be contained in Domino Rest API's Java libraries.
+The Domino Rest Admin Client is a web UI that facilitates managing schemas, scopes, and applications using Domino Rest API. By nature, it is built on TypeScript, Web component, [Webawesome](https://webawesome.com/) and the [LIT](https://lit.dev/) web component compiler. No proprietary frameworks like React, Vue or Angular used. It is pakcaged in a Maven application (Domino Rest API) as a [WebJar](https://www.webjars.org/). This WebJar will be contained in Domino Rest API's Java libraries.
 
 Once you have Domino Rest API, you can access it on http://localhost:8880/admin/ui.
 
@@ -32,9 +32,14 @@ Domino Rest Admin Client uses `npm` as its package manager. The `exec-maven-plug
 
 The config.json file contains the configurations for Admin UI and the paths that will be available in the WebJar.
 
+## Webawesome web components
+
+We use [Webawesome](https://webawesome.com/) components, layout ([wa-page](https://webawesome.com/docs/components/page/)) and [design tokens](https://webawesome.com/docs/tokens/).
+You could use a (custom) [Theme](https://webawesome.com/docs/theming-overview) to adjust visibles without touching any logic.
+
 ## 🌐 Lit Web Components
 
-Our current components are Lit 3.0 web components. To build a custom Lit element, please follow the following steps:
+Our own components are Lit 3.0 web components, eventually containing webawesome components. To build a custom Lit element, please follow the following steps:
 
 1. Place your Lit element file in _src/components/keep-elements_. For example, we currently have Lit element with the tag name `keep-autocomplete`, under the class name `Autocomplete`.
 
@@ -71,7 +76,7 @@ To use an icon, reference it by its Font Awesome name through that library:
 `KeepButton` takes the name directly:
 
 ```jsx
-<keep=button icon="plus" @click=${handleAdd}>Add</keep-button>
+<keep-button icon="plus" @click=${handleAdd}>Add</keep-button>
 ```
 
 Only the glyphs listed in `ICONS` are bundled — to add one, import its URL in
