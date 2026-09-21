@@ -300,11 +300,17 @@ export default class ModeFields extends KeepElement {
         padding: 0 11px;
       }
 
-      /* was .flex.justify-between.full-width.p-0.items-center */
+      /*
+       * was .flex.justify-between.full-width.p-0.items-center. The select-all checkbox used
+       * to be the row's last child, out at the far end that space-between pushed it to; now
+       * it is the first child, immediately to the left of Remove/Cancel rather than spaced
+       * clear across the row from them.
+       */
       .batch-actions {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-start;
         align-items: center;
+        gap: 12px;
         width: 100%;
         padding: 0;
       }
@@ -379,10 +385,15 @@ export default class ModeFields extends KeepElement {
         margin: 0;
       }
 
-      /* was .field-list-custom-item.flex.items-center.full-width.small-text */
+      /*
+       * was .field-list-custom-item.flex.items-center.full-width.small-text. gap is new:
+       * the batch checkbox is the row's first child now, and without it the checkbox and
+       * the name sat flush against each other.
+       */
       .row {
         display: flex;
         align-items: center;
+        gap: 10px;
         justify-content: space-between;
         width: 100%;
         padding: 10px 20px;
@@ -605,6 +616,9 @@ export default class ModeFields extends KeepElement {
   /** Names of the mode's required fields. Owned by the Access tab. */
   @property({ type: Array }) accessor required: string[] = [];
 
+  /** The mode's own name, shown in the remove-field confirmation. Owned by the Access tab. */
+  @property({ type: String }) accessor modeName = '';
+
   /** Which field is selected. Owned by the Access tab, echoed back as an event. */
   @property({ type: Number }) accessor fieldIndex = 0;
 
@@ -787,15 +801,6 @@ export default class ModeFields extends KeepElement {
 
     return html`
       <div class="row">
-        <button
-          type="button"
-          class="row-select"
-          aria-current=${selected ? 'true' : nothing}
-          @click=${() => this.selectField(item, index)}
-        >
-          <span class="row-name" title=${item.name}>${item.name}</span>
-          <span class="row-meta">${ModeFields.describe(item, isRequired)}</span>
-        </button>
         ${this.batchDelete
           ? html`
               <keep-checkbox
@@ -806,6 +811,15 @@ export default class ModeFields extends KeepElement {
               </keep-checkbox>
             `
           : nothing}
+        <button
+          type="button"
+          class="row-select"
+          aria-current=${selected ? 'true' : nothing}
+          @click=${() => this.selectField(item, index)}
+        >
+          <span class="row-name" title=${item.name}>${item.name}</span>
+          <span class="row-meta">${ModeFields.describe(item, isRequired)}</span>
+        </button>
       </div>
     `;
   }
@@ -824,6 +838,9 @@ export default class ModeFields extends KeepElement {
     const nothingTicked = this.deleteFields.length === 0;
     return html`
       <div class="batch-actions">
+        <keep-checkbox size="s" @change=${this.handleSelectAll}>
+          <span class="visually-hidden">Select all fields</span>
+        </keep-checkbox>
         <div class="batch-buttons">
           <keep-tooltip
             placement="bottom"
@@ -837,16 +854,18 @@ export default class ModeFields extends KeepElement {
             <span class="cancel-text">Cancel</span>
           </button>
         </div>
-        <keep-checkbox size="s" @change=${this.handleSelectAll}>
-          <span class="visually-hidden">Select all fields</span>
-        </keep-checkbox>
       </div>
     `;
   }
 
   private renderRemoveDialog() {
+    // Plural whenever more than one row is ticked — "Field" only reads oddly for a batch,
+    // never wrongly for a single field.
+    const heading = this.deleteFields.length > 1 ? 'Remove Fields' : 'Remove Field';
+    const modeText = this.modeName ? `in the mode: ${this.modeName}.` : 'in the current mode.';
+
     return html`
-      <dialog aria-label="Remove Field" @cancel=${this.closeRemoveDialog}>
+      <dialog aria-label=${heading} @cancel=${this.closeRemoveDialog}>
         <div class="dialog-head">
           <div class="warning-icon">
             <!-- One registered glyph replaces 35x35 of hand-drawn path data that was
@@ -856,7 +875,7 @@ export default class ModeFields extends KeepElement {
           </div>
           <div class="dialog-head-body">
             <keep-form-dialog-header
-              heading="Remove Field"
+              heading=${heading}
               @header-close=${this.closeRemoveDialog}
             ></keep-form-dialog-header>
           </div>
@@ -868,13 +887,13 @@ export default class ModeFields extends KeepElement {
               (field) => html`<li><p class="dialog-field-name">${field.name}</p></li>`,
             )}
           </ul>
-          <p class="dialog-text">on this mode?</p>
+          <p class="dialog-text">${modeText}</p>
         </div>
         <div class="dialog-actions">
           <keep-button variant="neutral" appearance="outlined" @click=${this.closeRemoveDialog}>
-            Cancel
+            No
           </keep-button>
-          <keep-button @click=${this.handleBatchDelete}>OK</keep-button>
+          <keep-button @click=${this.handleBatchDelete}>Yes</keep-button>
         </div>
       </dialog>
     `;

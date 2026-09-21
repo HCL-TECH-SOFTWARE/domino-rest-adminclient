@@ -131,6 +131,7 @@ describe('keep-mode-fields', () => {
     expect(el.validationRules).toEqual([]);
     expect(el.required).toEqual([]);
     expect(el.fieldIndex).toBe(0);
+    expect(el.modeName).toBe('');
     expect(el.addField('read', {})).toBe('');
   });
 
@@ -355,6 +356,30 @@ describe('keep-mode-fields', () => {
       expect(selectAllBox(el).textContent).toContain('Select all fields');
     });
 
+    it('puts each row checkbox to the left of the field name, not the right', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+
+      const row = shadow(el).querySelectorAll('.row')[0]!;
+      const children = [...row.children];
+      expect(children.indexOf(rowCheckboxes(el)[0])).toBeLessThan(
+        children.indexOf(rowButtons(el)[0]),
+      );
+    });
+
+    it('puts the select-all checkbox to the left of Remove/Cancel, not the right', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+
+      const batchActions = shadow(el).querySelector('.batch-actions')!;
+      const children = [...batchActions.children];
+      expect(children.indexOf(selectAllBox(el))).toBeLessThan(
+        children.indexOf(shadow(el).querySelector('.batch-buttons')!),
+      );
+    });
+
     it('explains the disabled Remove button while nothing is ticked', async () => {
       const el = await mount();
       textButton(el, 'Delete Field(s)').click();
@@ -414,6 +439,68 @@ describe('keep-mode-fields', () => {
       expect(
         Array.from(shadow(el).querySelectorAll('.dialog-field-name')).map((n) => n.textContent),
       ).toEqual(['Body']);
+    });
+
+    it('heads the dialog "Remove Field" for one row and "Remove Fields" for more than one', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+      expect(dialogEl(el).getAttribute('aria-label')).toBe('Remove Field');
+      expect(
+        shadow(el).querySelector('keep-form-dialog-header')!.getAttribute('heading'),
+      ).toBe('Remove Field');
+
+      await toggle(rowCheckboxes(el)[1], true);
+      await el.updateComplete;
+      expect(dialogEl(el).getAttribute('aria-label')).toBe('Remove Fields');
+      expect(
+        shadow(el).querySelector('keep-form-dialog-header')!.getAttribute('heading'),
+      ).toBe('Remove Fields');
+    });
+
+    it('names the mode in the confirmation body when it has one', async () => {
+      const el = await mount({ modeName: 'Editor' });
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+
+      const [, modeText] = shadow(el).querySelectorAll('.dialog-text');
+      expect(modeText!.textContent).toBe('in the mode: Editor.');
+    });
+
+    it('falls back to a generic mode reference when it has no mode name', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+
+      const [, modeText] = shadow(el).querySelectorAll('.dialog-text');
+      expect(modeText!.textContent).toBe('in the current mode.');
+    });
+
+    it('labels the confirmation buttons Yes and No', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await toggle(rowCheckboxes(el)[0], true);
+      await el.updateComplete;
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+
+      const [no, yes] = shadow(el).querySelectorAll('keep-button');
+      expect(no!.textContent?.trim()).toBe('No');
+      expect(yes!.textContent?.trim()).toBe('Yes');
     });
 
     it('unticking a row takes it back out of the basket', async () => {
@@ -503,7 +590,7 @@ describe('keep-mode-fields', () => {
         shadow(el)
           .querySelector('keep-form-dialog-header')!
           .dispatchEvent(new CustomEvent('header-close', { bubbles: true, composed: true }))],
-      ['Cancel', (el: ModeFields) =>
+      ['No', (el: ModeFields) =>
         shadow(el).querySelectorAll('keep-button')[0].dispatchEvent(new Event('click'))],
       ['the Escape key', (el: ModeFields) => dialogEl(el).dispatchEvent(new Event('cancel'))],
     ])('closes the dialog from %s', async (_name, close) => {

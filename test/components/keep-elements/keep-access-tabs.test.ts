@@ -146,13 +146,19 @@ describe('keep-access-tabs', () => {
   });
 
   describe('seeding from the current mode', () => {
-    it('hands the mode scripts, required list and rules to the field panel', async () => {
+    it('hands the mode scripts, required list, rules and name to the field panel', async () => {
       const modes = [mode('default'), mode('draft', { required: ['Other'] })];
       const el = await mount({ modes, currentModeIndex: 1 } as Partial<AccessTabs>);
       const panel = modeFields(el) as any;
       expect(panel.required).toEqual(['Other']);
       expect(panel.scripts.onLoad.formula).toBe('LOAD');
       expect(panel.scripts.continueOnError).toBe(true);
+      expect(panel.modeName).toBe('draft');
+    });
+
+    it('hands the panel an empty mode name for an index that outran the list', async () => {
+      const el = await mount({ modes: [mode('default')], currentModeIndex: 7 } as Partial<AccessTabs>);
+      expect((modeFields(el) as any).modeName).toBe('');
     });
 
     it('shows the current mode name on the picker', async () => {
