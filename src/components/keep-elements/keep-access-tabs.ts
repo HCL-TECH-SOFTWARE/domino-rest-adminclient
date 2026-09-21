@@ -1109,6 +1109,7 @@ export default class AccessTabs extends KeepElement {
             .required=${this.required}
             .validationRules=${this.validationRules}
             .fieldIndex=${this.fieldIndex}
+            .modeName=${this.modes[this.currentModeIndex]?.modeName ?? ''}
             @required-change=${(event: CustomEvent<{ required: string[] }>) => {
               this.required = event.detail.required;
             }}

@@ -14,6 +14,7 @@ import './keep-checkbox';
 import './keep-field-container';
 import './keep-form-dialog-header';
 import './keep-script-editor';
+import './keep-search-input';
 import './keep-tooltip';
 import { KeepElement } from './keep-element';
 import { modalBackdropStyles } from './modal-backdrop';
@@ -23,6 +24,7 @@ import { store } from '../../store/store';
 import { toggleAlert } from '../../store/alerts/action';
 import type { KeepFieldItem } from './keep-field-container';
 import type { KeepScriptData, KeepValidationRule } from './keep-script-editor';
+import type { KeepSearchChangeDetail } from './keep-search-input';
 
 /**
  * The mode's field lists, keyed by "droppable" id. Only the first key is ever read for
@@ -275,6 +277,20 @@ export default class ModeFields extends KeepElement {
         background: var(--wa-color-surface-border);
       }
 
+      /* Sits between the divider and the batch-delete bar; holds the field filter. */
+      .search-row {
+        padding: 0 20px;
+      }
+
+      /*
+       * :host on keep-search-input is flex:1, which only sizes it inside a flex parent.
+       * .search-row is a plain block, so the width is restated here, same as keep-field-list
+       * does for the same element.
+       */
+      keep-search-input {
+        width: 100%;
+      }
+
       /* was .flex.justify-end.field-batch-delete-container */
       .batch-bar {
         display: flex;
@@ -284,11 +300,17 @@ export default class ModeFields extends KeepElement {
         padding: 0 11px;
       }
 
-      /* was .flex.justify-between.full-width.p-0.items-center */
+      /*
+       * was .flex.justify-between.full-width.p-0.items-center. The select-all checkbox used
+       * to be the row's last child, out at the far end that space-between pushed it to; now
+       * it is the first child, immediately to the left of Remove/Cancel rather than spaced
+       * clear across the row from them.
+       */
       .batch-actions {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-start;
         align-items: center;
+        gap: 12px;
         width: 100%;
         padding: 0;
       }
@@ -351,18 +373,27 @@ export default class ModeFields extends KeepElement {
         padding: 0;
       }
 
-      /* was .field-list-container.p-0.pb-10.m-0 */
+      /*
+       * was .field-list-container.p-0.pb-10.m-0. overflow-x is auto rather than clip: a
+       * field name that does not fit the panel now scrolls into view instead of being
+       * clipped, matching .row-name below.
+       */
       .field-list {
         overflow-y: auto;
-        overflow-x: clip;
+        overflow-x: auto;
         padding: 0 0 10px 0;
         margin: 0;
       }
 
-      /* was .field-list-custom-item.flex.items-center.full-width.small-text */
+      /*
+       * was .field-list-custom-item.flex.items-center.full-width.small-text. gap is new:
+       * the batch checkbox is the row's first child now, and without it the checkbox and
+       * the name sat flush against each other.
+       */
       .row {
         display: flex;
         align-items: center;
+        gap: 10px;
         justify-content: space-between;
         width: 100%;
         padding: 10px 20px;
@@ -381,26 +412,34 @@ export default class ModeFields extends KeepElement {
        * was .field-list-field-info, on a div inside a div with the click handler. A button
        * now, so the row is reachable from the keyboard; the reset undoes the control
        * appearance the row never had.
+       *
+       * The fixed 60% width is gone: it left a blank 40% of the row unused whenever the
+       * batch checkbox was not there to claim it (i.e. outside batch-delete mode), and, in
+       * concert with .row-name's ellipsis, clipped names well before the panel itself ran
+       * out of room. flex: 1 lets it claim the row's full width when the checkbox is
+       * absent, and shrink to make way for it when present.
        */
       .row-select {
         display: block;
-        width: 60%;
+        flex: 1 1 auto;
         padding: 0;
         border: 0;
         background: none;
         font: inherit;
         text-align: left;
-        text-overflow: ellipsis;
         cursor: pointer;
       }
 
-      /* was .field-list-field-name */
+      /*
+       * was .field-list-field-name. No longer clipped with an ellipsis: a name that does
+       * not fit the panel now overflows .field-list, which scrolls horizontally instead of
+       * cutting the text off (see .field-list above). The title attribute on this element
+       * still surfaces the full name as a hover tooltip.
+       */
       .row-name {
         display: block;
         text-align: left;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         color: var(--wa-color-text-normal);
       }
 
@@ -577,6 +616,9 @@ export default class ModeFields extends KeepElement {
   /** Names of the mode's required fields. Owned by the Access tab. */
   @property({ type: Array }) accessor required: string[] = [];
 
+  /** The mode's own name, shown in the remove-field confirmation. Owned by the Access tab. */
+  @property({ type: String }) accessor modeName = '';
+
   /** Which field is selected. Owned by the Access tab, echoed back as an event. */
   @property({ type: Number }) accessor fieldIndex = 0;
 
@@ -592,6 +634,9 @@ export default class ModeFields extends KeepElement {
 
   /** The rejection from the last add attempt, shown under the box. */
   @state() private accessor customFieldError = '';
+
+  /** Text in the field filter. Internal — the parent never sees it. */
+  @state() private accessor searchKey = '';
 
   /** The field whose settings the right-hand pane shows. */
   @state() private accessor editField: KeepFieldItem | null = null;
@@ -646,6 +691,18 @@ export default class ModeFields extends KeepElement {
   private handleAddFieldTextChange(event: Event): void {
     this.fieldText = (event.target as HTMLInputElement).value;
     this.customFieldError = '';
+  }
+
+  /** Whether a field's name matches the filter box, case-insensitively. */
+  private matchesSearch(item: KeepFieldItem): boolean {
+    if (!this.searchKey) return true;
+    return (item.name ?? '').toLowerCase().includes(this.searchKey.toLowerCase());
+  }
+
+  private handleSearch(event: CustomEvent<KeepSearchChangeDetail>): void {
+    // The control's change event composes, matching every other handler here.
+    event.stopPropagation();
+    this.searchKey = event.detail.value;
   }
 
   /**
@@ -744,15 +801,6 @@ export default class ModeFields extends KeepElement {
 
     return html`
       <div class="row">
-        <button
-          type="button"
-          class="row-select"
-          aria-current=${selected ? 'true' : nothing}
-          @click=${() => this.selectField(item, index)}
-        >
-          <span class="row-name">${item.name}</span>
-          <span class="row-meta">${ModeFields.describe(item, isRequired)}</span>
-        </button>
         ${this.batchDelete
           ? html`
               <keep-checkbox
@@ -763,6 +811,15 @@ export default class ModeFields extends KeepElement {
               </keep-checkbox>
             `
           : nothing}
+        <button
+          type="button"
+          class="row-select"
+          aria-current=${selected ? 'true' : nothing}
+          @click=${() => this.selectField(item, index)}
+        >
+          <span class="row-name" title=${item.name}>${item.name}</span>
+          <span class="row-meta">${ModeFields.describe(item, isRequired)}</span>
+        </button>
       </div>
     `;
   }
@@ -781,6 +838,9 @@ export default class ModeFields extends KeepElement {
     const nothingTicked = this.deleteFields.length === 0;
     return html`
       <div class="batch-actions">
+        <keep-checkbox size="s" @change=${this.handleSelectAll}>
+          <span class="visually-hidden">Select all fields</span>
+        </keep-checkbox>
         <div class="batch-buttons">
           <keep-tooltip
             placement="bottom"
@@ -794,16 +854,18 @@ export default class ModeFields extends KeepElement {
             <span class="cancel-text">Cancel</span>
           </button>
         </div>
-        <keep-checkbox size="s" @change=${this.handleSelectAll}>
-          <span class="visually-hidden">Select all fields</span>
-        </keep-checkbox>
       </div>
     `;
   }
 
   private renderRemoveDialog() {
+    // Plural whenever more than one row is ticked — "Field" only reads oddly for a batch,
+    // never wrongly for a single field.
+    const heading = this.deleteFields.length > 1 ? 'Remove Fields' : 'Remove Field';
+    const modeText = this.modeName ? `in the mode: ${this.modeName}.` : 'in the current mode.';
+
     return html`
-      <dialog aria-label="Remove Field" @cancel=${this.closeRemoveDialog}>
+      <dialog aria-label=${heading} @cancel=${this.closeRemoveDialog}>
         <div class="dialog-head">
           <div class="warning-icon">
             <!-- One registered glyph replaces 35x35 of hand-drawn path data that was
@@ -813,7 +875,7 @@ export default class ModeFields extends KeepElement {
           </div>
           <div class="dialog-head-body">
             <keep-form-dialog-header
-              heading="Remove Field"
+              heading=${heading}
               @header-close=${this.closeRemoveDialog}
             ></keep-form-dialog-header>
           </div>
@@ -825,13 +887,13 @@ export default class ModeFields extends KeepElement {
               (field) => html`<li><p class="dialog-field-name">${field.name}</p></li>`,
             )}
           </ul>
-          <p class="dialog-text">on this mode?</p>
+          <p class="dialog-text">${modeText}</p>
         </div>
         <div class="dialog-actions">
           <keep-button variant="neutral" appearance="outlined" @click=${this.closeRemoveDialog}>
-            Cancel
+            No
           </keep-button>
-          <keep-button @click=${this.handleBatchDelete}>OK</keep-button>
+          <keep-button @click=${this.handleBatchDelete}>Yes</keep-button>
         </div>
       </dialog>
     `;
@@ -865,16 +927,28 @@ export default class ModeFields extends KeepElement {
           ? html`<p class="error-text" role="alert">${this.customFieldError}</p>`
           : nothing}
         <hr />
+        <div class="search-row">
+          <keep-search-input
+            placeholder="Search Field"
+            label="Search Field"
+            @search-change=${this.handleSearch}
+          ></keep-search-input>
+        </div>
         <div class="batch-bar">${this.renderBatchBar()}</div>
-        ${fields.length > 0
-          ? html`
-              <div class="field-list">
-                ${Object.values(this.state).flatMap((list) =>
-                  list.map((item, index) => this.renderRow(item, index)),
-                )}
-              </div>
-            `
-          : html`<p class="empty-text">Please add field/s...</p>`}
+        ${fields.length === 0
+          ? html`<p class="empty-text">Please add field/s...</p>`
+          : Object.values(this.state).some((list) => list.some((item) => this.matchesSearch(item)))
+            ? html`
+                <div class="field-list">
+                  ${Object.values(this.state).flatMap((list) =>
+                    list
+                      .map((item, index) => ({ item, index }))
+                      .filter(({ item }) => this.matchesSearch(item))
+                      .map(({ item, index }) => this.renderRow(item, index)),
+                  )}
+                </div>
+              `
+            : html`<p class="empty-text">No fields match "${this.searchKey}".</p>`}
       </div>
       <div class="editor-panel">
         ${editField
