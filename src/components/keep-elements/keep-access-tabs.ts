@@ -164,26 +164,52 @@ export default class AccessTabs extends KeepElement {
       box-sizing: border-box;
     }
 
-    /* was the TabAccessContainer styled.div. Its width and top were props, and the one call
-       site passed 100 and 0, so they are stated rather than parameterised. */
+    /*
+     * was the TabAccessContainer styled.div. Its width and top were props, and the one call
+     * site passed 100 and 0, so they are stated rather than parameterised.
+     *
+     * display and min-height are no longer block / fit-content. Those let this host grow
+     * past its own 100% the moment the field list below had more rows than fit — which
+     * pushed keep-access-mode's .access-container into scrolling the *whole* tab, mode
+     * picker and all, instead of the field list scrolling on its own. flex-direction:column
+     * is what lets .tab-navigator's flex:1 below turn "100%" into an actual bounded height
+     * that flows all the way down to keep-mode-fields' own internal scrollbar.
+     */
     :host {
       box-sizing: border-box;
-      display: block;
+      display: flex;
+      flex-direction: column;
       position: absolute;
       top: 0;
       width: 100%;
       height: 100%;
-      min-height: fit-content;
       padding: 30px;
       border: 1px solid var(--wa-color-surface-border);
       border-radius: var(--wa-border-radius-l);
       background-color: var(--keep-surface-accent);
     }
 
-    /* was the TabNavigator styled.div, minus its two Material base-class rules. */
+    /*
+     * was the TabNavigator styled.div, minus its two Material base-class rules. min-height:0
+     * is new: a flex item's automatic minimum size is its content's own height unless this
+     * overrides it, and that content — by way of .fields-container and keep-mode-fields —
+     * is exactly the field list this whole fix is about. Without it, flex:1 would still
+     * ask this to shrink to the host's height, but the automatic minimum would refuse, and
+     * every box below it would grow right back to fit-content.
+     */
     .tab-navigator {
       flex: 1;
-      height: auto;
+      min-height: 0;
+    }
+
+    /*
+     * keep-mode-fields is a light-DOM child, not a shadow one, so this bare-element selector
+     * reaches it directly. It is .fields-container's flex item, and needs the same
+     * min-height:0 as .tab-navigator above and for the same reason: its own field list is
+     * the tall content the automatic minimum would otherwise defer to.
+     */
+    keep-mode-fields {
+      min-height: 0;
     }
 
     /* was the TabsContainer styled.div. */

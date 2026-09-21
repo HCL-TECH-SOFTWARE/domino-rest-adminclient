@@ -377,8 +377,18 @@ export default class ModeFields extends KeepElement {
        * was .field-list-container.p-0.pb-10.m-0. overflow-x is auto rather than clip: a
        * field name that does not fit the panel now scrolls into view instead of being
        * clipped, matching .row-name below.
+       *
+       * flex and min-height are new. This is a flex item of .field-list-panel's column, and
+       * without flex:1 it would not claim the space left over after the add box, the
+       * filter and the batch bar, so overflow-y:auto below would never have a bounded box
+       * to actually overflow. min-height:0 is the other half: a flex item's automatic
+       * minimum size is otherwise its own content's height — the full row list — which
+       * would keep this (and every ancestor up to keep-access-tabs' host) growing to fit it
+       * instead of scrolling in place.
        */
       .field-list {
+        flex: 1 1 auto;
+        min-height: 0;
         overflow-y: auto;
         overflow-x: auto;
         padding: 0 0 10px 0;
