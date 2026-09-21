@@ -14,6 +14,7 @@ import './keep-checkbox';
 import './keep-field-container';
 import './keep-form-dialog-header';
 import './keep-script-editor';
+import './keep-search-input';
 import './keep-tooltip';
 import { KeepElement } from './keep-element';
 import { modalBackdropStyles } from './modal-backdrop';
@@ -23,6 +24,7 @@ import { store } from '../../store/store';
 import { toggleAlert } from '../../store/alerts/action';
 import type { KeepFieldItem } from './keep-field-container';
 import type { KeepScriptData, KeepValidationRule } from './keep-script-editor';
+import type { KeepSearchChangeDetail } from './keep-search-input';
 
 /**
  * The mode's field lists, keyed by "droppable" id. Only the first key is ever read for
@@ -275,6 +277,20 @@ export default class ModeFields extends KeepElement {
         background: var(--wa-color-surface-border);
       }
 
+      /* Sits between the divider and the batch-delete bar; holds the field filter. */
+      .search-row {
+        padding: 0 20px;
+      }
+
+      /*
+       * :host on keep-search-input is flex:1, which only sizes it inside a flex parent.
+       * .search-row is a plain block, so the width is restated here, same as keep-field-list
+       * does for the same element.
+       */
+      keep-search-input {
+        width: 100%;
+      }
+
       /* was .flex.justify-end.field-batch-delete-container */
       .batch-bar {
         display: flex;
@@ -351,10 +367,14 @@ export default class ModeFields extends KeepElement {
         padding: 0;
       }
 
-      /* was .field-list-container.p-0.pb-10.m-0 */
+      /*
+       * was .field-list-container.p-0.pb-10.m-0. overflow-x is auto rather than clip: a
+       * field name that does not fit the panel now scrolls into view instead of being
+       * clipped, matching .row-name below.
+       */
       .field-list {
         overflow-y: auto;
-        overflow-x: clip;
+        overflow-x: auto;
         padding: 0 0 10px 0;
         margin: 0;
       }
@@ -381,26 +401,34 @@ export default class ModeFields extends KeepElement {
        * was .field-list-field-info, on a div inside a div with the click handler. A button
        * now, so the row is reachable from the keyboard; the reset undoes the control
        * appearance the row never had.
+       *
+       * The fixed 60% width is gone: it left a blank 40% of the row unused whenever the
+       * batch checkbox was not there to claim it (i.e. outside batch-delete mode), and, in
+       * concert with .row-name's ellipsis, clipped names well before the panel itself ran
+       * out of room. flex: 1 lets it claim the row's full width when the checkbox is
+       * absent, and shrink to make way for it when present.
        */
       .row-select {
         display: block;
-        width: 60%;
+        flex: 1 1 auto;
         padding: 0;
         border: 0;
         background: none;
         font: inherit;
         text-align: left;
-        text-overflow: ellipsis;
         cursor: pointer;
       }
 
-      /* was .field-list-field-name */
+      /*
+       * was .field-list-field-name. No longer clipped with an ellipsis: a name that does
+       * not fit the panel now overflows .field-list, which scrolls horizontally instead of
+       * cutting the text off (see .field-list above). The title attribute on this element
+       * still surfaces the full name as a hover tooltip.
+       */
       .row-name {
         display: block;
         text-align: left;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         color: var(--wa-color-text-normal);
       }
 
@@ -593,6 +621,9 @@ export default class ModeFields extends KeepElement {
   /** The rejection from the last add attempt, shown under the box. */
   @state() private accessor customFieldError = '';
 
+  /** Text in the field filter. Internal — the parent never sees it. */
+  @state() private accessor searchKey = '';
+
   /** The field whose settings the right-hand pane shows. */
   @state() private accessor editField: KeepFieldItem | null = null;
 
@@ -646,6 +677,18 @@ export default class ModeFields extends KeepElement {
   private handleAddFieldTextChange(event: Event): void {
     this.fieldText = (event.target as HTMLInputElement).value;
     this.customFieldError = '';
+  }
+
+  /** Whether a field's name matches the filter box, case-insensitively. */
+  private matchesSearch(item: KeepFieldItem): boolean {
+    if (!this.searchKey) return true;
+    return (item.name ?? '').toLowerCase().includes(this.searchKey.toLowerCase());
+  }
+
+  private handleSearch(event: CustomEvent<KeepSearchChangeDetail>): void {
+    // The control's change event composes, matching every other handler here.
+    event.stopPropagation();
+    this.searchKey = event.detail.value;
   }
 
   /**
@@ -750,7 +793,7 @@ export default class ModeFields extends KeepElement {
           aria-current=${selected ? 'true' : nothing}
           @click=${() => this.selectField(item, index)}
         >
-          <span class="row-name">${item.name}</span>
+          <span class="row-name" title=${item.name}>${item.name}</span>
           <span class="row-meta">${ModeFields.describe(item, isRequired)}</span>
         </button>
         ${this.batchDelete
@@ -865,16 +908,28 @@ export default class ModeFields extends KeepElement {
           ? html`<p class="error-text" role="alert">${this.customFieldError}</p>`
           : nothing}
         <hr />
+        <div class="search-row">
+          <keep-search-input
+            placeholder="Search Field"
+            label="Search Field"
+            @search-change=${this.handleSearch}
+          ></keep-search-input>
+        </div>
         <div class="batch-bar">${this.renderBatchBar()}</div>
-        ${fields.length > 0
-          ? html`
-              <div class="field-list">
-                ${Object.values(this.state).flatMap((list) =>
-                  list.map((item, index) => this.renderRow(item, index)),
-                )}
-              </div>
-            `
-          : html`<p class="empty-text">Please add field/s...</p>`}
+        ${fields.length === 0
+          ? html`<p class="empty-text">Please add field/s...</p>`
+          : Object.values(this.state).some((list) => list.some((item) => this.matchesSearch(item)))
+            ? html`
+                <div class="field-list">
+                  ${Object.values(this.state).flatMap((list) =>
+                    list
+                      .map((item, index) => ({ item, index }))
+                      .filter(({ item }) => this.matchesSearch(item))
+                      .map(({ item, index }) => this.renderRow(item, index)),
+                  )}
+                </div>
+              `
+            : html`<p class="empty-text">No fields match "${this.searchKey}".</p>`}
       </div>
       <div class="editor-panel">
         ${editField

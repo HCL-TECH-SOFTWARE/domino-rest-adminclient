@@ -69,6 +69,16 @@ const addButton = (el: ModeFields) =>
 
 const dialogEl = (el: ModeFields) => shadow(el).querySelector('dialog')!;
 
+/** Type into the filter the way the shared search element reports it. */
+const search = async (el: ModeFields, value: string) => {
+  shadow(el)
+    .querySelector('keep-search-input')!
+    .dispatchEvent(
+      new CustomEvent('search-change', { detail: { value }, bubbles: true, composed: true }),
+    );
+  await el.updateComplete;
+};
+
 /** Row checkboxes only; the select-all box lives in the batch bar, outside the list. */
 const rowCheckboxes = (el: ModeFields) =>
   Array.from(shadow(el).querySelectorAll<Checkbox>('.row keep-checkbox'));
@@ -169,6 +179,52 @@ describe('keep-mode-fields', () => {
       // whole list with it; the second row is the regression guard. It renders the access
       // flag alone, which is what the surrounding bullet guards already implied.
       expect(metaText(el)).toEqual(['Names • R / W', 'R / W']);
+    });
+  });
+
+  describe('the field filter', () => {
+    it('gives the filter an accessible name', async () => {
+      const el = await mount();
+      expect(shadow(el).querySelector('keep-search-input')!.getAttribute('label')).toBe(
+        'Search Field',
+      );
+    });
+
+    it('narrows the rows to those whose name matches, case-insensitively', async () => {
+      const el = await mount();
+      await search(el, 'bod');
+      expect(rowButtons(el).map((button) => button.querySelector('.row-name')!.textContent)).toEqual(
+        ['Body'],
+      );
+    });
+
+    it('restores every row once the filter is cleared', async () => {
+      const el = await mount();
+      await search(el, 'bod');
+      await search(el, '');
+      expect(rowButtons(el)).toHaveLength(2);
+    });
+
+    it('shows a no-match message distinct from the empty-mode placeholder', async () => {
+      const el = await mount();
+      await search(el, 'nope');
+      expect(shadow(el).querySelector('.field-list')).toBeNull();
+      expect(shadow(el).querySelector('.empty-text')!.textContent).toContain(
+        'No fields match "nope"',
+      );
+    });
+
+    it('still reports a filtered row by its position in the full, unfiltered list', async () => {
+      const el = await mount({
+        state: modeState([FIELDS[0], FIELDS[1], { name: 'Cc', content: 'Cc', format: 'string' }]),
+      });
+      const seen = listen<KeepFieldIndexChangeDetail>(el, 'field-index-change');
+
+      await search(el, 'cc');
+      rowButtons(el)[0].click();
+      await el.updateComplete;
+
+      expect(seen).toEqual([{ fieldIndex: 2 }]);
     });
   });
 
