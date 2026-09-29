@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   encodeQueryValue,
   fullEncode,
+  normalizeNsfPath,
   insertCharacter,
   capitalizeFirst,
   stringExpiration,
@@ -94,6 +95,39 @@ describe('encodeQueryValue', () => {
   it('round-trips through the standard decoder', () => {
     const awkward = `a&b#c+d%e f/g'h(i)j*k!l[m]n$o\\p,q;r=s?t`;
     expect(decodeURIComponent(encodeQueryValue(awkward))).toBe(awkward);
+  });
+});
+
+/**
+ * A schema created against a Windows-hosted NSF and a scope read back against the same NSF
+ * from a Linux-hosted server carry `nsfPath` values that differ only in separator — the two
+ * would otherwise compare unequal and silently fail to link. This is the normalization every
+ * ingestion point (`databases.ts`, `schemas.ts`, `scopes.ts`, the schema-import dialog) applies
+ * exactly once before the value is ever compared or stored.
+ */
+describe('normalizeNsfPath', () => {
+  it('converts backslashes to forward slashes', () => {
+    expect(normalizeNsfPath('somedir\\mydb.nsf')).toBe('somedir/mydb.nsf');
+  });
+
+  it('leaves an already-forward-slash path unchanged', () => {
+    expect(normalizeNsfPath('somedir/mydb.nsf')).toBe('somedir/mydb.nsf');
+  });
+
+  it('leaves a top-level path with no directory unchanged', () => {
+    expect(normalizeNsfPath('mydb.nsf')).toBe('mydb.nsf');
+  });
+
+  it('converts every backslash in a multi-level path', () => {
+    expect(normalizeNsfPath('a\\b\\c.nsf')).toBe('a/b/c.nsf');
+  });
+
+  it('makes a Windows-style and a Linux-style path of the same database compare equal', () => {
+    expect(normalizeNsfPath('somedir\\mydb.nsf')).toBe(normalizeNsfPath('somedir/mydb.nsf'));
+  });
+
+  it('returns an empty string for empty input', () => {
+    expect(normalizeNsfPath('')).toBe('');
   });
 });
 

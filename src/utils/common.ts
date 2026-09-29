@@ -9,6 +9,28 @@ export function fullEncode(name: string): string {
 }
 
 /**
+ * Canonicalize an NSF path's directory separator to `/` (#1055-ish: schema/scope linking).
+ *
+ * The Domino REST API accepts `/` regardless of the server's OS, but `/admin/access`,
+ * `/schema` and `/admin/scope` echo back whatever separator the *server's* OS uses when it
+ * reports a path — `\` on Windows, `/` on Linux. A schema created against a Windows-hosted
+ * NSF and a scope created (or read back) against the same NSF from a Linux-hosted server
+ * therefore carry `nsfPath` values that are byte-for-byte different despite naming the same
+ * database, and every schema/scope comparison in this codebase is a plain string comparison
+ * (`===`, `.localeCompare`, template-literal keys) with no separator awareness. That silently
+ * breaks the schema-to-scope link rather than erroring, so the mismatch has to be closed
+ * before either value is ever compared or stored, not patched at each comparison site.
+ *
+ * Applied once at every ingestion point — the API responses in `databases.ts`, `schemas.ts`
+ * and `scopes.ts`, and the user-supplied file in `keep-add-import-dialog.ts` — so everything
+ * already in Redux state, and everything derived from it (routes, query strings, display),
+ * is canonical by construction.
+ */
+export function normalizeNsfPath(nsfPath: string): string {
+  return nsfPath.replace(/\\/g, '/');
+}
+
+/**
  * Percent-encode a value for use as a **query-string value** (#978).
  *
  * A query value and a path segment are different positions with different rules, and this

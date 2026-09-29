@@ -129,6 +129,23 @@ describe('databases — schemas', () => {
       await expect(fetchSchema('db.nsf', 'demo', setSchemaData)(dispatch)).resolves.not.toThrow();
       expect(setSchemaData).not.toHaveBeenCalled();
     });
+
+    /**
+     * `/schema` echoes back the server's own separator convention. A schema hosted on a
+     * Windows server would otherwise hand this component a `\`-joined `nsfPath` while every
+     * other entry point normalizes to `/`, breaking the schema/scope comparisons that key on
+     * this value — see `normalizeNsfPath`.
+     */
+    it('normalizes a backslash-separated nsfPath from the response', async () => {
+      const setSchemaData = vi.fn();
+      returns({ nsfPath: 'sub\\dir\\db.nsf', schemaName: 'demo' });
+
+      await fetchSchema('sub/dir/db.nsf', 'demo', setSchemaData)(dispatch);
+
+      expect(setSchemaData).toHaveBeenCalledWith(
+        expect.objectContaining({ nsfPath: 'sub/dir/db.nsf' }),
+      );
+    });
   });
 
   describe('addSchema', () => {
@@ -168,6 +185,17 @@ describe('databases — schemas', () => {
       await expect(addSchema(schema)(dispatch)).resolves.not.toThrow();
       expectLoadingCleared();
     });
+
+    it('normalizes a backslash-separated nsfPath from the response before storing it', async () => {
+      returns({ nsfPath: 'sub\\dir\\db.nsf', schemaName: 'demo' });
+
+      await addSchema(schema)(dispatch);
+
+      const added = actions().find((a) => a?.type === addSchemaAction.type);
+      const newSchema = actions().find((a) => a?.type === addNewSchemaToStateAction.type);
+      expect(added.payload.nsfPath).toBe('sub/dir/db.nsf');
+      expect(newSchema.payload.nsfPath).toBe('sub/dir/db.nsf');
+    });
   });
 
   describe('updateSchema', () => {
@@ -198,6 +226,19 @@ describe('databases — schemas', () => {
 
       await expect(updateSchema(schema)(dispatch)).resolves.not.toThrow();
       expectLoadingCleared();
+    });
+
+    it('normalizes a backslash-separated nsfPath from the response before storing it', async () => {
+      const setSchemaData = vi.fn();
+      returns({ nsfPath: 'sub\\dir\\db.nsf', schemaName: 'demo' });
+
+      await updateSchema(schema, setSchemaData)(dispatch);
+
+      expect(setSchemaData).toHaveBeenCalledWith(
+        expect.objectContaining({ nsfPath: 'sub/dir/db.nsf' }),
+      );
+      const newSchema = actions().find((a) => a?.type === addNewSchemaToStateAction.type);
+      expect(newSchema.payload.nsfPath).toBe('sub/dir/db.nsf');
     });
   });
 
