@@ -602,6 +602,26 @@ describe('keep-add-import-dialog', () => {
     expect(submitted[0].payload.owners).toEqual([]);
   });
 
+  /**
+   * An exported schema can carry the separator of whichever server's OS it was exported
+   * from — see `normalizeNsfPath`. Left raw, importing a Windows-exported schema onto a
+   * database this client already knows by its Linux-style path would fail the "Database
+   * does not exist!" rule below (`buildSchema`'s `nsfPath` test, which compares against
+   * `availableDatabases.title` verbatim) instead of matching the existing one.
+   */
+  it('normalizes a backslash-separated nsfPath from an imported file so it matches the known database', async () => {
+    store.dispatch(addAvailableDatabase({ title: 'sub/dir/db.nsf', nsfpath: 'sub/dir/db.nsf', apinames: [] }));
+
+    const el = await mount();
+    await chooseFile(
+      el,
+      JSON.stringify({ schemaName: 'imported', description: 'from a file', nsfPath: 'sub\\dir\\db.nsf' }),
+    );
+    await save(el);
+
+    expect(submitted[0].payload.nsfPath).toBe('sub/dir/db.nsf');
+  });
+
   it('reports a file that is not a schema instead of throwing out of the reader', async () => {
     const el = await mount();
     await chooseFile(el, 'this is not json');
