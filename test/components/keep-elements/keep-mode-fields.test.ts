@@ -532,6 +532,27 @@ describe('keep-mode-fields', () => {
       expect(rowCheckboxes(el).some((box) => box.checked)).toBe(false);
     });
 
+    it('selects only the filtered rows from the select-all box, not every field in the mode', async () => {
+      const el = await mount();
+      textButton(el, 'Delete Field(s)').click();
+      await el.updateComplete;
+      await search(el, 'bod');
+      await el.updateComplete;
+
+      await toggle(selectAllBox(el), true);
+      await el.updateComplete;
+
+      // Only the one filtered-in row is ticked…
+      expect(rowCheckboxes(el)).toHaveLength(1);
+      expect(rowCheckboxes(el)[0].checked).toBe(true);
+      // …and the confirmation dialog reflects that, not the mode's full field list.
+      textButton(el, 'Remove').click();
+      await el.updateComplete;
+      expect(
+        Array.from(shadow(el).querySelectorAll('.dialog-field-name')).map((n) => n.textContent),
+      ).toEqual(['Body']);
+    });
+
     it('emits fields-remove, leaves batch mode, closes the dialog and reports success', async () => {
       const dispatch = vi.spyOn(store, 'dispatch');
       const el = await mount();

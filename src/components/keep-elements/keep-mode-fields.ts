@@ -760,9 +760,18 @@ export default class ModeFields extends KeepElement {
     this.deleteFields = this.deleteFields.filter((field) => !sameField(field, item));
   }
 
+  /**
+   * Select-all only ticks what the filter is currently showing — every field, unfiltered,
+   * would otherwise end up in the remove dialog even though rows the filter hid were never
+   * offered as choices in the first place.
+   */
   private handleSelectAll(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
-    this.deleteFields = checked ? Object.values(this.state).flat() : [];
+    this.deleteFields = checked
+      ? Object.values(this.state)
+          .flat()
+          .filter((item) => this.matchesSearch(item))
+      : [];
   }
 
   private selectField(item: KeepFieldItem, index: number): void {
