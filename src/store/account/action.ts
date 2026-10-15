@@ -164,8 +164,7 @@ export function renewToken() {
  * hit, so it is spelled out rather than left as a bare status code.
  */
 export const CORS_LOGIN_MESSAGE =
-  'CORS error: the server rejected this browser origin. Add the address you are using ' +
-  'to the allowed origins (CORS) in the Domino REST API configuration, then restart the API.';
+  'CORS error: the server rejected this browser origin.';
 
 /**
  * Turn a failed login into the text for the error popup.
