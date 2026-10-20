@@ -11,7 +11,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog, toggleErrorDialog } from '../dialog/action';
 import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
-import { encodeQueryValue } from '../../utils/common';
+import { encodeQueryValue, normalizeNsfPath } from '../../utils/common';
 import { log, getErrorMsg, setDBError, clearDBError } from './shared';
 import { sortAndRemoveDupSchemas } from './schemas';
 import {
@@ -78,7 +78,9 @@ export const fetchScope = async (scopeData: any) => {
     return {
       apiName: apiName,
       schemaName: schemaName,
-      nsfPath,
+      // Normalized once here: `/admin/scope` echoes back the server's own separator
+      // convention. See `normalizeNsfPath`.
+      nsfPath: typeof nsfPath === 'string' ? normalizeNsfPath(nsfPath) : nsfPath,
       description,
       isActive: isActive,
       icon,
@@ -112,6 +114,14 @@ export const fetchScopes = () => {
 
       var pulled = false;
       if (scopes && scopes.length > 0) {
+        // Normalized once here, in place: `/admin/scopes` echoes back the server's own
+        // separator convention, and every scope below — `simpleSchemas`, the raw array
+        // dispatched to `fetchKeepScopes` — has to agree with the schemas' own normalized
+        // `nsfPath` for the two to link up. See `normalizeNsfPath`.
+        scopes.forEach((scope: any) => {
+          if (typeof scope.nsfPath === 'string') scope.nsfPath = normalizeNsfPath(scope.nsfPath);
+        });
+
         let simpleSchemas = scopes
           .filter((scope: any) => scope.apiName !== 'keepconfig')
           .map((scope: any) => {
@@ -208,6 +218,11 @@ export const changeScope = (dbData: any, isEdit?: boolean) => {
           }
           return acc;
         }, {} as { [key: string]: any });
+
+        // Normalized once here: `/admin/scope` echoes back the server's own separator
+        // convention. See `normalizeNsfPath`.
+        if (typeof keepData.nsfPath === 'string') keepData.nsfPath = normalizeNsfPath(keepData.nsfPath);
+
         // A conditional action type, so it needs the branch rather than a
         // rewrite: `isEdit ? updateScope : addScope` picks the creator.
         dispatch(isEdit ? updateScopeAction(keepData) : addScopeAction(keepData));

@@ -361,7 +361,7 @@ describe('keep-field-list', () => {
     const el = await mount();
     expect(select(el).getAttribute('label')).toBe('Show fields from');
     expect(el.shadowRoot!.querySelector('keep-search-input')!.getAttribute('label')).toBe(
-      'Search Field',
+      'Search available fields',
     );
   });
 

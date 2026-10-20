@@ -276,6 +276,56 @@ describe('token event', () => {
     expect(published).toBeUndefined();
   });
 
+  describe('login failure messages', () => {
+    const messageOf = () =>
+      (dispatch as unknown as ReturnType<typeof vi.fn>).mock.calls
+        .map(([a]) => a)
+        .find((a) => a?.type?.endsWith('setErrorMessage'))?.payload as string;
+
+    it('spells out CORS when the server rejects the origin (403, plain-text body)', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          new Response('CORS Rejected - Invalid origin', { status: 403, statusText: 'CORS Rejected - Invalid origin' }),
+        ),
+      );
+      await login({ username: 'u', password: 'p' }, () => {})(dispatch);
+      expect(messageOf()).toMatch(/^403 CORS error/);
+    });
+
+    it('still finds CORS when the status line is empty (HTTP/2)', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('CORS Rejected - Invalid origin', { status: 403 })));
+      await login({ username: 'u', password: 'p' }, () => {})(dispatch);
+      expect(messageOf()).toMatch(/^403 CORS error/);
+    });
+
+    it('spells out CORS when the browser blocks the reply (fetch rejects)', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+      await login({ username: 'u', password: 'p' }, () => {})(dispatch);
+      expect(messageOf()).toMatch(/CORS error/);
+    });
+
+    it('keeps the server message for other failures', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          new Response(JSON.stringify({ status: 401, message: 'Invalid credentials or account locked' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ),
+      );
+      await login({ username: 'u', password: 'p' }, () => {})(dispatch);
+      expect(messageOf()).toBe('401 error: Invalid credentials or account locked');
+    });
+
+    it('is never just a bare number', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Bad gateway', { status: 502, statusText: '' })));
+      await login({ username: 'u', password: 'p' }, () => {})(dispatch);
+      expect(messageOf()).toBe('502 error: Bad gateway');
+    });
+  });
+
   describe('bearerOf', () => {
     it('reads the bearer of a Keep native token', () => {
       expect(bearerOf({ bearer: 'b', expSeconds: 3600 })).toBe('b');

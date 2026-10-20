@@ -46,14 +46,14 @@ describe('keep-schema-status', () => {
     });
     expect(q(schema, 'wa-tooltip')).toBeTruthy();
     expect(q(schema, 'div.api-status')).toBeTruthy();
-    expect(q(schema, 'div.delete')).toBeTruthy();
+    expect(q(schema, 'button.delete')).toBeTruthy();
 
     const api = await mountLit<SchemaStatus>(TAG, {
       isSchema: false,
       item: { apiName: 'OrdersApi' },
     });
     expect(q(api, 'wa-tooltip')).toBeNull();
-    expect(q(api, 'div.delete')).toBeNull();
+    expect(q(api, 'button.delete')).toBeNull();
   });
 
   it('marks the status dot unused unless the schema is used by scopes', async () => {
@@ -90,7 +90,26 @@ describe('keep-schema-status', () => {
       item: { schemaName: 'Orders', nsfPath: 'db.nsf' },
       onDelete,
     });
-    (q(el, 'div.delete') as HTMLElement).click();
+    (q(el, 'button.delete') as HTMLElement).click();
     expect(onDelete).toHaveBeenCalledOnce();
+  });
+
+  it('opens from the keyboard, and names its controls', async () => {
+    const onClickOpen = vi.fn();
+    const el = await mountLit<SchemaStatus>(TAG, {
+      isSchema: true,
+      item: { schemaName: 'Orders', nsfPath: 'db.nsf' },
+      schemasWithScopes: [],
+      onClickOpen,
+    });
+    const row = q(el, 'div.description') as HTMLElement;
+    expect(row.getAttribute('role')).toBe('button');
+    expect(row.getAttribute('tabindex')).toBe('0');
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    expect(onClickOpen).toHaveBeenCalledTimes(2);
+    expect(q(el, 'button.delete')!.getAttribute('aria-label')).toBe('Delete Orders');
+    expect(q(el, 'div.api-status')!.getAttribute('aria-label')).toBe('Not used by Scopes');
   });
 });

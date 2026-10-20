@@ -306,6 +306,40 @@ export default class FieldContainer extends KeepElement {
       display: flex;
       align-items: center;
     }
+
+    /*
+     * Phone width: one column — each setting is a full-width row, label over control —
+     * instead of the two-up grid. Last in the sheet so these win on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      .item-name {
+        width: 100%;
+        padding: 12px 12px 0;
+      }
+
+      hr {
+        margin: 4px 0 8px;
+      }
+
+      .settings-title {
+        padding: 0 12px;
+      }
+
+      .settings {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        padding: 6px 12px 0;
+        row-gap: 4px;
+      }
+
+      .cell,
+      keep-tooltip.cell-tooltip,
+      .group-cell,
+      .control,
+      .encrypt {
+        width: 100%;
+      }
+    }
   `;
 
   /** The field being edited. Owned by the parent; this element edits a copy. */

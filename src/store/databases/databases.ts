@@ -13,7 +13,7 @@ import { toggleAlert } from '../alerts/action';
 import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading } from '../dialog/action';
-import { AlertManager, encodeQueryValue } from '../../utils/common';
+import { AlertManager, encodeQueryValue, normalizeNsfPath } from '../../utils/common';
 import { getAppIcons, loadAppIcons } from '../../services/app-icons';
 import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
 import { log, setDBError, clearDBError } from './shared';
@@ -106,6 +106,11 @@ const processPart = (part: string, dispatch: Dispatch, callback: any, scopeList:
   else if (part.endsWith('}')) return callback(JSON.parse(part), dispatch, scopeList, schemasWithoutScopes);
 };
 const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, schemasWithoutScopes: Array<any>) => {
+  // Normalized once here: `json.path` is the server's own separator convention
+  // (backslash on a Windows-hosted NSF), and every comparison and cache key built from it
+  // downstream — `scopeList`, `nsfDesigns`, schema/scope linking — assumes `/`. See
+  // `normalizeNsfPath`.
+  const nsfPath = typeof json.path === 'string' ? normalizeNsfPath(json.path) : json.path;
   if (!!json.configurations && json.configurations.length > 0) {
     // Already resolved: `processResponse` awaited the icon chunk before opening the stream.
     const appIcons = getAppIcons();
@@ -119,19 +124,19 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
     }> = [];
     configurations.forEach((config: any) => {
       let schema = typeof config === 'string' ? config : config.name;
-      if (!!json.path && !!schema) {
-        if (scopeList.includes(json.path + ':' + schema)) {
+      if (!!nsfPath && !!schema) {
+        if (scopeList.includes(nsfPath + ':' + schema)) {
           const new_config = {
             schemaName: config.name,
             description: config.description,
             iconName: config.iconName,
             icon: appIcons[config.iconName],
-            nsfPath: json.path
+            nsfPath
           };
           schemasWithScopes.push(new_config);
         } else {
           schemasWithoutScopes.push({
-            nsfPath: json.path,
+            nsfPath,
             schemaName: schema,
             description: config.description,
             iconName: config.iconName,
@@ -154,8 +159,8 @@ const displayResult = (json: any, dispatch: Dispatch, scopeList: Array<any>, sch
   }
 
   let availableDatabases = {
-    title: json.path,
-    nsfpath: json.path,
+    title: nsfPath,
+    nsfpath: nsfPath,
     apinames: json.configurations ? json.configurations : []
   };
   let { apinames } = availableDatabases;
@@ -267,7 +272,7 @@ export const quickConfig = (dbData: any) => {
         icon,
         iconName,
         isActive,
-        nsfPath,
+        nsfPath: rawNsfPath,
         openAccess,
         owners,
         requireRevisionToUpdate,
@@ -278,6 +283,9 @@ export const quickConfig = (dbData: any) => {
         apiName,
         server
       } = keepData;
+      // Normalized once here: `/admin/quickconfig` echoes back the server's own
+      // separator convention. See `normalizeNsfPath`.
+      const nsfPath = typeof rawNsfPath === 'string' ? normalizeNsfPath(rawNsfPath) : rawNsfPath;
       const meta = keepData['@meta'];
       const schemaData = {
         unid,

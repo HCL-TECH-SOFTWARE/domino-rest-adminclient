@@ -90,8 +90,24 @@ export default class SchemaStatus extends KeepElement {
         font-size: 15px;
     }
 
-    div.delete {
+    /* A real button, reset to look like the div it replaced. */
+    button.delete {
+        display: flex;
+        padding: 0;
+        border: 0;
+        background: none;
         cursor: pointer;
+    }
+
+    div.description:focus,
+    button.delete:focus {
+        outline: none;
+    }
+
+    div.description:focus-visible,
+    button.delete:focus-visible {
+        outline: var(--wa-focus-ring);
+        outline-offset: var(--wa-focus-ring-offset);
     }
   `;
 
@@ -117,21 +133,43 @@ export default class SchemaStatus extends KeepElement {
     }
   }
 
+  /** Enter and Space open the row, as they would a button. */
+  private readonly handleOpenKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    this.onClickOpen(event);
+  };
+
   render() {
     return html`
       <div class="main">
-        <div class="description" @click=${this.onClickOpen}>
+        <div
+          class="description"
+          role="button"
+          tabindex="0"
+          @click=${this.onClickOpen}
+          @keydown=${this.handleOpenKeydown}
+        >
             ${this.isSchema
               ? html`<wa-tooltip content="${this.status}" placement="top">
-                <div class="api-status ${this.usedByScopes ? '' : 'unused'}"></div>
+                <div
+                  class="api-status ${this.usedByScopes ? '' : 'unused'}"
+                  role="img"
+                  aria-label=${this.status}
+                ></div>
             </wa-tooltip>`
               : ''}
             <div class="name" title="${this.name}">${this.name}</div>
         </div>
         ${this.isSchema
-          ? html`<div class="delete" @click=${this.onDelete}>
+          ? html`<button
+            type="button"
+            class="delete"
+            aria-label="Delete ${this.name}"
+            @click=${this.onDelete}
+          >
             <wa-icon class="trash-icon" library=${FA_LIBRARY} name="trash" canvas="auto" aria-hidden="true"></wa-icon>
-        </div>`
+        </button>`
           : ''}
       </div>
     `;

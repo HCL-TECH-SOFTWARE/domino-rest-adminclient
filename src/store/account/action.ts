@@ -158,16 +158,63 @@ export function renewToken() {
 // Create User Session
 // Add Token To Local Storage
 // Redirect to Main Page
+/**
+ * Shown when the server rejects the request's Origin, or when the browser blocks the reply
+ * for the same reason. A CORS misconfiguration is the most common login failure customers
+ * hit, so it is spelled out rather than left as a bare status code.
+ */
+export const CORS_LOGIN_MESSAGE =
+  'CORS error: the server rejected this browser origin.';
+
+/**
+ * Turn a failed login into the text for the error popup.
+ *
+ * - The server's own CORS rejection is `403` with the reason in the status line and a
+ *   plain-text body ("CORS Rejected - Invalid origin"). Neither is JSON, and the status line
+ *   is empty over HTTP/2, so the body is checked as well.
+ * - Anything else keeps `status error: message`, falling back to the raw body when there is
+ *   no message, so the popup is never just a number.
+ */
+export async function describeLoginFailure(
+  response: Response,
+  data: { status?: number; message?: string },
+): Promise<string> {
+  // `clone()`: checkForResponse may already have consumed the body.
+  let body = '';
+  try {
+    body = (await response.clone().text()).trim();
+  } catch {
+    // Body already consumed or unreadable: the status line and data.message still count.
+  }
+  const isCors = [response.statusText, data.message, body].some((t) => /cors/i.test(t ?? ''));
+  if (isCors) return `${response.status} ${CORS_LOGIN_MESSAGE}`;
+
+  const detail = data.message || body;
+  return detail ? `${data.status ?? response.status} error: ${detail}` : `${response.status} error`;
+}
+
 export function login(credentials: Credentials, successCallback: () => void) {
   return async (dispatch: Dispatch) => {
-    const response = await
-      fetch(`${BASE_KEEP_API_URL}/auth`, {
+    let response: Response;
+    try {
+      response = await fetch(`${BASE_KEEP_API_URL}/auth`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials),
-      })
+      });
+    } catch (error) {
+      // fetch rejects (a TypeError) when the browser blocks the reply, which is how a
+      // cross-origin CORS rejection arrives: no status, no body. A dropped connection looks
+      // identical, so name both.
+      log.error('Login request failed before a response was received', { error });
+      const message = `${CORS_LOGIN_MESSAGE} (If the origin is already allowed, check that the server is reachable.)`;
+      dispatch(setLoginError(true));
+      dispatch(setErrorMessage(message));
+      notify(message, 'danger');
+      return { status: 0, message };
+    }
     const data = await checkForResponse(response)
 
     if (response.ok) {
@@ -181,9 +228,10 @@ export function login(credentials: Credentials, successCallback: () => void) {
       successCallback()
     } else {
       log.debug('Login failed, dispatching error state')
+      const message = await describeLoginFailure(response, data);
       dispatch(setLoginError(true));
-      dispatch(setErrorMessage(`${data.status} error: ${data.message}`));
-      notify(`${data.message}`, 'danger');
+      dispatch(setErrorMessage(message));
+      notify(message, 'danger');
       return data;
     }
   };

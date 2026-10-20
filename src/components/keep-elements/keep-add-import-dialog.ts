@@ -19,6 +19,7 @@ import { StoreController } from '../../store/StoreController';
 import { FormController } from '../../store/FormController';
 import { DEFAULT_APP_ICON_NAME, appIconPayload, loadAppIcons } from '../../services/app-icons';
 import { addSchema } from '../../store/databases/action';
+import { normalizeNsfPath } from '../../utils/common';
 import './keep-autocomplete';
 import type Autocomplete from './keep-autocomplete';
 import './keep-icon-dropdown';
@@ -672,6 +673,10 @@ export default class AddImportDialog extends KeepElement {
       if (key in INITIAL_VALUES) known[key] = value;
       else extras[key] = value;
     }
+
+    // Normalized once here: an exported schema can carry the separator of whichever
+    // server's OS it was exported from. See `normalizeNsfPath`.
+    if (typeof known.nsfPath === 'string') known.nsfPath = normalizeNsfPath(known.nsfPath);
 
     this.importError = '';
     this.form.setExtras(extras);

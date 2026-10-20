@@ -241,7 +241,7 @@ export const ELEMENT_FIXTURES: ElementFixture[] = [
   { tag: 'keep-consents' },
   { tag: 'keep-data-table' },
   { tag: 'keep-database-search' },
-  { tag: 'keep-default-card' },
+  { tag: 'keep-default-card', props: { title: 'Demo', subtitle: 'demo/x.nsf', delete: true } }, // the open button is named from the title
   { tag: 'keep-delete-dialog' },
   { tag: 'keep-details-section' },
   { tag: 'keep-dialog-actions' },
@@ -281,7 +281,7 @@ export const ELEMENT_FIXTURES: ElementFixture[] = [
   { tag: 'keep-quick-config-form' },
   { tag: 'keep-router-outlet' },
   { tag: 'keep-schema-contents-tree' },
-  { tag: 'keep-schema-status' },
+  { tag: 'keep-schema-status', props: { item: { schemaName: 'Demo', apiName: 'demo', nsfPath: 'demo/x.nsf' } } }, // the open button is named from the item
   { tag: 'keep-schemas-alphabetical-view' },
   { tag: 'keep-schemas-cards-view' },
   { tag: 'keep-schemas-default-view' },

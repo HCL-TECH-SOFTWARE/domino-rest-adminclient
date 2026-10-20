@@ -257,12 +257,82 @@ export default class DetailsSection extends KeepElement {
         white-space: nowrap;
       }
 
-      @media screen and (max-width: 600px) {
+      /* The mobile view/edit buttons; hidden everywhere else. */
+      .mobile-actions {
+        display: none;
+      }
+
+      /*
+       * Phone width: the panel collapses to a compact header — icon, name, file name and
+       * two buttons (view, edit) — so the tab content below gets the screen. Description,
+       * file path and the configuration summary are not shown here; the view button opens
+       * the same dialog as edit, read-only. They stay in the DOM, hidden by CSS.
+       */
+      @media screen and (max-width: 768px) {
+        .title {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          column-gap: 12px;
+          row-gap: 2px;
+          align-items: center;
+        }
+
+        .icon-container,
+        .schema-icon {
+          width: 48px;
+          height: 48px;
+        }
+
+        .icon-container {
+          grid-row: 1 / span 2;
+        }
+
+        .status-icon {
+          right: -6px;
+        }
+
+        /* Show the whole schema name, wrapping if it has to, rather than truncating. */
+        .api-name {
+          white-space: normal;
+          overflow: visible;
+          grid-column: 2;
+          grid-row: 1;
+        }
+
         .api-schema {
-          max-width: 30%;
-          text-overflow: ellipsis;
-          overflow-x: hidden;
-          white-space: nowrap;
+          max-width: 100%;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          overflow-x: visible;
+          text-overflow: clip;
+        }
+
+        .api-nsf {
+          grid-column: 2;
+          grid-row: 2;
+          overflow-wrap: anywhere;
+        }
+
+        /* The pencil beside the name moves into the action group. */
+        .api-name .edit-icon {
+          display: none;
+        }
+
+        .mobile-actions {
+          display: flex;
+          gap: 14px;
+          grid-column: 3;
+          grid-row: 1 / span 2;
+          font-size: 20px;
+        }
+
+        .mobile-actions .view-icon {
+          color: var(--wa-color-text-normal);
+        }
+
+        .rule,
+        .information {
+          display: none;
         }
       }
 
@@ -622,6 +692,13 @@ export default class DetailsSection extends KeepElement {
         text-align: start;
       }
 
+      /* The read-only dialog shows the icon instead of the picker. */
+      .view-only-icon {
+        display: block;
+        width: 48px;
+        height: 48px;
+      }
+
       /*
        * Was the description textarea's own rule plus what Web Awesome's native layer gave
        * every bare textarea — height, font family, line height, background, border style
@@ -754,6 +831,12 @@ export default class DetailsSection extends KeepElement {
   @state() private accessor dbContext: SchemaEditBuffer = DetailsSection.emptyBuffer();
 
   @state() private accessor editOpen = false;
+
+  /**
+   * The dialog is showing the schema read-only (the mobile view button). Same dialog, same
+   * buffers; the fields are disabled and the footer is Edit / OK instead of Cancel / Save.
+   */
+  @state() private accessor viewOnly = false;
 
   @state() private accessor discardOpen = false;
 
@@ -943,6 +1026,17 @@ export default class DetailsSection extends KeepElement {
     if (discardChanged && !this.discardOpen) this.discardDialog?.close();
   }
 
+  /**
+   * Escape on the read-only dialog. The native dialog closes itself, which would leave
+   * `editOpen` true and make the next press of the view button a no-op, so it is routed
+   * through the flag. The edit dialog is left as it was.
+   */
+  private handleEditDialogCancel(event: Event): void {
+    if (!this.viewOnly) return;
+    event.preventDefault();
+    this.editOpen = false;
+  }
+
   private openModal(dialog: HTMLDialogElement | null): void {
     if (dialog && !dialog.open) dialog.showModal();
   }
@@ -1090,6 +1184,7 @@ export default class DetailsSection extends KeepElement {
       <wa-switch
         class="config-toggle"
         size="s"
+        ?disabled=${this.viewOnly}
         .checked=${live(checked)}
         @change=${onChange}
         @input=${this.stopEvent}
@@ -1134,13 +1229,17 @@ export default class DetailsSection extends KeepElement {
 
   private renderEditDialog() {
     const buffer = this.dbContext;
+    const viewOnly = this.viewOnly;
+    const heading = viewOnly ? 'View Schema' : 'Edit Schema';
     return html`
-      <dialog class="dialog edit" aria-label="Edit Schema">
+      <dialog class="dialog edit" aria-label=${heading} @cancel=${this.handleEditDialogCancel}>
         <div class="padded">
           <keep-form-dialog-header
-            heading="Edit Schema"
+            heading=${heading}
             @header-close=${() => {
-              this.discardOpen = true;
+              // Nothing to discard when nothing could have been changed.
+              if (viewOnly) this.editOpen = false;
+              else this.discardOpen = true;
             }}
           ></keep-form-dialog-header>
         </div>
@@ -1149,10 +1248,16 @@ export default class DetailsSection extends KeepElement {
           <div>
             <span class="caption">Icon</span>
             <div class="icon-picker">
-              <keep-icon-dropdown
-                .iconName=${this.displayIconName}
-                @icon-select=${this.handleIconSelect}
-              ></keep-icon-dropdown>
+              ${viewOnly
+                ? html`<keep-app-icon
+                    class="view-only-icon"
+                    name=${this.displayIconName}
+                    alt="db-icon"
+                  ></keep-app-icon>`
+                : html`<keep-icon-dropdown
+                    .iconName=${this.displayIconName}
+                    @icon-select=${this.handleIconSelect}
+                  ></keep-icon-dropdown>`}
             </div>
           </div>
           <div>
@@ -1160,6 +1265,7 @@ export default class DetailsSection extends KeepElement {
             <textarea
               id="schema-description"
               class="textarea"
+              ?readonly=${viewOnly}
               .value=${live(this.desc)}
               @input=${this.handleDescriptionInput}
             ></textarea>
@@ -1189,20 +1295,40 @@ export default class DetailsSection extends KeepElement {
           <wa-input
             id="dql-formula"
             label="DQL Formula"
+            ?readonly=${viewOnly}
             .value=${live(this.dqlFormulaValue)}
             @input=${this.handleDqlFormulaInput}
           ></wa-input>
         </div>
         <div class="dialog-actions padded">
-          <keep-button
-            variant="neutral"
-            appearance="outlined"
-            @click=${() => {
-              this.discardOpen = true;
-            }}
-            >Cancel</keep-button
-          >
-          <keep-button @click=${this.handleClickSave}>Save</keep-button>
+          ${viewOnly
+            ? html`
+                <keep-button
+                  variant="neutral"
+                  appearance="outlined"
+                  @click=${() => {
+                    this.viewOnly = false;
+                  }}
+                  >Edit</keep-button
+                >
+                <keep-button
+                  @click=${() => {
+                    this.editOpen = false;
+                  }}
+                  >OK</keep-button
+                >
+              `
+            : html`
+                <keep-button
+                  variant="neutral"
+                  appearance="outlined"
+                  @click=${() => {
+                    this.discardOpen = true;
+                  }}
+                  >Cancel</keep-button
+                >
+                <keep-button @click=${this.handleClickSave}>Save</keep-button>
+              `}
         </div>
       </dialog>
     `;
@@ -1237,6 +1363,27 @@ export default class DetailsSection extends KeepElement {
     `;
   }
 
+  /**
+   * The pencil. Rendered in two places — beside the name, and in the mobile action group —
+   * and CSS shows one per breakpoint; the hidden one is `display: none`, so it is not in
+   * the accessibility tree and there is only ever one reachable "Edit Schema" button.
+   */
+  private renderEditButton() {
+    return html`
+      <button
+        class="edit-icon"
+        type="button"
+        aria-label="Edit Schema"
+        @click=${() => {
+          this.viewOnly = false;
+          this.editOpen = true;
+        }}
+      >
+        <wa-icon library=${FA_LIBRARY} name="pen-to-square" canvas="auto"></wa-icon>
+      </button>
+    `;
+  }
+
   render() {
     const schema = this.schemaData;
     const description = schema?.description ?? '';
@@ -1263,18 +1410,23 @@ export default class DetailsSection extends KeepElement {
         </span>
         <span class="api-name">
           <span class="api-schema">${this.dbName}</span>
+          ${this.renderEditButton()}
+        </span>
+        <span class="api-nsf">${schema?.nsfPath ?? ''}</span>
+        <div class="mobile-actions">
           <button
-            class="edit-icon"
+            class="edit-icon view-icon"
             type="button"
-            aria-label="Edit Schema"
+            aria-label="View Schema"
             @click=${() => {
+              this.viewOnly = true;
               this.editOpen = true;
             }}
           >
-            <wa-icon library=${FA_LIBRARY} name="pen-to-square" canvas="auto"></wa-icon>
+            <wa-icon library=${FA_LIBRARY} name="eye" canvas="auto"></wa-icon>
           </button>
-        </span>
-        <span class="api-nsf">${schema?.nsfPath ?? ''}</span>
+          ${this.renderEditButton()}
+        </div>
       </div>
       <hr class="rule" />
       <div class="information">

@@ -5,13 +5,16 @@
  * ========================================================================== */
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchDBConfig, fetchKeepPermissions, quickConfig } from '../../../src/store/databases/action';
+import { fetchDBConfig, fetchKeepDatabases, fetchKeepPermissions, quickConfig } from '../../../src/store/databases/action';
 import { SET_DB_ERROR } from '../../../src/store/databases/types';
 import {
+  addAvailableDatabase as addAvailableDatabaseAction,
+  addNewSchemaToState as addNewSchemaToStateAction,
   addSchema as addSchemaAction,
   addScope as addScopeAction,
   fetchDbConfig as fetchDbConfigAction,
   fetchKeepPermissions as fetchKeepPermissionsAction,
+  updateSchema as updateSchemaAction,
 } from '../../../src/store/databases/reducer';
 import { setApiLoading } from '../../../src/store/dialog/action';
 import { toggleAlert } from '../../../src/store/alerts/action';
@@ -188,6 +191,76 @@ describe('databases — database-level thunks', () => {
 
       await expect(quickConfig(dbData)(dispatch)).resolves.not.toThrow();
       expectLoadingCleared();
+    });
+
+    /**
+     * `/admin/quickconfig` echoes back whatever separator the server's OS uses for an NSF
+     * path. Left unnormalized, the schema and scope this dispatches would carry a `\`-joined
+     * `nsfPath` while every other entry point (`/admin/access`, an imported schema) normalizes
+     * to `/`, breaking the schema/scope link for exactly this database going forward.
+     */
+    it('normalizes a backslash-separated nsfPath from the response before storing it', async () => {
+      returns({ schemaName: 'demo', nsfPath: 'sub\\dir\\db.nsf', apiName: 'demoScope' });
+
+      await quickConfig(dbData)(dispatch);
+
+      const schemaAction = actions().find((a: any) => a?.type === addSchemaAction.type);
+      const scopeAction = actions().find((a: any) => a?.type === addScopeAction.type);
+      const newSchemaAction = actions().find((a: any) => a?.type === addNewSchemaToStateAction.type);
+
+      expect(schemaAction.payload.nsfPath).toBe('sub/dir/db.nsf');
+      expect(scopeAction.payload.nsfPath).toBe('sub/dir/db.nsf');
+      expect(newSchemaAction.payload.nsfPath).toBe('sub/dir/db.nsf');
+    });
+  });
+
+  describe('fetchKeepDatabases', () => {
+    const getState = () => ({ databases: { scopes: [] } }) as any;
+
+    /** One streamed NDJSON-style record, matching what `/admin/access` sends. */
+    const streamedResponse = (path: string, configurations: unknown[]) => {
+      const body = JSON.stringify({ path, configurations });
+      let exhausted = false;
+      return {
+        status: 200,
+        body: {
+          getReader: () => ({
+            read: () => {
+              if (exhausted) return Promise.resolve({ done: true, value: undefined });
+              exhausted = true;
+              return Promise.resolve({ done: false, value: new TextEncoder().encode(body) });
+            },
+          }),
+        },
+      } as unknown as Response;
+    };
+
+    /**
+     * `/admin/access` reports each database's path in the server's own separator
+     * convention. A schema hosted on a Windows server and a scope (or a second listing)
+     * read back from a Linux one otherwise carry a `\`- vs `/`-joined `nsfPath` for the
+     * same database and never link up — see `normalizeNsfPath`.
+     */
+    it('normalizes a backslash-separated path from /admin/access before storing it', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi
+          .fn()
+          .mockResolvedValue(streamedResponse('sub\\dir\\db.nsf', [{ name: 'demo', description: 'd', iconName: 'icon1' }])),
+      );
+
+      await fetchKeepDatabases()(dispatch, getState);
+
+      await vi.waitFor(() => {
+        expect(actions().some((a: any) => a?.type === updateSchemaAction.type)).toBe(true);
+      });
+
+      const availableDb = actions().find((a: any) => a?.type === addAvailableDatabaseAction.type);
+      expect(availableDb.payload.title).toBe('sub/dir/db.nsf');
+      expect(availableDb.payload.nsfpath).toBe('sub/dir/db.nsf');
+
+      const updated = actions().find((a: any) => a?.type === updateSchemaAction.type);
+      expect(updated.payload[0].nsfPath).toBe('sub/dir/db.nsf');
     });
   });
 });

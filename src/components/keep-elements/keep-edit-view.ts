@@ -529,6 +529,92 @@ export default class EditView extends KeepElement {
         gap: 10px;
         width: 100%;
       }
+
+      /*
+       * Phone width: both panes stay side by side, but the available-columns pane gets the
+       * larger share (it was a fifth, which is why its names were cut off) and the chosen-
+       * columns pane drops its table layout for stacked rows (see keep-column-details).
+       * Padding and gaps shrink to give the panes the room. Last in the sheet, so these win
+       * over the rules above on source order.
+       */
+      @media only screen and (max-width: 768px) {
+        .edit-dialog {
+          padding: 12px;
+          gap: 8px;
+        }
+
+        /* Clear of the close button, which is pinned to the dialog's top-right corner. */
+        .title-container {
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 28px;
+          padding: 0;
+        }
+
+        .buttons-container {
+          gap: 8px;
+        }
+
+        .action-button {
+          padding: 0 10px;
+        }
+
+        /* The panes fill the rest of the dialog and scroll inside it. */
+        .dialog-body {
+          flex: 1 1 auto;
+          min-height: 0;
+          gap: 8px;
+          margin: 4px 0 0;
+        }
+
+        .column-bar {
+          flex: 0 0 46%;
+          width: 46%;
+          margin-left: 0;
+        }
+
+        keep-column-details {
+          flex: 1 1 0;
+          width: auto;
+          min-width: 0;
+          margin-right: 0;
+          overflow: auto;
+        }
+
+        .add-all {
+          height: auto;
+          padding: 8px 12px;
+          line-height: normal;
+        }
+
+        .column-button {
+          padding: 10px 12px;
+          gap: 6px;
+        }
+
+        .column-info {
+          width: auto;
+          min-width: 0;
+          gap: 2px;
+        }
+
+        .column-name {
+          font-size: 14px;
+          overflow-wrap: anywhere;
+        }
+
+        .column-detail {
+          font-size: 12px;
+          line-height: 15px;
+        }
+      }
+
+      /* No hover on a touch screen, so the add affordance is shown rather than revealed. */
+      @media (hover: none) and (max-width: 768px) {
+        .add-icon {
+          visibility: visible;
+        }
+      }
     `,
     // Last, so the dark backdrop wins over the native one restated above.
     modalBackdropStyles,
