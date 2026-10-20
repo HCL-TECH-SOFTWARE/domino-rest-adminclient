@@ -20,6 +20,7 @@ import './keep-agents-table';
 import './keep-button';
 import './keep-form-dialog-header';
 import './keep-search-input';
+import { matchesNameOrAlias } from '../../utils/common';
 import './keep-switch';
 
 /**
@@ -110,6 +111,17 @@ export default class AgentsTab extends KeepElement {
         justify-content: space-between;
         align-items: center;
         align-content: center;
+      }
+
+      /* Phone width: Show Active drops under Activate All | Deactivate All. */
+      @media only screen and (max-width: 768px) {
+        .buttons-panel {
+          height: auto;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
       }
 
       /*
@@ -285,8 +297,7 @@ export default class AgentsTab extends KeepElement {
     }
     const key = this.searchKey.toLowerCase();
     return this.databases.value.agents.filter(
-      (agent: KeepAgentsTableAgent) =>
-        agent.agentName && agent.agentName.toLowerCase().indexOf(key) !== -1,
+      (agent: KeepAgentsTableAgent) => matchesNameOrAlias(agent.agentName, agent.agentAlias, key),
     );
   }
 

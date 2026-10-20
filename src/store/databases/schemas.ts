@@ -11,7 +11,7 @@ import { SETUP_KEEP_API_URL } from '../../config.dev';
 import { getToken } from '../account/action';
 import { setApiLoading, toggleDeleteDialog } from '../dialog/action';
 import { apiRequestWithRetry, parseThrownError } from '../../utils/api-retry';
-import { encodeQueryValue } from '../../utils/common';
+import { encodeQueryValue, normalizeNsfPath } from '../../utils/common';
 import { log, setDBError, clearDBError } from './shared';
 import {
   addNewSchemaToState,
@@ -105,6 +105,10 @@ export const fetchSchema = (nsfPath: string, schemaName: string, setSchemaData: 
         throw new Error(JSON.stringify(data))
       }
 
+      // Normalized once here: `/schema` echoes back the server's own separator
+      // convention. See `normalizeNsfPath`.
+      if (typeof data.nsfPath === 'string') data.nsfPath = normalizeNsfPath(data.nsfPath);
+
       setSchemaData(data);
       dispatch(setApiLoading(false));
     } catch (e: any) {
@@ -152,6 +156,10 @@ export const addSchema = (dbData: any, resetCallback?: () => void) => {
       if (!response.ok) {
         throw new Error(JSON.stringify(data))
       }
+
+      // Normalized once here: `/schema` echoes back the server's own separator
+      // convention. See `normalizeNsfPath`.
+      if (typeof data.nsfPath === 'string') data.nsfPath = normalizeNsfPath(data.nsfPath);
 
       dispatch(addSchemaAction(data));
 
@@ -212,6 +220,10 @@ export const updateSchema = (schemaData: any, setSchemaData?: (data: any) => voi
         if (!response.ok) {
           throw new Error(JSON.stringify(data))
         }
+
+        // Normalized once here: `/schema` echoes back the server's own separator
+        // convention. See `normalizeNsfPath`.
+        if (typeof data.nsfPath === 'string') data.nsfPath = normalizeNsfPath(data.nsfPath);
 
         if (setSchemaData) {
           setSchemaData(data);

@@ -6,7 +6,7 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Dispatch } from '@reduxjs/toolkit';
-import { changeScope, deleteScope, fetchScopes } from '../../../src/store/databases/action';
+import { changeScope, deleteScope, fetchScope, fetchScopes } from '../../../src/store/databases/action';
 import { SET_DB_ERROR } from '../../../src/store/databases/types';
 import {
   addScope as addScopeAction,
@@ -153,6 +153,30 @@ describe('databases — scopes', () => {
     });
   });
 
+  describe('fetchScope', () => {
+    it('resolves the scope by API name', async () => {
+      returns(scope);
+
+      const result = await fetchScope({ apiName: 'demo' });
+
+      expect(result).toEqual(expect.objectContaining({ apiName: 'demo', nsfPath: 'db.nsf' }));
+    });
+
+    /**
+     * `/admin/scope` echoes back the server's own separator convention — see
+     * `normalizeNsfPath`. Left raw, this scope's `nsfPath` would fail to compare equal to
+     * the same database's schema `nsfPath` wherever the two are read back from different
+     * OS-hosted servers.
+     */
+    it('normalizes a backslash-separated nsfPath from the response', async () => {
+      returns({ ...scope, nsfPath: 'sub\\dir\\db.nsf' });
+
+      const result = await fetchScope({ apiName: 'demo' });
+
+      expect(result?.nsfPath).toBe('sub/dir/db.nsf');
+    });
+  });
+
   describe('fetchScopes', () => {
     it('stores the scopes it fetched', async () => {
       const scopes = [scope, { ...scope, apiName: 'other' }];
@@ -162,6 +186,19 @@ describe('databases — scopes', () => {
 
       expect(types()).toContain(fetchKeepScopesAction.type);
       expect(actions().find((a) => a?.type === fetchKeepScopesAction.type).payload).toEqual(scopes);
+    });
+
+    it('normalizes a backslash-separated nsfPath on every scope before storing them', async () => {
+      const scopes = [
+        { ...scope, apiName: 'a', nsfPath: 'sub\\dir\\db.nsf' },
+        { ...scope, apiName: 'b', nsfPath: 'other\\db.nsf' },
+      ];
+      returns(scopes);
+
+      await fetchScopes()(dispatch);
+
+      const stored = actions().find((a) => a?.type === fetchKeepScopesAction.type).payload;
+      expect(stored.map((s: any) => s.nsfPath)).toEqual(['sub/dir/db.nsf', 'other/db.nsf']);
     });
 
     it('marks the pull complete when there are no scopes', async () => {
@@ -286,6 +323,15 @@ describe('databases — scopes', () => {
       // setApiLoading(false) sat on the success path only, so any refused save
       // left the eight screens reading state.dialog.loading spinning.
       expectLoadingCleared();
+    });
+
+    it('normalizes a backslash-separated nsfPath from the response before storing it', async () => {
+      returns({ ...scope, nsfPath: 'sub\\dir\\db.nsf' });
+
+      await changeScope(scope)(dispatch);
+
+      const payload = actions().find((a) => a?.type === addScopeAction.type).payload;
+      expect(payload.nsfPath).toBe('sub/dir/db.nsf');
     });
   });
 

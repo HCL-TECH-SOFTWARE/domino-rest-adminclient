@@ -210,6 +210,68 @@ export default class ColumnDetails extends KeepElement {
       wa-input[aria-invalid='true']::part(hint) {
         color: var(--keep-color-danger-text);
       }
+
+      /*
+       * Phone width: the three-column table becomes one compact block per column, with no
+       * markup change. Line one is the column name with a small trash control at the right;
+       * line two is the External Name field at full width. The header row is hidden (kept
+       * for assistive technology, clipped rather than removed), since each field says what
+       * it is. ':host' is in the cell selectors to outrank the shared table sheet's cell
+       * padding, a plain element selector. Last in the sheet so the rest win on source order.
+       */
+      @media only screen and (max-width: 768px) {
+        :host table,
+        :host tbody {
+          display: block;
+        }
+
+        :host thead {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          clip-path: inset(50%);
+        }
+
+        :host tbody tr {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          column-gap: 8px;
+          row-gap: 4px;
+          padding: 8px 4px;
+        }
+
+        :host tbody td {
+          padding: 0;
+          min-width: 0;
+        }
+
+        /* The name, first line, first column. The delete cell is first in the markup. */
+        :host tbody td:nth-child(2) {
+          grid-column: 1;
+          grid-row: 1;
+          align-self: center;
+          overflow-wrap: anywhere;
+          font-size: var(--wa-font-size-s);
+        }
+
+        :host tbody td:nth-child(1) {
+          grid-column: 2;
+          grid-row: 1;
+          align-self: center;
+        }
+
+        :host tbody td:nth-child(3) {
+          grid-column: 1 / -1;
+          grid-row: 2;
+        }
+
+        .delete-button {
+          font-size: 1em;
+          margin-left: 0;
+          padding: 4px;
+        }
+      }
     `,
   ];
 

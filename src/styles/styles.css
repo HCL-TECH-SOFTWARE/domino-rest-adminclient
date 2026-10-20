@@ -41,9 +41,12 @@
      was the .background-badge rule deleted there. */
   --base-color: var(--keep-surface-brand);
   --icon-color: var(--wa-color-text-loud);
-  --hint-text-color: light-dark(#808080, #a9a9a9);
-  --active-indicator-color: light-dark(#0fa068, #52c999);
-  --inactive-indicator-color: light-dark(#8291a0, #707e8a);
+  /* These three carry text, so they have to clear 4.5:1 on the surfaces they sit on: white and
+     #f8fbff in light, #1e1e2e and #252535 in dark. Measured by axe in a browser, the previous
+     light values were 3.9 / 3.2 / 3.1 and the dark inactive one 3.6 on the raised surface. */
+  --hint-text-color: light-dark(#6b6b6b, #a9a9a9);
+  --active-indicator-color: light-dark(#0b7a4f, #52c999);
+  --inactive-indicator-color: light-dark(#5f6f7e, #8c99a5);
   --copyright-color: var(--wa-color-text-quiet);
 }
 

@@ -237,6 +237,48 @@ export default class FormsTable extends KeepElement {
         width: 550px;
       }
 
+      /*
+       * Phone width: tighter cells and content-sized columns, so the table needs far less
+       * horizontal scrolling. :host is in the selectors to outrank the shared table sheet's
+       * cell padding, which is a plain element selector.
+       */
+      @media only screen and (max-width: 768px) {
+        :host table th,
+        :host table td {
+          padding: 10px 8px;
+        }
+
+        :host table thead th {
+          padding-top: 14px;
+        }
+
+        /* :host again: the column and button rules below this block are one class of
+           specificity and would otherwise win on source order. */
+        :host .col-edit,
+        :host .col-name,
+        :host .col-alias,
+        :host .col-modes,
+        :host .cell-name,
+        :host .col-status,
+        :host .cell-status {
+          width: auto;
+        }
+
+        :host .col-name,
+        :host .cell-name,
+        :host .col-alias {
+          min-width: 110px;
+        }
+
+        :host .edit-button {
+          padding: 4px;
+        }
+
+        :host .edit-icon {
+          font-size: 1.25em;
+        }
+      }
+
       /* was .table-cell-activate-menu in the global sheet */
       .col-status,
       .cell-status {

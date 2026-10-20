@@ -1,6 +1,6 @@
 {
   "name": "@hcl-software/domino-rest-adminclient",
-  "version": "1.50.4-SNAPSHOT",
+  "version": "1.50.7-SNAPSHOT",
   "private": false,
   "dependencies": {
     "@awesome.me/webawesome": "^3.12.0",
@@ -30,7 +30,7 @@
     "node": ">=24"
   },
   "overrides": {
-    "dompurify": "^3.4.14",
+    "dompurify": "^3.4.16",
     "jsdom": "^30.0.1"
   },
   "scripts": {

@@ -139,6 +139,18 @@ export default class SingleField extends KeepElement {
       opacity: 1;
     }
 
+    /* No hover on a touch screen, so the add button is shown outright, and the row's
+       right-hand padding (which only made room for it on hover) is trimmed. */
+    @media (hover: none) and (max-width: 768px) {
+      .add-field {
+        opacity: 1;
+      }
+
+      .item-container {
+        padding: 6px 12px 6px 10px;
+      }
+    }
+
     .add-field:focus-visible {
       border-radius: var(--wa-border-radius-s);
       outline: var(--wa-focus-ring);

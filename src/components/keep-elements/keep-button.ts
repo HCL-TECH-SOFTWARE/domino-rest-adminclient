@@ -73,6 +73,9 @@ export default class Button extends KeepElement {
   @property({ type: Boolean }) accessor disabled = false;
   @property({ type: Boolean }) accessor pill = false;
 
+  /** Web Awesome control size: `s` | `m` | `l`. */
+  @property({ type: String }) accessor size = 'm';
+
 /*
  * No `style` passthrough to the inner Web Awesome control.
  *
@@ -89,6 +92,7 @@ export default class Button extends KeepElement {
         variant="${this.variant}"
         ?disabled="${this.disabled}"
         appearance="${this.appearance}"
+        size="${this.size}"
         ?pill="${this.pill}"
       >
         ${this.icon ? html`<wa-icon library="${FA_LIBRARY}" name="${this.icon}"></wa-icon>` : ''}
