@@ -187,7 +187,7 @@ describe('keep-mode-fields', () => {
     it('gives the filter an accessible name', async () => {
       const el = await mount();
       expect(shadow(el).querySelector('keep-search-input')!.getAttribute('label')).toBe(
-        'Search Field',
+        'Search fields in this mode',
       );
     });
 

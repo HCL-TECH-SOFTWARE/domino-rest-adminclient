@@ -79,12 +79,13 @@ describe('keep-default-card', () => {
     expect(status.classList.contains('inactive')).toBe(false);
   });
 
-  it('reflects the title into the heading and image alt text', async () => {
+  it('reflects the title into the heading, and leaves the image to the button name', async () => {
     const el = await mountLit<DefaultCard>(TAG, { title: 'My Schema', icon: '/icons/db.svg' });
     expect(shadow(el).querySelector('section.titles strong text')!.textContent!.trim()).toBe(
       'My Schema',
     );
-    expect(shadow(el).querySelector('div.icon img')!.getAttribute('alt')).toBe('My Schema');
+    // Decorative: the open button's name already carries the title, so alt text would read twice.
+    expect(shadow(el).querySelector('div.icon img')!.getAttribute('alt')).toBe('');
   });
 
   it('reflects the subtitle into the titles section', async () => {
@@ -131,20 +132,19 @@ describe('keep-default-card', () => {
 
   it('renders no delete affordance by default', async () => {
     const el = await mountLit<DefaultCard>(TAG);
-    expect(shadow(el).querySelector('div.delete')).toBeNull();
+    expect(shadow(el).querySelector('button.delete-button')).toBeNull();
   });
 
   it('renders the delete affordance when delete is true', async () => {
     const el = await mountLit<DefaultCard>(TAG, { delete: true });
-    expect(shadow(el).querySelector('div.delete')).toBeTruthy();
+    expect(shadow(el).querySelector('button.delete-button')).toBeTruthy();
   });
 
   it('invokes onDelete when the delete control is clicked', async () => {
     const onDelete = vi.fn();
     const el = await mountLit<DefaultCard>(TAG, { delete: true, onDelete });
-    const affordance = shadow(el).querySelector('div.delete') as HTMLElement;
+    const affordance = shadow(el).querySelector('button.delete-button') as HTMLElement;
     expect(affordance).toBeTruthy();
-    // Click bubbles up to the handler on the enclosing section.delete.
     affordance.click();
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
@@ -154,9 +154,56 @@ describe('keep-default-card', () => {
     const el = await mountLit<DefaultCard>(TAG, { delete: true, onDelete });
     const outer = vi.fn();
     el.addEventListener('click', outer);
-    (shadow(el).querySelector('div.delete') as HTMLElement).click();
+    (shadow(el).querySelector('button.delete-button') as HTMLElement).click();
     expect(onDelete).toHaveBeenCalledTimes(1);
     // stopPropagation() keeps the click from reaching the host listener.
     expect(outer).not.toHaveBeenCalled();
+  });
+
+  describe('keyboard and assistive technology', () => {
+    const open = (el: DefaultCard) => shadow(el).querySelector('.open') as HTMLElement;
+
+    it('puts the card body in the tab order as a button named for the card', async () => {
+      const el = await mountLit<DefaultCard>(TAG, { title: 'My Schema', subtitle: 'a/b.nsf' });
+      expect(open(el).getAttribute('role')).toBe('button');
+      expect(open(el).getAttribute('tabindex')).toBe('0');
+      expect(open(el).getAttribute('aria-label')).toBe('My Schema, a/b.nsf');
+    });
+
+    it.each(['Enter', ' '])('raises a host click on %j, which is what the parents listen for', async (key) => {
+      const el = await mountLit<DefaultCard>(TAG, { title: 'My Schema' });
+      const clicked = vi.fn();
+      el.addEventListener('click', clicked);
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      open(el).dispatchEvent(event);
+      expect(clicked).toHaveBeenCalledTimes(1);
+      // Space would otherwise scroll the page as well.
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('ignores other keys, so Tab still leaves the card', async () => {
+      const el = await mountLit<DefaultCard>(TAG, { title: 'My Schema' });
+      const clicked = vi.fn();
+      el.addEventListener('click', clicked);
+      const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      open(el).dispatchEvent(event);
+      expect(clicked).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('does not nest the delete button inside the open button', async () => {
+      const el = await mountLit<DefaultCard>(TAG, { title: 'My Schema', delete: true });
+      expect(open(el).querySelector('button')).toBeNull();
+      expect(
+        shadow(el).querySelector('button.delete-button')!.getAttribute('aria-label'),
+      ).toBe('Delete My Schema');
+    });
+
+    it('names the status dot, so it is not carried by colour alone', async () => {
+      const off = await mountLit<DefaultCard>(TAG, { title: 'x' });
+      expect(shadow(off).querySelector('.status')!.getAttribute('aria-label')).toBe('Inactive');
+      const on = await mountLit<DefaultCard>(TAG, { title: 'x', status: true });
+      expect(shadow(on).querySelector('.status')!.getAttribute('aria-label')).toBe('Active');
+    });
   });
 });

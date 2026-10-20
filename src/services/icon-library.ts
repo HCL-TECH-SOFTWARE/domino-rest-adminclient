@@ -57,6 +57,7 @@ import database from '@fortawesome/fontawesome-free/svgs/solid/database.svg?url'
 import download from '@fortawesome/fontawesome-free/svgs/solid/download.svg?url';
 import ellipsis from '@fortawesome/fontawesome-free/svgs/solid/ellipsis.svg?url';
 import envelope from '@fortawesome/fontawesome-free/svgs/solid/envelope.svg?url';
+import eye from '@fortawesome/fontawesome-free/svgs/solid/eye.svg?url';
 import file from '@fortawesome/fontawesome-free/svgs/solid/file.svg?url';
 import filter from '@fortawesome/fontawesome-free/svgs/solid/filter.svg?url';
 import folder from '@fortawesome/fontawesome-free/svgs/solid/folder.svg?url';
@@ -139,6 +140,7 @@ const BUNDLED = {
   download,
   ellipsis,
   envelope,
+  eye,
   file,
   filter,
   folder,

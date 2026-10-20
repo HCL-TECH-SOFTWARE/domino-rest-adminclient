@@ -191,6 +191,26 @@ export default class FormsTab extends KeepElement {
         align-content: center;
       }
 
+      /* Phone width: search on its own line with the smaller Add button under it, and
+         Show Active under Activate All | Deactivate All. */
+      @media only screen and (max-width: 768px) {
+        .top-nav {
+          flex-direction: column;
+          align-items: flex-start;
+          padding: 15px 0;
+        }
+
+        .top-nav keep-search-input {
+          width: 100%;
+        }
+
+        .buttons-panel {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+      }
+
       /*
        * The two bulk controls were framework buttons, so everything a bare button loses
        * inside a shadow root — the font, the border, the background — has to be explicit.
@@ -411,6 +431,26 @@ export default class FormsTab extends KeepElement {
   /** What is in the search box. Owned here — see the note on `keep-search-input`. */
   @state() accessor searchKey = '';
 
+  /** True at phone width; drives the smaller Add button. The layout itself is in CSS. */
+  @state() accessor isMobile = false;
+
+  private readonly mobileQuery = window.matchMedia('(max-width: 768px)');
+
+  private readonly handleMobileChange = (event: MediaQueryListEvent) => {
+    this.isMobile = event.matches;
+  };
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.isMobile = this.mobileQuery.matches;
+    this.mobileQuery.addEventListener('change', this.handleMobileChange);
+  }
+
+  disconnectedCallback(): void {
+    this.mobileQuery.removeEventListener('change', this.handleMobileChange);
+    super.disconnectedCallback();
+  }
+
   /** The Show Active filter. */
   @state() accessor showActive = false;
 
@@ -612,7 +652,10 @@ export default class FormsTab extends KeepElement {
           ?disabled=${!this.databases.value.databasePull}
           @search-change=${this.handleSearch}
         ></keep-search-input>
-        <keep-button @click=${() => (this.createFormOpen = true)}>
+        <keep-button
+          size=${this.isMobile ? 's' : 'm'}
+          @click=${() => (this.createFormOpen = true)}
+        >
           Add New Form Schema
         </keep-button>
       </div>

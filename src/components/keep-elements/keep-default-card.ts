@@ -6,6 +6,7 @@
 
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import { KeepElement } from './keep-element';
 import { appIconSkeleton, appIconSkeletonStyles } from './app-icon-skeleton';
@@ -168,6 +169,17 @@ export default class DefaultCard extends KeepElement {
             width: 75px;
         }
 
+        /* The keyboard path into the card: the title block and description. The card's click
+           handler lives on the host, so this just re-dispatches one. */
+        .open:focus {
+            outline: none;
+        }
+        .open:focus-visible,
+        button.delete-button:focus-visible {
+            outline: var(--wa-focus-ring);
+            outline-offset: calc(-1 * var(--wa-focus-ring-width));
+        }
+
         div.main {
             display: flex;
             flex-direction: row;
@@ -178,9 +190,15 @@ export default class DefaultCard extends KeepElement {
             margin: 0;
             padding: 0;
         }
-        div.delete {
+        /* A real button now, with the glyph still painted as a background. The resets are the
+           ones a bare <button> needs to look like the div it replaced. */
+        button.delete-button {
             width: 20px;
             height: 20px;
+            padding: 0;
+            border: 0;
+            background-color: transparent;
+            cursor: pointer;
             background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMgNkg1SDIxIiBmaWxsPSIjRDY0NjZGIi8+CjxwYXRoIGQ9Ik0zIDZINUgyMSIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNMTkgNlYyMEMxOSAyMC41MzA0IDE4Ljc4OTMgMjEuMDM5MSAxOC40MTQyIDIxLjQxNDJDMTguMDM5MSAyMS43ODkzIDE3LjUzMDQgMjIgMTcgMjJIN0M2LjQ2OTU3IDIyIDUuOTYwODYgMjEuNzg5MyA1LjU4NTc5IDIxLjQxNDJDNS4yMTA3MSAyMS4wMzkxIDUgMjAuNTMwNCA1IDIwVjZNOCA2VjRDOCAzLjQ2OTU3IDguMjEwNzEgMi45NjA4NiA4LjU4NTc5IDIuNTg1NzlDOC45NjA4NiAyLjIxMDcxIDkuNDY5NTcgMiAxMCAySDE0QzE0LjUzMDQgMiAxNS4wMzkxIDIuMjEwNzEgMTUuNDE0MiAyLjU4NTc5QzE1Ljc4OTMgMi45NjA4NiAxNiAzLjQ2OTU3IDE2IDRWNiIgc3Ryb2tlPSIjRDY0NjZGIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K');
             background-position: top right;
             background-repeat: no-repeat;
@@ -235,39 +253,72 @@ export default class DefaultCard extends KeepElement {
   @property({ type: Boolean }) accessor delete = false;
   @property({ attribute: false }) accessor onDelete: () => void = () => {};
 
+  /**
+   * Enter and Space open the card, as they would a button. The parents listen for `click` on
+   * this element, so the keyboard raises that same event rather than a second, parallel one.
+   */
+  private readonly handleOpenKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    this.click();
+  };
+
+  private readonly handleDelete = (event: Event): void => {
+    event.stopPropagation();
+    this.onDelete();
+  };
+
   render() {
+    const openLabel = this.subtitle ? `${this.title}, ${this.subtitle}` : this.title;
     return html`
         <wa-card>
             <section class="delete">
-                <div class="status ${this.status ? 'active' : 'inactive'}"></div>
+                <div
+                    class="status ${this.status ? 'active' : 'inactive'}"
+                    role="img"
+                    aria-label=${this.status ? 'Active' : 'Inactive'}
+                ></div>
             </section>
-            <div class="main">
-                <div class="icon">
-                    ${this.icon
-                      ? html`<img src="${this.icon}" alt="${this.title}" />`
-                      : appIconSkeleton()}
+            <div
+                class="open"
+                role="button"
+                tabindex="0"
+                aria-label=${ifDefined(openLabel || undefined)}
+                @keydown=${this.handleOpenKeydown}
+            >
+                <div class="main">
+                    <div class="icon">
+                        ${this.icon
+                          ? html`<img src="${this.icon}" alt="" />`
+                          : appIconSkeleton()}
+                    </div>
+                    <section class="titles">
+                        <strong><text>${this.title}</text></strong>
+                        <text class="medium">${this.subtitle}</text>
+                        ${this.acl ?
+                            html`
+                                <strong>
+                                    <text class="${this.acl === '*Editor' ? 'acl-editor' : 'acl-other'}">
+                                        ${this.acl}
+                                    </text>
+                                </strong>
+                            `
+                            : ''}
+                    </section>
                 </div>
-                <section class="titles">
-                    <strong><text>${this.title}</text></strong>
-                    <text class="medium">${this.subtitle}</text>
-                    ${this.acl ?
-                        html`
-                            <strong>
-                                <text class="${this.acl === '*Editor' ? 'acl-editor' : 'acl-other'}">
-                                    ${this.acl}
-                                </text>
-                            </strong>
-                        `
-                        : ''}
+                <section class="description">
+                    <text class="medium">${this.description}</text>
                 </section>
             </div>
-            <section class="description">
-                <text class="medium">${this.description}</text>
-            </section>
-            <section class="delete" @click=${(e: Event) => { e.stopPropagation(); this.onDelete(); }}>
+            <section class="delete">
                 ${this.delete ?
                     html`
-                        <div class="delete"></div>
+                        <button
+                            type="button"
+                            class="delete-button"
+                            aria-label=${this.title ? `Delete ${this.title}` : 'Delete'}
+                            @click=${this.handleDelete}
+                        ></button>
                     `
                     :
                     ''
