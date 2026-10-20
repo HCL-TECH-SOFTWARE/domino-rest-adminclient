@@ -170,6 +170,19 @@ export default class ViewsTab extends KeepElement {
         padding-left: 5px;
       }
 
+      /* Phone width: Show Active drops under Activate All | Deactivate All. */
+      @media only screen and (max-width: 768px) {
+        .toolbar {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .buttons-panel {
+          height: auto;
+        }
+      }
+
       /*
        * The two bulk buttons were text buttons from the component library that is gone from
        * this element's tree, so its box is restated: 64px of minimum width, the 14px/500

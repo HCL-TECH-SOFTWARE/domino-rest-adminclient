@@ -338,7 +338,8 @@ export default class FormsContainer extends KeepElement {
 
       @media only screen and (max-width: 768px) {
         .core {
-          height: calc(100vh - 60px);
+          /* 60px of chrome, plus the compact breadcrumb now shown above this screen. */
+          height: calc(100vh - 96px);
         }
       }
 
@@ -351,9 +352,36 @@ export default class FormsContainer extends KeepElement {
         height: 100%;
         border-radius: var(--wa-border-radius-l);
         border: 1px solid var(--wa-color-surface-border);
-        overflow-x: scroll;
-        overflow-y: auto;
+        /* auto, not scroll: scrollbars only appear when the content actually overflows. */
+        overflow: auto;
         padding: 20px 30px;
+      }
+
+      /*
+       * Phone width: the schema panel is a compact header across the top (keep-details-
+       * section collapses itself to icon, name, file name and view/edit buttons), and the
+       * tabs take the full width and the rest of the height below it.
+       */
+      @media only screen and (max-width: 768px) {
+        .core {
+          flex-direction: column;
+          overflow-y: auto;
+        }
+
+        .details {
+          width: 100%;
+          height: auto;
+          flex-shrink: 0;
+          overflow: visible;
+          padding: 12px;
+        }
+
+        /* :host: the base .stack rule is declared below this block at the same
+           specificity and would win on source order. */
+        :host .stack {
+          width: 100%;
+          padding: 0 8px;
+        }
       }
 
       /* was Stack */

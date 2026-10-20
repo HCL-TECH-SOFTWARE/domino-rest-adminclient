@@ -311,6 +311,42 @@ export default class FieldList extends KeepElement {
       gap: 10px;
       width: 100%;
     }
+
+    /*
+     * Phone width: tighter, and the list scrolls inside a height the parent caps, in both
+     * directions, so a long field name is reachable rather than clipped. Last in the sheet
+     * so it wins over the desktop rules on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      .picker {
+        padding: 0 12px;
+      }
+
+      .loading {
+        height: 120px;
+      }
+
+      .fields {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+      }
+
+      .field-group {
+        max-width: none;
+        width: max-content;
+        min-width: 100%;
+      }
+
+      .field-items {
+        flex: none;
+        height: auto;
+      }
+
+      dialog {
+        width: calc(100% - var(--wa-space-l));
+      }
+    }
   `,
   ];
 

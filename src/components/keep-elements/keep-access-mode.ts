@@ -7,6 +7,7 @@
 import { html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { v4 as uuid } from 'uuid';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import './keep-access-tabs';
 import './keep-button';
 import './keep-field-list';
@@ -14,6 +15,7 @@ import './keep-mode-compare';
 import './keep-network-error-dialog';
 import './keep-page-loading';
 import { KeepElement } from './keep-element';
+import { FA_LIBRARY } from '../../services/icon-library';
 import { StoreController } from '../../store/StoreController';
 import { RouterController } from '../../router/RouterController';
 import type { Database, Mode } from '../../store/databases/types';
@@ -178,6 +180,98 @@ export default class AccessMode extends KeepElement {
       position: relative;
       height: 100%;
     }
+
+    /* The mobile palette toggle and its body; not rendered above the narrow breakpoint. */
+    .palette-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--wa-color-surface-border);
+      border-radius: var(--wa-border-radius-l);
+      background: var(--wa-color-surface-default);
+      color: var(--wa-color-text-normal);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .palette-toggle:focus-visible {
+      outline: var(--wa-focus-ring);
+      outline-offset: var(--wa-focus-ring-offset);
+    }
+
+    /* A flex box so the field list inside is still stretched to the panel's height by the
+       row it sits in, exactly as when it was the row's own item. */
+    .palette-section {
+      display: contents;
+    }
+
+    .palette {
+      display: flex;
+    }
+
+    .palette[hidden] {
+      display: none;
+    }
+
+    /*
+     * Phone width: one column. The palette is a collapsible bar over the mode's field
+     * list, the editor flows under it, and the page scrolls rather than each panel. Kept
+     * at the end of the sheet so these win over the desktop rules above on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      .header-container {
+        margin-top: 8px;
+        padding: 8px 0;
+      }
+
+      /* The title takes the whole line, which drops Open Mode Compare onto its own. */
+      .header-text {
+        flex: 1 1 100%;
+        margin: 0;
+        font-size: 18px;
+        overflow-wrap: anywhere;
+      }
+
+      .panels {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+        gap: 12px;
+        padding-bottom: 12px;
+      }
+
+      .palette-section {
+        display: block;
+      }
+
+      /* Open: the bar and the list share one outline — square off the joining corners and
+         drop the list's own top border, the bar's bottom border is the divider. */
+      .palette-toggle.open {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+
+      .palette keep-field-list {
+        border-top: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        flex: 1;
+        min-width: 0;
+        max-height: 50vh;
+      }
+
+      .access-container {
+        flex: none;
+        display: block;
+        overflow: visible;
+        padding-top: 0;
+        height: auto;
+      }
+    }
   `;
 
   /** The shared field map. The slice's own object, so it is reference-stable between writes. */
@@ -214,8 +308,11 @@ export default class AccessMode extends KeepElement {
 
   @state() private accessor modeCompareOpen = false;
 
-  /** True below the narrow breakpoint, where the field palette is not shown. */
+  /** True below the narrow breakpoint, where the field palette is collapsible. */
   @state() private accessor narrow = false;
+
+  /** Whether the collapsible palette is expanded. Collapsed to start; only used when narrow. */
+  @state() private accessor paletteOpen = false;
 
   /**
    * A dialog `keep-access-tabs` wants opened after the next save.
@@ -621,17 +718,42 @@ export default class AccessMode extends KeepElement {
           </keep-button>
         </div>
         <div class="panels">
+          <!-- The bar and the list are one section, so they read as one collapsible. Above the
+               breakpoint the wrapper is display: contents and the layout is as it was. -->
+          <div class="palette-section">
           ${this.narrow
-            ? nothing
-            : html`
-                <keep-field-list
-                  .schemaName=${dbName}
-                  .nsfPath=${nsfPath}
-                  .formName=${formName}
-                  @fields-add=${(event: CustomEvent<KeepFieldsAddDetail>) =>
-                    this.addFields(event.detail.items as AccessField[])}
-                ></keep-field-list>
-              `}
+            ? html`
+                <button
+                  type="button"
+                  class="palette-toggle ${this.paletteOpen ? 'open' : ''}"
+                  aria-expanded=${this.paletteOpen ? 'true' : 'false'}
+                  aria-controls="palette"
+                  @click=${() => {
+                    this.paletteOpen = !this.paletteOpen;
+                  }}
+                >
+                  <span>Add Fields To This Mode</span>
+                  <wa-icon
+                    library=${FA_LIBRARY}
+                    name=${this.paletteOpen ? 'chevron-up' : 'chevron-down'}
+                    canvas="auto"
+                  ></wa-icon>
+                </button>
+              `
+            : nothing}
+          <!-- Always in the tree once rendered, hidden rather than removed when collapsed, so
+               the form picked in it and the fields it fetched survive a collapse. Above the
+               breakpoint the wrapper is a plain, never-hidden box. -->
+          <div id="palette" class="palette" ?hidden=${this.narrow && !this.paletteOpen}>
+            <keep-field-list
+              .schemaName=${dbName}
+              .nsfPath=${nsfPath}
+              .formName=${formName}
+              @fields-add=${(event: CustomEvent<KeepFieldsAddDetail>) =>
+                this.addFields(event.detail.items as AccessField[])}
+            ></keep-field-list>
+          </div>
+          </div>
           <div class="access-container">${this.renderEditor()}</div>
         </div>
       </div>

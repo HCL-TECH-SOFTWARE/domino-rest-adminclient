@@ -291,6 +291,11 @@ export default class ModeFields extends KeepElement {
         width: 100%;
       }
 
+      /* The panel's heading is a phone-width addition; the desktop panel has none. */
+      .panel-title {
+        display: none;
+      }
+
       /* was .flex.justify-end.field-batch-delete-container */
       .batch-bar {
         display: flex;
@@ -611,6 +616,84 @@ export default class ModeFields extends KeepElement {
         clip-path: inset(50%);
         white-space: nowrap;
       }
+
+      /*
+       * Phone width: the field list stacks over the editor and takes the full width. The
+       * list is capped in height and scrolls in both directions, so a long name is shown in
+       * full by scrolling. Last in the sheet so these win over the desktop rules above.
+       */
+      @media only screen and (max-width: 768px) {
+        :host {
+          flex-direction: column;
+          gap: 12px;
+          height: auto;
+          overflow-x: visible;
+        }
+
+        .field-list-panel {
+          width: 100%;
+          min-width: 0;
+          height: auto;
+          gap: 6px;
+        }
+
+        .add-row {
+          padding: 6px 8px 0;
+        }
+
+        .search-row {
+          padding: 0 8px;
+        }
+
+        .batch-bar {
+          padding: 0 4px;
+        }
+
+        .panel-title {
+          display: block;
+          margin: 0;
+          padding: 10px 12px 0;
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--wa-color-text-normal);
+        }
+
+        /* About four rows (each is roughly 54px), then it scrolls both ways. */
+        .field-list {
+          flex: none;
+          max-height: 220px;
+        }
+
+        .row {
+          width: max-content;
+          min-width: 100%;
+          padding: 6px 12px;
+        }
+
+        .editor-panel {
+          height: auto;
+          gap: 12px;
+        }
+
+        .no-field {
+          height: auto;
+          min-height: 90px;
+        }
+
+        .no-field-title {
+          height: auto;
+          padding: 10px 12px 0;
+        }
+
+        .no-field-message {
+          height: auto;
+          padding: 12px;
+        }
+
+        dialog {
+          width: calc(100% - var(--wa-space-l));
+        }
+      }
     `,
   ];
 
@@ -658,6 +741,8 @@ export default class ModeFields extends KeepElement {
   @state() private accessor deleteFields: KeepFieldItem[] = [];
 
   @query('dialog') private accessor removeDialog!: HTMLDialogElement | null;
+
+  @query('.editor-panel') private accessor editorPanel!: HTMLElement | null;
 
   /** Mirrors the dialog's open state, which `updated()` pushes into the element. */
   @state() private accessor removeOpen = false;
@@ -777,6 +862,14 @@ export default class ModeFields extends KeepElement {
   private selectField(item: KeepFieldItem, index: number): void {
     this.editField = item;
     this.emit<KeepFieldIndexChangeDetail>('field-index-change', { fieldIndex: index });
+    // On a phone the editor is below the list, off screen once the list is scrolled; bring
+    // it into view so the tap visibly does something. Not at desktop width, where both are
+    // on screen already.
+    if (window.matchMedia?.('(max-width: 768px)').matches) {
+      void this.updateComplete.then(() =>
+        this.editorPanel?.scrollIntoView?.({ behavior: 'smooth', block: 'start' }),
+      );
+    }
   }
 
   private openRemoveDialog(): void {
@@ -924,6 +1017,7 @@ export default class ModeFields extends KeepElement {
 
     return html`
       <div class="field-list-panel">
+        <p class="panel-title">Current Mode Fields</p>
         <div class="add-row">
           <wa-input
             class="add-input"

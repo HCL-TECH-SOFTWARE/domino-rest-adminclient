@@ -113,6 +113,17 @@ export default class AgentsTab extends KeepElement {
         align-content: center;
       }
 
+      /* Phone width: Show Active drops under Activate All | Deactivate All. */
+      @media only screen and (max-width: 768px) {
+        .buttons-panel {
+          height: auto;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+      }
+
       /*
        * The two bulk controls were components from the React component library, so their
        * metrics — the type ramp, the compact padding, the rounded hit area, the flat

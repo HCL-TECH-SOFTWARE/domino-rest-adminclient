@@ -189,6 +189,40 @@ export default class ViewsTable extends KeepElement {
       }
 
       /*
+       * Phone width: tighter cells and content-sized columns, so the table needs far less
+       * horizontal scrolling. :host is in the selectors to outrank the shared table sheet's
+       * cell padding, which is a plain element selector.
+       */
+      @media only screen and (max-width: 768px) {
+        :host table th,
+        :host table td {
+          padding: 10px 8px;
+        }
+
+        :host table thead th {
+          padding-top: 14px;
+        }
+
+        /* :host again: .edit-button is declared below this block at one class of
+           specificity and would otherwise win on source order. */
+        :host .col-edit,
+        :host .col-name,
+        :host .col-alias {
+          width: auto;
+        }
+
+        :host .col-name,
+        :host .col-alias {
+          min-width: 110px;
+        }
+
+        :host .edit-button {
+          min-width: 0;
+          padding: 4px;
+        }
+      }
+
+      /*
        * The edit control, which used to be a Material text button inside a click-handling
        * div. Its box is restated here rather than approximated: 64px of minimum width and
        * 6px/8px of padding are what set the column's real width, and the library that

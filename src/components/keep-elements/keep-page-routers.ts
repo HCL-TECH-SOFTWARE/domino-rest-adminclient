@@ -37,8 +37,11 @@ export default class PageRouters extends KeepElement {
        uses (width < 768px) now; aligning them shifts behaviour by one pixel, so it is left
        for lane B. */
     @media only screen and (max-width: 768px) {
+      /* Shown, and as tall as its content: the compact trail lives here. keep-breadcrumb-
+         router hides itself on the top-level pages, which is where phones still show nothing. */
       :host {
-        display: none;
+        height: auto;
+        flex: none;
       }
     }
   `;

@@ -20,7 +20,9 @@ import { StoreController } from '../../store/StoreController';
 import { FA_LIBRARY } from '../../services/icon-library';
 import { getLogger } from '../../services/log-service';
 import { setSaveFunction } from '../../store/navigationGuard/saveFunction';
-import { setNavigationDirty } from '../../store/navigationGuard/action';
+import { blockNavigation, setNavigationDirty } from '../../store/navigationGuard/action';
+import { selectIsDirty } from '../../store/navigationGuard/selectors';
+import { store } from '../../store/store';
 import { toggleApplicationDrawer } from '../../store/drawer/action';
 import { toggleDeleteDialog } from '../../store/dialog/action';
 import { toggleAlert } from '../../store/alerts/action';
@@ -342,6 +344,52 @@ export default class AccessTabs extends KeepElement {
      */
     .drawer-body {
       width: 100%;
+    }
+
+    /* The phone-only way back to this schema's forms; there is the breadcrumb for it on a desktop. */
+    .back-button {
+      display: none;
+    }
+
+    /*
+     * Phone width: the tab leaves the absolutely positioned, fixed-height box it has on
+     * desktop and flows in the page, so everything under the mode bar can be as tall as it
+     * needs. The mode bar wraps, with the four actions on their own line. Last in the
+     * sheet so these win on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      :host {
+        position: static;
+        height: auto;
+        padding: 12px;
+      }
+
+      .tab-navigator {
+        flex: none;
+        min-height: auto;
+      }
+
+      .tabs-container {
+        flex-wrap: wrap;
+        row-gap: 4px;
+        padding-bottom: 12px;
+      }
+
+      .actions {
+        flex: 1 1 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        padding: 0;
+        gap: 4px 16px;
+      }
+
+      .fields-container {
+        height: auto;
+      }
+
+      .back-button {
+        display: flex;
+      }
     }
   `;
 
@@ -1039,6 +1087,20 @@ export default class AccessTabs extends KeepElement {
     `;
   }
 
+  /**
+   * Back to the schema's forms. With unsaved edits the app-wide guard raises its
+   * save / discard / cancel dialog and holds the navigation, exactly as a breadcrumb click
+   * does; otherwise it just goes. Read point-in-time, as the breadcrumb does.
+   */
+  private handleBackToForms(): void {
+    const path = `/schema/${encodeURIComponent(this.nsfPath)}/${this.schemaName}`;
+    if (selectIsDirty(store.getState())) {
+      store.dispatch(blockNavigation(path));
+      return;
+    }
+    this.route.navigate(path);
+  }
+
   private renderActions() {
     const disabled = this.db.value.newForm.enabled;
     const modeName = this.modes[this.currentModeIndex]?.modeName ?? '';
@@ -1112,6 +1174,15 @@ export default class AccessTabs extends KeepElement {
             canvas="auto"
           ></wa-icon>
           <span class="caption ${saveActive ? '' : 'disabled'}">Save</span>
+        </button>
+        <button type="button" class="mode-button back-button" @click=${this.handleBackToForms}>
+          <wa-icon
+            class="action-icon"
+            library=${FA_LIBRARY}
+            name="chevron-left"
+            canvas="auto"
+          ></wa-icon>
+          <span class="caption">Back to Forms</span>
         </button>
       </div>
     `;

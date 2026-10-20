@@ -84,11 +84,15 @@ describe('keep-page-routers', () => {
     expect(customElements.get(TAG)).toBeTruthy();
   });
 
-  it('keeps the 60px strip and hides it on mobile', () => {
+  it('keeps the 60px strip, and on mobile lets it size to its content instead of hiding it', () => {
     const styles = PageRouters.styles.toString();
     expect(styles).toMatch(/height:\s*60px/);
     expect(styles).toMatch(/max-width:\s*768px/);
-    expect(styles).toMatch(/display:\s*none/);
+    // The compact trail shows on phones now; keep-breadcrumb-router hides itself on the
+    // top-level pages, so this strip no longer does it for the whole app.
+    const mobile = styles.slice(styles.indexOf('max-width: 768px'));
+    expect(mobile).toMatch(/height:\s*auto/);
+    expect(mobile).not.toMatch(/display:\s*none/);
   });
 
   it('drops the arrow-left rule, which matched nothing', () => {

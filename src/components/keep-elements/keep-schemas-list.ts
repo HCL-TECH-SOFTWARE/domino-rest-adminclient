@@ -227,6 +227,9 @@ export default class SchemasList extends KeepElement {
     const { search } = this.route.location;
     const displayType = search.split(VIEW_QUERY)[1];
     if (search && displayType) this.view = displayType;
+    // No explicit choice in the URL: the stack view is the more compact one, so it is the
+    // default on a phone-width screen. 768px matches the breakpoint the other screens use.
+    else if (window.matchMedia('(max-width: 768px)').matches) this.view = 'stack';
   }
 
   /**

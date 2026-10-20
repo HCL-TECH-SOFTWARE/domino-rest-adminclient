@@ -47,4 +47,19 @@ export const modalBackdropStyles = css`
   :host-context(body[data-theme='dark']) dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.6);
   }
+
+  /*
+   * Phone width: every modal here sizes itself as a percentage (30% is typical), which is
+   * about 140px on a phone — the buttons and text clip. A floor on the width fixes them all
+   * from one place: min-width wins over width, so a dialog that is narrower than this is
+   * raised to it (capped at the viewport less a gutter), and one that is already wider, such
+   * as the full-width mode comparison, is untouched. ':host' is in the selector to outrank
+   * each component's own plain 'dialog' rule, which this sheet is listed ahead of.
+   */
+  @media only screen and (max-width: 768px) {
+    :host dialog[open] {
+      min-width: min(calc(100% - var(--wa-space-l)), 480px);
+      max-width: calc(100% - var(--wa-space-l));
+    }
+  }
 `;
