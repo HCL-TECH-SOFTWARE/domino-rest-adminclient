@@ -57,6 +57,23 @@ export function encodeQueryValue(value: string): string {
   );
 }
 
+/**
+ * Whether a design element matches a search key by its name or any of its aliases.
+ *
+ * `key` must already be lower-cased. `alias` is tolerated as an array, a single string or
+ * absent, because the schema and the design list have both been seen to carry either shape.
+ */
+export function matchesNameOrAlias(
+  name: string | undefined,
+  alias: string[] | string | undefined | null,
+  key: string,
+): boolean {
+  if (name && name.toLowerCase().includes(key)) return true;
+  if (alias == null) return false;
+  const aliases = Array.isArray(alias) ? alias : [alias];
+  return aliases.some((a) => typeof a === 'string' && a.toLowerCase().includes(key));
+}
+
 // Function to insert a character or string inside another string for every interval of characters
 export function insertCharacter (inputString: string, interval: number, insertChar: string) {
   let outputString = ""
