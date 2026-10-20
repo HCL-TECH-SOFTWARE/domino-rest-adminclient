@@ -21,7 +21,7 @@ import { addForm, handleDatabaseForms, pullForms } from '../../store/databases/a
 import { toggleAlert } from '../../store/alerts/action';
 import { validateFormSchemaName } from '../../store/databases/scripts';
 import type { Database } from '../../store/databases/types';
-import { fullEncode } from '../../utils/common';
+import { fullEncode, matchesNameOrAlias } from '../../utils/common';
 
 /** `event.detail` of the `form-navigate` event. */
 export interface KeepFormsTabNavigateDetail {
@@ -474,7 +474,7 @@ export default class FormsTab extends KeepElement {
     return this.normalizedForms.filter(
       (form) =>
         form.dbName === this.dbName &&
-        (key === '' || form.formName.toLowerCase().includes(key)),
+        (key === '' || matchesNameOrAlias(form.formName, form.alias, key)),
     );
   }
 

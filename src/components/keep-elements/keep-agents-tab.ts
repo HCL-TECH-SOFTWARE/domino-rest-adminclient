@@ -20,6 +20,7 @@ import './keep-agents-table';
 import './keep-button';
 import './keep-form-dialog-header';
 import './keep-search-input';
+import { matchesNameOrAlias } from '../../utils/common';
 import './keep-switch';
 
 /**
@@ -285,8 +286,7 @@ export default class AgentsTab extends KeepElement {
     }
     const key = this.searchKey.toLowerCase();
     return this.databases.value.agents.filter(
-      (agent: KeepAgentsTableAgent) =>
-        agent.agentName && agent.agentName.toLowerCase().indexOf(key) !== -1,
+      (agent: KeepAgentsTableAgent) => matchesNameOrAlias(agent.agentName, agent.agentAlias, key),
     );
   }
 
