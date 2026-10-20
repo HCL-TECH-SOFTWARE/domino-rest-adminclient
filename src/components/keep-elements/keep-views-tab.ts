@@ -11,6 +11,7 @@ import { modalBackdropStyles } from './modal-backdrop';
 import './keep-button';
 import './keep-form-dialog-header';
 import './keep-search-input';
+import { matchesNameOrAlias } from '../../utils/common';
 import './keep-switch';
 import './keep-views-table';
 import type { KeepSearchChangeDetail } from './keep-search-input';
@@ -167,6 +168,19 @@ export default class ViewsTab extends KeepElement {
       .buttons-panel {
         height: 60px;
         padding-left: 5px;
+      }
+
+      /* Phone width: Show Active drops under Activate All | Deactivate All. */
+      @media only screen and (max-width: 768px) {
+        .toolbar {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .buttons-panel {
+          height: auto;
+        }
       }
 
       /*
@@ -387,7 +401,7 @@ export default class ViewsTab extends KeepElement {
       return rows.slice().sort((a, b) => (a.viewName > b.viewName ? 1 : -1));
     }
     const key = this.searchKey.toLowerCase();
-    return rows.filter((row) => row.viewName && row.viewName.toLowerCase().indexOf(key) !== -1);
+    return rows.filter((row) => matchesNameOrAlias(row.viewName, row.viewAlias, key));
   }
 
   private get nativeDialog(): HTMLDialogElement | null {

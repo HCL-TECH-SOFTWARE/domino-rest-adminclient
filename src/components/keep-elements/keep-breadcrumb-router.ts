@@ -206,6 +206,57 @@ export default class BreadcrumbRouter extends KeepElement {
       font-weight: 600;
       white-space: nowrap;
     }
+
+    /* Named for assistive tech, never shown. */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    /*
+     * Phone width: a compact one-line trail, and only below the top-level pages (the
+     * 'shallow' attribute is set in willUpdate), because the shell has always shown none
+     * there. "Overview" is the house icon alone, and every crumb is a smaller, shorter
+     * label. Last in the sheet so these win on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      :host([shallow]) {
+        display: none;
+      }
+
+      .action-header {
+        margin-top: 4px;
+      }
+
+      .top-banner {
+        height: auto;
+        padding: 4px 0;
+        font-size: 13px;
+      }
+
+      .trail {
+        margin-top: 0;
+      }
+
+      wa-breadcrumb-item::part(label) {
+        font-size: 13px;
+        max-width: 110px;
+      }
+
+      /* Only the house icon is visible; the word stays for screen readers. */
+      .overview-text {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+    }
   `;
 
   /**
@@ -230,6 +281,15 @@ export default class BreadcrumbRouter extends KeepElement {
       return;
     }
     this.route.navigate(path);
+  }
+
+  /**
+   * Whether this is a top-level page. Phones show the trail only below those, so the
+   * attribute is what the phone-width rule hides on. Set here rather than in `render` so it
+   * is in place before the first paint.
+   */
+  protected willUpdate(): void {
+    this.toggleAttribute('shallow', segmentsOf(this.route.value).length < 3);
   }
 
   render() {
@@ -265,7 +325,7 @@ export default class BreadcrumbRouter extends KeepElement {
             <wa-breadcrumb class="trail" label="breadcrumb">
               <wa-breadcrumb-item @click=${() => this.guardedNavigate('/')}>
                 <wa-icon slot="start" library=${FA_LIBRARY} name="house"></wa-icon>
-                Overview
+                <span class="overview-text">Overview</span>
               </wa-breadcrumb-item>
 
               <wa-breadcrumb-item @click=${() => this.guardedNavigate(section.path)}>

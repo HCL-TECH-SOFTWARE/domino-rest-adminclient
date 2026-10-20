@@ -174,6 +174,18 @@ describe('keep-search-input', () => {
     expect(el.shadowRoot!.querySelector('[role="search"]')).toBeTruthy();
   });
 
+  it('names the landmark after the field, so two on one page can be told apart', async () => {
+    const el = await mountLit<SearchInput>(TAG, { placeholder: 'Search Field', label: 'Search mode fields' });
+    expect(el.shadowRoot!.querySelector('[role="search"]')!.getAttribute('aria-label')).toBe(
+      'Search mode fields',
+    );
+    el.label = '';
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('[role="search"]')!.getAttribute('aria-label')).toBe(
+      'Search Field',
+    );
+  });
+
   it('reports the text verbatim, neither trimmed nor lower-cased', async () => {
     const el = await mountLit<SearchInput>(TAG, { placeholder: 'Search Forms' });
     const onSearch = vi.fn();

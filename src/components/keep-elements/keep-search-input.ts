@@ -200,7 +200,7 @@ export default class SearchInput extends KeepElement {
 
   render() {
     return html`
-      <div class="search-container" role="search">
+      <div class="search-container" role="search" aria-label=${this.label || this.placeholder}>
         <wa-icon
           class="search-icon"
           library=${FA_LIBRARY}
