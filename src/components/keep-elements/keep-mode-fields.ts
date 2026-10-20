@@ -949,7 +949,7 @@ export default class ModeFields extends KeepElement {
         <div class="search-row">
           <keep-search-input
             placeholder="Search Field"
-            label="Search Field"
+            label="Search fields in this mode"
             @search-change=${this.handleSearch}
           ></keep-search-input>
         </div>

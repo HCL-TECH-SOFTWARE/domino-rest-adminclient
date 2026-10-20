@@ -134,8 +134,10 @@ export default class AccessMode extends KeepElement {
       justify-content: space-between;
     }
 
-    /* was .header-text */
+    /* was .header-text. A heading now, so the page has an h1; the margin is what the paragraph
+       it replaces got from the user agent, stated so the swap moves nothing. */
     .header-text {
+      margin: 1em 0;
       display: flex;
       flex: 1;
       font-size: 24px;
@@ -608,7 +610,7 @@ export default class AccessMode extends KeepElement {
     return html`
       <div>
         <div class="header-container">
-          <p class="header-text">Schema Management - ${formName}</p>
+          <h1 class="header-text">Schema Management - ${formName}</h1>
           <keep-button
             ?disabled=${this.modes.length === 1}
             @click=${() => {

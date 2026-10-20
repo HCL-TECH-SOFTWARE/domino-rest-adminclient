@@ -657,7 +657,7 @@ export default class FieldList extends KeepElement {
         <div class="row">
           <keep-search-input
             placeholder="Search Field"
-            label="Search Field"
+            label="Search available fields"
             @search-change=${this.handleSearch}
           ></keep-search-input>
         </div>
