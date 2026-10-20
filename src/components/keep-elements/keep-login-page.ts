@@ -786,7 +786,7 @@ export default class LoginPage extends KeepElement {
         </keep-tooltip>
       </div>
 
-      <div class="form-panel">
+      <main class="form-panel">
         <div class="paper">
           <div class="logo">
             <img src=${keepLogo} alt="Domino REST API logo" />
@@ -901,7 +901,7 @@ export default class LoginPage extends KeepElement {
             ></keep-api-error-dialog>
           </div>
         </div>
-      </div>
+      </main>
 
       <div class="castle-panel"></div>
     `;

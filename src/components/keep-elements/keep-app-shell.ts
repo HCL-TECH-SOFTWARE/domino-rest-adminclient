@@ -321,7 +321,12 @@ export default class AppShell extends KeepElement {
           <keep-profile-menu ?expanded=${expanded} @logout=${this.handleLogout}></keep-profile-menu>
         </div>
 
-        ${this.main}
+        <!--
+          Ahead of the main region in the source, though it is position: fixed and so looks the
+          same wherever it sits. Tab order follows the source: after the page it sat last, so a
+          keyboard user reached the rail's own toggle only after tabbing through every control
+          in the view, when it belongs with the navigation it collapses.
+        -->
         ${isMobile
           ? nothing
           : html`
@@ -347,6 +352,7 @@ export default class AppShell extends KeepElement {
                 ></wa-icon>
               </button>
             `}
+        ${this.main}
       </wa-page>
 
       <!-- Both sit outside the page element on purpose: the toast is fixed to the top of the

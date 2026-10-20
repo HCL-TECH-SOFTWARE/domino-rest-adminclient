@@ -144,10 +144,11 @@ export default class Applications extends KeepElement {
         font-weight: bold;
       }
 
-      /* was the OptionsContainer block. Reversed, so the controls read right to left. */
+      /* was the OptionsContainer block. Source order is the visual order, left to right: a
+         row-reverse here put the filter control last in the tab order while it sat first on
+         screen. */
       .options {
         display: flex;
-        flex-direction: row-reverse;
         align-items: center;
         gap: 20px;
       }
@@ -411,12 +412,12 @@ export default class Applications extends KeepElement {
   private renderOptionsBar() {
     return html`
       <section class="options">
-        <keep-button icon="plus" @click=${this.createAction}>Add Application</keep-button>
-        <keep-button @click=${this.openConsents}>OAuth Consents</keep-button>
-        <div class="divider"></div>
         <button class="filter-button" aria-label="Filter applications" @click=${this.openFilters}>
           <wa-icon library=${FA_LIBRARY} name="filter" canvas="auto" aria-hidden="true"></wa-icon>
         </button>
+        <div class="divider"></div>
+        <keep-button @click=${this.openConsents}>OAuth Consents</keep-button>
+        <keep-button icon="plus" @click=${this.createAction}>Add Application</keep-button>
       </section>
     `;
   }

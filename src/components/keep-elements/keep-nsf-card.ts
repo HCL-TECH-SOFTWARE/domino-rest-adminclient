@@ -84,9 +84,24 @@ export default class NsfCard extends KeepElement {
       align-content: center;
     }
 
+    /* A long file name is truncated inside the card rather than spilling out of it.
+       min-width: 0 lets the flex item shrink below its content width. */
     text.nsf-filename {
       font-size: 17px;
       font-weight: 600;
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-icon {
+      flex-shrink: 0;
+    }
+
+    div.card-title {
+      min-width: 0;
     }
 
     /* Both were style attributes until #685; see the note in keep-element.ts. */
@@ -180,7 +195,7 @@ export default class NsfCard extends KeepElement {
             <div class="card-icon">
                 ${this.renderIcon()}
             </div>
-            <text class="nsf-filename">${this.database.fileName}</text>
+            <text class="nsf-filename" title=${this.database.fileName ?? ''}>${this.database.fileName}</text>
         </div>
         <!--
           The label is slotted and visually hidden (#713). A placeholder is not an accessible

@@ -167,6 +167,24 @@ export default class AgentsTable extends KeepElement {
         width: auto;
       }
 
+      /* Phone width: tighter cells, and the name no longer indented 20px. :host outranks
+         the shared table sheet's plain element selector for cell padding. */
+      @media only screen and (max-width: 768px) {
+        :host table th,
+        :host table td {
+          padding: 10px 8px;
+        }
+
+        :host table thead th {
+          padding-top: 14px;
+        }
+
+        /* :host: .agent-name is declared again below this block. */
+        :host .agent-name {
+          margin-left: 0;
+        }
+      }
+
       /* Push the status column to the right edge, matching the Views table layout. */
       .col-status {
         width: 1%;

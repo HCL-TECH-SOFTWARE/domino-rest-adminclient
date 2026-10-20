@@ -336,6 +336,38 @@ export default class ScriptEditor extends KeepElement {
         padding: 0;
       }
 
+      /*
+       * Phone width: tighter panels and every card on its own full-width row. Declared
+       * before the desktop card and dialog rules, so it repeats them with :host to win.
+       */
+      @media only screen and (max-width: 768px) {
+        :host .panel {
+          padding: 4px 12px 12px;
+          gap: 8px;
+        }
+
+        :host .formula-row {
+          flex-direction: column;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+
+        :host .formula-card,
+        :host .sign {
+          width: 100%;
+        }
+
+        :host dialog {
+          width: calc(100% - var(--wa-space-l));
+        }
+
+        :host .dialog-head,
+        :host .dialog-content,
+        :host .dialog-actions {
+          padding: 0 16px;
+        }
+      }
+
       /* was .script-editor-help-icon. A single colour in both modes, as it was. */
       .help-icon {
         color: #2d91e3;

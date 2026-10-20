@@ -346,7 +346,7 @@ describe('keep-access-mode', () => {
       expect(fieldList(el)).toBeTruthy();
     });
 
-    it('hides the field palette below it, and puts it back when the window grows', async () => {
+    it('collapses the field palette behind a toggle below it, and opens it back up when the window grows', async () => {
       const listeners = new Set<(event: MediaQueryListEvent) => void>();
       const original = window.matchMedia;
       window.matchMedia = ((query: string) =>
@@ -360,10 +360,29 @@ describe('keep-access-mode', () => {
         }) as unknown as MediaQueryList) as typeof window.matchMedia;
       try {
         const el = await mount();
-        expect(fieldList(el)).toBeNull();
+        const palette = () => el.shadowRoot!.querySelector('.palette') as HTMLElement;
+        const toggle = () =>
+          el.shadowRoot!.querySelector('.palette-toggle') as HTMLButtonElement | null;
+
+        // Still in the tree (so the picked form and fetched fields survive), but collapsed.
+        expect(fieldList(el)).toBeTruthy();
+        expect(palette().hidden).toBe(true);
+        expect(toggle()!.getAttribute('aria-expanded')).toBe('false');
+
+        toggle()!.click();
+        await el.updateComplete;
+        expect(palette().hidden).toBe(false);
+        expect(toggle()!.getAttribute('aria-expanded')).toBe('true');
+
+        toggle()!.click();
+        await el.updateComplete;
+        expect(palette().hidden).toBe(true);
+
         // The element listens rather than re-reading, so the event is the whole contract.
         for (const fn of listeners) fn({ matches: false } as MediaQueryListEvent);
         await el.updateComplete;
+        expect(toggle()).toBeNull();
+        expect(palette().hidden).toBe(false);
         expect(fieldList(el)).toBeTruthy();
       } finally {
         window.matchMedia = original;
