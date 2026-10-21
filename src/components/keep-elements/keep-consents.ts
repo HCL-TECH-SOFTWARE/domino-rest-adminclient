@@ -268,6 +268,48 @@ export default class Consents extends KeepElement {
         align-content: center;
         align-items: center;
       }
+
+      /*
+       * Phone width: the same header as the Schema, Scope and Application screens — a little
+       * inset from the screen edge, the title centred and at their size, the buttons together
+       * on the line below. The close control, present only when a dialog frames this screen,
+       * stays at the right edge of the title line. Last in the sheet so these win over the
+       * rules above on source order.
+       */
+      @media only screen and (max-width: 768px) {
+        :host {
+          width: 100%;
+          padding: 12px;
+          gap: 8px;
+        }
+
+        .header {
+          position: relative;
+          justify-content: center;
+        }
+
+        .heading {
+          font-size: 24px;
+          text-align: center;
+        }
+
+        .close {
+          position: absolute;
+          right: 0;
+        }
+
+        .options {
+          flex-wrap: wrap;
+          justify-content: center;
+          padding: 8px 0 0;
+          gap: 4px 10px;
+        }
+
+        /* The rules only separate buttons on a row that does not wrap. */
+        .rule {
+          display: none;
+        }
+      }
     `,
   ];
 

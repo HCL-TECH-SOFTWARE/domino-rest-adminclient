@@ -185,6 +185,27 @@ export default class SchemasList extends KeepElement {
       font-size: 16px;
       color: var(--text-color-primary);
     }
+
+    /*
+     * Phone width: a little inset from the screen edge, and the title centred on a line of its
+     * own with Refresh and Add Schema together on the line below it. Last in the sheet so
+     * these win over the rules above on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      :host {
+        padding-inline: 12px;
+      }
+
+      .title {
+        flex: 1 1 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .bar {
+        justify-content: center;
+      }
+    }
   `;
 
   /**

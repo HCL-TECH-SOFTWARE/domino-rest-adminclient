@@ -304,6 +304,115 @@ export default class AppsTable extends KeepElement {
         outline: var(--wa-focus-ring);
         outline-offset: var(--wa-focus-ring-offset);
       }
+
+      /*
+       * Phone width: the five-column table becomes a list of compact cards, with no markup
+       * change. The header keeps only the App Name column — its sort button and search box —
+       * as a toolbar; the other headings go, since each card labels its own values. A card is
+       * three lines: [launch | name and status | edit and delete], then the App ID and secret,
+       * then the description (clamped, and gone when empty).
+       *
+       * The rows are light-DOM children of this root (see keep-app-item), so they are reached
+       * through the keep-app-item selector, as the sheet above does. ':host' is in the
+       * selectors to outrank that sheet and the shared table sheet's cell padding, which are
+       * plain element selectors. Last in the sheet so the rest win on source order.
+       */
+      @media only screen and (max-width: 768px) {
+        :host table,
+        :host thead,
+        :host tbody {
+          display: block;
+        }
+
+        :host thead tr {
+          display: block;
+        }
+
+        :host thead th:not(.app-name) {
+          display: none;
+        }
+
+        :host thead th.app-name {
+          display: block;
+          width: 100%;
+          padding: 10px 4px;
+        }
+
+        :host keep-app-item tr {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          column-gap: 10px;
+          row-gap: 6px;
+          align-items: center;
+          padding: 10px 4px;
+        }
+
+        :host keep-app-item td {
+          padding: 0;
+          min-width: 0;
+        }
+
+        :host keep-app-item td:nth-child(1) {
+          grid-column: 1;
+          grid-row: 1;
+        }
+
+        :host keep-app-item td:nth-child(2) {
+          grid-column: 2;
+          grid-row: 1;
+        }
+
+        :host keep-app-item td:nth-child(5) {
+          grid-column: 3;
+          grid-row: 1;
+        }
+
+        :host keep-app-item td:nth-child(3) {
+          grid-column: 1 / -1;
+          grid-row: 2;
+          font-size: 13px;
+          overflow-wrap: anywhere;
+        }
+
+        :host keep-app-item td:nth-child(4) {
+          grid-column: 1 / -1;
+          grid-row: 3;
+          font-size: 13px;
+          color: var(--wa-color-text-quiet);
+        }
+
+        /* An application with no description takes no line at all. */
+        :host keep-app-item td:nth-child(4):empty,
+        :host keep-app-item td:nth-child(4):has(> .small-text:empty) {
+          display: none;
+        }
+
+        :host keep-app-item td:nth-child(4) .small-text {
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+          overflow: hidden;
+          font-size: 13px;
+        }
+
+        :host keep-app-item .app-id-secret-row {
+          flex-wrap: wrap;
+          gap: 2px 6px;
+        }
+
+        :host keep-app-item .app-id-secret-row .small-text {
+          font-size: 13px;
+        }
+
+        :host keep-app-item .launch-disc {
+          font-size: 32px;
+        }
+
+        :host keep-app-item keep-app-icon::part(icon) {
+          margin-top: 0;
+          height: 32px;
+        }
+      }
     `,
   ];
 

@@ -82,8 +82,10 @@ export default class OptionList extends KeepElement {
       justify-content: center;
       gap: 2px;
 
-      width: 181px;
-      height: 42px;
+      /* Variables, defaulting to the size it has always been, so a host that wants a smaller
+         button (the profile area of the phone drawer) can ask without a second element. */
+      width: var(--keep-sign-out-width, 181px);
+      height: var(--keep-sign-out-height, 42px);
       padding: 0 var(--wa-form-control-padding-inline);
 
       border-style: var(--wa-border-style);
@@ -151,7 +153,7 @@ export default class OptionList extends KeepElement {
 
     /* was .small-text */
     .label {
-      font-size: 14px;
+      font-size: var(--keep-sign-out-font-size, 14px);
     }
   `;
 

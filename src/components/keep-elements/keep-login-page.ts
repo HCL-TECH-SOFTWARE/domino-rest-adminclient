@@ -411,6 +411,50 @@ export default class LoginPage extends KeepElement {
       font-size: 14px;
       color: var(--copyright-color);
     }
+
+    /*
+     * Phone width: the form is centred in the screen, and the page scrolls only when the form
+     * is taller than the screen. The scrollbars came from the desktop sizing — 90px of
+     * panel padding and a fixed-width logo, which together are wider than a phone, plus the
+     * same padding and margins stacked above and below a form that would have fitted. Last in
+     * the sheet so these win over the rules above on source order.
+     */
+    @media (max-width: 768px) {
+      :host {
+        /* dvh follows the visible viewport as a phone's address bar comes and goes; vh is the
+           fallback for a browser without it. minmax stops the form widening its own column. */
+        grid-template-columns: minmax(0, 1fr);
+        height: 100vh;
+        height: 100dvh;
+        overflow: auto;
+      }
+
+      /* A flex column, so the form can be centred with auto margins: unlike
+         justify-content: center, a form taller than the screen then starts at the top and
+         scrolls instead of being cut off above it. */
+      .form-panel {
+        display: flex;
+        flex-direction: column;
+        padding: 24px 16px;
+        min-height: 100%;
+        height: auto;
+      }
+
+      .paper {
+        width: 100%;
+        max-width: 400px;
+        margin: auto;
+      }
+
+      .logo {
+        width: 100%;
+        max-width: 330px;
+      }
+
+      .column {
+        width: 100%;
+      }
+    }
   `;
 
   /**
