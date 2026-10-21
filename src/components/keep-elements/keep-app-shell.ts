@@ -227,6 +227,18 @@ export default class AppShell extends KeepElement {
     window.location.href = window.location.origin;
   };
 
+  /**
+   * Close the phone navigation drawer once something in it is picked — the page it led to is
+   * what the user wanted to see. A no-op above the breakpoint, where there is no drawer and
+   * the rail stays as it is. This element renders into the light DOM, so the page is found
+   * from here rather than through a shadow root.
+   */
+  private readonly closeNavDrawer = (): void => {
+    if (!this.isMobile) return;
+    (this.querySelector('wa-page') as (HTMLElement & { hideNavigation?: () => void }) | null)
+      ?.hideNavigation?.();
+  };
+
   private readonly toggleCollapsed = (): void => {
     this.collapsed = !this.collapsed;
   };
@@ -314,7 +326,7 @@ export default class AppShell extends KeepElement {
           reads it itself; that was the last property-passed router in the app.
         -->
         <div slot="navigation">
-          <keep-side-nav ?expanded=${expanded}></keep-side-nav>
+          <keep-side-nav ?expanded=${expanded} @nav-select=${this.closeNavDrawer}></keep-side-nav>
         </div>
 
         <div slot="navigation-footer">

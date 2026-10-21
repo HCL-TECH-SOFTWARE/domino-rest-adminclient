@@ -51,6 +51,18 @@ export default class ConsentsContainer extends KeepElement {
       padding: 30px;
       box-sizing: border-box;
     }
+
+    /* Phone width: no padding of its own, so the screen's 12px inset is the whole margin, as
+       on the other management screens. min-width lets the flex child shrink to the screen. */
+    @media only screen and (max-width: 768px) {
+      :host {
+        padding: 0;
+      }
+
+      keep-consents {
+        min-width: 0;
+      }
+    }
   `;
 
   connectedCallback(): void {

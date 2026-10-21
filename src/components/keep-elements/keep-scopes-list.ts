@@ -167,6 +167,27 @@ export default class ScopesList extends KeepElement {
       font-weight: bold;
       color: var(--text-color-primary);
     }
+
+    /*
+     * Phone width: a little inset from the screen edge, and the title centred on a line of its
+     * own with Refresh and Add Scope together on the line below it — the same as
+     * keep-schemas-list. Last in the sheet so these win over the rules above on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      :host {
+        padding-inline: 12px;
+      }
+
+      .title {
+        flex: 1 1 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .bar {
+        justify-content: center;
+      }
+    }
   `;
 
   /**
@@ -205,6 +226,10 @@ export default class ScopesList extends KeepElement {
     const { search } = this.route.location;
     const displayType = search.split(VIEW_QUERY)[1];
     if (search && displayType) this.view = displayType;
+    // No explicit choice in the URL: the stack view is the more compact one, so it is the
+    // default on a phone-width screen, as on the Schema Management screen. 768px matches the
+    // breakpoint the other screens use. Desktop keeps the card view.
+    else if (window.matchMedia('(max-width: 768px)').matches) this.view = 'stack';
   }
 
   /**

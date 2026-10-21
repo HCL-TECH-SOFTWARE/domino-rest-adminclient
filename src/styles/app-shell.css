@@ -253,3 +253,65 @@ wa-page.nav-collapsed .nav-collapse-toggle {
 .nav-collapse-toggle wa-icon {
   font-size: 19px;
 }
+
+/*
+ * Phone width — the navigation drawer. The same elements fill the desktop rail and this drawer,
+ * so these rules are scoped to the narrow query (the same form wa-page compiles from
+ * `mobile-breakpoint`, as above) and the rail is untouched.
+ *
+ * The header is compacted: the appearance toggle moves to the top-left corner, out of the flow,
+ * so the logo and wordmark can sit close together in the middle with far less padding above
+ * them. The drawer body stops scrolling sideways — a thin horizontal scrollbar had appeared
+ * under the links, and nothing in the drawer is meant to be wider than it.
+ *
+ * Last in the sheet so these win over the rules above on source order.
+ */
+@media screen and (width < 768px) {
+  wa-page > .nav-header {
+    position: relative;
+    gap: 2px;
+    padding: 12px 12px 4px;
+  }
+
+  wa-page > .nav-header keep-tooltip {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+  }
+
+  .nav-header .nav-title {
+    font-size: 14px;
+  }
+
+  wa-page::part(drawer__body) {
+    overflow-x: hidden;
+  }
+
+  /*
+   * The drawer is as wide as its content needs rather than wa-drawer's 25rem default, and
+   * its header, links and footer share one inset on both sides. --size is a custom property
+   * the drawer declares on its own host, and the host is the part `drawer` of wa-page, so an
+   * outer-tree declaration on it wins.
+   */
+  wa-page::part(drawer) {
+    --size: min(260px, 85vw);
+  }
+
+  wa-page::part(drawer__header),
+  wa-page::part(drawer__body),
+  wa-page::part(drawer__footer) {
+    padding-inline: 12px;
+  }
+
+  /*
+   * wa-drawer's footer pushes its content to the end of the row, which is what put the name
+   * and Sign Out against the right edge. Start-aligned, with the slotted block filling the row.
+   */
+  wa-page::part(drawer__footer) {
+    justify-content: flex-start;
+  }
+
+  wa-page > [slot='navigation-footer'] {
+    width: 100%;
+  }
+}

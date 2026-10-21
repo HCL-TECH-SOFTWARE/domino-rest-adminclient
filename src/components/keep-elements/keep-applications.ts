@@ -246,6 +246,47 @@ export default class Applications extends KeepElement {
       .consents-dialog[open] {
         display: flex;
       }
+
+      /*
+       * Phone width: the same header as Schema and Scope Management — a little inset from the
+       * screen edge, the title centred on a line of its own, and the buttons together on the
+       * line below. The list stops being a fixed-height scroll box of its own and flows in the
+       * page, so the page is the only thing that scrolls. Last in the sheet so these win over
+       * the rules above on source order.
+       */
+      @media only screen and (max-width: 768px) {
+        .board {
+          height: auto;
+          overflow-y: visible;
+          padding-inline: 12px;
+        }
+
+        .top-bar {
+          justify-content: center;
+        }
+
+        .title {
+          flex: 1 1 100%;
+          justify-content: center;
+          text-align: center;
+        }
+
+        .options {
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 10px;
+        }
+
+        /* The rule between the filter control and the buttons only separates on a wide row. */
+        .divider {
+          height: 32px;
+        }
+
+        .list {
+          height: auto;
+          overflow-y: visible;
+        }
+      }
     `,
   ];
 

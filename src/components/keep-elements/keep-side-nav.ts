@@ -261,6 +261,37 @@ export default class SideNav extends KeepElement {
       border: 0;
       border-bottom: thin solid rgb(0 0 0 / 12%);
     }
+
+    /*
+     * Phone width (this is the body of the navigation drawer there): the links are tighter,
+     * so the list is most of what is on screen — less space above it, shorter rows, a
+     * narrower icon column. Last in the sheet so these win over the rules above on source
+     * order (the spacer rules are one class of specificity more than a bare class).
+     */
+    @media only screen and (max-width: 768px) {
+      .nav {
+        padding: 4px 0;
+      }
+
+      .spacer,
+      .spacer.expanded,
+      .spacer.collapsed {
+        height: 0;
+        margin-top: 0;
+      }
+
+      .item {
+        padding: 6px 10px;
+      }
+
+      .icon {
+        min-width: 44px;
+      }
+
+      .label {
+        margin: 2px 0 2px -4px;
+      }
+    }
   `;
 
   /** True when the menu shows its labels; false for the 57px rail. */
@@ -346,6 +377,9 @@ export default class SideNav extends KeepElement {
     }
     event.preventDefault();
     this.route.navigate(uri);
+    // Something was picked. The shell closes the phone drawer on this; on a desktop there is
+    // no drawer and nothing listens.
+    this.emit('nav-select');
   }
 
   private startPrefetch(uri: string): void {
@@ -373,6 +407,7 @@ export default class SideNav extends KeepElement {
       store.dispatch(fetchKeepDatabases());
     }
     store.dispatch(toggleQuickConfigDrawer());
+    this.emit('nav-select');
   };
 
   /**
