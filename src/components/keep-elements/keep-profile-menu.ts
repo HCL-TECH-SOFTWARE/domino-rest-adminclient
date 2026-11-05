@@ -301,6 +301,53 @@ export default class ProfileMenu extends KeepElement {
       justify-content: center;
       margin-bottom: 24px;
     }
+
+    /*
+     * Phone width (this is the footer of the navigation drawer there): a small, left-aligned
+     * block — a modest avatar, the name and role beside it at a smaller size, and a smaller
+     * Sign Out under them — instead of a large centred one. The drawer should be mostly the
+     * navigation links. Last in the sheet so these win over the rules above on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      .profile {
+        margin: 0 0 12px;
+      }
+
+      .profile.expanded {
+        align-items: flex-start;
+        padding: 0 12px;
+      }
+
+      .profile.expanded .avatar-row {
+        margin-bottom: 6px;
+      }
+
+      .avatar {
+        padding: 4px;
+      }
+
+      .profile.expanded .info {
+        margin-left: 8px;
+      }
+
+      .name {
+        font-size: 14px;
+      }
+
+      .role {
+        font-size: 12px;
+      }
+
+      .actions-inner {
+        justify-content: flex-start;
+      }
+
+      .actions-inner keep-option-list {
+        --keep-sign-out-width: 124px;
+        --keep-sign-out-height: 32px;
+        --keep-sign-out-font-size: 12px;
+      }
+    }
   `;
 
   /** True when the rail shows its labels; false for the 57px collapsed rail. */

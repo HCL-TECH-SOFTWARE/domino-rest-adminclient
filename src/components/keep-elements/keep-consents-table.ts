@@ -332,6 +332,130 @@ export default class ConsentsTable extends KeepElement {
         outline: var(--wa-focus-ring);
         outline-offset: var(--wa-focus-ring-offset);
       }
+
+      /*
+       * Phone width: the five-column table becomes a list of compact cards, as on the
+       * Application screen, with no markup change. The header keeps the two search columns
+       * (User, App Name — with their sort buttons) as a toolbar; the others go, since the card
+       * labels its own values. A card is [expand | user | Revoke], then the app name, then the
+       * two expirations; the detail row under it, when open, is one block of its own with the
+       * URL wrapping and the scopes wrapping into rows rather than running off the screen.
+       *
+       * The rows are light-DOM children of this root (see keep-consent-item), reached through
+       * its tag as the sheet above does. ':host' outranks that sheet and the shared table
+       * sheet's cell padding, both plain element selectors. The data row is the one with no
+       * id; the detail row carries one, and keeps its [hidden] state from the item's own rule.
+       * Last in the sheet so the rest win on source order.
+       */
+      @media only screen and (max-width: 768px) {
+        :host table,
+        :host thead,
+        :host tbody {
+          display: block;
+        }
+
+        :host thead tr {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          padding: 8px 4px;
+        }
+
+        :host thead th.expand,
+        :host thead th.expirations,
+        :host thead th.action {
+          display: none;
+        }
+
+        :host thead th.user,
+        :host thead th.app-name {
+          display: block;
+          flex: 1 1 140px;
+          width: auto;
+          padding: 0;
+        }
+
+        :host keep-consent-item tr:not([id]) {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          column-gap: 10px;
+          row-gap: 4px;
+          align-items: center;
+          padding: 10px 4px 4px;
+        }
+
+        :host keep-consent-item tr:not([id]) td {
+          padding: 0;
+          min-width: 0;
+          width: auto;
+        }
+
+        :host keep-consent-item td.expand {
+          grid-column: 1;
+          grid-row: 1;
+        }
+
+        :host keep-consent-item td.user {
+          grid-column: 2;
+          grid-row: 1;
+          overflow-wrap: anywhere;
+        }
+
+        :host keep-consent-item tr:not([id]) td:nth-child(5) {
+          grid-column: 3;
+          grid-row: 1;
+        }
+
+        :host keep-consent-item td.app-name {
+          grid-column: 2 / -1;
+          grid-row: 2;
+          font-size: 13px;
+          color: var(--wa-color-text-quiet);
+        }
+
+        /* The cell has no label of its own, so the card names it. */
+        :host keep-consent-item td.app-name::before {
+          content: 'App: ';
+        }
+
+        :host keep-consent-item td.expiration {
+          grid-column: 2 / -1;
+          grid-row: 3;
+          gap: 2px;
+        }
+
+        :host keep-consent-item .exp-row .small-text {
+          font-size: 13px;
+        }
+
+        :host keep-consent-item tr[id]:not([hidden]) {
+          display: block;
+          padding: 0 4px 10px;
+        }
+
+        :host keep-consent-item tr[id] td {
+          display: block;
+          padding: 0;
+        }
+
+        :host keep-consent-item .url-container {
+          padding: 4px 0 0;
+          font-size: 13px;
+          overflow-wrap: anywhere;
+        }
+
+        :host keep-consent-item .scope-box {
+          flex-wrap: wrap;
+          gap: 6px;
+          padding: 8px;
+        }
+
+        :host keep-consent-item .scope {
+          padding: 3px 8px;
+          font-size: 12px;
+          overflow-wrap: anywhere;
+        }
+      }
     `,
   ];
 

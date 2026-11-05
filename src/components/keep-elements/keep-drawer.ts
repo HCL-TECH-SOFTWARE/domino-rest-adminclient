@@ -45,6 +45,23 @@ export default class Drawer extends KeepElement {
     wa-drawer {
       --size: 40vw;
     }
+
+    /*
+     * Phone width: the drawer takes the whole screen. 40vw is narrower than the forms inside
+     * it can be drawn, so the content ran off the right edge — and the body does not scroll,
+     * so there was no way to reach it. Full width gives the content the room it needs, and
+     * the body scrolls only if it still comes up short vertically (it was overflow: hidden,
+     * which would clip it instead). Last in the sheet so these win on source order.
+     */
+    @media only screen and (max-width: 768px) {
+      wa-drawer {
+        --size: 100vw;
+      }
+
+      wa-drawer::part(body) {
+        overflow: auto;
+      }
+    }
   `;
 
   @property({ type: String }) accessor label = 'Drawer Label';
