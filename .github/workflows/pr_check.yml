@@ -81,7 +81,7 @@ jobs:
           fi
       - name: SonarQube Cloud scan
         if: steps.sonar.outputs.available == 'true'
-        uses: SonarSource/sonarqube-scan-action@v8.4.0
+        uses: SonarSource/sonarqube-scan-action@v8.4.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       # Report-only: `continue-on-error` keeps a red gate from failing the PR while
