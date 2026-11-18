@@ -14,7 +14,7 @@
   "devDependencies": {
     "@swc/core": "^1.16.20",
     "@testing-library/dom": "^10.4.2",
-    "@types/node": "26.5.1",
+    "@types/node": "26.6.6",
     "@vitest/coverage-v8": "^5.0.1",
     "@vitest/ui": "^5.0.5",
     "axe-core": "^4.13.0",
